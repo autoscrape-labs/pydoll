@@ -17,6 +17,7 @@ from pydoll.connection.connection import ConnectionHandler
 from pydoll.constants import Scripts
 from pydoll.mixins.find_elements import FindElementsMixin
 from pydoll.utils import decode_image_to_bytes
+import warnings
 
 
 class WebElement(FindElementsMixin):  # noqa: PLR0904
@@ -250,7 +251,8 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
             image_bytes = decode_image_to_bytes(screenshot['result']['data'])
             await file.write(image_bytes)
 
-    async def get_element_text(self) -> str:
+    @property
+    async def text(self) -> str:
         """
         Retrieves the text of the element.
 
@@ -259,8 +261,22 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         """
         outer_html = await self.inner_html
         soup = BeautifulSoup(outer_html, 'html.parser')
-        text_inside = soup.get_text(strip=True)
-        return text_inside
+        return soup.get_text(strip=True)
+
+    async def get_element_text(self) -> str:
+        """
+        Retrieves the text of the element.
+
+        .. deprecated:: Version X.X.X
+            Use ``text`` instead.
+        """
+        warnings.warn(
+            "get_element_text() is deprecated and will be removed in a future version. Use 'text' instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
+        return await self.text
+
 
     def get_attribute(self, name: str) -> str:
         """
