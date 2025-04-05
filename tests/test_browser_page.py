@@ -2,7 +2,7 @@ import pytest
 import pytest_asyncio
 import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch, ANY
-
+from pydoll.constants import By
 from pydoll.browser.page import Page
 from pydoll.element import WebElement
 from pydoll.events import PageEvents
@@ -456,3 +456,110 @@ async def test_expect_file_chooser(page):
     assert not page.intercept_file_chooser_dialog_enabled
     await page.disable_intercept_file_chooser_dialog()
     assert not page.intercept_file_chooser_dialog_enabled
+
+
+@pytest.mark.asyncio
+async def test_expect_and_bypass_cloudflare_captcha(page):
+    mock_event = AsyncMock()
+    mock_event.set = MagicMock()
+    mock_event.wait = AsyncMock()
+    
+    mock_element = AsyncMock()
+
+    page.find_element = AsyncMock(return_value=mock_element)
+    
+    page.enable_page_events = AsyncMock()
+    page.disable_page_events = AsyncMock()
+    page._connection_handler.remove_callback = AsyncMock()
+    
+    callback_id = 123
+    page.on = AsyncMock(return_value=callback_id)
+    
+
+    page._page_events_enabled = False
+    
+    with patch('asyncio.Event', return_value=mock_event):
+        async with page.expect_and_bypass_cloudflare_captcha():
+            assert page.enable_page_events.called
+            
+            callback_func = page.on.call_args[0][1]
+            
+            await callback_func({})
+            
+            assert page.find_element.called
+            assert mock_element.click.called
+            assert mock_event.set.called
+        
+        assert mock_event.wait.called
+        
+        page._connection_handler.remove_callback.assert_called_once_with(callback_id)
+        assert page.disable_page_events.called
+
+
+@pytest.mark.asyncio
+async def test_expect_and_bypass_cloudflare_captcha_no_element(page):
+    mock_event = AsyncMock()
+    mock_event.set = MagicMock()
+    mock_event.wait = AsyncMock()
+    
+    page.find_element = AsyncMock(return_value=None)
+    
+    page.enable_page_events = AsyncMock()
+    page.disable_page_events = AsyncMock()
+    page._connection_handler.remove_callback = AsyncMock()
+    
+    callback_id = 123
+    page.on = AsyncMock(return_value=callback_id)
+    
+    page._page_events_enabled = True
+    
+    with patch('asyncio.Event', return_value=mock_event):
+        async with page.expect_and_bypass_cloudflare_captcha():
+            assert not page.enable_page_events.called
+            
+            callback_func = page.on.call_args[0][1]
+            await callback_func({})
+            
+            assert page.find_element.called
+            assert mock_event.set.called
+        
+        assert mock_event.wait.called
+        page._connection_handler.remove_callback.assert_called_once_with(callback_id)
+        assert not page.disable_page_events.called
+
+
+@pytest.mark.asyncio
+async def test_expect_and_bypass_cloudflare_captcha_custom_selector(page):
+    mock_event = AsyncMock()
+    mock_event.set = MagicMock()
+    mock_event.wait = AsyncMock()
+    
+    mock_element = AsyncMock()
+    
+    page.find_element = AsyncMock(return_value=mock_element)
+    page.execute_script = AsyncMock()
+    
+    page.enable_page_events = AsyncMock()
+    page._connection_handler.remove_callback = AsyncMock()
+    
+    callback_id = 456
+    page.on = AsyncMock(return_value=callback_id)
+    
+    custom_selector = (By.ID, 'custom-captcha')
+    
+    with patch('asyncio.Event', return_value=mock_event):
+        async with page.expect_and_bypass_cloudflare_captcha(custom_selector=custom_selector):
+            callback_func = page.on.call_args[0][1]
+            await callback_func({})
+            
+            page.find_element.assert_called_once_with(
+                By.ID, 'custom-captcha', raise_exc=False
+            )
+            
+            assert page.execute_script.called
+            assert mock_element.click.called
+            assert mock_event.set.called
+        
+        assert mock_event.wait.called
+        page._connection_handler.remove_callback.assert_called_once_with(callback_id)
+
