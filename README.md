@@ -118,7 +118,7 @@ async def example_with_context_manager():
     print("Using context manager approach...")
     # The context manager will wait for the captcha to be processed
     # before exiting and continuing execution
-    async with page.expect_and_bypass_cloudflare_captcha(timeout=5):
+    async with page.expect_and_bypass_cloudflare_captcha(time_to_wait_captcha=5):
         await page.go_to('https://2captcha.com/demo/cloudflare-turnstile')
         print("Page loaded, waiting for captcha to be handled...")
     
@@ -147,7 +147,7 @@ async def example_with_enable_disable():
     
     print("Using enable/disable approach...")
     # Enable automatic captcha solving before navigating
-    await page.enable_auto_solve_cloudflare_captcha(timeout=5)
+    await page.enable_auto_solve_cloudflare_captcha(time_to_wait_captcha=5)
     
     # Navigate to the page - captcha will be handled automatically in the background
     await page.go_to('https://2captcha.com/demo/cloudflare-turnstile')
@@ -249,6 +249,40 @@ await asyncio.sleep(3)
 # Now interact with the page
 await page.find_element(By.ID, 'important-button').click()
 ```
+
+### Understanding Cloudflare Bypass Parameters
+
+Both captcha bypass methods accept several parameters that let you customize how the captcha detection and solving works:
+
+| Parameter | Description | Default | When to Change |
+|-----------|-------------|---------|---------------|
+| `custom_selector` | Custom CSS selector to locate the captcha element | `(By.CLASS_NAME, 'cf-turnstile')` | When the captcha has a non-standard HTML structure or class name |
+| `time_before_click` | Time to wait (in seconds) before clicking the captcha element | `2` | When the captcha element isn't immediately interactive or requires time to load properly |
+| `time_to_wait_captcha` | Maximum time (in seconds) to wait for the captcha element to be found | `5` | When pages load slowly or when captcha widgets take longer to appear |
+
+**Example with custom parameters:**
+
+```python
+# For sites with slow-loading captchas or non-standard elements
+async with page.expect_and_bypass_cloudflare_captcha(
+    custom_selector=(By.ID, 'custom-captcha-id'),
+    time_before_click=3.5,  # Wait longer before clicking
+    time_to_wait_captcha=10  # Allow more time for the captcha to appear
+):
+    await page.go_to('https://site-with-slow-captcha.com')
+```
+
+**When to adjust `time_before_click`:**
+- The captcha widget is complex and takes time to initialize
+- You notice the click happens too early and fails to register
+- The page is loading slowly due to network conditions
+- JavaScript on the page needs time to fully initialize the widget
+
+**When to adjust `time_to_wait_captcha`:**
+- The page takes longer to load completely 
+- The captcha appears after an initial loading delay
+- You're experiencing timeout errors with the default value
+- When working with slower connections or complex pages
 
 ### 🔌 Connect to Existing Browser
 
@@ -484,8 +518,8 @@ async def page_demo():
 | `async find_element(by, value)` | 🔎 Find an element on the page | `el = await page.find_element(By.ID, 'btn')` |
 | `async find_elements(by, value)` | 🔍 Find multiple elements matching a selector | `items = await page.find_elements(By.CSS, 'li')` |
 | `async wait_element(by, value, timeout=10)` | ⏳ Wait for an element to appear | `await page.wait_element(By.ID, 'loaded', 5)` |
-| `async expect_and_bypass_cloudflare_captcha(custom_selector=None, timeout=5)` | 🛡️ Context manager that waits for captcha to be solved | `async with page.expect_and_bypass_cloudflare_captcha():` |
-| `async enable_auto_solve_cloudflare_captcha(custom_selector=None, timeout=5)` | 🤖 Enable automatic Cloudflare captcha solving | `await page.enable_auto_solve_cloudflare_captcha()` |
+| `async expect_and_bypass_cloudflare_captcha(custom_selector=None, time_before_click=2, time_to_wait_captcha=5)` | 🛡️ Context manager that waits for captcha to be solved | `async with page.expect_and_bypass_cloudflare_captcha():` |
+| `async enable_auto_solve_cloudflare_captcha(custom_selector=None, time_before_click=2, time_to_wait_captcha=5)` | 🤖 Enable automatic Cloudflare captcha solving | `await page.enable_auto_solve_cloudflare_captcha()` |
 | `async disable_auto_solve_cloudflare_captcha()` | 🔌 Disable automatic Cloudflare captcha solving | `await page.disable_auto_solve_cloudflare_captcha()` |
 
 ### WebElement Interface
@@ -728,12 +762,24 @@ Please make sure to:
 
 Get ready for these upcoming features in Pydoll:
 
-🔹 **Auto-detection of Cloudflare Captcha** - Automatic solving without manual intervention  
-🔹 **Fingerprint Generation & Rotation** - Dynamic browser fingerprints to avoid detection  
 🔹 **Proxy Rotation** - Seamless IP switching for extended scraping sessions  
 🔹 **Shadow DOM Access** - Navigate and interact with Shadow Root elements  
 
 Stay tuned and star the repository to get updates when these features are released!
+
+## 📞 Professional Support
+
+Need specialized help with your automation projects? I offer professional services for those who need:
+
+- 🔧 **Custom Integration** - Integrate Pydoll into your existing systems
+- 🚀 **Performance Optimization** - Make your automation scripts faster and more reliable
+- 🛡️ **Bypass Solutions** - Help with complex captcha or anti-bot challenges
+- 🎓 **Training & Consultation** - Learn advanced techniques and best practices
+- 💼 **Enterprise Support** - Priority assistance for business-critical applications
+
+### Contact:
+- Telegram: [@thalissonvs](https://t.me/thalissonvs)
+- LinkedIn: [Thalison Fernandes](https://www.linkedin.com/in/thalison-fernandes/)
 
 ## 📄 License
 
