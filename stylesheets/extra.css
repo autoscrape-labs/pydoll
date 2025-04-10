@@ -1,0 +1,106 @@
+.termynal-comment {
+  color: #4a968f;
+  font-style: italic;
+  display: block;
+}
+
+.termy {
+  /* For right to left languages */
+  direction: ltr;
+}
+
+.termy [data-termynal] {
+  white-space: pre-wrap;
+}
+
+.termy .linenos {
+  display: none;
+}
+
+.label-class {
+  background-color: #1e88e5;
+  color: white;
+  padding: 2px 6px;
+  font-size: 0.75em;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+.label-attr {
+  background-color: #fb8c00;
+  color: white;
+  padding: 2px 6px;
+  font-size: 0.75em;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+.label-meth {
+  background-color: #43a047;
+  color: white;
+  padding: 2px 6px;
+  font-size: 0.75em;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+
+[data-md-color-scheme="default"] {
+  --md-primary-fg-color:        #0076AB;
+  --md-primary-fg-color--light: #3a7e9d;
+  --md-primary-fg-color--dark:  #004059;
+  
+  --md-accent-fg-color: #0091d0;
+  --md-accent-bg-color: rgba(0, 145, 208, 0.1);
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color:        #14151a;
+  --md-primary-fg-color--light: #b4b7bc;
+  --md-primary-fg-color--dark:  #1f2229;
+
+  --md-accent-fg-color: #8caabf;
+  --md-accent-bg-color: rgba(140, 170, 191, 0.1);
+}
+
+
+[data-md-color-scheme="slate"] .md-content h3 a,
+[data-md-color-scheme="slate"] .md-content h2 a,
+[data-md-color-scheme="slate"] .md-content h1 a {
+  color: inherit !important;
+  text-decoration: none;
+}
+
+[data-md-color-scheme="slate"] .md-content h3 a:hover,
+[data-md-color-scheme="slate"] .md-content h2 a:hover,
+[data-md-color-scheme="slate"] .md-content h1 a:hover {
+  text-decoration: underline;
+  opacity: 0.8;
+}
+
+/* Corrigir links dentro de cabeçalhos no modo claro */
+[data-md-color-scheme="default"] .md-content h3 a,
+[data-md-color-scheme="default"] .md-content h2 a,
+[data-md-color-scheme="default"] .md-content h1 a {
+  color: inherit !important; /* Herdar a cor do cabeçalho pai */
+  text-decoration: none;
+}
+
+[data-md-color-scheme="default"] .md-content h3 a:hover,
+[data-md-color-scheme="default"] .md-content h2 a:hover,
+[data-md-color-scheme="default"] .md-content h1 a:hover {
+  text-decoration: underline;
+  opacity: 0.8;
+}
+
+/* Estilo básico para links ativos - modo claro */
+.md-nav__link--active {
+  font-weight: bold;
+  color: var(--md-accent-fg-color);
+}
+
+/* Sobrescrever cor apenas para o modo escuro */
+[data-md-color-scheme="slate"] .md-nav__link--active {
+  color: #b4c0dd; /* Cor clara para contraste no modo escuro */
+}
+
