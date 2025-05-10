@@ -12,7 +12,7 @@ from pydoll.browser.managers import (
     ProxyManager,
     TempDirectoryManager,
 )
-from pydoll.browser.options import Options, ChromeOptions, EdgeOptions
+from pydoll.browser.options import ChromeOptions, EdgeOptions, Options
 from pydoll.browser.page import Page
 from pydoll.commands import (
     BrowserCommands,
@@ -66,7 +66,7 @@ class Browser(ABC):  # noqa: PLR0904
         self._temp_directory_manager = TempDirectoryManager()
         self._connection_handler = ConnectionHandler(self._connection_port)
         BrowserOptionsManager.add_default_arguments(self.options)
-        
+
         self._enable_fingerprint_spoofing = enable_fingerprint_spoofing
         self._fingerprint_script = None
 
@@ -116,7 +116,7 @@ class Browser(ABC):  # noqa: PLR0904
 
         self._setup_user_dir()
         proxy_config = self._proxy_manager.get_proxy_credentials()
-        
+
         # 应用指纹伪装（如果启用）
         if self._enable_fingerprint_spoofing:
             self._apply_fingerprint_spoofing()
@@ -129,7 +129,7 @@ class Browser(ABC):  # noqa: PLR0904
         await self._verify_browser_running()
         await self._configure_proxy(proxy_config[0], proxy_config[1])
         await self._init_first_page()
-        
+
         # 如果启用了指纹伪装，在页面加载后注入JavaScript
         if self._enable_fingerprint_spoofing and self._fingerprint_script:
             page = await self.get_page()
@@ -631,17 +631,17 @@ class Browser(ABC):  # noqa: PLR0904
             browser_type = 'chrome'
         elif isinstance(self.options, EdgeOptions):
             browser_type = 'edge'
-            
+
         # 显式生成新的指纹
         FINGERPRINT_MANAGER.generate_new_fingerprint(browser_type)
-        
+
         # 获取指纹相关命令行参数
         fingerprint_args = FINGERPRINT_MANAGER.get_fingerprint_arguments(browser_type)
-        
+
         # 将指纹参数添加到浏览器选项中
         for arg in fingerprint_args:
             if arg not in self.options.arguments:
                 self.options.arguments.append(arg)
-                
+
         # 保存指纹JavaScript脚本，稍后注入
         self._fingerprint_script = FINGERPRINT_MANAGER.get_fingerprint_js()

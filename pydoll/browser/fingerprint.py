@@ -1,9 +1,8 @@
+import json
 import random
 import string
-import json
 import uuid
-import platform
-from typing import Dict, List, Union, Optional
+from typing import Dict, List, Union
 
 
 class FingerprintGenerator:
@@ -13,7 +12,7 @@ class FingerprintGenerator:
     该类负责生成唯一不重复的浏览器指纹，用于每次会话中伪装浏览器环境，
     避免跟踪和指纹识别。
     """
-    
+
     # 常用的操作系统列表
     OS_LIST = [
         {'name': 'Windows', 'version': '10.0'},
@@ -53,7 +52,7 @@ class FingerprintGenerator:
         {'name': 'Linux', 'version': 'sparc64'},
         {'name': 'Linux', 'version': 'riscv64'},
     ]
-    
+
     # 移动设备操作系统列表
     MOBILE_OS_LIST = [
         {'name': 'Android', 'version': '10', 'device': 'SM-G970F'},  # Samsung Galaxy S10e
@@ -84,7 +83,7 @@ class FingerprintGenerator:
         {'name': 'iOS', 'version': '6.0', 'device': 'iPhone5,1'},
         {'name': 'iOS', 'version': '5.0', 'device': 'iPhone4,1'},
     ]
-    
+
     # 常用的浏览器版本
     CHROME_VERSIONS = [
         '110.0.5481.178',
@@ -115,7 +114,7 @@ class FingerprintGenerator:
         '135.0.7013.350',
         '136.0.7071.400',
     ]
-    
+
     # Edge版本
     EDGE_VERSIONS = [
         '110.0.1587.69',
@@ -139,7 +138,7 @@ class FingerprintGenerator:
         '128.0.2705.100',
         '129.0.2757.150',
     ]
-    
+
     # 常用的语言
     LANGUAGES = [
         'en-US,en;q=0.9',
@@ -284,7 +283,7 @@ class FingerprintGenerator:
         'tr-NZ,tr;q=0.9,en;q=0.8',  # 土耳其语（新西兰）
         'ar-NZ,ar;q=0.9,en;q=0.8',  # 阿拉伯语（新西兰）
     ]
-    
+
     # 常见的WebGL厂商与渲染器
     WEBGL_VENDORS = [
         'Google Inc. (NVIDIA)',
@@ -334,7 +333,7 @@ class FingerprintGenerator:
         'Google Inc. (Hisilicon)',
         'Google Inc. (Rockchip)',
     ]
-    
+
     WEBGL_RENDERERS = [
         'ANGLE (NVIDIA GeForce RTX 3070 Direct3D11 vs_5_0 ps_5_0)',
         'ANGLE (NVIDIA GeForce GTX 1660 Direct3D11 vs_5_0 ps_5_0)',
@@ -449,23 +448,23 @@ class FingerprintGenerator:
         'ANGLE (AMD Radeon HD 7020 Direct3D11 vs_5_0 ps_5_0)',
         'ANGLE (AMD Radeon HD 7010 Direct3D11 vs_5_0 ps_5_0)',
     ]
-    
+
     @staticmethod
     def _generate_random_id() -> str:
         """生成随机的唯一标识符"""
         return str(uuid.uuid4())
-    
+
     @staticmethod
     def _random_viewport_size() -> Dict[str, int]:
         """生成随机的视口大小"""
         common_widths = [1366, 1440, 1536, 1600, 1920, 2560]
         common_heights = [768, 900, 864, 1024, 1080, 1440]
-        
+
         width = random.choice(common_widths)
         height = random.choice(common_heights)
-        
+
         return {"width": width, "height": height}
-    
+
     @staticmethod
     def _generate_user_agent(os_info: Dict[str, str], browser_type: str, browser_version: str, is_mobile: bool = False) -> str:
         """根据操作系统信息和浏览器版本生成User-Agent"""
@@ -477,7 +476,7 @@ class FingerprintGenerator:
                 # iOS版本需要将点替换为下划线
                 ios_version = os_info['version'].replace('.', '_')
                 return f"Mozilla/5.0 (iPhone; CPU iPhone OS {ios_version} like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1"
-        
+
         # 桌面设备User-Agent
         if browser_type.lower() == 'chrome':
             if os_info['name'] == 'Windows':
@@ -496,7 +495,7 @@ class FingerprintGenerator:
         else:
             # 默认返回Chrome
             return f"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{browser_version} Safari/537.36"
-    
+
     def generate_fingerprint(self, browser_type: str = 'chrome', is_mobile: bool = False) -> Dict[str, Union[str, Dict, List]]:
         """
         生成一个完整的浏览器指纹配置
@@ -513,23 +512,23 @@ class FingerprintGenerator:
             os_info = random.choice(self.MOBILE_OS_LIST)
         else:
             os_info = random.choice(self.OS_LIST)
-        
+
         # 根据浏览器类型选择版本
         if browser_type.lower() == 'edge':
             browser_version = random.choice(self.EDGE_VERSIONS)
         else:
             browser_version = random.choice(self.CHROME_VERSIONS)
-        
+
         # 生成用户代理字符串
         user_agent = self._generate_user_agent(os_info, browser_type, browser_version, is_mobile)
-        
+
         # 生成随机视口大小
         if is_mobile:
-            viewport = {"width": random.choice([360, 375, 390, 414, 428]), 
+            viewport = {"width": random.choice([360, 375, 390, 414, 428]),
                         "height": random.choice([640, 720, 780, 844, 926])}
         else:
             viewport = self._random_viewport_size()
-        
+
         # 生成指纹数据
         fingerprint = {
             "id": self._generate_random_id(),
@@ -539,7 +538,7 @@ class FingerprintGenerator:
             "device_memory": random.choice([2, 4, 8]) if is_mobile else random.choice([2, 4, 8, 16]),
             "hardware_concurrency": random.choice([2, 4, 6, 8]) if is_mobile else random.choice([2, 4, 6, 8, 12, 16]),
             "viewport": viewport,
-            "platform": "Android" if os_info.get('name') == 'Android' else 
+            "platform": "Android" if os_info.get('name') == 'Android' else
                        ("iPhone" if os_info.get('name') == 'iOS' else os_info['name']),
             "plugins": [],  # 默认为空数组
             "timezone": random.choice([-480, -420, -360, -300, -240, -180, 0, 60, 120, 180, 240, 300, 360, 480, 540]),
@@ -554,9 +553,9 @@ class FingerprintGenerator:
             "is_mobile": is_mobile,
             "mobile_info": os_info if is_mobile else None
         }
-        
+
         return fingerprint
-    
+
     def get_fingerprint_arguments(self, fingerprint: Dict[str, any], browser_type: str = 'chrome') -> List[str]:
         """
         将指纹转换为命令行参数列表
@@ -569,31 +568,31 @@ class FingerprintGenerator:
             List[str]: 命令行参数列表
         """
         args = []
-        
+
         # 设置用户代理
         args.append(f"--user-agent={fingerprint['user_agent']}")
-        
+
         # 设置语言
         args.append(f"--lang={fingerprint['language'].split(',')[0]}")
-        
+
         # 设置硬件并发
         args.append(f"--js-flags=--cpu-count={fingerprint['hardware_concurrency']}")
-        
+
         # 设置视口大小
         args.append(f"--window-size={fingerprint['viewport']['width']},{fingerprint['viewport']['height']}")
-        
+
         # 设置平台
         args.append(f"--platform={fingerprint['platform']}")
-        
+
         # 设置WebGL参数（通过JavaScript注入方式，不直接作为启动参数）
-        
+
         # 根据浏览器类型添加特定参数
         if browser_type.lower() == 'chrome':
             args.append("--disable-blink-features=AutomationControlled")
         elif browser_type.lower() == 'edge':
             args.append("--disable-blink-features=AutomationControlled")
             args.append("--edge-compat")
-        
+
         return args
 
 
@@ -720,10 +719,10 @@ def generate_fingerprint_js(fingerprint: Dict[str, any]) -> str:
         delete window.cdc_adoQpoasnfa76pfcZLmcfl_Symbol;
     })();
     """
-    
+
     # 使用更安全的JSON替换方式
     js_code = js_template.replace("JSON_DATA", fingerprint_json)
-    
+
     return js_code
 
 
@@ -733,12 +732,12 @@ class FingerprintManager:
     
     负责生成、存储和应用浏览器指纹配置。
     """
-    
+
     def __init__(self):
         """初始化指纹管理器"""
         self.generator = FingerprintGenerator()
         self.current_fingerprint = None
-    
+
     def generate_new_fingerprint(self, browser_type: str = 'chrome', is_mobile: bool = False) -> Dict[str, any]:
         """
         生成新的浏览器指纹
@@ -752,7 +751,7 @@ class FingerprintManager:
         """
         self.current_fingerprint = self.generator.generate_fingerprint(browser_type, is_mobile)
         return self.current_fingerprint
-    
+
     def get_fingerprint_arguments(self, browser_type: str = 'chrome') -> List[str]:
         """
         获取当前指纹的命令行参数
@@ -765,9 +764,9 @@ class FingerprintManager:
         """
         if not self.current_fingerprint:
             self.generate_new_fingerprint(browser_type)
-            
+
         return self.generator.get_fingerprint_arguments(self.current_fingerprint, browser_type)
-    
+
     def get_fingerprint_js(self) -> str:
         """
         获取当前指纹的JavaScript注入代码
@@ -777,7 +776,7 @@ class FingerprintManager:
         """
         if not self.current_fingerprint:
             self.generate_new_fingerprint()
-            
+
         return generate_fingerprint_js(self.current_fingerprint)
 
 
