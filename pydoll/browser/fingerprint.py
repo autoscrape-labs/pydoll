@@ -8,7 +8,7 @@ from typing import Dict, List, Union
 class FingerprintGenerator:
     """
     生成浏览器指纹伪装数据的类。
-    
+
     该类负责生成唯一不重复的浏览器指纹，用于每次会话中伪装浏览器环境，
     避免跟踪和指纹识别。
     """
@@ -499,11 +499,11 @@ class FingerprintGenerator:
     def generate_fingerprint(self, browser_type: str = 'chrome', is_mobile: bool = False) -> Dict[str, Union[str, Dict, List]]:
         """
         生成一个完整的浏览器指纹配置
-        
+
         Args:
             browser_type (str): 浏览器类型，'chrome' 或 'edge'
             is_mobile (bool): 是否生成移动设备指纹
-            
+
         Returns:
             Dict: 包含完整指纹信息的字典
         """
@@ -559,11 +559,11 @@ class FingerprintGenerator:
     def get_fingerprint_arguments(self, fingerprint: Dict[str, any], browser_type: str = 'chrome') -> List[str]:
         """
         将指纹转换为命令行参数列表
-        
+
         Args:
             fingerprint (Dict): 指纹数据
             browser_type (str): 浏览器类型
-            
+
         Returns:
             List[str]: 命令行参数列表
         """
@@ -599,10 +599,10 @@ class FingerprintGenerator:
 def generate_fingerprint_js(fingerprint: Dict[str, any]) -> str:
     """
     生成注入到浏览器的JavaScript代码，用于覆盖指纹属性
-    
+
     Args:
         fingerprint (Dict): 指纹数据
-        
+
     Returns:
         str: JavaScript注入代码
     """
@@ -610,23 +610,23 @@ def generate_fingerprint_js(fingerprint: Dict[str, any]) -> str:
     js_template = """
     (function() {
         const fingerprint = JSON_DATA;
-        
+
         // 覆盖navigator属性
         Object.defineProperty(navigator, 'userAgent', {value: fingerprint.user_agent});
         Object.defineProperty(navigator, 'languages', {value: [fingerprint.language.split(',')[0]]});
         Object.defineProperty(navigator, 'platform', {value: fingerprint.platform});
         Object.defineProperty(navigator, 'hardwareConcurrency', {value: fingerprint.hardware_concurrency});
         Object.defineProperty(navigator, 'deviceMemory', {value: fingerprint.device_memory});
-        
+
         if (fingerprint.do_not_track !== null) {
             Object.defineProperty(navigator, 'doNotTrack', {value: fingerprint.do_not_track});
         }
-        
+
         // 覆盖屏幕属性
         Object.defineProperty(screen, 'width', {value: fingerprint.viewport.width});
         Object.defineProperty(screen, 'height', {value: fingerprint.viewport.height});
         Object.defineProperty(screen, 'colorDepth', {value: fingerprint.color_depth});
-        
+
         // 增强WebGL伪装
         const getParameter = WebGLRenderingContext.prototype.getParameter;
         WebGLRenderingContext.prototype.getParameter = function(parameter) {
@@ -656,21 +656,21 @@ def generate_fingerprint_js(fingerprint: Dict[str, any]) -> str:
             }
             return getParameter.call(this, parameter);
         };
-        
+
         // 同样增强WebGL2伪装
         if (typeof WebGL2RenderingContext !== 'undefined') {
             const getParameterWebGL2 = WebGL2RenderingContext.prototype.getParameter;
             WebGL2RenderingContext.prototype.getParameter = function(parameter) {
                 // 复用相同的参数处理逻辑
-                if (parameter === 37445 || parameter === 37446 || 
-                    parameter === 3379 || parameter === 3386 || 
+                if (parameter === 37445 || parameter === 37446 ||
+                    parameter === 3379 || parameter === 3386 ||
                     parameter === 33902 || parameter === 33901) {
                     return WebGLRenderingContext.prototype.getParameter.call(this, parameter);
                 }
                 return getParameterWebGL2.call(this, parameter);
             };
         }
-        
+
         // 覆盖Canvas指纹
         const oldToDataURL = HTMLCanvasElement.prototype.toDataURL;
         HTMLCanvasElement.prototype.toDataURL = function(type) {
@@ -682,7 +682,7 @@ def generate_fingerprint_js(fingerprint: Dict[str, any]) -> str:
             }
             return oldToDataURL.call(this, type);
         };
-        
+
         // 覆盖AudioContext指纹
         const oldGetChannelData = AudioBuffer.prototype.getChannelData;
         AudioBuffer.prototype.getChannelData = function() {
@@ -698,20 +698,20 @@ def generate_fingerprint_js(fingerprint: Dict[str, any]) -> str:
             }
             return array;
         };
-        
+
         // 修改插件信息
         Object.defineProperty(navigator, 'plugins', {
             get: function() {
                 const plugins = fingerprint.plugins.length > 0 ? fingerprint.plugins : [];
                 const pluginArray = Array.from(plugins);
                 pluginArray.item = function(index) { return this[index]; };
-                pluginArray.namedItem = function(name) { 
+                pluginArray.namedItem = function(name) {
                     return this.find(plugin => plugin.name === name);
                 };
                 return pluginArray;
             }
         });
-        
+
         // 防止Automation检测
         window.navigator.webdriver = false;
         delete window.cdc_adoQpoasnfa76pfcZLmcfl_Array;
@@ -729,7 +729,7 @@ def generate_fingerprint_js(fingerprint: Dict[str, any]) -> str:
 class FingerprintManager:
     """
     管理浏览器指纹的类。
-    
+
     负责生成、存储和应用浏览器指纹配置。
     """
 
@@ -741,11 +741,11 @@ class FingerprintManager:
     def generate_new_fingerprint(self, browser_type: str = 'chrome', is_mobile: bool = False) -> Dict[str, any]:
         """
         生成新的浏览器指纹
-        
+
         Args:
             browser_type (str): 浏览器类型，'chrome' 或 'edge'
             is_mobile (bool): 是否生成移动设备指纹
-            
+
         Returns:
             Dict: 新生成的指纹数据
         """
@@ -755,10 +755,10 @@ class FingerprintManager:
     def get_fingerprint_arguments(self, browser_type: str = 'chrome') -> List[str]:
         """
         获取当前指纹的命令行参数
-        
+
         Args:
             browser_type (str): 浏览器类型
-            
+
         Returns:
             List[str]: 命令行参数列表
         """
@@ -770,7 +770,7 @@ class FingerprintManager:
     def get_fingerprint_js(self) -> str:
         """
         获取当前指纹的JavaScript注入代码
-        
+
         Returns:
             str: 用于注入的JavaScript代码
         """

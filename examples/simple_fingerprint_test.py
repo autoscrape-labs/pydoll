@@ -84,10 +84,10 @@ class TestFingerprint:
     async def _run_browser_instance(self, index):
         """
         运行单个浏览器实例并获取其指纹ID
-        
+
         Args:
             index: 实例编号
-            
+
         Returns:
             dict: 包含实例信息和指纹ID的字典
         """
