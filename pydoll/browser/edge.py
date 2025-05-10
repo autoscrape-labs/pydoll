@@ -19,6 +19,7 @@ class Edge(Browser):
         self,
         options: Optional[Options] = None,
         connection_port: Optional[int] = None,
+        enable_fingerprint_spoofing: bool = False,
     ):
         """
         Initializes the Edge browser instance.
@@ -28,8 +29,10 @@ class Edge(Browser):
                 the browser. If None, default options will be used.
             connection_port (int): The port to connect to the browser.
                 Defaults to a random port between 9223 and 9322.
+            enable_fingerprint_spoofing (bool): Whether to enable browser fingerprint
+                spoofing. If True, a unique fingerprint will be generated for each session.
         """
-        super().__init__(options, connection_port, BrowserType.EDGE)
+        super().__init__(options, connection_port, BrowserType.EDGE, enable_fingerprint_spoofing)
 
     @staticmethod
     def _get_default_binary_location():
