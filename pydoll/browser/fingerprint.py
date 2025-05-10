@@ -782,4 +782,4 @@ class FingerprintManager:
 
 
 # 创建全局单例实例
-FINGERPRINT_MANAGER = FingerprintManager() 
+FINGERPRINT_MANAGER = FingerprintManager()
