@@ -6,7 +6,7 @@ Provide built-in disguised fingerprint function on the basis of the original Pyd
 
 ## 自动伪装机制
 
-pydoll的指纹伪装系统设计为"一键启用"模式：只需设置一个参数，系统会自动完成所有指纹伪装工作，无需用户进行额外配置或手动注入代码。
+pydoll的指纹伪装系统设计为"一键启用"模式：只需设置一个参数，系统会自动完成所有指纹伪装工作，不需要用户进行额外配置或手动注入代码。
 
 ### 自动注入流程
 
@@ -41,7 +41,7 @@ page = await browser.get_page()
 await page.go_to("https://fingerprintjs.github.io/fingerprintjs/")
 ```
 
-就是这么简单！系统会自动完成所有指纹伪装工作，无需其他额外步骤。
+就是这么简单！系统会自动完成所有指纹伪装工作，不需要其他额外步骤。
 
 ## 工作原理
 
