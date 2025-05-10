@@ -693,7 +693,9 @@ def generate_fingerprint_js(fingerprint: Dict[str, any]) -> str:
                 const fingerprint_seed = parseInt(fingerprint.audio_fingerprint.slice(0, 8), 16);
                 for (let i = 0; i < 8; i++) {
                     const index = Math.floor(array.length / 8 * i);
-                    array[index] = array[index] + (fingerprint_seed % 100) / 1000000;
+                    array[index] = array[index] + (
+                        fingerprint_seed % 100
+                    ) / 1000000;
                 }
             }
             return array;
@@ -702,9 +704,13 @@ def generate_fingerprint_js(fingerprint: Dict[str, any]) -> str:
         // 修改插件信息
         Object.defineProperty(navigator, 'plugins', {
             get: function() {
-                const plugins = fingerprint.plugins.length > 0 ? fingerprint.plugins : [];
+                const plugins = fingerprint.plugins.length > 0
+                    ? fingerprint.plugins
+                    : [];
                 const pluginArray = Array.from(plugins);
-                pluginArray.item = function(index) { return this[index]; };
+                pluginArray.item = function(index) {
+                    return this[index];
+                };
                 pluginArray.namedItem = function(name) {
                     return this.find(plugin => plugin.name === name);
                 };
