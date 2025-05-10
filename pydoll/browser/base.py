@@ -5,13 +5,14 @@ from random import randint
 
 from pydoll import exceptions
 from pydoll.browser.constants import BrowserType
+from pydoll.browser.fingerprint import FINGERPRINT_MANAGER
 from pydoll.browser.managers import (
     BrowserOptionsManager,
     BrowserProcessManager,
     ProxyManager,
     TempDirectoryManager,
 )
-from pydoll.browser.options import Options
+from pydoll.browser.options import ChromeOptions, EdgeOptions, Options
 from pydoll.browser.page import Page
 from pydoll.commands import (
     BrowserCommands,
@@ -37,6 +38,7 @@ class Browser(ABC):  # noqa: PLR0904
         options: Options | None = None,
         connection_port: int = None,
         browser_type: BrowserType = None,
+        enable_fingerprint_spoofing: bool = False,
     ):
         """
         Initializes the Browser instance.
@@ -47,6 +49,9 @@ class Browser(ABC):  # noqa: PLR0904
             connection_port (int): The port to connect to the browser.
             browser_type (BrowserType): The type of browser to use.
                 If None, it will be inferred from the options.
+            enable_fingerprint_spoofing (bool): Whether to enable browser
+                fingerprint spoofing. If True, a unique fingerprint will be
+                generated for each session.
 
         Raises:
             TypeError: If any of the arguments are not callable.
@@ -62,6 +67,9 @@ class Browser(ABC):  # noqa: PLR0904
         self._temp_directory_manager = TempDirectoryManager()
         self._connection_handler = ConnectionHandler(self._connection_port)
         BrowserOptionsManager.add_default_arguments(self.options)
+
+        self._enable_fingerprint_spoofing = enable_fingerprint_spoofing
+        self._fingerprint_script = None
 
         self._pages = []
 
@@ -110,6 +118,10 @@ class Browser(ABC):  # noqa: PLR0904
         self._setup_user_dir()
         proxy_config = self._proxy_manager.get_proxy_credentials()
 
+        # 应用指纹伪装（如果启用）
+        if self._enable_fingerprint_spoofing:
+            self._apply_fingerprint_spoofing()
+
         self._browser_process_manager.start_browser_process(
             binary_location,
             self._connection_port,
@@ -118,6 +130,20 @@ class Browser(ABC):  # noqa: PLR0904
         await self._verify_browser_running()
         await self._configure_proxy(proxy_config[0], proxy_config[1])
         await self._init_first_page()
+
+        # 如果启用了指纹伪装，在页面加载后注入JavaScript
+        if self._enable_fingerprint_spoofing and self._fingerprint_script:
+            page = await self.get_page()
+            try:
+                await page.execute_script(self._fingerprint_script)
+            except Exception as e:
+                print(f"注入指纹伪装脚本时出现错误: {e}")
+                # 尝试重新注入简化版本的脚本
+                try:
+                    simple_script = "window.navigator.webdriver = false;"
+                    await page.execute_script(simple_script)
+                except Exception:
+                    pass
 
     async def connect(self) -> Page:
         """
@@ -592,3 +618,33 @@ class Browser(ABC):  # noqa: PLR0904
         This method must be implemented by subclasses.
         """
         pass
+
+    def _apply_fingerprint_spoofing(self):
+        """
+        应用指纹伪装，生成并设置唯一的浏览器指纹
+
+        Returns:
+            None
+        """
+        # 获取浏览器类型
+        browser_type = 'chrome'
+        if isinstance(self.options, ChromeOptions):
+            browser_type = 'chrome'
+        elif isinstance(self.options, EdgeOptions):
+            browser_type = 'edge'
+
+        # 显式生成新的指纹
+        FINGERPRINT_MANAGER.generate_new_fingerprint(browser_type)
+
+        # 获取指纹相关命令行参数
+        fingerprint_args = (
+            FINGERPRINT_MANAGER.get_fingerprint_arguments(browser_type)
+        )
+
+        # 将指纹参数添加到浏览器选项中
+        for arg in fingerprint_args:
+            if arg not in self.options.arguments:
+                self.options.arguments.append(arg)
+
+        # 保存指纹JavaScript脚本，稍后注入
+        self._fingerprint_script = FINGERPRINT_MANAGER.get_fingerprint_js()

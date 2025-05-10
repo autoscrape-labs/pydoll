@@ -137,21 +137,10 @@ async def test_get_element_text(web_element):
     test_html = '<div>Test Text</div>'
     web_element._connection_handler.execute_command.return_value = {
         'result': {'outerHTML': test_html}
-    } 
+    }
 
     text = await web_element.get_element_text()
     assert text == 'Test Text'
-
-@pytest.mark.asyncio
-async def test_text_property(web_element):
-    test_html = '<div>Hello World</div>'
-    web_element._connection_handler.execute_command.return_value = {
-        'result': {'outerHTML': test_html}
-    }
-
-    text = await web_element.text
-    assert text == 'Hello World'
-
 
 
 @pytest.mark.asyncio

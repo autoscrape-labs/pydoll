@@ -1,7 +1,10 @@
-## 1.7.0 (2025-04-06)
+## 1.7.0 (2025-04-24)
 
 ### Feat
 
+- add browser fingerprint spoofing capability to prevent tracking
+- implement JavaScript injection to mask browser fingerprint properties
+- add unique fingerprint generation for each browser session
 - refactor captcha handling with adjustable wait times and parameters
 
 ## 1.6.0 (2025-04-06)
