@@ -1,4 +1,8 @@
 # pydoll 浏览器指纹伪装功能说明
+#Pydoll Browser Fingerprint Disguise Function Description
+
+在原有的pydoll库基础上提供内置伪装指纹功能
+Provide built-in disguised fingerprint function on the basis of the original Pydoll library
 
 ## 自动伪装机制
 
