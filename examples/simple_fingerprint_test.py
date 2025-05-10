@@ -57,7 +57,10 @@ class TestFingerprint:
                 count = fingerprint_ids.count(fp_id)
                 if count > 1:
                     print(f"- 指纹ID '{fp_id}' 出现了 {count} 次")
-                    indices = [r["index"] for r in results if r["fingerprint_id"] == fp_id]
+                    indices = [
+                        r["index"] for r in results
+                        if r["fingerprint_id"] == fp_id
+                    ]
                     print(f"  出现在实例: {indices}")
 
                     # 显示使用相同指纹的实例的详细信息
@@ -81,7 +84,8 @@ class TestFingerprint:
             print(f"  指纹ID: {r['fingerprint_id']}")
             print("-" * 40)
 
-    async def _run_browser_instance(self, index):
+    @staticmethod
+    async def _run_browser_instance(index):
         """
         运行单个浏览器实例并获取其指纹ID
 
@@ -127,7 +131,8 @@ class TestFingerprint:
             (() => {
                 try {
                     const element = document.querySelector('pre.giant');
-                    return element ? element.textContent.trim() : "未找到指纹ID";
+                    return element ? element.textContent.trim() :
+                        "未找到指纹ID";
                 } catch(e) {
                     return "错误: " + e.message;
                 }
@@ -157,10 +162,12 @@ class TestFingerprint:
             print(f"测试失败: {e}")
             try:
                 await browser.stop()
-            except:
+            except Exception:
                 pass
             return {
                 "index": index,
                 "fingerprint_id": f"错误: {str(e)}",
-                "user_agent": fingerprint['user_agent'] if fingerprint else "未知"
+                "user_agent": (
+                    fingerprint['user_agent'] if fingerprint else "未知"
+                )
             }

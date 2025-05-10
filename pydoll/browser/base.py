@@ -49,8 +49,9 @@ class Browser(ABC):  # noqa: PLR0904
             connection_port (int): The port to connect to the browser.
             browser_type (BrowserType): The type of browser to use.
                 If None, it will be inferred from the options.
-            enable_fingerprint_spoofing (bool): Whether to enable browser fingerprint
-                spoofing. If True, a unique fingerprint will be generated for each session.
+            enable_fingerprint_spoofing (bool): Whether to enable browser
+                fingerprint spoofing. If True, a unique fingerprint will be
+                generated for each session.
 
         Raises:
             TypeError: If any of the arguments are not callable.
@@ -636,7 +637,9 @@ class Browser(ABC):  # noqa: PLR0904
         FINGERPRINT_MANAGER.generate_new_fingerprint(browser_type)
 
         # 获取指纹相关命令行参数
-        fingerprint_args = FINGERPRINT_MANAGER.get_fingerprint_arguments(browser_type)
+        fingerprint_args = (
+            FINGERPRINT_MANAGER.get_fingerprint_arguments(browser_type)
+        )
 
         # 将指纹参数添加到浏览器选项中
         for arg in fingerprint_args:

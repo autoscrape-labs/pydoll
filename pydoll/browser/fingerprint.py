@@ -55,13 +55,41 @@ class FingerprintGenerator:
 
     # 移动设备操作系统列表
     MOBILE_OS_LIST = [
-        {'name': 'Android', 'version': '10', 'device': 'SM-G970F'},  # Samsung Galaxy S10e
-        {'name': 'Android', 'version': '11', 'device': 'SM-G991B'},  # Samsung Galaxy S21
-        {'name': 'Android', 'version': '12', 'device': 'Pixel 6'},   # Google Pixel 6
-        {'name': 'Android', 'version': '13', 'device': 'Pixel 7'},   # Google Pixel 7
-        {'name': 'iOS', 'version': '15.4', 'device': 'iPhone13,1'},  # iPhone 12 Mini
-        {'name': 'iOS', 'version': '16.3', 'device': 'iPhone14,7'},  # iPhone 14
-        {'name': 'iOS', 'version': '17.0', 'device': 'iPhone15,4'},  # iPhone 15
+        {
+            'name': 'Android',
+            'version': '10',
+            'device': 'SM-G970F',  # Samsung Galaxy S10e
+        },
+        {
+            'name': 'Android',
+            'version': '11',
+            'device': 'SM-G991B',  # Samsung Galaxy S21
+        },
+        {
+            'name': 'Android',
+            'version': '12',
+            'device': 'Pixel 6',  # Google Pixel 6
+        },
+        {
+            'name': 'Android',
+            'version': '13',
+            'device': 'Pixel 7',  # Google Pixel 7
+        },
+        {
+            'name': 'iOS',
+            'version': '15.4',
+            'device': 'iPhone13,1',  # iPhone 12 Mini
+        },
+        {
+            'name': 'iOS',
+            'version': '16.3',
+            'device': 'iPhone14,7',  # iPhone 14
+        },
+        {
+            'name': 'iOS',
+            'version': '17.0',
+            'device': 'iPhone15,4',  # iPhone 15
+        },
         {'name': 'Android', 'version': '10', 'device': 'SM-G970F'},
         {'name': 'Android', 'version': '11', 'device': 'SM-G991B'},
         {'name': 'Android', 'version': '12', 'device': 'Pixel 6'},
@@ -466,37 +494,67 @@ class FingerprintGenerator:
         return {"width": width, "height": height}
 
     @staticmethod
-    def _generate_user_agent(os_info: Dict[str, str], browser_type: str, browser_version: str, is_mobile: bool = False) -> str:
+    def _generate_user_agent(
+        os_info: Dict[str, str],
+        browser_type: str,
+        browser_version: str,
+        is_mobile: bool = False,
+    ) -> str:
         """根据操作系统信息和浏览器版本生成User-Agent"""
-        # 移动设备User-Agent
+        ua = None
         if is_mobile:
             if os_info['name'] == 'Android':
-                return f"Mozilla/5.0 (Linux; Android {os_info['version']}; {os_info['device']}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{browser_version} Mobile Safari/537.36"
+                ua = (
+                    f"Mozilla/5.0 (Linux; Android {os_info['version']}; "
+                    f"{os_info['device']}) "
+                    f"AppleWebKit/537.36 (KHTML, like Gecko) "
+                    f"Chrome/{browser_version} Mobile Safari/537.36"
+                )
             elif os_info['name'] == 'iOS':
-                # iOS版本需要将点替换为下划线
                 ios_version = os_info['version'].replace('.', '_')
-                return f"Mozilla/5.0 (iPhone; CPU iPhone OS {ios_version} like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1"
-
-        # 桌面设备User-Agent
-        if browser_type.lower() == 'chrome':
-            if os_info['name'] == 'Windows':
-                return f"Mozilla/5.0 (Windows NT {os_info['version']}; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{browser_version} Safari/537.36"
-            elif os_info['name'] == 'Macintosh':
-                return f"Mozilla/5.0 (Macintosh; Intel Mac OS X {os_info['version'].replace('.', '_')}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{browser_version} Safari/537.36"
-            else:  # Linux
-                return f"Mozilla/5.0 (X11; Linux {os_info['version']}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{browser_version} Safari/537.36"
-        elif browser_type.lower() == 'edge':
-            if os_info['name'] == 'Windows':
-                return f"Mozilla/5.0 (Windows NT {os_info['version']}; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{browser_version} Safari/537.36 Edg/{browser_version}"
-            elif os_info['name'] == 'Macintosh':
-                return f"Mozilla/5.0 (Macintosh; Intel Mac OS X {os_info['version'].replace('.', '_')}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{browser_version} Safari/537.36 Edg/{browser_version}"
-            else:  # Linux
-                return f"Mozilla/5.0 (X11; Linux {os_info['version']}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{browser_version} Safari/537.36 Edg/{browser_version}"
+                ua = (
+                    f"Mozilla/5.0 (iPhone; CPU iPhone OS {ios_version} "
+                    f"like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) "
+                    f"Version/16.0 Mobile/15E148 Safari/604.1"
+                )
         else:
-            # 默认返回Chrome
-            return f"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{browser_version} Safari/537.36"
+            base_ua = ""
+            if os_info['name'] == 'Windows':
+                base_ua = (
+                    f"Mozilla/5.0 (Windows NT {os_info['version']}; "
+                    f"Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
+                )
+            elif os_info['name'] == 'Macintosh':
+                base_ua = (
+                    f"Mozilla/5.0 (Macintosh; Intel Mac OS X "
+                    f"{os_info['version'].replace('.', '_')}) "
+                    f"AppleWebKit/537.36 (KHTML, like Gecko) "
+                )
+            else:
+                base_ua = (
+                    f"Mozilla/5.0 (X11; Linux {os_info['version']}) "
+                    f"AppleWebKit/537.36 (KHTML, like Gecko) "
+                )
+            if browser_type.lower() == 'chrome':
+                ua = f"{base_ua}Chrome/{browser_version} Safari/537.36"
+            elif browser_type.lower() == 'edge':
+                ua = (
+                    f"{base_ua}Chrome/{browser_version} Safari/537.36 "
+                    f"Edg/{browser_version}"
+                )
+            else:
+                ua = (
+                    f"Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                    f"AppleWebKit/537.36 (KHTML, like Gecko) "
+                    f"Chrome/{browser_version} Safari/537.36"
+                )
+        return ua
 
-    def generate_fingerprint(self, browser_type: str = 'chrome', is_mobile: bool = False) -> Dict[str, Union[str, Dict, List]]:
+    def generate_fingerprint(
+        self,
+        browser_type: str = 'chrome',
+        is_mobile: bool = False,
+    ) -> Dict[str, Union[str, Dict, List]]:
         """
         生成一个完整的浏览器指纹配置
 
@@ -520,12 +578,21 @@ class FingerprintGenerator:
             browser_version = random.choice(self.CHROME_VERSIONS)
 
         # 生成用户代理字符串
-        user_agent = self._generate_user_agent(os_info, browser_type, browser_version, is_mobile)
+        user_agent = self._generate_user_agent(
+            os_info,
+            browser_type,
+            browser_version,
+            is_mobile,
+        )
 
         # 生成随机视口大小
         if is_mobile:
-            viewport = {"width": random.choice([360, 375, 390, 414, 428]),
-                        "height": random.choice([640, 720, 780, 844, 926])}
+            viewport = {
+                "width": random.choice([360, 375, 390, 414, 428]),
+                "height": random.choice([
+                    640, 720, 780, 844, 926
+                ]),
+            }
         else:
             viewport = self._random_viewport_size()
 
@@ -535,64 +602,70 @@ class FingerprintGenerator:
             "user_agent": user_agent,
             "language": random.choice(self.LANGUAGES),
             "color_depth": random.choice([24, 30, 32]),
-            "device_memory": random.choice([2, 4, 8]) if is_mobile else random.choice([2, 4, 8, 16]),
-            "hardware_concurrency": random.choice([2, 4, 6, 8]) if is_mobile else random.choice([2, 4, 6, 8, 12, 16]),
+            "device_memory": (
+                random.choice([2, 4, 8]) if is_mobile else random.choice([
+                    2, 4, 8, 16
+                ])
+            ),
+            "hardware_concurrency": (
+                random.choice([2, 4, 6, 8]) if is_mobile else random.choice([
+                    2, 4, 6, 8, 12, 16
+                ])
+            ),
             "viewport": viewport,
-            "platform": "Android" if os_info.get('name') == 'Android' else
-                       ("iPhone" if os_info.get('name') == 'iOS' else os_info['name']),
+            "platform": (
+                "Android" if os_info.get('name') == 'Android' else (
+                    "iPhone" if os_info.get('name') == 'iOS'
+                    else os_info['name']
+                )
+            ),
             "plugins": [],  # 默认为空数组
-            "timezone": random.choice([-480, -420, -360, -300, -240, -180, 0, 60, 120, 180, 240, 300, 360, 480, 540]),
+            "timezone": random.choice([
+                -480, -420, -360, -300, -240, -180, 0, 60, 120, 180,
+                240, 300, 360, 480, 540
+            ]),
             "webgl": {
                 "vendor": random.choice(self.WEBGL_VENDORS),
-                "renderer": random.choice(self.WEBGL_RENDERERS)
+                "renderer": random.choice(self.WEBGL_RENDERERS),
             },
             "do_not_track": random.choice(["1", "0", None]),
-            "canvas_fingerprint": ''.join(random.choices(string.ascii_letters + string.digits, k=64)),
-            "audio_fingerprint": ''.join(random.choices(string.ascii_letters + string.digits, k=64)),
+            "canvas_fingerprint": ''.join(
+                random.choices(string.ascii_letters + string.digits, k=64)
+            ),
+            "audio_fingerprint": ''.join(
+                random.choices(string.ascii_letters + string.digits, k=64)
+            ),
             "fonts": [],  # 默认为空数组
             "is_mobile": is_mobile,
-            "mobile_info": os_info if is_mobile else None
+            "mobile_info": os_info if is_mobile else None,
         }
 
         return fingerprint
 
-    def get_fingerprint_arguments(self, fingerprint: Dict[str, any], browser_type: str = 'chrome') -> List[str]:
+    @staticmethod
+    def get_fingerprint_arguments(
+        fingerprint: Dict[str, any],
+        browser_type: str = 'chrome',
+    ) -> List[str]:
         """
         将指纹转换为命令行参数列表
-
-        Args:
-            fingerprint (Dict): 指纹数据
-            browser_type (str): 浏览器类型
-
-        Returns:
-            List[str]: 命令行参数列表
         """
         args = []
-
-        # 设置用户代理
         args.append(f"--user-agent={fingerprint['user_agent']}")
-
-        # 设置语言
         args.append(f"--lang={fingerprint['language'].split(',')[0]}")
-
-        # 设置硬件并发
-        args.append(f"--js-flags=--cpu-count={fingerprint['hardware_concurrency']}")
-
-        # 设置视口大小
-        args.append(f"--window-size={fingerprint['viewport']['width']},{fingerprint['viewport']['height']}")
-
-        # 设置平台
+        args.append(
+            f"--js-flags=--cpu-count={fingerprint['hardware_concurrency']}"
+        )
+        args.append(
+            f"--window-size={fingerprint['viewport']['width']},"
+            f"{fingerprint['viewport']['height']}"
+        )
         args.append(f"--platform={fingerprint['platform']}")
-
-        # 设置WebGL参数（通过JavaScript注入方式，不直接作为启动参数）
-
-        # 根据浏览器类型添加特定参数
         if browser_type.lower() == 'chrome':
             args.append("--disable-blink-features=AutomationControlled")
         elif browser_type.lower() == 'edge':
             args.append("--disable-blink-features=AutomationControlled")
             args.append("--edge-compat")
-
         return args
 
 
@@ -612,20 +685,38 @@ def generate_fingerprint_js(fingerprint: Dict[str, any]) -> str:
         const fingerprint = JSON_DATA;
 
         // 覆盖navigator属性
-        Object.defineProperty(navigator, 'userAgent', {value: fingerprint.user_agent});
-        Object.defineProperty(navigator, 'languages', {value: [fingerprint.language.split(',')[0]]});
-        Object.defineProperty(navigator, 'platform', {value: fingerprint.platform});
-        Object.defineProperty(navigator, 'hardwareConcurrency', {value: fingerprint.hardware_concurrency});
-        Object.defineProperty(navigator, 'deviceMemory', {value: fingerprint.device_memory});
+        Object.defineProperty(navigator, 'userAgent', {
+            value: fingerprint.user_agent
+        });
+        Object.defineProperty(navigator, 'languages', {
+            value: [fingerprint.language.split(',')[0]]
+        });
+        Object.defineProperty(navigator, 'platform', {
+            value: fingerprint.platform
+        });
+        Object.defineProperty(navigator, 'hardwareConcurrency', {
+            value: fingerprint.hardware_concurrency
+        });
+        Object.defineProperty(navigator, 'deviceMemory', {
+            value: fingerprint.device_memory
+        });
 
         if (fingerprint.do_not_track !== null) {
-            Object.defineProperty(navigator, 'doNotTrack', {value: fingerprint.do_not_track});
+            Object.defineProperty(navigator, 'doNotTrack', {
+                value: fingerprint.do_not_track
+            });
         }
 
         // 覆盖屏幕属性
-        Object.defineProperty(screen, 'width', {value: fingerprint.viewport.width});
-        Object.defineProperty(screen, 'height', {value: fingerprint.viewport.height});
-        Object.defineProperty(screen, 'colorDepth', {value: fingerprint.color_depth});
+        Object.defineProperty(screen, 'width', {
+            value: fingerprint.viewport.width
+        });
+        Object.defineProperty(screen, 'height', {
+            value: fingerprint.viewport.height
+        });
+        Object.defineProperty(screen, 'colorDepth', {
+            value: fingerprint.color_depth
+        });
 
         // 增强WebGL伪装
         const getParameter = WebGLRenderingContext.prototype.getParameter;
@@ -659,13 +750,17 @@ def generate_fingerprint_js(fingerprint: Dict[str, any]) -> str:
 
         // 同样增强WebGL2伪装
         if (typeof WebGL2RenderingContext !== 'undefined') {
-            const getParameterWebGL2 = WebGL2RenderingContext.prototype.getParameter;
-            WebGL2RenderingContext.prototype.getParameter = function(parameter) {
+            const getParameterWebGL2 =
+                WebGL2RenderingContext.prototype.getParameter;
+            WebGL2RenderingContext.prototype.getParameter =
+                function(parameter) {
                 // 复用相同的参数处理逻辑
                 if (parameter === 37445 || parameter === 37446 ||
                     parameter === 3379 || parameter === 3386 ||
                     parameter === 33902 || parameter === 33901) {
-                    return WebGLRenderingContext.prototype.getParameter.call(this, parameter);
+                    return WebGLRenderingContext.prototype.getParameter.call(
+                        this, parameter
+                    );
                 }
                 return getParameterWebGL2.call(this, parameter);
             };
@@ -678,7 +773,8 @@ def generate_fingerprint_js(fingerprint: Dict[str, any]) -> str:
                 // 只修改可能用于指纹识别的canvas
                 const modifiedDataURL = oldToDataURL.call(this, type);
                 // 添加微小变化，使每次都不同但视觉上相似
-                return modifiedDataURL.slice(0, modifiedDataURL.length - 8) + fingerprint.canvas_fingerprint.slice(0, 8);
+                return modifiedDataURL.slice(0, modifiedDataURL.length - 8) +
+                    fingerprint.canvas_fingerprint.slice(0, 8);
             }
             return oldToDataURL.call(this, type);
         };
@@ -690,7 +786,9 @@ def generate_fingerprint_js(fingerprint: Dict[str, any]) -> str:
             // 只修改用于音频指纹的数据
             if (array.length > 100) {
                 // 添加微小变化
-                const fingerprint_seed = parseInt(fingerprint.audio_fingerprint.slice(0, 8), 16);
+                const fingerprint_seed = parseInt(
+                    fingerprint.audio_fingerprint.slice(0, 8), 16
+                );
                 for (let i = 0; i < 8; i++) {
                     const index = Math.floor(array.length / 8 * i);
                     array[index] = array[index] + (
@@ -744,7 +842,11 @@ class FingerprintManager:
         self.generator = FingerprintGenerator()
         self.current_fingerprint = None
 
-    def generate_new_fingerprint(self, browser_type: str = 'chrome', is_mobile: bool = False) -> Dict[str, any]:
+    def generate_new_fingerprint(
+        self,
+        browser_type: str = 'chrome',
+        is_mobile: bool = False,
+    ) -> Dict[str, any]:
         """
         生成新的浏览器指纹
 
@@ -755,10 +857,15 @@ class FingerprintManager:
         Returns:
             Dict: 新生成的指纹数据
         """
-        self.current_fingerprint = self.generator.generate_fingerprint(browser_type, is_mobile)
+        self.current_fingerprint = self.generator.generate_fingerprint(
+            browser_type, is_mobile
+        )
         return self.current_fingerprint
 
-    def get_fingerprint_arguments(self, browser_type: str = 'chrome') -> List[str]:
+    def get_fingerprint_arguments(
+        self,
+        browser_type: str = 'chrome',
+    ) -> List[str]:
         """
         获取当前指纹的命令行参数
 
@@ -771,7 +878,10 @@ class FingerprintManager:
         if not self.current_fingerprint:
             self.generate_new_fingerprint(browser_type)
 
-        return self.generator.get_fingerprint_arguments(self.current_fingerprint, browser_type)
+        return self.generator.get_fingerprint_arguments(
+            self.current_fingerprint,
+            browser_type,
+        )
 
     def get_fingerprint_js(self) -> str:
         """
