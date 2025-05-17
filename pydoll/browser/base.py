@@ -621,7 +621,7 @@ class Browser(ABC):  # noqa: PLR0904
 
     def _apply_fingerprint_spoofing(self):
         """
-        Apply fingerprint spoofing, generate and set a unique browser 
+                Apply fingerprint spoofing, generate and set a unique browser
         fingerprint
 
         Returns:

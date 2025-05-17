@@ -9,9 +9,9 @@ class FingerprintGenerator:
     """
     Class for generating browser fingerprint spoofing data.
 
-    This class is responsible for generating unique browser fingerprints for 
-    each session to disguise the browser environment and avoid tracking and 
-    fingerprint identification.
+    This class is responsible for generating unique browser fingerprints
+    for each session to disguise the browser environment and avoid tracking
+    and fingerprint identification.
     """
 
     # Common operating system list

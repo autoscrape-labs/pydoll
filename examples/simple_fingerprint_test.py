@@ -24,7 +24,7 @@ class TestFingerprint:
 
     @pytest.mark.asyncio
     async def test_fingerprints_are_unique(self):
-        """Test if fingerprints generated from multiple browser instances 
+        """Test if fingerprints generated from multiple browser instances
         are unique"""
         print("\nStarting to test pydoll fingerprint spoofing functionality"
               "...")
@@ -65,7 +65,7 @@ class TestFingerprint:
                     ]
                     print(f"  Appears in instances: {indices}")
 
-                    # Show detailed information for instances using the same 
+                    # Show detailed information for instances using the same
                     # fingerprint
                     print("  Details:")
                     for idx in indices:
