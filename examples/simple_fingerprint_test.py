@@ -24,8 +24,10 @@ class TestFingerprint:
 
     @pytest.mark.asyncio
     async def test_fingerprints_are_unique(self):
-        """Test if fingerprints generated from multiple browser instances are unique"""
-        print("\nStarting to test pydoll fingerprint spoofing functionality...")
+        """Test if fingerprints generated from multiple browser instances 
+        are unique"""
+        print("\nStarting to test pydoll fingerprint spoofing functionality"
+              "...")
 
         # Collect all fingerprints
         results = []
@@ -63,18 +65,23 @@ class TestFingerprint:
                     ]
                     print(f"  Appears in instances: {indices}")
 
-                    # Show detailed information for instances using the same fingerprint
+                    # Show detailed information for instances using the same 
+                    # fingerprint
                     print("  Details:")
                     for idx in indices:
                         r = next(res for res in results if res["index"] == idx)
-                        print(f"    Instance #{idx} UA: {r['user_agent'][:30]}...")
+                        print(f"    Instance #{idx} UA: "
+                              f"{r['user_agent'][:30]}...")
 
         # Verify all fingerprints are unique
         if len(unique_ids) < len(fingerprint_ids):
-            print("\n⚠️ Duplicate fingerprints detected, but this doesn't necessarily mean fingerprint spoofing completely failed")
-            print("FingerprintJS uses many deep browser features, and may require more technical measures for complete spoofing")
+            print("\n⚠️ Duplicate fingerprints detected, but this doesn't "
+                  "necessarily mean fingerprint spoofing completely failed")
+            print("FingerprintJS uses many deep browser features, and may "
+                  "require more technical measures for complete spoofing")
         else:
-            print("\n✅ All fingerprint IDs are unique, fingerprint spoofing is working correctly!")
+            print("\n✅ All fingerprint IDs are unique, fingerprint spoofing "
+                  "is working correctly!")
 
         # Display detailed results
         print("\nDetailed results:")
