@@ -7,13 +7,13 @@ from typing import Dict, List, Union
 
 class FingerprintGenerator:
     """
-    生成浏览器指纹伪装数据的类。
+    Class for generating browser fingerprint spoofing data.
 
-    该类负责生成唯一不重复的浏览器指纹，用于每次会话中伪装浏览器环境，
-    避免跟踪和指纹识别。
+    This class is responsible for generating unique browser fingerprints for each session
+    to disguise the browser environment and avoid tracking and fingerprint identification.
     """
 
-    # 常用的操作系统列表
+    # Common operating system list
     OS_LIST = [
         {'name': 'Windows', 'version': '10.0'},
         {'name': 'Windows', 'version': '11.0'},
@@ -53,7 +53,7 @@ class FingerprintGenerator:
         {'name': 'Linux', 'version': 'riscv64'},
     ]
 
-    # 移动设备操作系统列表
+    # Mobile device operating systems list
     MOBILE_OS_LIST = [
         {
             'name': 'Android',
@@ -112,7 +112,7 @@ class FingerprintGenerator:
         {'name': 'iOS', 'version': '5.0', 'device': 'iPhone4,1'},
     ]
 
-    # 常用的浏览器版本
+    # Common browser versions
     CHROME_VERSIONS = [
         '110.0.5481.178',
         '111.0.5563.147',
@@ -143,7 +143,7 @@ class FingerprintGenerator:
         '136.0.7071.400',
     ]
 
-    # Edge版本
+    # Edge versions
     EDGE_VERSIONS = [
         '110.0.1587.69',
         '111.0.1661.54',
@@ -167,7 +167,7 @@ class FingerprintGenerator:
         '129.0.2757.150',
     ]
 
-    # 常用的语言
+    # Common languages
     LANGUAGES = [
         'en-US,en;q=0.9',
         'en-GB,en;q=0.9',
@@ -184,135 +184,135 @@ class FingerprintGenerator:
         'sv-SE,sv;q=0.9,en;q=0.8',
         'pl-PL,pl;q=0.9,en;q=0.8',
         'tr-TR,tr;q=0.9,en;q=0.8',
-        'ar-SA,ar;q=0.9,en;q=0.8',  # 阿拉伯语（沙特阿拉伯）
-        'he-IL,he;q=0.9,en;q=0.8',  # 希伯来语（以色列）
-        'el-GR,el;q=0.9,en;q=0.8',  # 希腊语（希腊）
-        'hu-HU,hu;q=0.9,en;q=0.8',  # 匈牙利语（匈牙利）
-        'ro-RO,ro;q=0.9,en;q=0.8',  # 罗马尼亚语（罗马尼亚）
-        'bg-BG,bg;q=0.9,en;q=0.8',  # 保加利亚语（保加利亚）
-        'cs-CZ,cs;q=0.9,en;q=0.8',  # 捷克语（捷克）
-        'sk-SK,sk;q=0.9,en;q=0.8',  # 斯洛伐克语（斯洛伐克）
-        'th-TH,th;q=0.9,en;q=0.8',  # 泰语（泰国）
-        'vi-VN,vi;q=0.9,en;q=0.8',  # 越南语（越南）
-        'uk-UA,uk;q=0.9,en;q=0.8',  # 乌克兰语（乌克兰）
-        'hr-HR,hr;q=0.9,en;q=0.8',  # 克罗地亚语（克罗地亚）
-        'sr-RS,sr;q=0.9,en;q=0.8',  # 塞尔维亚语（塞尔维亚）
-        'ms-MY,ms;q=0.9,en;q=0.8',  # 马来语（马来西亚）
-        'id-ID,id;q=0.9,en;q=0.8',  # 印尼语（印尼）
-        'fi-FI,fi;q=0.9,en;q=0.8',  # 芬兰语（芬兰）
-        'sv-SE,sv;q=0.9,en;q=0.8',  # 瑞典语（瑞典）
-        'da-DK,da;q=0.9,en;q=0.8',  # 丹麦语（丹麦）
-        'no-NO,no;q=0.9,en;q=0.8',  # 挪威语（挪威）
-        'nl-BE,nl;q=0.9,en;q=0.8',  # 荷兰语（比利时）
-        'fr-BE,fr;q=0.9,en;q=0.8',  # 法语（比利时）
-        'de-BE,de;q=0.9,en;q=0.8',  # 德语（比利时）
-        'it-CH,it;q=0.9,en;q=0.8',  # 意大利语（瑞士）
-        'fr-CH,fr;q=0.9,en;q=0.8',  # 法语（瑞士）
-        'de-CH,de;q=0.9,en;q=0.8',  # 德语（瑞士）
-        'pt-PT,pt;q=0.9,en;q=0.8',  # 葡萄牙语（葡萄牙）
-        'zh-TW,zh;q=0.9,en;q=0.8',  # 中文（台湾）
-        'zh-HK,zh;q=0.9,en;q=0.8',  # 中文（香港）
-        'fa-IR,fa;q=0.9,en;q=0.8',  # 波斯语（伊朗）
-        'tr-TR,tr;q=0.9,en;q=0.8',  # 土耳其语（土耳其）
-        'pl-PL,pl;q=0.9,en;q=0.8',  # 波兰语（波兰）
-        'cs-CZ,cs;q=0.9,en;q=0.8',  # 捷克语（捷克）
-        'et-EE,et;q=0.9,en;q=0.8',  # 爱沙尼亚语（爱沙尼亚）
-        'lv-LV.lv;q=0.9,en;q=0.8',  # 拉脱维亚语（拉脱维亚）
-        'lt-LT,lt;q=0.9,en;q=0.8',  # 立陶宛语（立陶宛）
-        'ka-GE,ka;q=0.9,en;q=0.8',  # 格鲁吉亚语（格鲁吉亚）
-        'hy-AM,hy;q=0.9,en;q=0.8',  # 亚美尼亚语（亚美尼亚）
-        'az-AZ,az;q=0.9,en;q=0.8',  # 阿塞拜疆语（阿塞拜疆）
-        'mn-MN,mn;q=0.9,en;q=0.8',  # 蒙古语（蒙古）
-        'ku-IQ,ku;q=0.9,en;q=0.8',  # 库尔德语（伊拉克）
-        'mk-MK,mk;q=0.9,en;q=0.8',  # 马其顿语（北马其顿）
-        'sq-AL,sq;q=0.9,en;q=0.8',  # 阿尔巴尼亚语（阿尔巴尼亚）
-        'mt-MT,mt;q=0.9,en;q=0.8',  # 马耳他语（马耳他）
-        'is-IS,is;q=0.9,en;q=0.8',  # 冰岛语（冰岛）
-        'ga-IE,ga;q=0.9,en;q=0.8',  # 爱尔兰语（爱尔兰）
-        'gd-GB,gd;q=0.9,en;q=0.8',  # 苏格兰盖尔语（英国）
-        'cy-GB,cy;q=0.9,en;q=0.8',  # 威尔士语（英国）
-        'br-FR,br;q=0.9,en;q=0.8',  # 布列塔尼语（法国）
-        'eu-ES,eu;q=0.9,en;q=0.8',  # 巴斯克语（西班牙）
-        'ca-ES,ca;q=0.9,en;q=0.8',  # 加泰罗尼亚语（西班牙）
-        'gl-ES,gl;q=0.9,en;q=0.8',  # 加利西亚语（西班牙）
-        'eo,en;q=0.9',  # 世界语
-        'af-ZA,af;q=0.9,en;q=0.8',  # 南非荷兰语（南非）
-        'xh-ZA,xh;q=0.9,en;q=0.8',  # 科萨语（南非）
-        'zu-ZA,zu;q=0.9,en;q=0.8',  # 祖鲁语（南非）
-        'st-ZA,st;q=0.9,en;q=0.8',  # 索托语（南非）
-        'tn-ZA,tn;q=0.9,en;q=0.8',  # 托瓦纳语（南非）
-        'ss-ZA,ss;q=0.9,en;q=0.8',  # 史瓦蒂语（南非）
-        've-ZA,ve;q=0.9,en;q=0.8',  # 瓦纳语（南非）
-        'nso-ZA,nso;q=0.9,en;q=0.8',  # 北索托语（南非）
-        'tg-TJ,tg;q=0.9,en;q=0.8',  # 塔吉克语（塔吉克斯坦）
-        'ps-AF,ps;q=0.9,en;q=0.8',  # 普什图语（阿富汗）
-        'dv-MV,dv;q=0.9,en;q=0.8',  # 马尔代夫语（马尔代夫）
-        'mi-NZ,mi;q=0.9,en;q=0.8',  # 毛利语（新西兰）
-        'tk-TM,tk;q=0.9,en;q=0.8',  # 土库曼语（土库曼斯坦）
-        'km-KH,km;q=0.9,en;q=0.8',  # 柬埔寨语（柬埔寨）
-        'lo-LA,lo;q=0.9,en;q=0.8',  # 老挝语（老挝）
-        'my-MM,my;q=0.9,en;q=0.8',  # 缅甸语（缅甸）
-        'ne-NP,ne;q=0.9,en;q=0.8',  # 尼泊尔语（尼泊尔）
-        'si-LK,si;q=0.9,en;q=0.8',  # 锡兰语（斯里兰卡）
-        'mn-CN,mn;q=0.9,en;q=0.8',  # 蒙古语（中国）
-        'bo-CN,bo;q=0.9,en;q=0.8',  # 藏语（中国）
-        'ug-CN,ug;q=0.9,en;q=0.8',  # 维吾尔语（中国）
-        'kk-KZ,kk;q=0.9,en;q=0.8',  # 哈萨克语（哈萨克斯坦）
-        'uz-UZ,uz;q=0.9,en;q=0.8',  # 乌兹别克语（乌兹别克斯坦）
-        'tt-RU,tt;q=0.9,en;q=0.8',  # 鞑靼语（俄罗斯）
-        'ba-RU,ba;q=0.9,en;q=0.8',  # 巴什基尔语（俄罗斯）
-        'cv-RU,cv;q=0.9,en;q=0.8',  # 钦察语（俄罗斯）
-        'os-RU,os;q=0.9,en;q=0.8',  # 奥塞梯语（俄罗斯）
-        'av-RU,av;q=0.9,en;q=0.8',  # 阿瓦尔语（俄罗斯）
-        'ce-RU,ce;q=0.9,en;q=0.8',  # 切尔克斯语（俄罗斯）
-        'kaa-KZ,kaa;q=0.9,en;q=0.8',  # 卡拉卡尔帕克语（哈萨克斯坦）
-        'tr-CY,tr;q=0.9,en;q=0.8',  # 土耳其语（塞浦路斯）
-        'el-CY,el;q=0.9,en;q=0.8',  # 希腊语（塞浦路斯）
-        'hy-AM,hy;q=0.9,en;q=0.8',  # 亚美尼亚语（亚美尼亚）
-        'ru-MD,ru;q=0.9,en;q=0.8',  # 俄语（摩尔多瓦）
-        'uk-MD,uk;q=0.9,en;q=0.8',  # 乌克兰语（摩尔多瓦）
-        'ro-MD,ro;q=0.9,en;q=0.8',  # 罗马尼亚语（摩尔多瓦）
-        'tr-DE,tr;q=0.9,en;q=0.8',  # 土耳其语（德国）
-        'ar-DE,ar;q=0.9,en;q=0.8',  # 阿拉伯语（德国）
-        'ru-DE,ru;q=0.9,en;q=0.8',  # 俄语（德国）
-        'es-DE,es;q=0.9,en;q=0.8',  # 西班牙语（德国）
-        'it-DE,it;q=0.9,en;q=0.8',  # 意大利语（德国）
-        'pl-DE,pl;q=0.9,en;q=0.8',  # 波兰语（德国）
-        'tr-FR,tr;q=0.9,en;q=0.8',  # 土耳其语（法国）
-        'ar-FR,ar;q=0.9,en;q=0.8',  # 阿拉伯语（法国）
-        'ru-FR,ru;q=0.9,en;q=0.8',  # 俄语（法国）
-        'es-FR,es;q=0.9,en;q=0.8',  # 西班牙语（法国）
-        'it-FR,it;q=0.9,en;q=0.8',  # 意大利语（法国）
-        'pl-FR,pl;q=0.9,en;q=0.8',  # 波兰语（法国）
-        'tr-GB,tr;q=0.9,en;q=0.8',  # 土耳其语（英国）
-        'ar-GB,ar;q=0.9,en;q=0.8',  # 阿拉伯语（英国）
-        'ru-GB,ru;q=0.9,en;q=0.8',  # 俄语（英国）
-        'es-GB,es;q=0.9,en;q=0.8',  # 西班牙语（英国）
-        'it-GB,it;q=0.9,en;q=0.8',  # 意大利语（英国）
-        'pl-GB,pl;q=0.9,en;q=0.8',  # 波兰语（英国）
-        'tr-US,tr;q=0.9,en;q=0.8',  # 土耳其语（美国）
-        'ar-US,ar;q=0.9,en;q=0.8',  # 阿拉伯语（美国）
-        'ru-US,ru;q=0.9,en;q=0.8',  # 俄语（美国）
-        'es-US,es;q=0.9,en;q=0.8',  # 西班牙语（美国）
-        'it-US,it;q=0.9,en;q=0.8',  # 意大利语（美国）
-        'pl-US,pl;q=0.9,en;q=0.8',  # 波兰语（美国）
-        'tr-CA,tr;q=0.9,en;q=0.8',  # 土耳其语（加拿大）
-        'ar-CA,ar;q=0.9,en;q=0.8',  # 阿拉伯语（加拿大）
-        'ru-CA,ru;q=0.9,en;q=0.8',  # 俄语（加拿大）
-        'es-CA,es;q=0.9,en;q=0.8',  # 西班牙语（加拿大）
-        'it-CA,it;q=0.9,en;q=0.8',  # 意大利语（加拿大）
-        'pl-CA,pl;q=0.9,en;q=0.8',  # 波兰语（加拿大）
-        'tr-AU,tr;q=0.9,en;q=0.8',  # 土耳其语（澳大利亚）
-        'ar-AU,ar;q=0.9,en;q=0.8',  # 阿拉伯语（澳大利亚）
-        'ru-AU,ru;q=0.9,en;q=0.8',  # 俄语（澳大利亚）
-        'es-AU,es;q=0.9,en;q=0.8',  # 西班牙语（澳大利亚）
-        'it-AU,it;q=0.9,en;q=0.8',  # 意大利语（澳大利亚）
-        'pl-AU,pl;q=0.9,en;q=0.8',  # 波兰语（澳大利亚）
-        'tr-NZ,tr;q=0.9,en;q=0.8',  # 土耳其语（新西兰）
-        'ar-NZ,ar;q=0.9,en;q=0.8',  # 阿拉伯语（新西兰）
+        'ar-SA,ar;q=0.9,en;q=0.8',  # Arabic (Saudi Arabia)
+        'he-IL,he;q=0.9,en;q=0.8',  # Hebrew (Israel)
+        'el-GR,el;q=0.9,en;q=0.8',  # Greek (Greece)
+        'hu-HU,hu;q=0.9,en;q=0.8',  # Hungarian (Hungary)
+        'ro-RO,ro;q=0.9,en;q=0.8',  # Romanian (Romania)
+        'bg-BG,bg;q=0.9,en;q=0.8',  # Bulgarian (Bulgaria)
+        'cs-CZ,cs;q=0.9,en;q=0.8',  # Czech (Czech Republic)
+        'sk-SK,sk;q=0.9,en;q=0.8',  # Slovak (Slovakia)
+        'th-TH,th;q=0.9,en;q=0.8',  # Thai (Thailand)
+        'vi-VN,vi;q=0.9,en;q=0.8',  # Vietnamese (Vietnam)
+        'uk-UA,uk;q=0.9,en;q=0.8',  # Ukrainian (Ukraine)
+        'hr-HR,hr;q=0.9,en;q=0.8',  # Croatian (Croatia)
+        'sr-RS,sr;q=0.9,en;q=0.8',  # Serbian (Serbia)
+        'ms-MY,ms;q=0.9,en;q=0.8',  # Malay (Malaysia)
+        'id-ID,id;q=0.9,en;q=0.8',  # Indonesian (Indonesia)
+        'fi-FI,fi;q=0.9,en;q=0.8',  # Finnish (Finland)
+        'sv-SE,sv;q=0.9,en;q=0.8',  # Swedish (Sweden)
+        'da-DK,da;q=0.9,en;q=0.8',  # Danish (Denmark)
+        'no-NO,no;q=0.9,en;q=0.8',  # Norwegian (Norway)
+        'nl-BE,nl;q=0.9,en;q=0.8',  # Dutch (Belgium)
+        'fr-BE,fr;q=0.9,en;q=0.8',  # French (Belgium)
+        'de-BE,de;q=0.9,en;q=0.8',  # German (Belgium)
+        'it-CH,it;q=0.9,en;q=0.8',  # Italian (Switzerland)
+        'fr-CH,fr;q=0.9,en;q=0.8',  # French (Switzerland)
+        'de-CH,de;q=0.9,en;q=0.8',  # German (Switzerland)
+        'pt-PT,pt;q=0.9,en;q=0.8',  # Portuguese (Portugal)
+        'zh-TW,zh;q=0.9,en;q=0.8',  # Chinese (Taiwan)
+        'zh-HK,zh;q=0.9,en;q=0.8',  # Chinese (Hong Kong)
+        'fa-IR,fa;q=0.9,en;q=0.8',  # Persian (Iran)
+        'tr-TR,tr;q=0.9,en;q=0.8',  # Turkish (Turkey)
+        'pl-PL,pl;q=0.9,en;q=0.8',  # Polish (Poland)
+        'cs-CZ,cs;q=0.9,en;q=0.8',  # Czech (Czech Republic)
+        'et-EE,et;q=0.9,en;q=0.8',  # Estonian (Estonia)
+        'lv-LV.lv;q=0.9,en;q=0.8',  # Latvian (Latvia)
+        'lt-LT,lt;q=0.9,en;q=0.8',  # Lithuanian (Lithuania)
+        'ka-GE,ka;q=0.9,en;q=0.8',  # Georgian (Georgia)
+        'hy-AM,hy;q=0.9,en;q=0.8',  # Armenian (Armenia)
+        'az-AZ,az;q=0.9,en;q=0.8',  # Azerbaijani (Azerbaijan)
+        'mn-MN,mn;q=0.9,en;q=0.8',  # Mongolian (Mongolia)
+        'ku-IQ,ku;q=0.9,en;q=0.8',  # Kurdish (Iraq)
+        'mk-MK,mk;q=0.9,en;q=0.8',  # Macedonian (North Macedonia)
+        'sq-AL,sq;q=0.9,en;q=0.8',  # Albanian (Albania)
+        'mt-MT,mt;q=0.9,en;q=0.8',  # Maltese (Malta)
+        'is-IS,is;q=0.9,en;q=0.8',  # Icelandic (Iceland)
+        'ga-IE,ga;q=0.9,en;q=0.8',  # Irish (Ireland)
+        'gd-GB,gd;q=0.9,en;q=0.8',  # Scottish Gaelic (UK)
+        'cy-GB,cy;q=0.9,en;q=0.8',  # Welsh (UK)
+        'br-FR,br;q=0.9,en;q=0.8',  # Breton (France)
+        'eu-ES,eu;q=0.9,en;q=0.8',  # Basque (Spain)
+        'ca-ES,ca;q=0.9,en;q=0.8',  # Catalan (Spain)
+        'gl-ES,gl;q=0.9,en;q=0.8',  # Galician (Spain)
+        'eo,en;q=0.9',  # Esperanto
+        'af-ZA,af;q=0.9,en;q=0.8',  # Afrikaans (South Africa)
+        'xh-ZA,xh;q=0.9,en;q=0.8',  # Xhosa (South Africa)
+        'zu-ZA,zu;q=0.9,en;q=0.8',  # Zulu (South Africa)
+        'st-ZA,st;q=0.9,en;q=0.8',  # Sotho (South Africa)
+        'tn-ZA,tn;q=0.9,en;q=0.8',  # Tswana (South Africa)
+        'ss-ZA,ss;q=0.9,en;q=0.8',  # Swati (South Africa)
+        've-ZA,ve;q=0.9,en;q=0.8',  # Venda (South Africa)
+        'nso-ZA,nso;q=0.9,en;q=0.8',  # Northern Sotho (South Africa)
+        'tg-TJ,tg;q=0.9,en;q=0.8',  # Tajik (Tajikistan)
+        'ps-AF,ps;q=0.9,en;q=0.8',  # Pashto (Afghanistan)
+        'dv-MV,dv;q=0.9,en;q=0.8',  # Maldivian (Maldives)
+        'mi-NZ,mi;q=0.9,en;q=0.8',  # Maori (New Zealand)
+        'tk-TM,tk;q=0.9,en;q=0.8',  # Turkmen (Turkmenistan)
+        'km-KH,km;q=0.9,en;q=0.8',  # Khmer (Cambodia)
+        'lo-LA,lo;q=0.9,en;q=0.8',  # Lao (Laos)
+        'my-MM,my;q=0.9,en;q=0.8',  # Burmese (Myanmar)
+        'ne-NP,ne;q=0.9,en;q=0.8',  # Nepali (Nepal)
+        'si-LK,si;q=0.9,en;q=0.8',  # Sinhala (Sri Lanka)
+        'mn-CN,mn;q=0.9,en;q=0.8',  # Mongolian (China)
+        'bo-CN,bo;q=0.9,en;q=0.8',  # Tibetan (China)
+        'ug-CN,ug;q=0.9,en;q=0.8',  # Uyghur (China)
+        'kk-KZ,kk;q=0.9,en;q=0.8',  # Kazakh (Kazakhstan)
+        'uz-UZ,uz;q=0.9,en;q=0.8',  # Uzbek (Uzbekistan)
+        'tt-RU,tt;q=0.9,en;q=0.8',  # Tatar (Russia)
+        'ba-RU,ba;q=0.9,en;q=0.8',  # Bashkir (Russia)
+        'cv-RU,cv;q=0.9,en;q=0.8',  # Chuvash (Russia)
+        'os-RU,os;q=0.9,en;q=0.8',  # Ossetian (Russia)
+        'av-RU,av;q=0.9,en;q=0.8',  # Avar (Russia)
+        'ce-RU,ce;q=0.9,en;q=0.8',  # Chechen (Russia)
+        'kaa-KZ,kaa;q=0.9,en;q=0.8',  # Karakalpak (Kazakhstan)
+        'tr-CY,tr;q=0.9,en;q=0.8',  # Turkish (Cyprus)
+        'el-CY,el;q=0.9,en;q=0.8',  # Greek (Cyprus)
+        'hy-AM,hy;q=0.9,en;q=0.8',  # Armenian (Armenia)
+        'ru-MD,ru;q=0.9,en;q=0.8',  # Russian (Moldova)
+        'uk-MD,uk;q=0.9,en;q=0.8',  # Ukrainian (Moldova)
+        'ro-MD,ro;q=0.9,en;q=0.8',  # Romanian (Moldova)
+        'tr-DE,tr;q=0.9,en;q=0.8',  # Turkish (Germany)
+        'ar-DE,ar;q=0.9,en;q=0.8',  # Arabic (Germany)
+        'ru-DE,ru;q=0.9,en;q=0.8',  # Russian (Germany)
+        'es-DE,es;q=0.9,en;q=0.8',  # Spanish (Germany)
+        'it-DE,it;q=0.9,en;q=0.8',  # Italian (Germany)
+        'pl-DE,pl;q=0.9,en;q=0.8',  # Polish (Germany)
+        'tr-FR,tr;q=0.9,en;q=0.8',  # Turkish (France)
+        'ar-FR,ar;q=0.9,en;q=0.8',  # Arabic (France)
+        'ru-FR,ru;q=0.9,en;q=0.8',  # Russian (France)
+        'es-FR,es;q=0.9,en;q=0.8',  # Spanish (France)
+        'it-FR,it;q=0.9,en;q=0.8',  # Italian (France)
+        'pl-FR,pl;q=0.9,en;q=0.8',  # Polish (France)
+        'tr-GB,tr;q=0.9,en;q=0.8',  # Turkish (UK)
+        'ar-GB,ar;q=0.9,en;q=0.8',  # Arabic (UK)
+        'ru-GB,ru;q=0.9,en;q=0.8',  # Russian (UK)
+        'es-GB,es;q=0.9,en;q=0.8',  # Spanish (UK)
+        'it-GB,it;q=0.9,en;q=0.8',  # Italian (UK)
+        'pl-GB,pl;q=0.9,en;q=0.8',  # Polish (UK)
+        'tr-US,tr;q=0.9,en;q=0.8',  # Turkish (US)
+        'ar-US,ar;q=0.9,en;q=0.8',  # Arabic (US)
+        'ru-US,ru;q=0.9,en;q=0.8',  # Russian (US)
+        'es-US,es;q=0.9,en;q=0.8',  # Spanish (US)
+        'it-US,it;q=0.9,en;q=0.8',  # Italian (US)
+        'pl-US,pl;q=0.9,en;q=0.8',  # Polish (US)
+        'tr-CA,tr;q=0.9,en;q=0.8',  # Turkish (Canada)
+        'ar-CA,ar;q=0.9,en;q=0.8',  # Arabic (Canada)
+        'ru-CA,ru;q=0.9,en;q=0.8',  # Russian (Canada)
+        'es-CA,es;q=0.9,en;q=0.8',  # Spanish (Canada)
+        'it-CA,it;q=0.9,en;q=0.8',  # Italian (Canada)
+        'pl-CA,pl;q=0.9,en;q=0.8',  # Polish (Canada)
+        'tr-AU,tr;q=0.9,en;q=0.8',  # Turkish (Australia)
+        'ar-AU,ar;q=0.9,en;q=0.8',  # Arabic (Australia)
+        'ru-AU,ru;q=0.9,en;q=0.8',  # Russian (Australia)
+        'es-AU,es;q=0.9,en;q=0.8',  # Spanish (Australia)
+        'it-AU,it;q=0.9,en;q=0.8',  # Italian (Australia)
+        'pl-AU,pl;q=0.9,en;q=0.8',  # Polish (Australia)
+        'tr-NZ,tr;q=0.9,en;q=0.8',  # Turkish (New Zealand)
+        'ar-NZ,ar;q=0.9,en;q=0.8',  # Arabic (New Zealand)
     ]
 
-    # 常见的WebGL厂商与渲染器
+    # Common WebGL vendors and renderers
     WEBGL_VENDORS = [
         'Google Inc. (NVIDIA)',
         'Google Inc. (Intel)',
@@ -479,12 +479,12 @@ class FingerprintGenerator:
 
     @staticmethod
     def _generate_random_id() -> str:
-        """生成随机的唯一标识符"""
+        """Generate a random unique identifier"""
         return str(uuid.uuid4())
 
     @staticmethod
     def _random_viewport_size() -> Dict[str, int]:
-        """生成随机的视口大小"""
+        """Generate a random viewport size"""
         common_widths = [1366, 1440, 1536, 1600, 1920, 2560]
         common_heights = [768, 900, 864, 1024, 1080, 1440]
 
@@ -500,7 +500,7 @@ class FingerprintGenerator:
         browser_version: str,
         is_mobile: bool = False,
     ) -> str:
-        """根据操作系统信息和浏览器版本生成User-Agent"""
+        """Generate User-Agent based on operating system information and browser version"""
         ua = None
         if is_mobile:
             if os_info['name'] == 'Android':
@@ -556,28 +556,28 @@ class FingerprintGenerator:
         is_mobile: bool = False,
     ) -> Dict[str, Union[str, Dict, List]]:
         """
-        生成一个完整的浏览器指纹配置
+        Generate a complete browser fingerprint configuration
 
         Args:
-            browser_type (str): 浏览器类型，'chrome' 或 'edge'
-            is_mobile (bool): 是否生成移动设备指纹
+            browser_type (str): Browser type, 'chrome' or 'edge'
+            is_mobile (bool): Whether to generate mobile device fingerprint
 
         Returns:
-            Dict: 包含完整指纹信息的字典
+            Dict: Dictionary containing complete fingerprint information
         """
-        # 随机选择操作系统
+        # Randomly select operating system
         if is_mobile:
             os_info = random.choice(self.MOBILE_OS_LIST)
         else:
             os_info = random.choice(self.OS_LIST)
 
-        # 根据浏览器类型选择版本
+        # Select version based on browser type
         if browser_type.lower() == 'edge':
             browser_version = random.choice(self.EDGE_VERSIONS)
         else:
             browser_version = random.choice(self.CHROME_VERSIONS)
 
-        # 生成用户代理字符串
+        # Generate User-Agent string
         user_agent = self._generate_user_agent(
             os_info,
             browser_type,
@@ -585,7 +585,7 @@ class FingerprintGenerator:
             is_mobile,
         )
 
-        # 生成随机视口大小
+        # Generate random viewport size
         if is_mobile:
             viewport = {
                 "width": random.choice([360, 375, 390, 414, 428]),
@@ -596,7 +596,7 @@ class FingerprintGenerator:
         else:
             viewport = self._random_viewport_size()
 
-        # 生成指纹数据
+        # Generate fingerprint data
         fingerprint = {
             "id": self._generate_random_id(),
             "user_agent": user_agent,
@@ -619,7 +619,7 @@ class FingerprintGenerator:
                     else os_info['name']
                 )
             ),
-            "plugins": [],  # 默认为空数组
+            "plugins": [],  # Default to empty array
             "timezone": random.choice([
                 -480, -420, -360, -300, -240, -180, 0, 60, 120, 180,
                 240, 300, 360, 480, 540
@@ -635,7 +635,7 @@ class FingerprintGenerator:
             "audio_fingerprint": ''.join(
                 random.choices(string.ascii_letters + string.digits, k=64)
             ),
-            "fonts": [],  # 默认为空数组
+            "fonts": [],  # Default to empty array
             "is_mobile": is_mobile,
             "mobile_info": os_info if is_mobile else None,
         }
@@ -648,7 +648,7 @@ class FingerprintGenerator:
         browser_type: str = 'chrome',
     ) -> List[str]:
         """
-        将指纹转换为命令行参数列表
+        Convert fingerprint to command line argument list
         """
         args = []
         args.append(f"--user-agent={fingerprint['user_agent']}")
@@ -671,20 +671,20 @@ class FingerprintGenerator:
 
 def generate_fingerprint_js(fingerprint: Dict[str, any]) -> str:
     """
-    生成注入到浏览器的JavaScript代码，用于覆盖指纹属性
+    Generate JavaScript code to inject into browser, to override fingerprint attributes
 
     Args:
-        fingerprint (Dict): 指纹数据
+        fingerprint (Dict): Fingerprint data
 
     Returns:
-        str: JavaScript注入代码
+        str: JavaScript injection code
     """
     fingerprint_json = json.dumps(fingerprint)
     js_template = """
     (function() {
         const fingerprint = JSON_DATA;
 
-        // 覆盖navigator属性
+        // Override navigator attributes
         Object.defineProperty(navigator, 'userAgent', {
             value: fingerprint.user_agent
         });
@@ -707,7 +707,7 @@ def generate_fingerprint_js(fingerprint: Dict[str, any]) -> str:
             });
         }
 
-        // 覆盖屏幕属性
+        // Override screen attributes
         Object.defineProperty(screen, 'width', {
             value: fingerprint.viewport.width
         });
@@ -718,7 +718,7 @@ def generate_fingerprint_js(fingerprint: Dict[str, any]) -> str:
             value: fingerprint.color_depth
         });
 
-        // 增强WebGL伪装
+        // Enhance WebGL spoofing
         const getParameter = WebGLRenderingContext.prototype.getParameter;
         WebGLRenderingContext.prototype.getParameter = function(parameter) {
             // UNMASKED_VENDOR_WEBGL
@@ -748,13 +748,13 @@ def generate_fingerprint_js(fingerprint: Dict[str, any]) -> str:
             return getParameter.call(this, parameter);
         };
 
-        // 同样增强WebGL2伪装
+        // Enhance WebGL2 spoofing
         if (typeof WebGL2RenderingContext !== 'undefined') {
             const getParameterWebGL2 =
                 WebGL2RenderingContext.prototype.getParameter;
             WebGL2RenderingContext.prototype.getParameter =
                 function(parameter) {
-                // 复用相同的参数处理逻辑
+                // Reuse same parameter processing logic
                 if (parameter === 37445 || parameter === 37446 ||
                     parameter === 3379 || parameter === 3386 ||
                     parameter === 33902 || parameter === 33901) {
@@ -766,26 +766,26 @@ def generate_fingerprint_js(fingerprint: Dict[str, any]) -> str:
             };
         }
 
-        // 覆盖Canvas指纹
+        // Override Canvas fingerprint
         const oldToDataURL = HTMLCanvasElement.prototype.toDataURL;
         HTMLCanvasElement.prototype.toDataURL = function(type) {
             if (this.width > 5 && this.height > 5) {
-                // 只修改可能用于指纹识别的canvas
+                // Only modify possible canvas used for fingerprint recognition
                 const modifiedDataURL = oldToDataURL.call(this, type);
-                // 添加微小变化，使每次都不同但视觉上相似
+                // Add small change to make each time different but visually similar
                 return modifiedDataURL.slice(0, modifiedDataURL.length - 8) +
                     fingerprint.canvas_fingerprint.slice(0, 8);
             }
             return oldToDataURL.call(this, type);
         };
 
-        // 覆盖AudioContext指纹
+        // Override AudioContext fingerprint
         const oldGetChannelData = AudioBuffer.prototype.getChannelData;
         AudioBuffer.prototype.getChannelData = function() {
             const array = oldGetChannelData.apply(this, arguments);
-            // 只修改用于音频指纹的数据
+            // Only modify data used for audio fingerprint
             if (array.length > 100) {
-                // 添加微小变化
+                // Add small change
                 const fingerprint_seed = parseInt(
                     fingerprint.audio_fingerprint.slice(0, 8), 16
                 );
@@ -799,7 +799,7 @@ def generate_fingerprint_js(fingerprint: Dict[str, any]) -> str:
             return array;
         };
 
-        // 修改插件信息
+        // Modify plugin information
         Object.defineProperty(navigator, 'plugins', {
             get: function() {
                 const plugins = fingerprint.plugins.length > 0
@@ -816,7 +816,7 @@ def generate_fingerprint_js(fingerprint: Dict[str, any]) -> str:
             }
         });
 
-        // 防止Automation检测
+        // Prevent Automation detection
         window.navigator.webdriver = false;
         delete window.cdc_adoQpoasnfa76pfcZLmcfl_Array;
         delete window.cdc_adoQpoasnfa76pfcZLmcfl_Promise;
@@ -824,7 +824,7 @@ def generate_fingerprint_js(fingerprint: Dict[str, any]) -> str:
     })();
     """
 
-    # 使用更安全的JSON替换方式
+    # Use safer JSON replacement method
     js_code = js_template.replace("JSON_DATA", fingerprint_json)
 
     return js_code
@@ -832,13 +832,13 @@ def generate_fingerprint_js(fingerprint: Dict[str, any]) -> str:
 
 class FingerprintManager:
     """
-    管理浏览器指纹的类。
+    Class for managing browser fingerprints.
 
-    负责生成、存储和应用浏览器指纹配置。
+    Responsible for generating, storing, and applying browser fingerprint configurations.
     """
 
     def __init__(self):
-        """初始化指纹管理器"""
+        """Initialize fingerprint manager"""
         self.generator = FingerprintGenerator()
         self.current_fingerprint = None
 
@@ -848,14 +848,14 @@ class FingerprintManager:
         is_mobile: bool = False,
     ) -> Dict[str, any]:
         """
-        生成新的浏览器指纹
+        Generate new browser fingerprint
 
         Args:
-            browser_type (str): 浏览器类型，'chrome' 或 'edge'
-            is_mobile (bool): 是否生成移动设备指纹
+            browser_type (str): Browser type, 'chrome' or 'edge'
+            is_mobile (bool): Whether to generate mobile device fingerprint
 
         Returns:
-            Dict: 新生成的指纹数据
+            Dict: Newly generated fingerprint data
         """
         self.current_fingerprint = self.generator.generate_fingerprint(
             browser_type, is_mobile
@@ -867,13 +867,13 @@ class FingerprintManager:
         browser_type: str = 'chrome',
     ) -> List[str]:
         """
-        获取当前指纹的命令行参数
+        Get command line arguments for current fingerprint
 
         Args:
-            browser_type (str): 浏览器类型
+            browser_type (str): Browser type
 
         Returns:
-            List[str]: 命令行参数列表
+            List[str]: List of command line arguments
         """
         if not self.current_fingerprint:
             self.generate_new_fingerprint(browser_type)
@@ -885,10 +885,10 @@ class FingerprintManager:
 
     def get_fingerprint_js(self) -> str:
         """
-        获取当前指纹的JavaScript注入代码
+        Get JavaScript injection code for current fingerprint
 
         Returns:
-            str: 用于注入的JavaScript代码
+            str: JavaScript code to inject
         """
         if not self.current_fingerprint:
             self.generate_new_fingerprint()
@@ -896,5 +896,5 @@ class FingerprintManager:
         return generate_fingerprint_js(self.current_fingerprint)
 
 
-# 创建全局单例实例
+# Create global singleton instance
 FINGERPRINT_MANAGER = FingerprintManager()

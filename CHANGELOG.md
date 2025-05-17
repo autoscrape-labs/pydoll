@@ -42,7 +42,7 @@
 - Supports initialization options based on browser type
 - Edge browser constructors to support optional connection port parameters
 - Add Microsoft Edge browser support
-- 为 Edge 浏览器添加默认用户数据目录支持
+- Add default user data directory support for Edge browser
 - Add Microsoft Edge browser support
 
 ### Refactor

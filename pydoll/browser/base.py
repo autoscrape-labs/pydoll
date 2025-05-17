@@ -118,7 +118,7 @@ class Browser(ABC):  # noqa: PLR0904
         self._setup_user_dir()
         proxy_config = self._proxy_manager.get_proxy_credentials()
 
-        # 应用指纹伪装（如果启用）
+        # Apply fingerprint spoofing (if enabled)
         if self._enable_fingerprint_spoofing:
             self._apply_fingerprint_spoofing()
 
@@ -131,14 +131,14 @@ class Browser(ABC):  # noqa: PLR0904
         await self._configure_proxy(proxy_config[0], proxy_config[1])
         await self._init_first_page()
 
-        # 如果启用了指纹伪装，在页面加载后注入JavaScript
+        # If fingerprint spoofing is enabled, inject JavaScript after page load
         if self._enable_fingerprint_spoofing and self._fingerprint_script:
             page = await self.get_page()
             try:
                 await page.execute_script(self._fingerprint_script)
             except Exception as e:
-                print(f"注入指纹伪装脚本时出现错误: {e}")
-                # 尝试重新注入简化版本的脚本
+                print(f"Error injecting fingerprint spoofing script: {e}")
+                # Try to inject a simplified version of the script
                 try:
                     simple_script = "window.navigator.webdriver = false;"
                     await page.execute_script(simple_script)
@@ -621,30 +621,30 @@ class Browser(ABC):  # noqa: PLR0904
 
     def _apply_fingerprint_spoofing(self):
         """
-        应用指纹伪装，生成并设置唯一的浏览器指纹
+        Apply fingerprint spoofing, generate and set a unique browser fingerprint
 
         Returns:
             None
         """
-        # 获取浏览器类型
+        # Get browser type
         browser_type = 'chrome'
         if isinstance(self.options, ChromeOptions):
             browser_type = 'chrome'
         elif isinstance(self.options, EdgeOptions):
             browser_type = 'edge'
 
-        # 显式生成新的指纹
+        # Explicitly generate a new fingerprint
         FINGERPRINT_MANAGER.generate_new_fingerprint(browser_type)
 
-        # 获取指纹相关命令行参数
+        # Get fingerprint-related command line arguments
         fingerprint_args = (
             FINGERPRINT_MANAGER.get_fingerprint_arguments(browser_type)
         )
 
-        # 将指纹参数添加到浏览器选项中
+        # Add fingerprint parameters to browser options
         for arg in fingerprint_args:
             if arg not in self.options.arguments:
                 self.options.arguments.append(arg)
 
-        # 保存指纹JavaScript脚本，稍后注入
+        # Save fingerprint JavaScript script for later injection
         self._fingerprint_script = FINGERPRINT_MANAGER.get_fingerprint_js()
