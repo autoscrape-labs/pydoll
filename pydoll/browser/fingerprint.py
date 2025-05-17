@@ -500,7 +500,10 @@ class FingerprintGenerator:
         browser_version: str,
         is_mobile: bool = False,
     ) -> str:
-        """Generate User-Agent based on operating system information and browser version"""
+        """
+        Generate User-Agent based on operating system information and browser
+        version
+        """
         ua = None
         if is_mobile:
             if os_info['name'] == 'Android':
@@ -671,7 +674,8 @@ class FingerprintGenerator:
 
 def generate_fingerprint_js(fingerprint: Dict[str, any]) -> str:
     """
-    Generate JavaScript code to inject into browser, to override fingerprint attributes
+    Generate JavaScript code to inject into browser, to override fingerprint
+    attributes
 
     Args:
         fingerprint (Dict): Fingerprint data
@@ -772,7 +776,8 @@ def generate_fingerprint_js(fingerprint: Dict[str, any]) -> str:
             if (this.width > 5 && this.height > 5) {
                 // Only modify possible canvas used for fingerprint recognition
                 const modifiedDataURL = oldToDataURL.call(this, type);
-                // Add small change to make each time different but visually similar
+                // Add small change to make each time different but visually
+                // similar
                 return modifiedDataURL.slice(0, modifiedDataURL.length - 8) +
                     fingerprint.canvas_fingerprint.slice(0, 8);
             }
@@ -834,7 +839,8 @@ class FingerprintManager:
     """
     Class for managing browser fingerprints.
 
-    Responsible for generating, storing, and applying browser fingerprint configurations.
+    Responsible for generating, storing, and applying browser fingerprint 
+    configurations.
     """
 
     def __init__(self):
