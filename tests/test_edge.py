@@ -94,7 +94,7 @@ async def mock_browser() -> AsyncGenerator[ConcreteEdge, None]:
 
         yield browser
 
-        # 清理代码
+        # Cleanup code
         try:
             await asyncio.wait_for(browser.stop(), timeout=5.0)
         except (asyncio.TimeoutError, Exception):
@@ -494,7 +494,7 @@ async def test_user_data_directory_setup(mock_browser):
 
 def test_edge_page_validation(mock_browser):
     """Test Edge page validation for different URL types"""
-    # 使用已经配置好的mock_browser而不是创建新实例
+    # Use the already configured mock_browser instead of creating a new instance
     
     # Test valid Edge URLs
     assert mock_browser._is_valid_page({
