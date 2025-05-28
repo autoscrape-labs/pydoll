@@ -1,4 +1,4 @@
-from pydoll.commands import RuntimeCommands
+from pydoll.protocol.commands import RuntimeCommands
 
 
 def test_get_properties():

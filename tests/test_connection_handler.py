@@ -7,7 +7,7 @@ import pytest_asyncio
 import websockets
 
 from pydoll import exceptions
-from pydoll.connection.connection import ConnectionHandler
+from pydoll.connection import ConnectionHandler
 
 
 @pytest_asyncio.fixture

@@ -8,18 +8,18 @@ from pydoll.exceptions import (
     ElementNotInteractable,
     ElementNotFound,
 )
-from pydoll.commands import (
+from pydoll.protocol.commands import (
     DomCommands,
     InputCommands,
 )
 
-from pydoll.element import WebElement
+from pydoll.elements.web_element import WebElement
 
 
 @pytest_asyncio.fixture
 async def mock_connection_handler():
     with patch(
-        'pydoll.connection.connection.ConnectionHandler', autospec=True
+        'pydoll.connection.ConnectionHandler', autospec=True
     ) as mock:
         handler = mock.return_value
         handler.execute_command = AsyncMock()
@@ -283,44 +283,19 @@ async def test__is_element_on_top(web_element):
 
 
 @pytest.mark.asyncio
-async def test_send_keys_text(web_element):
-    test_text = 'Hello World'
-    keys = [(char, ord(char.upper())) for char in test_text]
-
-    await web_element.send_keys(test_text)
-
-    assert (
-        web_element._connection_handler.execute_command.call_count
-        == len(test_text) * 2
-    )
-
-    count = 1
-    for char, key_code in keys:
-        web_element._connection_handler.execute_command.assert_any_call(
-            InputCommands.key_down((char, key_code), count), timeout=60
-        )
-        count += 1
-
-        web_element._connection_handler.execute_command.assert_any_call(
-            InputCommands.key_up((char, key_code), count), timeout=60
-        )
-        count += 1
-
-
-@pytest.mark.asyncio
-async def test_type_keys(web_element):
+async def test_type_text(web_element):
     test_text = 'Hi'
     with patch('asyncio.sleep') as mock_sleep:
-        await web_element.type_keys(test_text)
+        await web_element.type_text(test_text)
 
     assert web_element._connection_handler.execute_command.call_count == len(
         test_text
     )
     web_element._connection_handler.execute_command.assert_any_call(
-        InputCommands.key_press('H'), timeout=60
+        InputCommands.char_press('H'), timeout=60
     )
     web_element._connection_handler.execute_command.assert_any_call(
-        InputCommands.key_press('i'), timeout=60
+        InputCommands.char_press('i'), timeout=60
     )
 
 

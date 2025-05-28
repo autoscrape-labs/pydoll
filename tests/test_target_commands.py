@@ -1,4 +1,4 @@
-from pydoll.commands import TargetCommands
+from pydoll.protocol.commands import TargetCommands
 
 
 def test_activate_target():

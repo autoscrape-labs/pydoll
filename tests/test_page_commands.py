@@ -1,4 +1,4 @@
-from pydoll.commands import PageCommands
+from pydoll.protocol.commands import PageCommands
 
 
 def test_set_download_path():

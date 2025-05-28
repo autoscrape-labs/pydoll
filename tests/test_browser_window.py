@@ -1,8 +1,8 @@
 import pytest
 import pytest_asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
-from pydoll.browser.base import Browser
-from pydoll.commands import BrowserCommands
+from pydoll.browser.chromium.base import Browser
+from pydoll.protocol.commands import BrowserCommands
 
 
 class ConcreteBrowser(Browser):
@@ -20,7 +20,7 @@ async def mock_browser():
             ),
         ),
         patch(
-            'pydoll.connection.connection.ConnectionHandler',
+            'pydoll.connection.ConnectionHandler',
             autospec=True,
         ) as mock_conn_handler,
     ):

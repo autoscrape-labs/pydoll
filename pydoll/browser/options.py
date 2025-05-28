@@ -1,3 +1,6 @@
+from pydoll.exceptions import ArgumentAlreadyExistsInOptions
+
+
 class Options:
     """
     A class to manage command-line options for a browser instance.
@@ -64,12 +67,12 @@ class Options:
             argument (str): The command-line argument to be added.
 
         Raises:
-            ValueError: If the argument is already in the list of arguments.
+            ArgumentAlreadyExistsInOptions: If the argument is already in the list of arguments.
         """
         if argument not in self._arguments:
             self._arguments.append(argument)
         else:
-            raise ValueError(f'Argument already exists: {argument}')
+            raise ArgumentAlreadyExistsInOptions(f'Argument already exists: {argument}')
 
 
 class ChromeOptions(Options):

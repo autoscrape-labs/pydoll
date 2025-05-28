@@ -1,7 +1,7 @@
 # tests/test_dom_commands.py
 import pytest
 from unittest.mock import patch
-from pydoll.commands import (
+from pydoll.protocol.commands import (
     DomCommands,
     RuntimeCommands,
 )
@@ -10,7 +10,7 @@ from pydoll.constants import By
 
 @pytest.fixture
 def mock_runtime_commands():
-    with patch('pydoll.commands.dom.RuntimeCommands') as mock:
+    with patch('pydoll.protocol.commands.dom_commands.RuntimeCommands') as mock:
         yield mock
 
 

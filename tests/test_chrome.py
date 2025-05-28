@@ -4,12 +4,12 @@ import pytest
 import pytest_asyncio
 
 from pydoll import exceptions
-from pydoll.browser.chrome import Chrome
-from pydoll.browser.base import Browser
+from pydoll.browser.chromium.chrome import Chrome
+from pydoll.browser.chromium.base import Browser
 from pydoll.browser.managers import ProxyManager, BrowserOptionsManager
 from pydoll.browser.options import Options
 from pydoll.browser.page import Page
-from pydoll.commands import (
+from pydoll.protocol.commands import (
     BrowserCommands,
     DomCommands,
     FetchCommands,
@@ -17,7 +17,7 @@ from pydoll.commands import (
     StorageCommands,
     TargetCommands,
 )
-from pydoll.events import FetchEvents, PageEvents
+from pydoll.protocol.events import FetchEvents, PageEvents
 
 
 class ConcreteBrowser(Browser):
@@ -43,7 +43,7 @@ async def mock_browser():
             autospec=True,
         ) as mock_temp_dir_manager,
         patch(
-            'pydoll.connection.connection.ConnectionHandler',
+            'pydoll.connection.ConnectionHandler',
             autospec=True,
         ) as mock_conn_handler,
         patch(
@@ -100,7 +100,7 @@ async def test_start_browser_success(mock_browser):
 @pytest.mark.asyncio
 async def test_start_browser_failure(mock_browser):
     mock_browser._connection_handler.ping.return_value = False
-    with patch('pydoll.browser.base.asyncio.sleep', AsyncMock()) as mock_sleep:
+    with patch('pydoll.browser.chromium.base.asyncio.sleep', AsyncMock()) as mock_sleep:
         mock_sleep.return_value = False
         with pytest.raises(exceptions.BrowserNotRunning):
             await mock_browser.start()
@@ -298,7 +298,7 @@ async def test_stop_browser(mock_browser):
 @pytest.mark.asyncio
 async def test_stop_browser_not_running(mock_browser):
     mock_browser._connection_handler.ping.return_value = False
-    with patch('pydoll.browser.base.asyncio.sleep', AsyncMock()) as mock_sleep:
+    with patch('pydoll.browser.chromium.base.asyncio.sleep', AsyncMock()) as mock_sleep:
         mock_sleep.return_value = False
         with pytest.raises(exceptions.BrowserNotRunning):
             await mock_browser.stop()

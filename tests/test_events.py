@@ -1,4 +1,4 @@
-from pydoll.events import (
+from pydoll.protocol.events import (
     BrowserEvents,
     DomEvents,
     FetchEvents,

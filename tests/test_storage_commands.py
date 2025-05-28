@@ -1,4 +1,4 @@
-from pydoll.commands import StorageCommands
+from pydoll.protocol.commands import StorageCommands
 
 
 def test_clear_cookies():
