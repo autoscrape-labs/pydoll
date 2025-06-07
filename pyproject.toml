@@ -33,7 +33,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
-line-length = 79
+line-length = 100
 target-version = "py310"
 
 
@@ -58,3 +58,8 @@ lint = 'ruff check .; ruff check . --diff'
 format = 'ruff check . --fix; ruff format .'
 test = 'pytest -s -x --cov=pydoll -vv'
 post_test = 'coverage html'
+
+[tool.mypy]
+exclude = [
+    "tests/",
+]

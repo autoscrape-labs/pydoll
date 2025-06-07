@@ -1,4 +1,10 @@
-class Options:
+from typing import List
+
+from pydoll.browser.interfaces import Options
+from pydoll.exceptions import ArgumentAlreadyExistsInOptions
+
+
+class ChromiumOptions(Options):
     """
     A class to manage command-line options for a browser instance.
 
@@ -17,7 +23,7 @@ class Options:
         self._binary_location = ''
 
     @property
-    def arguments(self) -> list:
+    def arguments(self) -> List[str]:
         """
         Gets the list of command-line arguments.
 
@@ -27,7 +33,7 @@ class Options:
         return self._arguments
 
     @arguments.setter
-    def arguments(self, args_list: list):
+    def arguments(self, args_list: List[str]):
         """
         Sets the list of command-line arguments.
 
@@ -64,19 +70,9 @@ class Options:
             argument (str): The command-line argument to be added.
 
         Raises:
-            ValueError: If the argument is already in the list of arguments.
+            ArgumentAlreadyExistsInOptions: If the argument is already in the list of arguments.
         """
         if argument not in self._arguments:
             self._arguments.append(argument)
         else:
-            raise ValueError(f'Argument already exists: {argument}')
-
-
-class ChromeOptions(Options):
-    def __init__(self):
-        super().__init__()
-
-
-class EdgeOptions(Options):
-    def __init__(self):
-        super().__init__()
+            raise ArgumentAlreadyExistsInOptions(f'Argument already exists: {argument}')

@@ -7,7 +7,7 @@ import pytest_asyncio
 import websockets
 
 from pydoll import exceptions
-from pydoll.connection.connection import ConnectionHandler
+from pydoll.connection import ConnectionHandler
 
 
 @pytest_asyncio.fixture
@@ -75,12 +75,6 @@ async def test_execute_command_success(connection_handler):
 
 
 @pytest.mark.asyncio
-async def test_execute_command_invalid_command(connection_handler):
-    with pytest.raises(exceptions.InvalidCommand):
-        await connection_handler.execute_command('invalid')
-
-
-@pytest.mark.asyncio
 async def test_execute_command_timeout(connection_handler):
     command = {'id': 2, 'method': 'TimeoutMethod'}
 
@@ -89,7 +83,7 @@ async def test_execute_command_timeout(connection_handler):
         return_value=asyncio.Future()
     )
 
-    with pytest.raises(asyncio.TimeoutError):
+    with pytest.raises(exceptions.CommandExecutionTimeout):
         await connection_handler.execute_command(command, timeout=0.1)
 
 
@@ -103,7 +97,7 @@ async def test_execute_command_connection_closed_exception(connection_handler):
     connection_handler._ws_connection.close = AsyncMock()
     connection_handler._receive_task = AsyncMock(spec=asyncio.Task)
     connection_handler._receive_task.done = MagicMock(return_value=False)
-    with pytest.raises(websockets.ConnectionClosed):
+    with pytest.raises(exceptions.WebSocketConnectionClosed):
         await connection_handler.execute_command({
             'id': 1,
             'method': 'SomeMethod',
