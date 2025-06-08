@@ -3576,7 +3576,7 @@ Only specified properties are changed.</p>
   </span>
 
 </h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">enable_fetch_events</span><span class="p">(</span><span class="n">handle_auth_requests</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">resource_type</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">enable_fetch_events</span><span class="p">(</span><span class="n">handle_auth_requests</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">resource_type</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3625,11 +3625,11 @@ All matching requests are paused until explicitly continued.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="str">str</span></code>
+                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="            ResourceType (pydoll.constants.ResourceType)" href="../../core/constants/#pydoll.constants.ResourceType">ResourceType</a>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
-                      <code>&#39;&#39;</code>
+                      <code>None</code>
                   </span>
               </p>
             </td>
