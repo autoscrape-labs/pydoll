@@ -1,6 +1,9 @@
-from typing import Generic, NotRequired, TypedDict, TypeVar
+from typing import TypedDict
 
-T_CommandResponse = TypeVar('T_CommandResponse')
+try:
+    from typing import NotRequired
+except ImportError:
+    from typing_extensions import NotRequired
 
 
 class CommandParams(TypedDict, total=False):
@@ -9,7 +12,7 @@ class CommandParams(TypedDict, total=False):
     pass
 
 
-class Command(TypedDict, Generic[T_CommandResponse]):
+class Command(TypedDict):
     """Base structure for all commands.
 
     Attributes:
