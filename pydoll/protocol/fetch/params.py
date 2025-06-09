@@ -1,4 +1,8 @@
-from typing import NotRequired
+
+try:
+    from typing import NotRequired
+except ImportError:
+    from typing_extensions import NotRequired
 
 from pydoll.constants import NetworkErrorReason, RequestMethod
 from pydoll.protocol.base import CommandParams

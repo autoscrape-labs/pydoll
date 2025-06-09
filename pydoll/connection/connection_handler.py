@@ -156,7 +156,7 @@ class ConnectionHandler:
 
     async def _ensure_active_connection(self):
         """Ensure active connection exists, establishing new one if needed."""
-        if self._ws_connection is None or self._ws_connection.closed:
+        if self._ws_connection is None or self._is_connection_closed():
             await self._establish_new_connection()
 
     async def _establish_new_connection(self):
@@ -178,7 +178,7 @@ class ConnectionHandler:
 
     async def _handle_connection_loss(self):
         """Clean up resources after connection loss."""
-        if self._ws_connection and not self._ws_connection.closed:
+        if self._ws_connection and not self._is_connection_closed():
             await self._ws_connection.close()
         self._ws_connection = None
 
@@ -186,6 +186,37 @@ class ConnectionHandler:
             self._receive_task.cancel()
 
         logger.info('Connection resources cleaned up')
+
+    def _is_connection_closed(self) -> bool:
+        """Safely check if WebSocket connection is closed, handling different library versions."""
+        if self._ws_connection is None:
+            return True
+        
+        # Try different ways to check connection status for compatibility
+        try:
+            # For websockets library (newer versions)
+            if hasattr(self._ws_connection, 'closed'):
+                return self._ws_connection.closed
+            
+            # For ClientConnection or other connection types
+            if hasattr(self._ws_connection, 'state'):
+                # Check if state indicates closed
+                state = self._ws_connection.state
+                if hasattr(state, 'name'):
+                    return state.name in ('CLOSED', 'CLOSING')
+                # For numeric states
+                return state in (3, 4)  # Common closed/closing state values
+                
+            # Fallback: try to access connection state indirectly
+            if hasattr(self._ws_connection, 'close_code'):
+                return self._ws_connection.close_code is not None
+                
+            # Last resort: assume open if we can't determine state
+            return False
+            
+        except Exception:
+            # If any error occurs while checking state, assume closed
+            return True
 
     async def _receive_events(self):
         """Main loop for receiving and processing WebSocket messages."""
@@ -201,7 +232,7 @@ class ConnectionHandler:
     async def _incoming_messages(self) -> AsyncGenerator[Union[str, bytes], None]:
         """Generator yielding raw messages from WebSocket connection."""
         ws = cast(WebSocketClientProtocol, self._ws_connection)
-        while not ws.closed:
+        while not self._is_connection_closed():
             yield await ws.recv()
 
     async def _process_single_message(self, raw_message: str):
