@@ -163,4 +163,3 @@ cython_debug/
 .czrc
 .ruff_cache/
 /pydoll-enhance参考
-/Remote-file-transfer
