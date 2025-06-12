@@ -153,8 +153,8 @@ async def advanced_captcha_bypass():
             print("Cloudflare Turnstile automatically solved!")
             
             # Continue with your automation - captcha is handled
-            await tab.find(id='username').type('user@example.com')
-            await tab.find(id='password').type('password123')
+            await tab.find(id='username').type_text('user@example.com')
+            await tab.find(id='password').type_text('password123')
             await tab.find(tag_name='button', text='Login').click()
         
         # Method 2: Background processing (non-blocking)
@@ -173,14 +173,6 @@ async def advanced_captcha_bypass():
 
 asyncio.run(advanced_captcha_bypass())
 ```
-
-**Why This Matters:**
-- **No External Dependencies**: No need for captcha solving services or API keys
-- **Cost Effective**: Eliminate monthly captcha solving service fees
-- **Reliable**: Works consistently without depending on third-party availability
-- **Fast**: Instant solving without network delays to external services
-- **Seamless Integration**: Captcha bypass happens transparently in your automation flow
-
 
 ### Advanced Element Finding
 
@@ -289,7 +281,7 @@ async def event_driven_automation():
             print("Page loaded! Starting automation...")
             # Perform actions after page loads
             search_box = await tab.find(id='search-box')
-            await search_box.type('automation')
+            await search_box.type_text('automation')
         
         # React to navigation
         async def on_navigation(event):
@@ -330,7 +322,7 @@ async def iframe_interaction():
         
         # You can use all Tab methods on the frame
         form_input = await frame.find(id='captcha-input')
-        await form_input.type('verification-code')
+        await form_input.type_text('verification-code')
         
         # Find elements by various methods
         links = await frame.find(tag_name='a', find_all=True)
