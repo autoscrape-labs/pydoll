@@ -5,13 +5,15 @@ This module provides the FingerprintGenerator class which creates realistic
 browser fingerprints with randomized but consistent properties.
 """
 
-import json
 import random
 import string
-import uuid
 from typing import Dict, List, Optional, Tuple
 
 from .models import Fingerprint, FingerprintConfig
+
+# Constants for magic values
+DEVICE_MEMORY_THRESHOLD = 0.3
+DO_NOT_TRACK_THRESHOLD = 0.8
 
 
 class FingerprintGenerator:
@@ -136,100 +138,99 @@ class FingerprintGenerator:
         Returns:
             A Fingerprint object with all properties set.
         """
-        # Choose operating system
+        # Generate basic system properties
+        system_properties = self._generate_system_properties()
+
+        # Generate display properties
+        display_properties = self._generate_display_properties()
+
+        # Generate browser properties
+        browser_properties = self._generate_browser_properties()
+
+        # Generate multimedia properties
+        multimedia_properties = self._generate_multimedia_properties()
+
+        # Combine all properties into fingerprint
+        return Fingerprint(**{
+            **system_properties,
+            **display_properties,
+            **browser_properties,
+            **multimedia_properties,
+        })
+
+    def _generate_system_properties(self) -> Dict:
+        """Generate system-related properties."""
         os_info = self._choose_operating_system()
-
-        # Choose browser version
         browser_version = self._choose_browser_version()
+        language = random.choice(self.LANGUAGES)
+        timezone = random.choice(self.TIMEZONES)
 
-        # Generate user agent
-        user_agent = self._generate_user_agent(os_info, browser_version)
+        return {
+            'user_agent': self._generate_user_agent(os_info, browser_version),
+            'platform': os_info['platform'],
+            'language': language.split(',')[0],
+            'languages': self._generate_language_list(language),
+            'hardware_concurrency': random.choice([2, 4, 6, 8, 12, 16]),
+            'device_memory': (
+                random.choice([2, 4, 8, 16])
+                if random.random() > DEVICE_MEMORY_THRESHOLD
+                else None
+            ),
+            'timezone': timezone,
+            'timezone_offset': self._get_timezone_offset(timezone),
+            'browser_type': self.config.browser_type,
+            'browser_version': browser_version,
+            'chrome_version': browser_version if self.config.browser_type == 'chrome' else None,
+            'cookie_enabled': True,
+            'do_not_track': (
+                random.choice([None, '1'])
+                if random.random() > DO_NOT_TRACK_THRESHOLD
+                else None
+            ),
+            'webdriver': False,
+            'connection_type': random.choice(['wifi', 'ethernet', 'cellular']),
+        }
 
-        # Choose screen resolution
+    def _generate_display_properties(self) -> Dict:
+        """Generate display and viewport properties."""
         screen_width, screen_height = self._choose_screen_resolution()
-
-        # Generate viewport size (slightly smaller than screen)
         viewport_width = screen_width - random.randint(0, 100)
         viewport_height = screen_height - random.randint(100, 200)
 
-        # Generate WebGL properties
+        return {
+            'screen_width': screen_width,
+            'screen_height': screen_height,
+            'screen_color_depth': 24,
+            'screen_pixel_depth': 24,
+            'available_width': screen_width,
+            'available_height': screen_height - 40,  # Account for taskbar
+            'viewport_width': viewport_width,
+            'viewport_height': viewport_height,
+            'inner_width': viewport_width,
+            'inner_height': viewport_height - 120,  # Account for browser UI
+        }
+
+    def _generate_browser_properties(self) -> Dict:
+        """Generate browser-specific properties."""
         webgl_vendor, webgl_renderer = self._choose_webgl_properties()
 
-        # Generate language settings
-        language = random.choice(self.LANGUAGES)
-        languages = self._generate_language_list(language)
+        return {
+            'webgl_vendor': webgl_vendor,
+            'webgl_renderer': webgl_renderer,
+            'webgl_version': 'WebGL 1.0 (OpenGL ES 2.0 Chromium)',
+            'webgl_shading_language_version': 'WebGL GLSL ES 1.0 (OpenGL ES GLSL ES 1.0 Chromium)',
+            'webgl_extensions': random.sample(self.WEBGL_EXTENSIONS, random.randint(15, 25)),
+            'canvas_fingerprint': self._generate_canvas_fingerprint(),
+            'plugins': self._generate_plugins() if self.config.include_plugins else [],
+        }
 
-        # Generate timezone
-        timezone = random.choice(self.TIMEZONES)
-        timezone_offset = self._get_timezone_offset(timezone)
-
-        # Generate hardware properties
-        hardware_concurrency = random.choice([2, 4, 6, 8, 12, 16])
-        device_memory = random.choice([2, 4, 8, 16]) if random.random() > 0.3 else None
-
-        # Generate audio properties
-        audio_sample_rate = random.choice(self.AUDIO_SAMPLE_RATES)
-        audio_max_channels = random.choice([2, 6, 8])
-
-        # Generate plugins
-        plugins = self._generate_plugins() if self.config.include_plugins else []
-
-        return Fingerprint(
-            # Navigator properties
-            user_agent=user_agent,
-            platform=os_info['platform'],
-            language=language.split(',')[0],
-            languages=languages,
-            hardware_concurrency=hardware_concurrency,
-            device_memory=device_memory,
-
-            # Screen properties
-            screen_width=screen_width,
-            screen_height=screen_height,
-            screen_color_depth=24,
-            screen_pixel_depth=24,
-            available_width=screen_width,
-            available_height=screen_height - 40,  # Account for taskbar
-
-            # Viewport properties
-            viewport_width=viewport_width,
-            viewport_height=viewport_height,
-            inner_width=viewport_width,
-            inner_height=viewport_height - 120,  # Account for browser UI
-
-            # WebGL properties
-            webgl_vendor=webgl_vendor,
-            webgl_renderer=webgl_renderer,
-            webgl_version='WebGL 1.0 (OpenGL ES 2.0 Chromium)',
-            webgl_shading_language_version='WebGL GLSL ES 1.0 (OpenGL ES GLSL ES 1.0 Chromium)',
-            webgl_extensions=random.sample(self.WEBGL_EXTENSIONS, random.randint(15, 25)),
-
-            # Canvas fingerprint
-            canvas_fingerprint=self._generate_canvas_fingerprint(),
-
-            # Audio context properties
-            audio_context_sample_rate=float(audio_sample_rate),
-            audio_context_state='suspended',
-            audio_context_max_channel_count=audio_max_channels,
-
-            # Timezone and locale
-            timezone=timezone,
-            timezone_offset=timezone_offset,
-
-            # Browser specific
-            browser_type=self.config.browser_type,
-            browser_version=browser_version,
-            chrome_version=browser_version if self.config.browser_type == 'chrome' else None,
-
-            # Plugin information
-            plugins=plugins,
-
-            # Additional properties
-            cookie_enabled=True,
-            do_not_track=random.choice([None, '1']) if random.random() > 0.8 else None,
-            webdriver=False,
-            connection_type=random.choice(['wifi', 'ethernet', 'cellular']),
-        )
+    def _generate_multimedia_properties(self) -> Dict:
+        """Generate multimedia-related properties."""
+        return {
+            'audio_context_sample_rate': float(random.choice(self.AUDIO_SAMPLE_RATES)),
+            'audio_context_state': 'suspended',
+            'audio_context_max_channel_count': random.choice([2, 6, 8]),
+        }
 
     def _choose_operating_system(self) -> Dict[str, str]:
         """Choose a random operating system."""
@@ -274,25 +275,42 @@ class FingerprintGenerator:
         os_version = os_info['version']
 
         if self.config.browser_type == 'chrome':
-            if os_name == 'Windows':
-                return f'Mozilla/5.0 (Windows NT {os_version}; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{browser_version} Safari/537.36'
-            elif os_name == 'Macintosh':
-                return f'Mozilla/5.0 (Macintosh; Intel Mac OS X {os_version.replace(".", "_")}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{browser_version} Safari/537.36'
-            else:  # Linux
-                return f'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{browser_version} Safari/537.36'
-
+            return self._generate_chrome_user_agent(os_name, os_version, browser_version)
         elif self.config.browser_type == 'edge':
-            if os_name == 'Windows':
-                return f'Mozilla/5.0 (Windows NT {os_version}; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{browser_version.split(".")[0]}.0.0.0 Safari/537.36 Edg/{browser_version}'
-            elif os_name == 'Macintosh':
-                return f'Mozilla/5.0 (Macintosh; Intel Mac OS X {os_version.replace(".", "_")}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{browser_version.split(".")[0]}.0.0.0 Safari/537.36 Edg/{browser_version}'
-            else:  # Linux
-                return f'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{browser_version.split(".")[0]}.0.0.0 Safari/537.36 Edg/{browser_version}'
+            return self._generate_edge_user_agent(os_name, os_version, browser_version)
+        else:
+            # Fallback to Chrome
+            return self._generate_chrome_user_agent('Windows', '10.0', browser_version)
 
-        # Fallback to Chrome
-        return f'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{browser_version} Safari/537.36'
+    def _generate_chrome_user_agent(self, os_name: str, os_version: str, browser_version: str) -> str:
+        """Generate Chrome user agent for specific OS."""
+        base_template = 'Mozilla/5.0 ({os_part}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{version} Safari/537.36'
 
-    def _generate_language_list(self, primary_language: str) -> List[str]:
+        os_parts = {
+            'Windows': f'Windows NT {os_version}; Win64; x64',
+            'Macintosh': f'Macintosh; Intel Mac OS X {os_version.replace(".", "_")}',
+            'Linux': 'X11; Linux x86_64'
+        }
+
+        os_part = os_parts.get(os_name, os_parts['Windows'])
+        return base_template.format(os_part=os_part, version=browser_version)
+
+    def _generate_edge_user_agent(self, os_name: str, os_version: str, browser_version: str) -> str:
+        """Generate Edge user agent for specific OS."""
+        chrome_major = browser_version.split(".")[0]
+        base_template = 'Mozilla/5.0 ({os_part}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{chrome_major}.0.0.0 Safari/537.36 Edg/{version}'
+
+        os_parts = {
+            'Windows': f'Windows NT {os_version}; Win64; x64',
+            'Macintosh': f'Macintosh; Intel Mac OS X {os_version.replace(".", "_")}',
+            'Linux': 'X11; Linux x86_64'
+        }
+
+        os_part = os_parts.get(os_name, os_parts['Windows'])
+        return base_template.format(os_part=os_part, chrome_major=chrome_major, version=browser_version)
+
+    @staticmethod
+    def _generate_language_list(primary_language: str) -> List[str]:
         """Generate a list of languages based on the primary language."""
         base_lang = primary_language.split(',')[0]
         lang_code = base_lang.split('-')[0]
@@ -309,7 +327,8 @@ class FingerprintGenerator:
 
         return languages
 
-    def _get_timezone_offset(self, timezone: str) -> int:
+    @staticmethod
+    def _get_timezone_offset(timezone: str) -> int:
         """Get timezone offset for a given timezone."""
         # Simplified timezone offset mapping
         offset_map = {
@@ -329,7 +348,8 @@ class FingerprintGenerator:
 
         return offset_map.get(timezone, 0)
 
-    def _generate_canvas_fingerprint(self) -> str:
+    @staticmethod
+    def _generate_canvas_fingerprint() -> str:
         """Generate a unique canvas fingerprint."""
         # Generate a pseudo-random canvas fingerprint
         random_data = ''.join(random.choices(string.ascii_letters + string.digits, k=32))
@@ -338,11 +358,31 @@ class FingerprintGenerator:
     def _generate_plugins(self) -> List[Dict[str, str]]:
         """Generate a realistic list of browser plugins."""
         common_plugins = [
-            {'name': 'PDF Viewer', 'filename': 'internal-pdf-viewer', 'description': 'Portable Document Format'},
-            {'name': 'Chrome PDF Viewer', 'filename': 'mhjfbmdgcfjbbpaeojofohoefgiehjai', 'description': ''},
-            {'name': 'Chromium PDF Viewer', 'filename': 'mhjfbmdgcfjbbpaeojofohoefgiehjai', 'description': ''},
-            {'name': 'Microsoft Edge PDF Viewer', 'filename': 'mhjfbmdgcfjbbpaeojofohoefgiehjai', 'description': ''},
-            {'name': 'WebKit built-in PDF', 'filename': 'webkit-built-in-pdf', 'description': ''},
+            {
+                'name': 'PDF Viewer',
+                'filename': 'internal-pdf-viewer',
+                'description': 'Portable Document Format'
+            },
+            {
+                'name': 'Chrome PDF Viewer',
+                'filename': 'mhjfbmdgcfjbbpaeojofohoefgiehjai',
+                'description': ''
+            },
+            {
+                'name': 'Chromium PDF Viewer',
+                'filename': 'mhjfbmdgcfjbbpaeojofohoefgiehjai',
+                'description': ''
+            },
+            {
+                'name': 'Microsoft Edge PDF Viewer',
+                'filename': 'mhjfbmdgcfjbbpaeojofohoefgiehjai',
+                'description': ''
+            },
+            {
+                'name': 'WebKit built-in PDF',
+                'filename': 'webkit-built-in-pdf',
+                'description': ''
+            },
         ]
 
         # Randomly select and return plugins

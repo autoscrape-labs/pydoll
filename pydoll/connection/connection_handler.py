@@ -192,31 +192,36 @@ class ConnectionHandler:
         if self._ws_connection is None:
             return True
 
-        # Try different ways to check connection status for compatibility
         try:
-            # For websockets library (newer versions)
-            if hasattr(self._ws_connection, 'closed'):
-                return self._ws_connection.closed
-
-            # For ClientConnection or other connection types
-            if hasattr(self._ws_connection, 'state'):
-                # Check if state indicates closed
-                state = self._ws_connection.state
-                if hasattr(state, 'name'):
-                    return state.name in ('CLOSED', 'CLOSING')
-                # For numeric states
-                return state in (3, 4)  # Common closed/closing state values
-
-            # Fallback: try to access connection state indirectly
-            if hasattr(self._ws_connection, 'close_code'):
-                return self._ws_connection.close_code is not None
-
-            # Last resort: assume open if we can't determine state
-            return False
-
+            return self._check_connection_state()
         except Exception:
             # If any error occurs while checking state, assume closed
             return True
+
+    def _check_connection_state(self) -> bool:
+        """Check connection state using various methods for compatibility."""
+        # For websockets library (newer versions)
+        if hasattr(self._ws_connection, 'closed'):
+            return self._ws_connection.closed
+
+        # For ClientConnection or other connection types
+        if hasattr(self._ws_connection, 'state'):
+            return self._check_state_attribute()
+
+        # Fallback: try to access connection state indirectly
+        if hasattr(self._ws_connection, 'close_code'):
+            return self._ws_connection.close_code is not None
+
+        # Last resort: assume open if we can't determine state
+        return False
+
+    def _check_state_attribute(self) -> bool:
+        """Check connection state attribute."""
+        state = self._ws_connection.state
+        if hasattr(state, 'name'):
+            return state.name in {'CLOSED', 'CLOSING'}
+        # For numeric states
+        return state in {3, 4}  # Common closed/closing state values
 
     async def _receive_events(self):
         """Main loop for receiving and processing WebSocket messages."""
