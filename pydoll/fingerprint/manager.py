@@ -85,7 +85,9 @@ class FingerprintManager:
             ValueError: If no fingerprint has been generated.
         """
         if not self.injector:
-            raise ValueError("No fingerprint has been generated. Call generate_new_fingerprint() first.")
+            raise ValueError(
+                "No fingerprint has been generated. Call generate_new_fingerprint() first."
+            )
 
         return self.injector.generate_script()
 
@@ -103,7 +105,9 @@ class FingerprintManager:
             ValueError: If no fingerprint has been generated.
         """
         if not self.current_fingerprint:
-            raise ValueError("No fingerprint has been generated. Call generate_new_fingerprint() first.")
+            raise ValueError(
+                "No fingerprint has been generated. Call generate_new_fingerprint() first."
+            )
 
         args = []
 
@@ -114,11 +118,16 @@ class FingerprintManager:
         args.append(f'--lang={self.current_fingerprint.language}')
 
         # Window size
-        args.append(f'--window-size={self.current_fingerprint.viewport_width},{self.current_fingerprint.viewport_height}')
+        args.append(
+            f'--window-size={self.current_fingerprint.viewport_width},'
+            f'{self.current_fingerprint.viewport_height}'
+        )
 
         # Hardware concurrency (for Chrome)
         if browser_type == 'chrome':
-            args.append(f'--force-cpu-count={self.current_fingerprint.hardware_concurrency}')
+            args.append(
+                f'--force-cpu-count={self.current_fingerprint.hardware_concurrency}'
+            )
 
         # Disable automation features
         args.extend([
