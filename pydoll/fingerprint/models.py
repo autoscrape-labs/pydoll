@@ -83,7 +83,7 @@ class Fingerprint:
     @classmethod
     def from_dict(cls, data: Dict[str, Union[str, int, float, bool, List, None]]) -> 'Fingerprint':
         """Create fingerprint from dictionary format."""
-        return cls(**data)
+        return cls(**data)  # type: ignore[arg-type]
 
 
 @dataclass
@@ -135,4 +135,4 @@ class FingerprintConfig:
     @classmethod
     def from_dict(cls, data: Dict[str, Union[str, int, bool, List, None]]) -> 'FingerprintConfig':
         """Create config from dictionary format."""
-        return cls(**data)
+        return cls(**data)  # type: ignore[arg-type]

@@ -200,6 +200,9 @@ class ConnectionHandler:
 
     def _check_connection_state(self) -> bool:
         """Check connection state using various methods for compatibility."""
+        # This method is only called when _ws_connection is not None
+        assert self._ws_connection is not None
+
         # For websockets library (newer versions)
         if hasattr(self._ws_connection, 'closed'):
             return self._ws_connection.closed
@@ -217,6 +220,7 @@ class ConnectionHandler:
 
     def _check_state_attribute(self) -> bool:
         """Check connection state attribute."""
+        assert self._ws_connection is not None
         state = self._ws_connection.state
         if hasattr(state, 'name'):
             return state.name in {'CLOSED', 'CLOSING'}

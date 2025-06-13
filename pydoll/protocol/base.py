@@ -1,9 +1,11 @@
-from typing import TypedDict
+from typing import Any, Dict, TypedDict, TypeVar
 
 try:
     from typing import NotRequired
 except ImportError:
     from typing_extensions import NotRequired
+
+T = TypeVar('T')
 
 
 class CommandParams(TypedDict, total=False):
@@ -47,4 +49,4 @@ class Event(TypedDict):
     """Base structure for all events."""
 
     method: str
-    params: NotRequired[dict[str, str]]
+    params: NotRequired[Dict[str, Any]]
