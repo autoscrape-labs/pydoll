@@ -384,8 +384,8 @@ async def advanced_captcha_bypass():
             print("Cloudflare Turnstile automatically solved!")
             
             # Continue with your automation - captcha is handled
-            await tab.find(id='username').type('user@example.com')
-            await tab.find(id='password').type('password123')
+            await tab.find(id='username').type_text('user@example.com')
+            await tab.find(id='password').type_text('password123')
             await tab.find(tag_name='button', text='Login').click()
         
         # Method 2: Background processing (non-blocking)
@@ -519,7 +519,7 @@ async def event_driven_automation():
             print("Page loaded! Starting automation...")
             # Perform actions after page loads
             search_box = await tab.find(id='search-box')
-            await search_box.type('automation')
+            await search_box.type_text('automation')
         
         # React to navigation
         async def on_navigation(event):
@@ -560,7 +560,7 @@ async def iframe_interaction():
         
         # You can use all Tab methods on the frame
         form_input = await frame.find(id='captcha-input')
-        await form_input.type('verification-code')
+        await form_input.type_text('verification-code')
         
         # Find elements by various methods
         links = await frame.find(tag_name='a', find_all=True)
@@ -817,6 +817,11 @@ async def advanced_captcha_bypass():
         async with tab.expect_and_bypass_cloudflare_captcha():
             await tab.go_to('https://site-with-cloudflare.com')
             print("Cloudflare Turnstile 自动解决！")
+            
+            # 继续您的自动化 - 验证码已处理
+            await tab.find(id='username').type_text('user@example.com')
+            await tab.find(id='password').type_text('password123')
+            await tab.find(tag_name='button', text='Login').click()
 
 asyncio.run(advanced_captcha_bypass())
 ```
