@@ -1,5 +1,4 @@
 import asyncio
-import re
 from typing import TYPE_CHECKING, Optional, TypeVar, Union
 
 from pydoll.commands import (
@@ -352,18 +351,11 @@ class FindElementsMixin:
         Auto-detect selector type from expression syntax.
 
         Patterns:
-        - XPath: starts with //, .// , ./, or /
-        - ID: starts with #
-        - Class: starts with . (but not ./)
+        - XPath: starts with ./, or /
         - Default: CSS_SELECTOR
         """
-        xpath_pattern = r'^(//|\.//|\.\/|/)'
-        if re.match(xpath_pattern, expression):
+        if expression.startswith('./') or expression.startswith('/'):
             return By.XPATH
-        if expression.startswith('#'):
-            return By.ID
-        if expression.startswith('.') and not expression.startswith('./'):
-            return By.CLASS_NAME
 
         return By.CSS_SELECTOR
 
@@ -403,8 +395,8 @@ class FindElementsMixin:
         if object_id and not by == By.XPATH:
             script = Scripts.RELATIVE_QUERY_SELECTOR.replace('{selector}', selector)
             command = RuntimeCommands.call_function_on(
-                object_id,
-                script,
+                function_declaration=script,
+                object_id=object_id,
                 return_by_value=False,
             )
         elif by == By.XPATH:
@@ -435,10 +427,10 @@ class FindElementsMixin:
             case _:
                 selector = escaped_value
         if object_id and not by == By.XPATH:
-            script = Scripts.RELATIVE_QUERY_SELECTOR_ALL.replace('{selector}', escaped_value)
+            script = Scripts.RELATIVE_QUERY_SELECTOR_ALL.replace('{selector}', selector)
             command = RuntimeCommands.call_function_on(
-                object_id,
-                script,
+                function_declaration=script,
+                object_id=object_id,
                 return_by_value=False,
             )
         elif by == By.XPATH:
@@ -461,8 +453,8 @@ class FindElementsMixin:
             escaped_value = self._ensure_relative_xpath(escaped_value)
             script = Scripts.FIND_RELATIVE_XPATH_ELEMENT.replace('{escaped_value}', escaped_value)
             command = RuntimeCommands.call_function_on(
-                object_id,
-                script,
+                function_declaration=script,
+                object_id=object_id,
                 return_by_value=False,
             )
         else:
@@ -482,8 +474,8 @@ class FindElementsMixin:
             escaped_value = self._ensure_relative_xpath(escaped_value)
             script = Scripts.FIND_RELATIVE_XPATH_ELEMENTS.replace('{escaped_value}', escaped_value)
             command = RuntimeCommands.call_function_on(
-                object_id,
-                script,
+                function_declaration=script,
+                object_id=object_id,
                 return_by_value=False,
             )
         else:

@@ -20,9 +20,9 @@ __all__ = [
     'Edge',
     'FingerprintBrowserOptionsManager',
     'FingerprintGenerator',
-    'FingerprintInjector', 
+    'FingerprintInjector',
     'FingerprintManager',
     'Fingerprint',
     'FingerprintConfig',
     'FINGERPRINT_MANAGER',
-] 
+]
