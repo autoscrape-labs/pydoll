@@ -316,7 +316,6 @@ asyncio.run(advanced_captcha_bypass())
 - **Fast**: Instant solving without network delays to external services
 - **Seamless Integration**: Captcha bypass happens transparently in your automation flow
 
-
 ### Advanced Element Finding
 
 Pydoll offers multiple intuitive ways to find elements. No matter how you prefer to work, we have an approach that makes sense for you:
