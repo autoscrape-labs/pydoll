@@ -191,13 +191,13 @@ class ConnectionHandler:
         """Safely check if WebSocket connection is closed, handling different library versions."""
         if self._ws_connection is None:
             return True
-        
+
         # Try different ways to check connection status for compatibility
         try:
             # For websockets library (newer versions)
             if hasattr(self._ws_connection, 'closed'):
                 return self._ws_connection.closed
-            
+
             # For ClientConnection or other connection types
             if hasattr(self._ws_connection, 'state'):
                 # Check if state indicates closed
@@ -206,14 +206,14 @@ class ConnectionHandler:
                     return state.name in ('CLOSED', 'CLOSING')
                 # For numeric states
                 return state in (3, 4)  # Common closed/closing state values
-                
+
             # Fallback: try to access connection state indirectly
             if hasattr(self._ws_connection, 'close_code'):
                 return self._ws_connection.close_code is not None
-                
+
             # Last resort: assume open if we can't determine state
             return False
-            
+
         except Exception:
             # If any error occurs while checking state, assume closed
             return True
