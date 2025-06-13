@@ -6,7 +6,6 @@ generation, storage, and application to browser instances.
 """
 
 import json
-import os
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -39,7 +38,9 @@ class FingerprintManager:
         self.storage_dir = Path.home() / '.pydoll' / 'fingerprints'
         self.storage_dir.mkdir(parents=True, exist_ok=True)
 
-    def generate_new_fingerprint(self, browser_type: str = 'chrome', force: bool = False) -> Fingerprint:
+    def generate_new_fingerprint(
+        self, browser_type: str = 'chrome', force: bool = False
+    ) -> Fingerprint:
         """
         Generate a new browser fingerprint.
 

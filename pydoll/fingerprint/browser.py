@@ -140,9 +140,9 @@ class Chrome(Browser):
             return self.fingerprint_manager.get_fingerprint_summary()
         return None
 
-    def _get_default_binary_location(self) -> str:
+    @staticmethod
+    def _get_default_binary_location() -> str:
         """Get default Chrome executable path."""
-        from pydoll.browser.chromium.chrome import Chrome as BaseChrome
         return BaseChrome._get_default_binary_location()
 
 
@@ -270,7 +270,7 @@ class Edge(Browser):
             return self.fingerprint_manager.get_fingerprint_summary()
         return None
 
-    def _get_default_binary_location(self) -> str:
+    @staticmethod
+    def _get_default_binary_location() -> str:
         """Get default Edge executable path."""
-        from pydoll.browser.chromium.edge import Edge as BaseEdge
         return BaseEdge._get_default_binary_location()

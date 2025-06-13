@@ -38,7 +38,11 @@ class FingerprintBrowserOptionsManager(ChromiumOptionsManager):
         """
         super().__init__(options)
         self.enable_fingerprint_spoofing = enable_fingerprint_spoofing
-        self.fingerprint_manager = FingerprintManager(fingerprint_config) if enable_fingerprint_spoofing else None
+        self.fingerprint_manager = (
+            FingerprintManager(fingerprint_config)
+            if enable_fingerprint_spoofing
+            else None
+        )
 
     def initialize_options(self) -> ChromiumOptions:
         """

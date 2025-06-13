@@ -5,7 +5,6 @@ This module provides the FingerprintInjector class which generates JavaScript
 code to override browser properties for fingerprint spoofing.
 """
 
-from typing import Dict, List
 from .models import Fingerprint
 
 
@@ -116,14 +115,22 @@ class FingerprintInjector:
         configurable: true
     }});
 
-    {'Object.defineProperty(navigator, "deviceMemory", { get: () => ' + str(self.fingerprint.device_memory) + ', configurable: true });' if self.fingerprint.device_memory else ''}
+    {(
+        'Object.defineProperty(navigator, "deviceMemory", { get: () => ' +
+        str(self.fingerprint.device_memory) +
+        ', configurable: true });'
+    ) if self.fingerprint.device_memory else ''}
 
     Object.defineProperty(navigator, 'cookieEnabled', {{
         get: () => {str(self.fingerprint.cookie_enabled).lower()},
         configurable: true
     }});
 
-    {'Object.defineProperty(navigator, "doNotTrack", { get: () => "' + str(self.fingerprint.do_not_track) + '", configurable: true });' if self.fingerprint.do_not_track else ''}
+    {(
+        'Object.defineProperty(navigator, "doNotTrack", { get: () => "' +
+        str(self.fingerprint.do_not_track) +
+        '", configurable: true });'
+    ) if self.fingerprint.do_not_track else ''}
     """
 
     def _generate_screen_override(self) -> str:
@@ -347,7 +354,9 @@ class FingerprintInjector:
 
     // Override connection type
     if (navigator.connection || navigator.mozConnection || navigator.webkitConnection) {{
-        const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+        const connection = navigator.connection ||
+                          navigator.mozConnection ||
+                          navigator.webkitConnection;
         Object.defineProperty(connection, 'effectiveType', {{
             get: () => '{self.fingerprint.connection_type}',
             configurable: true
