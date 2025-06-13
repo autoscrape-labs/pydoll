@@ -65,3 +65,6 @@ post_test = 'coverage html'
 exclude = [
     "tests/",
 ]
+disable_error_code = [
+    "type-arg",  # Disable "expects no type arguments" errors
+]

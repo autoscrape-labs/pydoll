@@ -110,6 +110,7 @@ class Chrome(Browser):
         """
         try:
             # Get the JavaScript injection code
+            assert self.fingerprint_manager is not None
             script = self.fingerprint_manager.get_fingerprint_js()
 
             # Inject the script using Page.addScriptToEvaluateOnNewDocument
@@ -241,6 +242,7 @@ class Edge(Browser):
         """
         try:
             # Get the JavaScript injection code
+            assert self.fingerprint_manager is not None
             script = self.fingerprint_manager.get_fingerprint_js()
 
             # Inject the script using Page.addScriptToEvaluateOnNewDocument
