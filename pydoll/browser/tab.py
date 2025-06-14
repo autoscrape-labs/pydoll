@@ -32,13 +32,15 @@ from pydoll.exceptions import (
     IFrameNotFound,
     InvalidFileExtension,
     InvalidIFrame,
+    NetworkEventsNotEnabled,
     NoDialogPresent,
     NotAnIFrame,
     PageLoadTimeout,
     WaitElementTimeout,
 )
 from pydoll.protocol.base import Response
-from pydoll.protocol.network.types import Cookie, CookieParam
+from pydoll.protocol.network.responses import GetResponseBodyResponse
+from pydoll.protocol.network.types import Cookie, CookieParam, NetworkLog
 from pydoll.protocol.page.events import PageEvent
 from pydoll.protocol.page.responses import CaptureScreenshotResponse, PrintToPDFResponse
 from pydoll.protocol.runtime.responses import EvaluateResponse
@@ -312,6 +314,50 @@ class Tab(FindElementsMixin):  # noqa: PLR0904
             StorageCommands.get_cookies(self._browser_context_id)
         )
         return response['result']['cookies']
+
+    async def get_network_response_body(self, request_id: str) -> str:
+        """
+        Get the response body for a given request ID.
+
+        Args:
+            request_id: Request ID to get the response body for.
+
+        Returns:
+            The response body for the given request ID.
+
+        Raises:
+            NetworkEventsNotEnabled: If network events are not enabled.
+        """
+        if not self.network_events_enabled:
+            raise NetworkEventsNotEnabled('Network events must be enabled to get response body')
+
+        response: GetResponseBodyResponse = await self._execute_command(
+            NetworkCommands.get_response_body(request_id)
+        )
+        return response['result']['body']
+
+    async def get_network_logs(self, filter: Optional[str] = None) -> list[NetworkLog]:
+        """
+        Get network logs.
+
+        Args:
+            filter: Filter to apply to the network logs.
+
+        Returns:
+            The network logs.
+
+        Raises:
+            NetworkEventsNotEnabled: If network events are not enabled.
+        """
+        if not self.network_events_enabled:
+            raise NetworkEventsNotEnabled('Network events must be enabled to get network logs')
+
+        logs = self._connection_handler.network_logs
+        if filter:
+            logs = [
+                log for log in logs if filter in log['params'].get('request', {}).get('url', '')
+            ]
+        return logs
 
     async def set_cookies(self, cookies: list[CookieParam]):
         """
