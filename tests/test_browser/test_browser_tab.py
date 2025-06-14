@@ -546,6 +546,18 @@ class TestTabScriptExecution:
         tab._connection_handler.execute_command.assert_not_called()
 
     @pytest.mark.asyncio
+    async def test_execute_script_element_without_argument_raises_exception(self, tab):
+        """Test execute_script raises exception when element is provided but script doesn't contain 'argument'."""
+        element = MagicMock()
+        element._object_id = 'test-object-id'
+        
+        with pytest.raises(InvalidScriptWithElement) as exc_info:
+            await tab.execute_script('console.log("test")', element)
+        
+        assert str(exc_info.value) == 'Script does not contain "argument"'
+        tab._connection_handler.execute_command.assert_not_called()
+
+    @pytest.mark.asyncio
     async def test_execute_script_with_element_already_function(self, tab):
         """Test execute_script with element when script is already a function."""
         element = MagicMock()
