@@ -3,8 +3,8 @@
 </p>
 
 <p align="center">
-    <a href="https://codecov.io/gh/autoscrape-labs/pydoll">
-        <img src="https://codecov.io/gh/autoscrape-labs/pydoll/graph/badge.svg?token=40I938OGM9"/> 
+    <a href="https://codecov.io/gh/autoscrape-labs/pydoll" >
+        <img src="https://codecov.io/gh/autoscrape-labs/pydoll/graph/badge.svg?token=40I938OGM9"/>
     </a>
     <img src="https://github.com/thalissonvs/pydoll/actions/workflows/tests.yml/badge.svg" alt="Tests">
     <img src="https://github.com/thalissonvs/pydoll/actions/workflows/ruff-ci.yml/badge.svg" alt="Ruff CI">
