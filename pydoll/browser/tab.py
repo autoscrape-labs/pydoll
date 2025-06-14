@@ -212,9 +212,6 @@ class Tab(FindElementsMixin):  # noqa: PLR0904
             custom_selector: Custom captcha selector (default: cf-turnstile class).
             time_before_click: Delay before clicking captcha (default 2s).
             time_to_wait_captcha: Timeout for captcha detection (default 5s).
-
-        Returns:
-            Callback ID for disabling auto-solver.
         """
         if not self.page_events_enabled:
             await self.enable_page_events()
@@ -285,7 +282,7 @@ class Tab(FindElementsMixin):  # noqa: PLR0904
         Get Tab object for interacting with iframe content.
 
         Args:
-            frame: Tab representing the iframe (<iframe> tag).
+            frame: Tab representing the iframe tag.
 
         Returns:
             Tab instance configured for iframe interaction.
@@ -295,7 +292,6 @@ class Tab(FindElementsMixin):  # noqa: PLR0904
             InvalidIFrame: If iframe lacks valid src attribute.
             IFrameNotFound: If iframe target not found in browser.
         """
-        print('frame.tag_name: ', frame.tag_name)
         if not frame.tag_name == 'iframe':
             raise NotAnIFrame
 
@@ -616,7 +612,12 @@ class Tab(FindElementsMixin):  # noqa: PLR0904
             if not _before_page_events_enabled:
                 await self.disable_page_events()
 
-    async def on(self, event_name: str, callback: Callable[[dict], Any], temporary: bool = False):
+    async def on(
+        self,
+        event_name: str,
+        callback: Callable[[dict], Any],
+        temporary: bool = False,
+    ) -> int:
         """
         Register CDP event listener.
 
