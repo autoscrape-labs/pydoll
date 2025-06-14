@@ -4571,6 +4571,10 @@ like Cloudflare bypass.</p>
   </span>
 
 </h3>
+          <div class="doc-overloads">
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">execute_script</span><span class="p">(</span><span class="n">script</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="pydoll.protocol.runtime.responses.EvaluateResponse">EvaluateResponse</span></span>
+</span></code></pre></div><div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">execute_script</span><span class="p">(</span><span class="n">script</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">element</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            pydoll.elements.web_element.WebElement" href="../../elements/web_element/#pydoll.elements.web_element.WebElement">WebElement</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="pydoll.protocol.runtime.responses.CallFunctionOnResponse">CallFunctionOnResponse</span></span>
+</span></code></pre></div>          </div>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">execute_script</span><span class="p">(</span><span class="n">script</span><span class="p">,</span> <span class="n">element</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </span></code></pre></div>
 
@@ -4630,6 +4634,30 @@ like Cloudflare bypass.</p>
 <p><span class="doc-section-title">Examples:</span></p>
     <p>await page.execute_script('argument.click()', element)
 await page.execute_script('argument.value = "Hello"', element)</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RAISES</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+              <span class="doc-raises-annotation">
+                  <code><a class="autorefs autorefs-internal" title="            InvalidScriptWithElement (pydoll.exceptions.InvalidScriptWithElement)" href="../../core/exceptions/#pydoll.exceptions.InvalidScriptWithElement">InvalidScriptWithElement</a></code>
+              </span>
+            </td>
+            <td class="doc-raises-details">
+              <div class="doc-md-description">
+                <p>If script contains 'argument' but no element is provided.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     </div>
