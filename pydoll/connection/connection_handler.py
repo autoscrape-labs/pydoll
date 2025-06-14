@@ -15,7 +15,7 @@ from typing import (
 )
 
 import websockets
-from websockets.legacy.client import Connect, WebSocketClientProtocol
+from websockets.legacy.client import WebSocketClientProtocol
 
 from pydoll.connection.managers import CommandsManager, EventsManager
 from pydoll.exceptions import (
@@ -44,7 +44,7 @@ class ConnectionHandler:
         connection_port: int,
         page_id: Optional[str] = None,
         ws_address_resolver: Callable[[int], Coroutine[Any, Any, str]] = get_browser_ws_address,
-        ws_connector: type[Connect] = websockets.connect,
+        ws_connector: Any = websockets.connect,
     ):
         """
         Initialize connection handler.

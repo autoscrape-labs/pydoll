@@ -157,6 +157,36 @@ class ElementNotAFileInput(ElementException):
     message = 'The element is not a file input'
 
 
+class ShadowRootException(ElementException):
+    """Base class for exceptions related to shadow DOM operations."""
+
+    message = 'A shadow root error occurred'
+
+
+class NoShadowRootAttached(ShadowRootException):
+    """Raised when attempting to access a shadow root that doesn't exist."""
+
+    message = 'The element does not have a shadow root attached'
+
+
+class InvalidShadowRoot(ShadowRootException):
+    """Raised when a shadow root is in an invalid state or configuration."""
+
+    message = 'The shadow root is invalid'
+
+
+class ShadowRootAccessDenied(ShadowRootException):
+    """Raised when access to a shadow root is denied due to security restrictions."""
+
+    message = 'Access to shadow root is denied'
+
+
+class ShadowBoundaryViolation(ShadowRootException):
+    """Raised when attempting to perform operations that violate shadow DOM boundaries."""
+
+    message = 'Operation violates shadow DOM boundary restrictions'
+
+
 class TimeoutException(PydollException):
     """Base class for exceptions related to timeouts."""
 
