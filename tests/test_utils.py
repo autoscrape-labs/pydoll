@@ -6,7 +6,14 @@ import os
 from unittest.mock import patch
 
 from pydoll import exceptions
-from pydoll.utils import decode_base64_to_bytes, get_browser_ws_address, validate_browser_paths
+from pydoll.utils import (
+    clean_script_for_analysis,
+    decode_base64_to_bytes,
+    get_browser_ws_address,
+    has_return_outside_function,
+    is_script_already_function,
+    validate_browser_paths,
+)
 
 
 class TestUtils:
@@ -227,4 +234,170 @@ class TestUtils:
             
             result = validate_browser_paths(paths)
             assert result == valid_path
+
+
+class TestDecodeBase64ToBytes:
+    """Test decode_base64_to_bytes function."""
+
+    def test_decode_base64_to_bytes_valid_input(self):
+        """Test decoding valid base64 string."""
+        base64_string = 'SGVsbG8gV29ybGQ='  # "Hello World" in base64
+        result = decode_base64_to_bytes(base64_string)
+        assert result == b'Hello World'
+
+    def test_decode_base64_to_bytes_empty_string(self):
+        """Test decoding empty base64 string."""
+        result = decode_base64_to_bytes('')
+        assert result == b''
+
+
+class TestValidateBrowserPaths:
+    """Test validate_browser_paths function."""
+
+    def test_validate_browser_paths_valid_path(self, tmp_path):
+        """Test with valid executable path."""
+        # Create a temporary executable file
+        executable = tmp_path / "browser"
+        executable.write_text("#!/bin/bash\necho 'browser'")
+        executable.chmod(0o755)
+        
+        result = validate_browser_paths([str(executable)])
+        assert result == str(executable)
+
+    def test_validate_browser_paths_invalid_paths(self):
+        """Test with invalid paths."""
+        from pydoll.exceptions import InvalidBrowserPath
+        
+        with pytest.raises(InvalidBrowserPath):
+            validate_browser_paths(['/nonexistent/path', '/another/invalid/path'])
+
+
+class TestScriptAnalysisFunctions:
+    """Test JavaScript script analysis functions."""
+
+    def test_clean_script_for_analysis_removes_comments(self):
+        """Test that comments are removed from script."""
+        script = '''
+        // This is a line comment
+        var x = 5;
+        /* This is a block comment */
+        return x;
+        '''
+        
+        result = clean_script_for_analysis(script)
+        
+        assert '// This is a line comment' not in result
+        assert '/* This is a block comment */' not in result
+        assert 'var x = 5;' in result
+        assert 'return x;' in result
+
+    def test_clean_script_for_analysis_removes_strings(self):
+        """Test that string literals are removed from script."""
+        script = '''
+        var message = "This string contains return statement";
+        var another = 'Another string with return';
+        var template = `Template literal with return`;
+        return "actual return";
+        '''
+        
+        result = clean_script_for_analysis(script)
+        
+        assert 'This string contains return statement' not in result
+        assert 'Another string with return' not in result
+        assert 'Template literal with return' not in result
+        assert 'return ""' in result  # String replaced with empty quotes
+
+    def test_is_script_already_function_regular_function(self):
+        """Test detection of regular function declaration."""
+        script = 'function() { console.log("test"); }'
+        assert is_script_already_function(script) is True
+
+    def test_is_script_already_function_arrow_function(self):
+        """Test detection of arrow function."""
+        script = '() => { console.log("test"); }'
+        assert is_script_already_function(script) is True
+
+    def test_is_script_already_function_with_parameters(self):
+        """Test detection of function with parameters."""
+        script = 'function(a, b) { return a + b; }'
+        assert is_script_already_function(script) is True
+
+    def test_is_script_already_function_not_function(self):
+        """Test detection when script is not a function."""
+        script = 'console.log("test"); return "value";'
+        assert is_script_already_function(script) is False
+
+    def test_is_script_already_function_with_whitespace(self):
+        """Test detection with leading/trailing whitespace."""
+        script = '   function() { test(); }   '
+        assert is_script_already_function(script) is True
+
+    def test_has_return_outside_function_simple_return(self):
+        """Test detection of simple return statement."""
+        script = 'return document.title;'
+        assert has_return_outside_function(script) is True
+
+    def test_has_return_outside_function_no_return(self):
+        """Test when script has no return statement."""
+        script = 'console.log("test"); var x = 5;'
+        assert has_return_outside_function(script) is False
+
+    def test_has_return_outside_function_return_inside_function(self):
+        """Test when return is inside a function."""
+        script = '''
+        function getTitle() {
+            return document.title;
+        }
+        getTitle();
+        '''
+        assert has_return_outside_function(script) is False
+
+    def test_has_return_outside_function_mixed_returns(self):
+        """Test with both inside and outside returns."""
+        script = '''
+        function inner() {
+            return "inner";
+        }
+        return "outer";
+        '''
+        assert has_return_outside_function(script) is True
+
+    def test_has_return_outside_function_already_function(self):
+        """Test when script is already a function."""
+        script = 'function() { return "test"; }'
+        assert has_return_outside_function(script) is False
+
+    def test_has_return_outside_function_with_comments(self):
+        """Test with comments containing 'return'."""
+        script = '''
+        // This comment has return in it
+        var message = "This string has return in it";
+        /* This block comment also has return */
+        return "actual return";
+        '''
+        assert has_return_outside_function(script) is True
+
+    def test_has_return_outside_function_nested_braces(self):
+        """Test with nested braces and complex structure."""
+        script = '''
+        if (true) {
+            var obj = {
+                method: function() {
+                    return "nested";
+                }
+            };
+        }
+        return "outside";
+        '''
+        assert has_return_outside_function(script) is True
+
+    def test_has_return_outside_function_arrow_function(self):
+        """Test with arrow function containing return."""
+        script = '''
+        var func = () => {
+            return "arrow";
+        };
+        func();
+        '''
+        assert has_return_outside_function(script) is False
 

@@ -16,6 +16,7 @@ from pydoll.exceptions import (
     InvalidFileExtension,
     WaitElementTimeout,
     NetworkEventsNotEnabled,
+    InvalidScriptWithElement,
 )
 
 @pytest_asyncio.fixture
@@ -507,11 +508,11 @@ class TestTabDialogHandling:
 
 
 class TestTabScriptExecution:
-    """Test Tab JavaScript execution methods."""
+    """Test Tab script execution methods."""
 
     @pytest.mark.asyncio
     async def test_execute_script_simple(self, tab):
-        """Test executing simple JavaScript."""
+        """Test execute_script with simple JavaScript."""
         tab._connection_handler.execute_command.return_value = {
             'result': {'result': {'value': 'Test Result'}}
         }
@@ -522,17 +523,130 @@ class TestTabScriptExecution:
 
     @pytest.mark.asyncio
     async def test_execute_script_with_element(self, tab):
-        """Test executing JavaScript with element context."""
-        mock_element = WebElement(
-            object_id='test-element-id',
-            connection_handler=tab._connection_handler
-        )
+        """Test execute_script with element context."""
+        # Mock element
+        element = MagicMock()
+        element._object_id = 'test-object-id'
         
         tab._connection_handler.execute_command.return_value = {
             'result': {'result': {'value': 'Element clicked'}}
         }
         
-        result = await tab.execute_script('this.click()', mock_element)
+        result = await tab.execute_script('argument.click()', element)
+        
+        tab._connection_handler.execute_command.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_execute_script_argument_without_element_raises_exception(self, tab):
+        """Test execute_script raises exception when script contains 'argument' but no element provided."""
+        with pytest.raises(InvalidScriptWithElement) as exc_info:
+            await tab.execute_script('argument.click()')
+        
+        assert str(exc_info.value) == 'Script contains "argument" but no element was provided'
+        tab._connection_handler.execute_command.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_execute_script_with_element_already_function(self, tab):
+        """Test execute_script with element when script is already a function."""
+        element = MagicMock()
+        element._object_id = 'test-object-id'
+        
+        tab._connection_handler.execute_command.return_value = {
+            'result': {'result': {'value': 'Function executed'}}
+        }
+        
+        # Script already wrapped in function
+        script = 'function() { argument.click(); return "done"; }'
+        result = await tab.execute_script(script, element)
+        
+        tab._connection_handler.execute_command.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_execute_script_with_element_arrow_function(self, tab):
+        """Test execute_script with element when script is already an arrow function."""
+        element = MagicMock()
+        element._object_id = 'test-object-id'
+        
+        tab._connection_handler.execute_command.return_value = {
+            'result': {'result': {'value': 'Arrow function executed'}}
+        }
+        
+        # Script already wrapped in arrow function
+        script = '() => { argument.click(); return "done"; }'
+        result = await tab.execute_script(script, element)
+        
+        tab._connection_handler.execute_command.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_execute_script_return_outside_function(self, tab):
+        """Test execute_script wraps return statement outside function."""
+        tab._connection_handler.execute_command.return_value = {
+            'result': {'result': {'value': 'Wrapped result'}}
+        }
+        
+        # Script with return outside function should be wrapped
+        result = await tab.execute_script('return document.title')
+        
+        tab._connection_handler.execute_command.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_execute_script_return_inside_function(self, tab):
+        """Test execute_script doesn't wrap when return is inside function."""
+        tab._connection_handler.execute_command.return_value = {
+            'result': {'result': {'value': 'Function result'}}
+        }
+        
+        # Script with return inside function should not be wrapped
+        script = '''
+        function getTitle() {
+            return document.title;
+        }
+        getTitle();
+        '''
+        result = await tab.execute_script(script)
+        
+        tab._connection_handler.execute_command.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_execute_script_no_return_statement(self, tab):
+        """Test execute_script without return statement."""
+        tab._connection_handler.execute_command.return_value = {
+            'result': {'result': {'value': None}}
+        }
+        
+        # Script without return should not be wrapped
+        result = await tab.execute_script('console.log("Hello World")')
+        
+        tab._connection_handler.execute_command.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_execute_script_with_comments_and_strings(self, tab):
+        """Test execute_script handles comments and strings correctly."""
+        tab._connection_handler.execute_command.return_value = {
+            'result': {'result': {'value': 'Test with comments'}}
+        }
+        
+        # Script with comments and strings containing 'return'
+        script = '''
+        // This comment has return in it
+        var message = "This string has return in it";
+        /* This block comment also has return */
+        return "actual return";
+        '''
+        result = await tab.execute_script(script)
+        
+        tab._connection_handler.execute_command.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_execute_script_already_wrapped_function(self, tab):
+        """Test execute_script with already wrapped function."""
+        tab._connection_handler.execute_command.return_value = {
+            'result': {'result': {'value': 'Already wrapped'}}
+        }
+        
+        # Script already wrapped in function should not be wrapped again
+        script = 'function() { console.log("test"); return "done"; }'
+        result = await tab.execute_script(script)
         
         tab._connection_handler.execute_command.assert_called_once()
 
