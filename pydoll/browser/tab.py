@@ -12,6 +12,7 @@ from typing import (
     TypeAlias,
     Union,
     cast,
+    overload,
 )
 
 import aiofiles
@@ -32,6 +33,7 @@ from pydoll.exceptions import (
     IFrameNotFound,
     InvalidFileExtension,
     InvalidIFrame,
+    InvalidScriptWithElement,
     NetworkEventsNotEnabled,
     NoDialogPresent,
     NotAnIFrame,
@@ -43,9 +45,13 @@ from pydoll.protocol.network.responses import GetResponseBodyResponse
 from pydoll.protocol.network.types import Cookie, CookieParam, NetworkLog
 from pydoll.protocol.page.events import PageEvent
 from pydoll.protocol.page.responses import CaptureScreenshotResponse, PrintToPDFResponse
-from pydoll.protocol.runtime.responses import EvaluateResponse
+from pydoll.protocol.runtime.responses import CallFunctionOnResponse, EvaluateResponse
 from pydoll.protocol.storage.responses import GetCookiesResponse
-from pydoll.utils import decode_base64_to_bytes
+from pydoll.utils import (
+    decode_base64_to_bytes,
+    has_return_outside_function,
+    is_script_already_function,
+)
 
 if TYPE_CHECKING:
     from pydoll.browser.chromium.base import Browser
@@ -554,7 +560,15 @@ class Tab(FindElementsMixin):  # noqa: PLR0904
             PageCommands.handle_javascript_dialog(accept=accept, prompt_text=prompt_text)
         )
 
-    async def execute_script(self, script: str, element: Optional[WebElement] = None):
+    @overload
+    async def execute_script(self, script: str) -> EvaluateResponse: ...
+
+    @overload
+    async def execute_script(self, script: str, element: WebElement) -> CallFunctionOnResponse: ...
+
+    async def execute_script(
+        self, script: str, element: Optional[WebElement] = None
+    ) -> Union[EvaluateResponse, CallFunctionOnResponse]:
         """
         Execute JavaScript in page context.
 
@@ -565,17 +579,17 @@ class Tab(FindElementsMixin):  # noqa: PLR0904
         Examples:
             await page.execute_script('argument.click()', element)
             await page.execute_script('argument.value = "Hello"', element)
+
+        Raises:
+            InvalidScriptWithElement: If script contains 'argument' but no element is provided.
         """
+        if 'argument' in script and element is None:
+            raise InvalidScriptWithElement('Script contains "argument" but no element was provided')
+
         if element:
-            script = script.replace('argument', 'this')
-            script = f'function(){{ {script} }}'
-            object_id = element._object_id
-            command = RuntimeCommands.call_function_on(
-                object_id=object_id, function_declaration=script, return_by_value=True
-            )
-        else:
-            command = RuntimeCommands.evaluate(expression=script)
-        return await self._execute_command(command)
+            return await self._execute_script_with_element(script, element)
+
+        return await self._execute_script_without_element(script)
 
     @asynccontextmanager
     async def expect_file_chooser(
@@ -692,6 +706,46 @@ class Tab(FindElementsMixin):  # noqa: PLR0904
         return await self._connection_handler.register_callback(
             event_name, function_to_register, temporary
         )
+
+    async def _execute_script_with_element(self, script: str, element: WebElement):
+        """
+        Execute script with element context.
+
+        Args:
+            script: JavaScript code to execute.
+            element: Element context (use 'argument' in script to reference).
+
+        Returns:
+            The result of the script execution.
+        """
+        if 'argument' not in script:
+            raise InvalidScriptWithElement('Script does not contain "argument"')
+
+        script = script.replace('argument', 'this')
+
+        if not is_script_already_function(script):
+            script = f'function(){{ {script} }}'
+
+        command = RuntimeCommands.call_function_on(
+            object_id=element._object_id, function_declaration=script, return_by_value=True
+        )
+        return await self._execute_command(command)
+
+    async def _execute_script_without_element(self, script: str):
+        """
+        Execute script without element context.
+
+        Args:
+            script: JavaScript code to execute.
+
+        Returns:
+            The result of the script execution.
+        """
+        if has_return_outside_function(script):
+            script = f'(function(){{ {script} }})()'
+
+        command = RuntimeCommands.evaluate(expression=script)
+        return await self._execute_command(command)
 
     async def _refresh_if_url_not_changed(self, url: str) -> bool:
         """Refresh page if URL hasn't changed."""
