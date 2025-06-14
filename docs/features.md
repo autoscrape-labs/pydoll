@@ -487,7 +487,7 @@ async def iframe_interaction():
         
         # You can use all Tab methods on the frame
         form_input = await frame.find(id='captcha-input')
-        await form_input.type('verification-code')
+        await form_input.type_text('verification-code')
         
         # Find elements by various methods
         links = await frame.find(tag_name='a', find_all=True)
