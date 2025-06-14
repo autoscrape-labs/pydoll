@@ -354,6 +354,187 @@ asyncio.run(event_monitoring_example())
 
 The event system makes Pydoll uniquely powerful for monitoring API requests and responses, creating reactive automations, debugging complex web applications, and building comprehensive web monitoring tools.
 
+## Network Analysis and Response Extraction
+
+Pydoll provides powerful methods for analyzing network traffic and extracting response data from web applications. These capabilities are essential for API monitoring, data extraction, and debugging network-related issues.
+
+### Network Logs Analysis
+
+The `get_network_logs()` method allows you to retrieve and analyze all network requests made by a page:
+
+```python
+import asyncio
+from pydoll.browser.chromium import Chrome
+
+async def network_analysis_example():
+    async with Chrome() as browser:
+        tab = await browser.start()
+        
+        # Enable network monitoring
+        await tab.enable_network_events()
+        
+        # Navigate to a page with API calls
+        await tab.go_to('https://example.com/dashboard')
+        
+        # Wait for page to load and make requests
+        await asyncio.sleep(3)
+        
+        # Get all network logs
+        all_logs = await tab.get_network_logs()
+        print(f"Total network requests: {len(all_logs)}")
+        
+        # Filter logs for API requests only
+        api_logs = await tab.get_network_logs(filter='api')
+        print(f"API requests: {len(api_logs)}")
+        
+        # Filter logs for specific domain
+        domain_logs = await tab.get_network_logs(filter='example.com')
+        print(f"Requests to example.com: {len(domain_logs)}")
+        
+        # Analyze request patterns
+        for log in api_logs:
+            request = log['params'].get('request', {})
+            url = request.get('url', 'Unknown')
+            method = request.get('method', 'Unknown')
+            print(f"📡 {method} {url}")
+
+asyncio.run(network_analysis_example())
+```
+
+### Response Body Extraction
+
+The `get_network_response_body()` method enables you to extract the actual response content from network requests:
+
+```python
+import asyncio
+import json
+from functools import partial
+from pydoll.browser.chromium import Chrome
+from pydoll.protocol.network.events import NetworkEvent
+
+async def response_extraction_example():
+    async with Chrome() as browser:
+        tab = await browser.start()
+        
+        # Storage for API responses
+        api_responses = {}
+        
+        async def capture_api_responses(tab, event):
+            """Capture API response bodies"""
+            request_id = event['params']['requestId']
+            response = event['params']['response']
+            url = response['url']
+            
+            # Only capture successful API responses
+            if '/api/' in url and response['status'] == 200:
+                try:
+                    # Extract the response body
+                    body = await tab.get_network_response_body(request_id)
+                    
+                    # Try to parse as JSON
+                    try:
+                        data = json.loads(body)
+                        api_responses[url] = data
+                        print(f"✅ Captured API response from: {url}")
+                        print(f"Data keys: {list(data.keys()) if isinstance(data, dict) else 'Non-dict response'}")
+                    except json.JSONDecodeError:
+                        # Handle non-JSON responses
+                        api_responses[url] = body
+                        print(f"📄 Captured text response from: {url} ({len(body)} chars)")
+                        
+                except Exception as e:
+                    print(f"❌ Failed to get response body for {url}: {e}")
+        
+        # Enable network monitoring and register callback
+        await tab.enable_network_events()
+        await tab.on(NetworkEvent.RESPONSE_RECEIVED, partial(capture_api_responses, tab))
+        
+        # Navigate to a page with API calls
+        await tab.go_to('https://jsonplaceholder.typicode.com')
+        
+        # Trigger some API calls by interacting with the page
+        await asyncio.sleep(5)
+        
+        # Display captured responses
+        print(f"\n📊 Analysis Results:")
+        print(f"Captured {len(api_responses)} API responses")
+        
+        for url, data in api_responses.items():
+            if isinstance(data, dict):
+                print(f"🔗 {url}: {len(data)} fields")
+            else:
+                print(f"🔗 {url}: {len(str(data))} characters")
+        
+        return api_responses
+
+asyncio.run(response_extraction_example())
+```
+
+### Advanced Network Monitoring
+
+Combine both methods for comprehensive network analysis:
+
+```python
+import asyncio
+from pydoll.browser.chromium import Chrome
+
+async def comprehensive_network_monitoring():
+    async with Chrome() as browser:
+        tab = await browser.start()
+        
+        # Enable network monitoring
+        await tab.enable_network_events()
+        
+        # Navigate to a complex web application
+        await tab.go_to('https://example.com/app')
+        
+        # Wait for initial page load and API calls
+        await asyncio.sleep(5)
+        
+        # Get comprehensive network analysis
+        all_logs = await tab.get_network_logs()
+        api_logs = await tab.get_network_logs(filter='api')
+        static_logs = await tab.get_network_logs(filter='.js')
+        
+        print(f"📈 Network Traffic Summary:")
+        print(f"   Total requests: {len(all_logs)}")
+        print(f"   API calls: {len(api_logs)}")
+        print(f"   JavaScript files: {len(static_logs)}")
+        
+        # Analyze request types
+        request_types = {}
+        for log in all_logs:
+            request = log['params'].get('request', {})
+            url = request.get('url', '')
+            
+            if '/api/' in url:
+                request_types['API'] = request_types.get('API', 0) + 1
+            elif any(ext in url for ext in ['.js', '.css', '.png', '.jpg']):
+                request_types['Static'] = request_types.get('Static', 0) + 1
+            else:
+                request_types['Other'] = request_types.get('Other', 0) + 1
+        
+        print(f"📊 Request breakdown: {request_types}")
+        
+        # Show API endpoints
+        print(f"\n🔗 API Endpoints Called:")
+        for log in api_logs[:10]:  # Show first 10
+            request = log['params'].get('request', {})
+            method = request.get('method', 'GET')
+            url = request.get('url', 'Unknown')
+            print(f"   {method} {url}")
+
+asyncio.run(comprehensive_network_monitoring())
+```
+
+These network analysis capabilities make Pydoll ideal for:
+
+- **API Testing**: Monitor and validate API responses
+- **Performance Analysis**: Track request timing and sizes
+- **Data Extraction**: Extract dynamic content loaded via AJAX
+- **Debugging**: Identify failed requests and network issues
+- **Security Testing**: Analyze request/response patterns
+
 ## File Upload Support
 
 Seamlessly handle file uploads in your automation:
