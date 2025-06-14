@@ -233,3 +233,9 @@ class IFrameNotFound(PydollException):
     """Raised when an iframe is not found."""
 
     message = 'The iframe was not found'
+
+
+class NetworkEventsNotEnabled(PydollException):
+    """Raised when network events are not enabled."""
+
+    message = 'Network events not enabled'
