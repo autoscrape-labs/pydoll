@@ -913,3 +913,63 @@ class DialogType(str, Enum):
     CONFIRM = 'confirm'
     PROMPT = 'prompt'
     BEFORE_UNLOAD = 'beforeunload'
+
+
+class InitiatorType(str, Enum):
+    PARSER = 'parser'
+    SCRIPT = 'script'
+    PRELOAD = 'preload'
+    SIGNED_EXCHANGE = 'SignedExchange'
+    PREFLIGHT = 'preflight'
+    OTHER = 'other'
+
+
+class NetworkServiceWorkerRouterSourceType(str, Enum):
+    """Network service worker router source types."""
+
+    NETWORK = 'network'
+    CACHE = 'cache'
+    FETCH_EVENT = 'fetch-event'
+    RACE_NETWORK = 'race-network'
+    RACE_NETWORK_AND_FETCH_HANDLER = 'race-network-and-fetch-handler'
+    RACE_NETWORK_AND_CACHE = 'race-network-and-cache'
+
+
+class NetworkServiceWorkerResponseSource(str, Enum):
+    """Network service worker response source types."""
+
+    CACHE_STORAGE = 'cache-storage'
+    HTTP_CACHE = 'http-cache'
+    FALLBACK_CODE = 'fallback-code'
+    NETWORK = 'network'
+
+
+class AlternateProtocolUsage(str, Enum):
+    """Alternate protocol usage types."""
+
+    ALTERNATIVE_JOB_WON_WITHOUT_RACE = 'alternativeJobWonWithoutRace'
+    ALTERNATIVE_JOB_WON_RACE = 'alternativeJobWonRace'
+    MAIN_JOB_WON_RACE = 'mainJobWonRace'
+    MAPPING_MISSING = 'mappingMissing'
+    BROKEN = 'broken'
+    DNS_ALPN_H3_JOB_WON_WITHOUT_RACE = 'dnsAlpnH3JobWonWithoutRace'
+    DNS_ALPN_H3_JOB_WON_RACE = 'dnsAlpnH3JobWonRace'
+    UNSPECIFIED_REASON = 'unspecifiedReason'
+
+
+class SecurityState(str, Enum):
+    """Security state types."""
+
+    UNKNOWN = 'unknown'
+    NEUTRAL = 'neutral'
+    INSECURE = 'insecure'
+    INFO = 'info'
+    INSECURE_BROKEN = 'insecure-broken'
+
+
+class CertificateTransparencyCompliance(str, Enum):
+    """Certificate transparency compliance types."""
+
+    UNKNOWN = 'unknown'
+    NOT_COMPLIANT = 'not-compliant'
+    COMPLIANT = 'compliant'
