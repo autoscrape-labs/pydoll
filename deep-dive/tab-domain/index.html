@@ -726,6 +726,57 @@
   
 </li>
         
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#network-analysis-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Network Analysis Methods
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Network Analysis Methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#network-logs-retrieval" class="md-nav__link">
+    <span class="md-ellipsis">
+      Network Logs Retrieval
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#response-body-extraction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response Body Extraction
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#practical-network-analysis-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Practical Network Analysis Example
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-cases-for-network-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      Use Cases for Network Analysis
+    </span>
+  </a>
+  
+</li>
+        
           <li class="md-nav__item">
   <a href="#file-upload-handling" class="md-nav__link">
     <span class="md-ellipsis">
@@ -2106,6 +2157,57 @@
   
 </li>
         
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#network-analysis-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      Network Analysis Methods
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Network Analysis Methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#network-logs-retrieval" class="md-nav__link">
+    <span class="md-ellipsis">
+      Network Logs Retrieval
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#response-body-extraction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response Body Extraction
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#practical-network-analysis-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Practical Network Analysis Example
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-cases-for-network-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      Use Cases for Network Analysis
+    </span>
+  </a>
+  
+</li>
+        
           <li class="md-nav__item">
   <a href="#file-upload-handling" class="md-nav__link">
     <span class="md-ellipsis">
@@ -2656,78 +2758,286 @@
 </span><span id="__span-11-12"><a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="c1"># Trigger an alert dialog</span>
 </span><span id="__span-11-13"><a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">execute_script</span><span class="p">(</span><span class="s2">&quot;alert(&#39;This is a test alert&#39;)&quot;</span><span class="p">)</span>
 </span></code></pre></div>
+<h2 id="network-analysis-methods">Network Analysis Methods</h2>
+<p>The Tab domain provides specialized methods for analyzing network traffic and extracting response data. These methods require network events to be enabled first.</p>
+<h3 id="network-logs-retrieval">Network Logs Retrieval</h3>
+<p>The <code>get_network_logs()</code> method provides access to all captured network requests:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># Enable network monitoring</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">enable_network_events</span><span class="p">()</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="c1"># Navigate to trigger network requests</span>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">&#39;https://example.com/api-heavy-page&#39;</span><span class="p">)</span>
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>
+</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="c1"># Get all network logs</span>
+</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="n">all_logs</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">get_network_logs</span><span class="p">()</span>
+</span><span id="__span-12-9"><a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Captured </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">all_logs</span><span class="p">)</span><span class="si">}</span><span class="s2"> network requests&quot;</span><span class="p">)</span>
+</span><span id="__span-12-10"><a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>
+</span><span id="__span-12-11"><a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a><span class="c1"># Filter logs by URL content</span>
+</span><span id="__span-12-12"><a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a><span class="n">api_logs</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">get_network_logs</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="s1">&#39;api&#39;</span><span class="p">)</span>
+</span><span id="__span-12-13"><a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a><span class="n">static_logs</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">get_network_logs</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="s1">&#39;.js&#39;</span><span class="p">)</span>
+</span><span id="__span-12-14"><a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a><span class="n">domain_logs</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">get_network_logs</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="s1">&#39;example.com&#39;</span><span class="p">)</span>
+</span><span id="__span-12-15"><a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a>
+</span><span id="__span-12-16"><a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;API requests: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">api_logs</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-12-17"><a id="__codelineno-12-17" name="__codelineno-12-17" href="#__codelineno-12-17"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;JavaScript files: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">static_logs</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-12-18"><a id="__codelineno-12-18" name="__codelineno-12-18" href="#__codelineno-12-18"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Domain requests: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">domain_logs</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span></code></pre></div>
+<h3 id="response-body-extraction">Response Body Extraction</h3>
+<p>The <code>get_network_response_body()</code> method allows extraction of actual response content:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.protocol.network.events</span><span class="w"> </span><span class="kn">import</span> <span class="n">NetworkEvent</span>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="c1"># Storage for captured responses</span>
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="n">captured_responses</span> <span class="o">=</span> <span class="p">{}</span>
+</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>
+</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">capture_api_responses</span><span class="p">(</span><span class="n">tab</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+</span><span id="__span-13-8"><a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Capture response bodies from API calls&quot;&quot;&quot;</span>
+</span><span id="__span-13-9"><a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a>    <span class="n">request_id</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">][</span><span class="s1">&#39;requestId&#39;</span><span class="p">]</span>
+</span><span id="__span-13-10"><a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a>    <span class="n">response</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">][</span><span class="s1">&#39;response&#39;</span><span class="p">]</span>
+</span><span id="__span-13-11"><a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a>    <span class="n">url</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">]</span>
+</span><span id="__span-13-12"><a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a>
+</span><span id="__span-13-13"><a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a>    <span class="c1"># Only capture API responses</span>
+</span><span id="__span-13-14"><a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a>    <span class="k">if</span> <span class="s1">&#39;/api/&#39;</span> <span class="ow">in</span> <span class="n">url</span> <span class="ow">and</span> <span class="n">response</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+</span><span id="__span-13-15"><a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a>        <span class="k">try</span><span class="p">:</span>
+</span><span id="__span-13-16"><a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a>            <span class="c1"># Extract the response body</span>
+</span><span id="__span-13-17"><a id="__codelineno-13-17" name="__codelineno-13-17" href="#__codelineno-13-17"></a>            <span class="n">body</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">get_network_response_body</span><span class="p">(</span><span class="n">request_id</span><span class="p">)</span>
+</span><span id="__span-13-18"><a id="__codelineno-13-18" name="__codelineno-13-18" href="#__codelineno-13-18"></a>            <span class="n">captured_responses</span><span class="p">[</span><span class="n">url</span><span class="p">]</span> <span class="o">=</span> <span class="n">body</span>
+</span><span id="__span-13-19"><a id="__codelineno-13-19" name="__codelineno-13-19" href="#__codelineno-13-19"></a>            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Captured response from: </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-13-20"><a id="__codelineno-13-20" name="__codelineno-13-20" href="#__codelineno-13-20"></a>        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+</span><span id="__span-13-21"><a id="__codelineno-13-21" name="__codelineno-13-21" href="#__codelineno-13-21"></a>            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to capture response: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-13-22"><a id="__codelineno-13-22" name="__codelineno-13-22" href="#__codelineno-13-22"></a>
+</span><span id="__span-13-23"><a id="__codelineno-13-23" name="__codelineno-13-23" href="#__codelineno-13-23"></a><span class="c1"># Enable network monitoring and register callback</span>
+</span><span id="__span-13-24"><a id="__codelineno-13-24" name="__codelineno-13-24" href="#__codelineno-13-24"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">enable_network_events</span><span class="p">()</span>
+</span><span id="__span-13-25"><a id="__codelineno-13-25" name="__codelineno-13-25" href="#__codelineno-13-25"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">NetworkEvent</span><span class="o">.</span><span class="n">RESPONSE_RECEIVED</span><span class="p">,</span> <span class="n">partial</span><span class="p">(</span><span class="n">capture_api_responses</span><span class="p">,</span> <span class="n">tab</span><span class="p">))</span>
+</span><span id="__span-13-26"><a id="__codelineno-13-26" name="__codelineno-13-26" href="#__codelineno-13-26"></a>
+</span><span id="__span-13-27"><a id="__codelineno-13-27" name="__codelineno-13-27" href="#__codelineno-13-27"></a><span class="c1"># Navigate to trigger API calls</span>
+</span><span id="__span-13-28"><a id="__codelineno-13-28" name="__codelineno-13-28" href="#__codelineno-13-28"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">&#39;https://example.com/dashboard&#39;</span><span class="p">)</span>
+</span><span id="__span-13-29"><a id="__codelineno-13-29" name="__codelineno-13-29" href="#__codelineno-13-29"></a><span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>  <span class="c1"># Wait for API calls</span>
+</span><span id="__span-13-30"><a id="__codelineno-13-30" name="__codelineno-13-30" href="#__codelineno-13-30"></a>
+</span><span id="__span-13-31"><a id="__codelineno-13-31" name="__codelineno-13-31" href="#__codelineno-13-31"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Captured </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">captured_responses</span><span class="p">)</span><span class="si">}</span><span class="s2"> API responses&quot;</span><span class="p">)</span>
+</span></code></pre></div>
+<h3 id="practical-network-analysis-example">Practical Network Analysis Example</h3>
+<p>Here's a comprehensive example combining both methods for thorough network analysis:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.chromium</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.protocol.network.events</span><span class="w"> </span><span class="kn">import</span> <span class="n">NetworkEvent</span>
+</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>
+</span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">comprehensive_network_analysis</span><span class="p">():</span>
+</span><span id="__span-14-8"><a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a>    <span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">()</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
+</span><span id="__span-14-9"><a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a>        <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</span><span id="__span-14-10"><a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a>
+</span><span id="__span-14-11"><a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a>        <span class="c1"># Storage for analysis results</span>
+</span><span id="__span-14-12"><a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a>        <span class="n">analysis_results</span> <span class="o">=</span> <span class="p">{</span>
+</span><span id="__span-14-13"><a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a>            <span class="s1">&#39;api_responses&#39;</span><span class="p">:</span> <span class="p">{},</span>
+</span><span id="__span-14-14"><a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a>            <span class="s1">&#39;failed_requests&#39;</span><span class="p">:</span> <span class="p">[],</span>
+</span><span id="__span-14-15"><a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a>            <span class="s1">&#39;request_summary&#39;</span><span class="p">:</span> <span class="p">{}</span>
+</span><span id="__span-14-16"><a id="__codelineno-14-16" name="__codelineno-14-16" href="#__codelineno-14-16"></a>        <span class="p">}</span>
+</span><span id="__span-14-17"><a id="__codelineno-14-17" name="__codelineno-14-17" href="#__codelineno-14-17"></a>
+</span><span id="__span-14-18"><a id="__codelineno-14-18" name="__codelineno-14-18" href="#__codelineno-14-18"></a>        <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">analyze_responses</span><span class="p">(</span><span class="n">tab</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+</span><span id="__span-14-19"><a id="__codelineno-14-19" name="__codelineno-14-19" href="#__codelineno-14-19"></a><span class="w">            </span><span class="sd">&quot;&quot;&quot;Analyze network responses&quot;&quot;&quot;</span>
+</span><span id="__span-14-20"><a id="__codelineno-14-20" name="__codelineno-14-20" href="#__codelineno-14-20"></a>            <span class="n">request_id</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">][</span><span class="s1">&#39;requestId&#39;</span><span class="p">]</span>
+</span><span id="__span-14-21"><a id="__codelineno-14-21" name="__codelineno-14-21" href="#__codelineno-14-21"></a>            <span class="n">response</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">][</span><span class="s1">&#39;response&#39;</span><span class="p">]</span>
+</span><span id="__span-14-22"><a id="__codelineno-14-22" name="__codelineno-14-22" href="#__codelineno-14-22"></a>            <span class="n">url</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">]</span>
+</span><span id="__span-14-23"><a id="__codelineno-14-23" name="__codelineno-14-23" href="#__codelineno-14-23"></a>            <span class="n">status</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">]</span>
+</span><span id="__span-14-24"><a id="__codelineno-14-24" name="__codelineno-14-24" href="#__codelineno-14-24"></a>
+</span><span id="__span-14-25"><a id="__codelineno-14-25" name="__codelineno-14-25" href="#__codelineno-14-25"></a>            <span class="c1"># Track failed requests</span>
+</span><span id="__span-14-26"><a id="__codelineno-14-26" name="__codelineno-14-26" href="#__codelineno-14-26"></a>            <span class="k">if</span> <span class="n">status</span> <span class="o">&gt;=</span> <span class="mi">400</span><span class="p">:</span>
+</span><span id="__span-14-27"><a id="__codelineno-14-27" name="__codelineno-14-27" href="#__codelineno-14-27"></a>                <span class="n">analysis_results</span><span class="p">[</span><span class="s1">&#39;failed_requests&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+</span><span id="__span-14-28"><a id="__codelineno-14-28" name="__codelineno-14-28" href="#__codelineno-14-28"></a>                    <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="n">url</span><span class="p">,</span>
+</span><span id="__span-14-29"><a id="__codelineno-14-29" name="__codelineno-14-29" href="#__codelineno-14-29"></a>                    <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="n">status</span><span class="p">,</span>
+</span><span id="__span-14-30"><a id="__codelineno-14-30" name="__codelineno-14-30" href="#__codelineno-14-30"></a>                    <span class="s1">&#39;request_id&#39;</span><span class="p">:</span> <span class="n">request_id</span>
+</span><span id="__span-14-31"><a id="__codelineno-14-31" name="__codelineno-14-31" href="#__codelineno-14-31"></a>                <span class="p">})</span>
+</span><span id="__span-14-32"><a id="__codelineno-14-32" name="__codelineno-14-32" href="#__codelineno-14-32"></a>                <span class="k">return</span>
+</span><span id="__span-14-33"><a id="__codelineno-14-33" name="__codelineno-14-33" href="#__codelineno-14-33"></a>
+</span><span id="__span-14-34"><a id="__codelineno-14-34" name="__codelineno-14-34" href="#__codelineno-14-34"></a>            <span class="c1"># Capture successful API responses</span>
+</span><span id="__span-14-35"><a id="__codelineno-14-35" name="__codelineno-14-35" href="#__codelineno-14-35"></a>            <span class="k">if</span> <span class="s1">&#39;/api/&#39;</span> <span class="ow">in</span> <span class="n">url</span> <span class="ow">and</span> <span class="n">status</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+</span><span id="__span-14-36"><a id="__codelineno-14-36" name="__codelineno-14-36" href="#__codelineno-14-36"></a>                <span class="k">try</span><span class="p">:</span>
+</span><span id="__span-14-37"><a id="__codelineno-14-37" name="__codelineno-14-37" href="#__codelineno-14-37"></a>                    <span class="n">body</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">get_network_response_body</span><span class="p">(</span><span class="n">request_id</span><span class="p">)</span>
+</span><span id="__span-14-38"><a id="__codelineno-14-38" name="__codelineno-14-38" href="#__codelineno-14-38"></a>
+</span><span id="__span-14-39"><a id="__codelineno-14-39" name="__codelineno-14-39" href="#__codelineno-14-39"></a>                    <span class="c1"># Try to parse JSON responses</span>
+</span><span id="__span-14-40"><a id="__codelineno-14-40" name="__codelineno-14-40" href="#__codelineno-14-40"></a>                    <span class="k">try</span><span class="p">:</span>
+</span><span id="__span-14-41"><a id="__codelineno-14-41" name="__codelineno-14-41" href="#__codelineno-14-41"></a>                        <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
+</span><span id="__span-14-42"><a id="__codelineno-14-42" name="__codelineno-14-42" href="#__codelineno-14-42"></a>                        <span class="n">analysis_results</span><span class="p">[</span><span class="s1">&#39;api_responses&#39;</span><span class="p">][</span><span class="n">url</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+</span><span id="__span-14-43"><a id="__codelineno-14-43" name="__codelineno-14-43" href="#__codelineno-14-43"></a>                            <span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="n">data</span><span class="p">,</span>
+</span><span id="__span-14-44"><a id="__codelineno-14-44" name="__codelineno-14-44" href="#__codelineno-14-44"></a>                            <span class="s1">&#39;size&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">body</span><span class="p">),</span>
+</span><span id="__span-14-45"><a id="__codelineno-14-45" name="__codelineno-14-45" href="#__codelineno-14-45"></a>                            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;json&#39;</span>
+</span><span id="__span-14-46"><a id="__codelineno-14-46" name="__codelineno-14-46" href="#__codelineno-14-46"></a>                        <span class="p">}</span>
+</span><span id="__span-14-47"><a id="__codelineno-14-47" name="__codelineno-14-47" href="#__codelineno-14-47"></a>                    <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">:</span>
+</span><span id="__span-14-48"><a id="__codelineno-14-48" name="__codelineno-14-48" href="#__codelineno-14-48"></a>                        <span class="n">analysis_results</span><span class="p">[</span><span class="s1">&#39;api_responses&#39;</span><span class="p">][</span><span class="n">url</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+</span><span id="__span-14-49"><a id="__codelineno-14-49" name="__codelineno-14-49" href="#__codelineno-14-49"></a>                            <span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="n">body</span><span class="p">,</span>
+</span><span id="__span-14-50"><a id="__codelineno-14-50" name="__codelineno-14-50" href="#__codelineno-14-50"></a>                            <span class="s1">&#39;size&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">body</span><span class="p">),</span>
+</span><span id="__span-14-51"><a id="__codelineno-14-51" name="__codelineno-14-51" href="#__codelineno-14-51"></a>                            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;text&#39;</span>
+</span><span id="__span-14-52"><a id="__codelineno-14-52" name="__codelineno-14-52" href="#__codelineno-14-52"></a>                        <span class="p">}</span>
+</span><span id="__span-14-53"><a id="__codelineno-14-53" name="__codelineno-14-53" href="#__codelineno-14-53"></a>
+</span><span id="__span-14-54"><a id="__codelineno-14-54" name="__codelineno-14-54" href="#__codelineno-14-54"></a>                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+</span><span id="__span-14-55"><a id="__codelineno-14-55" name="__codelineno-14-55" href="#__codelineno-14-55"></a>                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to capture response from </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-14-56"><a id="__codelineno-14-56" name="__codelineno-14-56" href="#__codelineno-14-56"></a>
+</span><span id="__span-14-57"><a id="__codelineno-14-57" name="__codelineno-14-57" href="#__codelineno-14-57"></a>        <span class="c1"># Enable monitoring and register callback</span>
+</span><span id="__span-14-58"><a id="__codelineno-14-58" name="__codelineno-14-58" href="#__codelineno-14-58"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">enable_network_events</span><span class="p">()</span>
+</span><span id="__span-14-59"><a id="__codelineno-14-59" name="__codelineno-14-59" href="#__codelineno-14-59"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">NetworkEvent</span><span class="o">.</span><span class="n">RESPONSE_RECEIVED</span><span class="p">,</span> <span class="n">partial</span><span class="p">(</span><span class="n">analyze_responses</span><span class="p">,</span> <span class="n">tab</span><span class="p">))</span>
+</span><span id="__span-14-60"><a id="__codelineno-14-60" name="__codelineno-14-60" href="#__codelineno-14-60"></a>
+</span><span id="__span-14-61"><a id="__codelineno-14-61" name="__codelineno-14-61" href="#__codelineno-14-61"></a>        <span class="c1"># Navigate and perform actions</span>
+</span><span id="__span-14-62"><a id="__codelineno-14-62" name="__codelineno-14-62" href="#__codelineno-14-62"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">&#39;https://example.com/complex-app&#39;</span><span class="p">)</span>
+</span><span id="__span-14-63"><a id="__codelineno-14-63" name="__codelineno-14-63" href="#__codelineno-14-63"></a>        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  <span class="c1"># Wait for network activity</span>
+</span><span id="__span-14-64"><a id="__codelineno-14-64" name="__codelineno-14-64" href="#__codelineno-14-64"></a>
+</span><span id="__span-14-65"><a id="__codelineno-14-65" name="__codelineno-14-65" href="#__codelineno-14-65"></a>        <span class="c1"># Get comprehensive logs</span>
+</span><span id="__span-14-66"><a id="__codelineno-14-66" name="__codelineno-14-66" href="#__codelineno-14-66"></a>        <span class="n">all_logs</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">get_network_logs</span><span class="p">()</span>
+</span><span id="__span-14-67"><a id="__codelineno-14-67" name="__codelineno-14-67" href="#__codelineno-14-67"></a>        <span class="n">api_logs</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">get_network_logs</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="s1">&#39;api&#39;</span><span class="p">)</span>
+</span><span id="__span-14-68"><a id="__codelineno-14-68" name="__codelineno-14-68" href="#__codelineno-14-68"></a>
+</span><span id="__span-14-69"><a id="__codelineno-14-69" name="__codelineno-14-69" href="#__codelineno-14-69"></a>        <span class="c1"># Generate summary</span>
+</span><span id="__span-14-70"><a id="__codelineno-14-70" name="__codelineno-14-70" href="#__codelineno-14-70"></a>        <span class="n">analysis_results</span><span class="p">[</span><span class="s1">&#39;request_summary&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+</span><span id="__span-14-71"><a id="__codelineno-14-71" name="__codelineno-14-71" href="#__codelineno-14-71"></a>            <span class="s1">&#39;total_requests&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_logs</span><span class="p">),</span>
+</span><span id="__span-14-72"><a id="__codelineno-14-72" name="__codelineno-14-72" href="#__codelineno-14-72"></a>            <span class="s1">&#39;api_requests&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">api_logs</span><span class="p">),</span>
+</span><span id="__span-14-73"><a id="__codelineno-14-73" name="__codelineno-14-73" href="#__codelineno-14-73"></a>            <span class="s1">&#39;failed_requests&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">analysis_results</span><span class="p">[</span><span class="s1">&#39;failed_requests&#39;</span><span class="p">]),</span>
+</span><span id="__span-14-74"><a id="__codelineno-14-74" name="__codelineno-14-74" href="#__codelineno-14-74"></a>            <span class="s1">&#39;captured_responses&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">analysis_results</span><span class="p">[</span><span class="s1">&#39;api_responses&#39;</span><span class="p">])</span>
+</span><span id="__span-14-75"><a id="__codelineno-14-75" name="__codelineno-14-75" href="#__codelineno-14-75"></a>        <span class="p">}</span>
+</span><span id="__span-14-76"><a id="__codelineno-14-76" name="__codelineno-14-76" href="#__codelineno-14-76"></a>
+</span><span id="__span-14-77"><a id="__codelineno-14-77" name="__codelineno-14-77" href="#__codelineno-14-77"></a>        <span class="c1"># Display results</span>
+</span><span id="__span-14-78"><a id="__codelineno-14-78" name="__codelineno-14-78" href="#__codelineno-14-78"></a>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;🔍 Network Analysis Results:&quot;</span><span class="p">)</span>
+</span><span id="__span-14-79"><a id="__codelineno-14-79" name="__codelineno-14-79" href="#__codelineno-14-79"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   Total requests: </span><span class="si">{</span><span class="n">analysis_results</span><span class="p">[</span><span class="s1">&#39;request_summary&#39;</span><span class="p">][</span><span class="s1">&#39;total_requests&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-14-80"><a id="__codelineno-14-80" name="__codelineno-14-80" href="#__codelineno-14-80"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   API requests: </span><span class="si">{</span><span class="n">analysis_results</span><span class="p">[</span><span class="s1">&#39;request_summary&#39;</span><span class="p">][</span><span class="s1">&#39;api_requests&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-14-81"><a id="__codelineno-14-81" name="__codelineno-14-81" href="#__codelineno-14-81"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   Failed requests: </span><span class="si">{</span><span class="n">analysis_results</span><span class="p">[</span><span class="s1">&#39;request_summary&#39;</span><span class="p">][</span><span class="s1">&#39;failed_requests&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-14-82"><a id="__codelineno-14-82" name="__codelineno-14-82" href="#__codelineno-14-82"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   Captured responses: </span><span class="si">{</span><span class="n">analysis_results</span><span class="p">[</span><span class="s1">&#39;request_summary&#39;</span><span class="p">][</span><span class="s1">&#39;captured_responses&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-14-83"><a id="__codelineno-14-83" name="__codelineno-14-83" href="#__codelineno-14-83"></a>
+</span><span id="__span-14-84"><a id="__codelineno-14-84" name="__codelineno-14-84" href="#__codelineno-14-84"></a>        <span class="c1"># Show failed requests</span>
+</span><span id="__span-14-85"><a id="__codelineno-14-85" name="__codelineno-14-85" href="#__codelineno-14-85"></a>        <span class="k">if</span> <span class="n">analysis_results</span><span class="p">[</span><span class="s1">&#39;failed_requests&#39;</span><span class="p">]:</span>
+</span><span id="__span-14-86"><a id="__codelineno-14-86" name="__codelineno-14-86" href="#__codelineno-14-86"></a>            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">❌ Failed Requests:&quot;</span><span class="p">)</span>
+</span><span id="__span-14-87"><a id="__codelineno-14-87" name="__codelineno-14-87" href="#__codelineno-14-87"></a>            <span class="k">for</span> <span class="n">failed</span> <span class="ow">in</span> <span class="n">analysis_results</span><span class="p">[</span><span class="s1">&#39;failed_requests&#39;</span><span class="p">]:</span>
+</span><span id="__span-14-88"><a id="__codelineno-14-88" name="__codelineno-14-88" href="#__codelineno-14-88"></a>                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   </span><span class="si">{</span><span class="n">failed</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">failed</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-14-89"><a id="__codelineno-14-89" name="__codelineno-14-89" href="#__codelineno-14-89"></a>
+</span><span id="__span-14-90"><a id="__codelineno-14-90" name="__codelineno-14-90" href="#__codelineno-14-90"></a>        <span class="c1"># Show captured API data</span>
+</span><span id="__span-14-91"><a id="__codelineno-14-91" name="__codelineno-14-91" href="#__codelineno-14-91"></a>        <span class="k">if</span> <span class="n">analysis_results</span><span class="p">[</span><span class="s1">&#39;api_responses&#39;</span><span class="p">]:</span>
+</span><span id="__span-14-92"><a id="__codelineno-14-92" name="__codelineno-14-92" href="#__codelineno-14-92"></a>            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">✅ Captured API Responses:&quot;</span><span class="p">)</span>
+</span><span id="__span-14-93"><a id="__codelineno-14-93" name="__codelineno-14-93" href="#__codelineno-14-93"></a>            <span class="k">for</span> <span class="n">url</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">analysis_results</span><span class="p">[</span><span class="s1">&#39;api_responses&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+</span><span id="__span-14-94"><a id="__codelineno-14-94" name="__codelineno-14-94" href="#__codelineno-14-94"></a>                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> bytes)&quot;</span><span class="p">)</span>
+</span><span id="__span-14-95"><a id="__codelineno-14-95" name="__codelineno-14-95" href="#__codelineno-14-95"></a>
+</span><span id="__span-14-96"><a id="__codelineno-14-96" name="__codelineno-14-96" href="#__codelineno-14-96"></a>        <span class="k">return</span> <span class="n">analysis_results</span>
+</span><span id="__span-14-97"><a id="__codelineno-14-97" name="__codelineno-14-97" href="#__codelineno-14-97"></a>
+</span><span id="__span-14-98"><a id="__codelineno-14-98" name="__codelineno-14-98" href="#__codelineno-14-98"></a><span class="c1"># Run the analysis</span>
+</span><span id="__span-14-99"><a id="__codelineno-14-99" name="__codelineno-14-99" href="#__codelineno-14-99"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">comprehensive_network_analysis</span><span class="p">())</span>
+</span></code></pre></div>
+<h3 id="use-cases-for-network-analysis">Use Cases for Network Analysis</h3>
+<p>These network analysis methods enable powerful automation scenarios:</p>
+<p><strong>API Testing and Validation:</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="c1"># Validate API responses during automated testing</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="n">api_logs</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">get_network_logs</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="s1">&#39;/api/users&#39;</span><span class="p">)</span>
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="k">for</span> <span class="n">log</span> <span class="ow">in</span> <span class="n">api_logs</span><span class="p">:</span>
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>    <span class="n">request_id</span> <span class="o">=</span> <span class="n">log</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">][</span><span class="s1">&#39;requestId&#39;</span><span class="p">]</span>
+</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>    <span class="n">response_body</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">get_network_response_body</span><span class="p">(</span><span class="n">request_id</span><span class="p">)</span>
+</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>    <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response_body</span><span class="p">)</span>
+</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>
+</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>    <span class="c1"># Validate response structure</span>
+</span><span id="__span-15-9"><a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>    <span class="k">assert</span> <span class="s1">&#39;users&#39;</span> <span class="ow">in</span> <span class="n">data</span>
+</span><span id="__span-15-10"><a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a>    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;users&#39;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">0</span>
+</span></code></pre></div></p>
+<p><strong>Performance Monitoring:</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="c1"># Monitor request timing and sizes</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="n">all_logs</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">get_network_logs</span><span class="p">()</span>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="n">large_responses</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>
+</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="k">for</span> <span class="n">log</span> <span class="ow">in</span> <span class="n">all_logs</span><span class="p">:</span>
+</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>    <span class="k">if</span> <span class="s1">&#39;response&#39;</span> <span class="ow">in</span> <span class="n">log</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">]:</span>
+</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>        <span class="n">response</span> <span class="o">=</span> <span class="n">log</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">][</span><span class="s1">&#39;response&#39;</span><span class="p">]</span>
+</span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;encodedDataLength&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1000000</span><span class="p">:</span>  <span class="c1"># &gt; 1MB</span>
+</span><span id="__span-16-9"><a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a>            <span class="n">large_responses</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+</span><span id="__span-16-10"><a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a>                <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="n">response</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">],</span>
+</span><span id="__span-16-11"><a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a>                <span class="s1">&#39;size&#39;</span><span class="p">:</span> <span class="n">response</span><span class="p">[</span><span class="s1">&#39;encodedDataLength&#39;</span><span class="p">]</span>
+</span><span id="__span-16-12"><a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a>            <span class="p">})</span>
+</span><span id="__span-16-13"><a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a>
+</span><span id="__span-16-14"><a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">large_responses</span><span class="p">)</span><span class="si">}</span><span class="s2"> large responses&quot;</span><span class="p">)</span>
+</span></code></pre></div></p>
+<p><strong>Data Extraction:</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="c1"># Extract dynamic content loaded via AJAX</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">&#39;https://spa-application.com&#39;</span><span class="p">)</span>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>  <span class="c1"># Wait for AJAX calls</span>
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>
+</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="n">data_logs</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">get_network_logs</span><span class="p">(</span><span class="nb">filter</span><span class="o">=</span><span class="s1">&#39;/data/&#39;</span><span class="p">)</span>
+</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="n">extracted_data</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span id="__span-17-7"><a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a>
+</span><span id="__span-17-8"><a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a><span class="k">for</span> <span class="n">log</span> <span class="ow">in</span> <span class="n">data_logs</span><span class="p">:</span>
+</span><span id="__span-17-9"><a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a>    <span class="n">request_id</span> <span class="o">=</span> <span class="n">log</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">][</span><span class="s1">&#39;requestId&#39;</span><span class="p">]</span>
+</span><span id="__span-17-10"><a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a>    <span class="k">try</span><span class="p">:</span>
+</span><span id="__span-17-11"><a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a>        <span class="n">body</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">get_network_response_body</span><span class="p">(</span><span class="n">request_id</span><span class="p">)</span>
+</span><span id="__span-17-12"><a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a>        <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
+</span><span id="__span-17-13"><a id="__codelineno-17-13" name="__codelineno-17-13" href="#__codelineno-17-13"></a>        <span class="n">extracted_data</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;items&#39;</span><span class="p">,</span> <span class="p">[]))</span>
+</span><span id="__span-17-14"><a id="__codelineno-17-14" name="__codelineno-17-14" href="#__codelineno-17-14"></a>    <span class="k">except</span><span class="p">:</span>
+</span><span id="__span-17-15"><a id="__codelineno-17-15" name="__codelineno-17-15" href="#__codelineno-17-15"></a>        <span class="k">continue</span>
+</span><span id="__span-17-16"><a id="__codelineno-17-16" name="__codelineno-17-16" href="#__codelineno-17-16"></a>
+</span><span id="__span-17-17"><a id="__codelineno-17-17" name="__codelineno-17-17" href="#__codelineno-17-17"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Extracted </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">extracted_data</span><span class="p">)</span><span class="si">}</span><span class="s2"> data items&quot;</span><span class="p">)</span>
+</span></code></pre></div></p>
 <h3 id="file-upload-handling">File Upload Handling</h3>
 <p>The Tab domain provides a context manager for handling file uploads:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># Path to a file to upload</span>
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="n">file_path</span> <span class="o">=</span> <span class="s2">&quot;document.pdf&quot;</span>
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>
-</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="c1"># Use the context manager to handle file chooser dialog</span>
-</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="k">async</span> <span class="k">with</span> <span class="n">tab</span><span class="o">.</span><span class="n">expect_file_chooser</span><span class="p">(</span><span class="n">files</span><span class="o">=</span><span class="n">file_path</span><span class="p">):</span>
-</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>    <span class="c1"># Find and click the upload button</span>
-</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>    <span class="n">upload_button</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s2">&quot;upload-button&quot;</span><span class="p">)</span>
-</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>    <span class="k">await</span> <span class="n">upload_button</span><span class="o">.</span><span class="n">click</span><span class="p">()</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="c1"># Path to a file to upload</span>
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="n">file_path</span> <span class="o">=</span> <span class="s2">&quot;document.pdf&quot;</span>
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="c1"># Use the context manager to handle file chooser dialog</span>
+</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="k">async</span> <span class="k">with</span> <span class="n">tab</span><span class="o">.</span><span class="n">expect_file_chooser</span><span class="p">(</span><span class="n">files</span><span class="o">=</span><span class="n">file_path</span><span class="p">):</span>
+</span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>    <span class="c1"># Find and click the upload button</span>
+</span><span id="__span-18-7"><a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>    <span class="n">upload_button</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s2">&quot;upload-button&quot;</span><span class="p">)</span>
+</span><span id="__span-18-8"><a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>    <span class="k">await</span> <span class="n">upload_button</span><span class="o">.</span><span class="n">click</span><span class="p">()</span>
 </span></code></pre></div>
 <h3 id="iframe-interaction">IFrame Interaction</h3>
 <p>Work with iframes through the Tab domain:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="c1"># Find an iframe element</span>
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="n">iframe_element</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">tag_name</span><span class="o">=</span><span class="s2">&quot;iframe&quot;</span><span class="p">)</span>
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>
-</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="c1"># Get a Tab instance for the iframe</span>
-</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="n">iframe_tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">get_frame</span><span class="p">(</span><span class="n">iframe_element</span><span class="p">)</span>
-</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>
-</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="c1"># Interact with content inside the iframe</span>
-</span><span id="__span-13-8"><a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a><span class="n">iframe_button</span> <span class="o">=</span> <span class="k">await</span> <span class="n">iframe_tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s2">&quot;iframe-button&quot;</span><span class="p">)</span>
-</span><span id="__span-13-9"><a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a><span class="k">await</span> <span class="n">iframe_button</span><span class="o">.</span><span class="n">click</span><span class="p">()</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="c1"># Find an iframe element</span>
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="n">iframe_element</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">tag_name</span><span class="o">=</span><span class="s2">&quot;iframe&quot;</span><span class="p">)</span>
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>
+</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="c1"># Get a Tab instance for the iframe</span>
+</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="n">iframe_tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">get_frame</span><span class="p">(</span><span class="n">iframe_element</span><span class="p">)</span>
+</span><span id="__span-19-6"><a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>
+</span><span id="__span-19-7"><a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a><span class="c1"># Interact with content inside the iframe</span>
+</span><span id="__span-19-8"><a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a><span class="n">iframe_button</span> <span class="o">=</span> <span class="k">await</span> <span class="n">iframe_tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s2">&quot;iframe-button&quot;</span><span class="p">)</span>
+</span><span id="__span-19-9"><a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a><span class="k">await</span> <span class="n">iframe_button</span><span class="o">.</span><span class="n">click</span><span class="p">()</span>
 </span></code></pre></div>
 <h2 id="tab-lifecycle-management">Tab Lifecycle Management</h2>
 <h3 id="closing-tabs">Closing Tabs</h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1"># Close a specific tab</span>
-</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>
-</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="c1"># Note: Tab instance becomes invalid after closing</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="c1"># Close a specific tab</span>
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>
+</span><span id="__span-20-4"><a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="c1"># Note: Tab instance becomes invalid after closing</span>
 </span></code></pre></div>
 <h3 id="multiple-tab-management">Multiple Tab Management</h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="c1"># Create multiple tabs</span>
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="n">tab1</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>  <span class="c1"># Initial tab</span>
-</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="n">tab2</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">new_tab</span><span class="p">(</span><span class="s2">&quot;https://example.com&quot;</span><span class="p">)</span>
-</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="n">tab3</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">new_tab</span><span class="p">(</span><span class="s2">&quot;https://github.com&quot;</span><span class="p">)</span>
-</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>
-</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="c1"># Work with different tabs</span>
-</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="k">await</span> <span class="n">tab1</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s2">&quot;https://google.com&quot;</span><span class="p">)</span>
-</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="k">await</span> <span class="n">tab2</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s2">&quot;search&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s2">&quot;Pydoll&quot;</span><span class="p">)</span>
-</span><span id="__span-15-9"><a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="k">await</span> <span class="n">tab3</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">class_name</span><span class="o">=</span><span class="s2">&quot;header-search-input&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s2">&quot;automation&quot;</span><span class="p">)</span>
-</span><span id="__span-15-10"><a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a>
-</span><span id="__span-15-11"><a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a><span class="c1"># Close specific tabs when done</span>
-</span><span id="__span-15-12"><a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a><span class="k">await</span> <span class="n">tab2</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-</span><span id="__span-15-13"><a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a><span class="k">await</span> <span class="n">tab3</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="c1"># Create multiple tabs</span>
+</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="n">tab1</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>  <span class="c1"># Initial tab</span>
+</span><span id="__span-21-3"><a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="n">tab2</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">new_tab</span><span class="p">(</span><span class="s2">&quot;https://example.com&quot;</span><span class="p">)</span>
+</span><span id="__span-21-4"><a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="n">tab3</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">new_tab</span><span class="p">(</span><span class="s2">&quot;https://github.com&quot;</span><span class="p">)</span>
+</span><span id="__span-21-5"><a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a>
+</span><span id="__span-21-6"><a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a><span class="c1"># Work with different tabs</span>
+</span><span id="__span-21-7"><a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a><span class="k">await</span> <span class="n">tab1</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s2">&quot;https://google.com&quot;</span><span class="p">)</span>
+</span><span id="__span-21-8"><a id="__codelineno-21-8" name="__codelineno-21-8" href="#__codelineno-21-8"></a><span class="k">await</span> <span class="n">tab2</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s2">&quot;search&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s2">&quot;Pydoll&quot;</span><span class="p">)</span>
+</span><span id="__span-21-9"><a id="__codelineno-21-9" name="__codelineno-21-9" href="#__codelineno-21-9"></a><span class="k">await</span> <span class="n">tab3</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">class_name</span><span class="o">=</span><span class="s2">&quot;header-search-input&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s2">&quot;automation&quot;</span><span class="p">)</span>
+</span><span id="__span-21-10"><a id="__codelineno-21-10" name="__codelineno-21-10" href="#__codelineno-21-10"></a>
+</span><span id="__span-21-11"><a id="__codelineno-21-11" name="__codelineno-21-11" href="#__codelineno-21-11"></a><span class="c1"># Close specific tabs when done</span>
+</span><span id="__span-21-12"><a id="__codelineno-21-12" name="__codelineno-21-12" href="#__codelineno-21-12"></a><span class="k">await</span> <span class="n">tab2</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</span><span id="__span-21-13"><a id="__codelineno-21-13" name="__codelineno-21-13" href="#__codelineno-21-13"></a><span class="k">await</span> <span class="n">tab3</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </span></code></pre></div>
 <h2 id="performance-optimization">Performance Optimization</h2>
 <h3 id="event-optimization">Event Optimization</h3>
 <p>Enable only the specific event domains necessary for your current task:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="c1"># GOOD: Enable only what you need</span>
-</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">enable_network_events</span><span class="p">()</span>  <span class="c1"># Only enable network events</span>
-</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>
-</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="c1"># BAD: Enabling unnecessary events creates overhead</span>
-</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">enable_page_events</span><span class="p">()</span>
-</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">enable_network_events</span><span class="p">()</span>
-</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">enable_dom_events</span><span class="p">()</span>
-</span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">enable_fetch_events</span><span class="p">()</span>
-</span><span id="__span-16-9"><a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">enable_runtime_events</span><span class="p">()</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="c1"># GOOD: Enable only what you need</span>
+</span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">enable_network_events</span><span class="p">()</span>  <span class="c1"># Only enable network events</span>
+</span><span id="__span-22-3"><a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>
+</span><span id="__span-22-4"><a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="c1"># BAD: Enabling unnecessary events creates overhead</span>
+</span><span id="__span-22-5"><a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">enable_page_events</span><span class="p">()</span>
+</span><span id="__span-22-6"><a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">enable_network_events</span><span class="p">()</span>
+</span><span id="__span-22-7"><a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">enable_dom_events</span><span class="p">()</span>
+</span><span id="__span-22-8"><a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">enable_fetch_events</span><span class="p">()</span>
+</span><span id="__span-22-9"><a id="__codelineno-22-9" name="__codelineno-22-9" href="#__codelineno-22-9"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">enable_runtime_events</span><span class="p">()</span>
 </span></code></pre></div>
 <h3 id="resource-management">Resource Management</h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="c1"># Use context managers for automatic cleanup</span>
-</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">()</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
-</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>    <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>
-</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>    <span class="c1"># Enable events only when needed</span>
-</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>    <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">enable_page_events</span><span class="p">()</span>
-</span><span id="__span-17-7"><a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a>
-</span><span id="__span-17-8"><a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a>    <span class="k">try</span><span class="p">:</span>
-</span><span id="__span-17-9"><a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a>        <span class="c1"># Your automation code</span>
-</span><span id="__span-17-10"><a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s2">&quot;https://example.com&quot;</span><span class="p">)</span>
-</span><span id="__span-17-11"><a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a>    <span class="k">finally</span><span class="p">:</span>
-</span><span id="__span-17-12"><a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a>        <span class="c1"># Events are automatically cleaned up when browser closes</span>
-</span><span id="__span-17-13"><a id="__codelineno-17-13" name="__codelineno-17-13" href="#__codelineno-17-13"></a>        <span class="k">pass</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="c1"># Use context managers for automatic cleanup</span>
+</span><span id="__span-23-2"><a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">()</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
+</span><span id="__span-23-3"><a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a>    <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</span><span id="__span-23-4"><a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a>
+</span><span id="__span-23-5"><a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a>    <span class="c1"># Enable events only when needed</span>
+</span><span id="__span-23-6"><a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a>    <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">enable_page_events</span><span class="p">()</span>
+</span><span id="__span-23-7"><a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a>
+</span><span id="__span-23-8"><a id="__codelineno-23-8" name="__codelineno-23-8" href="#__codelineno-23-8"></a>    <span class="k">try</span><span class="p">:</span>
+</span><span id="__span-23-9"><a id="__codelineno-23-9" name="__codelineno-23-9" href="#__codelineno-23-9"></a>        <span class="c1"># Your automation code</span>
+</span><span id="__span-23-10"><a id="__codelineno-23-10" name="__codelineno-23-10" href="#__codelineno-23-10"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s2">&quot;https://example.com&quot;</span><span class="p">)</span>
+</span><span id="__span-23-11"><a id="__codelineno-23-11" name="__codelineno-23-11" href="#__codelineno-23-11"></a>    <span class="k">finally</span><span class="p">:</span>
+</span><span id="__span-23-12"><a id="__codelineno-23-12" name="__codelineno-23-12" href="#__codelineno-23-12"></a>        <span class="c1"># Events are automatically cleaned up when browser closes</span>
+</span><span id="__span-23-13"><a id="__codelineno-23-13" name="__codelineno-23-13" href="#__codelineno-23-13"></a>        <span class="k">pass</span>
 </span></code></pre></div>
 <h2 id="domain-relationships">Domain Relationships</h2>
 <p>Understanding Pydoll's domain architecture helps clarify how the Tab Domain fits into the library's broader ecosystem:</p>
