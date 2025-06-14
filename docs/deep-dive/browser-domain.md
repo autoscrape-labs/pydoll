@@ -385,8 +385,8 @@ async def test_multiple_accounts():
         tab = await browser.new_tab("https://app.example.com/login", browser_context_id=context_id)
         
         # Login with account credentials
-        await tab.find(tag_name="input", name="username").type(account["username"])
-        await tab.find(tag_name="input", name="password").type(account["password"])
+        await tab.find(tag_name="input", name="username").type_text(account["username"])
+        await tab.find(tag_name="input", name="password").type_text(account["password"])
         await tab.find(tag_name="button", type="submit").click()
         
         contexts_and_tabs.append((context_id, tab, account["username"]))

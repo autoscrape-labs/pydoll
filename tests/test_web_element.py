@@ -291,11 +291,13 @@ class TestWebElementMethods:
     async def test_type_text(self, input_element):
         """Test type_text method with character-by-character typing."""
         test_text = 'Hi'
+        input_element.click = AsyncMock()
         with patch('asyncio.sleep') as mock_sleep:
             await input_element.type_text(test_text, interval=0.05)
 
         # Should call execute_command for each character
         assert input_element._connection_handler.execute_command.call_count == len(test_text)
+        assert input_element.click.call_count == 1
         
         # Verify sleep was called between characters
         assert mock_sleep.call_count == len(test_text)
@@ -305,10 +307,12 @@ class TestWebElementMethods:
     async def test_type_text_default_interval(self, input_element):
         """Test type_text with default interval."""
         test_text = 'A'
+        input_element.click = AsyncMock()
         with patch('asyncio.sleep') as mock_sleep:
             await input_element.type_text(test_text)
 
         mock_sleep.assert_called_with(0.1)  # Default interval
+        assert input_element.click.call_count == 1
 
 
 class TestWebElementKeyboardInteraction:
@@ -878,10 +882,12 @@ class TestWebElementEdgeCases:
     @pytest.mark.asyncio
     async def test_type_text_empty_string(self, input_element):
         """Test type_text with empty string."""
+        input_element.click = AsyncMock()
         await input_element.type_text('')
-        
+
         # Should not call execute_command for empty string
         input_element._connection_handler.execute_command.assert_not_called()
+        assert input_element.click.call_count == 1
 
     @pytest.mark.asyncio
     async def test_set_input_files_empty_list(self, file_input_element):

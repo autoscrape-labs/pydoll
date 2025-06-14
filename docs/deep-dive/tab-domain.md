@@ -507,8 +507,8 @@ tab3 = await browser.new_tab("https://github.com")
 
 # Work with different tabs
 await tab1.go_to("https://google.com")
-await tab2.find(id="search").type("Pydoll")
-await tab3.find(class_name="header-search-input").type("automation")
+await tab2.find(id="search").type_text("Pydoll")
+await tab3.find(class_name="header-search-input").type_text("automation")
 
 # Close specific tabs when done
 await tab2.close()

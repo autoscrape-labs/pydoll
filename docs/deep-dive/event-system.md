@@ -662,7 +662,7 @@ await tab.enable_page_events()
 async def handle_page_load(tab, event):
     print(f"Page loaded: {await tab.current_url}")
     # Perform actions after page load
-    await tab.find(id="search").type("pydoll")
+    await tab.find(id="search").type_text("pydoll")
 
 await tab.on(PageEvent.LOAD_EVENT_FIRED, partial(handle_page_load, tab))
 

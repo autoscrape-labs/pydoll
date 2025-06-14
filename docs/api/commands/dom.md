@@ -55,4 +55,4 @@ The DOM commands module provides functions for:
 - `request_child_nodes()` - Get child elements
 
 !!! tip "High-Level APIs"
-    While these commands provide powerful low-level access, most users should use the higher-level `WebElement` class methods like `click()`, `type()`, and `get_attribute()` which use these commands internally. 
+    While these commands provide powerful low-level access, most users should use the higher-level `WebElement` class methods like `click()`, `type_text()`, and `get_attribute()` which use these commands internally. 

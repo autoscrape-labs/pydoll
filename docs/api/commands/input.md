@@ -72,4 +72,4 @@ The input commands support human-like behavior patterns:
 - Pressure-sensitive touch events
 
 !!! tip "Element Methods"
-    For most use cases, use the higher-level element methods like `element.click()` and `element.type()` which provide a more convenient API and handle common scenarios automatically. 
+    For most use cases, use the higher-level element methods like `element.click()` and `element.type_text()` which provide a more convenient API and handle common scenarios automatically. 
