@@ -239,3 +239,15 @@ class NetworkEventsNotEnabled(PydollException):
     """Raised when network events are not enabled."""
 
     message = 'Network events not enabled'
+
+
+class ScriptException(PydollException):
+    """Base class for exceptions related to JavaScript execution."""
+
+    message = 'A script execution error occurred'
+
+
+class InvalidScriptWithElement(ScriptException):
+    """Raised when a script contains 'argument' but no element is provided."""
+
+    message = 'Script contains "argument" but no element was provided'
