@@ -1,6 +1,7 @@
 import base64
 import logging
 import os
+import re
 
 import aiohttp
 
@@ -70,3 +71,96 @@ def validate_browser_paths(paths: list[str]) -> str:
         if os.path.exists(path) and os.access(path, os.X_OK):
             return path
     raise InvalidBrowserPath(f'No valid browser path found in: {paths}')
+
+
+def clean_script_for_analysis(script: str) -> str:
+    """
+    Clean JavaScript code by removing comments and string literals.
+
+    This helps avoid false positives when analyzing script structure.
+
+    Args:
+        script: JavaScript code to clean.
+
+    Returns:
+        str: Cleaned script with comments and strings removed.
+    """
+    # Remove line comments
+    cleaned = re.sub(r'//.*?$', '', script, flags=re.MULTILINE)
+    # Remove block comments
+    cleaned = re.sub(r'/\*.*?\*/', '', cleaned, flags=re.DOTALL)
+    # Remove double quoted strings
+    cleaned = re.sub(r'"[^"]*"', '""', cleaned)
+    # Remove single quoted strings
+    cleaned = re.sub(r"'[^']*'", "''", cleaned)
+    # Remove template literals
+    cleaned = re.sub(r'`[^`]*`', '``', cleaned)
+
+    return cleaned
+
+
+def is_script_already_function(script: str) -> bool:
+    """
+    Check if a JavaScript script is already wrapped in a function.
+
+    Args:
+        script: JavaScript code to analyze.
+
+    Returns:
+        bool: True if script is already a function, False otherwise.
+    """
+    cleaned_script = clean_script_for_analysis(script)
+
+    function_pattern = r'^\s*function\s*\([^)]*\)\s*\{'
+    arrow_function_pattern = r'^\s*\([^)]*\)\s*=>\s*\{'
+
+    return bool(
+        re.match(function_pattern, cleaned_script.strip())
+        or re.match(arrow_function_pattern, cleaned_script.strip())
+    )
+
+
+def has_return_outside_function(script: str) -> bool:
+    """
+    Check if a JavaScript script has return statements outside of functions.
+
+    Args:
+        script: JavaScript code to analyze.
+
+    Returns:
+        bool: True if script has return outside function, False otherwise.
+    """
+    cleaned_script = clean_script_for_analysis(script)
+
+    # If already a function, no need to check
+    if is_script_already_function(cleaned_script):
+        return False
+
+    # Look for 'return' statements
+    return_pattern = r'\breturn\b'
+    if not re.search(return_pattern, cleaned_script):
+        return False
+
+    # Check if return is inside a function by counting braces
+    lines = cleaned_script.split('\n')
+    brace_count = 0
+    in_function = False
+
+    for line in lines:
+        # Check for function declarations
+        if re.search(r'\bfunction\b', line) or re.search(r'=>', line):
+            in_function = True
+
+        # Count braces
+        brace_count += line.count('{') - line.count('}')
+
+        # Check for return statement
+        if re.search(return_pattern, line):
+            if not in_function or brace_count <= 0:
+                return True
+
+        # Reset function flag if we're back to top level
+        if brace_count <= 0:
+            in_function = False
+
+    return False
