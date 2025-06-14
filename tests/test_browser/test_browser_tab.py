@@ -15,17 +15,8 @@ from pydoll.exceptions import (
     NotAnIFrame,
     InvalidFileExtension,
     WaitElementTimeout,
+    NetworkEventsNotEnabled,
 )
-from pydoll.commands import (
-    DomCommands,
-    RuntimeCommands,
-    NetworkCommands,
-    StorageCommands,
-    PageCommands,
-    FetchCommands,
-)
-from pydoll.protocol.page.events import PageEvent
-
 
 @pytest_asyncio.fixture
 async def mock_connection_handler():
@@ -945,8 +936,173 @@ class TestTabEdgeCases:
     @pytest.mark.asyncio
     async def test_dialog_property(self, tab):
         """Test dialog property access."""
-        test_dialog = {'params': {'type': 'alert', 'message': 'Test'}}
+        test_dialog = {'type': 'alert', 'message': 'Test message'}
         tab._connection_handler.dialog = test_dialog
         
         dialog = tab._connection_handler.dialog
         assert dialog == test_dialog
+
+
+class TestTabNetworkMethods:
+    """Test Tab network-related methods."""
+
+    @pytest.mark.asyncio
+    async def test_get_network_response_body_success(self, tab):
+        """Test get_network_response_body with network events enabled."""
+        # Enable network events
+        tab._network_events_enabled = True
+        
+        # Mock the response
+        expected_body = '<html><body>Response content</body></html>'
+        tab._connection_handler.execute_command.return_value = {
+            'result': {'body': expected_body}
+        }
+        
+        result = await tab.get_network_response_body('test_request_123')
+        
+        assert result == expected_body
+        tab._connection_handler.execute_command.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_get_network_response_body_events_not_enabled(self, tab):
+        """Test get_network_response_body when network events are not enabled."""
+        # Ensure network events are disabled
+        tab._network_events_enabled = False
+        
+        with pytest.raises(NetworkEventsNotEnabled) as exc_info:
+            await tab.get_network_response_body('test_request_123')
+        
+        assert str(exc_info.value) == 'Network events must be enabled to get response body'
+        tab._connection_handler.execute_command.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_get_network_logs_success_no_filter(self, tab):
+        """Test get_network_logs without filter."""
+        # Enable network events
+        tab._network_events_enabled = True
+        
+        # Mock network logs
+        test_logs = [
+            {
+                'method': 'Network.requestWillBeSent',
+                'params': {
+                    'request': {'url': 'https://example.com/api/data'},
+                    'requestId': 'req_1'
+                }
+            },
+            {
+                'method': 'Network.responseReceived',
+                'params': {
+                    'request': {'url': 'https://example.com/static/style.css'},
+                    'requestId': 'req_2'
+                }
+            }
+        ]
+        tab._connection_handler.network_logs = test_logs
+        
+        result = await tab.get_network_logs()
+        
+        assert result == test_logs
+        assert len(result) == 2
+
+    @pytest.mark.asyncio
+    async def test_get_network_logs_success_with_filter(self, tab):
+        """Test get_network_logs with URL filter."""
+        # Enable network events
+        tab._network_events_enabled = True
+        
+        # Mock network logs
+        test_logs = [
+            {
+                'method': 'Network.requestWillBeSent',
+                'params': {
+                    'request': {'url': 'https://example.com/api/data'},
+                    'requestId': 'req_1'
+                }
+            },
+            {
+                'method': 'Network.responseReceived',
+                'params': {
+                    'request': {'url': 'https://example.com/static/style.css'},
+                    'requestId': 'req_2'
+                }
+            },
+            {
+                'method': 'Network.requestWillBeSent',
+                'params': {
+                    'request': {'url': 'https://api.example.com/users'},
+                    'requestId': 'req_3'
+                }
+            }
+        ]
+        tab._connection_handler.network_logs = test_logs
+        
+        result = await tab.get_network_logs(filter='api')
+        
+        # Should return only logs with 'api' in the URL
+        assert len(result) == 2
+        assert result[0]['params']['request']['url'] == 'https://example.com/api/data'
+        assert result[1]['params']['request']['url'] == 'https://api.example.com/users'
+
+    @pytest.mark.asyncio
+    async def test_get_network_logs_empty_filter_result(self, tab):
+        """Test get_network_logs with filter that matches no logs."""
+        # Enable network events
+        tab._network_events_enabled = True
+        
+        # Mock network logs
+        test_logs = [
+            {
+                'method': 'Network.requestWillBeSent',
+                'params': {
+                    'request': {'url': 'https://example.com/static/style.css'},
+                    'requestId': 'req_1'
+                }
+            }
+        ]
+        tab._connection_handler.network_logs = test_logs
+        
+        result = await tab.get_network_logs(filter='nonexistent')
+        
+        assert result == []
+
+    @pytest.mark.asyncio
+    async def test_get_network_logs_events_not_enabled(self, tab):
+        """Test get_network_logs when network events are not enabled."""
+        # Ensure network events are disabled
+        tab._network_events_enabled = False
+        
+        with pytest.raises(NetworkEventsNotEnabled) as exc_info:
+            await tab.get_network_logs()
+        
+        assert str(exc_info.value) == 'Network events must be enabled to get network logs'
+
+    @pytest.mark.asyncio
+    async def test_get_network_logs_missing_request_params(self, tab):
+        """Test get_network_logs with logs missing request parameters."""
+        # Enable network events
+        tab._network_events_enabled = True
+        
+        # Mock network logs with missing request data
+        test_logs = [
+            {
+                'method': 'Network.requestWillBeSent',
+                'params': {
+                    'requestId': 'req_1'
+                    # Missing 'request' key
+                }
+            },
+            {
+                'method': 'Network.responseReceived',
+                'params': {
+                    'request': {},  # Empty request object
+                    'requestId': 'req_2'
+                }
+            }
+        ]
+        tab._connection_handler.network_logs = test_logs
+        
+        result = await tab.get_network_logs(filter='example')
+        
+        # Should handle missing request data gracefully
+        assert result == []
