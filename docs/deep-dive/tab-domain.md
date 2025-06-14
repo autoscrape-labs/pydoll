@@ -455,6 +455,236 @@ await tab.on('Page.javascriptDialogOpening', handle_dialog)
 await tab.execute_script("alert('This is a test alert')")
 ```
 
+## Network Analysis Methods
+
+The Tab domain provides specialized methods for analyzing network traffic and extracting response data. These methods require network events to be enabled first.
+
+### Network Logs Retrieval
+
+The `get_network_logs()` method provides access to all captured network requests:
+
+```python
+# Enable network monitoring
+await tab.enable_network_events()
+
+# Navigate to trigger network requests
+await tab.go_to('https://example.com/api-heavy-page')
+
+# Get all network logs
+all_logs = await tab.get_network_logs()
+print(f"Captured {len(all_logs)} network requests")
+
+# Filter logs by URL content
+api_logs = await tab.get_network_logs(filter='api')
+static_logs = await tab.get_network_logs(filter='.js')
+domain_logs = await tab.get_network_logs(filter='example.com')
+
+print(f"API requests: {len(api_logs)}")
+print(f"JavaScript files: {len(static_logs)}")
+print(f"Domain requests: {len(domain_logs)}")
+```
+
+### Response Body Extraction
+
+The `get_network_response_body()` method allows extraction of actual response content:
+
+```python
+from functools import partial
+from pydoll.protocol.network.events import NetworkEvent
+
+# Storage for captured responses
+captured_responses = {}
+
+async def capture_api_responses(tab, event):
+    """Capture response bodies from API calls"""
+    request_id = event['params']['requestId']
+    response = event['params']['response']
+    url = response['url']
+    
+    # Only capture API responses
+    if '/api/' in url and response['status'] == 200:
+        try:
+            # Extract the response body
+            body = await tab.get_network_response_body(request_id)
+            captured_responses[url] = body
+            print(f"Captured response from: {url}")
+        except Exception as e:
+            print(f"Failed to capture response: {e}")
+
+# Enable network monitoring and register callback
+await tab.enable_network_events()
+await tab.on(NetworkEvent.RESPONSE_RECEIVED, partial(capture_api_responses, tab))
+
+# Navigate to trigger API calls
+await tab.go_to('https://example.com/dashboard')
+await asyncio.sleep(3)  # Wait for API calls
+
+print(f"Captured {len(captured_responses)} API responses")
+```
+
+### Practical Network Analysis Example
+
+Here's a comprehensive example combining both methods for thorough network analysis:
+
+```python
+import asyncio
+import json
+from functools import partial
+from pydoll.browser.chromium import Chrome
+from pydoll.protocol.network.events import NetworkEvent
+
+async def comprehensive_network_analysis():
+    async with Chrome() as browser:
+        tab = await browser.start()
+        
+        # Storage for analysis results
+        analysis_results = {
+            'api_responses': {},
+            'failed_requests': [],
+            'request_summary': {}
+        }
+        
+        async def analyze_responses(tab, event):
+            """Analyze network responses"""
+            request_id = event['params']['requestId']
+            response = event['params']['response']
+            url = response['url']
+            status = response['status']
+            
+            # Track failed requests
+            if status >= 400:
+                analysis_results['failed_requests'].append({
+                    'url': url,
+                    'status': status,
+                    'request_id': request_id
+                })
+                return
+            
+            # Capture successful API responses
+            if '/api/' in url and status == 200:
+                try:
+                    body = await tab.get_network_response_body(request_id)
+                    
+                    # Try to parse JSON responses
+                    try:
+                        data = json.loads(body)
+                        analysis_results['api_responses'][url] = {
+                            'data': data,
+                            'size': len(body),
+                            'type': 'json'
+                        }
+                    except json.JSONDecodeError:
+                        analysis_results['api_responses'][url] = {
+                            'data': body,
+                            'size': len(body),
+                            'type': 'text'
+                        }
+                        
+                except Exception as e:
+                    print(f"Failed to capture response from {url}: {e}")
+        
+        # Enable monitoring and register callback
+        await tab.enable_network_events()
+        await tab.on(NetworkEvent.RESPONSE_RECEIVED, partial(analyze_responses, tab))
+        
+        # Navigate and perform actions
+        await tab.go_to('https://example.com/complex-app')
+        await asyncio.sleep(5)  # Wait for network activity
+        
+        # Get comprehensive logs
+        all_logs = await tab.get_network_logs()
+        api_logs = await tab.get_network_logs(filter='api')
+        
+        # Generate summary
+        analysis_results['request_summary'] = {
+            'total_requests': len(all_logs),
+            'api_requests': len(api_logs),
+            'failed_requests': len(analysis_results['failed_requests']),
+            'captured_responses': len(analysis_results['api_responses'])
+        }
+        
+        # Display results
+        print("🔍 Network Analysis Results:")
+        print(f"   Total requests: {analysis_results['request_summary']['total_requests']}")
+        print(f"   API requests: {analysis_results['request_summary']['api_requests']}")
+        print(f"   Failed requests: {analysis_results['request_summary']['failed_requests']}")
+        print(f"   Captured responses: {analysis_results['request_summary']['captured_responses']}")
+        
+        # Show failed requests
+        if analysis_results['failed_requests']:
+            print("\n❌ Failed Requests:")
+            for failed in analysis_results['failed_requests']:
+                print(f"   {failed['status']} - {failed['url']}")
+        
+        # Show captured API data
+        if analysis_results['api_responses']:
+            print("\n✅ Captured API Responses:")
+            for url, info in analysis_results['api_responses'].items():
+                print(f"   {url} ({info['type']}, {info['size']} bytes)")
+        
+        return analysis_results
+
+# Run the analysis
+asyncio.run(comprehensive_network_analysis())
+```
+
+### Use Cases for Network Analysis
+
+These network analysis methods enable powerful automation scenarios:
+
+**API Testing and Validation:**
+```python
+# Validate API responses during automated testing
+api_logs = await tab.get_network_logs(filter='/api/users')
+for log in api_logs:
+    request_id = log['params']['requestId']
+    response_body = await tab.get_network_response_body(request_id)
+    data = json.loads(response_body)
+    
+    # Validate response structure
+    assert 'users' in data
+    assert len(data['users']) > 0
+```
+
+**Performance Monitoring:**
+```python
+# Monitor request timing and sizes
+all_logs = await tab.get_network_logs()
+large_responses = []
+
+for log in all_logs:
+    if 'response' in log['params']:
+        response = log['params']['response']
+        if response.get('encodedDataLength', 0) > 1000000:  # > 1MB
+            large_responses.append({
+                'url': response['url'],
+                'size': response['encodedDataLength']
+            })
+
+print(f"Found {len(large_responses)} large responses")
+```
+
+**Data Extraction:**
+```python
+# Extract dynamic content loaded via AJAX
+await tab.go_to('https://spa-application.com')
+await asyncio.sleep(3)  # Wait for AJAX calls
+
+data_logs = await tab.get_network_logs(filter='/data/')
+extracted_data = []
+
+for log in data_logs:
+    request_id = log['params']['requestId']
+    try:
+        body = await tab.get_network_response_body(request_id)
+        data = json.loads(body)
+        extracted_data.extend(data.get('items', []))
+    except:
+        continue
+
+print(f"Extracted {len(extracted_data)} data items")
+```
+
 ### File Upload Handling
 
 The Tab domain provides a context manager for handling file uploads:
