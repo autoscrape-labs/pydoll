@@ -1,4 +1,4 @@
-name: PyDoll Tests Suite
+name: PyDoll Tests
 
 on: 
   push:

@@ -209,6 +209,133 @@ asyncio.run(background_bypass_example())
 
 Access websites that actively block automation tools without using third-party captcha solving services. This native captcha handling makes Pydoll suitable for automating previously inaccessible websites.
 
+## Multi-Tab Management
+
+Pydoll provides sophisticated tab management capabilities with a singleton pattern that ensures efficient resource usage and prevents duplicate Tab instances for the same browser tab.
+
+### Tab Singleton Pattern
+
+Pydoll implements a singleton pattern for Tab instances based on the browser's target ID. This means:
+
+- **One Tab instance per browser tab**: Multiple references to the same browser tab return the same Tab object
+- **Automatic resource management**: No duplicate connections or handlers for the same tab
+- **Consistent state**: All references to a tab share the same state and event handlers
+
+```python
+import asyncio
+from pydoll.browser.chromium import Chrome
+from pydoll.browser.tab import Tab
+
+async def singleton_demonstration():
+    async with Chrome() as browser:
+        tab = await browser.start()
+        
+        # Get the same tab through different methods - they're identical objects
+        same_tab = Tab(browser, browser._connection_port, tab._target_id)
+        opened_tabs = await browser.get_opened_tabs()
+        
+        # All references point to the same singleton instance
+        print(f"Same object? {tab is same_tab}")  # May be True if same target_id
+        print(f"Tab instances are managed as singletons")
+
+asyncio.run(singleton_demonstration())
+```
+
+### Creating New Tabs Programmatically
+
+Use `new_tab()` to create tabs programmatically with full control:
+
+```python
+import asyncio
+from pydoll.browser.chromium import Chrome
+
+async def programmatic_tab_creation():
+    async with Chrome() as browser:
+        # Start with the initial tab
+        main_tab = await browser.start()
+        
+        # Create additional tabs with specific URLs
+        search_tab = await browser.new_tab('https://google.com')
+        news_tab = await browser.new_tab('https://news.ycombinator.com')
+        docs_tab = await browser.new_tab('https://docs.python.org')
+        
+        # Work with multiple tabs simultaneously
+        await search_tab.find(name='q').type_text('Python automation')
+        await news_tab.find(class_name='storylink', find_all=True)
+        await docs_tab.find(id='search-field').type_text('asyncio')
+        
+        # Get all opened tabs
+        all_tabs = await browser.get_opened_tabs()
+        print(f"Total tabs open: {len(all_tabs)}")
+        
+        # Close specific tabs when done
+        await search_tab.close()
+        await news_tab.close()
+
+asyncio.run(programmatic_tab_creation())
+```
+
+### Handling User-Opened Tabs
+
+When users click links that open new tabs (target="_blank"), use `get_opened_tabs()` to detect and manage them:
+
+```python
+import asyncio
+from pydoll.browser.chromium import Chrome
+
+async def handle_user_opened_tabs():
+    async with Chrome() as browser:
+        main_tab = await browser.start()
+        await main_tab.go_to('https://example.com')
+        
+        # Get initial tab count
+        initial_tabs = await browser.get_opened_tabs()
+        initial_count = len(initial_tabs)
+        print(f"Initial tabs: {initial_count}")
+        
+        # Click a link that opens a new tab (target="_blank")
+        external_link = await main_tab.find(text='Open in New Tab')
+        await external_link.click()
+        
+        # Wait for new tab to open
+        await asyncio.sleep(2)
+        
+        # Detect new tabs
+        current_tabs = await browser.get_opened_tabs()
+        new_tab_count = len(current_tabs)
+        
+        if new_tab_count > initial_count:
+            print(f"New tab detected! Total tabs: {new_tab_count}")
+            
+            # Get the newly opened tab (last in the list)
+            new_tab = current_tabs[-1]
+            
+            # Work with the new tab
+            await new_tab.go_to('https://different-site.com')
+            title = await new_tab.execute_script('return document.title')
+            print(f"New tab title: {title}")
+            
+            # Close the new tab when done
+            await new_tab.close()
+
+asyncio.run(handle_user_opened_tabs())
+```
+
+### Key Benefits of Pydoll's Tab Management
+
+1. **Singleton Pattern**: Prevents resource duplication and ensures consistent state
+2. **Automatic Detection**: `get_opened_tabs()` finds all tabs, including user-opened ones
+3. **Concurrent Processing**: Handle multiple tabs simultaneously with asyncio
+4. **Resource Management**: Proper cleanup prevents memory leaks
+5. **Event Isolation**: Each tab maintains its own event handlers and state
+
+This sophisticated tab management makes Pydoll ideal for:
+- **Multi-page workflows** that require coordination between tabs
+- **Parallel data extraction** from multiple sources
+- **Testing applications** that use popup windows or new tabs
+- **Monitoring user behavior** across multiple browser tabs
+
+
 ## Concurrent Scraping
 
 Pydoll's async architecture allows you to scrape multiple pages or websites simultaneously for maximum efficiency:
