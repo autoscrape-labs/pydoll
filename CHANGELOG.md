@@ -2,7 +2,7 @@
 
 ### Feat
 
-- **🎭 Advanced Browser Fingerprint Spoofing**: one-click fingerprint protection system
+- **🎭 Browser Fingerprint Spoofing**: one-click fingerprint protection system
 - add comprehensive browser fingerprint spoofing with FingerprintConfig
 - implement intelligent fingerprint generation with randomization
 - add support for spoofing Navigator properties (User-Agent, platform, languages, hardware)
