@@ -60,7 +60,42 @@ class Tab(FindElementsMixin):  # noqa: PLR0904
     Primary interface for web page automation including navigation, DOM manipulation,
     JavaScript execution, event handling, network monitoring, and specialized tasks
     like Cloudflare bypass.
+
+    This class implements a singleton pattern based on target_id to ensure
+    only one Tab instance exists per browser tab.
     """
+
+    _instances: dict[str, 'Tab'] = {}
+
+    def __new__(
+        cls,
+        browser: 'Browser',
+        connection_port: int,
+        target_id: str,
+        browser_context_id: Optional[str] = None,
+    ) -> 'Tab':
+        """
+        Create or return existing Tab instance for the given target_id.
+
+        Args:
+            browser: Browser instance that created this tab.
+            connection_port: CDP WebSocket port.
+            target_id: CDP target identifier for this tab.
+            browser_context_id: Optional browser context ID.
+
+        Returns:
+            Tab instance (new or existing) for the target_id.
+        """
+        if target_id in cls._instances:
+            existing_instance = cls._instances[target_id]
+            existing_instance._browser = browser
+            existing_instance._connection_port = connection_port
+            existing_instance._browser_context_id = browser_context_id
+            return existing_instance
+
+        instance = super().__new__(cls)
+        cls._instances[target_id] = instance
+        return instance
 
     def __init__(
         self,
@@ -78,6 +113,9 @@ class Tab(FindElementsMixin):  # noqa: PLR0904
             target_id: CDP target identifier for this tab.
             browser_context_id: Optional browser context ID.
         """
+        if hasattr(self, '_initialized') and self._initialized:
+            return
+
         self._browser = browser
         self._connection_port = connection_port
         self._target_id = target_id
@@ -90,6 +128,40 @@ class Tab(FindElementsMixin):  # noqa: PLR0904
         self._intercept_file_chooser_dialog_enabled = False
         self._cloudflare_captcha_callback_id: Optional[int] = None
         self._browser_context_id = browser_context_id
+        self._initialized = True
+
+    @classmethod
+    def _remove_instance(cls, target_id: str) -> None:
+        """
+        Remove instance from registry when tab is closed.
+
+        Args:
+            target_id: Target ID to remove from registry.
+        """
+        cls._instances.pop(target_id, None)
+
+    @classmethod
+    def get_instance(cls, target_id: str) -> Optional['Tab']:
+        """
+        Get existing Tab instance for target_id if it exists.
+
+        Args:
+            target_id: Target ID to look up.
+
+        Returns:
+            Existing Tab instance or None if not found.
+        """
+        return cls._instances.get(target_id)
+
+    @classmethod
+    def get_all_instances(cls) -> dict[str, 'Tab']:
+        """
+        Get all active Tab instances.
+
+        Returns:
+            Dictionary mapping target_id to Tab instances.
+        """
+        return cls._instances.copy()
 
     @property
     def page_events_enabled(self) -> bool:
@@ -278,7 +350,9 @@ class Tab(FindElementsMixin):  # noqa: PLR0904
         Note:
             Tab instance becomes invalid after calling this method.
         """
-        return await self._execute_command(PageCommands.close())
+        result = await self._execute_command(PageCommands.close())
+        self._remove_instance(self._target_id)
+        return result
 
     async def get_frame(self, frame: WebElement) -> IFrame:
         """
