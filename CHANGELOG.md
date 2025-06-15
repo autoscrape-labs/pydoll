@@ -19,6 +19,12 @@
 - add fingerprint customization options (OS preference, screen resolution, languages)
 - implement automatic script injection via CDP for seamless operation
 - add fingerprint summary retrieval for monitoring current fingerprint
+=======
+## 2.1.0 (2025-06-14)
+
+### Feat
+
+
 - add new script-related exception classes for better handling
 - add functions to clean scripts and check return statements
 - add methods to retrieve network response body and logs
@@ -30,14 +36,6 @@
 ### Refactor
 
 - add overloads for execute_script to improve type safety
-
-### Enhancement
-
-- integrate fingerprint spoofing into main browser classes
-- add bilingual documentation (English/Chinese) with language switching
-- enhance README with comprehensive fingerprint spoofing examples
-- add fingerprint testing website recommendations
-- optimize fingerprint generation algorithms for realistic results
 
 ## 2.0.1 (2025-06-08)
 
