@@ -5,13 +5,17 @@ on: workflow_dispatch
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # Add security hardening
+    permissions:
+      contents: read
+      id-token: write  # For trusted publishing
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 

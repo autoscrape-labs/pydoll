@@ -1,0 +1,71 @@
+version: 2
+updates:
+  # Python dependencies
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "autoscrape-labs"
+    assignees:
+      - "autoscrape-labs"
+    commit-message:
+      prefix: "deps"
+      prefix-development: "deps-dev"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "security"
+    # Group related updates
+    groups:
+      production-dependencies:
+        patterns:
+          - "websockets"
+          - "aiohttp"
+          - "aiofiles"
+          - "bs4"
+      development-dependencies:
+        patterns:
+          - "ruff"
+          - "pytest*"
+          - "mypy"
+          - "mkdocs*"
+          - "taskipy"
+    # Security updates
+    allow:
+      - dependency-type: "direct"
+      - dependency-type: "indirect"
+    # Ignore certain updates if needed
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+  
+  # GitHub Actions dependencies
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "autoscrape-labs"
+    assignees:
+      - "autoscrape-labs"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    labels:
+      - "github-actions"
+      - "security"
+    # Group GitHub Actions updates
+    groups:
+      github-actions:
+        patterns:
+          - "actions/*"
+          - "codecov/*"
+          - "softprops/*"
+          - "peaceiris/*" 

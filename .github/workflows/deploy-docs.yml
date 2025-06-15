@@ -1,36 +1,41 @@
-name: Deploy MkDocs to GitHub Pages
+name: Deploy Documentation
 
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # Add security hardening
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
 
     steps:
-    - name: Code Checkout
-      uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: Setup Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.x'
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
 
-    - name: Install Dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install mkdocs
-        pip install mkdocs-material
-        pip install pymdown-extensions
-        pip install mkdocstrings[python]
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry install
 
-    - name: Build the documentation
-      run: mkdocs build
+      - name: Build documentation
+        run: poetry run mkdocs build
 
-    - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./site
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site

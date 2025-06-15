@@ -1,6 +1,6 @@
 import asyncio
 import json
-from typing import Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 import aiofiles
 from bs4 import BeautifulSoup
@@ -26,6 +26,8 @@ from pydoll.exceptions import (
     ElementNotAFileInput,
     ElementNotInteractable,
     ElementNotVisible,
+    NoShadowRootAttached,
+    ShadowRootAccessDenied,
 )
 from pydoll.protocol.dom.responses import (
     GetBoxModelResponse,
@@ -35,6 +37,9 @@ from pydoll.protocol.dom.types import Quad
 from pydoll.protocol.page.responses import CaptureScreenshotResponse
 from pydoll.protocol.page.types import Viewport
 from pydoll.utils import decode_base64_to_bytes
+
+if TYPE_CHECKING:
+    from pydoll.elements.shadow_root import ShadowRoot
 
 
 class WebElement(FindElementsMixin):  # noqa: PLR0904
@@ -341,6 +346,69 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         await self.key_down(key, modifiers)
         await asyncio.sleep(interval)
         await self.key_up(key)
+
+    async def get_shadow_root(self) -> Optional['ShadowRoot']:
+        """
+        Get the shadow root attached to this element if it exists.
+
+        Returns:
+            ShadowRoot: The shadow root object if it exists, None otherwise
+
+        Raises:
+            NoShadowRootAttached: If no shadow root is attached to this element
+            ShadowRootAccessDenied: If there's an error accessing the shadow root
+        """
+        # Import here to avoid circular imports
+        from pydoll.elements.shadow_root import ShadowRoot  # noqa: PLC0415
+
+        if not self._object_id:
+            raise NoShadowRootAttached(
+                "Element must have a valid node_id to check for shadow root"
+            )
+
+        try:
+            # Request shadow root for this element using describeDOMNode
+            response: Dict[str, Any] = await self._connection_handler.execute_command(
+                DomCommands.describe_node(
+                    object_id=self._object_id,
+                    depth=1,
+                    pierce=False,  # Respect shadow boundaries
+                )
+            )
+
+            # Check if the element has a shadow root
+            node_info = response['result']['root']
+            shadow_root_info = node_info.get('shadowRoots', [])
+
+            if not shadow_root_info:
+                return None
+
+            # Get the first shadow root (elements typically have only one)
+            shadow_root_data = shadow_root_info[0]
+            shadow_root_node_id = shadow_root_data.get('nodeId')
+
+            if not shadow_root_node_id:
+                raise ShadowRootAccessDenied("Shadow root found but no nodeId available")
+
+            # Resolve the shadow root to get its object ID
+            resolve_response: Dict[str, Any] = await self._connection_handler.execute_command(
+                DomCommands.resolve_node(node_id=shadow_root_node_id)
+            )
+            shadow_root_object_id = resolve_response['result']['object']['objectId']
+
+            # Create ShadowRoot instance with security validation
+            return ShadowRoot(
+                shadow_root_object_id=shadow_root_object_id,
+                connection_handler=self._connection_handler,
+                mode=shadow_root_data.get('shadowRootType', 'open'),
+                host_element=self,
+            )
+
+        except Exception as e:
+            if "No node with given id found" in str(e):
+                raise NoShadowRootAttached(f"Element node not found: {e}")
+            else:
+                raise ShadowRootAccessDenied(f"Failed to access shadow root: {e}")
 
     async def _click_option_tag(self):
         """Specialized method for clicking <option> elements in dropdowns."""

@@ -5,6 +5,8 @@ jobs:
   version-cz:
     runs-on: ubuntu-latest
     name: "Version CZ"
+    permissions:
+      contents: write
     outputs:
       version: ${{ steps.cz.outputs.version }}
 
@@ -28,6 +30,8 @@ jobs:
     runs-on: ubuntu-latest
     name: "Version Pyproject"
     needs: version-cz
+    permissions:
+      contents: write
     outputs:
       version: ${{ needs.version-cz.outputs.version }}
     steps:
@@ -37,10 +41,15 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
       - name: Install Poetry
         run: |
-          curl -sSL https://install.python-poetry.org | python3 -
-          export PATH="$HOME/.local/bin:$PATH"
+          python -m pip install --upgrade pip
+          pip install poetry
 
       - name: Update Poetry version in pyproject.toml
         run: |
@@ -63,14 +72,15 @@ jobs:
           git pull --rebase
           git push
 
-
   release:
     name: Release
     needs: version-pyproject
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           draft: false
           prerelease: false

@@ -162,3 +162,9 @@ cython_debug/
 
 .czrc
 .ruff_cache/
+
+# Docker files (local development only)
+Dockerfile
+docker-compose.yml
+.dockerignore
+docker-example.py
