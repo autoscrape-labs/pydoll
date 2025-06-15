@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pydoll-python"
-version = "2.1.0"
+version = "2.2.0"
 description = ""
 authors = ["Thalison Fernandes <thalissfernandes99@gmail.com>"]
 readme = "README.md"
@@ -70,3 +70,8 @@ exclude = [
 disable_error_code = [
     "type-arg",  # Disable "expects no type arguments" errors
 ]
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+tag_format = "$version"
+version = "2.2.0"

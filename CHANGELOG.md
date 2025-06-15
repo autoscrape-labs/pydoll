@@ -19,6 +19,17 @@
 - add fingerprint customization options (OS preference, screen resolution, languages)
 - implement automatic script injection via CDP for seamless operation
 - add fingerprint summary retrieval for monitoring current fingerprint
+- add new script-related exception classes for better handling
+- add functions to clean scripts and check return statements
+- add methods to retrieve network response body and logs
+
+### Fix
+
+- click in the input before typing and fix documentation
+
+### Refactor
+
+- add overloads for execute_script to improve type safety
 
 ### Enhancement
 
