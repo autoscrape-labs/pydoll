@@ -685,3 +685,404 @@ async def test_event_registration_sync_callback(mock_browser):
     mock_browser._connection_handler.register_callback.assert_called_with(
         'test_sync_event', ANY, True
     )
+
+
+# Tests for get_opened_tabs method
+@pytest.mark.asyncio
+async def test_get_opened_tabs_success(mock_browser):
+    """Test get_opened_tabs with multiple valid tabs."""
+    # Mock get_targets to return various target types
+    mock_targets = [
+        {
+            'targetId': 'tab1',
+            'type': 'page',
+            'url': 'https://example.com',
+            'title': 'Example Site'
+        },
+        {
+            'targetId': 'ext1',
+            'type': 'page',
+            'url': 'chrome-extension://abc123/popup.html',
+            'title': 'Extension Popup'
+        },
+        {
+            'targetId': 'tab2',
+            'type': 'page',
+            'url': 'https://google.com',
+            'title': 'Google'
+        },
+        {
+            'targetId': 'bg1',
+            'type': 'background_page',
+            'url': 'chrome://background',
+            'title': 'Background Page'
+        },
+        {
+            'targetId': 'tab3',
+            'type': 'page',
+            'url': 'chrome://newtab/',
+            'title': 'New Tab'
+        }
+    ]
+    
+    mock_browser.get_targets = AsyncMock(return_value=mock_targets)
+    
+    # Clear Tab singleton registry to avoid conflicts
+    Tab._instances.clear()
+    
+    tabs = await mock_browser.get_opened_tabs()
+    
+    # Should return 3 tabs (excluding extension and background_page)
+    assert len(tabs) == 3
+    
+    # Verify all returned objects are Tab instances
+    for tab in tabs:
+        assert isinstance(tab, Tab)
+    
+    # Verify target IDs are correct (should be in reversed order)
+    expected_target_ids = ['tab3', 'tab2', 'tab1']  # reversed order
+    actual_target_ids = [tab._target_id for tab in tabs]
+    assert actual_target_ids == expected_target_ids
+    
+    # Verify get_targets was called
+    mock_browser.get_targets.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_get_opened_tabs_no_valid_tabs(mock_browser):
+    """Test get_opened_tabs when no valid tabs exist."""
+    # Mock get_targets to return only non-page targets
+    mock_targets = [
+        {
+            'targetId': 'ext1',
+            'type': 'page',
+            'url': 'chrome-extension://abc123/popup.html',
+            'title': 'Extension Popup'
+        },
+        {
+            'targetId': 'bg1',
+            'type': 'background_page',
+            'url': 'chrome://background',
+            'title': 'Background Page'
+        },
+        {
+            'targetId': 'worker1',
+            'type': 'service_worker',
+            'url': 'https://example.com/sw.js',
+            'title': 'Service Worker'
+        }
+    ]
+    
+    mock_browser.get_targets = AsyncMock(return_value=mock_targets)
+    
+    # Clear Tab singleton registry
+    Tab._instances.clear()
+    
+    tabs = await mock_browser.get_opened_tabs()
+    
+    # Should return empty list
+    assert len(tabs) == 0
+    assert tabs == []
+    
+    mock_browser.get_targets.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_get_opened_tabs_empty_targets(mock_browser):
+    """Test get_opened_tabs when no targets exist."""
+    mock_browser.get_targets = AsyncMock(return_value=[])
+    
+    # Clear Tab singleton registry
+    Tab._instances.clear()
+    
+    tabs = await mock_browser.get_opened_tabs()
+    
+    assert len(tabs) == 0
+    assert tabs == []
+    
+    mock_browser.get_targets.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_get_opened_tabs_filters_extensions(mock_browser):
+    """Test that get_opened_tabs correctly filters out extension pages."""
+    mock_targets = [
+        {
+            'targetId': 'tab1',
+            'type': 'page',
+            'url': 'https://example.com',
+            'title': 'Example Site'
+        },
+        {
+            'targetId': 'ext1',
+            'type': 'page',
+            'url': 'chrome-extension://abc123/popup.html',
+            'title': 'Extension Popup'
+        },
+        {
+            'targetId': 'ext2',
+            'type': 'page',
+            'url': 'moz-extension://def456/options.html',
+            'title': 'Extension Options'
+        },
+        {
+            'targetId': 'tab2',
+            'type': 'page',
+            'url': 'https://github.com',
+            'title': 'GitHub'
+        }
+    ]
+    
+    mock_browser.get_targets = AsyncMock(return_value=mock_targets)
+    
+    # Clear Tab singleton registry
+    Tab._instances.clear()
+    
+    tabs = await mock_browser.get_opened_tabs()
+    
+    # Should return only 2 tabs (excluding extensions)
+    assert len(tabs) == 2
+    
+    # Verify no extension URLs in results
+    for tab in tabs:
+        assert 'extension' not in tab._target_id
+    
+    # Verify correct target IDs (reversed order)
+    expected_target_ids = ['tab2', 'tab1']
+    actual_target_ids = [tab._target_id for tab in tabs]
+    assert actual_target_ids == expected_target_ids
+
+
+@pytest.mark.asyncio
+async def test_get_opened_tabs_filters_non_page_types(mock_browser):
+    """Test that get_opened_tabs only returns 'page' type targets."""
+    mock_targets = [
+        {
+            'targetId': 'tab1',
+            'type': 'page',
+            'url': 'https://example.com',
+            'title': 'Example Site'
+        },
+        {
+            'targetId': 'worker1',
+            'type': 'service_worker',
+            'url': 'https://example.com/sw.js',
+            'title': 'Service Worker'
+        },
+        {
+            'targetId': 'shared1',
+            'type': 'shared_worker',
+            'url': 'https://example.com/shared.js',
+            'title': 'Shared Worker'
+        },
+        {
+            'targetId': 'browser1',
+            'type': 'browser',
+            'url': '',
+            'title': 'Browser Process'
+        },
+        {
+            'targetId': 'tab2',
+            'type': 'page',
+            'url': 'https://google.com',
+            'title': 'Google'
+        }
+    ]
+    
+    mock_browser.get_targets = AsyncMock(return_value=mock_targets)
+    
+    # Clear Tab singleton registry
+    Tab._instances.clear()
+    
+    tabs = await mock_browser.get_opened_tabs()
+    
+    # Should return only 2 tabs (only 'page' type)
+    assert len(tabs) == 2
+    
+    # Verify all are Tab instances
+    for tab in tabs:
+        assert isinstance(tab, Tab)
+    
+    # Verify correct target IDs (reversed order)
+    expected_target_ids = ['tab2', 'tab1']
+    actual_target_ids = [tab._target_id for tab in tabs]
+    assert actual_target_ids == expected_target_ids
+
+
+@pytest.mark.asyncio
+async def test_get_opened_tabs_singleton_behavior(mock_browser):
+    """Test that get_opened_tabs respects Tab singleton pattern."""
+    mock_targets = [
+        {
+            'targetId': 'tab1',
+            'type': 'page',
+            'url': 'https://example.com',
+            'title': 'Example Site'
+        },
+        {
+            'targetId': 'tab2',
+            'type': 'page',
+            'url': 'https://google.com',
+            'title': 'Google'
+        }
+    ]
+    
+    mock_browser.get_targets = AsyncMock(return_value=mock_targets)
+    
+    # Clear Tab singleton registry
+    Tab._instances.clear()
+    
+    # First call
+    tabs1 = await mock_browser.get_opened_tabs()
+    
+    # Second call with same targets
+    tabs2 = await mock_browser.get_opened_tabs()
+    
+    # Should return same instances due to singleton pattern
+    assert len(tabs1) == len(tabs2) == 2
+    
+    # Verify singleton behavior - same target_id should return same instance
+    for tab1, tab2 in zip(tabs1, tabs2):
+        if tab1._target_id == tab2._target_id:
+            assert tab1 is tab2  # Same object reference
+
+
+@pytest.mark.asyncio
+async def test_get_opened_tabs_order_is_reversed(mock_browser):
+    """Test that get_opened_tabs returns tabs in reversed order (most recent first)."""
+    mock_targets = [
+        {
+            'targetId': 'oldest_tab',
+            'type': 'page',
+            'url': 'https://first.com',
+            'title': 'First Tab'
+        },
+        {
+            'targetId': 'middle_tab',
+            'type': 'page',
+            'url': 'https://second.com',
+            'title': 'Second Tab'
+        },
+        {
+            'targetId': 'newest_tab',
+            'type': 'page',
+            'url': 'https://third.com',
+            'title': 'Third Tab'
+        }
+    ]
+    
+    mock_browser.get_targets = AsyncMock(return_value=mock_targets)
+    
+    # Clear Tab singleton registry
+    Tab._instances.clear()
+    
+    tabs = await mock_browser.get_opened_tabs()
+    
+    # Should return in reversed order (newest first)
+    expected_order = ['newest_tab', 'middle_tab', 'oldest_tab']
+    actual_order = [tab._target_id for tab in tabs]
+    
+    assert actual_order == expected_order
+
+
+@pytest.mark.asyncio
+async def test_get_opened_tabs_with_mixed_valid_invalid_targets(mock_browser):
+    """Test get_opened_tabs with a mix of valid and invalid targets."""
+    mock_targets = [
+        {
+            'targetId': 'valid_tab1',
+            'type': 'page',
+            'url': 'https://example.com',
+            'title': 'Valid Tab 1'
+        },
+        {
+            'targetId': 'extension_page',
+            'type': 'page',
+            'url': 'chrome-extension://abc123/popup.html',
+            'title': 'Extension Page'
+        },
+        {
+            'targetId': 'service_worker',
+            'type': 'service_worker',
+            'url': 'https://example.com/sw.js',
+            'title': 'Service Worker'
+        },
+        {
+            'targetId': 'valid_tab2',
+            'type': 'page',
+            'url': 'https://github.com',
+            'title': 'Valid Tab 2'
+        },
+        {
+            'targetId': 'background_page',
+            'type': 'background_page',
+            'url': 'chrome://background',
+            'title': 'Background'
+        },
+        {
+            'targetId': 'valid_tab3',
+            'type': 'page',
+            'url': 'chrome://newtab/',
+            'title': 'New Tab'
+        }
+    ]
+    
+    mock_browser.get_targets = AsyncMock(return_value=mock_targets)
+    
+    # Clear Tab singleton registry
+    Tab._instances.clear()
+    
+    tabs = await mock_browser.get_opened_tabs()
+    
+    # Should return only 3 valid tabs
+    assert len(tabs) == 3
+    
+    # Verify correct filtering and order
+    expected_target_ids = ['valid_tab3', 'valid_tab2', 'valid_tab1']
+    actual_target_ids = [tab._target_id for tab in tabs]
+    assert actual_target_ids == expected_target_ids
+    
+    # Verify all are Tab instances
+    for tab in tabs:
+        assert isinstance(tab, Tab)
+
+
+@pytest.mark.asyncio
+async def test_get_opened_tabs_integration_with_new_tab(mock_browser):
+    """Test get_opened_tabs integration with new_tab method."""
+    # Mock initial targets (empty)
+    mock_browser.get_targets = AsyncMock(return_value=[])
+    
+    # Clear Tab singleton registry
+    Tab._instances.clear()
+    
+    # Initially no tabs
+    tabs = await mock_browser.get_opened_tabs()
+    assert len(tabs) == 0
+    
+    # Mock new_tab creation
+    mock_browser._connection_handler.execute_command.return_value = {
+        'result': {'targetId': 'new_tab_1'}
+    }
+    
+    # Create a new tab
+    new_tab = await mock_browser.new_tab('https://example.com')
+    assert new_tab._target_id == 'new_tab_1'
+    
+    # Mock updated targets after tab creation
+    mock_browser.get_targets = AsyncMock(return_value=[
+        {
+            'targetId': 'new_tab_1',
+            'type': 'page',
+            'url': 'https://example.com',
+            'title': 'Example'
+        }
+    ])
+    
+    # Now get_opened_tabs should return the new tab
+    tabs = await mock_browser.get_opened_tabs()
+    assert len(tabs) == 1
+    assert tabs[0]._target_id == 'new_tab_1'
+    
+    # Due to singleton pattern, should be the same instance
+    assert tabs[0] is new_tab
