@@ -15,17 +15,9 @@ from pydoll.exceptions import (
     NotAnIFrame,
     InvalidFileExtension,
     WaitElementTimeout,
+    NetworkEventsNotEnabled,
+    InvalidScriptWithElement,
 )
-from pydoll.commands import (
-    DomCommands,
-    RuntimeCommands,
-    NetworkCommands,
-    StorageCommands,
-    PageCommands,
-    FetchCommands,
-)
-from pydoll.protocol.page.events import PageEvent
-
 
 @pytest_asyncio.fixture
 async def mock_connection_handler():
@@ -516,11 +508,11 @@ class TestTabDialogHandling:
 
 
 class TestTabScriptExecution:
-    """Test Tab JavaScript execution methods."""
+    """Test Tab script execution methods."""
 
     @pytest.mark.asyncio
     async def test_execute_script_simple(self, tab):
-        """Test executing simple JavaScript."""
+        """Test execute_script with simple JavaScript."""
         tab._connection_handler.execute_command.return_value = {
             'result': {'result': {'value': 'Test Result'}}
         }
@@ -531,17 +523,142 @@ class TestTabScriptExecution:
 
     @pytest.mark.asyncio
     async def test_execute_script_with_element(self, tab):
-        """Test executing JavaScript with element context."""
-        mock_element = WebElement(
-            object_id='test-element-id',
-            connection_handler=tab._connection_handler
-        )
+        """Test execute_script with element context."""
+        # Mock element
+        element = MagicMock()
+        element._object_id = 'test-object-id'
         
         tab._connection_handler.execute_command.return_value = {
             'result': {'result': {'value': 'Element clicked'}}
         }
         
-        result = await tab.execute_script('this.click()', mock_element)
+        result = await tab.execute_script('argument.click()', element)
+        
+        tab._connection_handler.execute_command.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_execute_script_argument_without_element_raises_exception(self, tab):
+        """Test execute_script raises exception when script contains 'argument' but no element provided."""
+        with pytest.raises(InvalidScriptWithElement) as exc_info:
+            await tab.execute_script('argument.click()')
+        
+        assert str(exc_info.value) == 'Script contains "argument" but no element was provided'
+        tab._connection_handler.execute_command.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_execute_script_element_without_argument_raises_exception(self, tab):
+        """Test execute_script raises exception when element is provided but script doesn't contain 'argument'."""
+        element = MagicMock()
+        element._object_id = 'test-object-id'
+        
+        with pytest.raises(InvalidScriptWithElement) as exc_info:
+            await tab.execute_script('console.log("test")', element)
+        
+        assert str(exc_info.value) == 'Script does not contain "argument"'
+        tab._connection_handler.execute_command.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_execute_script_with_element_already_function(self, tab):
+        """Test execute_script with element when script is already a function."""
+        element = MagicMock()
+        element._object_id = 'test-object-id'
+        
+        tab._connection_handler.execute_command.return_value = {
+            'result': {'result': {'value': 'Function executed'}}
+        }
+        
+        # Script already wrapped in function
+        script = 'function() { argument.click(); return "done"; }'
+        result = await tab.execute_script(script, element)
+        
+        tab._connection_handler.execute_command.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_execute_script_with_element_arrow_function(self, tab):
+        """Test execute_script with element when script is already an arrow function."""
+        element = MagicMock()
+        element._object_id = 'test-object-id'
+        
+        tab._connection_handler.execute_command.return_value = {
+            'result': {'result': {'value': 'Arrow function executed'}}
+        }
+        
+        # Script already wrapped in arrow function
+        script = '() => { argument.click(); return "done"; }'
+        result = await tab.execute_script(script, element)
+        
+        tab._connection_handler.execute_command.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_execute_script_return_outside_function(self, tab):
+        """Test execute_script wraps return statement outside function."""
+        tab._connection_handler.execute_command.return_value = {
+            'result': {'result': {'value': 'Wrapped result'}}
+        }
+        
+        # Script with return outside function should be wrapped
+        result = await tab.execute_script('return document.title')
+        
+        tab._connection_handler.execute_command.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_execute_script_return_inside_function(self, tab):
+        """Test execute_script doesn't wrap when return is inside function."""
+        tab._connection_handler.execute_command.return_value = {
+            'result': {'result': {'value': 'Function result'}}
+        }
+        
+        # Script with return inside function should not be wrapped
+        script = '''
+        function getTitle() {
+            return document.title;
+        }
+        getTitle();
+        '''
+        result = await tab.execute_script(script)
+        
+        tab._connection_handler.execute_command.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_execute_script_no_return_statement(self, tab):
+        """Test execute_script without return statement."""
+        tab._connection_handler.execute_command.return_value = {
+            'result': {'result': {'value': None}}
+        }
+        
+        # Script without return should not be wrapped
+        result = await tab.execute_script('console.log("Hello World")')
+        
+        tab._connection_handler.execute_command.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_execute_script_with_comments_and_strings(self, tab):
+        """Test execute_script handles comments and strings correctly."""
+        tab._connection_handler.execute_command.return_value = {
+            'result': {'result': {'value': 'Test with comments'}}
+        }
+        
+        # Script with comments and strings containing 'return'
+        script = '''
+        // This comment has return in it
+        var message = "This string has return in it";
+        /* This block comment also has return */
+        return "actual return";
+        '''
+        result = await tab.execute_script(script)
+        
+        tab._connection_handler.execute_command.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_execute_script_already_wrapped_function(self, tab):
+        """Test execute_script with already wrapped function."""
+        tab._connection_handler.execute_command.return_value = {
+            'result': {'result': {'value': 'Already wrapped'}}
+        }
+        
+        # Script already wrapped in function should not be wrapped again
+        script = 'function() { console.log("test"); return "done"; }'
+        result = await tab.execute_script(script)
         
         tab._connection_handler.execute_command.assert_called_once()
 
@@ -945,8 +1062,173 @@ class TestTabEdgeCases:
     @pytest.mark.asyncio
     async def test_dialog_property(self, tab):
         """Test dialog property access."""
-        test_dialog = {'params': {'type': 'alert', 'message': 'Test'}}
+        test_dialog = {'type': 'alert', 'message': 'Test message'}
         tab._connection_handler.dialog = test_dialog
         
         dialog = tab._connection_handler.dialog
         assert dialog == test_dialog
+
+
+class TestTabNetworkMethods:
+    """Test Tab network-related methods."""
+
+    @pytest.mark.asyncio
+    async def test_get_network_response_body_success(self, tab):
+        """Test get_network_response_body with network events enabled."""
+        # Enable network events
+        tab._network_events_enabled = True
+        
+        # Mock the response
+        expected_body = '<html><body>Response content</body></html>'
+        tab._connection_handler.execute_command.return_value = {
+            'result': {'body': expected_body}
+        }
+        
+        result = await tab.get_network_response_body('test_request_123')
+        
+        assert result == expected_body
+        tab._connection_handler.execute_command.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_get_network_response_body_events_not_enabled(self, tab):
+        """Test get_network_response_body when network events are not enabled."""
+        # Ensure network events are disabled
+        tab._network_events_enabled = False
+        
+        with pytest.raises(NetworkEventsNotEnabled) as exc_info:
+            await tab.get_network_response_body('test_request_123')
+        
+        assert str(exc_info.value) == 'Network events must be enabled to get response body'
+        tab._connection_handler.execute_command.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_get_network_logs_success_no_filter(self, tab):
+        """Test get_network_logs without filter."""
+        # Enable network events
+        tab._network_events_enabled = True
+        
+        # Mock network logs
+        test_logs = [
+            {
+                'method': 'Network.requestWillBeSent',
+                'params': {
+                    'request': {'url': 'https://example.com/api/data'},
+                    'requestId': 'req_1'
+                }
+            },
+            {
+                'method': 'Network.responseReceived',
+                'params': {
+                    'request': {'url': 'https://example.com/static/style.css'},
+                    'requestId': 'req_2'
+                }
+            }
+        ]
+        tab._connection_handler.network_logs = test_logs
+        
+        result = await tab.get_network_logs()
+        
+        assert result == test_logs
+        assert len(result) == 2
+
+    @pytest.mark.asyncio
+    async def test_get_network_logs_success_with_filter(self, tab):
+        """Test get_network_logs with URL filter."""
+        # Enable network events
+        tab._network_events_enabled = True
+        
+        # Mock network logs
+        test_logs = [
+            {
+                'method': 'Network.requestWillBeSent',
+                'params': {
+                    'request': {'url': 'https://example.com/api/data'},
+                    'requestId': 'req_1'
+                }
+            },
+            {
+                'method': 'Network.responseReceived',
+                'params': {
+                    'request': {'url': 'https://example.com/static/style.css'},
+                    'requestId': 'req_2'
+                }
+            },
+            {
+                'method': 'Network.requestWillBeSent',
+                'params': {
+                    'request': {'url': 'https://api.example.com/users'},
+                    'requestId': 'req_3'
+                }
+            }
+        ]
+        tab._connection_handler.network_logs = test_logs
+        
+        result = await tab.get_network_logs(filter='api')
+        
+        # Should return only logs with 'api' in the URL
+        assert len(result) == 2
+        assert result[0]['params']['request']['url'] == 'https://example.com/api/data'
+        assert result[1]['params']['request']['url'] == 'https://api.example.com/users'
+
+    @pytest.mark.asyncio
+    async def test_get_network_logs_empty_filter_result(self, tab):
+        """Test get_network_logs with filter that matches no logs."""
+        # Enable network events
+        tab._network_events_enabled = True
+        
+        # Mock network logs
+        test_logs = [
+            {
+                'method': 'Network.requestWillBeSent',
+                'params': {
+                    'request': {'url': 'https://example.com/static/style.css'},
+                    'requestId': 'req_1'
+                }
+            }
+        ]
+        tab._connection_handler.network_logs = test_logs
+        
+        result = await tab.get_network_logs(filter='nonexistent')
+        
+        assert result == []
+
+    @pytest.mark.asyncio
+    async def test_get_network_logs_events_not_enabled(self, tab):
+        """Test get_network_logs when network events are not enabled."""
+        # Ensure network events are disabled
+        tab._network_events_enabled = False
+        
+        with pytest.raises(NetworkEventsNotEnabled) as exc_info:
+            await tab.get_network_logs()
+        
+        assert str(exc_info.value) == 'Network events must be enabled to get network logs'
+
+    @pytest.mark.asyncio
+    async def test_get_network_logs_missing_request_params(self, tab):
+        """Test get_network_logs with logs missing request parameters."""
+        # Enable network events
+        tab._network_events_enabled = True
+        
+        # Mock network logs with missing request data
+        test_logs = [
+            {
+                'method': 'Network.requestWillBeSent',
+                'params': {
+                    'requestId': 'req_1'
+                    # Missing 'request' key
+                }
+            },
+            {
+                'method': 'Network.responseReceived',
+                'params': {
+                    'request': {},  # Empty request object
+                    'requestId': 'req_2'
+                }
+            }
+        ]
+        tab._connection_handler.network_logs = test_logs
+        
+        result = await tab.get_network_logs(filter='example')
+        
+        # Should handle missing request data gracefully
+        assert result == []

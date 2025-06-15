@@ -1,32 +1,18 @@
-## 2.1.0 (2025-06-10)
+## 2.1.0 (2025-06-14)
 
 ### Feat
 
-- **🎭 Advanced Browser Fingerprint Spoofing**: one-click fingerprint protection system
-- add comprehensive browser fingerprint spoofing with FingerprintConfig
-- implement intelligent fingerprint generation with randomization
-- add support for spoofing Navigator properties (User-Agent, platform, languages, hardware)
-- add WebGL fingerprint spoofing (vendor, renderer, extensions)
-- add Canvas fingerprint spoofing with noise injection
-- add Audio fingerprint spoofing (AudioContext, sample rate, channels)
-- add Screen and Window properties spoofing (resolution, color depth, dimensions)
-- add Geography and Timezone spoofing (timezone, offset, Intl API)
-- add Plugin information spoofing for enhanced stealth
-- add automation detection protection (remove navigator.webdriver, hide traces)
-- implement fingerprint persistence with save/load functionality
-- add FingerprintManager for direct fingerprint operations
-- support both Chrome and Edge browsers for fingerprint spoofing
-- add fingerprint customization options (OS preference, screen resolution, languages)
-- implement automatic script injection via CDP for seamless operation
-- add fingerprint summary retrieval for monitoring current fingerprint
+- add new script-related exception classes for better handling
+- add functions to clean scripts and check return statements
+- add methods to retrieve network response body and logs
 
-### Enhancement
+### Fix
 
-- integrate fingerprint spoofing into main browser classes
-- add bilingual documentation (English/Chinese) with language switching
-- enhance README with comprehensive fingerprint spoofing examples
-- add fingerprint testing website recommendations
-- optimize fingerprint generation algorithms for realistic results
+- click in the input before typing and fix documentation
+
+### Refactor
+
+- add overloads for execute_script to improve type safety
 
 ## 2.0.1 (2025-06-08)
 

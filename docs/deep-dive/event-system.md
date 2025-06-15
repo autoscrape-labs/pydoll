@@ -312,7 +312,7 @@ async def scrape_dynamic_content():
             if 'api/products' in event['params']['response']['url']:
                 # Extract the response body
                 request_id = event['params']['requestId']
-                body, is_base64 = await tab.get_network_response_body(request_id)
+                body = await tab.get_network_response_body(request_id)
                 
                 # Process the data
                 products = json.loads(body)
@@ -483,7 +483,7 @@ async def dynamic_tab_creation():
                 
             # Extract categories from the response
             request_id = event['params']['requestId']
-            body, _ = await main_tab.get_network_response_body(request_id)
+            body = await main_tab.get_network_response_body(request_id)
             categories = json.loads(body)
             
             print(f"Found {len(categories)} categories to process")
@@ -502,7 +502,7 @@ async def dynamic_tab_creation():
                         
                     # Process the product data
                     request_id = event['params']['requestId']
-                    body, _ = await tab.get_network_response_body(request_id)
+                    body = await tab.get_network_response_body(request_id)
                     products = json.loads(body)
                     
                     # Add to results
@@ -662,7 +662,7 @@ await tab.enable_page_events()
 async def handle_page_load(tab, event):
     print(f"Page loaded: {await tab.current_url}")
     # Perform actions after page load
-    await tab.find(id="search").type("pydoll")
+    await tab.find(id="search").type_text("pydoll")
 
 await tab.on(PageEvent.LOAD_EVENT_FIRED, partial(handle_page_load, tab))
 
@@ -699,10 +699,13 @@ async def log_request(tab, event):
 await tab.on(NetworkEvent.REQUEST_WILL_BE_SENT, partial(log_request, tab))
 
 # After performing actions, retrieve logs
-api_logs = await tab.get_network_logs(matches=["api", "graphql"])
+api_logs = await tab.get_network_logs(filter="api")
 
-# Get response bodies for specific requests
-json_responses = await tab.get_network_response_bodies(matches=["api/data"])
+# Get response bodies for specific requests by filtering logs first
+api_logs = await tab.get_network_logs(filter="api/data")
+for log in api_logs:
+    request_id = log['params']['requestId']
+    body = await tab.get_network_response_body(request_id)
 ```
 
 ### DOM Events for Structure Monitoring
