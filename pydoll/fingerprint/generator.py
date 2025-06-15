@@ -282,9 +282,15 @@ class FingerprintGenerator:
             # Fallback to Chrome
             return self._generate_chrome_user_agent('Windows', '10.0', browser_version)
 
-    def _generate_chrome_user_agent(self, os_name: str, os_version: str, browser_version: str) -> str:
+    @staticmethod
+    def _generate_chrome_user_agent(
+        os_name: str, os_version: str, browser_version: str
+    ) -> str:
         """Generate Chrome user agent for specific OS."""
-        base_template = 'Mozilla/5.0 ({os_part}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{version} Safari/537.36'
+        base_template = (
+            'Mozilla/5.0 ({os_part}) AppleWebKit/537.36 '
+            '(KHTML, like Gecko) Chrome/{version} Safari/537.36'
+        )
 
         os_parts = {
             'Windows': f'Windows NT {os_version}; Win64; x64',
@@ -295,10 +301,17 @@ class FingerprintGenerator:
         os_part = os_parts.get(os_name, os_parts['Windows'])
         return base_template.format(os_part=os_part, version=browser_version)
 
-    def _generate_edge_user_agent(self, os_name: str, os_version: str, browser_version: str) -> str:
+    @staticmethod
+    def _generate_edge_user_agent(
+        os_name: str, os_version: str, browser_version: str
+    ) -> str:
         """Generate Edge user agent for specific OS."""
         chrome_major = browser_version.split(".")[0]
-        base_template = 'Mozilla/5.0 ({os_part}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{chrome_major}.0.0.0 Safari/537.36 Edg/{version}'
+        base_template = (
+            'Mozilla/5.0 ({os_part}) AppleWebKit/537.36 '
+            '(KHTML, like Gecko) Chrome/{chrome_major}.0.0.0 '
+            'Safari/537.36 Edg/{version}'
+        )
 
         os_parts = {
             'Windows': f'Windows NT {os_version}; Win64; x64',
@@ -307,7 +320,9 @@ class FingerprintGenerator:
         }
 
         os_part = os_parts.get(os_name, os_parts['Windows'])
-        return base_template.format(os_part=os_part, chrome_major=chrome_major, version=browser_version)
+        return base_template.format(
+            os_part=os_part, chrome_major=chrome_major, version=browser_version
+        )
 
     @staticmethod
     def _generate_language_list(primary_language: str) -> List[str]:
