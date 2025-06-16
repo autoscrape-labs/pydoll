@@ -334,12 +334,12 @@ asyncio.run(iframe_interaction())
 
 如需完整文档、详细示例以及想要深入了解Pydoll的特性,请访问[官方文档](https://autoscrape-labs.github.io/pydoll/)
 
-The documentation includes:
-- **Getting Started Guide** - Step-by-step tutorials
-- **API Reference** - Complete method documentation  
-- **Advanced Techniques** - Network interception, event handling, performance optimization
-- **Troubleshooting** - Common issues and solutions
-- **Best Practices** - Patterns for reliable automation
+文档包含以下内容：
+- **入门指南** - 手把手教学教程
+- **API参考** - 完整的方法文档说明  
+- **高级技巧** - 网络请求拦截、事件处理、性能优化
+- **故障排查** - 常见问题及解决方案
+- **最佳实践** - 构建稳定自动化流程的推荐方案
 
 ## 贡献
 
