@@ -57,7 +57,7 @@ $ pip install git+https://github.com/autoscrape-labs/pydoll.git
 
 让我们以最优雅的方式，开启您的网页自动化之旅！🚀
 
-## 简单的例子快速上手
+## 简单的例子上手
 
 让我们从一个实际案例开始。以下脚本将打开 Pydoll 的 GitHub 仓库并star：  
 
@@ -85,10 +85,10 @@ async def main():
 asyncio.run(main())
 ```
 
-This example demonstrates how to navigate to a website, wait for an element to appear, and interact with it. You can adapt this pattern to automate many different web tasks.
+此示例演示了如何导航到网站、等待元素出现并与之交互。您可以使用这样的模式来自动执行许多不同的 Web 任务。
 
-??? note "Or use without context manager..."
-    If you prefer not to use the context manager pattern, you can manually manage the browser instance:
+??? note "或者使用不带上下文管理器的..."
+    如果你不想要使用上下文管理器模式，你可以手动管理浏览器实例：
     
     ```python
     import asyncio
@@ -117,16 +117,16 @@ This example demonstrates how to navigate to a website, wait for an element to a
     
     Note that when not using the context manager, you'll need to explicitly call `browser.stop()` to release resources.
 
-## Extended Example: Custom Browser Configuration
+## 补充例子: 自定义浏览器配置
 
-For more advanced usage scenarios, Pydoll allows you to customize your browser configuration using the `ChromiumOptions` class. This is useful when you need to:
+对于更高级的使用场景，Pydoll 允许您使用 `ChromiumOptions` 类自定义浏览器配置。此功能在您需要执行以下操作时非常有用：
 
-- Run in headless mode (no visible browser window)
-- Specify a custom browser executable path
-- Configure proxies, user agents, or other browser settings
-- Set window dimensions or startup arguments
+- 在无头模式下运行（无可见浏览器窗口）
+- 指定自定义浏览器可执行文件路径
+- 配置代理、用户代理或其他浏览器设置
+- 设置窗口尺寸或启动参数
 
-Here's an example showing how to use custom options for Chrome:
+以下示例展示了如何使用 Chrome 的自定义选项：
 
 ```python hl_lines="8-12 30-32 34-38"
 import asyncio
@@ -173,54 +173,55 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-This extended example demonstrates:
 
-1. Creating and configuring browser options
-2. Setting a custom Chrome binary path
-3. Enabling headless mode for invisible operation
-4. Setting additional browser flags
-5. Taking screenshots (especially useful in headless mode)
+此扩展示例演示了：
 
-??? info "About Chromium Options"
-    The `options.add_argument()` method allows you to pass any Chromium command-line argument to customize browser behavior. There are hundreds of available options to control everything from networking to rendering behavior.
-    
-    Common Chrome Options
+1. 创建和配置浏览器选项
+2. 设置自定义Chrome可执行程序路径
+3. 启用无头模式以实现无痕操作
+4. 设置其他浏览器命令行flags
+5. 屏幕截图（在无头模式下尤其有用）
+
+??? info "关于Chrome配置选项"
+    The `options.add_argument()` 方法允许您传递任何 Chromium 命令行参数来自定义浏览器行为。有数百个可用选项可用于控制从网络到渲染行为的所有内容。
+
+    常用Chrome配置选项
     
     ```python
-    # Performance & Behavior Options
-    options.add_argument('--headless=new')         # Run Chrome in headless mode
-    options.add_argument('--disable-gpu')          # Disable GPU hardware acceleration
-    options.add_argument('--no-sandbox')           # Disable sandbox (use with caution)
-    options.add_argument('--disable-dev-shm-usage') # Overcome limited resource issues
+    # 性能与行为选项
+    options.add_argument('--headless=new')         # 以无头模式运行Chrome
+    options.add_argument('--disable-gpu')          # 禁用GPU加速
+    options.add_argument('--no-sandbox')           # 禁用沙盒模式（需谨慎使用）
+    options.add_argument('--disable-dev-shm-usage') # 解决资源限制问题
     
-    # Appearance Options
-    options.add_argument('--start-maximized')      # Start with maximized window
-    options.add_argument('--window-size=1920,1080') # Set specific window size
-    options.add_argument('--hide-scrollbars')      # Hide scrollbars
+    # 界面显示选项
+    options.add_argument('--start-maximized')      # 以最大化窗口启动
+    options.add_argument('--window-size=1920,1080') # 设置特定窗口尺寸
+    options.add_argument('--hide-scrollbars')      # 隐藏滚动条
     
-    # Network Options
-    options.add_argument('--proxy-server=socks5://127.0.0.1:9050') # Use proxy
-    options.add_argument('--disable-extensions')   # Disable extensions
-    options.add_argument('--disable-notifications') # Disable notifications
+    # 网络选项
+    options.add_argument('--proxy-server=socks5://127.0.0.1:9050') # 使用代理服务器
+    options.add_argument('--disable-extensions')   # 禁用扩展程序
+    options.add_argument('--disable-notifications') # 禁用通知
     
-    # Privacy & Security
-    options.add_argument('--incognito')            # Run in incognito mode
-    options.add_argument('--disable-infobars')     # Disable infobars
+    # 隐私与安全
+    options.add_argument('--incognito')            # 以隐身模式运行
+    options.add_argument('--disable-infobars')     # 禁用信息栏
     ```
     
-    Complete Reference Guides
+    完整参考指南
     
-    For a comprehensive list of all available Chrome command-line arguments, refer to these resources:
+    如需获取所有可用的Chrome命令行参数完整列表，请参考以下资源：
     
     - [Chromium Command Line Switches](https://peter.sh/experiments/chromium-command-line-switches/) - Complete reference list
     - [Chrome Flags](chrome://flags) - Enter this in your Chrome browser address bar to see experimental features
     - [Chromium Source Code Flags](https://source.chromium.org/chromium/chromium/src/+/main:chrome/common/chrome_switches.cc) - Direct source code reference
     
-    Remember that some options may behave differently across Chrome versions, so it's a good practice to test your configuration when upgrading Chrome.
+    请注意某些选项在不同Chrome版本中可能有差异表现，建议在升级Chrome时测试您的配置。
 
-With these configurations, you can run Pydoll in various environments, including CI/CD pipelines, servers without displays, or Docker containers.
+通过这些配置，您可以在各种环境中运行 Pydoll，包括 CI/CD 流水线、无显示器的服务器或 Docker 容器。
 
-Continue reading the documentation to explore Pydoll's powerful features for handling captchas, working with multiple tabs, interacting with elements, and more.
+继续阅读文档，探索 Pydoll 在处理验证码、处理多个标签页、与元素交互等方面的强大功能。
 
 ## 极简依赖
 
