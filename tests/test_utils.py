@@ -13,6 +13,7 @@ from pydoll.utils import (
     has_return_outside_function,
     is_script_already_function,
     validate_browser_paths,
+    extract_text_from_html,
 )
 
 
@@ -401,3 +402,26 @@ class TestScriptAnalysisFunctions:
         '''
         assert has_return_outside_function(script) is False
 
+    def test_extract_text_without_strip_without_separator(self):
+        html = ('<div>Hello <span> world </span><script>alert(1)</script><style>body { color: red; }</style>'
+                '<template>hidden</template></div>')
+        result = extract_text_from_html(html)
+        assert result == 'Hello  world '
+
+    def test_extract_text_with_strip_without_separator(self):
+        html = ('<div>Hello <span> world </span><script>alert(1)</script><style>body { color: red; }</style>'
+                '<template>hidden</template></div>')
+        result = extract_text_from_html(html, strip=True)
+        assert result == 'Helloworld'
+
+    def test_extract_text_without_strip_with_separator(self):
+        html = ('<div>Hello <span> world </span><script>alert(1)</script><style>body { color: red; }</style>'
+                '<template>hidden</template></div>')
+        result = extract_text_from_html(html, separator="/")
+        assert result == 'Hello / world '
+
+    def test_extract_text_with_strip_with_separator(self):
+        html = ('<div>Hello <span> world </span><script>alert(1)</script><style>body { color: red; }</style>'
+                '<template>hidden</template></div>')
+        result = extract_text_from_html(html, strip=True, separator="/")
+        assert result == 'Hello/world'
