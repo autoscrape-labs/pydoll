@@ -1,10 +1,10 @@
-# Fetch Commands
+# Fetch 命令
 
-Fetch commands provide advanced network request handling and interception capabilities using the Fetch API domain.
+Fetch 命令使用 Fetch API 域提供高级网络请求处理和拦截功能。
 
-## Overview
+## 概述
 
-The fetch commands module enables sophisticated network request management, including request modification, response interception, and authentication handling.
+Fetch 命令模块支持复杂的网络请求管理，包括请求修改、响应拦截和身份验证处理。
 
 ::: pydoll.commands.fetch_commands
     options:
@@ -15,9 +15,9 @@ The fetch commands module enables sophisticated network request management, incl
         - "!^_"
         - "!^__"
 
-## Usage
+## 用法
 
-Fetch commands are used for advanced network interception and request handling:
+Fetch 命令用于高级网络拦截和请求处理：
 
 ```python
 from pydoll.commands.fetch_commands import enable, request_paused, continue_request
@@ -36,36 +36,37 @@ async def handle_paused_request(request_id, request):
     await continue_request(connection, request_id=request_id)
 ```
 
-## Key Functionality
+## 关键功能
 
-The fetch commands module provides functions for:
+fetch 命令模块提供以下功能：
 
-### Request Interception
-- `enable()` - Enable fetch domain with patterns
-- `disable()` - Disable fetch domain
-- `continue_request()` - Continue intercepted requests
-- `fail_request()` - Fail requests with specific errors
+### 请求拦截
+- `enable()` - 激活fetch模式
+- `disable()` - 关闭fetch模式
+- `continue_request()` - 继续请求（放行）
+- `fail_request()` - 返回特定错误请求
 
-### Request Modification
-- Modify request headers
-- Change request URLs
-- Alter request methods (GET, POST, etc.)
-- Modify request bodies
+### 修改请求
+- 修改请求headers
+- 更改请求 URL
+- 更改请求方法（GET、POST 等）
+- 修改请求body
 
-### Response Handling
-- `fulfill_request()` - Provide custom responses
-- `get_response_body()` - Get response content
-- Response header modification
-- Response status code control
+### 响应处理
+- `fulfill_request()` - 提供自定义响应
+- `get_response_body()` - 获取响应内容
+- 修改响应头
+- 响应状态码控制
 
-### Authentication
-- `continue_with_auth()` - Handle authentication challenges
-- Basic authentication support
-- Custom authentication flows
+### 身份验证
+- `continue_with_auth()` - 处理身份验证挑战
+- 基本身份验证支持
+- 自定义身份验证流程
 
-## Advanced Features
+## 高级功能
 
-### Pattern-Based Interception
+### 基于模式的拦截
+
 ```python
 # Intercept specific URL patterns
 patterns = [
@@ -77,7 +78,7 @@ patterns = [
 await enable(connection, patterns=patterns)
 ```
 
-### Request Modification
+### 请求修改
 ```python
 # Modify intercepted requests
 async def modify_request(request_id, request):
@@ -93,7 +94,7 @@ async def modify_request(request_id, request):
     )
 ```
 
-### Response Mocking
+### 响应模拟
 ```python
 # Mock API responses
 await fulfill_request(
@@ -108,7 +109,7 @@ await fulfill_request(
 )
 ```
 
-### Authentication Handling
+### 身份验证处理
 ```python
 # Handle authentication challenges
 await continue_with_auth(
@@ -122,16 +123,16 @@ await continue_with_auth(
 )
 ```
 
-## Request Stages
+## 请求阶段
 
-Fetch commands can intercept requests at different stages:
+Fetch 命令可以在不同阶段拦截请求：
 
-| Stage | Description | Use Cases |
+| 阶段 | 描述 | 用例 |
 |-------|-------------|-----------|
-| Request | Before request is sent | Modify headers, URL, method |
-| Response | After response received | Mock responses, modify content |
+| 请求 | 请求发送前 | 修改标头、URL 和方法 |
+| 响应 | 收到响应后 | 模拟响应，修改内容 |
 
-## Error Handling
+## 错误处理
 
 ```python
 # Fail requests with specific errors
@@ -142,12 +143,12 @@ await fail_request(
 )
 ```
 
-## Integration with Network Commands
+## 与网络命令集成
 
-Fetch commands work alongside network commands but provide more granular control:
+Fetch 命令与网络命令协同工作，但提供更精细的控制：
 
-- **Network Commands**: Broader network monitoring and control
-- **Fetch Commands**: Specific request/response interception and modification
+- **网络命令**：更广泛的网络监控和控制
+- **Fetch 命令**：特定的请求/响应拦截和修改
 
 !!! tip "Performance Considerations"
     Fetch interception can impact page loading performance. Use specific URL patterns and disable when not needed to minimize overhead. 

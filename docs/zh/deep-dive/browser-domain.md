@@ -1,6 +1,6 @@
-# Browser Domain
+# 浏览器域
 
-The Browser domain is the backbone of Pydoll's zero-webdriver architecture. This component provides a direct interface to browser instances through the Chrome DevTools Protocol (CDP), eliminating the need for traditional webdrivers while delivering superior performance and reliability.
+浏览器域是 Pydoll无webdriver架构的核心。该组件通过 Chrome DevTools 协议 (CDP) 为浏览器实例提供直接接口，无需传统的 Web 驱动程序，同时提供极佳的性能和可靠性。
 
 ```mermaid
 graph LR
@@ -17,7 +17,7 @@ graph LR
     end
 ```
 
-## Technical Architecture
+## 技术架构
 
 At its core, the Browser domain is implemented as an abstract base class (`Browser`) that establishes the fundamental contract for all browser implementations. Specific browser classes like `Chrome` and `Edge` extend this base class to provide browser-specific behavior while sharing the common architecture.
 

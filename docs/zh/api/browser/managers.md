@@ -1,8 +1,8 @@
-# Browser Managers
+# 浏览器管理器
 
-The managers module provides specialized classes for managing different aspects of browser lifecycle and configuration.
+管理器模块提供专门的类来管理浏览器生命周期和配置。
 
-## Overview
+## 总览
 
 Browser managers handle specific responsibilities in browser automation:
 
@@ -15,10 +15,10 @@ Browser managers handle specific responsibilities in browser automation:
         - "!^_"
         - "!^__"
 
-## Manager Classes
+## 管理器类
 
-### Browser Process Manager
-Manages the browser process lifecycle, including starting, stopping, and monitoring browser processes.
+### 浏览器进程管理器
+管理浏览器进程的生命周期，包括启动、停止和监控浏览器进程。
 
 ::: pydoll.browser.managers.browser_process_manager
     options:
@@ -26,8 +26,8 @@ Manages the browser process lifecycle, including starting, stopping, and monitor
       show_source: false
       heading_level: 3
 
-### Browser Options Manager
-Handles browser configuration options and command-line arguments.
+### 浏览器选项管理器
+处理浏览器配置选项和命令行参数。
 
 ::: pydoll.browser.managers.browser_options_manager
     options:
@@ -35,8 +35,8 @@ Handles browser configuration options and command-line arguments.
       show_source: false
       heading_level: 3
 
-### Proxy Manager
-Manages proxy configuration and authentication for browser instances.
+### 代理管理器
+管理浏览器实例的代理配置和身份验证。
 
 ::: pydoll.browser.managers.proxy_manager
     options:
@@ -44,8 +44,8 @@ Manages proxy configuration and authentication for browser instances.
       show_source: false
       heading_level: 3
 
-### Temporary Directory Manager
-Handles creation and cleanup of temporary directories used by browser instances.
+### 临时目录管理器
+处理浏览器实例使用的临时目录的创建和清理。
 
 ::: pydoll.browser.managers.temp_dir_manager
     options:
@@ -53,9 +53,8 @@ Handles creation and cleanup of temporary directories used by browser instances.
       show_source: false
       heading_level: 3
 
-## Usage
-
-Managers are typically used internally by browser classes like `Chrome` and `Edge`. They provide modular functionality that can be composed together:
+## 用法
+管理器通常由 Chrome 和 Edge 等浏览器类内部使用。它们提供可组合的模块化功能：
 
 ```python
 from pydoll.browser.managers.proxy_manager import ProxyManager
