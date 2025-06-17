@@ -3,7 +3,6 @@ import json
 from typing import Optional
 
 import aiofiles
-from bs4 import BeautifulSoup
 
 from pydoll.commands import (
     DomCommands,
@@ -34,7 +33,10 @@ from pydoll.protocol.dom.responses import (
 from pydoll.protocol.dom.types import Quad
 from pydoll.protocol.page.responses import CaptureScreenshotResponse
 from pydoll.protocol.page.types import Viewport
-from pydoll.utils import decode_base64_to_bytes
+from pydoll.utils import (
+    decode_base64_to_bytes,
+    extract_text_from_html,
+)
 
 
 class WebElement(FindElementsMixin):  # noqa: PLR0904
@@ -99,8 +101,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
     async def text(self) -> str:
         """Visible text content of the element."""
         outer_html = await self.inner_html
-        soup = BeautifulSoup(outer_html, 'html.parser')
-        return soup.get_text(strip=True)
+        return extract_text_from_html(outer_html, strip=True)
 
     @property
     async def bounds(self) -> Quad:
