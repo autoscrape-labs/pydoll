@@ -23,6 +23,8 @@
 </p>
 
 
+- [简体中文介绍](README_zh.md)
+
 ## Key Features
 
 🔹 **Zero Webdrivers!** Say goodbye to webdriver compatibility nightmares  

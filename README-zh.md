@@ -22,6 +22,7 @@
   <a href="#license">License</a>
 </p>
 
+- [英文介绍](README.md)
 
 ## 核心特性  
 
