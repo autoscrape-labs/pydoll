@@ -215,9 +215,29 @@ class Browser(ABC):  # noqa: PLR0904
 
         Targets include pages, service workers, shared workers, and browser process.
         Useful for debugging and managing multiple tabs.
+
+        Returns:
+            List of TargetInfo objects.
         """
         response: GetTargetsResponse = await self._execute_command(TargetCommands.get_targets())
         return response['result']['targetInfos']
+
+    async def get_opened_tabs(self) -> list[Tab]:
+        """
+        Get all opened tabs that are not extensions and have the type 'page'
+
+        Returns:
+            List of Tab instances. The last tab is the most recent one.
+        """
+        targets = await self.get_targets()
+        valid_tab_targets = [
+            target for target in targets if target['type'] == 'page'
+            and 'extension' not in target['url']
+        ]
+        return [
+            Tab(self, self._connection_port, target['targetId']) for target
+            in reversed(valid_tab_targets)
+        ]
 
     async def set_download_path(self, path: str, browser_context_id: Optional[str] = None):
         """Set download directory path (convenience method for set_download_behavior)."""

@@ -2,12 +2,102 @@ import base64
 import logging
 import os
 import re
+from html import unescape
+from html.parser import HTMLParser
 
 import aiohttp
 
 from pydoll.exceptions import InvalidBrowserPath, InvalidResponse, NetworkError
 
 logger = logging.getLogger(__name__)
+
+
+class TextExtractor(HTMLParser):
+    """
+    HTML parser for text extraction.
+
+    Extracts visible text content from an HTML string, excluding the contents of
+    tags specified in _skip_tags.
+    """
+    def __init__(self):
+        super().__init__()
+        self._parts = []
+        self._skip = False
+        self._skip_tags = {"script", "style", "template"}
+
+    def handle_starttag(self, tag, attrs):
+        """
+        Marks the parser to skip content inside tags specified in _skip_tags.
+
+        Args:
+            tag (str): The tag name.
+            attrs (list): A list of (attribute, value) pairs.
+        """
+        if tag in self._skip_tags:
+            self._skip = True
+
+    def handle_endtag(self, tag):
+        """
+        Marks the parser the end of skip tags.
+
+        Args:
+            tag (str): The tag name.
+        """
+        if tag in self._skip_tags:
+            self._skip = False
+
+    def handle_data(self, data):
+        """
+        Handles text nodes. Adds them to the result unless they are within a skip tag.
+
+        Args:
+            data (str): The text data.
+        """
+        if not self._skip:
+            self._parts.append(unescape(data))
+
+    def get_strings(self, strip: bool):
+        """
+        Yields all collected visible text fragments.
+
+        Args:
+            strip (bool): Whether to strip leading/trailing whitespace from each fragment.
+
+        Yields:
+            str: Visible text fragments.
+        """
+        for text in self._parts:
+            yield text.strip() if strip else text
+
+    def get_text(self, separator: str, strip: bool) -> str:
+        """
+        Returns all visible text.
+
+        Args:
+            separator (str): String inserted between extracted text fragments.
+            strip (bool): Whether to strip whitespace from each fragment.
+
+        Returns:
+            str: The visible text.
+        """
+        return separator.join(self.get_strings(strip=strip))
+
+
+def extract_text_from_html(html: str, separator: str = '', strip: bool = False) -> str:
+    """
+    Extracts visible text content from an HTML string.
+
+    Args:
+        html (str): The HTML string to extract text from.
+        separator (str, optional): String inserted between extracted text fragments. Defaults to ''.
+        strip (bool, optional): Whether to strip whitespace from text fragments. Defaults to False.
+
+    Returns:
+        str: The extracted visible text.
+    """
+    parser = TextExtractor()
+    parser.feed(html)
+    return parser.get_text(separator=separator, strip=strip)
 
 
 def decode_base64_to_bytes(image: str) -> bytes:

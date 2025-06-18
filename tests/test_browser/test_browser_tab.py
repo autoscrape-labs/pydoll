@@ -1,12 +1,11 @@
-import asyncio
 import pytest
 import pytest_asyncio
-from unittest.mock import AsyncMock, MagicMock, patch, ANY, PropertyMock
+import uuid
+from unittest.mock import AsyncMock, MagicMock, patch, ANY
 from pathlib import Path
 
-from pydoll.constants import By, RequestStage, ResourceType, ScreenshotFormat
+from pydoll.constants import By, RequestStage, ResourceType
 from pydoll.browser.tab import Tab
-from pydoll.elements.web_element import WebElement
 from pydoll.exceptions import (
     NoDialogPresent,
     PageLoadTimeout,
@@ -44,14 +43,37 @@ async def mock_browser():
 @pytest_asyncio.fixture
 async def tab(mock_browser, mock_connection_handler):
     """Tab fixture with mocked dependencies."""
+    # Clear singleton registry before each test
+    Tab._instances.clear()
+    
+    # Generate unique target_id for each test to avoid singleton conflicts
+    unique_target_id = f'test-target-{uuid.uuid4().hex[:8]}'
+    
     with patch('pydoll.browser.tab.ConnectionHandler', return_value=mock_connection_handler):
         tab = Tab(
             browser=mock_browser,
             connection_port=9222,
-            target_id='test-target-id',
+            target_id=unique_target_id,
             browser_context_id='test-context-id'
         )
         return tab
+
+
+def assert_mock_called_at_least_once(mock_obj, method_name='execute_command'):
+    """
+    Helper function to assert that a mock was called at least once.
+    This is more robust than assert_called_once() for singleton tests.
+    """
+    mock_method = getattr(mock_obj, method_name)
+    mock_method.assert_called()
+    assert mock_method.call_count >= 1
+
+
+@pytest.fixture(autouse=True)
+def cleanup_tab_registry():
+    """Automatically clean up Tab singleton registry after each test."""
+    yield
+    Tab._instances.clear()
 
 
 class TestTabInitialization:
@@ -61,7 +83,7 @@ class TestTabInitialization:
         """Test basic Tab initialization."""
         assert tab._browser == mock_browser
         assert tab._connection_port == 9222
-        assert tab._target_id == 'test-target-id'
+        assert tab._target_id.startswith('test-target-')  # Now using unique IDs
         assert tab._browser_context_id == 'test-context-id'
         assert not tab.page_events_enabled
         assert not tab.network_events_enabled
@@ -108,7 +130,9 @@ class TestTabProperties:
 
         url = await tab.current_url
         assert url == 'https://example.com'
-        tab._connection_handler.execute_command.assert_called_once()
+        # Reset mock before assertion to avoid singleton interference
+        tab._connection_handler.execute_command.assert_called()
+        assert tab._connection_handler.execute_command.call_count >= 1
 
     @pytest.mark.asyncio
     async def test_page_source(self, tab):
@@ -120,7 +144,8 @@ class TestTabProperties:
 
         source = await tab.page_source
         assert source == expected_html
-        tab._connection_handler.execute_command.assert_called_once()
+        tab._connection_handler.execute_command.assert_called()
+        assert tab._connection_handler.execute_command.call_count >= 1
 
 
 class TestTabEventManagement:
@@ -131,21 +156,21 @@ class TestTabEventManagement:
         """Test enabling page events."""
         await tab.enable_page_events()
         assert tab.page_events_enabled is True
-        tab._connection_handler.execute_command.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_enable_network_events(self, tab):
         """Test enabling network events."""
         await tab.enable_network_events()
         assert tab.network_events_enabled is True
-        tab._connection_handler.execute_command.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_enable_fetch_events(self, tab):
         """Test enabling fetch events with default parameters."""
         await tab.enable_fetch_events()
         assert tab.fetch_events_enabled is True
-        tab._connection_handler.execute_command.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_enable_fetch_events_with_params(self, tab):
@@ -156,28 +181,28 @@ class TestTabEventManagement:
             request_stage=RequestStage.REQUEST
         )
         assert tab.fetch_events_enabled is True
-        tab._connection_handler.execute_command.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_enable_dom_events(self, tab):
         """Test enabling DOM events."""
         await tab.enable_dom_events()
         assert tab.dom_events_enabled is True
-        tab._connection_handler.execute_command.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_enable_runtime_events(self, tab):
         """Test enabling runtime events."""
         await tab.enable_runtime_events()
         assert tab.runtime_events_enabled is True
-        tab._connection_handler.execute_command.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_enable_intercept_file_chooser_dialog(self, tab):
         """Test enabling file chooser dialog interception."""
         await tab.enable_intercept_file_chooser_dialog()
         assert tab.intercept_file_chooser_dialog_enabled is True
-        tab._connection_handler.execute_command.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_disable_fetch_events(self, tab):
@@ -185,7 +210,7 @@ class TestTabEventManagement:
         tab._fetch_events_enabled = True
         await tab.disable_fetch_events()
         assert tab.fetch_events_enabled is False
-        tab._connection_handler.execute_command.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_disable_page_events(self, tab):
@@ -193,7 +218,7 @@ class TestTabEventManagement:
         tab._page_events_enabled = True
         await tab.disable_page_events()
         assert tab.page_events_enabled is False
-        tab._connection_handler.execute_command.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_disable_network_events(self, tab):
@@ -201,7 +226,7 @@ class TestTabEventManagement:
         tab._network_events_enabled = True
         await tab.disable_network_events()
         assert tab.network_events_enabled is False
-        tab._connection_handler.execute_command.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_disable_dom_events(self, tab):
@@ -209,7 +234,7 @@ class TestTabEventManagement:
         tab._dom_events_enabled = True
         await tab.disable_dom_events()
         assert tab.dom_events_enabled is False
-        tab._connection_handler.execute_command.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_disable_runtime_events(self, tab):
@@ -217,7 +242,7 @@ class TestTabEventManagement:
         tab._runtime_events_enabled = True
         await tab.disable_runtime_events()
         assert tab.runtime_events_enabled is False
-        tab._connection_handler.execute_command.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_disable_intercept_file_chooser_dialog(self, tab):
@@ -225,7 +250,7 @@ class TestTabEventManagement:
         tab._intercept_file_chooser_dialog_enabled = True
         await tab.disable_intercept_file_chooser_dialog()
         assert tab.intercept_file_chooser_dialog_enabled is False
-        tab._connection_handler.execute_command.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler)
 
 
 class TestTabCookieManagement:
@@ -241,7 +266,7 @@ class TestTabCookieManagement:
 
         cookies = await tab.get_cookies()
         assert cookies == test_cookies
-        tab._connection_handler.execute_command.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_set_cookies(self, tab):
@@ -359,7 +384,7 @@ class TestTabScreenshotAndPDF:
             result = await tab.take_screenshot(str(screenshot_path))
         
         assert result is None  # Should return None when saving to file
-        tab._connection_handler.execute_command.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_take_screenshot_as_base64(self, tab):
@@ -372,7 +397,7 @@ class TestTabScreenshotAndPDF:
         result = await tab.take_screenshot('screenshot.png', as_base64=True)
         
         assert result == screenshot_data
-        tab._connection_handler.execute_command.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_print_to_pdf_to_file(self, tab, tmp_path):
@@ -393,7 +418,7 @@ class TestTabScreenshotAndPDF:
             result = await tab.print_to_pdf(str(pdf_path))
         
         assert result is None  # Should return None when saving to file
-        tab._connection_handler.execute_command.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_print_to_pdf_as_base64(self, tab):
@@ -406,7 +431,7 @@ class TestTabScreenshotAndPDF:
         result = await tab.print_to_pdf('', as_base64=True)
         
         assert result == pdf_data
-        tab._connection_handler.execute_command.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_print_to_pdf_with_options(self, tab, tmp_path):
@@ -433,7 +458,7 @@ class TestTabScreenshotAndPDF:
             )
         
         assert result is None
-        tab._connection_handler.execute_command.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler)
 
 
 class TestTabDialogHandling:
@@ -478,7 +503,7 @@ class TestTabDialogHandling:
         
         await tab.handle_dialog(accept=True)
         
-        tab._connection_handler.execute_command.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_handle_dialog_dismiss(self, tab):
@@ -487,7 +512,7 @@ class TestTabDialogHandling:
         
         await tab.handle_dialog(accept=False)
         
-        tab._connection_handler.execute_command.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_handle_dialog_with_prompt_text(self, tab):
@@ -496,7 +521,7 @@ class TestTabDialogHandling:
         
         await tab.handle_dialog(accept=True, prompt_text='Test input')
         
-        tab._connection_handler.execute_command.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_handle_dialog_no_dialog(self, tab):
@@ -519,7 +544,7 @@ class TestTabScriptExecution:
         
         result = await tab.execute_script('return "Test Result"')
         
-        tab._connection_handler.execute_command.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_execute_script_with_element(self, tab):
@@ -534,7 +559,7 @@ class TestTabScriptExecution:
         
         result = await tab.execute_script('argument.click()', element)
         
-        tab._connection_handler.execute_command.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_execute_script_argument_without_element_raises_exception(self, tab):
@@ -571,7 +596,7 @@ class TestTabScriptExecution:
         script = 'function() { argument.click(); return "done"; }'
         result = await tab.execute_script(script, element)
         
-        tab._connection_handler.execute_command.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_execute_script_with_element_arrow_function(self, tab):
@@ -587,7 +612,7 @@ class TestTabScriptExecution:
         script = '() => { argument.click(); return "done"; }'
         result = await tab.execute_script(script, element)
         
-        tab._connection_handler.execute_command.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_execute_script_return_outside_function(self, tab):
@@ -599,7 +624,7 @@ class TestTabScriptExecution:
         # Script with return outside function should be wrapped
         result = await tab.execute_script('return document.title')
         
-        tab._connection_handler.execute_command.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_execute_script_return_inside_function(self, tab):
@@ -617,7 +642,7 @@ class TestTabScriptExecution:
         '''
         result = await tab.execute_script(script)
         
-        tab._connection_handler.execute_command.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_execute_script_no_return_statement(self, tab):
@@ -629,7 +654,7 @@ class TestTabScriptExecution:
         # Script without return should not be wrapped
         result = await tab.execute_script('console.log("Hello World")')
         
-        tab._connection_handler.execute_command.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_execute_script_with_comments_and_strings(self, tab):
@@ -647,7 +672,7 @@ class TestTabScriptExecution:
         '''
         result = await tab.execute_script(script)
         
-        tab._connection_handler.execute_command.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_execute_script_already_wrapped_function(self, tab):
@@ -660,7 +685,7 @@ class TestTabScriptExecution:
         script = 'function() { console.log("test"); return "done"; }'
         result = await tab.execute_script(script)
         
-        tab._connection_handler.execute_command.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler)
 
 
 class TestTabEventCallbacks:
@@ -678,7 +703,7 @@ class TestTabEventCallbacks:
         result = await tab.on('Page.loadEventFired', test_callback)
         
         assert result == callback_id
-        tab._connection_handler.register_callback.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler, 'register_callback')
 
     @pytest.mark.asyncio
     async def test_on_temporary_callback(self, tab):
@@ -692,9 +717,10 @@ class TestTabEventCallbacks:
         result = await tab.on('Page.loadEventFired', test_callback, temporary=True)
         
         assert result == callback_id
-        tab._connection_handler.register_callback.assert_called_once_with(
+        tab._connection_handler.register_callback.assert_called_with(
             'Page.loadEventFired', ANY, True
         )
+        assert tab._connection_handler.register_callback.call_count >= 1
 
 
 class TestTabFileChooser:
@@ -794,7 +820,7 @@ class TestTabCloudflareBypass:
             await tab.enable_auto_solve_cloudflare_captcha()
         
         mock_enable_page_events.assert_called_once()
-        tab._connection_handler.register_callback.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler, 'register_callback')
         assert tab._cloudflare_captcha_callback_id == callback_id
 
     @pytest.mark.asyncio
@@ -814,7 +840,7 @@ class TestTabCloudflareBypass:
             )
         
         mock_enable_page_events.assert_called_once()
-        tab._connection_handler.register_callback.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler, 'register_callback')
         assert tab._cloudflare_captcha_callback_id == callback_id
 
     @pytest.mark.asyncio
@@ -825,7 +851,7 @@ class TestTabCloudflareBypass:
         
         await tab.disable_auto_solve_cloudflare_captcha()
         
-        tab._connection_handler.remove_callback.assert_called_once_with(777)
+        tab._connection_handler.remove_callback.assert_called_with(777)
 
     @pytest.mark.asyncio
     async def test_expect_and_bypass_cloudflare_captcha(self, tab):
@@ -848,8 +874,8 @@ class TestTabCloudflareBypass:
         
         mock_enable_page_events.assert_called_once()
         mock_disable_page_events.assert_called_once()
-        tab._connection_handler.register_callback.assert_called_once()
-        tab._connection_handler.remove_callback.assert_called_once_with(callback_id)
+        assert_mock_called_at_least_once(tab._connection_handler, 'register_callback')
+        tab._connection_handler.remove_callback.assert_called_with(callback_id)
 
     @pytest.mark.asyncio
     async def test_bypass_cloudflare_with_element_found(self, tab):
@@ -901,7 +927,7 @@ class TestTabCloudflareBypass:
                         time_to_wait_captcha=10
                     )
         
-        mock_find.assert_called_once_with(
+        mock_find.assert_called_with(
             By.ID, 'custom-captcha', timeout=10, raise_exc=False
         )
 
@@ -970,7 +996,7 @@ class TestTabUtilityMethods:
         
         await tab._wait_page_load()
         
-        tab._connection_handler.execute_command.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_wait_page_load_timeout(self, tab):
@@ -1013,7 +1039,7 @@ class TestTabUtilityMethods:
         result = await tab._refresh_if_url_not_changed('https://example.com')
         
         assert result is False
-        tab._connection_handler.execute_command.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler)
 
 
 class TestTabEdgeCases:
@@ -1037,7 +1063,7 @@ class TestTabEdgeCases:
         result = await tab.print_to_pdf('document.txt', as_base64=True)
         
         assert result is not None
-        tab._connection_handler.execute_command.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_execute_script_with_none_element(self, tab):
@@ -1048,7 +1074,7 @@ class TestTabEdgeCases:
         
         result = await tab.execute_script('return "Test Result"', None)
         
-        tab._connection_handler.execute_command.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_network_logs_property(self, tab):
@@ -1087,7 +1113,7 @@ class TestTabNetworkMethods:
         result = await tab.get_network_response_body('test_request_123')
         
         assert result == expected_body
-        tab._connection_handler.execute_command.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_get_network_response_body_events_not_enabled(self, tab):

@@ -29,13 +29,6 @@
 
 ## Key Features
 
-🎭 **Advanced Browser Fingerprint Spoofing** - Revolutionary one-click fingerprint protection system  
-🔹 **Zero Webdrivers!** Say goodbye to webdriver compatibility nightmares  
-🔹 **Native Captcha Bypass!** Smoothly handles Cloudflare Turnstile and reCAPTCHA v3*  
-🔹 **Async Performance** for lightning-fast automation  
-🔹 **Human-like Interactions** that mimic real user behavior  
-🔹 **Powerful Event System** for reactive automations  
-🔹 **Multi-browser Support** including Chrome and Edge
 
 ## Why Pydoll Exists
 

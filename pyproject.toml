@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pydoll-python"
-version = "2.2.0"
+version = "2.2.2"
 
 description = ""
 authors = ["Thalison Fernandes <thalissfernandes99@gmail.com>"]
@@ -14,8 +14,6 @@ python = "^3.10"
 websockets = "^13.1"
 aiohttp = "^3.9.5"
 aiofiles = "^23.2.1"
-bs4 = "^0.0.2"
-mkdocstrings = "^0.29.1"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -67,11 +65,4 @@ post_test = 'coverage html'
 exclude = [
     "tests/",
 ]
-disable_error_code = [
-    "type-arg",  # Disable "expects no type arguments" errors
-]
 
-[tool.commitizen]
-name = "cz_conventional_commits"
-tag_format = "$version"
-version = "2.2.0"
