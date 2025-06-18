@@ -1,4 +1,24 @@
+<<<<<<< HEAD
 ## 2.1.0 (2025-06-15)
+=======
+## 2.2.2 (2025-06-18)
+
+### Fix
+
+- fix call_function_on parameters order
+
+### Refactor
+
+- replace BeautifulSoup with custom HTML text extractor
+
+## 2.2.1 (2025-06-16)
+
+### Fix
+
+- fix call parameters order in call_function_on method
+
+## 2.2.0 (2025-06-15)
+>>>>>>> 822fff6 (bump: version 2.2.1 → 2.2.2)
 
 ### Feat
 
