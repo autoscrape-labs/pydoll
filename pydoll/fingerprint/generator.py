@@ -258,7 +258,7 @@ class FingerprintGenerator:
         if self.config.preferred_os:
             # Convert to lowercase for case-insensitive comparison
             preferred_os_lower = self.config.preferred_os.lower()
-            
+
             # Map common OS names to their actual names in our data
             os_mapping = {
                 'windows': 'Windows',
@@ -268,16 +268,16 @@ class FingerprintGenerator:
                 'osx': 'Macintosh',
                 'linux': 'Linux'
             }
-            
+
             # Get the standardized OS name
             target_os = os_mapping.get(preferred_os_lower)
-            
+
             if target_os:
                 filtered_os = [os for os in self.OPERATING_SYSTEMS
                               if os['name'] == target_os]
                 if filtered_os:
                     return random.choice(filtered_os)
-        
+
         # If no preferred OS or no match found, return random OS
         return random.choice(self.OPERATING_SYSTEMS)
 
@@ -324,7 +324,7 @@ class FingerprintGenerator:
         # Handle mobile user agents
         if self.config.is_mobile:
             return self._generate_mobile_user_agent(os_name, browser_version)
-        
+
         # Handle desktop user agents
         if self.config.browser_type == 'chrome':
             return self._generate_chrome_user_agent(os_name, os_version, browser_version)
@@ -334,12 +334,13 @@ class FingerprintGenerator:
             # Fallback to Chrome
             return self._generate_chrome_user_agent('Windows', '10.0', browser_version)
 
-    def _generate_mobile_user_agent(self, os_name: str, browser_version: str) -> str:
+    @staticmethod
+    def _generate_mobile_user_agent(os_name: str, browser_version: str) -> str:
         """Generate a mobile user agent string."""
         if random.choice([True, False]):  # Android
             android_version = random.randint(10, 13)
             device_models = [
-                "SM-G998B", "Pixel 6", "Pixel 7", "OnePlus 10 Pro", 
+                "SM-G998B", "Pixel 6", "Pixel 7", "OnePlus 10 Pro",
                 "Redmi Note 11", "Moto G Power"
             ]
             device = random.choice(device_models)
@@ -440,11 +441,12 @@ class FingerprintGenerator:
 
         return offset_map.get(timezone, 0)
 
-    def _generate_unique_properties(self) -> Dict:
+    @staticmethod
+    def _generate_unique_properties() -> Dict:
         """Generate unique properties to ensure fingerprint uniqueness."""
         # 生成一个唯一的指纹ID，但不会影响浏览器功能
         unique_id = f"{int(time.time())}_{uuid.uuid4().hex[:8]}"
-        
+
         # 这些属性会被添加到指纹中，但不会影响浏览器的功能
         # 它们只是确保每个指纹都是唯一的
         return {

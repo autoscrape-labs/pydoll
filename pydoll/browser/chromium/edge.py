@@ -28,8 +28,8 @@ class Edge(Browser):
             fingerprint_config: Configuration for fingerprint generation.
         """
         options_manager = ChromiumOptionsManager(
-            options, 
-            enable_fingerprint_spoofing, 
+            options,
+            enable_fingerprint_spoofing,
             fingerprint_config
         )
         super().__init__(options_manager, connection_port)

@@ -49,20 +49,20 @@ class FingerprintInjector:
     def _generate_navigator_override(self) -> str:
         """Generate JavaScript to override navigator properties."""
         languages_js = str(self.fingerprint.languages).replace("'", '"')
-        
+
         # Conditional script parts
         device_memory_script = (
             'Object.defineProperty(navigator, "deviceMemory", { get: () => ' +
             str(self.fingerprint.device_memory) +
             ', configurable: true });'
         ) if self.fingerprint.device_memory else ''
-        
+
         do_not_track_script = (
             'Object.defineProperty(navigator, "doNotTrack", { get: () => "' +
             str(self.fingerprint.do_not_track) +
             '", configurable: true });'
         ) if self.fingerprint.do_not_track else ''
-        
+
         # Use the script template from constants
         return Scripts.NAVIGATOR_OVERRIDE.format(
             user_agent=self.fingerprint.user_agent,
@@ -94,7 +94,7 @@ class FingerprintInjector:
     def _generate_webgl_override(self) -> str:
         """Generate JavaScript to override WebGL properties."""
         extensions_js = str(self.fingerprint.webgl_extensions).replace("'", '"')
-        
+
         # Use the script template from constants
         return Scripts.WEBGL_OVERRIDE.format(
             webgl_vendor=self.fingerprint.webgl_vendor,

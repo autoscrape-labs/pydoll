@@ -3,6 +3,7 @@ from typing import Optional
 from pydoll.browser.interfaces import BrowserOptionsManager, Options
 from pydoll.browser.options import ChromiumOptions
 from pydoll.exceptions import InvalidOptionsObject
+from pydoll.fingerprint.manager import FingerprintManager
 
 
 class ChromiumOptionsManager(BrowserOptionsManager):
@@ -13,20 +14,20 @@ class ChromiumOptionsManager(BrowserOptionsManager):
     for Chrome and Edge browsers.
     """
 
-    def __init__(self, options: Optional[Options] = None, enable_fingerprint_spoofing: bool = False, fingerprint_config=None):
+    def __init__(
+        self,
+        options: Optional[Options] = None,
+        enable_fingerprint_spoofing: bool = False,
+        fingerprint_config=None
+    ):
         self.options = options
         self.enable_fingerprint_spoofing = enable_fingerprint_spoofing
         self.fingerprint_config = fingerprint_config
         self.fingerprint_manager = None
-        
-        # Import fingerprint manager only if needed to avoid circular imports
+
+        # Initialize fingerprint manager if spoofing is enabled
         if enable_fingerprint_spoofing:
-            try:
-                from pydoll.fingerprint.manager import FingerprintManager
-                self.fingerprint_manager = FingerprintManager(fingerprint_config)
-            except ImportError:
-                # Fingerprint module not available, disable spoofing
-                self.enable_fingerprint_spoofing = False
+            self.fingerprint_manager = FingerprintManager(fingerprint_config)
 
     def initialize_options(
         self,
@@ -50,18 +51,18 @@ class ChromiumOptionsManager(BrowserOptionsManager):
             raise InvalidOptionsObject(f'Expected ChromiumOptions, got {type(self.options)}')
 
         self.add_default_arguments()
-        
+
         # Apply fingerprint spoofing if enabled
         if self.enable_fingerprint_spoofing and self.fingerprint_manager:
             self._apply_fingerprint_spoofing()
-            
+
         return self.options
 
     def add_default_arguments(self):
         """Add default arguments required for CDP integration."""
         self.options.add_argument('--no-first-run')
         self.options.add_argument('--no-default-browser-check')
-        
+
     def _apply_fingerprint_spoofing(self):
         """
         Apply fingerprint spoofing arguments to browser options.
@@ -80,11 +81,11 @@ class ChromiumOptionsManager(BrowserOptionsManager):
         for arg in fingerprint_args:
             if arg not in self.options.arguments:
                 self.options.add_argument(arg)
-                
+
     def _detect_browser_type(self) -> str:
         """
         Detect browser type from options or configuration.
-        
+
         Returns:
             Browser type string ('chrome' or 'edge').
         """
@@ -93,7 +94,7 @@ class ChromiumOptionsManager(BrowserOptionsManager):
             if 'edge' in binary_path or 'msedge' in binary_path:
                 return 'edge'
         return 'chrome'  # Default to chrome
-                
+
     def get_fingerprint_manager(self):
         """
         Get the fingerprint manager instance.

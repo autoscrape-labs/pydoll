@@ -4,18 +4,16 @@ from functools import partial
 from random import randint
 from typing import Any, Callable, Optional, TypeVar
 
-from pydoll.browser.interfaces import BrowserOptionsManager
-from pydoll.browser.managers import (
-    BrowserProcessManager,
-    ProxyManager,
-    TempDirectoryManager,
-)
+from pydoll.browser.managers.browser_options_manager import BrowserOptionsManager
+from pydoll.browser.managers.browser_process_manager import BrowserProcessManager
+from pydoll.browser.managers.proxy_manager import ProxyManager
+from pydoll.browser.managers.temp_dir_manager import TempDirectoryManager
 from pydoll.browser.tab import Tab
 from pydoll.commands import (
     BrowserCommands,
     FetchCommands,
+    PageCommands,
     RuntimeCommands,
-    StorageCommands,
     TargetCommands,
 )
 from pydoll.connection import ConnectionHandler
@@ -37,6 +35,7 @@ from pydoll.protocol.browser.types import WindowBoundsDict
 from pydoll.protocol.fetch.events import FetchEvent
 from pydoll.protocol.fetch.types import HeaderEntry
 from pydoll.protocol.network.types import Cookie, CookieParam, RequestPausedEvent
+from pydoll.protocol.storage.commands import StorageCommands
 from pydoll.protocol.storage.responses import GetCookiesResponse
 from pydoll.protocol.target.responses import (
     CreateBrowserContextResponse,
@@ -80,10 +79,12 @@ class Browser(ABC):  # noqa: PLR0904
         self._browser_process_manager = BrowserProcessManager()
         self._temp_directory_manager = TempDirectoryManager()
         self._connection_handler = ConnectionHandler(self._connection_port)
-        
+
         # Store fingerprint manager reference if available
         self.fingerprint_manager = getattr(options_manager, 'fingerprint_manager', None)
-        self.enable_fingerprint_spoofing = getattr(options_manager, 'enable_fingerprint_spoofing', False)
+        self.enable_fingerprint_spoofing = getattr(
+            options_manager, 'enable_fingerprint_spoofing', False
+        )
 
     async def __aenter__(self) -> 'Browser':
         """Async context manager entry."""
@@ -129,11 +130,11 @@ class Browser(ABC):  # noqa: PLR0904
 
         valid_tab_id = await self._get_valid_tab_id(await self.get_targets())
         tab = Tab(self, self._connection_port, valid_tab_id)
-        
+
         # Inject fingerprint spoofing JavaScript if enabled
         if self.enable_fingerprint_spoofing and self.fingerprint_manager:
             await self._inject_fingerprint_script(tab)
-            
+
         return tab
 
     async def stop(self):
@@ -218,11 +219,11 @@ class Browser(ABC):  # noqa: PLR0904
         )
         target_id = response['result']['targetId']
         tab = Tab(self, self._connection_port, target_id, browser_context_id)
-        
+
         # Inject fingerprint spoofing JavaScript if enabled
         if self.enable_fingerprint_spoofing and self.fingerprint_manager:
             await self._inject_fingerprint_script(tab)
-            
+
         return tab
 
     async def get_targets(self) -> list[TargetInfo]:
@@ -590,9 +591,6 @@ class Browser(ABC):  # noqa: PLR0904
             # Get the JavaScript injection code
             assert self.fingerprint_manager is not None
             script = self.fingerprint_manager.get_fingerprint_js()
-
-            # Import PageCommands here to avoid circular imports
-            from pydoll.commands import PageCommands
 
             # Inject the script using Page.addScriptToEvaluateOnNewDocument
             # This ensures the script runs before any page scripts
