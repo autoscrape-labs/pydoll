@@ -32,12 +32,12 @@ async def basic_example():
 
         # Get fingerprint ID
         try:
-            # 等待足够时间让指纹生成
+            # Wait enough time for fingerprint generation
             await asyncio.sleep(3)
 
-            # 尝试使用更通用的选择器或直接执行 JavaScript 获取指纹 ID
+            # Try to use a more generic selector or execute JavaScript directly to get fingerprint ID
             fingerprint_id = await tab.execute_script("""
-                // 等待指纹生成完成
+                // Wait for fingerprint generation to complete
                 if (window.fingerprintJsResult) {
                     return window.fingerprintJsResult.visitorId || 'No ID found';
                 } else if (document.querySelector(".visitor-id")) {
@@ -45,7 +45,7 @@ async def basic_example():
                 } else if (document.getElementById("fp-result")) {
                     return document.getElementById("fp-result").textContent;
                 } else {
-                    // 尝试查找包含指纹 ID 的任何元素
+                    // Try to find any element containing a fingerprint ID
                     const elements = document.querySelectorAll('*');
                     for (const el of elements) {
                         if (el.textContent && el.textContent.match(/[a-f0-9]{32}/)) {
@@ -184,39 +184,39 @@ async def multiple_browsers_example():
     simultaneously"""
     print("\n=== Multiple Browsers Example ===")
 
-    # 创建指纹管理器以便获取指纹对象
+    # Create fingerprint managers to get fingerprint objects
     fingerprint_manager1 = FingerprintManager()
     fingerprint_manager2 = FingerprintManager()
 
-    # 生成两个不同的指纹
+    # Generate two different fingerprints
     fingerprint1 = fingerprint_manager1.generate_new_fingerprint("chrome")
     fingerprint2 = fingerprint_manager2.generate_new_fingerprint("chrome")
 
-    # 比较两个指纹
-    print("\n指纹比较:")
-    print(f"指纹1 ID: {fingerprint1.unique_id}")
-    print(f"指纹2 ID: {fingerprint2.unique_id}")
+    # Compare the two fingerprints
+    print("\nFingerprint Comparison:")
+    print(f"Fingerprint 1 ID: {fingerprint1.unique_id}")
+    print(f"Fingerprint 2 ID: {fingerprint2.unique_id}")
 
     if fingerprint1.unique_id != fingerprint2.unique_id:
-        print("✓ 成功: 两个指纹有不同的唯一ID!")
+        print("✓ Success: The two fingerprints have different unique IDs!")
     else:
-        print("✗ 警告: 两个指纹的唯一ID相同")
+        print("✗ Warning: The two fingerprints have the same unique ID")
 
-    # 比较其他关键属性
-    print("\n关键属性比较:")
-    print(f"用户代理1: {fingerprint1.user_agent}")
-    print(f"用户代理2: {fingerprint2.user_agent}")
-    print(f"平台1: {fingerprint1.platform}")
-    print(f"平台2: {fingerprint2.platform}")
-    print(f"Canvas指纹1: {fingerprint1.canvas_fingerprint}")
-    print(f"Canvas指纹2: {fingerprint2.canvas_fingerprint}")
+    # Compare other key attributes
+    print("\nKey Attributes Comparison:")
+    print(f"User Agent 1: {fingerprint1.user_agent}")
+    print(f"User Agent 2: {fingerprint2.user_agent}")
+    print(f"Platform 1: {fingerprint1.platform}")
+    print(f"Platform 2: {fingerprint2.platform}")
+    print(f"Canvas Fingerprint 1: {fingerprint1.canvas_fingerprint}")
+    print(f"Canvas Fingerprint 2: {fingerprint2.canvas_fingerprint}")
 
     # Create two browsers with different fingerprints
-    # 创建Chrome浏览器实例，并启用指纹伪装
-    # 注意：Chrome类不接受fingerprint_manager参数，而是接受fingerprint_config参数
+    # Create Chrome browser instances with fingerprint spoofing enabled
+    # Note: Chrome class doesn't accept fingerprint_manager parameter, but accepts fingerprint_config
     browser1 = Chrome(
         enable_fingerprint_spoofing=True,
-        # 创建一个新的FingerprintConfig，并使用已生成的指纹的配置
+        # Create a new FingerprintConfig and use the configuration of the generated fingerprint
         fingerprint_config=FingerprintConfig(browser_type="chrome")
     )
     browser2 = Chrome(
@@ -237,12 +237,12 @@ async def multiple_browsers_example():
 
         # Get fingerprint IDs from both browsers
         try:
-            # 等待足够时间让指纹生成
+            # Wait enough time for fingerprint generation
             await asyncio.sleep(3)
 
-            # 使用 JavaScript 获取指纹 ID
+            # Use JavaScript to get fingerprint ID
             fp_id1 = await tab1.execute_script("""
-                // 等待指纹生成完成
+                // Wait for fingerprint generation to complete
                 if (window.fingerprintJsResult) {
                     return window.fingerprintJsResult.visitorId || 'No ID found';
                 } else if (document.querySelector(".visitor-id")) {
@@ -250,7 +250,7 @@ async def multiple_browsers_example():
                 } else if (document.getElementById("fp-result")) {
                     return document.getElementById("fp-result").textContent;
                 } else {
-                    // 尝试查找包含指纹 ID 的任何元素
+                    // Try to find any element containing a fingerprint ID
                     const elements = document.querySelectorAll('*');
                     for (const el of elements) {
                         if (el.textContent && el.textContent.match(/[a-f0-9]{32}/)) {
@@ -262,7 +262,7 @@ async def multiple_browsers_example():
             """)
 
             fp_id2 = await tab2.execute_script("""
-                // 等待指纹生成完成
+                // Wait for fingerprint generation to complete
                 if (window.fingerprintJsResult) {
                     return window.fingerprintJsResult.visitorId || 'No ID found';
                 } else if (document.querySelector(".visitor-id")) {
@@ -270,7 +270,7 @@ async def multiple_browsers_example():
                 } else if (document.getElementById("fp-result")) {
                     return document.getElementById("fp-result").textContent;
                 } else {
-                    // 尝试查找包含指纹 ID 的任何元素
+                    // Try to find any element containing a fingerprint ID
                     const elements = document.querySelectorAll('*');
                     for (const el of elements) {
                         if (el.textContent && el.textContent.match(/[a-f0-9]{32}/)) {
@@ -281,16 +281,16 @@ async def multiple_browsers_example():
                 }
             """)
 
-            print("\n网站检测到的指纹:")
-            print(f"浏览器1指纹ID: {fp_id1}")
-            print(f"浏览器2指纹ID: {fp_id2}")
+            print("\nFingerprints detected by the website:")
+            print(f"Browser 1 Fingerprint ID: {fp_id1}")
+            print(f"Browser 2 Fingerprint ID: {fp_id2}")
 
             if fp_id1 != fp_id2:
-                print("✓ 成功: 两个浏览器生成了不同的指纹!")
+                print("✓ Success: The two browsers generated different fingerprints!")
             else:
-                print("✗ 警告: 两个浏览器有相同的指纹")
+                print("✗ Warning: The two browsers have the same fingerprint")
         except Exception as e:
-            print(f"获取指纹ID失败: {e}")
+            print(f"Failed to get fingerprint IDs: {e}")
             traceback.print_exc()
 
         await asyncio.sleep(3)
@@ -329,10 +329,10 @@ async def edge_browser_example():
 async def main():
     """Run all examples"""
     try:
-        # 只运行多浏览器示例来测试指纹唯一性
+        # Run multiple browsers example to test fingerprint uniqueness
         await multiple_browsers_example()
 
-        # 以下示例暂时注释掉
+        # The following examples are temporarily commented out
         # await basic_example()
         # await custom_config_example()
         # await persistent_fingerprint_example()
