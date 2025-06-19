@@ -35,7 +35,8 @@ async def basic_example():
             # Wait enough time for fingerprint generation
             await asyncio.sleep(3)
 
-            # Try to use a more generic selector or execute JavaScript directly to get fingerprint ID
+            # Try to use a more generic selector or directly execute JavaScript
+            # to get fingerprint ID
             fingerprint_id = await tab.execute_script("""
                 // Wait for fingerprint generation to complete
                 if (window.fingerprintJsResult) {
@@ -213,10 +214,9 @@ async def multiple_browsers_example():
 
     # Create two browsers with different fingerprints
     # Create Chrome browser instances with fingerprint spoofing enabled
-    # Note: Chrome class doesn't accept fingerprint_manager parameter, but accepts fingerprint_config
+    # Note: Chrome class accepts fingerprint_config instead of fingerprint_manager
     browser1 = Chrome(
         enable_fingerprint_spoofing=True,
-        # Create a new FingerprintConfig and use the configuration of the generated fingerprint
         fingerprint_config=FingerprintConfig(browser_type="chrome")
     )
     browser2 = Chrome(
