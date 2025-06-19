@@ -5,8 +5,6 @@ This module provides comprehensive browser fingerprinting protection by generati
 random but realistic browser fingerprints and injecting them into the browser.
 """
 
-from .browser import Chrome, Edge
-from .browser_options import FingerprintBrowserOptionsManager
 from .generator import FingerprintGenerator
 from .injector import FingerprintInjector
 from .manager import FingerprintManager
@@ -16,9 +14,6 @@ from .models import Fingerprint, FingerprintConfig
 FINGERPRINT_MANAGER = FingerprintManager()
 
 __all__ = [
-    'Chrome',
-    'Edge',
-    'FingerprintBrowserOptionsManager',
     'FingerprintGenerator',
     'FingerprintInjector',
     'FingerprintManager',

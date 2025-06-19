@@ -68,7 +68,13 @@ from pydoll.protocol.dom.responses import (
     GetNodeStackTracesResponse,
     GetOuterHTMLResponse,
     GetQueryingDescendantForContainerResponse,
+    GetRelayoutBoundaryResponse,
+    GetSearchResultsResponse,
+    GetTopLayerElementsResponse,
     MoveToResponse,
+    PerformSearchResponse,
+    PushNodeByPathToFrontendResponse,
+    PushNodesByBackendIdsToFrontendResponse,
     QuerySelectorAllResponse,
     QuerySelectorResponse,
     RequestNodeResponse,
@@ -1065,7 +1071,7 @@ class DomCommands:  # noqa
     @staticmethod
     def get_relayout_boundary(
         node_id: int,
-    ) -> Command:
+    ) -> Command[GetRelayoutBoundaryResponse]:
         """
         Returns the root of the relayout boundary for the given node.
 
@@ -1087,7 +1093,7 @@ class DomCommands:  # noqa
         search_id: str,
         from_index: int,
         to_index: int,
-    ) -> Command:
+    ) -> Command[GetSearchResultsResponse]:
         """
         Returns search results from given `fromIndex` to given `toIndex` from a search.
 
@@ -1107,7 +1113,7 @@ class DomCommands:  # noqa
         return Command(method=DomMethod.GET_SEARCH_RESULTS, params=params)
 
     @staticmethod
-    def get_top_layer_elements() -> Command:
+    def get_top_layer_elements() -> Command[GetTopLayerElementsResponse]:
         """
         Returns all top layer elements in the document.
 
@@ -1121,7 +1127,7 @@ class DomCommands:  # noqa
         return Command(method=DomMethod.GET_TOP_LAYER_ELEMENTS)
 
     @staticmethod
-    def mark_undoable_state() -> Command:
+    def mark_undoable_state() -> Command[Response]:
         """
         Marks last undoable state.
 
@@ -1138,7 +1144,7 @@ class DomCommands:  # noqa
     def perform_search(
         query: str,
         include_user_agent_shadow_dom: Optional[bool] = None,
-    ) -> Command:
+    ) -> Command[PerformSearchResponse]:
         """
         Searches for a given string in the DOM tree.
 
@@ -1161,7 +1167,7 @@ class DomCommands:  # noqa
     @staticmethod
     def push_node_by_path_to_frontend(
         path: str,
-    ) -> Command:
+    ) -> Command[PushNodeByPathToFrontendResponse]:
         """
         Requests that the node is sent to the caller given its path.
 
@@ -1181,7 +1187,7 @@ class DomCommands:  # noqa
     @staticmethod
     def push_nodes_by_backend_ids_to_frontend(
         backend_node_ids: list[int],
-    ) -> Command:
+    ) -> Command[PushNodesByBackendIdsToFrontendResponse]:
         """
         Requests that a batch of nodes is sent to the caller given their backend node ids.
 
@@ -1198,7 +1204,7 @@ class DomCommands:  # noqa
         return Command(method=DomMethod.PUSH_NODES_BY_BACKEND_IDS_TO_FRONTEND, params=params)
 
     @staticmethod
-    def redo() -> Command:
+    def redo() -> Command[Response]:
         """
         Re-does the last undone action.
 

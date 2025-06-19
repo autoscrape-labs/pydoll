@@ -8,8 +8,9 @@ fingerprint tracking.
 import asyncio
 import traceback
 
+from pydoll.browser.chromium.chrome import Chrome
+from pydoll.browser.chromium.edge import Edge
 from pydoll.fingerprint import FingerprintConfig, FingerprintManager
-from pydoll.fingerprint.browser import Chrome, Edge
 
 
 async def basic_example():
@@ -31,12 +32,34 @@ async def basic_example():
 
         # Get fingerprint ID
         try:
-            fingerprint_element = await tab.find_element("css", ".visitor-id")
-            if fingerprint_element:
-                fingerprint_id = await fingerprint_element.text
-                print(f"Generated fingerprint ID: {fingerprint_id}")
+            # Wait enough time for fingerprint generation
+            await asyncio.sleep(3)
+
+            # Try to use a more generic selector or directly execute JavaScript
+            # to get fingerprint ID
+            fingerprint_id = await tab.execute_script("""
+                // Wait for fingerprint generation to complete
+                if (window.fingerprintJsResult) {
+                    return window.fingerprintJsResult.visitorId || 'No ID found';
+                } else if (document.querySelector(".visitor-id")) {
+                    return document.querySelector(".visitor-id").textContent;
+                } else if (document.getElementById("fp-result")) {
+                    return document.getElementById("fp-result").textContent;
+                } else {
+                    // Try to find any element containing a fingerprint ID
+                    const elements = document.querySelectorAll('*');
+                    for (const el of elements) {
+                        if (el.textContent && el.textContent.match(/[a-f0-9]{32}/)) {
+                            return el.textContent.match(/[a-f0-9]{32}/)[0];
+                        }
+                    }
+                    return 'Could not find fingerprint ID on page';
+                }
+            """)
+            print(f"Generated fingerprint ID: {fingerprint_id}")
         except Exception as e:
             print(f"Failed to get fingerprint ID: {e}")
+            traceback.print_exc()
 
         # Take screenshot to save result
         try:
@@ -54,21 +77,23 @@ async def custom_config_example():
 
     # Create custom fingerprint configuration
     config = FingerprintConfig(
-        # Select features to spoof
-        spoof_user_agent=True,
-        spoof_screen=True,
-        spoof_hardware=True,
-        spoof_webgl=True,
-        spoof_canvas=True,
-        spoof_audio=True,
-        spoof_webrtc=True,
+        # Configure browser and OS settings
+        browser_type="chrome",
+        preferred_os="windows",
+        is_mobile=False,
+
+        # Configure fingerprinting protection features
+        enable_webgl_spoofing=True,
+        enable_canvas_spoofing=True,
+        enable_audio_spoofing=True,
+        enable_webrtc_spoofing=True,
 
         # Custom settings
-        browser_type="chrome",
-        os_type="windows",
-        device_type="desktop",
-        custom_languages=["zh-CN", "zh", "en-US", "en"],
-        custom_screen_resolution=(2560, 1440),
+        preferred_languages=["zh-CN", "zh", "en-US", "en"],
+        min_screen_width=1920,
+        max_screen_width=2560,
+        min_screen_height=1080,
+        max_screen_height=1440
     )
 
     # Create browser instance
@@ -114,17 +139,20 @@ async def persistent_fingerprint_example():
     # Create fingerprint manager
     fingerprint_manager = FingerprintManager()
 
-    # Configure persistent fingerprint
-    config = FingerprintConfig(
-        persist_fingerprint=True,
-        fingerprint_id="my_persistent_fingerprint"
-    )
-
     # First use: Generate and save fingerprint
     print("First visit: Generate new fingerprint")
+
+    # Generate a new fingerprint
+    _ = fingerprint_manager.generate_new_fingerprint("chrome")
+
+    # Save the fingerprint with a custom ID
+    fingerprint_path = fingerprint_manager.save_fingerprint("my_persistent_fingerprint")
+    print(f"Saved fingerprint to: {fingerprint_path}")
+
+    # Create browser with the generated fingerprint
     browser1 = Chrome(
         enable_fingerprint_spoofing=True,
-        fingerprint_config=config
+        fingerprint_config=FingerprintConfig(browser_type="chrome")
     )
 
     async with browser1:
@@ -149,7 +177,7 @@ async def persistent_fingerprint_example():
 
     # List all saved fingerprints
     all_fingerprints = fingerprint_manager.list_fingerprints()
-    print(f"\nAll saved fingerprints: {list(all_fingerprints.keys())}")
+    print(f"\nAll saved fingerprints: {list(all_fingerprints)}")
 
 
 async def multiple_browsers_example():
@@ -157,9 +185,44 @@ async def multiple_browsers_example():
     simultaneously"""
     print("\n=== Multiple Browsers Example ===")
 
+    # Create fingerprint managers to get fingerprint objects
+    fingerprint_manager1 = FingerprintManager()
+    fingerprint_manager2 = FingerprintManager()
+
+    # Generate two different fingerprints
+    fingerprint1 = fingerprint_manager1.generate_new_fingerprint("chrome")
+    fingerprint2 = fingerprint_manager2.generate_new_fingerprint("chrome")
+
+    # Compare the two fingerprints
+    print("\nFingerprint Comparison:")
+    print(f"Fingerprint 1 ID: {fingerprint1.unique_id}")
+    print(f"Fingerprint 2 ID: {fingerprint2.unique_id}")
+
+    if fingerprint1.unique_id != fingerprint2.unique_id:
+        print("✓ Success: The two fingerprints have different unique IDs!")
+    else:
+        print("✗ Warning: The two fingerprints have the same unique ID")
+
+    # Compare other key attributes
+    print("\nKey Attributes Comparison:")
+    print(f"User Agent 1: {fingerprint1.user_agent}")
+    print(f"User Agent 2: {fingerprint2.user_agent}")
+    print(f"Platform 1: {fingerprint1.platform}")
+    print(f"Platform 2: {fingerprint2.platform}")
+    print(f"Canvas Fingerprint 1: {fingerprint1.canvas_fingerprint}")
+    print(f"Canvas Fingerprint 2: {fingerprint2.canvas_fingerprint}")
+
     # Create two browsers with different fingerprints
-    browser1 = Chrome(enable_fingerprint_spoofing=True)
-    browser2 = Chrome(enable_fingerprint_spoofing=True)
+    # Create Chrome browser instances with fingerprint spoofing enabled
+    # Note: Chrome class accepts fingerprint_config instead of fingerprint_manager
+    browser1 = Chrome(
+        enable_fingerprint_spoofing=True,
+        fingerprint_config=FingerprintConfig(browser_type="chrome")
+    )
+    browser2 = Chrome(
+        enable_fingerprint_spoofing=True,
+        fingerprint_config=FingerprintConfig(browser_type="chrome")
+    )
 
     async with browser1, browser2:
         # Start both browsers
@@ -174,22 +237,61 @@ async def multiple_browsers_example():
 
         # Get fingerprint IDs from both browsers
         try:
-            fp_element1 = await tab1.find_element("css", ".visitor-id")
-            fp_element2 = await tab2.find_element("css", ".visitor-id")
+            # Wait enough time for fingerprint generation
+            await asyncio.sleep(3)
 
-            if fp_element1 and fp_element2:
-                fp_id1 = await fp_element1.text
-                fp_id2 = await fp_element2.text
+            # Use JavaScript to get fingerprint ID
+            fp_id1 = await tab1.execute_script("""
+                // Wait for fingerprint generation to complete
+                if (window.fingerprintJsResult) {
+                    return window.fingerprintJsResult.visitorId || 'No ID found';
+                } else if (document.querySelector(".visitor-id")) {
+                    return document.querySelector(".visitor-id").textContent;
+                } else if (document.getElementById("fp-result")) {
+                    return document.getElementById("fp-result").textContent;
+                } else {
+                    // Try to find any element containing a fingerprint ID
+                    const elements = document.querySelectorAll('*');
+                    for (const el of elements) {
+                        if (el.textContent && el.textContent.match(/[a-f0-9]{32}/)) {
+                            return el.textContent.match(/[a-f0-9]{32}/)[0];
+                        }
+                    }
+                    return 'Could not find fingerprint ID on page';
+                }
+            """)
 
-                print(f"Browser 1 fingerprint ID: {fp_id1}")
-                print(f"Browser 2 fingerprint ID: {fp_id2}")
+            fp_id2 = await tab2.execute_script("""
+                // Wait for fingerprint generation to complete
+                if (window.fingerprintJsResult) {
+                    return window.fingerprintJsResult.visitorId || 'No ID found';
+                } else if (document.querySelector(".visitor-id")) {
+                    return document.querySelector(".visitor-id").textContent;
+                } else if (document.getElementById("fp-result")) {
+                    return document.getElementById("fp-result").textContent;
+                } else {
+                    // Try to find any element containing a fingerprint ID
+                    const elements = document.querySelectorAll('*');
+                    for (const el of elements) {
+                        if (el.textContent && el.textContent.match(/[a-f0-9]{32}/)) {
+                            return el.textContent.match(/[a-f0-9]{32}/)[0];
+                        }
+                    }
+                    return 'Could not find fingerprint ID on page';
+                }
+            """)
 
-                if fp_id1 != fp_id2:
-                    print("✓ Success: Two browsers generated different fingerprints!")
-                else:
-                    print("✗ Warning: Both browsers have the same fingerprint")
+            print("\nFingerprints detected by the website:")
+            print(f"Browser 1 Fingerprint ID: {fp_id1}")
+            print(f"Browser 2 Fingerprint ID: {fp_id2}")
+
+            if fp_id1 != fp_id2:
+                print("✓ Success: The two browsers generated different fingerprints!")
+            else:
+                print("✗ Warning: The two browsers have the same fingerprint")
         except Exception as e:
-            print(f"Failed to get fingerprint ID: {e}")
+            print(f"Failed to get fingerprint IDs: {e}")
+            traceback.print_exc()
 
         await asyncio.sleep(3)
 
@@ -227,20 +329,14 @@ async def edge_browser_example():
 async def main():
     """Run all examples"""
     try:
-        # Run basic example
-        await basic_example()
-
-        # Run custom configuration example
-        await custom_config_example()
-
-        # Run persistent fingerprint example
-        await persistent_fingerprint_example()
-
-        # Run multiple browsers example
+        # Run multiple browsers example to test fingerprint uniqueness
         await multiple_browsers_example()
 
-        # Run Edge browser example
-        await edge_browser_example()
+        # The following examples are temporarily commented out
+        # await basic_example()
+        # await custom_config_example()
+        # await persistent_fingerprint_example()
+        # await edge_browser_example()
 
     except Exception as e:
         print(f"Error running examples: {e}")

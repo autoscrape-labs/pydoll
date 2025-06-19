@@ -72,6 +72,7 @@ class Fingerprint:
     do_not_track: Optional[str] = None
     webdriver: bool = False
     connection_type: str = "wifi"
+    unique_id: Optional[str] = None
 
     def to_dict(self) -> Dict[str, Union[str, int, float, bool, List, None]]:
         """Convert fingerprint to dictionary format."""
