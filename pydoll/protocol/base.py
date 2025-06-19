@@ -1,4 +1,4 @@
-from typing import Any, Dict, Generic, TypedDict, TypeVar, Union
+from typing import Any, Dict, Generic, TypedDict, TypeVar
 
 try:
     from typing import NotRequired
