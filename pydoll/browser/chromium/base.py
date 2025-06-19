@@ -14,8 +14,8 @@ from pydoll.commands import (
     FetchCommands,
     PageCommands,
     RuntimeCommands,
-    TargetCommands,
     StorageCommands,
+    TargetCommands,
 )
 from pydoll.connection import ConnectionHandler
 from pydoll.constants import (
