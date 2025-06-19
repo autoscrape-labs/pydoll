@@ -8,8 +8,9 @@ fingerprint tracking.
 import asyncio
 import traceback
 
+from pydoll.browser.chromium.chrome import Chrome
+from pydoll.browser.chromium.edge import Edge
 from pydoll.fingerprint import FingerprintConfig, FingerprintManager
-from pydoll.fingerprint.browser import Chrome, Edge
 
 
 async def basic_example():

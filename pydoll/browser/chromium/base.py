@@ -80,6 +80,10 @@ class Browser(ABC):  # noqa: PLR0904
         self._browser_process_manager = BrowserProcessManager()
         self._temp_directory_manager = TempDirectoryManager()
         self._connection_handler = ConnectionHandler(self._connection_port)
+        
+        # Store fingerprint manager reference if available
+        self.fingerprint_manager = getattr(options_manager, 'fingerprint_manager', None)
+        self.enable_fingerprint_spoofing = getattr(options_manager, 'enable_fingerprint_spoofing', False)
 
     async def __aenter__(self) -> 'Browser':
         """Async context manager entry."""
@@ -124,7 +128,13 @@ class Browser(ABC):  # noqa: PLR0904
         await self._configure_proxy(proxy_config[0], proxy_config[1])
 
         valid_tab_id = await self._get_valid_tab_id(await self.get_targets())
-        return Tab(self, self._connection_port, valid_tab_id)
+        tab = Tab(self, self._connection_port, valid_tab_id)
+        
+        # Inject fingerprint spoofing JavaScript if enabled
+        if self.enable_fingerprint_spoofing and self.fingerprint_manager:
+            await self._inject_fingerprint_script(tab)
+            
+        return tab
 
     async def stop(self):
         """
@@ -207,7 +217,13 @@ class Browser(ABC):  # noqa: PLR0904
             )
         )
         target_id = response['result']['targetId']
-        return Tab(self, self._connection_port, target_id, browser_context_id)
+        tab = Tab(self, self._connection_port, target_id, browser_context_id)
+        
+        # Inject fingerprint spoofing JavaScript if enabled
+        if self.enable_fingerprint_spoofing and self.fingerprint_manager:
+            await self._inject_fingerprint_script(tab)
+            
+        return tab
 
     async def get_targets(self) -> list[TargetInfo]:
         """
@@ -562,6 +578,49 @@ class Browser(ABC):  # noqa: PLR0904
             # For all browsers, use a temporary directory
             temp_dir = self._temp_directory_manager.create_temp_dir()
             self.options.arguments.append(f'--user-data-dir={temp_dir.name}')
+
+    async def _inject_fingerprint_script(self, tab):
+        """
+        Inject fingerprint spoofing JavaScript into a tab.
+
+        Args:
+            tab: The tab to inject the script into.
+        """
+        try:
+            # Get the JavaScript injection code
+            assert self.fingerprint_manager is not None
+            script = self.fingerprint_manager.get_fingerprint_js()
+
+            # Import PageCommands here to avoid circular imports
+            from pydoll.commands import PageCommands
+
+            # Inject the script using Page.addScriptToEvaluateOnNewDocument
+            # This ensures the script runs before any page scripts
+            await tab._execute_command(
+                PageCommands.add_script_to_evaluate_on_new_document(script)
+            )
+
+            # Also evaluate immediately for current page if it exists
+            try:
+                await tab.execute_script(script)
+            except Exception:
+                # Ignore errors for immediate execution as page might not be ready
+                pass
+
+        except Exception as e:
+            # Don't let fingerprint injection failures break the browser
+            print(f"Warning: Failed to inject fingerprint spoofing script: {e}")
+
+    def get_fingerprint_summary(self) -> Optional[dict]:
+        """
+        Get a summary of the current fingerprint.
+
+        Returns:
+            Dictionary with fingerprint information, or None if not enabled.
+        """
+        if self.fingerprint_manager:
+            return self.fingerprint_manager.get_fingerprint_summary()
+        return None
 
     @abstractmethod
     def _get_default_binary_location(self) -> str:
