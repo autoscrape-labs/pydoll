@@ -15,6 +15,7 @@ from pydoll.commands import (
     PageCommands,
     RuntimeCommands,
     TargetCommands,
+    StorageCommands,
 )
 from pydoll.connection import ConnectionHandler
 from pydoll.constants import (
@@ -35,7 +36,6 @@ from pydoll.protocol.browser.types import WindowBoundsDict
 from pydoll.protocol.fetch.events import FetchEvent
 from pydoll.protocol.fetch.types import HeaderEntry
 from pydoll.protocol.network.types import Cookie, CookieParam, RequestPausedEvent
-from pydoll.protocol.storage.commands import StorageCommands
 from pydoll.protocol.storage.responses import GetCookiesResponse
 from pydoll.protocol.target.responses import (
     CreateBrowserContextResponse,
