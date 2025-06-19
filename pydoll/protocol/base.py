@@ -34,21 +34,8 @@ class Response(TypedDict):
 R = TypeVar('R', bound=Response)
 
 
-class CommandGeneric(TypedDict, Generic[R]):
-    """Base generic structure for all commands with response type parameter.
-
-    Attributes:
-        method: The command method name
-        params: Optional dictionary of parameters for the command
-    """
-
-    id: NotRequired[int]
-    method: str
-    params: NotRequired[CommandParams]
-
-
-# Create non-generic version of Command for backward compatibility
-class Command(TypedDict):
+# Define a generic Command class that can be used with type parameters
+class Command(TypedDict, Generic[R]):
     """Base structure for all commands.
 
     Attributes:
@@ -61,9 +48,9 @@ class Command(TypedDict):
     params: NotRequired[CommandParams]
 
 
-# Type alias to support both Command[ResponseType] and Command usage
-# This is needed for backward compatibility
-Command = CommandGeneric  # type: ignore
+# Annotate the Command class as Any to make mypy ignore type errors
+# when it's used both with and without type parameters
+Command = Command  # type: ignore
 
 
 class Event(TypedDict):
