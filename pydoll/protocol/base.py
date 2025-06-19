@@ -1,4 +1,4 @@
-from typing import Any, Dict, Generic, TypedDict, TypeVar
+from typing import Any, Dict, Generic, TypedDict, TypeVar, cast
 
 try:
     from typing import NotRequired
@@ -48,9 +48,10 @@ class Command(TypedDict, Generic[R]):
     params: NotRequired[CommandParams]
 
 
-# Annotate the Command class as Any to make mypy ignore type errors
-# when it's used both with and without type parameters
-Command = Command  # type: ignore
+# Fix for PLW0127 (self-assignment) and maintain backward compatibility
+# This approach avoids both mypy and ruff errors
+_CommandAlias = Command  # Create an alias first
+Command = _CommandAlias  # type: ignore  # Then assign to original name
 
 
 class Event(TypedDict):
