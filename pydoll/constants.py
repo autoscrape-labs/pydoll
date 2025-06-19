@@ -126,6 +126,311 @@ class Scripts:
         }
     """
 
+    # Fingerprint spoofing related scripts
+    FINGERPRINT_WRAPPER = """
+(function() {{
+    'use strict';
+
+    // Disable webdriver detection
+    Object.defineProperty(navigator, 'webdriver', {{
+        get: () => false,
+        configurable: true
+    }});
+
+    // Remove automation indicators
+    delete window.navigator.webdriver;
+    delete window.__webdriver_script_fn;
+    delete window.__webdriver_script_func;
+    delete window.__webdriver_script_function;
+    delete window.__fxdriver_evaluate;
+    delete window.__fxdriver_unwrapped;
+    delete window._Selenium_IDE_Recorder;
+    delete window._selenium;
+    delete window.calledSelenium;
+    delete window.calledPhantom;
+    delete window.__nightmare;
+    delete window._phantom;
+    delete window.phantom;
+    delete window.callPhantom;
+
+    {scripts}
+
+    // Override toString to hide modifications
+    const originalToString = Function.prototype.toString;
+    Function.prototype.toString = function() {{
+        if (this.name === 'get' && this.toString().includes('return')) {{
+            return 'function get() {{ [native code] }}';
+        }}
+        return originalToString.call(this);
+    }};
+}})();
+"""
+
+    NAVIGATOR_OVERRIDE = """
+    // Override navigator properties
+    Object.defineProperty(navigator, 'userAgent', {{
+        get: () => '{user_agent}',
+        configurable: true
+    }});
+
+    Object.defineProperty(navigator, 'platform', {{
+        get: () => '{platform}',
+        configurable: true
+    }});
+
+    Object.defineProperty(navigator, 'language', {{
+        get: () => '{language}',
+        configurable: true
+    }});
+
+    Object.defineProperty(navigator, 'languages', {{
+        get: () => {languages},
+        configurable: true
+    }});
+
+    Object.defineProperty(navigator, 'hardwareConcurrency', {{
+        get: () => {hardware_concurrency},
+        configurable: true
+    }});
+
+    {device_memory_script}
+
+    Object.defineProperty(navigator, 'cookieEnabled', {{
+        get: () => {cookie_enabled},
+        configurable: true
+    }});
+
+    {do_not_track_script}
+    """
+
+    SCREEN_OVERRIDE = """
+    // Override screen properties
+    Object.defineProperty(screen, 'width', {{
+        get: () => {screen_width},
+        configurable: true
+    }});
+
+    Object.defineProperty(screen, 'height', {{
+        get: () => {screen_height},
+        configurable: true
+    }});
+
+    Object.defineProperty(screen, 'colorDepth', {{
+        get: () => {screen_color_depth},
+        configurable: true
+    }});
+
+    Object.defineProperty(screen, 'pixelDepth', {{
+        get: () => {screen_pixel_depth},
+        configurable: true
+    }});
+
+    Object.defineProperty(screen, 'availWidth', {{
+        get: () => {available_width},
+        configurable: true
+    }});
+
+    Object.defineProperty(screen, 'availHeight', {{
+        get: () => {available_height},
+        configurable: true
+    }});
+
+    // Override window dimensions
+    Object.defineProperty(window, 'innerWidth', {{
+        get: () => {inner_width},
+        configurable: true
+    }});
+
+    Object.defineProperty(window, 'innerHeight', {{
+        get: () => {inner_height},
+        configurable: true
+    }});
+
+    Object.defineProperty(window, 'outerWidth', {{
+        get: () => {viewport_width},
+        configurable: true
+    }});
+
+    Object.defineProperty(window, 'outerHeight', {{
+        get: () => {viewport_height},
+        configurable: true
+    }});
+    """
+
+    WEBGL_OVERRIDE = """
+    // Override WebGL properties
+    const getParameter = WebGLRenderingContext.prototype.getParameter;
+    WebGLRenderingContext.prototype.getParameter = function(parameter) {{
+        if (parameter === 37445) {{ // VENDOR
+            return '{webgl_vendor}';
+        }}
+        if (parameter === 37446) {{ // RENDERER
+            return '{webgl_renderer}';
+        }}
+        if (parameter === 7938) {{ // VERSION
+            return '{webgl_version}';
+        }}
+        if (parameter === 35724) {{ // SHADING_LANGUAGE_VERSION
+            return '{webgl_shading_language_version}';
+        }}
+        return getParameter.call(this, parameter);
+    }};
+
+    const getSupportedExtensions = WebGLRenderingContext.prototype.getSupportedExtensions;
+    WebGLRenderingContext.prototype.getSupportedExtensions = function() {{
+        return {webgl_extensions};
+    }};
+
+    // Also override WebGL2 if available
+    if (window.WebGL2RenderingContext) {{
+        const getParameter2 = WebGL2RenderingContext.prototype.getParameter;
+        WebGL2RenderingContext.prototype.getParameter = function(parameter) {{
+            if (parameter === 37445) return '{webgl_vendor}';
+            if (parameter === 37446) return '{webgl_renderer}';
+            if (parameter === 7938) return '{webgl_version}';
+            if (parameter === 35724) return '{webgl_shading_language_version}';
+            return getParameter2.call(this, parameter);
+        }};
+
+        const getSupportedExtensions2 = WebGL2RenderingContext.prototype.getSupportedExtensions;
+        WebGL2RenderingContext.prototype.getSupportedExtensions = function() {{
+            return {webgl_extensions};
+        }};
+    }}
+    """
+
+    CANVAS_OVERRIDE = """
+    // Override canvas fingerprinting
+    const originalGetContext = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function(contextType) {{
+        const context = originalGetContext.call(this, contextType);
+
+        if (contextType === '2d') {{
+            const originalToDataURL = this.toDataURL;
+            this.toDataURL = function() {{
+                return 'data:image/png;base64,{canvas_fingerprint}';
+            }};
+
+            const originalGetImageData = context.getImageData;
+            context.getImageData = function() {{
+                const imageData = originalGetImageData.apply(this, arguments);
+                // Add some noise to the image data
+                for (let i = 0; i < imageData.data.length; i += 4) {{
+                    imageData.data[i] = Math.floor(Math.random() * 256);
+                }}
+                return imageData;
+            }};
+        }}
+
+        return context;
+    }};
+    """
+
+    AUDIO_OVERRIDE = """
+    // Override AudioContext properties
+    if (window.AudioContext || window.webkitAudioContext) {{
+        const OriginalAudioContext = window.AudioContext || window.webkitAudioContext;
+
+        function FakeAudioContext() {{
+            const context = new OriginalAudioContext();
+
+            Object.defineProperty(context, 'sampleRate', {{
+                get: () => {audio_context_sample_rate},
+                configurable: true
+            }});
+
+            Object.defineProperty(context, 'state', {{
+                get: () => '{audio_context_state}',
+                configurable: true
+            }});
+
+            Object.defineProperty(context.destination, 'maxChannelCount', {{
+                get: () => {audio_context_max_channel_count},
+                configurable: true
+            }});
+
+            return context;
+        }}
+
+        FakeAudioContext.prototype = OriginalAudioContext.prototype;
+        window.AudioContext = FakeAudioContext;
+        if (window.webkitAudioContext) {{
+            window.webkitAudioContext = FakeAudioContext;
+        }}
+    }}
+    """
+
+    PLUGIN_OVERRIDE = """
+    // Override plugin information
+    Object.defineProperty(navigator, 'plugins', {{
+        get: () => {{
+            const plugins = {{}};
+            plugins.length = {plugins_length};
+            {plugins_js}
+            return plugins;
+        }},
+        configurable: true
+    }});
+    """
+
+    MISC_OVERRIDES = """
+    // Override timezone
+    const originalDateGetTimezoneOffset = Date.prototype.getTimezoneOffset;
+    Date.prototype.getTimezoneOffset = function() {{
+        return {timezone_offset};
+    }};
+
+    // Override Intl.DateTimeFormat
+    if (window.Intl && window.Intl.DateTimeFormat) {{
+        const originalResolvedOptions = Intl.DateTimeFormat.prototype.resolvedOptions;
+        Intl.DateTimeFormat.prototype.resolvedOptions = function() {{
+            const options = originalResolvedOptions.call(this);
+            options.timeZone = '{timezone}';
+            return options;
+        }};
+    }}
+
+    // Override connection type
+    if (navigator.connection || navigator.mozConnection || navigator.webkitConnection) {{
+        const connection = navigator.connection ||
+                          navigator.mozConnection ||
+                          navigator.webkitConnection;
+        Object.defineProperty(connection, 'effectiveType', {{
+            get: () => '{connection_type}',
+            configurable: true
+        }});
+    }}
+
+    // Hide automation indicators in Chrome
+    Object.defineProperty(window, 'chrome', {{
+        get: () => {{
+            return {{
+                runtime: {{
+                    onConnect: undefined,
+                    onMessage: undefined
+                }}
+            }};
+        }},
+        configurable: true
+    }});
+
+    // Override permissions
+    if (navigator.permissions && navigator.permissions.query) {{
+        const originalQuery = navigator.permissions.query;
+        navigator.permissions.query = function(parameters) {{
+            return originalQuery(parameters).then(result => {{
+                if (parameters.name === 'notifications') {{
+                    Object.defineProperty(result, 'state', {{
+                        get: () => 'denied',
+                        configurable: true
+                    }});
+                }}
+                return result;
+            }});
+        }};
+    }}
+    """
+
 
 class Key(tuple[str, int], Enum):
     BACKSPACE = ('Backspace', 8)

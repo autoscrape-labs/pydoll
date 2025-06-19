@@ -7,6 +7,8 @@ browser fingerprints with randomized but consistent properties.
 
 import random
 import string
+import time
+import uuid
 from typing import Dict, List, Optional, Tuple
 
 from .models import Fingerprint, FingerprintConfig
@@ -55,6 +57,19 @@ class FingerprintGenerator:
         (1920, 1080), (1366, 768), (1440, 900), (1536, 864),
         (1280, 720), (1600, 900), (2560, 1440), (1920, 1200),
         (1680, 1050), (1280, 1024), (2048, 1152), (1280, 800)
+    ]
+
+    # Mobile screen resolutions (smaller screens)
+    MOBILE_SCREEN_RESOLUTIONS = [
+        (375, 667),   # iPhone 8
+        (414, 896),   # iPhone XR
+        (390, 844),   # iPhone 12
+        (360, 800),   # Samsung Galaxy S10
+        (412, 915),   # Samsung Galaxy S21
+        (393, 851),   # Google Pixel 5
+        (360, 640),   # Common Android
+        (414, 736),   # iPhone 8 Plus
+        (428, 926),   # iPhone 13 Pro Max
     ]
 
     # Language preferences
@@ -130,6 +145,8 @@ class FingerprintGenerator:
             config: Configuration for fingerprint generation. Uses default if None.
         """
         self.config = config or FingerprintConfig()
+        # 使用当前时间和随机UUID初始化随机种子，确保每次生成的指纹都不同
+        random.seed(time.time() + hash(str(uuid.uuid4())))
 
     def generate(self) -> Fingerprint:
         """
@@ -150,12 +167,16 @@ class FingerprintGenerator:
         # Generate multimedia properties
         multimedia_properties = self._generate_multimedia_properties()
 
+        # 添加一些微小的随机变化，确保每次生成的指纹都不同
+        unique_properties = self._generate_unique_properties()
+
         # Combine all properties into fingerprint
         return Fingerprint(**{
             **system_properties,
             **display_properties,
             **browser_properties,
             **multimedia_properties,
+            **unique_properties,
         })
 
     def _generate_system_properties(self) -> Dict:
@@ -235,11 +256,29 @@ class FingerprintGenerator:
     def _choose_operating_system(self) -> Dict[str, str]:
         """Choose a random operating system."""
         if self.config.preferred_os:
-            filtered_os = [os for os in self.OPERATING_SYSTEMS
-                          if os['name'].lower() == self.config.preferred_os.lower()]
-            if filtered_os:
-                return random.choice(filtered_os)
-
+            # Convert to lowercase for case-insensitive comparison
+            preferred_os_lower = self.config.preferred_os.lower()
+            
+            # Map common OS names to their actual names in our data
+            os_mapping = {
+                'windows': 'Windows',
+                'win': 'Windows',
+                'macos': 'Macintosh',
+                'mac': 'Macintosh',
+                'osx': 'Macintosh',
+                'linux': 'Linux'
+            }
+            
+            # Get the standardized OS name
+            target_os = os_mapping.get(preferred_os_lower)
+            
+            if target_os:
+                filtered_os = [os for os in self.OPERATING_SYSTEMS
+                              if os['name'] == target_os]
+                if filtered_os:
+                    return random.choice(filtered_os)
+        
+        # If no preferred OS or no match found, return random OS
         return random.choice(self.OPERATING_SYSTEMS)
 
     def _choose_browser_version(self) -> str:
@@ -251,15 +290,23 @@ class FingerprintGenerator:
 
     def _choose_screen_resolution(self) -> Tuple[int, int]:
         """Choose a screen resolution within configured bounds."""
-        valid_resolutions = [
-            (w, h) for w, h in self.SCREEN_RESOLUTIONS
-            if self.config.min_screen_width <= w <= self.config.max_screen_width
-            and self.config.min_screen_height <= h <= self.config.max_screen_height
-        ]
+        # Use mobile resolutions if is_mobile is set
+        if self.config.is_mobile:
+            valid_resolutions = [
+                (w, h) for w, h in self.MOBILE_SCREEN_RESOLUTIONS
+                if self.config.min_screen_width <= w <= self.config.max_screen_width
+                and self.config.min_screen_height <= h <= self.config.max_screen_height
+            ]
+        else:
+            valid_resolutions = [
+                (w, h) for w, h in self.SCREEN_RESOLUTIONS
+                if self.config.min_screen_width <= w <= self.config.max_screen_width
+                and self.config.min_screen_height <= h <= self.config.max_screen_height
+            ]
 
         if not valid_resolutions:
             # Fallback to a default resolution
-            return (1920, 1080)
+            return (1920, 1080) if not self.config.is_mobile else (375, 667)
 
         return random.choice(valid_resolutions)
 
@@ -274,6 +321,11 @@ class FingerprintGenerator:
         os_name = os_info['name']
         os_version = os_info['version']
 
+        # Handle mobile user agents
+        if self.config.is_mobile:
+            return self._generate_mobile_user_agent(os_name, browser_version)
+        
+        # Handle desktop user agents
         if self.config.browser_type == 'chrome':
             return self._generate_chrome_user_agent(os_name, os_version, browser_version)
         elif self.config.browser_type == 'edge':
@@ -281,6 +333,31 @@ class FingerprintGenerator:
         else:
             # Fallback to Chrome
             return self._generate_chrome_user_agent('Windows', '10.0', browser_version)
+
+    def _generate_mobile_user_agent(self, os_name: str, browser_version: str) -> str:
+        """Generate a mobile user agent string."""
+        if random.choice([True, False]):  # Android
+            android_version = random.randint(10, 13)
+            device_models = [
+                "SM-G998B", "Pixel 6", "Pixel 7", "OnePlus 10 Pro", 
+                "Redmi Note 11", "Moto G Power"
+            ]
+            device = random.choice(device_models)
+            return (
+                f"Mozilla/5.0 (Linux; Android {android_version}; {device}) "
+                f"AppleWebKit/537.36 (KHTML, like Gecko) "
+                f"Chrome/{browser_version} Mobile Safari/537.36"
+            )
+        else:  # iOS
+            ios_version = f"{random.randint(14, 16)}_{random.randint(0, 6)}"
+            device_models = ["iPhone", "iPad"]
+            device = random.choice(device_models)
+            webkit_version = f"60{random.randint(1, 9)}.{random.randint(1, 9)}"
+            return (
+                f"Mozilla/5.0 ({device}; CPU OS {ios_version} like Mac OS X) "
+                f"AppleWebKit/{webkit_version}.{random.randint(10, 99)} (KHTML, like Gecko) "
+                f"CriOS/{browser_version} Mobile/15E148 Safari/{webkit_version}"
+            )
 
     @staticmethod
     def _generate_chrome_user_agent(
@@ -363,12 +440,24 @@ class FingerprintGenerator:
 
         return offset_map.get(timezone, 0)
 
+    def _generate_unique_properties(self) -> Dict:
+        """Generate unique properties to ensure fingerprint uniqueness."""
+        # 生成一个唯一的指纹ID，但不会影响浏览器功能
+        unique_id = f"{int(time.time())}_{uuid.uuid4().hex[:8]}"
+        
+        # 这些属性会被添加到指纹中，但不会影响浏览器的功能
+        # 它们只是确保每个指纹都是唯一的
+        return {
+            "unique_id": unique_id,
+        }
+
     @staticmethod
     def _generate_canvas_fingerprint() -> str:
         """Generate a unique canvas fingerprint."""
-        # Generate a pseudo-random canvas fingerprint
-        random_data = ''.join(random.choices(string.ascii_letters + string.digits, k=32))
-        return f"canvas_fp_{random_data}"
+        # 使用时间戳和UUID生成真正唯一的canvas指纹
+        timestamp = int(time.time() * 1000)
+        random_data = ''.join(random.choices(string.ascii_letters + string.digits, k=24))
+        return f"canvas_fp_{random_data}_{timestamp}"
 
     def _generate_plugins(self) -> List[Dict[str, str]]:
         """Generate a realistic list of browser plugins."""
