@@ -1,4 +1,4 @@
-from typing import Any, Dict, Generic, TypedDict, TypeVar
+from typing import Any, Dict, Generic, TypedDict, TypeVar, Union
 
 try:
     from typing import NotRequired
@@ -30,8 +30,9 @@ class Response(TypedDict):
     result: ResponseResult
 
 
-# Define Response type variable after Response class is defined
-R = TypeVar('R', bound=Response)
+# Define a more flexible Response type variable that accepts any TypedDict with compatible structure
+# This allows custom response types to be used with Command
+R = TypeVar('R')
 
 
 # Define a generic Command class that can be used with type parameters
