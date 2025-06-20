@@ -805,6 +805,173 @@ class TestTabFileChooser:
         mock_enable_intercept.assert_called_once()
         mock_disable_intercept.assert_called_once()
 
+    @pytest.mark.asyncio
+    async def test_expect_file_chooser_event_handler_single_file(self, tab):
+        """Test the real event_handler function with single file."""
+        from pydoll.protocol.dom.types import EventFileChooserOpened
+        from pydoll.protocol.page.events import PageEvent
+        
+        # Mock execute_command to capture the call
+        tab._execute_command = AsyncMock()
+        
+        # Create mock event data
+        mock_event: EventFileChooserOpened = {
+            'method': 'Page.fileChooserOpened',
+            'params': {
+                'frameId': 'test-frame-id',
+                'mode': 'selectSingle',
+                'backendNodeId': 12345
+            }
+        }
+        
+        # Capture the real event handler from expect_file_chooser
+        captured_handler = None
+        
+        async def mock_on(event_name, handler, temporary=False):
+            nonlocal captured_handler
+            if event_name == PageEvent.FILE_CHOOSER_OPENED:
+                captured_handler = handler
+            return 123
+        
+        # Mock the required methods
+        with patch.object(tab, 'enable_page_events', AsyncMock()):
+            with patch.object(tab, 'enable_intercept_file_chooser_dialog', AsyncMock()):
+                with patch.object(tab, 'disable_intercept_file_chooser_dialog', AsyncMock()):
+                    with patch.object(tab, 'disable_page_events', AsyncMock()):
+                        with patch.object(tab, 'on', mock_on):
+                            async with tab.expect_file_chooser('test.txt'):
+                                # Execute the captured real handler
+                                assert captured_handler is not None
+                                await captured_handler(mock_event)
+        
+        # Verify the command was called correctly
+        tab._execute_command.assert_called_once()
+        call_args = tab._execute_command.call_args[0][0]
+        assert call_args['method'] == 'DOM.setFileInputFiles'
+        assert call_args['params']['files'] == ['test.txt']
+        assert call_args['params']['backendNodeId'] == 12345
+
+    @pytest.mark.asyncio
+    async def test_expect_file_chooser_event_handler_multiple_files(self, tab):
+        """Test the real event_handler function with multiple files."""
+        from pydoll.protocol.dom.types import EventFileChooserOpened
+        from pydoll.protocol.page.events import PageEvent
+        
+        # Mock execute_command to capture the call
+        tab._execute_command = AsyncMock()
+        
+        # Create mock event data
+        mock_event: EventFileChooserOpened = {
+            'method': 'Page.fileChooserOpened',
+            'params': {
+                'frameId': 'test-frame-id',
+                'mode': 'selectMultiple',
+                'backendNodeId': 67890
+            }
+        }
+
+        # Capture the real event handler from expect_file_chooser
+        captured_handler = None
+        
+        async def mock_on(event_name, handler, temporary=False):
+            nonlocal captured_handler
+            if event_name == PageEvent.FILE_CHOOSER_OPENED:
+                captured_handler = handler
+            return 123
+        
+        # Mock the required methods
+        with patch.object(tab, 'enable_page_events', AsyncMock()):
+            with patch.object(tab, 'enable_intercept_file_chooser_dialog', AsyncMock()):
+                with patch.object(tab, 'disable_intercept_file_chooser_dialog', AsyncMock()):
+                    with patch.object(tab, 'disable_page_events', AsyncMock()):
+                        with patch.object(tab, 'on', mock_on):
+                            async with tab.expect_file_chooser(['file1.txt', 'file2.pdf', 'file3.jpg']):
+                                # Execute the captured real handler
+                                assert captured_handler is not None
+                                await captured_handler(mock_event)
+        
+        # Verify the command was called correctly
+        tab._execute_command.assert_called_once()
+        call_args = tab._execute_command.call_args[0][0]
+        assert call_args['method'] == 'DOM.setFileInputFiles'
+        assert call_args['params']['files'] == ['file1.txt', 'file2.pdf', 'file3.jpg']
+        assert call_args['params']['backendNodeId'] == 67890
+
+    async def _test_event_handler_with_files(self, tab, files, expected_files, backend_node_id):
+        """Helper method to test event handler with different file types."""
+        from pydoll.protocol.dom.types import EventFileChooserOpened
+        from pydoll.protocol.page.events import PageEvent
+        
+        # Mock execute_command to capture the call
+        tab._execute_command = AsyncMock()
+        
+        # Create mock event data
+        mock_event: EventFileChooserOpened = {
+            'method': 'Page.fileChooserOpened',
+            'params': {
+                'frameId': 'test-frame-id',
+                'mode': 'selectMultiple',
+                'backendNodeId': backend_node_id
+            }
+        }
+        
+        # Capture the real event handler from expect_file_chooser
+        captured_handler = None
+        
+        async def mock_on(event_name, handler, temporary=False):
+            nonlocal captured_handler
+            if event_name == PageEvent.FILE_CHOOSER_OPENED:
+                captured_handler = handler
+            return 123
+        
+        # Mock the required methods
+        with patch.object(tab, 'enable_page_events', AsyncMock()):
+            with patch.object(tab, 'enable_intercept_file_chooser_dialog', AsyncMock()):
+                with patch.object(tab, 'disable_intercept_file_chooser_dialog', AsyncMock()):
+                    with patch.object(tab, 'disable_page_events', AsyncMock()):
+                        with patch.object(tab, 'on', mock_on):
+                            async with tab.expect_file_chooser(files):
+                                # Execute the captured real handler
+                                assert captured_handler is not None
+                                await captured_handler(mock_event)
+        
+        # Verify the command was called correctly
+        tab._execute_command.assert_called_once()
+        call_args = tab._execute_command.call_args[0][0]
+        assert call_args['method'] == 'DOM.setFileInputFiles'
+        assert call_args['params']['files'] == expected_files
+        assert call_args['params']['backendNodeId'] == backend_node_id
+
+    @pytest.mark.asyncio
+    async def test_expect_file_chooser_event_handler_path_objects(self, tab):
+        """Test the real event_handler function with Path objects."""
+        from pathlib import Path
+        
+        files = [Path('documents/file1.txt'), Path('images/file2.jpg')]
+        expected_files = ['documents/file1.txt', 'images/file2.jpg']
+        
+        await self._test_event_handler_with_files(tab, files, expected_files, 54321)
+
+    @pytest.mark.asyncio
+    async def test_expect_file_chooser_event_handler_single_path_object(self, tab):
+        """Test the real event_handler function with single Path object."""
+        from pathlib import Path
+        
+        files = Path('documents/important.pdf')
+        expected_files = ['documents/important.pdf']
+        
+        await self._test_event_handler_with_files(tab, files, expected_files, 98765)
+
+    @pytest.mark.asyncio
+    async def test_expect_file_chooser_event_handler_empty_list(self, tab):
+        """Test the real event_handler function with empty file list."""
+        files = []
+        expected_files = []
+        
+        await self._test_event_handler_with_files(tab, files, expected_files, 11111)
+
+
+
 
 class TestTabCloudflareBypass:
     """Test Tab Cloudflare bypass functionality."""

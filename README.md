@@ -27,12 +27,12 @@
 
 ## Key Features
 
-🔹 **Zero Webdrivers!** Say goodbye to webdriver compatibility nightmares  
-🔹 **Native Captcha Bypass!** Smoothly handles Cloudflare Turnstile and reCAPTCHA v3*  
-🔹 **Async Performance** for lightning-fast automation  
-🔹 **Human-like Interactions** that mimic real user behavior  
-🔹 **Powerful Event System** for reactive automations  
-🔹 **Multi-browser Support** including Chrome and Edge
+- **Zero Webdrivers!** Say goodbye to webdriver compatibility nightmares  
+- **Native Captcha Bypass!** Smoothly handles Cloudflare Turnstile and reCAPTCHA v3*  
+- **Async Performance** for lightning-fast automation  
+- **Human-like Interactions** that mimic real user behavior  
+- **Powerful Event System** for reactive automations  
+- **Multi-browser Support** including Chrome and Edge
 
 ## Why Pydoll Exists
 

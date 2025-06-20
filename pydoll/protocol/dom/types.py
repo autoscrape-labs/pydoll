@@ -79,3 +79,14 @@ class BoxModel(TypedDict):
     width: int
     height: int
     shapeOutside: NotRequired[ShapeOutsideInfo]
+
+
+class EventFileChooserOpenedParams(TypedDict):
+    frameId: str
+    mode: str
+    backendNodeId: int
+
+
+class EventFileChooserOpened(TypedDict):
+    method: str
+    params: EventFileChooserOpenedParams
