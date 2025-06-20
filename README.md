@@ -13,38 +13,38 @@
     <a href="https://deepwiki.com/autoscrape-labs/pydoll"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
 </p>
 
+
+
 <p align="center">
   <a href="https://autoscrape-labs.github.io/pydoll/">Documentation</a> •
   <a href="#getting-started">Getting Started</a> •
+  <a href="#browser-fingerprint-spoofing">Fingerprint Spoofing</a> •
   <a href="#advanced-features">Advanced Features</a> •
   <a href="#contributing">Contributing</a> •
   <a href="#support-my-work">Support</a> •
   <a href="#license">License</a>
 </p>
 
+---
 
 ## Key Features
 
-- **Zero Webdrivers!** Say goodbye to webdriver compatibility nightmares  
-- **Native Captcha Bypass!** Smoothly handles Cloudflare Turnstile and reCAPTCHA v3*  
-- **Async Performance** for lightning-fast automation  
-- **Human-like Interactions** that mimic real user behavior  
-- **Powerful Event System** for reactive automations  
-- **Multi-browser Support** including Chrome and Edge
 
 ## Why Pydoll Exists
 
 Picture this: you need to automate browser tasks. Maybe it's testing your web application, scraping data from websites, or automating repetitive processes. Traditionally, this meant dealing with external drivers, complex configurations, and a host of compatibility issues that seemed to appear out of nowhere.
 
-But there's another challenge that's even more frustrating: **modern web protection systems**. Cloudflare Turnstile captchas, reCAPTCHA v3, and sophisticated bot detection algorithms that can instantly identify and block traditional automation tools. Your perfectly written automation script fails not because of bugs, but because websites can tell it's not human.
+But there's another challenge that's even more frustrating: **modern web protection systems**. Browser fingerprinting techniques, Cloudflare Turnstile captchas, reCAPTCHA v3, and sophisticated bot detection algorithms that can instantly identify and block traditional automation tools. Your perfectly written automation script fails not because of bugs, but because websites can track your unique browser fingerprint and tell it's not human.
 
 **Pydoll was born to change that.**
 
-Built from the ground up with a different philosophy, Pydoll connects directly to the Chrome DevTools Protocol (CDP), eliminating the need for external drivers entirely. More importantly, it incorporates advanced human behavior simulation and intelligent captcha bypass capabilities that make your automations virtually indistinguishable from real human interactions.
+Built from the ground up with a different philosophy, Pydoll connects directly to the Chrome DevTools Protocol (CDP), eliminating the need for external drivers entirely. More importantly, it incorporates advanced browser fingerprint spoofing and intelligent captcha bypass capabilities that make your automations virtually indistinguishable from real human interactions.
 
 We believe that powerful automation shouldn't require you to become a configuration expert or constantly battle with anti-bot systems. With Pydoll, you focus on what matters: your automation logic, not the underlying complexity or protection bypassing.
 
 ## What Makes Pydoll Special
+
+- **🎭 Revolutionary Fingerprint Spoofing**: One-click activation generates realistic, randomized browser fingerprints that fool even sophisticated tracking systems. Covers all major fingerprinting techniques including WebGL, Canvas, Audio, Navigator properties, and more.
 
 - **Intelligent Captcha Bypass**: Built-in automatic solving for Cloudflare Turnstile and reCAPTCHA v3 captchas without external services, API keys, or complex configurations. Your automations continue seamlessly even when encountering protection systems.
 
@@ -58,17 +58,145 @@ We believe that powerful automation shouldn't require you to become a configurat
 
 - **Event-Driven Architecture**: React to page events, network requests, and user interactions in real-time, enabling sophisticated automation flows that adapt to dynamic protection systems.
 
-- **Intuitive Element Finding**: Modern `find()` and `query()` methods that make sense and work as you'd expect, even with dynamically loaded content from protection systems.
+- **Intuitive Element Finding**: Modern `find()` and `query()` methods that make sense and work as you'd expected, even with dynamically loaded content from protection systems.
 
 - **Robust Type Safety**: Comprehensive type system for better IDE support and error prevention in complex automation scenarios.
 
 ## Installation
 
+### Install from PyPI (Standard Version)
+
 ```bash
 pip install pydoll-python
 ```
 
-That's it. No drivers to download, no complex configurations. Just install and start automating.
+### Install from GitHub (Enhanced Version with Fingerprint Spoofing)
+
+For the enhanced version with advanced browser fingerprint spoofing capabilities:
+
+```bash
+# Install the latest enhanced version with fingerprint spoofing
+pip install git+https://github.com/3-Tokisaki-Kurumi/pydoll-enhance.git
+
+# Or install a specific version/branch
+pip install git+https://github.com/3-Tokisaki-Kurumi/pydoll-enhance.git@main
+```
+
+That's it. No drivers to download, no complex configurations. Just install and start automating with advanced protection bypassing.
+
+## Browser Fingerprint Spoofing
+
+### Overview
+
+The enhanced version of Pydoll includes revolutionary browser fingerprint spoofing capabilities. This feature provides comprehensive protection against browser fingerprinting techniques used by websites to track and identify automated scripts.
+
+### Key Features
+
+- 🎭 **One-Click Activation** - Enable complete fingerprint protection with a single parameter
+- 🔄 **Intelligent Generation** - Automatically generates random but realistic browser fingerprints
+- 🛡️ **Comprehensive Protection** - Covers all major fingerprinting vectors
+- 💾 **Fingerprint Persistence** - Save and reuse fingerprint configurations
+- ⚙️ **Highly Customizable** - Fine-tune fingerprint characteristics
+- 🚀 **Seamless Integration** - Works transparently with existing code
+
+### Quick Start with Fingerprint Spoofing
+
+```python
+import asyncio
+from pydoll.fingerprint import Chrome
+
+async def fingerprint_protected_automation():
+    # Enable fingerprint spoofing with one parameter
+    async with Chrome(enable_fingerprint_spoofing=True) as browser:
+        tab = await browser.start()
+        
+        # Your automation runs with a completely spoofed fingerprint
+        await tab.go_to('https://fingerprintjs.github.io/fingerprintjs/')
+        
+        # Check the generated fingerprint
+        summary = browser.get_fingerprint_summary()
+        print("Current fingerprint:", summary)
+
+asyncio.run(fingerprint_protected_automation())
+```
+
+### Advanced Fingerprint Configuration
+
+```python
+from pydoll.fingerprint import Chrome, FingerprintConfig
+
+async def custom_fingerprint_automation():
+    # Create custom fingerprint configuration
+    config = FingerprintConfig(
+        browser_type="chrome",
+        preferred_os="windows",
+        min_screen_width=1920,
+        max_screen_width=1920,
+        min_screen_height=1080,
+        max_screen_height=1080,
+        enable_webgl_spoofing=True,
+        enable_canvas_spoofing=True,
+        enable_audio_spoofing=True,
+    )
+    
+    async with Chrome(
+        enable_fingerprint_spoofing=True,
+        fingerprint_config=config
+    ) as browser:
+        tab = await browser.start()
+        await tab.go_to('https://amiunique.org/fp')
+
+asyncio.run(custom_fingerprint_automation())
+```
+
+### Fingerprint Protection Techniques
+
+This enhanced version spoofs the following fingerprinting techniques:
+
+#### 🔧 Navigator Properties
+- User-Agent strings with realistic browser versions
+- Platform information (Windows, macOS, Linux)
+- Language settings and preferences
+- Hardware concurrency and device memory
+- Browser plugins and their details
+
+#### 🖥️ Screen and Display Properties
+- Screen resolution and available dimensions
+- Color depth and pixel density
+- Window inner/outer dimensions
+- Device pixel ratio
+
+#### 🎨 WebGL Fingerprinting
+- WebGL vendor and renderer information
+- Supported WebGL extensions
+- WebGL parameter values
+- Graphics card information spoofing
+
+#### 🖼️ Canvas Fingerprinting
+- Canvas rendering result manipulation
+- Image data noise injection
+- Text rendering variations
+
+#### 🔊 Audio Fingerprinting
+- AudioContext sample rate spoofing
+- Audio processing characteristics
+- Sound synthesis variations
+
+#### 🛡️ Anti-Detection Features
+- Removes `navigator.webdriver` property
+- Hides automation-related objects
+- Spoofs `toString` method results
+- Bypasses common detection scripts
+
+### Testing Your Fingerprint Protection
+
+Visit these websites to verify your fingerprint spoofing is working:
+
+1. **FingerprintJS Demo**: https://fingerprintjs.github.io/fingerprintjs/
+2. **AmIUnique**: https://amiunique.org/fp
+3. **BrowserLeaks**: https://browserleaks.com/javascript
+
+Each browser session should generate a unique, realistic fingerprint.
 
 ## Getting Started
 
@@ -173,6 +301,13 @@ async def advanced_captcha_bypass():
 
 asyncio.run(advanced_captcha_bypass())
 ```
+
+**Why This Matters:**
+- **No External Dependencies**: No need for captcha solving services or API keys
+- **Cost Effective**: Eliminate monthly captcha solving service fees
+- **Reliable**: Works consistently without depending on third-party availability
+- **Fast**: Instant solving without network delays to external services
+- **Seamless Integration**: Captcha bypass happens transparently in your automation flow
 
 ### Advanced Element Finding
 
@@ -368,6 +503,8 @@ Every bit of support makes a difference — thank you!
 ## License
 
 Pydoll is licensed under the [MIT License](LICENSE).
+
+
 
 <p align="center">
   <b>Pydoll</b> — Making browser automation magical!
