@@ -22,97 +22,88 @@
   <a href="#license">License</a>
 </p>
 
+- [英文介绍](README.md)
 
-- [简体中文介绍](README_zh.md)
+## 核心特性  
 
-## Key Features
+🔹 **无需Webdriver!** 从此告别webdriver兼容性地狱   
+🔹 **绕过本地验证码!** 平滑处理Cloudflare Turnstile和reCAPTCHA v3验证码  
+🔹 **异步性能加持** 闪电般快速的自动化操作  
+🔹 **模拟真人交互** 模拟真实用户行为  
+🔹 **强大的事件系统** 响应式自动化  
+🔹 **多浏览器支持** 支持Chrome以及Edge
 
-- **Zero Webdrivers!** Say goodbye to webdriver compatibility nightmares  
-- **Native Captcha Bypass!** Smoothly handles Cloudflare Turnstile and reCAPTCHA v3*  
-- **Async Performance** for lightning-fast automation  
-- **Human-like Interactions** that mimic real user behavior  
-- **Powerful Event System** for reactive automations  
-- **Multi-browser Support** including Chrome and Edge
+## 为什么选择Pydoll
 
-## Why Pydoll Exists
+想象一下场景: 你正在尝试写一个浏览器自动化任务，比如测试你的网站，从网站抓取数据，或者自动化一些重复性任务。通常来说，这需要解决外部驱动，复杂的配置，和一些无缘无故的兼容性问题。  
+不仅如此,目前还有一个更重要的问题: **网站反爬保护系统**  例如: Cloudflare Turnstile 验证码, reCAPTCHA v3以及一些检测出传统自动化工具的机器人检测算法,你的自动化脚本没有任何bug,但是这些网站却直接风控你。  
 
-Picture this: you need to automate browser tasks. Maybe it's testing your web application, scraping data from websites, or automating repetitive processes. Traditionally, this meant dealing with external drivers, complex configurations, and a host of compatibility issues that seemed to appear out of nowhere.
+**Pydoll的诞生就是为了解决此类问题!**
 
-But there's another challenge that's even more frustrating: **modern web protection systems**. Cloudflare Turnstile captchas, reCAPTCHA v3, and sophisticated bot detection algorithms that can instantly identify and block traditional automation tools. Your perfectly written automation script fails not because of bugs, but because websites can tell it's not human.
+Pydoll从头开始构建，Pydoll可以直接通过Chrome DevTools Protocol (CDP协议)链接到浏览器，完全消除了传统自动化框架需要外部驱动的问题（例如selenuim）。更重要地是，它可以更先进地模拟真人行为操作以及拥有更智能的验证码绕过能力使你的自动化任务和真人行为一样几乎无法区分。  
 
-**Pydoll was born to change that.**
+强大的自动化框架不需要复杂配置并且可以更方便地绕过反爬系统。在Pydoll的加持下，你只需要专注于业务逻辑而并不是复杂的底层设计以及绕过反爬系统。  
 
-Built from the ground up with a different philosophy, Pydoll connects directly to the Chrome DevTools Protocol (CDP), eliminating the need for external drivers entirely. More importantly, it incorporates advanced human behavior simulation and intelligent captcha bypass capabilities that make your automations virtually indistinguishable from real human interactions.
+## 特点
 
-We believe that powerful automation shouldn't require you to become a configuration expert or constantly battle with anti-bot systems. With Pydoll, you focus on what matters: your automation logic, not the underlying complexity or protection bypassing.
+- **智能验证码绕过**: 内置Cloudflare Turnstile与reCAPTCHA v3验证码的自动破解能力，无需依赖外部服务、API密钥或复杂配置。即使遭遇防护系统，您的自动化流程仍可畅行无阻。
+- **模拟真人交互**: 通过先进算法模拟真实人类行为特征——通过随机操作间隔，到鼠标移动轨迹、页面滚动模式乃至输入速度，皆可骗过最严苛的反爬虫系统。
+- **极简哲学**: 无需浪费太多时间在配置驱动或解决兼容问题上。Pydoll开箱即用。
+- **原生异步性能**: 基于`asyncio`库深度设计, Pydoll不仅支持异步操作——更为高并发而生，可同时进行多个受防护站点的数据采集。
+- **强大的网络监控**: 轻松实现请求拦截、流量篡改与响应分析，完整掌控网络通信链路，轻松突破层层防护体系。
+- **事件驱动架构**: 实时响应页面事件、网络请求与用户交互，构建能动态适应防护系统的智能自动化流。
+- **直观的元素定位**: 使用符合人类直觉的定位方法 `find()` 和 `query()` ，面对动态加载的防护内容，定位依然精准。
+- **强类型安全**: 完备的类型系统为复杂自动化场景提供更优IDE支持和更好地预防运行时报错。
 
-## What Makes Pydoll Special
-
-- **Intelligent Captcha Bypass**: Built-in automatic solving for Cloudflare Turnstile and reCAPTCHA v3 captchas without external services, API keys, or complex configurations. Your automations continue seamlessly even when encountering protection systems.
-
-- **Truly Human Interactions**: Advanced algorithms simulate authentic human behavior patterns - from realistic timing between actions to natural mouse movements, scroll patterns, and typing rhythms that fool even sophisticated bot detection systems.
-
-- **Genuine Simplicity**: We don't want you wasting time configuring drivers or dealing with compatibility issues. With Pydoll, you install and you're ready to automate, even on protected sites.
-
-- **Native Async Performance**: Built from the ground up with `asyncio`, Pydoll doesn't just support asynchronous operations - it was designed for them, enabling concurrent processing of multiple protected sites.
-
-- **Powerful Network Monitoring**: Intercept, modify, and analyze all network traffic with ease, giving you complete control over requests and responses - perfect for bypassing additional protection layers.
-
-- **Event-Driven Architecture**: React to page events, network requests, and user interactions in real-time, enabling sophisticated automation flows that adapt to dynamic protection systems.
-
-- **Intuitive Element Finding**: Modern `find()` and `query()` methods that make sense and work as you'd expect, even with dynamically loaded content from protection systems.
-
-- **Robust Type Safety**: Comprehensive type system for better IDE support and error prevention in complex automation scenarios.
-
-## Installation
+## 安装
 
 ```bash
 pip install pydoll-python
 ```
 
-That's it. No drivers to download, no complex configurations. Just install and start automating.
+无需额外的驱动下载，无需复杂的配置，开箱即用。  
 
-## Getting Started
+## 开始开始
 
-### Your First Automation
+### 开始第一个自动化应用
 
-Let's start with something simple. The code below opens a browser, navigates to a website, and interacts with elements:
+这是一个简单的例子，主要包括打开一个浏览器，访问网站以及和网页元素交互：
 
 ```python
 import asyncio
 from pydoll.browser import Chrome
 
 async def my_first_automation():
-    # Create a browser instance
+    # 创建浏览器实例
     async with Chrome() as browser:
-        # Start the browser and get a tab
+        # 启动浏览器并获取一个标签
         tab = await browser.start()
         
-        # Navigate to a website
+        # 访问网站
         await tab.go_to('https://example.com')
         
-        # Find elements intuitively
+        # 直观地查找元素
         button = await tab.find(tag_name='button', class_name='submit')
         await button.click()
         
-        # Or use CSS selectors/XPath directly
+        # 或者直接使用CSS selectors/XPath表达式
         link = await tab.query('a[href*="contact"]')
         await link.click()
 
-# Run the automation
+# 运行自动化程序
 asyncio.run(my_first_automation())
 ```
 
-### Custom Configuration
+### 定制配置
 
-Sometimes you need more control. Pydoll offers flexible configuration options:
+Pydoll提供了灵活的配置选项
 
 ```python
 from pydoll.browser import Chrome
 from pydoll.browser.options import ChromiumOptions
 
 async def custom_automation():
-    # Configure browser options
+    # 配置浏览器命令行参数
     options = ChromiumOptions()
     options.add_argument('--proxy-server=username:password@ip:port')
     options.add_argument('--window-size=1920,1080')
@@ -130,16 +121,16 @@ async def custom_automation():
 asyncio.run(custom_automation())
 ```
 
-## Advanced Features
+## 进阶特性  
 
-### Intelligent Captcha Bypass
+### 智能验证码绕过  
 
-One of Pydoll's most revolutionary features is its ability to automatically handle modern captcha systems that typically block automation tools. This isn't just about solving captchas - it's about making your automations completely transparent to protection systems.
+Pydoll最具代表性的功能之一，是能自动处理现代验证码系统——这些系统通常会检测拦截自动化工具。这不仅仅是绕过验证码，更是让您的自动化操作在防护系统面前完全隐形。  
 
 **Supported Captcha Types:**
-- **Cloudflare Turnstile** - The modern replacement for reCAPTCHA
-- **reCAPTCHA v3** - Google's invisible captcha system
-- **Custom implementations** - Extensible framework for new captcha types
+- **Cloudflare Turnstile** - reCAPTCHA 的现代替代方案
+- **reCAPTCHA v3** - 谷歌的无感验证系统
+- **自定义实现** - 可扩展框架，适配新型验证码
 
 ```python
 import asyncio
@@ -176,9 +167,9 @@ async def advanced_captcha_bypass():
 asyncio.run(advanced_captcha_bypass())
 ```
 
-### Advanced Element Finding
+### 高级元素定位
 
-Pydoll offers multiple intuitive ways to find elements. No matter how you prefer to work, we have an approach that makes sense for you:
+Pydoll 提供多种直观的元素定位方式，无论您的使用习惯如何，总有一种方案适合您：  
 
 ```python
 import asyncio
@@ -189,31 +180,31 @@ async def element_finding_examples():
         tab = await browser.start()
         await tab.go_to('https://example.com')
         
-        # Find by attributes (most intuitive)
+        # 属性匹配
         submit_btn = await tab.find(
             tag_name='button',
             class_name='btn-primary',
             text='Submit'
         )
         
-        # Find by ID
+        # id匹配
         username_field = await tab.find(id='username')
         
-        # Find multiple elements
+        # 多个元素匹配
         all_links = await tab.find(tag_name='a', find_all=True)
         
-        # CSS selectors and XPath
+        # CSS selectors 和 XPath表达式
         nav_menu = await tab.query('nav.main-menu')
         specific_item = await tab.query('//div[@data-testid="item-123"]')
         
-        # With timeout and error handling
+        # 超时和错误处理
         delayed_element = await tab.find(
             class_name='dynamic-content',
             timeout=10,
             raise_exc=False  # Returns None if not found
         )
         
-        # Advanced: Custom attributes
+        # 自定义属性字段匹配
         custom_element = await tab.find(
             data_testid='submit-button',
             aria_label='Submit form'
@@ -222,9 +213,9 @@ async def element_finding_examples():
 asyncio.run(element_finding_examples())
 ```
 
-### Concurrent Automation
+### 并行自动化  
 
-One of the great advantages of Pydoll's asynchronous design is the ability to process multiple tasks simultaneously:
+由于Pydoll是基于异步设计的，能够更好地同时处理多个任务：  
 
 ```python
 import asyncio
@@ -262,9 +253,9 @@ async def concurrent_scraping():
 asyncio.run(concurrent_scraping())
 ```
 
-### Event-Driven Automation
+### 事件驱动的自动化
 
-React to page events and user interactions in real-time. This enables more sophisticated and responsive automations:
+Pydoll 支持实时响应页面事件与用户交互，从而实现更智能、响应更迅捷的自动化流程：  
 
 ```python
 import asyncio
@@ -299,9 +290,9 @@ async def event_driven_automation():
 asyncio.run(event_driven_automation())
 ```
 
-### Working with iFrames
+### 处理 iframe 内容
 
-Pydoll provides seamless iframe interaction through the `get_frame()` method. This is especially useful for dealing with embedded content:
+Pydoll 通过`get_frame()`方法提供无缝的 iframe 交互能力，尤其适用于处理嵌入式内容：  
 
 ```python
 import asyncio
@@ -312,10 +303,10 @@ async def iframe_interaction():
         tab = await browser.start()
         await tab.go_to('https://example.com/page-with-iframe')
         
-        # Find the iframe element
+        # 查找iframe元素
         iframe_element = await tab.query('.hcaptcha-iframe', timeout=10)
         
-        # Get a Tab instance for the iframe content
+        # 从iframe中获取一个tab实例
         frame = await tab.get_frame(iframe_element)
         
         # Now interact with elements inside the iframe
@@ -333,43 +324,43 @@ async def iframe_interaction():
 asyncio.run(iframe_interaction())
 ```
 
-## Documentation
+## 文档
 
-For comprehensive documentation, detailed examples, and deep dives into Pydoll's features, visit our [official documentation site](https://autoscrape-labs.github.io/pydoll/).
+如需完整文档、详细示例以及想要深入了解Pydoll的特性,请访问[官方文档](https://autoscrape-labs.github.io/pydoll/)
 
-The documentation includes:
-- **Getting Started Guide** - Step-by-step tutorials
-- **API Reference** - Complete method documentation  
-- **Advanced Techniques** - Network interception, event handling, performance optimization
-- **Troubleshooting** - Common issues and solutions
-- **Best Practices** - Patterns for reliable automation
+文档包含以下内容：
+- **入门指南** - 手把手教学教程
+- **API参考** - 完整的方法文档说明  
+- **高级技巧** - 网络请求拦截、事件处理、性能优化
+- **故障排查** - 常见问题及解决方案
+- **最佳实践** - 构建稳定自动化流程的推荐方案
 
-## Contributing
+## 贡献
 
-We'd love your help making Pydoll even better! Check out our [contribution guidelines](CONTRIBUTING.md) to get started. Whether it's fixing bugs, adding features, or improving documentation - all contributions are welcome!
+诚邀您携手，共铸 Pydoll 更佳体验！请参阅[贡献指南](CONTRIBUTING.md)开启协作。无论修复疏漏、添砖新能，抑或完善文档——所有热忱，皆为至宝！
 
-Please make sure to:
-- Write tests for new features or bug fixes
-- Follow coding style and conventions
-- Use conventional commits for pull requests
-- Run lint and test checks before submitting
+请务必遵循以下规范：  
+- 为新功能或 Bug 修复编写测试
+- 遵守代码风格与项目规范  
+- 提交 Pull Request 时使用约定式提交（Conventional Commits）  
+- 提交前运行代码检查（Lint）和测试  
 
-## Support My Work
+## 赞助我们
 
-If you find my projects helpful, consider [sponsoring me on GitHub](https://github.com/sponsors/thalissonvs).  
-You'll get access to exclusive perks like prioritized support, custom features, and more!
+如果你觉得本项目对你有帮助，可以考虑[赞助我们](https://github.com/sponsors/thalissonvs).  
+您将获取独家优先支持,定制需求以及更多的福利!
 
-Can't sponsor right now? No problem — you can still help a lot by:
-- Starring the repo
-- Sharing it on social media
-- Writing blog posts or tutorials
-- Giving feedback or reporting issues
+现在不能赞助?无妨,你可以通过以下方式支持我们:
+- ⭐ Star 本项目
+- 📢 社交平台分享
+- ✍️ 撰写教程或博文
+- 🐛 反馈建议或提交issues
 
-Every bit of support makes a difference — thank you!
+点滴相助，铭记于心——诚谢！  
 
-## License
+## 许可
 
-Pydoll is licensed under the [MIT License](LICENSE).
+Pydoll是在 [MIT License](LICENSE) 许可下许可的开源软件。  
 
 <p align="center">
   <b>Pydoll</b> — Making browser automation magical!
