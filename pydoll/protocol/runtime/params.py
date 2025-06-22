@@ -1,8 +1,8 @@
-
 try:
     from typing import NotRequired
 except ImportError:
     from typing_extensions import NotRequired
+
 
 from pydoll.protocol.base import CommandParams
 from pydoll.protocol.runtime.types import CallArgument, SerializationOptions

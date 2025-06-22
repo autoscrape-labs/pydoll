@@ -5,6 +5,8 @@ try:
 except ImportError:
     from typing_extensions import NotRequired
 
+from typing_extensions import TypedDict
+
 from pydoll.protocol.runtime.types import (
     ExceptionDetails,
     InternalPropertyDescriptor,

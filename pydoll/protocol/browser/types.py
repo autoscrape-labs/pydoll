@@ -5,6 +5,9 @@ try:
 except ImportError:
     from typing_extensions import NotRequired
 
+from typing_extensions import TypedDict
+
+
 from pydoll.constants import WindowState
 
 

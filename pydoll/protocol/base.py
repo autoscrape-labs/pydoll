@@ -1,4 +1,6 @@
 from typing import Any, Dict, Generic, TypedDict, TypeVar
+from typing_extensions import NotRequired, TypedDict
+
 
 try:
     from typing import NotRequired

@@ -3,6 +3,7 @@ try:
 except ImportError:
     from typing_extensions import NotRequired
 
+
 from pydoll.constants import DownloadBehavior, PermissionType
 from pydoll.protocol.base import CommandParams
 from pydoll.protocol.browser.types import WindowBoundsDict

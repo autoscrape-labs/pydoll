@@ -248,12 +248,13 @@ class Browser(ABC):  # noqa: PLR0904
         """
         targets = await self.get_targets()
         valid_tab_targets = [
-            target for target in targets if target['type'] == 'page'
-            and 'extension' not in target['url']
+            target
+            for target in targets
+            if target['type'] == 'page' and 'extension' not in target['url']
         ]
         return [
-            Tab(self, self._connection_port, target['targetId']) for target
-            in reversed(valid_tab_targets)
+            Tab(self, self._connection_port, target['targetId'])
+            for target in reversed(valid_tab_targets)
         ]
 
     async def set_download_path(self, path: str, browser_context_id: Optional[str] = None):

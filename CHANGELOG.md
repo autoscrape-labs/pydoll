@@ -1,3 +1,9 @@
+## 2.2.3 (2025-06-20)
+
+### Fix
+
+- fix contextmanager for file upload
+
 ## 2.2.2 (2025-06-18)
 
 ### Fix

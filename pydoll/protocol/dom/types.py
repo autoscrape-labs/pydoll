@@ -5,6 +5,8 @@ try:
 except ImportError:
     from typing_extensions import NotRequired
 
+from typing_extensions import TypedDict
+
 from pydoll.constants import CompatibilityMode, PseudoType, ShadowRootType
 
 Quad = Annotated[list[float], 'Format: [x1, y1, x2, y2, x3, y3, x4, y4]']
@@ -84,3 +86,14 @@ class BoxModel(TypedDict):
     width: int
     height: int
     shapeOutside: NotRequired[ShapeOutsideInfo]
+
+
+class EventFileChooserOpenedParams(TypedDict):
+    frameId: str
+    mode: str
+    backendNodeId: int
+
+
+class EventFileChooserOpened(TypedDict):
+    method: str
+    params: EventFileChooserOpenedParams
