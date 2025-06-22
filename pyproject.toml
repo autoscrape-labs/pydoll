@@ -1,7 +1,6 @@
 [tool.poetry]
 name = "pydoll-python"
-version = "2.2.2"
-
+version = "2.2.3"
 description = ""
 authors = ["Thalison Fernandes <thalissfernandes99@gmail.com>"]
 readme = "README.md"
@@ -11,9 +10,10 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.10"
-websockets = "^13.1"
+websockets = "^14"
 aiohttp = "^3.9.5"
 aiofiles = "^23.2.1"
+typing_extensions = "^4.14.0"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -37,6 +37,7 @@ build-backend = "poetry.core.masonry.api"
 line-length = 100
 target-version = "py310"
 
+
 [tool.ruff.lint]
 preview = true
 select = ['I', 'F', 'E', 'W', 'PL', 'PT']
@@ -52,8 +53,6 @@ exclude = ['tests', 'tests/*']
 [tool.pytest.ini_options]
 pythonpath = "."
 addopts = '-p no:warnings'
-asyncio_mode = "auto"
-asyncio_default_fixture_loop_scope = "function"
 
 [tool.taskipy.tasks]
 lint = 'ruff check .; ruff check . --diff'
@@ -65,4 +64,3 @@ post_test = 'coverage html'
 exclude = [
     "tests/",
 ]
-
