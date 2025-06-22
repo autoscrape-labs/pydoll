@@ -5,6 +5,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 import pytest_asyncio
 import websockets
+from websockets.protocol import State
 
 from pydoll import exceptions
 from pydoll.connection import ConnectionHandler
@@ -14,7 +15,7 @@ from pydoll.connection import ConnectionHandler
 async def connection_handler():
     handler = ConnectionHandler(connection_port=9222)
     handler._ws_connection = AsyncMock()
-    handler._ws_connection.closed = False
+    handler._ws_connection.state = State.OPEN
     return handler
 
 
@@ -26,7 +27,7 @@ async def connection_handler_closed():
         ws_connector=AsyncMock(),
     )
     handler._ws_connection = AsyncMock()
-    handler._ws_connection.closed = True
+    handler._ws_connection.state = State.CLOSED
     return handler
 
 
@@ -39,7 +40,7 @@ async def connection_handler_with_page_id():
         ws_connector=AsyncMock(),
     )
     handler._ws_connection = AsyncMock()
-    handler._ws_connection.closed = True
+    handler._ws_connection.state = State.CLOSED
     return handler
 
 
