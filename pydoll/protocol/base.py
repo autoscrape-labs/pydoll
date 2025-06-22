@@ -1,11 +1,9 @@
-from typing import Any, Dict, Generic, TypedDict, TypeVar
-from typing_extensions import NotRequired, TypedDict
-
+from typing import Any, Dict, Generic, TypeVar
 
 try:
-    from typing import NotRequired
+    from typing import NotRequired, TypedDict
 except ImportError:
-    from typing_extensions import NotRequired
+    from typing_extensions import NotRequired, TypedDict
 
 
 class CommandParams(TypedDict, total=False):
