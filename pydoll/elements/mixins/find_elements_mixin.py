@@ -305,7 +305,7 @@ class FindElementsMixin:
         }
         provided_selectors = {key: value for key, value in simple_selectors.items() if value}
 
-        if len(provided_selectors) == 1 and not text:
+        if len(provided_selectors) == 1 and not text and not attributes:
             key, value = next(iter(provided_selectors.items()))
             by = by_map[key]
             return by, value

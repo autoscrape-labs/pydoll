@@ -1,3 +1,13 @@
+## 2.3.0 (2025-06-25)
+
+### Feat
+
+- **connection**: Upgrade adapt websockets version to 14.0
+
+### Fix
+
+- refine selector condition to include attributes check
+
 ## 2.2.3 (2025-06-20)
 
 ### Fix
