@@ -1425,3 +1425,66 @@ class TestTabNetworkMethods:
         
         # Should handle missing request data gracefully
         assert result == []
+
+    @pytest.mark.asyncio
+    async def test_continue_request(self, tab):
+        """Test continue_request method."""
+        request_id = 'test_request_123'
+        
+        # Mock the _execute_command method
+        tab._execute_command = AsyncMock(return_value={'success': True})
+        
+        result = await tab.continue_request(request_id)
+        
+        # Verify _execute_command was called with correct FetchCommands
+        tab._execute_command.assert_called_once()
+        call_args = tab._execute_command.call_args[0][0]
+        assert call_args['method'] == 'Fetch.continueRequest'
+        assert call_args['params']['requestId'] == request_id
+        assert result == {'success': True}
+
+    @pytest.mark.asyncio
+    async def test_fail_request(self, tab):
+        """Test fail_request method."""
+        from pydoll.constants import NetworkErrorReason
+        
+        request_id = 'test_request_123'
+        error_reason = NetworkErrorReason.BLOCKED_BY_CLIENT
+        
+        # Mock the _execute_command method
+        tab._execute_command = AsyncMock(return_value={'success': True})
+        
+        result = await tab.fail_request(request_id, error_reason)
+        
+        # Verify _execute_command was called with correct FetchCommands
+        tab._execute_command.assert_called_once()
+        call_args = tab._execute_command.call_args[0][0]
+        assert call_args['method'] == 'Fetch.failRequest'
+        assert call_args['params']['requestId'] == request_id
+        assert call_args['params']['errorReason'] == error_reason
+        assert result == {'success': True}
+
+    @pytest.mark.asyncio
+    async def test_fulfill_request(self, tab):
+        """Test fulfill_request method."""
+        request_id = 'test_request_123'
+        response_code = 200
+        response_headers = [{'name': 'Content-Type', 'value': 'application/json'}]
+        response_body = {'message': 'success'}
+        
+        # Mock the _execute_command method
+        tab._execute_command = AsyncMock(return_value={'success': True})
+        
+        result = await tab.fulfill_request(
+            request_id, response_code, response_headers, response_body
+        )
+        
+        # Verify _execute_command was called with correct FetchCommands
+        tab._execute_command.assert_called_once()
+        call_args = tab._execute_command.call_args[0][0]
+        assert call_args['method'] == 'Fetch.fulfillRequest'
+        assert call_args['params']['requestId'] == request_id
+        assert call_args['params']['responseCode'] == response_code
+        assert call_args['params']['responseHeaders'] == response_headers
+        assert call_args['params']['body'] == response_body
+        assert result == {'success': True}

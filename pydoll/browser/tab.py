@@ -26,7 +26,7 @@ from pydoll.commands import (
     StorageCommands,
 )
 from pydoll.connection import ConnectionHandler
-from pydoll.constants import By, RequestStage, ResourceType, ScreenshotFormat
+from pydoll.constants import By, NetworkErrorReason, RequestStage, ResourceType, ScreenshotFormat
 from pydoll.elements.mixins import FindElementsMixin
 from pydoll.elements.web_element import WebElement
 from pydoll.exceptions import (
@@ -42,6 +42,7 @@ from pydoll.exceptions import (
 )
 from pydoll.protocol.base import Response
 from pydoll.protocol.dom.types import EventFileChooserOpened
+from pydoll.protocol.fetch.types import HeaderEntry
 from pydoll.protocol.network.responses import GetResponseBodyResponse
 from pydoll.protocol.network.types import Cookie, CookieParam, NetworkLog
 from pydoll.protocol.page.events import PageEvent
@@ -457,8 +458,61 @@ class Tab(FindElementsMixin):  # noqa: PLR0904
         )
 
     async def delete_all_cookies(self):
-        """Delete all cookies from current browser context."""
+        """Delete all cookies for current page."""
         return await self._execute_command(StorageCommands.clear_cookies(self._browser_context_id))
+
+    async def continue_request(self, request_id: str):
+        """
+        Continue paused request without modifications.
+
+        Args:
+            request_id: The ID of the fetch request to continue.
+
+        Returns:
+            Response from the continue request command.
+        """
+        return await self._execute_command(FetchCommands.continue_request(request_id))
+
+    async def fail_request(self, request_id: str, error_reason: NetworkErrorReason):
+        """
+        Fail request with error code.
+
+        Args:
+            request_id: The ID of the fetch request to fail.
+            error_reason: The reason for failing the request.
+
+        Returns:
+            Response from the fail request command.
+        """
+        return await self._execute_command(FetchCommands.fail_request(request_id, error_reason))
+
+    async def fulfill_request(
+        self,
+        request_id: str,
+        response_code: int,
+        response_headers: list[HeaderEntry],
+        response_body: dict[Any, Any],
+    ):
+        """
+        Fulfill request with response data.
+
+        Args:
+            request_id: The ID of the fetch request to fulfill.
+            response_code: HTTP status code for the response.
+            response_headers: List of response headers.
+            response_body: Response body data.
+
+        Returns:
+            Response from the fulfill request command.
+        """
+        return await self._execute_command(
+            FetchCommands.fulfill_request(
+                request_id,
+                response_code,
+                response_headers,
+                response_body,
+            )
+        )
 
     async def go_to(self, url: str, timeout: int = 300):
         """
