@@ -30,20 +30,15 @@
 
 - fix call parameters order in call_function_on method
 
-## 2.2.0 (2025-06-15)
+
 
 ### Feat
 
-- add method to retrieve non-extension opened tabs as Tab instances
-
-### Refactor
-
-- refactor attribute assignments to include type annotations
-- implement singleton pattern for Tab instances by target_id
 
 ## 2.1.0 (2025-06-14)
 
 ### Feat
+
 
 - add new script-related exception classes for better handling
 - add functions to clean scripts and check return statements
@@ -255,8 +250,7 @@
 - Supports initialization options based on browser type
 - Edge browser constructors to support optional connection port parameters
 - Add Microsoft Edge browser support
-- 为 Edge 浏览器添加默认用户数据目录支持
-- Add Microsoft Edge browser support
+- Add default user data directory support for Edge browser
 
 ### Refactor
 
