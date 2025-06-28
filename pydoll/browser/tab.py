@@ -26,7 +26,14 @@ from pydoll.commands import (
     StorageCommands,
 )
 from pydoll.connection import ConnectionHandler
-from pydoll.constants import By, RequestStage, ResourceType, ScreenshotFormat
+from pydoll.constants import (
+    By,
+    NetworkErrorReason,
+    RequestMethod,
+    RequestStage,
+    ResourceType,
+    ScreenshotFormat,
+)
 from pydoll.elements.mixins import FindElementsMixin
 from pydoll.elements.web_element import WebElement
 from pydoll.exceptions import (
@@ -41,6 +48,8 @@ from pydoll.exceptions import (
     WaitElementTimeout,
 )
 from pydoll.protocol.base import Response
+from pydoll.protocol.dom.types import EventFileChooserOpened
+from pydoll.protocol.fetch.types import HeaderEntry
 from pydoll.protocol.network.responses import GetResponseBodyResponse
 from pydoll.protocol.network.types import Cookie, CookieParam, NetworkLog
 from pydoll.protocol.page.events import PageEvent
@@ -124,19 +133,21 @@ class Tab(FindElementsMixin):  # noqa: PLR0904
         if hasattr(self, '_initialized') and self._initialized:
             return
 
-        self._browser = browser
-        self._connection_port = connection_port
-        self._target_id = target_id
-        self._connection_handler = ConnectionHandler(connection_port, self._target_id)
-        self._page_events_enabled = False
-        self._network_events_enabled = False
-        self._fetch_events_enabled = False
-        self._dom_events_enabled = False
-        self._runtime_events_enabled = False
-        self._intercept_file_chooser_dialog_enabled = False
+        self._browser: 'Browser' = browser
+        self._connection_port: int = connection_port
+        self._target_id: str = target_id
+        self._connection_handler: ConnectionHandler = ConnectionHandler(
+            connection_port, self._target_id
+        )
+        self._page_events_enabled: bool = False
+        self._network_events_enabled: bool = False
+        self._fetch_events_enabled: bool = False
+        self._dom_events_enabled: bool = False
+        self._runtime_events_enabled: bool = False
+        self._intercept_file_chooser_dialog_enabled: bool = False
         self._cloudflare_captcha_callback_id: Optional[int] = None
-        self._browser_context_id = browser_context_id
-        self._initialized = True
+        self._browser_context_id: Optional[str] = browser_context_id
+        self._initialized: bool = True
 
     @classmethod
     def _remove_instance(cls, target_id: str) -> None:
@@ -292,9 +303,6 @@ class Tab(FindElementsMixin):  # noqa: PLR0904
             custom_selector: Custom captcha selector (default: cf-turnstile class).
             time_before_click: Delay before clicking captcha (default 2s).
             time_to_wait_captcha: Timeout for captcha detection (default 5s).
-
-        Returns:
-            Callback ID for disabling auto-solver.
         """
         if not self.page_events_enabled:
             await self.enable_page_events()
@@ -367,7 +375,7 @@ class Tab(FindElementsMixin):  # noqa: PLR0904
         Get Tab object for interacting with iframe content.
 
         Args:
-            frame: Tab representing the iframe (<iframe> tag).
+            frame: Tab representing the iframe tag.
 
         Returns:
             Tab instance configured for iframe interaction.
@@ -377,7 +385,6 @@ class Tab(FindElementsMixin):  # noqa: PLR0904
             InvalidIFrame: If iframe lacks valid src attribute.
             IFrameNotFound: If iframe target not found in browser.
         """
-        print('frame.tag_name: ', frame.tag_name)
         if not frame.tag_name == 'iframe':
             raise NotAnIFrame
 
@@ -669,6 +676,53 @@ class Tab(FindElementsMixin):  # noqa: PLR0904
 
         return await self._execute_script_without_element(script)
 
+    # TODO: think about how to remove these duplications with the base class
+    async def continue_request(  # noqa: PLR0913, PLR0917
+        self,
+        request_id: str,
+        url: Optional[str] = None,
+        method: Optional[RequestMethod] = None,
+        post_data: Optional[str] = None,
+        headers: Optional[list[HeaderEntry]] = None,
+        intercept_response: Optional[bool] = None,
+    ):
+        """
+        Continue paused request without modifications.
+        """
+        return await self._execute_command(
+            FetchCommands.continue_request(
+                request_id=request_id,
+                url=url,
+                method=method,
+                post_data=post_data,
+                headers=headers,
+                intercept_response=intercept_response,
+            )
+        )
+
+    async def fail_request(self, request_id: str, error_reason: NetworkErrorReason):
+        """Fail request with error code."""
+        return await self._execute_command(FetchCommands.fail_request(request_id, error_reason))
+
+    async def fulfill_request(
+        self,
+        request_id: str,
+        response_code: int,
+        response_headers: Optional[list[HeaderEntry]] = None,
+        body: Optional[str] = None,
+        response_phrase: Optional[str] = None,
+    ):
+        """Fulfill request with response data."""
+        return await self._execute_command(
+            FetchCommands.fulfill_request(
+                request_id=request_id,
+                response_code=response_code,
+                response_headers=response_headers,
+                body=body,
+                response_phrase=response_phrase,
+            )
+        )
+
     @asynccontextmanager
     async def expect_file_chooser(
         self, files: Union[str, Path, list[Union[str, Path]]]
@@ -680,10 +734,11 @@ class Tab(FindElementsMixin):  # noqa: PLR0904
             files: File path(s) for upload.
         """
 
-        async def event_handler(event):
+        async def event_handler(event: EventFileChooserOpened):
+            file_list = [str(file) for file in files] if isinstance(files, list) else [str(files)]
             await self._execute_command(
-                DomCommands.upload_files(
-                    files=files,
+                DomCommands.set_file_input_files(
+                    files=file_list,
                     backend_node_id=event['params']['backendNodeId'],
                 )
             )
@@ -697,7 +752,11 @@ class Tab(FindElementsMixin):  # noqa: PLR0904
         if self.intercept_file_chooser_dialog_enabled is False:
             await self.enable_intercept_file_chooser_dialog()
 
-        await self.on(PageEvent.FILE_CHOOSER_OPENED, event_handler, temporary=True)
+        await self.on(
+            PageEvent.FILE_CHOOSER_OPENED,
+            cast(Callable[[dict], Any], event_handler),
+            temporary=True,
+        )
 
         yield
 
@@ -750,7 +809,12 @@ class Tab(FindElementsMixin):  # noqa: PLR0904
             if not _before_page_events_enabled:
                 await self.disable_page_events()
 
-    async def on(self, event_name: str, callback: Callable[[dict], Any], temporary: bool = False):
+    async def on(
+        self,
+        event_name: str,
+        callback: Callable[[dict], Any],
+        temporary: bool = False,
+    ) -> int:
         """
         Register CDP event listener.
 

@@ -200,7 +200,7 @@ class FetchCommands:
         request_id: str,
         response_code: int,
         response_headers: Optional[list[HeaderEntry]] = None,
-        body: Optional[dict] = None,
+        body: Optional[str] = None,
         response_phrase: Optional[str] = None,
     ) -> Command[Response]:
         """
