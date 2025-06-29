@@ -949,7 +949,7 @@ class TestTabFileChooser:
         from pathlib import Path
         
         files = [Path('documents/file1.txt'), Path('images/file2.jpg')]
-        expected_files = ['documents/file1.txt', 'images/file2.jpg']
+        expected_files = [str(file) for file in files]
         
         await self._test_event_handler_with_files(tab, files, expected_files, 54321)
 
@@ -959,7 +959,7 @@ class TestTabFileChooser:
         from pathlib import Path
         
         files = Path('documents/important.pdf')
-        expected_files = ['documents/important.pdf']
+        expected_files = [str(files)]
         
         await self._test_event_handler_with_files(tab, files, expected_files, 98765)
 

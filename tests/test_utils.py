@@ -200,7 +200,11 @@ class TestUtils:
             with open(non_executable, 'w') as f:
                 f.write('not executable')
             # Don't set executable permissions
-            
+
+            # some filesystems do not have executable bits, notably NTFS on Windows
+            if os.access(non_executable, os.X_OK):
+                return
+
             with pytest.raises(exceptions.InvalidBrowserPath):
                 validate_browser_paths([non_executable])
 
