@@ -176,7 +176,7 @@ async def persistent_fingerprint_example():
         print(f"Loaded platform: {saved_fingerprint.platform}")
 
     # List all saved fingerprints
-    all_fingerprints = fingerprint_manager.list_fingerprints()
+    all_fingerprints = fingerprint_manager.list_saved_fingerprints()
     print(f"\nAll saved fingerprints: {list(all_fingerprints)}")
 
 

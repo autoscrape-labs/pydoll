@@ -158,10 +158,16 @@ class Scripts:
     // Override toString to hide modifications
     const originalToString = Function.prototype.toString;
     Function.prototype.toString = function() {{
-        if (this.name === 'get' && this.toString().includes('return')) {{
+        const originalSource = originalToString.call(this);
+        // Only hide fingerprint-related getter functions that return specific values
+        if (this.name === 'get' && 
+            originalSource.includes('return') && 
+            (originalSource.includes('false') || 
+             originalSource.includes("'{") || 
+             originalSource.includes('{{')) {{
             return 'function get() {{ [native code] }}';
         }}
-        return originalToString.call(this);
+        return originalSource;
     }};
 }})();
 """
@@ -308,15 +314,50 @@ class Scripts:
         if (contextType === '2d') {{
             const originalToDataURL = this.toDataURL;
             this.toDataURL = function() {{
-                return 'data:image/png;base64,{canvas_fingerprint}';
+                // Generate dynamic base64 with subtle variations
+                const baseFP = '{canvas_fingerprint}';
+                const timeSeed = Date.now() % 10000;
+                const urlSeed = window.location ? window.location.href.length % 100 : 0;
+                const variation = (timeSeed + urlSeed).toString(36).slice(-4);
+                
+                // Replace some characters in the base fingerprint to create variation
+                let variedFP = baseFP;
+                if (baseFP.length > 10) {{
+                    const replacePos = (timeSeed % (baseFP.length - 8)) + 4;
+                    variedFP = baseFP.substring(0, replacePos) + variation + baseFP.substring(replacePos + 4);
+                }}
+                
+                return 'data:image/png;base64,' + variedFP;
             }};
 
             const originalGetImageData = context.getImageData;
             context.getImageData = function() {{
                 const imageData = originalGetImageData.apply(this, arguments);
-                // Add some noise to the image data
+                
+                // Create a more robust seed based on context
+                const seed = (Date.now() + 
+                             (window.location ? window.location.href.length : 0) + 
+                             imageData.data.length + 
+                             (navigator.userAgent ? navigator.userAgent.length : 0)) % 1000000;
+                
+                // Simple seeded random function
+                let seedState = seed;
+                const seededRandom = () => {{
+                    seedState = (seedState * 9301 + 49297) % 233280;
+                    return seedState / 233280;
+                }};
+                
+                // Add context-aware noise to RGB channels
                 for (let i = 0; i < imageData.data.length; i += 4) {{
-                    imageData.data[i] = Math.floor(Math.random() * 256);
+                    // Use seeded random with position-based variation
+                    const positionSeed = (i / 4) * 0.001;
+                    const noiseIntensity = 3 + (seededRandom() + positionSeed) % 2; // 3-5 range
+                    
+                    // Add small random variations to RGB channels
+                    imageData.data[i] = Math.min(255, Math.max(0, imageData.data[i] + (seededRandom() - 0.5) * noiseIntensity));     // Red
+                    imageData.data[i + 1] = Math.min(255, Math.max(0, imageData.data[i + 1] + (seededRandom() - 0.5) * noiseIntensity)); // Green
+                    imageData.data[i + 2] = Math.min(255, Math.max(0, imageData.data[i + 2] + (seededRandom() - 0.5) * noiseIntensity)); // Blue
+                    // Keep alpha channel unchanged to preserve transparency
                 }}
                 return imageData;
             }};
