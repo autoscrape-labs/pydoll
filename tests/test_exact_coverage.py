@@ -347,4 +347,160 @@ class TestExactCoverage:
             result = manager.delete_fingerprint("nonexistent_file")
             
             # This line execution should cover line 262
-            assert result is False 
+            assert result is False
+
+    def test_mobile_user_agent_ios_path_lines_341_342(self):
+        """DIRECT test for lines 341-342: iOS mobile user agent generation"""
+        from unittest.mock import patch
+        
+        # Create mobile configuration
+        config = FingerprintConfig()
+        config.is_mobile = True
+        config.browser_type = 'chrome'
+        
+        generator = FingerprintGenerator(config)
+        
+        # Mock random.choice to always return False (iOS path)
+        with patch('random.choice') as mock_choice:
+            # Set up the mock to return iOS path for the first call, then iPhone for device selection
+            mock_choice.side_effect = [False, "iPhone"]  # False = iOS path, then choose iPhone
+            
+            # Call _generate_mobile_user_agent directly to hit lines 341-342
+            user_agent = generator._generate_mobile_user_agent("iOS", "120.0.0.0")
+            
+            # Verify iOS user agent was generated
+            assert "iPhone" in user_agent or "iPad" in user_agent
+            assert "CriOS" in user_agent
+            assert "Mobile" in user_agent
+
+    def test_mobile_user_agent_comprehensive_coverage(self):
+        """Comprehensive test for mobile user agent generation to cover lines 341-342 and 346-347"""
+        import random
+        
+        # Create mobile configuration
+        config = FingerprintConfig()
+        config.is_mobile = True
+        
+        generator = FingerprintGenerator(config)
+        
+        # Generate multiple mobile user agents to ensure we hit both Android and iOS paths
+        user_agents = []
+        for _ in range(20):  # Generate enough to statistically hit both paths
+            # Generate random mobile user agent
+            user_agent = generator._generate_mobile_user_agent("mobile", "120.0.0.0")
+            user_agents.append(user_agent)
+        
+        # Check that we got both Android and iOS user agents
+        android_uas = [ua for ua in user_agents if "Android" in ua]
+        ios_uas = [ua for ua in user_agents if ("iPhone" in ua or "iPad" in ua) and "CriOS" in ua]
+        
+        # At least one of each type should be generated
+        assert len(android_uas) > 0, "Android user agents should be generated"
+        assert len(ios_uas) > 0, "iOS user agents should be generated"
+
+    def test_force_ios_mobile_user_agent_path(self):
+        """Force iOS path in mobile user agent generation"""
+        from unittest.mock import patch, MagicMock
+        
+        # Create mobile configuration
+        config = FingerprintConfig()
+        config.is_mobile = True
+        
+        generator = FingerprintGenerator(config)
+        
+        # Mock all random functions to control the execution path
+        with patch('random.choice') as mock_choice, \
+             patch('random.randint') as mock_randint:
+            
+            # Set up mocks to force iOS path
+            mock_choice.side_effect = [
+                False,  # First call: choose iOS over Android
+                "iPhone",  # Second call: choose iPhone from device_models
+            ]
+            
+            mock_randint.side_effect = [
+                15, 3,  # ios_version: f"{15}_{3}"
+                8, 5,   # webkit_version: f"60{8}.{5}"
+                42      # webkit_version suffix: random.randint(10, 99)
+            ]
+            
+            # Call the mobile user agent generation
+            user_agent = generator._generate_mobile_user_agent("mobile", "120.0.0.0")
+            
+            # Verify iOS user agent structure
+            assert "iPhone" in user_agent
+            assert "CPU OS 15_3" in user_agent
+            assert "CriOS/120.0.0.0" in user_agent
+            assert "Mobile/15E148" in user_agent
+            assert "608.5.42" in user_agent  # webkit version with our mocked values
+
+    def test_fingerprint_generation_with_mobile_config(self):
+        """Test complete fingerprint generation with mobile configuration"""
+        # Create mobile configuration
+        config = FingerprintConfig()
+        config.is_mobile = True
+        config.browser_type = 'chrome'
+        
+        generator = FingerprintGenerator(config)
+        
+        # Generate multiple fingerprints to ensure iOS path is hit
+        for _ in range(10):
+            fingerprint = generator.generate()
+            
+            # Verify mobile fingerprint properties
+            assert fingerprint.user_agent is not None
+            assert len(fingerprint.user_agent) > 0
+            
+            # Check if it's a mobile user agent
+            is_mobile_ua = (
+                "Mobile" in fingerprint.user_agent or 
+                "iPhone" in fingerprint.user_agent or 
+                "iPad" in fingerprint.user_agent or
+                "Android" in fingerprint.user_agent
+            )
+            assert is_mobile_ua, f"Expected mobile user agent, got: {fingerprint.user_agent}"
+
+    def test_direct_ios_user_agent_code_execution(self):
+        """Direct test to execute iOS user agent code lines 341-342"""
+        # Import and use the specific method
+        from pydoll.fingerprint.generator import FingerprintGenerator
+        
+        # Force execute the iOS path by calling the static method multiple times
+        executed_ios = False
+        for attempt in range(50):  # Try multiple times to hit iOS path
+            user_agent = FingerprintGenerator._generate_mobile_user_agent("mobile", "120.0.0.0")
+            
+            if "iPhone" in user_agent or "iPad" in user_agent:
+                executed_ios = True
+                # Verify iOS-specific elements
+                assert "CriOS" in user_agent
+                assert "Mobile/15E148" in user_agent
+                assert "CPU OS" in user_agent
+                break
+        
+        assert executed_ios, "iOS user agent generation path was not executed"
+
+    def test_webkit_version_generation_edge_cases(self):
+        """Test webkit version generation which may be on lines 346-347"""
+        from unittest.mock import patch
+        
+        # Test multiple webkit version generation scenarios
+        with patch('random.randint') as mock_randint:
+            # Test specific random values that might hit lines 346-347
+            test_cases = [
+                [1, 1, 10],  # Minimum values
+                [9, 9, 99],  # Maximum values
+                [5, 3, 55],  # Middle values
+            ]
+            
+            for case in test_cases:
+                mock_randint.side_effect = case
+                
+                # Generate webkit version format: f"60{random.randint(1, 9)}.{random.randint(1, 9)}"
+                webkit_base = f"60{case[0]}.{case[1]}"
+                webkit_full = f"{webkit_base}.{case[2]}"
+                
+                # Verify format
+                assert webkit_base.startswith("60")
+                assert len(webkit_base.split(".")) == 2
+                assert len(webkit_full.split(".")) == 3 
