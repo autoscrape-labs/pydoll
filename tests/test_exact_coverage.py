@@ -19,8 +19,340 @@ from pydoll.browser.managers.browser_options_manager import ChromiumOptionsManag
 from pydoll.browser.options import ChromiumOptions
 
 
+class TestDirectLineCoverage:
+    """Direct and simple tests for specific uncovered lines - merged from verification script"""
+
+    def test_line_55_when_none(self):
+        """
+        Direct test for line 55: return self.current_fingerprint (when None)
+        """
+        manager = FingerprintManager()
+        
+        # Ensure current_fingerprint is None
+        assert manager.current_fingerprint is None
+        
+        # Call get_current_fingerprint - EXECUTES LINE 55: return self.current_fingerprint
+        result = manager.get_current_fingerprint()
+        
+        # Verify line 55 returned None correctly
+        assert result is None
+
+    def test_line_55_when_exists(self):
+        """
+        Direct test for line 55: return self.current_fingerprint (when exists)
+        """
+        manager = FingerprintManager()
+        
+        # Generate a fingerprint to set current_fingerprint
+        fingerprint = manager.generate_new_fingerprint()
+        assert manager.current_fingerprint is not None
+        assert manager.current_fingerprint is fingerprint
+        
+        # Call get_current_fingerprint - EXECUTES LINE 55: return self.current_fingerprint
+        result = manager.get_current_fingerprint()
+        
+        # Verify line 55 was executed correctly
+        assert result is fingerprint
+        assert result is manager.current_fingerprint
+
+    def test_line_262_return_false(self):
+        """
+        Direct test for line 262: return False (when file doesn't exist)
+        """
+        with tempfile.TemporaryDirectory() as temp_dir:
+            manager = FingerprintManager()
+            manager.storage_dir = Path(temp_dir)
+            
+            # Ensure directory is empty
+            assert len(list(manager.storage_dir.glob("*.json"))) == 0
+            
+            # Try to delete non-existent file - EXECUTES return False LINE
+            result = manager.delete_fingerprint("nonexistent_file")
+            
+            # Verify False was returned (line 262 executed)
+            assert result is False
+
+    def test_line_262_multiple_names(self):
+        """
+        Test line 262 with multiple different non-existent file names
+        """
+        with tempfile.TemporaryDirectory() as temp_dir:
+            manager = FingerprintManager()
+            manager.storage_dir = Path(temp_dir)
+            
+            # Test various non-existent file names
+            test_names = ["fake", "test", "nonexistent", "", "long_name_that_doesnt_exist", "another_fake"]
+            
+            for name in test_names:
+                # Each call should execute the return False line
+                result = manager.delete_fingerprint(name)
+                assert result is False
+
+    def test_comprehensive_workflow(self):
+        """
+        Complete workflow test that covers both lines 55 and 262
+        """
+        with tempfile.TemporaryDirectory() as temp_dir:
+            manager = FingerprintManager()
+            manager.storage_dir = Path(temp_dir)
+            
+            # Test line 55 (when None)
+            assert manager.get_current_fingerprint() is None  # Executes line 55
+            
+            # Generate fingerprint
+            fp = manager.generate_new_fingerprint()
+            
+            # Test line 55 (when not None)  
+            current = manager.get_current_fingerprint()  # Executes line 55
+            assert current is fp
+            
+            # Test line 262
+            result = manager.delete_fingerprint("fake_file")  # Executes return False line
+            assert result is False
+            
+            # Test state changes and line 55 again
+            manager.clear_current_fingerprint()
+            assert manager.get_current_fingerprint() is None  # Executes line 55
+
+    def test_multiple_calls_for_coverage_assurance(self):
+        """
+        Multiple calls to ensure the lines are definitely hit during coverage measurement
+        """
+        manager = FingerprintManager()
+        
+        # Multiple calls to get_current_fingerprint (line 55) when None
+        for i in range(10):
+            result = manager.get_current_fingerprint()
+            assert result is None
+        
+        # Generate fingerprint
+        fp = manager.generate_new_fingerprint()
+        
+        # Multiple calls when fingerprint exists (line 55)
+        for i in range(10):
+            result = manager.get_current_fingerprint()
+            assert result is fp
+        
+        # Multiple calls to delete_fingerprint (return False line 262)
+        with tempfile.TemporaryDirectory() as temp_dir:
+            manager.storage_dir = Path(temp_dir)
+            for i in range(10):
+                result = manager.delete_fingerprint(f"fake_{i}")
+                assert result is False
+
+    def test_state_transitions_line_55(self):
+        """
+        Test manager state transitions to thoroughly cover line 55
+        """
+        manager = FingerprintManager()
+        
+        # Initial state - line 55 returns None
+        assert manager.get_current_fingerprint() is None
+        assert manager.get_current_fingerprint() is None  # Call again
+        
+        # After generating - line 55 returns fingerprint
+        fp1 = manager.generate_new_fingerprint()
+        assert manager.get_current_fingerprint() is fp1
+        assert manager.get_current_fingerprint() is fp1  # Call again
+        
+        # After forcing new - line 55 returns new fingerprint  
+        fp2 = manager.generate_new_fingerprint(force=True)
+        assert manager.get_current_fingerprint() is fp2
+        assert manager.get_current_fingerprint() is fp2  # Call again
+        
+        # After clearing - line 55 returns None again
+        manager.clear_current_fingerprint()
+        assert manager.get_current_fingerprint() is None
+        assert manager.get_current_fingerprint() is None  # Call again
+
+    def test_edge_cases_line_262(self):
+        """
+        Edge cases for line 262 to ensure complete coverage
+        """
+        # Test with different temporary directories
+        for i in range(5):
+            with tempfile.TemporaryDirectory() as temp_dir:
+                manager = FingerprintManager()
+                manager.storage_dir = Path(temp_dir)
+                
+                # Test the return False line with different names
+                assert manager.delete_fingerprint(f"test_{i}") is False
+                assert manager.delete_fingerprint("") is False  # Empty string
+                assert manager.delete_fingerprint("a" * 100) is False  # Long name
+
+
+class TestExactLineCoverage:
+    """Additional focused tests for specific uncovered lines"""
+
+    def test_line_55_return_current_fingerprint_when_exists(self):
+        """
+        Test manager.py#L55 - get_current_fingerprint returns current fingerprint
+        Directly tests the return statement at line 55
+        """
+        manager = FingerprintManager()
+        
+        # Ensure it starts with None
+        assert manager.current_fingerprint is None
+        
+        # Generate a fingerprint to set current_fingerprint
+        fingerprint = manager.generate_new_fingerprint()
+        assert manager.current_fingerprint is not None
+        assert manager.current_fingerprint is fingerprint
+        
+        # Call get_current_fingerprint - THIS EXECUTES LINE 55: return self.current_fingerprint
+        result = manager.get_current_fingerprint()
+        
+        # Verify line 55 was executed correctly
+        assert result is fingerprint
+        assert result is manager.current_fingerprint
+
+    def test_line_55_return_current_fingerprint_when_none(self):
+        """
+        Additional test for line 55 when current_fingerprint is None
+        """
+        manager = FingerprintManager()
+        
+        # Ensure current_fingerprint is None
+        assert manager.current_fingerprint is None
+        
+        # Call get_current_fingerprint - THIS ALSO EXECUTES LINE 55: return self.current_fingerprint
+        result = manager.get_current_fingerprint()
+        
+        # Verify line 55 returned None correctly
+        assert result is None
+
+    def test_line_262_delete_fingerprint_return_false(self):
+        """
+        Test manager.py#L262 - delete_fingerprint returns False when file doesn't exist
+        Directly tests the return False statement
+        """
+        with tempfile.TemporaryDirectory() as temp_dir:
+            manager = FingerprintManager()
+            manager.storage_dir = Path(temp_dir)
+            
+            # Ensure directory is empty
+            assert len(list(manager.storage_dir.glob("*.json"))) == 0
+            
+            # Try to delete non-existent file - THIS EXECUTES THE return False LINE
+            result = manager.delete_fingerprint("nonexistent_file")
+            
+            # Verify False was returned (line 262 executed)
+            assert result is False
+
+    def test_line_262_with_various_nonexistent_names(self):
+        """
+        Additional tests for line 262 with different non-existent names
+        """
+        with tempfile.TemporaryDirectory() as temp_dir:
+            manager = FingerprintManager()
+            manager.storage_dir = Path(temp_dir)
+            
+            # Test various non-existent file names
+            test_names = ["fake", "test", "nonexistent", "", "long_name_that_doesnt_exist"]
+            
+            for name in test_names:
+                # Each call should execute the return False line
+                result = manager.delete_fingerprint(name)
+                assert result is False
+
+    def test_complete_workflow_covering_both_lines(self):
+        """
+        Complete test that covers both lines 55 and 262 in one workflow
+        """
+        with tempfile.TemporaryDirectory() as temp_dir:
+            manager = FingerprintManager()
+            manager.storage_dir = Path(temp_dir)
+            
+            # Test line 55 (when None)
+            assert manager.get_current_fingerprint() is None  # Executes line 55
+            
+            # Generate fingerprint
+            fp = manager.generate_new_fingerprint()
+            
+            # Test line 55 (when not None)  
+            current = manager.get_current_fingerprint()  # Executes line 55
+            assert current is fp
+            
+            # Test line 262
+            result = manager.delete_fingerprint("fake")  # Executes return False line
+            assert result is False
+
+    def test_multiple_calls_to_ensure_coverage(self):
+        """
+        Multiple calls to the methods to ensure the lines are definitely hit
+        """
+        manager = FingerprintManager()
+        
+        # Multiple calls to get_current_fingerprint (line 55)
+        for _ in range(5):
+            result = manager.get_current_fingerprint()
+            assert result is None
+        
+        # Generate fingerprint
+        fp = manager.generate_new_fingerprint()
+        
+        # Multiple calls when fingerprint exists (line 55)
+        for _ in range(5):
+            result = manager.get_current_fingerprint()
+            assert result is fp
+        
+        # Multiple calls to delete_fingerprint (return False line)
+        with tempfile.TemporaryDirectory() as temp_dir:
+            manager.storage_dir = Path(temp_dir)
+            for i in range(5):
+                result = manager.delete_fingerprint(f"fake_{i}")
+                assert result is False
+
+    def test_manager_state_changes_line_55(self):
+        """
+        Test state changes to ensure line 55 is covered in all scenarios
+        """
+        manager = FingerprintManager()
+        
+        # Initial state - line 55 returns None
+        assert manager.get_current_fingerprint() is None
+        
+        # After generating - line 55 returns fingerprint
+        fp1 = manager.generate_new_fingerprint()
+        assert manager.get_current_fingerprint() is fp1
+        
+        # After forcing new - line 55 returns new fingerprint  
+        fp2 = manager.generate_new_fingerprint(force=True)
+        assert manager.get_current_fingerprint() is fp2
+        
+        # After clearing - line 55 returns None again
+        manager.clear_current_fingerprint()
+        assert manager.get_current_fingerprint() is None
+
+    def test_edge_case_scenarios(self):
+        """Test edge cases to ensure complete coverage"""
+        
+        # Test with different temporary directories
+        for i in range(3):
+            with tempfile.TemporaryDirectory() as temp_dir:
+                manager = FingerprintManager()
+                manager.storage_dir = Path(temp_dir)
+                
+                # Test the return False line
+                assert manager.delete_fingerprint(f"test_{i}") is False
+        
+        # Test get_current_fingerprint in different scenarios
+        manager = FingerprintManager()
+        
+        # Before any fingerprint
+        assert manager.get_current_fingerprint() is None
+        
+        # With fingerprint
+        fp = manager.generate_new_fingerprint() 
+        assert manager.get_current_fingerprint() is fp
+        
+        # Multiple calls
+        assert manager.get_current_fingerprint() is fp
+        assert manager.get_current_fingerprint() is fp
+
+
 class TestExactCoverage:
-    """Exact tests for uncovered lines"""
+    """Legacy tests merged for compatibility"""
 
     def test_generator_line_335_fallback_browser_type(self):
         """
@@ -61,46 +393,6 @@ class TestExactCoverage:
         result2 = FingerprintGenerator._generate_unique_properties()
         assert result["unique_id"] != result2["unique_id"]
 
-    def test_manager_line_55_return_current_fingerprint(self):
-        """
-        Test manager.py#L55 - get_current_fingerprint returns current fingerprint
-        """
-        manager = FingerprintManager()
-        
-        # First ensure current_fingerprint is None
-        assert manager.current_fingerprint is None
-        result = manager.get_current_fingerprint()
-        assert result is None
-        
-        # Generate a fingerprint
-        fingerprint = manager.generate_new_fingerprint()
-        assert manager.current_fingerprint is not None
-        
-        # Now call get_current_fingerprint - this should hit line 55
-        current = manager.get_current_fingerprint()
-        
-        # Verify the same fingerprint is returned
-        assert current is fingerprint
-        assert current == manager.current_fingerprint
-
-    def test_manager_line_262_delete_nonexistent_return_false(self):
-        """
-        Test manager.py#L262 - delete_fingerprint returns False when file doesn't exist
-        """
-        with tempfile.TemporaryDirectory() as temp_dir:
-            manager = FingerprintManager()
-            manager.storage_dir = Path(temp_dir)
-            
-            # Try to delete non-existent file - this should hit line 262 return False
-            result = manager.delete_fingerprint("definitely_does_not_exist")
-            
-            # Verify False is returned
-            assert result is False
-            
-            # Verify no files were created
-            files = list(manager.storage_dir.glob("*.json"))
-            assert len(files) == 0
-
     def test_browser_options_manager_line_71_no_fingerprint_manager(self):
         """Test browser_options_manager.py#L71 - early return when no fingerprint manager"""
         # Create manager without fingerprint spoofing enabled
@@ -114,35 +406,38 @@ class TestExactCoverage:
         result = manager._apply_fingerprint_spoofing()
         assert result is None
 
-    def test_comprehensive_coverage_verification(self):
+    def test_comprehensive_integration_all_lines(self):
         """
-        Comprehensive test to ensure all 4 lines are covered
+        Final comprehensive test that ensures all target lines are covered
         """
-        # 1. Test generator fallback (line 335)
+        # Test generator fallback (line 335)
         config = FingerprintConfig()
-        config.browser_type = 'unknown_browser'  # Trigger fallback
+        config.browser_type = 'unsupported_browser'
+        config.is_mobile = False
         generator = FingerprintGenerator(config)
         
-        os_info = {'name': 'Linux', 'version': 'x86_64'}
+        os_info = {'name': 'Windows', 'version': '10.0'}
         user_agent = generator._generate_user_agent(os_info, '120.0.0.0')
         assert 'Chrome' in user_agent  # Should fallback to Chrome
         
-        # 2. Test unique properties 
+        # Test unique properties 
         unique_props = FingerprintGenerator._generate_unique_properties()
         assert "unique_id" in unique_props
         
-        # 3. Test manager get_current_fingerprint (line 55)
-        manager = FingerprintManager()
-        fp = manager.generate_new_fingerprint()
-        current = manager.get_current_fingerprint()
-        assert current is fp
-        
-        # 4. Test manager delete_fingerprint returns False (line 262)
+        # Test manager lines 55 and 262
         with tempfile.TemporaryDirectory() as temp_dir:
+            manager = FingerprintManager()
             manager.storage_dir = Path(temp_dir)
-            assert manager.delete_fingerprint("nonexistent") is False
             
-        # 5. Test browser options manager (line 71)
+            # Line 55 tests
+            assert manager.get_current_fingerprint() is None  # Line 55
+            fp = manager.generate_new_fingerprint()
+            assert manager.get_current_fingerprint() is fp  # Line 55
+            
+            # Line 262 test
+            assert manager.delete_fingerprint("nonexistent") is False  # Line 262
+            
+        # Test browser options manager (line 71)
         options_manager = ChromiumOptionsManager(enable_fingerprint_spoofing=False)
         options_manager.fingerprint_manager = None
         result = options_manager._apply_fingerprint_spoofing()
