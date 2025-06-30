@@ -164,7 +164,7 @@ class Scripts:
             originalSource.includes('return') &&
             (originalSource.includes('false') ||
              originalSource.includes("'{") ||
-             originalSource.includes('{{')) {{
+             originalSource.includes('{'))) {{
             return 'function get() {{ [native code] }}';
         }}
         return originalSource;
