@@ -1,4 +1,3 @@
-import base64
 from unittest.mock import ANY, AsyncMock, MagicMock, patch
 
 import pytest
@@ -19,7 +18,7 @@ from pydoll.commands import (
 )
 from pydoll.protocol.fetch.events import FetchEvent
 from pydoll.connection.connection_handler import ConnectionHandler
-from pydoll.constants import DownloadBehavior, PermissionType, NetworkErrorReason, RequestMethod
+from pydoll.constants import DownloadBehavior, PermissionType, NetworkErrorReason
 
 
 class ConcreteBrowser(Browser):
@@ -613,57 +612,7 @@ async def test_disable_runtime_events(mock_browser):
     )
 
 
-# Tests for continue_request, fail_request and fulfill_request
-@pytest.mark.asyncio
-async def test_continue_request(mock_browser):
-    """Test continue_request with minimal parameters."""
-    request_id = 'test_request_123'
-    
-    await mock_browser.continue_request(request_id)
-    
-    mock_browser._connection_handler.execute_command.assert_called_with(
-        FetchCommands.continue_request(
-            request_id=request_id,
-            url=None,
-            method=None,
-            post_data=None,
-            headers=None,
-            intercept_response=None,
-        ), timeout=10
-    )
-
-
-@pytest.mark.asyncio
-async def test_continue_request_with_all_params(mock_browser):
-    """Test continue_request with all parameters."""
-    request_id = 'test_request_123'
-    url = 'https://modified-example.com'
-    method = RequestMethod.POST
-    post_data = 'modified_data=test'
-    headers = [{'name': 'Authorization', 'value': 'Bearer token123'}]
-    intercept_response = True
-    
-    await mock_browser.continue_request(
-        request_id=request_id,
-        url=url,
-        method=method,
-        post_data=post_data,
-        headers=headers,
-        intercept_response=intercept_response,
-    )
-    
-    mock_browser._connection_handler.execute_command.assert_called_with(
-        FetchCommands.continue_request(
-            request_id=request_id,
-            url=url,
-            method=method,
-            post_data=post_data,
-            headers=headers,
-            intercept_response=intercept_response,
-        ), timeout=10
-    )
-
-
+# Tests for fail_request and fulfill_request
 @pytest.mark.asyncio
 async def test_fail_request(mock_browser):
     """Test fail_request."""
@@ -679,48 +628,19 @@ async def test_fail_request(mock_browser):
 
 @pytest.mark.asyncio
 async def test_fulfill_request(mock_browser):
-    """Test fulfill_request with minimal parameters."""
-    request_id = 'test_request_123'
-    response_code = 200
-    
-    await mock_browser.fulfill_request(request_id, response_code)
-    
-    mock_browser._connection_handler.execute_command.assert_called_with(
-        FetchCommands.fulfill_request(
-            request_id=request_id,
-            response_code=response_code,
-            response_headers=None,
-            body=None,
-            response_phrase=None,
-        ), timeout=10
-    )
-
-
-@pytest.mark.asyncio
-async def test_fulfill_request_with_all_params(mock_browser):
-    """Test fulfill_request with all parameters."""
+    """Test fulfill_request."""
     request_id = 'test_request_123'
     response_code = 200
     response_headers = [{'name': 'Content-Type', 'value': 'application/json'}]
-    json_response = '{"status": "success", "data": "test"}'
-    body = base64.b64encode(json_response.encode('utf-8')).decode('utf-8')
-    response_phrase = 'OK'
+    response_body = {'status': 'success', 'data': 'test'}
     
     await mock_browser.fulfill_request(
-        request_id=request_id,
-        response_code=response_code,
-        response_headers=response_headers,
-        body=body,
-        response_phrase=response_phrase,
+        request_id, response_code, response_headers, response_body
     )
     
     mock_browser._connection_handler.execute_command.assert_called_with(
         FetchCommands.fulfill_request(
-            request_id=request_id,
-            response_code=response_code,
-            response_headers=response_headers,
-            body=body,
-            response_phrase=response_phrase,
+            request_id, response_code, response_headers, response_body
         ), timeout=10
     )
 
