@@ -7,11 +7,11 @@ including browser integration, options manager, and error handling.
 
 import asyncio
 import json
-import pytest
+import tempfile
 from pathlib import Path
 from unittest.mock import Mock, patch, AsyncMock, MagicMock
-import tempfile
-import shutil
+
+import pytest
 
 from pydoll.browser.chromium.chrome import Chrome
 from pydoll.browser.chromium.edge import Edge
@@ -132,15 +132,21 @@ class TestFingerprintIntegration:
             mock_tab.execute_script.assert_called_with("test_script")
 
     @pytest.mark.asyncio
-    async def test_fingerprint_injection_with_script_error(self, mock_tab):
+    async def test_fingerprint_injection_with_script_error(self):
         """Test fingerprint injection handles script execution errors gracefully."""
         with patch('pydoll.browser.chromium.chrome.Chrome._get_default_binary_location'), \
              patch('pydoll.browser.chromium.chrome.Chrome._setup_user_dir'):
 
             chrome = Chrome(enable_fingerprint_spoofing=True)
             
+            # Create mock tab
+            mock_tab = Mock()
+            mock_tab._execute_command = AsyncMock()
+            mock_tab.execute_script = AsyncMock()
+            
             # Mock fingerprint manager
-            chrome.fingerprint_manager.get_fingerprint_js = Mock(return_value="test_script")
+            if chrome.fingerprint_manager:
+                chrome.fingerprint_manager.get_fingerprint_js = Mock(return_value="test_script")
             
             # Make execute_script raise an exception
             mock_tab.execute_script.side_effect = Exception("Script execution failed")
