@@ -26,7 +26,14 @@ from pydoll.commands import (
     StorageCommands,
 )
 from pydoll.connection import ConnectionHandler
-from pydoll.constants import By, RequestStage, ResourceType, ScreenshotFormat
+from pydoll.constants import (
+    By,
+    NetworkErrorReason,
+    RequestMethod,
+    RequestStage,
+    ResourceType,
+    ScreenshotFormat,
+)
 from pydoll.elements.mixins import FindElementsMixin
 from pydoll.elements.web_element import WebElement
 from pydoll.exceptions import (
@@ -42,6 +49,7 @@ from pydoll.exceptions import (
 )
 from pydoll.protocol.base import Response
 from pydoll.protocol.dom.types import EventFileChooserOpened
+from pydoll.protocol.fetch.types import HeaderEntry
 from pydoll.protocol.network.responses import GetResponseBodyResponse
 from pydoll.protocol.network.types import Cookie, CookieParam, NetworkLog
 from pydoll.protocol.page.events import PageEvent
@@ -667,6 +675,53 @@ class Tab(FindElementsMixin):  # noqa: PLR0904
             return await self._execute_script_with_element(script, element)
 
         return await self._execute_script_without_element(script)
+
+    # TODO: think about how to remove these duplications with the base class
+    async def continue_request(  # noqa: PLR0913, PLR0917
+        self,
+        request_id: str,
+        url: Optional[str] = None,
+        method: Optional[RequestMethod] = None,
+        post_data: Optional[str] = None,
+        headers: Optional[list[HeaderEntry]] = None,
+        intercept_response: Optional[bool] = None,
+    ):
+        """
+        Continue paused request without modifications.
+        """
+        return await self._execute_command(
+            FetchCommands.continue_request(
+                request_id=request_id,
+                url=url,
+                method=method,
+                post_data=post_data,
+                headers=headers,
+                intercept_response=intercept_response,
+            )
+        )
+
+    async def fail_request(self, request_id: str, error_reason: NetworkErrorReason):
+        """Fail request with error code."""
+        return await self._execute_command(FetchCommands.fail_request(request_id, error_reason))
+
+    async def fulfill_request(
+        self,
+        request_id: str,
+        response_code: int,
+        response_headers: Optional[list[HeaderEntry]] = None,
+        body: Optional[str] = None,
+        response_phrase: Optional[str] = None,
+    ):
+        """Fulfill request with response data."""
+        return await self._execute_command(
+            FetchCommands.fulfill_request(
+                request_id=request_id,
+                response_code=response_code,
+                response_headers=response_headers,
+                body=body,
+                response_phrase=response_phrase,
+            )
+        )
 
     @asynccontextmanager
     async def expect_file_chooser(

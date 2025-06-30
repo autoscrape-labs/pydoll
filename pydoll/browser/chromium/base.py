@@ -23,6 +23,7 @@ from pydoll.constants import (
     DownloadBehavior,
     NetworkErrorReason,
     PermissionType,
+    RequestMethod,
     ResourceType,
 )
 from pydoll.exceptions import BrowserNotRunning, FailedToStartBrowser, NoValidTabFound
@@ -442,11 +443,28 @@ class Browser(ABC):  # noqa: PLR0904
         """Disable runtime events."""
         return await self._connection_handler.execute_command(RuntimeCommands.disable())
 
-    async def continue_request(self, request_id: str):
+    async def continue_request(  # noqa: PLR0913, PLR0917
+        self,
+        request_id: str,
+        url: Optional[str] = None,
+        method: Optional[RequestMethod] = None,
+        post_data: Optional[str] = None,
+        headers: Optional[list[HeaderEntry]] = None,
+        intercept_response: Optional[bool] = None,
+    ):
         """
         Continue paused request without modifications.
         """
-        return await self._execute_command(FetchCommands.continue_request(request_id))
+        return await self._execute_command(
+            FetchCommands.continue_request(
+                request_id=request_id,
+                url=url,
+                method=method,
+                post_data=post_data,
+                headers=headers,
+                intercept_response=intercept_response,
+            )
+        )
 
     async def fail_request(self, request_id: str, error_reason: NetworkErrorReason):
         """Fail request with error code."""
@@ -456,16 +474,18 @@ class Browser(ABC):  # noqa: PLR0904
         self,
         request_id: str,
         response_code: int,
-        response_headers: list[HeaderEntry],
-        response_body: dict[Any, Any],
+        response_headers: Optional[list[HeaderEntry]] = None,
+        body: Optional[str] = None,
+        response_phrase: Optional[str] = None,
     ):
         """Fulfill request with response data."""
         return await self._execute_command(
             FetchCommands.fulfill_request(
-                request_id,
-                response_code,
-                response_headers,
-                response_body,
+                request_id=request_id,
+                response_code=response_code,
+                response_headers=response_headers,
+                body=body,
+                response_phrase=response_phrase,
             )
         )
 
