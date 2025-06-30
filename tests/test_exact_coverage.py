@@ -318,4 +318,86 @@ class TestExactCoverage:
         
         # This should also hit line 71
         result = manager_disabled._apply_fingerprint_spoofing()
-        assert result is None 
+        assert result is None
+
+    def test_force_generate_fingerprint_coverage(self):
+        """Test force generation to ensure line 55 condition logic is fully covered"""
+        manager = FingerprintManager()
+        
+        # Generate initial fingerprint
+        first_fp = manager.generate_new_fingerprint()
+        
+        # Generate again without force - should return existing (hits line 55)
+        same_fp = manager.generate_new_fingerprint(force=False)
+        assert same_fp is first_fp
+        
+        # Generate with force=True - should create new fingerprint (bypasses line 55)
+        new_fp = manager.generate_new_fingerprint(force=True)
+        assert new_fp is not first_fp
+        assert manager.current_fingerprint is new_fp
+
+    def test_delete_file_edge_cases(self):
+        """Test delete operations with various edge cases for line 262"""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            manager = FingerprintManager()
+            manager.storage_dir = Path(temp_dir)
+            
+            # Test with special characters and edge case names
+            edge_case_names = [
+                "file_with_underscores",
+                "file-with-dashes", 
+                "file.with.dots",
+                "UPPERCASE_FILE",
+                "mixedCase_File",
+                "123numeric456",
+                "special!@#$%^&*()",
+                "unicode_文件名",
+                "",  # Empty string
+                " ",  # Single space
+                "   ",  # Multiple spaces
+            ]
+            
+            for name in edge_case_names:
+                # Each should hit line 262: return False
+                result = manager.delete_fingerprint(name)
+                assert result is False
+                assert isinstance(result, bool)
+
+    def test_manager_line_55_existing_fingerprint_not_forced(self):
+        """
+        Test manager.py#L55 - the exact condition check when fingerprint exists and force=False
+        This specifically targets: if self.current_fingerprint and not force:
+        """
+        manager = FingerprintManager()
+        
+        # First generate a fingerprint
+        first_fingerprint = manager.generate_new_fingerprint()
+        assert manager.current_fingerprint is first_fingerprint
+        
+        # Now call generate_new_fingerprint again WITHOUT force=True
+        # This should hit line 55 and return the existing fingerprint
+        second_call_result = manager.generate_new_fingerprint()
+        
+        # Verify it returned the same fingerprint (hitting line 55)
+        assert second_call_result is first_fingerprint
+        assert manager.current_fingerprint is first_fingerprint
+
+    def test_manager_line_262_delete_returns_false(self):
+        """
+        Test manager.py#L262 - exact return False when file doesn't exist
+        This specifically targets the return False statement in delete_fingerprint
+        """
+        with tempfile.TemporaryDirectory() as temp_dir:
+            manager = FingerprintManager()
+            manager.storage_dir = Path(temp_dir)
+            
+            # Ensure the directory is empty
+            assert len(list(manager.storage_dir.glob("*.json"))) == 0
+            
+            # Try to delete non-existent file - this must hit line 262: return False
+            result = manager.delete_fingerprint("nonexistent_file")
+            
+            # Verify exact return value from line 262
+            assert result is False
+            assert isinstance(result, bool)
+            assert result == False 
