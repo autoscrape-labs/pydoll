@@ -22,7 +22,7 @@ class TestCoverageSpecific:
     """Tests to cover specific uncovered lines."""
 
     def test_browser_options_apply_fingerprint_spoofing(self):
-        """Test _apply_fingerprint_spoofing method - covers browser_options_manager.py#L71"""
+        """Test _apply_fingerprint_spoofing method - normal case"""
         config = FingerprintConfig(browser_type="chrome")
         manager = ChromiumOptionsManager(
             enable_fingerprint_spoofing=True,
@@ -47,6 +47,22 @@ class TestCoverageSpecific:
         manager.fingerprint_manager.generate_new_fingerprint.assert_called_with('chrome')
         manager.fingerprint_manager.get_fingerprint_arguments.assert_called_with('chrome')
 
+    def test_browser_options_apply_fingerprint_spoofing_no_manager(self):
+        """Test _apply_fingerprint_spoofing method when manager is None - covers browser_options_manager.py#L71"""
+        manager = ChromiumOptionsManager(enable_fingerprint_spoofing=False)
+        
+        # Set up options
+        manager.options = ChromiumOptions()
+        
+        # Ensure fingerprint manager is None
+        manager.fingerprint_manager = None
+        
+        # Call the method - this should hit the early return on line 71
+        result = manager._apply_fingerprint_spoofing()
+        
+        # Should return None without error
+        assert result is None
+
     def test_fingerprint_generator_unique_properties(self):
         """Test _generate_unique_properties - covers generator.py#L335"""
         # This covers the uncovered line in generator.py
@@ -57,12 +73,24 @@ class TestCoverageSpecific:
         assert len(unique_props["unique_id"]) > 0
 
     def test_fingerprint_manager_get_current_fingerprint_none(self):
-        """Test get_current_fingerprint when None - covers manager.py#L55"""
+        """Test get_current_fingerprint when None"""
         manager = FingerprintManager()
         
-        # Initially should be None - this covers line 55
+        # Initially should be None
         current = manager.get_current_fingerprint()
         assert current is None
+
+    def test_fingerprint_manager_get_current_fingerprint_exists(self):
+        """Test get_current_fingerprint when fingerprint exists - covers manager.py#L55"""
+        manager = FingerprintManager()
+        
+        # Generate a fingerprint first
+        fingerprint = manager.generate_new_fingerprint()
+        
+        # Now get the current fingerprint - this should hit line 55
+        current = manager.get_current_fingerprint()
+        assert current is fingerprint
+        assert current is not None
 
     def test_fingerprint_manager_delete_nonexistent_file(self):
         """Test delete_fingerprint with nonexistent file - covers manager.py#L262"""
