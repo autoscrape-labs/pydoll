@@ -19,40 +19,135 @@ from pydoll.browser.managers.browser_options_manager import ChromiumOptionsManag
 from pydoll.browser.options import ChromiumOptions
 
 
-class TestLine55And262Coverage:
-    """专门针对第55行和第262行的精确测试"""
+class TestLine55EarlyReturn:
+    """Specific tests for the early return at line 55 in generate_new_fingerprint"""
 
-    def test_line_55_get_current_fingerprint_return_statement(self):
+    def test_line_55_early_return_when_fingerprint_exists_and_no_force(self):
         """
-        专门测试 manager.py 第55行: return self.current_fingerprint
+        Test line 55: return self.current_fingerprint - early return in generate_new_fingerprint
+        This tests the case when current_fingerprint exists and force=False (default)
         """
         manager = FingerprintManager()
         
-        # 情况1: current_fingerprint 为 None
+        # First, generate a fingerprint to set current_fingerprint
+        first_fingerprint = manager.generate_new_fingerprint()
+        assert manager.current_fingerprint is first_fingerprint
+        
+        # Now call generate_new_fingerprint again WITHOUT force=True
+        # This should trigger the early return at line 55
+        returned_fingerprint = manager.generate_new_fingerprint()
+        
+        # Verify that line 55 was executed - the same fingerprint was returned
+        assert returned_fingerprint is first_fingerprint
+        assert returned_fingerprint is manager.current_fingerprint
+        
+        # Verify no new fingerprint was generated (same object)
+        assert id(returned_fingerprint) == id(first_fingerprint)
+
+    def test_line_55_early_return_with_different_browser_types(self):
+        """
+        Test line 55 early return with different browser types
+        """
+        manager = FingerprintManager()
+        
+        # Generate initial fingerprint with chrome
+        chrome_fingerprint = manager.generate_new_fingerprint(browser_type='chrome')
+        assert manager.current_fingerprint is chrome_fingerprint
+        
+        # Call generate_new_fingerprint with edge but force=False (default)
+        # This should still trigger line 55 early return
+        returned_fingerprint = manager.generate_new_fingerprint(browser_type='edge')
+        
+        # Line 55 should have been executed - same fingerprint returned
+        assert returned_fingerprint is chrome_fingerprint
+        assert manager.current_fingerprint is chrome_fingerprint
+
+    def test_line_55_early_return_multiple_calls(self):
+        """
+        Test line 55 early return with multiple sequential calls
+        """
+        manager = FingerprintManager()
+        
+        # Generate initial fingerprint
+        original_fingerprint = manager.generate_new_fingerprint()
+        
+        # Multiple calls without force should all trigger line 55
+        for i in range(5):
+            returned_fingerprint = manager.generate_new_fingerprint()
+            
+            # Each call should execute line 55 and return the same fingerprint
+            assert returned_fingerprint is original_fingerprint
+            assert manager.current_fingerprint is original_fingerprint
+
+    def test_line_55_early_return_vs_force_generation(self):
+        """
+        Test the difference between line 55 early return and force generation
+        """
+        manager = FingerprintManager()
+        
+        # Generate initial fingerprint
+        first_fingerprint = manager.generate_new_fingerprint()
+        
+        # Call without force - should hit line 55
+        same_fingerprint = manager.generate_new_fingerprint(force=False)
+        assert same_fingerprint is first_fingerprint  # Line 55 executed
+        
+        # Call with force=True - should NOT hit line 55, creates new fingerprint
+        new_fingerprint = manager.generate_new_fingerprint(force=True)
+        assert new_fingerprint is not first_fingerprint  # Line 55 NOT executed
+        assert manager.current_fingerprint is new_fingerprint
+
+    def test_line_55_early_return_with_explicit_force_false(self):
+        """
+        Test line 55 with explicitly setting force=False
+        """
+        manager = FingerprintManager()
+        
+        # Generate initial fingerprint
+        initial_fingerprint = manager.generate_new_fingerprint()
+        
+        # Explicitly set force=False to trigger line 55
+        returned_fingerprint = manager.generate_new_fingerprint(force=False)
+        
+        # Verify line 55 was executed
+        assert returned_fingerprint is initial_fingerprint
+        assert manager.current_fingerprint is initial_fingerprint
+
+
+class TestLine55And262Coverage:
+    """Precise tests specifically targeting line 55 and line 262"""
+
+    def test_line_55_get_current_fingerprint_return_statement(self):
+        """
+        Specifically test manager.py line 55: return self.current_fingerprint
+        """
+        manager = FingerprintManager()
+        
+        # Case 1: current_fingerprint is None
         assert manager.current_fingerprint is None
-        result = manager.get_current_fingerprint()  # 执行第55行
+        result = manager.get_current_fingerprint()  # Execute line 55
         assert result is None
         
-        # 情况2: current_fingerprint 存在
+        # Case 2: current_fingerprint exists
         fingerprint = manager.generate_new_fingerprint()
         assert manager.current_fingerprint is not None
-        result = manager.get_current_fingerprint()  # 再次执行第55行
+        result = manager.get_current_fingerprint()  # Execute line 55 again
         assert result is fingerprint
         assert result is manager.current_fingerprint
 
     def test_line_262_get_fingerprint_summary_return_statement(self):
         """
-        专门测试 manager.py 第262行: return { ... } - get_fingerprint_summary方法的返回语句
+        Specifically test manager.py line 262: return { ... } - return statement of get_fingerprint_summary method
         """
         manager = FingerprintManager()
         
-        # 生成一个指纹以便测试摘要
+        # Generate a fingerprint for testing summary
         fingerprint = manager.generate_new_fingerprint()
         
-        # 调用 get_fingerprint_summary - 这会执行第262行的 return { 语句
+        # Call get_fingerprint_summary - this executes line 262's return { statement
         summary = manager.get_fingerprint_summary()
         
-        # 验证返回的字典结构和内容
+        # Verify the returned dictionary structure and content
         assert isinstance(summary, dict)
         expected_keys = [
             'Browser', 'User Agent', 'Platform', 'Language', 'Screen',
@@ -62,99 +157,99 @@ class TestLine55And262Coverage:
         for key in expected_keys:
             assert key in summary
         
-        # 验证具体内容
+        # Verify specific content
         assert fingerprint.browser_type.title() in summary['Browser']
         assert summary['User Agent'] == fingerprint.user_agent
         assert summary['Platform'] == fingerprint.platform
 
     def test_line_262_with_explicit_fingerprint_parameter(self):
         """
-        使用显式指纹参数测试第262行
+        Test line 262 using explicit fingerprint parameter
         """
         manager = FingerprintManager()
         
-        # 生成两个指纹
+        # Generate two fingerprints
         fp1 = manager.generate_new_fingerprint()
         manager.clear_current_fingerprint()
         fp2 = manager.generate_new_fingerprint(force=True)
         
-        # 使用显式指纹参数调用 get_fingerprint_summary - 执行第262行
+        # Call get_fingerprint_summary with explicit fingerprint parameter - executes line 262
         summary1 = manager.get_fingerprint_summary(fp1)
         summary2 = manager.get_fingerprint_summary(fp2)
         
-        # 验证摘要不同
+        # Verify summaries are different
         assert summary1['User Agent'] != summary2['User Agent']
         assert isinstance(summary1, dict)
         assert isinstance(summary2, dict)
 
     def test_both_lines_in_sequence(self):
         """
-        在一个测试中依次测试两行
+        Test both lines sequentially in one test
         """
         manager = FingerprintManager()
         
-        # 测试第55行 - 当为None时
-        result = manager.get_current_fingerprint()  # 第55行
+        # Test line 55 - when None
+        result = manager.get_current_fingerprint()  # Line 55
         assert result is None
         
-        # 生成指纹
+        # Generate fingerprint
         fingerprint = manager.generate_new_fingerprint()
         
-        # 测试第55行 - 当存在时
-        current = manager.get_current_fingerprint()  # 第55行
+        # Test line 55 - when exists
+        current = manager.get_current_fingerprint()  # Line 55
         assert current is fingerprint
         
-        # 测试第262行 - get_fingerprint_summary
-        summary = manager.get_fingerprint_summary()  # 第262行
+        # Test line 262 - get_fingerprint_summary
+        summary = manager.get_fingerprint_summary()  # Line 262
         assert isinstance(summary, dict)
         assert 'Browser' in summary
         assert 'User Agent' in summary
 
     def test_multiple_calls_ensure_line_coverage(self):
         """
-        多次调用确保行覆盖
+        Multiple calls to ensure line coverage
         """
         manager = FingerprintManager()
         
-        # 多次调用第55行
+        # Multiple calls to line 55
         for i in range(10):
-            result = manager.get_current_fingerprint()  # 第55行
+            result = manager.get_current_fingerprint()  # Line 55
             assert result is None
         
-        # 生成指纹
+        # Generate fingerprint
         fingerprint = manager.generate_new_fingerprint()
         
-        # 多次调用第55行和第262行
+        # Multiple calls to line 55 and line 262
         for i in range(10):
-            current = manager.get_current_fingerprint()  # 第55行
+            current = manager.get_current_fingerprint()  # Line 55
             assert current is fingerprint
             
-            summary = manager.get_fingerprint_summary()  # 第262行
+            summary = manager.get_fingerprint_summary()  # Line 262
             assert isinstance(summary, dict)
 
     def test_line_262_edge_cases(self):
         """
-        测试第262行的边界情况
+        Test edge cases for line 262
         """
         manager = FingerprintManager()
         
-        # 使用不同浏览器类型生成指纹
+        # Use different browser types to generate fingerprints
         browser_types = ['chrome', 'edge']
         
         for browser_type in browser_types:
             fingerprint = manager.generate_new_fingerprint(browser_type=browser_type, force=True)
             
-            # 测试第262行 - 返回字典语句
-            summary = manager.get_fingerprint_summary()  # 第262行
+            # Test line 262 - return dictionary statement
+            summary = manager.get_fingerprint_summary()  # Line 262
             
             assert isinstance(summary, dict)
             assert browser_type.title() in summary['Browser']
             
-            # 清除当前指纹
+            # Clear current fingerprint
             manager.clear_current_fingerprint()
             
-            # 使用显式参数再次测试第262行
-            summary_explicit = manager.get_fingerprint_summary(fingerprint)  # 第262行
+            # Test line 262 again with explicit parameter
+            summary_explicit = manager.get_fingerprint_summary(fingerprint)  # Line 262
             assert summary == summary_explicit
 
 
@@ -572,6 +667,10 @@ class TestExactCoverage:
             assert manager.get_current_fingerprint() is None  # Line 55
             fp = manager.generate_new_fingerprint()
             assert manager.get_current_fingerprint() is fp  # Line 55
+            
+            # Test the early return line 55 in generate_new_fingerprint
+            same_fp = manager.generate_new_fingerprint()  # Should execute line 55 early return
+            assert same_fp is fp
             
             # Test get_fingerprint_summary (this might be line 262)
             summary = manager.get_fingerprint_summary()  # Possible line 262
