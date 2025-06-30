@@ -19,6 +19,145 @@ from pydoll.browser.managers.browser_options_manager import ChromiumOptionsManag
 from pydoll.browser.options import ChromiumOptions
 
 
+class TestLine55And262Coverage:
+    """专门针对第55行和第262行的精确测试"""
+
+    def test_line_55_get_current_fingerprint_return_statement(self):
+        """
+        专门测试 manager.py 第55行: return self.current_fingerprint
+        """
+        manager = FingerprintManager()
+        
+        # 情况1: current_fingerprint 为 None
+        assert manager.current_fingerprint is None
+        result = manager.get_current_fingerprint()  # 执行第55行
+        assert result is None
+        
+        # 情况2: current_fingerprint 存在
+        fingerprint = manager.generate_new_fingerprint()
+        assert manager.current_fingerprint is not None
+        result = manager.get_current_fingerprint()  # 再次执行第55行
+        assert result is fingerprint
+        assert result is manager.current_fingerprint
+
+    def test_line_262_get_fingerprint_summary_return_statement(self):
+        """
+        专门测试 manager.py 第262行: return { ... } - get_fingerprint_summary方法的返回语句
+        """
+        manager = FingerprintManager()
+        
+        # 生成一个指纹以便测试摘要
+        fingerprint = manager.generate_new_fingerprint()
+        
+        # 调用 get_fingerprint_summary - 这会执行第262行的 return { 语句
+        summary = manager.get_fingerprint_summary()
+        
+        # 验证返回的字典结构和内容
+        assert isinstance(summary, dict)
+        expected_keys = [
+            'Browser', 'User Agent', 'Platform', 'Language', 'Screen',
+            'Viewport', 'WebGL Vendor', 'WebGL Renderer', 'Hardware Concurrency',
+            'Device Memory', 'Timezone', 'Canvas Fingerprint'
+        ]
+        for key in expected_keys:
+            assert key in summary
+        
+        # 验证具体内容
+        assert fingerprint.browser_type.title() in summary['Browser']
+        assert summary['User Agent'] == fingerprint.user_agent
+        assert summary['Platform'] == fingerprint.platform
+
+    def test_line_262_with_explicit_fingerprint_parameter(self):
+        """
+        使用显式指纹参数测试第262行
+        """
+        manager = FingerprintManager()
+        
+        # 生成两个指纹
+        fp1 = manager.generate_new_fingerprint()
+        manager.clear_current_fingerprint()
+        fp2 = manager.generate_new_fingerprint(force=True)
+        
+        # 使用显式指纹参数调用 get_fingerprint_summary - 执行第262行
+        summary1 = manager.get_fingerprint_summary(fp1)
+        summary2 = manager.get_fingerprint_summary(fp2)
+        
+        # 验证摘要不同
+        assert summary1['User Agent'] != summary2['User Agent']
+        assert isinstance(summary1, dict)
+        assert isinstance(summary2, dict)
+
+    def test_both_lines_in_sequence(self):
+        """
+        在一个测试中依次测试两行
+        """
+        manager = FingerprintManager()
+        
+        # 测试第55行 - 当为None时
+        result = manager.get_current_fingerprint()  # 第55行
+        assert result is None
+        
+        # 生成指纹
+        fingerprint = manager.generate_new_fingerprint()
+        
+        # 测试第55行 - 当存在时
+        current = manager.get_current_fingerprint()  # 第55行
+        assert current is fingerprint
+        
+        # 测试第262行 - get_fingerprint_summary
+        summary = manager.get_fingerprint_summary()  # 第262行
+        assert isinstance(summary, dict)
+        assert 'Browser' in summary
+        assert 'User Agent' in summary
+
+    def test_multiple_calls_ensure_line_coverage(self):
+        """
+        多次调用确保行覆盖
+        """
+        manager = FingerprintManager()
+        
+        # 多次调用第55行
+        for i in range(10):
+            result = manager.get_current_fingerprint()  # 第55行
+            assert result is None
+        
+        # 生成指纹
+        fingerprint = manager.generate_new_fingerprint()
+        
+        # 多次调用第55行和第262行
+        for i in range(10):
+            current = manager.get_current_fingerprint()  # 第55行
+            assert current is fingerprint
+            
+            summary = manager.get_fingerprint_summary()  # 第262行
+            assert isinstance(summary, dict)
+
+    def test_line_262_edge_cases(self):
+        """
+        测试第262行的边界情况
+        """
+        manager = FingerprintManager()
+        
+        # 使用不同浏览器类型生成指纹
+        browser_types = ['chrome', 'edge']
+        
+        for browser_type in browser_types:
+            fingerprint = manager.generate_new_fingerprint(browser_type=browser_type, force=True)
+            
+            # 测试第262行 - 返回字典语句
+            summary = manager.get_fingerprint_summary()  # 第262行
+            
+            assert isinstance(summary, dict)
+            assert browser_type.title() in summary['Browser']
+            
+            # 清除当前指纹
+            manager.clear_current_fingerprint()
+            
+            # 使用显式参数再次测试第262行
+            summary_explicit = manager.get_fingerprint_summary(fingerprint)  # 第262行
+            assert summary == summary_explicit
+
+
 class TestDirectLineCoverage:
     """Direct and simple tests for specific uncovered lines - merged from verification script"""
 
@@ -434,8 +573,12 @@ class TestExactCoverage:
             fp = manager.generate_new_fingerprint()
             assert manager.get_current_fingerprint() is fp  # Line 55
             
-            # Line 262 test
-            assert manager.delete_fingerprint("nonexistent") is False  # Line 262
+            # Test get_fingerprint_summary (this might be line 262)
+            summary = manager.get_fingerprint_summary()  # Possible line 262
+            assert isinstance(summary, dict)
+            
+            # Line 262 test for delete_fingerprint
+            assert manager.delete_fingerprint("nonexistent") is False  # Possible line 262
             
         # Test browser options manager (line 71)
         options_manager = ChromiumOptionsManager(enable_fingerprint_spoofing=False)
