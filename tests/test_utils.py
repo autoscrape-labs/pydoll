@@ -3,6 +3,7 @@ import pytest
 from aioresponses import aioresponses
 import tempfile
 import os
+import sys
 from unittest.mock import patch
 
 from pydoll import exceptions
@@ -189,6 +190,7 @@ class TestUtils:
         
         assert 'No valid browser path found in:' in str(exc_info.value)
 
+    @pytest.mark.skipif(sys.platform.startswith('win'), reason='No executable bit on NTFS on Windows')
     def test_validate_browser_paths_file_exists_but_not_executable(self):
         """
         Test validate_browser_paths with non-executable file.
@@ -200,7 +202,7 @@ class TestUtils:
             with open(non_executable, 'w') as f:
                 f.write('not executable')
             # Don't set executable permissions
-            
+
             with pytest.raises(exceptions.InvalidBrowserPath):
                 validate_browser_paths([non_executable])
 
