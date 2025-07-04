@@ -1,1 +1,0 @@
-"""Fetch domain implementation."""
