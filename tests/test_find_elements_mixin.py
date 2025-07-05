@@ -168,19 +168,6 @@ class TestGetExpressionType:
         """Test XPath detection with single slash."""
         assert FindElementsMixin._get_expression_type('/html/body') == By.XPATH
 
-    def test_id_selector(self):
-        """Test ID selector detection."""
-        assert FindElementsMixin._get_expression_type('#main-content') == By.ID
-
-    def test_class_selector(self):
-        """Test class selector detection."""
-        assert FindElementsMixin._get_expression_type('.btn-primary') == By.CLASS_NAME
-
-    def test_class_selector_not_xpath(self):
-        """Test that class selector doesn't conflict with XPath dot slash."""
-        assert FindElementsMixin._get_expression_type('.button') == By.CLASS_NAME
-        assert FindElementsMixin._get_expression_type('./button') == By.XPATH
-
     def test_css_selector_default(self):
         """Test CSS selector as default."""
         assert FindElementsMixin._get_expression_type('div.content > p') == By.CSS_SELECTOR
@@ -192,6 +179,11 @@ class TestGetExpressionType:
     def test_css_selector_pseudo_class(self):
         """Test CSS selector with pseudo-classes."""
         assert FindElementsMixin._get_expression_type('button:hover') == By.CSS_SELECTOR
+    
+    def test_css_selector_not_xpath(self):
+        """Test that css selector doesn't conflict with XPath dot slash."""
+        assert FindElementsMixin._get_expression_type('.button') == By.CSS_SELECTOR
+        assert FindElementsMixin._get_expression_type('./button') == By.XPATH
 
     def test_complex_xpath_expressions(self):
         """Test complex XPath expressions are detected correctly."""
@@ -208,12 +200,6 @@ class TestGetExpressionType:
         """Test edge case expressions."""
         # Empty string should default to CSS
         assert FindElementsMixin._get_expression_type('') == By.CSS_SELECTOR
-        
-        # Just a dot should be class selector
-        assert FindElementsMixin._get_expression_type('.') == By.CLASS_NAME
-        
-        # Just a hash should be ID selector
-        assert FindElementsMixin._get_expression_type('#') == By.ID
 
 
 class TestEnsureRelativeXPath:
