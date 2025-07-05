@@ -1,4 +1,8 @@
-from typing_extensions import NotRequired
+try:
+    from typing import NotRequired
+except ImportError:
+    from typing_extensions import NotRequired
+
 
 from pydoll.protocol.base import CommandParams
 from pydoll.protocol.network.types import CookieParam
