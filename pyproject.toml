@@ -10,11 +10,10 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.10"
-websockets = "^13.1"
+websockets = "^14"
 aiohttp = "^3.9.5"
 aiofiles = "^23.2.1"
-bs4 = "^0.0.2"
-mkdocstrings = "^0.29.1"
+typing_extensions = "^4.14.0"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -54,8 +53,6 @@ exclude = ['tests', 'tests/*']
 [tool.pytest.ini_options]
 pythonpath = "."
 addopts = '-p no:warnings'
-asyncio_mode = "auto"
-asyncio_default_fixture_loop_scope = "function"
 
 [tool.taskipy.tasks]
 lint = 'ruff check .; ruff check . --diff'
@@ -66,7 +63,4 @@ post_test = 'coverage html'
 [tool.mypy]
 exclude = [
     "tests/",
-]
-disable_error_code = [
-    "type-arg",  # Disable "expects no type arguments" errors
 ]

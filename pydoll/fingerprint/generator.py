@@ -444,11 +444,11 @@ class FingerprintGenerator:
     @staticmethod
     def _generate_unique_properties() -> Dict:
         """Generate unique properties to ensure fingerprint uniqueness."""
-        # 生成一个唯一的指纹ID，但不会影响浏览器功能
+        # Generate a unique fingerprint ID that won't affect browser functionality
         unique_id = f"{int(time.time())}_{uuid.uuid4().hex[:8]}"
 
-        # 这些属性会被添加到指纹中，但不会影响浏览器的功能
-        # 它们只是确保每个指纹都是唯一的
+        # These properties will be added to the fingerprint but won't affect browser functionality
+        # They only ensure that each fingerprint is unique
         return {
             "unique_id": unique_id,
         }
@@ -456,7 +456,7 @@ class FingerprintGenerator:
     @staticmethod
     def _generate_canvas_fingerprint() -> str:
         """Generate a unique canvas fingerprint."""
-        # 使用时间戳和UUID生成真正唯一的canvas指纹
+        # Use timestamp and UUID to generate a truly unique canvas fingerprint
         timestamp = int(time.time() * 1000)
         random_data = ''.join(random.choices(string.ascii_letters + string.digits, k=24))
         return f"canvas_fp_{random_data}_{timestamp}"

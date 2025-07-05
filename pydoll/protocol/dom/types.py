@@ -1,9 +1,9 @@
-from typing import Annotated, Any, TypedDict
+from typing import Annotated, Any
 
 try:
-    from typing import NotRequired
+    from typing import NotRequired, TypedDict
 except ImportError:
-    from typing_extensions import NotRequired
+    from typing_extensions import NotRequired, TypedDict
 
 from pydoll.constants import CompatibilityMode, PseudoType, ShadowRootType
 
@@ -84,3 +84,14 @@ class BoxModel(TypedDict):
     width: int
     height: int
     shapeOutside: NotRequired[ShapeOutsideInfo]
+
+
+class EventFileChooserOpenedParams(TypedDict):
+    frameId: str
+    mode: str
+    backendNodeId: int
+
+
+class EventFileChooserOpened(TypedDict):
+    method: str
+    params: EventFileChooserOpenedParams

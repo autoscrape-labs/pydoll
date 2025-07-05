@@ -288,6 +288,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
 
         More realistic than insert_text() but slower.
         """
+        await self.click()
         for char in text:
             await self._execute_command(
                 InputCommands.dispatch_key_event(

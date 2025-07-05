@@ -19,11 +19,12 @@ class TextExtractor(HTMLParser):
     Extracts visible text content from an HTML string, excluding the contents of
     tags specified in _skip_tags.
     """
+
     def __init__(self):
         super().__init__()
         self._parts = []
         self._skip = False
-        self._skip_tags = {"script", "style", "template"}
+        self._skip_tags = {'script', 'style', 'template'}
 
     def handle_starttag(self, tag, attrs):
         """
@@ -90,7 +91,7 @@ def extract_text_from_html(html: str, separator: str = '', strip: bool = False) 
     Args:
         html (str): The HTML string to extract text from.
         separator (str, optional): String inserted between extracted text fragments. Defaults to ''.
-        strip (bool, optional): Whether to strip whitespace from each text fragment. Defaults to False.
+        strip (bool, optional): Whether to strip whitespace from text fragments. Defaults to False.
 
     Returns:
         str: The extracted visible text.

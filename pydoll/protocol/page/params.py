@@ -5,6 +5,7 @@ try:
 except ImportError:
     from typing_extensions import NotRequired
 
+
 from pydoll.constants import (
     AutoResponseMode,
     ReferrerPolicy,
