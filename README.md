@@ -14,7 +14,6 @@
     <a href="https://deepwiki.com/autoscrape-labs/pydoll"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
 </p>
 
-<<<<<<< HEAD
 
 <p align="center">
   📖 <a href="https://autoscrape-labs.github.io/pydoll/">Documentation</a> •
@@ -27,30 +26,10 @@
 Imagine the following scenario: you need to automate tasks in your browser. Maybe it's testing a web application, collecting data from a site, or even automating repetitive processes. Normally this involves using external drivers, complex configurations, and many compatibility issues.
 
 **Pydoll was born to solve these problems.**
-=======
-<p align="center">
-  <a href="https://autoscrape-labs.github.io/pydoll/">Documentation</a> •
-  <a href="#getting-started">Getting Started</a> •
-  <a href="#advanced-features">Advanced Features</a> •
-  <a href="#contributing">Contributing</a> •
-  <a href="#support-my-work">Support</a> •
-  <a href="#license">License</a>
-</p>
-
->>>>>>> parent of 3540834 (Update README.md)
 
 Built from scratch with a different philosophy, Pydoll connects directly to the Chrome DevTools Protocol (CDP), eliminating the need for external drivers. This clean implementation along with realistic ways of clicking, navigating and interacting with elements makes it practically indistinguishable from a real user.
 
-<<<<<<< HEAD
 We believe that powerful automation shouldn't require you to become an expert in configuration or constantly fight with bot protection systems. With Pydoll, you can focus on what really matters: your automation logic, not the underlying complexity or protection systems.
-=======
-🔹 **Zero Webdrivers!** Say goodbye to webdriver compatibility nightmares  
-🔹 **Native Captcha Bypass!** Smoothly handles Cloudflare Turnstile and reCAPTCHA v3*  
-🔹 **Async Performance** for lightning-fast automation  
-🔹 **Human-like Interactions** that mimic real user behavior  
-🔹 **Powerful Event System** for reactive automations  
-🔹 **Multi-browser Support** including Chrome and Edge
->>>>>>> parent of 3540834 (Update README.md)
 
 ## 🌟 What makes Pydoll special?
 
@@ -60,45 +39,14 @@ We believe that powerful automation shouldn't require you to become an expert in
 - **Humanized Interactions**: Mimic real user behavior
 - **Simplicity**: With Pydoll, you install and you're ready to automate.
 
-<<<<<<< HEAD
 >⚠️ The effectiveness of captcha bypass depends on various factors, such as IP address reputation. Pydoll can achieve scores comparable to real users, but cannot handle restrictive configurations or IP blocks.
 
 ## 📦 Installation
-=======
-But there's another challenge that's even more frustrating: **modern web protection systems**. Cloudflare Turnstile captchas, reCAPTCHA v3, and sophisticated bot detection algorithms that can instantly identify and block traditional automation tools. Your perfectly written automation script fails not because of bugs, but because websites can tell it's not human.
-
-**Pydoll was born to change that.**
-
-Built from the ground up with a different philosophy, Pydoll connects directly to the Chrome DevTools Protocol (CDP), eliminating the need for external drivers entirely. More importantly, it incorporates advanced human behavior simulation and intelligent captcha bypass capabilities that make your automations virtually indistinguishable from real human interactions.
-
-We believe that powerful automation shouldn't require you to become a configuration expert or constantly battle with anti-bot systems. With Pydoll, you focus on what matters: your automation logic, not the underlying complexity or protection bypassing.
-
-## What Makes Pydoll Special
-
-- **Intelligent Captcha Bypass**: Built-in automatic solving for Cloudflare Turnstile and reCAPTCHA v3 captchas without external services, API keys, or complex configurations. Your automations continue seamlessly even when encountering protection systems.
-
-- **Truly Human Interactions**: Advanced algorithms simulate authentic human behavior patterns - from realistic timing between actions to natural mouse movements, scroll patterns, and typing rhythms that fool even sophisticated bot detection systems.
-
-- **Genuine Simplicity**: We don't want you wasting time configuring drivers or dealing with compatibility issues. With Pydoll, you install and you're ready to automate, even on protected sites.
-
-- **Native Async Performance**: Built from the ground up with `asyncio`, Pydoll doesn't just support asynchronous operations - it was designed for them, enabling concurrent processing of multiple protected sites.
-
-- **Powerful Network Monitoring**: Intercept, modify, and analyze all network traffic with ease, giving you complete control over requests and responses - perfect for bypassing additional protection layers.
-
-- **Event-Driven Architecture**: React to page events, network requests, and user interactions in real-time, enabling sophisticated automation flows that adapt to dynamic protection systems.
-
-- **Intuitive Element Finding**: Modern `find()` and `query()` methods that make sense and work as you'd expect, even with dynamically loaded content from protection systems.
-
-- **Robust Type Safety**: Comprehensive type system for better IDE support and error prevention in complex automation scenarios.
-
-## Installation
->>>>>>> parent of 3540834 (Update README.md)
 
 ```bash
 pip install pydoll-python
 ```
 
-<<<<<<< HEAD
 And that's it! Just install and start automating.
 
 ## 🚀 Getting Started
@@ -110,18 +58,6 @@ Let's start with a real example: an automation that performs a Google search and
 ```python
 import asyncio
 
-=======
-That's it. No drivers to download, no complex configurations. Just install and start automating.
-
-## Getting Started
-
-### Your First Automation
-
-Let's start with something simple. The code below opens a browser, navigates to a website, and interacts with elements:
-
-```python
-import asyncio
->>>>>>> parent of 3540834 (Update README.md)
 from pydoll.browser import Chrome
 from pydoll.constants import Key
 
@@ -273,16 +209,7 @@ demanding users.
 
 ### Advanced Element Search
 
-<<<<<<< HEAD
 We have several ways to find elements on the page. No matter how you prefer, we have a way that makes sense for you:
-=======
-asyncio.run(advanced_captcha_bypass())
-```
-
-### Advanced Element Finding
-
-Pydoll offers multiple intuitive ways to find elements. No matter how you prefer to work, we have an approach that makes sense for you:
->>>>>>> parent of 3540834 (Update README.md)
 
 ```python
 import asyncio
@@ -372,7 +299,6 @@ And there's much, much more! Event system for reactive automations, request inte
 regret it!
 
 
-<<<<<<< HEAD
 ## 🔧 Quick Troubleshooting
 
 **Browser not found?**
@@ -424,77 +350,11 @@ Can't sponsor right now? No problem — you can still help a lot by:
 - Starring the repository
 - Sharing on social media
 - Writing posts or tutorials
-=======
-```python
-import asyncio
-from pydoll.browser.chromium import Chrome
-
-async def iframe_interaction():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://example.com/page-with-iframe')
-        
-        # Find the iframe element
-        iframe_element = await tab.query('.hcaptcha-iframe', timeout=10)
-        
-        # Get a Tab instance for the iframe content
-        frame = await tab.get_frame(iframe_element)
-        
-        # Now interact with elements inside the iframe
-        submit_button = await frame.find(tag_name='button', class_name='submit')
-        await submit_button.click()
-        
-        # You can use all Tab methods on the frame
-        form_input = await frame.find(id='captcha-input')
-        await form_input.type_text('verification-code')
-        
-        # Find elements by various methods
-        links = await frame.find(tag_name='a', find_all=True)
-        specific_element = await frame.query('#specific-id')
-
-asyncio.run(iframe_interaction())
-```
-
-## Documentation
-
-For comprehensive documentation, detailed examples, and deep dives into Pydoll's features, visit our [official documentation site](https://autoscrape-labs.github.io/pydoll/).
-
-The documentation includes:
-- **Getting Started Guide** - Step-by-step tutorials
-- **API Reference** - Complete method documentation  
-- **Advanced Techniques** - Network interception, event handling, performance optimization
-- **Troubleshooting** - Common issues and solutions
-- **Best Practices** - Patterns for reliable automation
-
-## Contributing
-
-We'd love your help making Pydoll even better! Check out our [contribution guidelines](CONTRIBUTING.md) to get started. Whether it's fixing bugs, adding features, or improving documentation - all contributions are welcome!
-
-Please make sure to:
-- Write tests for new features or bug fixes
-- Follow coding style and conventions
-- Use conventional commits for pull requests
-- Run lint and test checks before submitting
-
-## Support My Work
-
-If you find my projects helpful, consider [sponsoring me on GitHub](https://github.com/sponsors/thalissonvs).  
-You'll get access to exclusive perks like prioritized support, custom features, and more!
-
-Can't sponsor right now? No problem — you can still help a lot by:
-- Starring the repo
-- Sharing it on social media
-- Writing blog posts or tutorials
->>>>>>> parent of 3540834 (Update README.md)
 - Giving feedback or reporting issues
 
 Every bit of support makes a difference — thank you!
 
-<<<<<<< HEAD
 ## 📄 License
-=======
-## License
->>>>>>> parent of 3540834 (Update README.md)
 
 Pydoll is licensed under the [MIT License](LICENSE).
 

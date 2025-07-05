@@ -1,4 +1,5 @@
 import asyncio
+import re
 from typing import TYPE_CHECKING, Optional, TypeVar, Union
 
 from pydoll.commands import (
@@ -304,7 +305,7 @@ class FindElementsMixin:
         }
         provided_selectors = {key: value for key, value in simple_selectors.items() if value}
 
-        if len(provided_selectors) == 1 and not text:
+        if len(provided_selectors) == 1 and not text and not attributes:
             key, value = next(iter(provided_selectors.items()))
             by = by_map[key]
             return by, value
@@ -351,11 +352,18 @@ class FindElementsMixin:
         Auto-detect selector type from expression syntax.
 
         Patterns:
-        - XPath: starts with ./, or /
+        - XPath: starts with //, .// , ./, or /
+        - ID: starts with #
+        - Class: starts with . (but not ./)
         - Default: CSS_SELECTOR
         """
-        if expression.startswith('./') or expression.startswith('/'):
+        xpath_pattern = r'^(//|\.//|\.\/|/)'
+        if re.match(xpath_pattern, expression):
             return By.XPATH
+        if expression.startswith('#'):
+            return By.ID
+        if expression.startswith('.') and not expression.startswith('./'):
+            return By.CLASS_NAME
 
         return By.CSS_SELECTOR
 
@@ -427,7 +435,7 @@ class FindElementsMixin:
             case _:
                 selector = escaped_value
         if object_id and not by == By.XPATH:
-            script = Scripts.RELATIVE_QUERY_SELECTOR_ALL.replace('{selector}', selector)
+            script = Scripts.RELATIVE_QUERY_SELECTOR_ALL.replace('{selector}', escaped_value)
             command = RuntimeCommands.call_function_on(
                 function_declaration=script,
                 object_id=object_id,

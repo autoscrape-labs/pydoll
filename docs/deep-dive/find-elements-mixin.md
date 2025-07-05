@@ -652,10 +652,10 @@ Found elements are returned as WebElement instances that provide rich interactio
 ```python
 # Find and interact with form elements
 username = await tab.find(name="username")
-await username.type("user@example.com")
+await username.type_text("user@example.com")
 
 password = await tab.find(type="password")
-await password.type("secretpassword")
+await password.type_text("secretpassword")
 
 submit = await tab.find(tag_name="button", type="submit")
 await submit.click()
