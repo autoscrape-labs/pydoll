@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="ea828ddc-5d37-405f-aef3-1bb9eca245b9" name="Changes" comment="docs: REAMDME.md modify" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;LunacyZeus&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/LunacyZeus/pydoll-chinese-docs.git&quot;,
+    &quot;accountId&quot;: &quot;a859b310-dda2-46a9-b3e0-9ae976180ec6&quot;
+  }
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 1
+}</component>
+  <component name="ProjectId" id="2yZY25pifN74ZKVriJzbQrUR64A" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/project/pydoll-chinese-docs/docs/zh/api&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\project\pydoll-chinese-docs\docs\zh\api" />
+      <recent name="D:\project\pydoll-chinese-docs\docs\zh\api\commands" />
+      <recent name="D:\project\pydoll-chinese-docs\docs\zh\deep-dive" />
+      <recent name="D:\project\pydoll-chinese-docs\docs" />
+      <recent name="D:\project\pydoll-chinese-docs\docs\zh" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\project\pydoll-chinese-docs" />
+      <recent name="D:\project\pydoll-chinese-docs\docs\en" />
+    </key>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="ea828ddc-5d37-405f-aef3-1bb9eca245b9" name="Changes" comment="" />
+      <created>1750043352097</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1750043352097</updated>
+      <workItem from="1750043353170" duration="6808000" />
+      <workItem from="1750051812199" duration="1432000" />
+      <workItem from="1750072893868" duration="502000" />
+      <workItem from="1750073479188" duration="1278000" />
+      <workItem from="1750082152277" duration="3426000" />
+      <workItem from="1750139904801" duration="4529000" />
+      <workItem from="1750145096647" duration="6000" />
+      <workItem from="1750167848659" duration="7705000" />
+      <workItem from="1750264937938" duration="4015000" />
+      <workItem from="1751700674357" duration="82000" />
+      <workItem from="1751700767758" duration="35000" />
+    </task>
+    <task id="LOCAL-00001" summary="docs: finish translation of README.md">
+      <option name="closed" value="true" />
+      <created>1750047095788</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1750047095788</updated>
+    </task>
+    <task id="LOCAL-00002" summary="docs: finish translation of README.md">
+      <option name="closed" value="true" />
+      <created>1750047247826</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1750047247826</updated>
+    </task>
+    <task id="LOCAL-00003" summary="docs: finish translation of README.md">
+      <option name="closed" value="true" />
+      <created>1750047342026</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1750047342026</updated>
+    </task>
+    <task id="LOCAL-00004" summary="docs: modify translation of README.md">
+      <option name="closed" value="true" />
+      <created>1750047769258</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1750047769258</updated>
+    </task>
+    <task id="LOCAL-00005" summary="docs: translation of index.md">
+      <option name="closed" value="true" />
+      <created>1750048519167</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1750048519167</updated>
+    </task>
+    <task id="LOCAL-00006" summary="docs: finish translation of index.md">
+      <option name="closed" value="true" />
+      <created>1750050176101</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1750050176101</updated>
+    </task>
+    <task id="LOCAL-00007" summary="docs: finish translation of features.md">
+      <option name="closed" value="true" />
+      <created>1750074667561</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1750074667561</updated>
+    </task>
+    <task id="LOCAL-00008" summary="docs: chinese translation">
+      <option name="closed" value="true" />
+      <created>1750174243832</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1750174243832</updated>
+    </task>
+    <task id="LOCAL-00009" summary="docs: chinese translation for the part of docs/api">
+      <option name="closed" value="true" />
+      <created>1750267539812</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1750267539812</updated>
+    </task>
+    <task id="LOCAL-00010" summary="docs: REAMDME.md modify">
+      <option name="closed" value="true" />
+      <created>1750267803350</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1750267803350</updated>
+    </task>
+    <task id="LOCAL-00011" summary="docs: REAMDME.md modify">
+      <option name="closed" value="true" />
+      <created>1750268263886</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1750268263886</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="docs: finish translation of README.md" />
+    <MESSAGE value="docs: modify translation of README.md" />
+    <MESSAGE value="docs: translation of index.md" />
+    <MESSAGE value="docs: finish translation of index.md" />
+    <MESSAGE value="docs: finish translation of features.md" />
+    <MESSAGE value="docs: chinese translation" />
+    <MESSAGE value="docs: chinese translation for the part of docs/api" />
+    <MESSAGE value="docs: REAMDME.md modify" />
+    <option name="LAST_COMMIT_MESSAGE" value="docs: REAMDME.md modify" />
+  </component>
+</project>

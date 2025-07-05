@@ -23,6 +23,8 @@
   💖 <a href="#support-my-work">Support My Work</a>
 </p>
 
+- [简体中文](README_zh.md)
+
 Imagine the following scenario: you need to automate tasks in your browser. Maybe it's testing a web application, collecting data from a site, or even automating repetitive processes. Normally this involves using external drivers, complex configurations, and many compatibility issues.
 
 **Pydoll was born to solve these problems.**
