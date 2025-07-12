@@ -15,6 +15,8 @@ class Chrome(Browser):
         self,
         options: Optional[ChromiumOptions] = None,
         connection_port: Optional[int] = None,
+        enable_fingerprint_spoofing: bool = False,
+        fingerprint_config=None,
     ):
         """
         Initialize Chrome browser instance.
@@ -22,9 +24,17 @@ class Chrome(Browser):
         Args:
             options: Chrome configuration options (default if None).
             connection_port: CDP WebSocket port (random if None).
+            enable_fingerprint_spoofing: Whether to enable fingerprint spoofing.
+            fingerprint_config: Configuration for fingerprint generation.
         """
-        options_manager = ChromiumOptionsManager(options)
+        options_manager = ChromiumOptionsManager(
+            options,
+            enable_fingerprint_spoofing,
+            fingerprint_config
+        )
         super().__init__(options_manager, connection_port)
+        self.enable_fingerprint_spoofing = enable_fingerprint_spoofing
+        self.fingerprint_manager = options_manager.get_fingerprint_manager()
 
     @staticmethod
     def _get_default_binary_location():
