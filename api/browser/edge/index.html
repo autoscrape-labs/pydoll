@@ -151,6 +151,32 @@
       <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
     
     
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../zh/api/browser/edge/" hreflang="zh" class="md-select__link">
+              中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
     
       
       
@@ -176,6 +202,8 @@
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
       </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
       
     </form>
     <div class="md-search__output">
@@ -1479,6 +1507,8 @@
     
       
         
+          
+        
       
         
       
@@ -1519,8 +1549,9 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_5" >
         
           
-          <label class="md-nav__link" for="__nav_4_5" id="__nav_4_5_label" tabindex="">
-            
+          <div class="md-nav__link md-nav__container">
+            <a href="../../commands/" class="md-nav__link ">
+              
   
   
   <span class="md-ellipsis">
@@ -1529,8 +1560,14 @@
   </span>
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4_5" id="__nav_4_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
         
         <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_4_5">
@@ -1539,27 +1576,6 @@
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../commands/index.md" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Overview
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
               
             
               
@@ -2408,7 +2424,7 @@
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="            pydoll.browser.interfaces.Options (pydoll.browser.options.Options)" href="../options/#pydoll.browser.interfaces.Options">Options</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;pydoll.browser.interfaces.Options&lt;/span&gt; (&lt;code&gt;pydoll.browser.options.Options&lt;/code&gt;)" href="../options/#pydoll.browser.interfaces.Options">Options</a>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -2544,7 +2560,7 @@
           <tr class="doc-section-item">
             <td>
                 <span class="doc-returns-annotation">
-                    <code><a class="autorefs autorefs-internal" title="            pydoll.browser.tab.Tab" href="../tab/#pydoll.browser.tab.Tab">Tab</a></code>
+                    <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;pydoll.browser.tab.Tab&lt;/span&gt;" href="../tab/#pydoll.browser.tab.Tab">Tab</a></code>
                 </span>
             </td>
             <td class="doc-returns-details">
@@ -2568,7 +2584,7 @@
           <tr class="doc-section-item">
             <td>
               <span class="doc-raises-annotation">
-                  <code><a class="autorefs autorefs-internal" title="            FailedToStartBrowser (pydoll.exceptions.FailedToStartBrowser)" href="../../core/exceptions/#pydoll.exceptions.FailedToStartBrowser">FailedToStartBrowser</a></code>
+                  <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;FailedToStartBrowser&lt;/span&gt; (&lt;code&gt;pydoll.exceptions.FailedToStartBrowser&lt;/code&gt;)" href="../../core/exceptions/#pydoll.exceptions.FailedToStartBrowser">FailedToStartBrowser</a></code>
               </span>
             </td>
             <td class="doc-raises-details">
@@ -2618,7 +2634,7 @@ and closes WebSocket connections.</p>
           <tr class="doc-section-item">
             <td>
               <span class="doc-raises-annotation">
-                  <code><a class="autorefs autorefs-internal" title="            BrowserNotRunning (pydoll.exceptions.BrowserNotRunning)" href="../../core/exceptions/#pydoll.exceptions.BrowserNotRunning">BrowserNotRunning</a></code>
+                  <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;BrowserNotRunning&lt;/span&gt; (&lt;code&gt;pydoll.exceptions.BrowserNotRunning&lt;/code&gt;)" href="../../core/exceptions/#pydoll.exceptions.BrowserNotRunning">BrowserNotRunning</a></code>
               </span>
             </td>
             <td class="doc-raises-details">
@@ -2875,7 +2891,7 @@ The default browser context cannot be deleted.</p>
           <tr class="doc-section-item">
             <td>
                 <span class="doc-returns-annotation">
-                    <code><a class="autorefs autorefs-internal" title="            pydoll.browser.tab.Tab" href="../tab/#pydoll.browser.tab.Tab">Tab</a></code>
+                    <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;pydoll.browser.tab.Tab&lt;/span&gt;" href="../tab/#pydoll.browser.tab.Tab">Tab</a></code>
                 </span>
             </td>
             <td class="doc-returns-details">
@@ -2973,7 +2989,7 @@ Useful for debugging and managing multiple tabs.</p>
           <tr class="doc-section-item">
             <td>
                 <span class="doc-returns-annotation">
-                    <code><span title="list">list</span>[<a class="autorefs autorefs-internal" title="            pydoll.browser.tab.Tab" href="../tab/#pydoll.browser.tab.Tab">Tab</a>]</code>
+                    <code><span title="list">list</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;pydoll.browser.tab.Tab&lt;/span&gt;" href="../tab/#pydoll.browser.tab.Tab">Tab</a>]</code>
                 </span>
             </td>
             <td class="doc-returns-details">
@@ -3053,7 +3069,7 @@ Useful for debugging and managing multiple tabs.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><a class="autorefs autorefs-internal" title="            DownloadBehavior (pydoll.constants.DownloadBehavior)" href="../../core/constants/#pydoll.constants.DownloadBehavior">DownloadBehavior</a></code>
+                      <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;DownloadBehavior&lt;/span&gt; (&lt;code&gt;pydoll.constants.DownloadBehavior&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.DownloadBehavior">DownloadBehavior</a></code>
                   </span>
               </p>
             </td>
@@ -3301,7 +3317,7 @@ Useful for debugging and managing multiple tabs.</p>
           <tr class="doc-section-item">
             <td>
               <span class="doc-raises-annotation">
-                  <code><a class="autorefs autorefs-internal" title="            NoValidTabFound (pydoll.exceptions.NoValidTabFound)" href="../../core/exceptions/#pydoll.exceptions.NoValidTabFound">NoValidTabFound</a></code>
+                  <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;NoValidTabFound&lt;/span&gt; (&lt;code&gt;pydoll.exceptions.NoValidTabFound&lt;/code&gt;)" href="../../core/exceptions/#pydoll.exceptions.NoValidTabFound">NoValidTabFound</a></code>
               </span>
             </td>
             <td class="doc-raises-details">
@@ -3459,7 +3475,7 @@ Only specified properties are changed.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="list">list</span>[<a class="autorefs autorefs-internal" title="            PermissionType (pydoll.constants.PermissionType)" href="../../core/constants/#pydoll.constants.PermissionType">PermissionType</a>]</code>
+                      <code><span title="list">list</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;PermissionType&lt;/span&gt; (&lt;code&gt;pydoll.constants.PermissionType&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.PermissionType">PermissionType</a>]</code>
                   </span>
               </p>
             </td>
@@ -3715,7 +3731,7 @@ All matching requests are paused until explicitly continued.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="            ResourceType (pydoll.constants.ResourceType)" href="../../core/constants/#pydoll.constants.ResourceType">ResourceType</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;ResourceType&lt;/span&gt; (&lt;code&gt;pydoll.constants.ResourceType&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.ResourceType">ResourceType</a>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -3942,7 +3958,7 @@ All matching requests are paused until explicitly continued.</p>
     
     
       
-      <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.indexes", "navigation.expand", "navigation.path", "navigation.top", "toc.follow"], "search": "../../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.indexes", "navigation.expand", "navigation.path", "navigation.top", "toc.follow", "content.code.copy", "content.code.select", "content.tooltips", "search.highlight", "search.suggest"], "search": "../../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../../../assets/javascripts/bundle.56ea9cef.min.js"></script>

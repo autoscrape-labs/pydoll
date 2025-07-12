@@ -151,6 +151,32 @@
       <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
     
     
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../zh/api/protocol/commands/" hreflang="zh" class="md-select__link">
+              中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
     
       
       
@@ -176,6 +202,8 @@
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
       </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
       
     </form>
     <div class="md-search__output">
@@ -1143,6 +1171,8 @@
     
       
         
+          
+        
       
         
       
@@ -1183,8 +1213,9 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_5" >
         
           
-          <label class="md-nav__link" for="__nav_4_5" id="__nav_4_5_label" tabindex="">
-            
+          <div class="md-nav__link md-nav__container">
+            <a href="../../commands/" class="md-nav__link ">
+              
   
   
   <span class="md-ellipsis">
@@ -1193,8 +1224,14 @@
   </span>
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4_5" id="__nav_4_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
         
         <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_4_5">
@@ -1203,27 +1240,6 @@
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../commands/index.md" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Overview
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
               
             
               
@@ -12522,7 +12538,7 @@ many DOM operations would fail or provide incomplete information.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="            IncludeWhitespace (pydoll.constants.IncludeWhitespace)" href="../../core/constants/#pydoll.constants.IncludeWhitespace">IncludeWhitespace</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;IncludeWhitespace&lt;/span&gt; (&lt;code&gt;pydoll.constants.IncludeWhitespace&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.IncludeWhitespace">IncludeWhitespace</a>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -15598,7 +15614,7 @@ dealing with scrollable containers.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="            PhysicalAxes (pydoll.constants.PhysicalAxes)" href="../../core/constants/#pydoll.constants.PhysicalAxes">PhysicalAxes</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;PhysicalAxes&lt;/span&gt; (&lt;code&gt;pydoll.constants.PhysicalAxes&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.PhysicalAxes">PhysicalAxes</a>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -15618,7 +15634,7 @@ dealing with scrollable containers.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="            LogicalAxes (pydoll.constants.LogicalAxes)" href="../../core/constants/#pydoll.constants.LogicalAxes">LogicalAxes</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;LogicalAxes&lt;/span&gt; (&lt;code&gt;pydoll.constants.LogicalAxes&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.LogicalAxes">LogicalAxes</a>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -15923,7 +15939,7 @@ useful for simulating keyboard navigation or for analyzing element relationships
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><a class="autorefs autorefs-internal" title="            ElementRelation (pydoll.constants.ElementRelation)" href="../../core/constants/#pydoll.constants.ElementRelation">ElementRelation</a></code>
+                      <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;ElementRelation&lt;/span&gt; (&lt;code&gt;pydoll.constants.ElementRelation&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.ElementRelation">ElementRelation</a></code>
                   </span>
               </p>
             </td>
@@ -18354,7 +18370,7 @@ cookies that might affect the application's behavior.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="            CookieSameSite (pydoll.constants.CookieSameSite)" href="../../core/constants/#pydoll.constants.CookieSameSite">CookieSameSite</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;CookieSameSite&lt;/span&gt; (&lt;code&gt;pydoll.constants.CookieSameSite&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.CookieSameSite">CookieSameSite</a>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -18394,7 +18410,7 @@ cookies that might affect the application's behavior.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="            CookiePriority (pydoll.constants.CookiePriority)" href="../../core/constants/#pydoll.constants.CookiePriority">CookiePriority</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;CookiePriority&lt;/span&gt; (&lt;code&gt;pydoll.constants.CookiePriority&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.CookiePriority">CookiePriority</a>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -18434,7 +18450,7 @@ cookies that might affect the application's behavior.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="            CookieSourceScheme (pydoll.constants.CookieSourceScheme)" href="../../core/constants/#pydoll.constants.CookieSourceScheme">CookieSourceScheme</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;CookieSourceScheme&lt;/span&gt; (&lt;code&gt;pydoll.constants.CookieSourceScheme&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.CookieSourceScheme">CookieSourceScheme</a>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -19543,7 +19559,7 @@ cookies that might affect the application's behavior.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="list">list</span>[<a class="autorefs autorefs-internal" title="            ContentEncoding (pydoll.constants.ContentEncoding)" href="../../core/constants/#pydoll.constants.ContentEncoding">ContentEncoding</a>]</code>
+                      <code><span title="list">list</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;ContentEncoding&lt;/span&gt; (&lt;code&gt;pydoll.constants.ContentEncoding&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.ContentEncoding">ContentEncoding</a>]</code>
                   </span>
               </p>
             </td>
@@ -20092,7 +20108,7 @@ cookies that might affect the application's behavior.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="            ConnectionType (pydoll.constants.ConnectionType)" href="../../core/constants/#pydoll.constants.ConnectionType">ConnectionType</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;ConnectionType&lt;/span&gt; (&lt;code&gt;pydoll.constants.ConnectionType&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.ConnectionType">ConnectionType</a>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -20700,7 +20716,7 @@ key releases, and character inputs.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><a class="autorefs autorefs-internal" title="            KeyEventType (pydoll.constants.KeyEventType)" href="../../core/constants/#pydoll.constants.KeyEventType">KeyEventType</a></code>
+                      <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;KeyEventType&lt;/span&gt; (&lt;code&gt;pydoll.constants.KeyEventType&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.KeyEventType">KeyEventType</a></code>
                   </span>
               </p>
             </td>
@@ -20718,7 +20734,7 @@ key releases, and character inputs.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="            KeyModifier (pydoll.constants.KeyModifier)" href="../../core/constants/#pydoll.constants.KeyModifier">KeyModifier</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;KeyModifier&lt;/span&gt; (&lt;code&gt;pydoll.constants.KeyModifier&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.KeyModifier">KeyModifier</a>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -20964,7 +20980,7 @@ context of active modifiers, keyboard layout, etc. (e.g., 'AltGr')
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="            KeyLocation (pydoll.constants.KeyLocation)" href="../../core/constants/#pydoll.constants.KeyLocation">KeyLocation</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;KeyLocation&lt;/span&gt; (&lt;code&gt;pydoll.constants.KeyLocation&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.KeyLocation">KeyLocation</a>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -21076,7 +21092,7 @@ movements, and wheel scrolling.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><a class="autorefs autorefs-internal" title="            MouseEventType (pydoll.constants.MouseEventType)" href="../../core/constants/#pydoll.constants.MouseEventType">MouseEventType</a></code>
+                      <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;MouseEventType&lt;/span&gt; (&lt;code&gt;pydoll.constants.MouseEventType&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.MouseEventType">MouseEventType</a></code>
                   </span>
               </p>
             </td>
@@ -21126,7 +21142,7 @@ Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0).</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="            KeyModifier (pydoll.constants.KeyModifier)" href="../../core/constants/#pydoll.constants.KeyModifier">KeyModifier</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;KeyModifier&lt;/span&gt; (&lt;code&gt;pydoll.constants.KeyModifier&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.KeyModifier">KeyModifier</a>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -21167,7 +21183,7 @@ Allowed values: "none", "left", "middle", "right", "back", "forward".</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="            MouseButton (pydoll.constants.MouseButton)" href="../../core/constants/#pydoll.constants.MouseButton">MouseButton</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;MouseButton&lt;/span&gt; (&lt;code&gt;pydoll.constants.MouseButton&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.MouseButton">MouseButton</a>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -21357,7 +21373,7 @@ Positive values scroll up.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="            PointerType (pydoll.constants.PointerType)" href="../../core/constants/#pydoll.constants.PointerType">PointerType</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;PointerType&lt;/span&gt; (&lt;code&gt;pydoll.constants.PointerType&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.PointerType">PointerType</a>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -21449,7 +21465,7 @@ or emulated touch environments.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><a class="autorefs autorefs-internal" title="            TouchEventType (pydoll.constants.TouchEventType)" href="../../core/constants/#pydoll.constants.TouchEventType">TouchEventType</a></code>
+                      <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;TouchEventType&lt;/span&gt; (&lt;code&gt;pydoll.constants.TouchEventType&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.TouchEventType">TouchEventType</a></code>
                   </span>
               </p>
             </td>
@@ -21489,7 +21505,7 @@ or emulated touch environments.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="            KeyModifier (pydoll.constants.KeyModifier)" href="../../core/constants/#pydoll.constants.KeyModifier">KeyModifier</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;KeyModifier&lt;/span&gt; (&lt;code&gt;pydoll.constants.KeyModifier&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.KeyModifier">KeyModifier</a>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -21682,7 +21698,7 @@ by dispatching drag events at specific coordinates.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><a class="autorefs autorefs-internal" title="            DragEventType (pydoll.constants.DragEventType)" href="../../core/constants/#pydoll.constants.DragEventType">DragEventType</a></code>
+                      <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;DragEventType&lt;/span&gt; (&lt;code&gt;pydoll.constants.DragEventType&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.DragEventType">DragEventType</a></code>
                   </span>
               </p>
             </td>
@@ -21752,7 +21768,7 @@ by dispatching drag events at specific coordinates.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="            KeyModifier (pydoll.constants.KeyModifier)" href="../../core/constants/#pydoll.constants.KeyModifier">KeyModifier</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;KeyModifier&lt;/span&gt; (&lt;code&gt;pydoll.constants.KeyModifier&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.KeyModifier">KeyModifier</a>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -21842,7 +21858,7 @@ useful for testing touch interactions in environments where touch is not availab
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><a class="autorefs autorefs-internal" title="            MouseEventType (pydoll.constants.MouseEventType)" href="../../core/constants/#pydoll.constants.MouseEventType">MouseEventType</a></code>
+                      <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;MouseEventType&lt;/span&gt; (&lt;code&gt;pydoll.constants.MouseEventType&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.MouseEventType">MouseEventType</a></code>
                   </span>
               </p>
             </td>
@@ -21890,7 +21906,7 @@ useful for testing touch interactions in environments where touch is not availab
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><a class="autorefs autorefs-internal" title="            MouseButton (pydoll.constants.MouseButton)" href="../../core/constants/#pydoll.constants.MouseButton">MouseButton</a></code>
+                      <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;MouseButton&lt;/span&gt; (&lt;code&gt;pydoll.constants.MouseButton&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.MouseButton">MouseButton</a></code>
                   </span>
               </p>
             </td>
@@ -21968,7 +21984,7 @@ useful for testing touch interactions in environments where touch is not availab
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="            KeyModifier (pydoll.constants.KeyModifier)" href="../../core/constants/#pydoll.constants.KeyModifier">KeyModifier</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;KeyModifier&lt;/span&gt; (&lt;code&gt;pydoll.constants.KeyModifier&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.KeyModifier">KeyModifier</a>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -22478,7 +22494,7 @@ pinch-to-zoom functionality in web applications.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="            GestureSourceType (pydoll.constants.GestureSourceType)" href="../../core/constants/#pydoll.constants.GestureSourceType">GestureSourceType</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;GestureSourceType&lt;/span&gt; (&lt;code&gt;pydoll.constants.GestureSourceType&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.GestureSourceType">GestureSourceType</a>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -22725,7 +22741,7 @@ behavior in web applications.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="            GestureSourceType (pydoll.constants.GestureSourceType)" href="../../core/constants/#pydoll.constants.GestureSourceType">GestureSourceType</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;GestureSourceType&lt;/span&gt; (&lt;code&gt;pydoll.constants.GestureSourceType&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.GestureSourceType">GestureSourceType</a>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -22949,7 +22965,7 @@ touch interaction in web applications.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="            GestureSourceType (pydoll.constants.GestureSourceType)" href="../../core/constants/#pydoll.constants.GestureSourceType">GestureSourceType</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;GestureSourceType&lt;/span&gt; (&lt;code&gt;pydoll.constants.GestureSourceType&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.GestureSourceType">GestureSourceType</a>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -23165,7 +23181,7 @@ headers, and body before continuing.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="            RequestMethod (pydoll.constants.RequestMethod)" href="../../core/constants/#pydoll.constants.RequestMethod">RequestMethod</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;RequestMethod&lt;/span&gt; (&lt;code&gt;pydoll.constants.RequestMethod&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.RequestMethod">RequestMethod</a>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -23328,7 +23344,7 @@ challenge response type.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><a class="autorefs autorefs-internal" title="            AuthChallengeResponseValues (pydoll.constants.AuthChallengeResponseValues)" href="../../core/constants/#pydoll.constants.AuthChallengeResponseValues">AuthChallengeResponseValues</a></code>
+                      <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;AuthChallengeResponseValues&lt;/span&gt; (&lt;code&gt;pydoll.constants.AuthChallengeResponseValues&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.AuthChallengeResponseValues">AuthChallengeResponseValues</a></code>
                   </span>
               </p>
             </td>
@@ -23537,7 +23553,7 @@ Defaults to None.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="            ResourceType (pydoll.constants.ResourceType)" href="../../core/constants/#pydoll.constants.ResourceType">ResourceType</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;ResourceType&lt;/span&gt; (&lt;code&gt;pydoll.constants.ResourceType&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.ResourceType">ResourceType</a>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -23558,7 +23574,7 @@ Defaults to None.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="            RequestStage (pydoll.constants.RequestStage)" href="../../core/constants/#pydoll.constants.RequestStage">RequestStage</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;RequestStage&lt;/span&gt; (&lt;code&gt;pydoll.constants.RequestStage&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.RequestStage">RequestStage</a>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -23656,7 +23672,7 @@ operation, providing a reason for the failure.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><a class="autorefs autorefs-internal" title="            NetworkErrorReason (pydoll.constants.NetworkErrorReason)" href="../../core/constants/#pydoll.constants.NetworkErrorReason">NetworkErrorReason</a></code>
+                      <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;NetworkErrorReason&lt;/span&gt; (&lt;code&gt;pydoll.constants.NetworkErrorReason&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.NetworkErrorReason">NetworkErrorReason</a></code>
                   </span>
               </p>
             </td>
@@ -24606,7 +24622,7 @@ before crashing the GPU process.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><a class="autorefs autorefs-internal" title="            DownloadBehavior (pydoll.constants.DownloadBehavior)" href="../../core/constants/#pydoll.constants.DownloadBehavior">DownloadBehavior</a></code>
+                      <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;DownloadBehavior&lt;/span&gt; (&lt;code&gt;pydoll.constants.DownloadBehavior&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.DownloadBehavior">DownloadBehavior</a></code>
                   </span>
               </p>
             </td>
@@ -25079,7 +25095,7 @@ See PermissionType enum for available permissions.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="list">list</span>[<a class="autorefs autorefs-internal" title="            PermissionType (pydoll.constants.PermissionType)" href="../../core/constants/#pydoll.constants.PermissionType">PermissionType</a>]</code>
+                      <code><span title="list">list</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;PermissionType&lt;/span&gt; (&lt;code&gt;pydoll.constants.PermissionType&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.PermissionType">PermissionType</a>]</code>
                   </span>
               </p>
             </td>
@@ -25806,7 +25822,7 @@ properties such as position, size, and browser context.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="            WindowState (pydoll.constants.WindowState)" href="../../core/constants/#pydoll.constants.WindowState">WindowState</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;WindowState&lt;/span&gt; (&lt;code&gt;pydoll.constants.WindowState&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.WindowState">WindowState</a>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -30136,7 +30152,7 @@ allow for in-browser ad auctions in a privacy-preserving way.</p>
     
     
       
-      <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.indexes", "navigation.expand", "navigation.path", "navigation.top", "toc.follow"], "search": "../../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.indexes", "navigation.expand", "navigation.path", "navigation.top", "toc.follow", "content.code.copy", "content.code.select", "content.tooltips", "search.highlight", "search.suggest"], "search": "../../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../../../assets/javascripts/bundle.56ea9cef.min.js"></script>
