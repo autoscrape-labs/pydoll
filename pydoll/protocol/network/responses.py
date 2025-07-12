@@ -1,4 +1,7 @@
-from typing_extensions import NotRequired, TypedDict
+try:
+    from typing import NotRequired, TypedDict
+except ImportError:
+    from typing_extensions import NotRequired, TypedDict
 
 from pydoll.protocol.fetch.types import HeaderEntry
 from pydoll.protocol.network.types import Cookie, SearchMatch, SecurityIsolationStatus
