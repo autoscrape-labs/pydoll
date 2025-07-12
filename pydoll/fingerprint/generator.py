@@ -5,6 +5,7 @@ This module provides the FingerprintGenerator class which creates realistic
 browser fingerprints with randomized but consistent properties.
 """
 
+import os
 import random
 import string
 import time
@@ -145,8 +146,9 @@ class FingerprintGenerator:
             config: Configuration for fingerprint generation. Uses default if None.
         """
         self.config = config or FingerprintConfig()
-        # 使用当前时间和随机UUID初始化随机种子，确保每次生成的指纹都不同
-        random.seed(time.time() + hash(str(uuid.uuid4())))
+        # Initialize with a basic seed, will be re-seeded in generate() method
+        # to ensure each fingerprint generation is truly unique
+        random.seed()
 
     def generate(self) -> Fingerprint:
         """
@@ -155,6 +157,20 @@ class FingerprintGenerator:
         Returns:
             A Fingerprint object with all properties set.
         """
+        # Ensure each fingerprint generation has a unique random seed
+        # Use high-precision timestamp, UUID, object ID, and process ID for maximum uniqueness
+
+        # Create a highly unique seed combining multiple entropy sources
+        timestamp_ns = int(time.time_ns())  # Nanosecond precision
+        random_uuid = uuid.uuid4()
+        object_id = id(self)
+        process_id = os.getpid()
+        thread_id = getattr(os, 'gettid', lambda: 0)()  # Thread ID if available
+
+        # Combine all entropy sources
+        unique_seed = hash((timestamp_ns, random_uuid, object_id, process_id, thread_id))
+        random.seed(unique_seed)
+
         # Generate basic system properties
         system_properties = self._generate_system_properties()
 
@@ -167,7 +183,7 @@ class FingerprintGenerator:
         # Generate multimedia properties
         multimedia_properties = self._generate_multimedia_properties()
 
-        # 添加一些微小的随机变化，确保每次生成的指纹都不同
+        # Add unique properties to ensure fingerprint uniqueness
         unique_properties = self._generate_unique_properties()
 
         # Combine all properties into fingerprint
@@ -445,7 +461,11 @@ class FingerprintGenerator:
     def _generate_unique_properties() -> Dict:
         """Generate unique properties to ensure fingerprint uniqueness."""
         # Generate a unique fingerprint ID that won't affect browser functionality
-        unique_id = f"{int(time.time())}_{uuid.uuid4().hex[:8]}"
+        # Use current time with high precision, UUID, and random data
+        timestamp_ms = int(time.time() * 1000)
+        unique_uuid = uuid.uuid4()
+        random_suffix = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+        unique_id = f"{timestamp_ms}_{unique_uuid.hex[:8]}_{random_suffix}"
 
         # These properties will be added to the fingerprint but won't affect browser functionality
         # They only ensure that each fingerprint is unique
@@ -457,9 +477,10 @@ class FingerprintGenerator:
     def _generate_canvas_fingerprint() -> str:
         """Generate a unique canvas fingerprint."""
         # Use timestamp and UUID to generate a truly unique canvas fingerprint
-        timestamp = int(time.time() * 1000)
+        timestamp = int(time.time() * 1000000)  # Microsecond precision
         random_data = ''.join(random.choices(string.ascii_letters + string.digits, k=24))
-        return f"canvas_fp_{random_data}_{timestamp}"
+        unique_part = uuid.uuid4().hex[:12]
+        return f"canvas_fp_{random_data}_{unique_part}_{timestamp}"
 
     def _generate_plugins(self) -> List[Dict[str, str]]:
         """Generate a realistic list of browser plugins."""
