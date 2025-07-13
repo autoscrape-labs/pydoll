@@ -12,6 +12,11 @@ class Options(ABC):
     def binary_location(self) -> str:
         pass
 
+    @property
+    @abstractmethod
+    def start_timeout(self) -> int:
+        pass
+
     @abstractmethod
     def add_argument(self, argument: str):
         pass

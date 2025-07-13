@@ -19,6 +19,10 @@ def test_set_binary_location():
     options.binary_location = '/path/to/browser'
     assert options.binary_location == '/path/to/browser'
 
+def test_set_start_timeout():
+    options = Options() 
+    options.start_timeout = 30 
+    assert options.start_timeout == 30 
 
 def test_add_argument():
     options = Options()

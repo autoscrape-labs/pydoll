@@ -19,6 +19,7 @@ class ChromiumOptions(Options):
         """
         self._arguments = []
         self._binary_location = ''
+        self._start_timeout = 10
 
     @property
     def arguments(self) -> list[str]:
@@ -59,6 +60,26 @@ class ChromiumOptions(Options):
             location (str): The file path to the browser executable.
         """
         self._binary_location = location
+
+    @property
+    def start_timeout(self) -> int:
+        """
+        Gets the timeout to verify the browser's running state.
+
+        Returns:
+            int: The timeout in seconds.
+        """
+        return self._start_timeout
+
+    @start_timeout.setter
+    def start_timeout(self, timeout: int):
+        """
+        Sets the timeout to verify the browser's running state.
+
+        Args:
+            timeout (int): The timeout in seconds.
+        """
+        self._start_timeout = timeout
 
     def add_argument(self, argument: str):
         """

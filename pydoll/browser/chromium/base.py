@@ -526,7 +526,7 @@ class Browser(ABC):  # noqa: PLR0904
         Raises:
             FailedToStartBrowser: If the browser failed to start.
         """
-        if not await self._is_browser_running():
+        if not await self._is_browser_running(self.options.start_timeout):
             raise FailedToStartBrowser()
 
     async def _configure_proxy(

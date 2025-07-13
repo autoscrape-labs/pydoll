@@ -1,3 +1,4 @@
+import asyncio
 import base64
 from unittest.mock import ANY, AsyncMock, MagicMock, patch
 
@@ -109,6 +110,53 @@ async def test_start_browser_failure(mock_browser):
         mock_sleep.return_value = False
         with pytest.raises(exceptions.FailedToStartBrowser):
             await mock_browser.start()
+
+@pytest.mark.asyncio 
+async def test_start_browser_failure_with_start_timeout(mock_browser):
+    browser_launched = False 
+
+    async def launch_browser_later():
+        nonlocal browser_launched
+        await asyncio.sleep(2)
+        browser_launched = True
+
+    def start_browser_process_side_effect(*args, **kwargs):
+        asyncio.create_task(launch_browser_later())
+
+    async def ping_side_effect():
+        nonlocal browser_launched
+        return browser_launched
+    
+    mock_browser.options.start_timeout = 1
+    mock_browser._get_valid_tab_id = AsyncMock(return_value='page1')
+    mock_browser._browser_process_manager.start_browser_process.side_effect = start_browser_process_side_effect
+    mock_browser._connection_handler.ping =  AsyncMock(side_effect=ping_side_effect)
+
+    with pytest.raises(exceptions.FailedToStartBrowser):
+        await mock_browser.start()
+
+@pytest.mark.asyncio 
+async def test_start_browser_success_with_start_timeout(mock_browser):
+    browser_launched = False 
+
+    async def launch_browser_later():
+        nonlocal browser_launched
+        await asyncio.sleep(2)
+        browser_launched = True
+
+    def start_browser_process_side_effect(*args, **kwargs):
+        asyncio.create_task(launch_browser_later())
+
+    async def ping_side_effect():
+        nonlocal browser_launched
+        return browser_launched
+    
+    mock_browser.options.start_timeout = 3
+    mock_browser._get_valid_tab_id = AsyncMock(return_value='page1')
+    mock_browser._browser_process_manager.start_browser_process.side_effect = start_browser_process_side_effect
+    mock_browser._connection_handler.ping =  AsyncMock(side_effect=ping_side_effect)
+
+    await mock_browser.start()
 
 @pytest.mark.asyncio
 async def test_proxy_configuration(mock_browser):

@@ -188,6 +188,7 @@ async def custom_automation():
     options.add_argument('--proxy-server=username:password@ip:port')
     options.add_argument('--window-size=1920,1080')
     options.binary_location = '/path/to/your/browser'
+    options.start_timeout = 20
 
     async with Chrome(options=options) as browser:
         tab = await browser.start()
@@ -308,6 +309,17 @@ from pydoll.browser.options import ChromiumOptions
 
 options = ChromiumOptions()
 options.binary_location = '/path/to/your/chrome'
+browser = Chrome(options=options)
+```
+
+**Browser starts after a FailedToStartBrowser error?**
+```python
+from pydoll.browser import Chrome
+from pydoll.browser.options import ChromiumOptions
+
+options = ChromiumOptions()
+options.start_timeout = 20  # default is 10 seconds
+
 browser = Chrome(options=options)
 ```
 
