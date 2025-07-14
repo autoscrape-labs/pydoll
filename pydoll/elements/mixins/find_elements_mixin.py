@@ -205,18 +205,13 @@ class FindElementsMixin:
             EvaluateResponse, CallFunctionOnResponse
         ] = await self._execute_command(command)
 
-        if not response_for_command.get('result', {}).get('result', {}).get('objectId'):
+        if not self._has_object_id_key(response_for_command):
             if raise_exc:
                 raise ElementNotFound()
             return None
 
         object_id = response_for_command['result']['result']['objectId']
-        node_description = await self._describe_node(object_id=object_id)
-        attributes = node_description.get('attributes', [])
-
-        tag_name = node_description.get('nodeName', '').lower()
-        attributes.extend(['tag_name', tag_name])
-
+        attributes = await self._get_object_attributes(object_id=object_id)
         return create_web_element(object_id, self._connection_handler, by, value, attributes)  # type: ignore
 
     async def _find_elements(
@@ -279,6 +274,16 @@ class FindElementsMixin:
                 create_web_element(object_id, self._connection_handler, by, value, attributes)  # type: ignore
             )
         return elements
+
+    async def _get_object_attributes(self, object_id: str) -> list[str]:
+        """
+        Get attributes of a DOM node.
+        """
+        node_description = await self._describe_node(object_id=object_id)
+        attributes = node_description.get('attributes', [])
+        tag_name = node_description.get('nodeName', '').lower()
+        attributes.extend(['tag_name', tag_name])
+        return attributes
 
     def _get_by_and_value(  # noqa: PLR0913, PLR0917
         self,
@@ -491,3 +496,10 @@ class FindElementsMixin:
         Converts absolute XPath to relative for context-based searches.
         """
         return f'.{xpath}' if not xpath.startswith('.') else xpath
+
+    @staticmethod
+    def _has_object_id_key(response: Union[EvaluateResponse, CallFunctionOnResponse]) -> bool:
+        """
+        Check if response has objectId key.
+        """
+        return bool(response.get('result', {}).get('result', {}).get('objectId'))

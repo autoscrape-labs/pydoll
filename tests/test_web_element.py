@@ -314,6 +314,130 @@ class TestWebElementMethods:
         mock_sleep.assert_called_with(0.1)  # Default interval
         assert input_element.click.call_count == 1
 
+    @pytest.mark.asyncio
+    async def test_get_parent_element_success(self, web_element):
+        """Test successful parent element retrieval."""
+        script_response = {
+            'result': {
+                'result': {
+                    'objectId': 'parent-object-id'
+                }
+            }
+        }
+        describe_response = {
+            'result': {
+                'node': {
+                    'nodeName': 'DIV',
+                    'attributes': ['id', 'parent-container', 'class', 'container']
+                }
+            }
+        }
+        web_element._connection_handler.execute_command.side_effect = [
+            script_response,  # Script execution
+            describe_response,  # Describe node
+        ]
+        
+        parent_element = await web_element.get_parent_element()
+
+        assert isinstance(parent_element, WebElement)
+        assert parent_element._object_id == 'parent-object-id'
+        assert parent_element._attributes == {
+            'id': 'parent-container',
+            'class_name': 'container',
+            'tag_name': 'div'
+        }
+        web_element._connection_handler.execute_command.assert_called()
+
+    @pytest.mark.asyncio
+    async def test_get_parent_element_not_found(self, web_element):
+        """Test parent element not found raises ElementNotFound."""
+        script_response = {
+            'result': {
+                'result': {}  # No objectId
+            }
+        }
+
+        web_element._connection_handler.execute_command.return_value = script_response
+
+        with pytest.raises(ElementNotFound, match='Parent element not found for element:'):
+            await web_element.get_parent_element()
+
+    @pytest.mark.asyncio
+    async def test_get_parent_element_with_complex_attributes(self, web_element):
+        """Test parent element with complex attribute list."""
+        script_response = {
+            'result': {
+                'result': {
+                    'objectId': 'complex-parent-id'
+                }
+            }
+        }
+
+        describe_response = {
+            'result': {
+                'node': {
+                    'nodeName': 'SECTION',
+                    'attributes': [
+                        'id', 'main-section',
+                        'class', 'content-wrapper',
+                        'data-testid', 'parent-element',
+                        'aria-label', 'Main content area'
+                    ]
+                }
+            }
+        }
+        
+        web_element._connection_handler.execute_command.side_effect = [
+            script_response,
+            describe_response,
+        ]
+        
+        parent_element = await web_element.get_parent_element()
+
+        assert isinstance(parent_element, WebElement)
+        assert parent_element._object_id == 'complex-parent-id'
+        assert parent_element._attributes == {
+            'id': 'main-section',
+            'class_name': 'content-wrapper',
+            'data-testid': 'parent-element',
+            'aria-label': 'Main content area',
+            'tag_name': 'section'
+        }
+
+    @pytest.mark.asyncio
+    async def test_get_parent_element_root_element(self, web_element):
+        """Test getting parent of root element (should return document body)."""
+        script_response = {
+            'result': {
+                'result': {
+                    'objectId': 'body-object-id'
+                }
+            }
+        }
+        
+        describe_response = {
+            'result': {
+                'node': {
+                    'nodeName': 'BODY',
+                    'attributes': ['class', 'page-body']
+                }
+            }
+        }
+        
+        web_element._connection_handler.execute_command.side_effect = [
+            script_response,
+            describe_response,
+        ]
+        
+        parent_element = await web_element.get_parent_element()
+
+        assert isinstance(parent_element, WebElement)
+        assert parent_element._object_id == 'body-object-id'
+        assert parent_element._attributes == {
+            'class_name': 'page-body',
+            'tag_name': 'body'
+        }
+
 
 class TestWebElementKeyboardInteraction:
     """Test keyboard interaction methods."""

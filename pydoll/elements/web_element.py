@@ -23,6 +23,7 @@ from pydoll.constants import (
 from pydoll.elements.mixins import FindElementsMixin
 from pydoll.exceptions import (
     ElementNotAFileInput,
+    ElementNotFound,
     ElementNotInteractable,
     ElementNotVisible,
 )
@@ -129,6 +130,16 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         """
         response = await self._execute_script(Scripts.BOUNDS, return_by_value=True)
         return json.loads(response['result']['result']['value'])
+
+    async def get_parent_element(self) -> 'WebElement':
+        """Element's parent element."""
+        result = await self._execute_script(Scripts.GET_PARENT_NODE)
+        if not self._has_object_id_key(result):
+            raise ElementNotFound(f'Parent element not found for element: {self}')
+
+        object_id = result['result']['result']['objectId']
+        attributes = await self._get_object_attributes(object_id=object_id)
+        return WebElement(object_id, self._connection_handler, attributes_list=attributes)
 
     async def take_screenshot(self, path: str, quality: int = 100):
         """
@@ -345,8 +356,14 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
 
     async def _click_option_tag(self):
         """Specialized method for clicking <option> elements in dropdowns."""
-        script = Scripts.CLICK_OPTION_TAG.replace('{self.value}', self.value)
-        await self._execute_command(RuntimeCommands.evaluate(script))
+        
+        await self._execute_command(
+            RuntimeCommands.call_function_on(
+                object_id=self._object_id,
+                function_declaration=Scripts.CLICK_OPTION_TAG,
+                return_by_value=True,
+            )
+        )
 
     async def _is_element_visible(self):
         """Check if element is visible using comprehensive JavaScript visibility test."""
