@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from abc import ABC, abstractmethod
 from functools import partial
 from random import randint
@@ -51,6 +52,8 @@ from pydoll.protocol.target.responses import (
 from pydoll.protocol.target.types import TargetInfo
 
 T = TypeVar('T')
+
+logger = logging.getLogger(__name__)
 
 
 class Browser(ABC):  # noqa: PLR0904
@@ -651,7 +654,7 @@ class Browser(ABC):  # noqa: PLR0904
 
         except (RuntimeError, OSError, ValueError, AssertionError) as e:
             # Don't let fingerprint injection failures break the browser
-            print(f"Warning: Failed to inject fingerprint spoofing script: {e}")
+            logger.warning("Failed to inject fingerprint spoofing script: %s", e)
 
     def get_fingerprint_summary(self) -> Optional[dict]:
         """
