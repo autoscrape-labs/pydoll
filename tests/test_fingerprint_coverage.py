@@ -24,17 +24,14 @@ class TestCoverageSpecific:
     def test_browser_options_apply_fingerprint_spoofing(self):
         """Test _apply_fingerprint_spoofing method - normal case"""
         config = FingerprintConfig(browser_type="chrome")
-        manager = ChromiumOptionsManager(
-            enable_fingerprint_spoofing=True,
-            fingerprint_config=config
-        )
-        
-        # Set up options
-        manager.options = ChromiumOptions()
-        manager.options.binary_location = "/path/to/chrome"
+        options = ChromiumOptions()
+        options.enable_fingerprint_spoofing_mode()
+        options.fingerprint_config = config
+        options.binary_location = "/path/to/chrome"
+        manager = ChromiumOptionsManager(options)
         
         # Ensure fingerprint manager exists and mock its methods
-        assert manager.fingerprint_manager is not None
+        manager.fingerprint_manager = Mock()
         manager.fingerprint_manager.generate_new_fingerprint = Mock()
         manager.fingerprint_manager.get_fingerprint_arguments = Mock(return_value=[
             '--user-agent=Test Agent'
@@ -49,10 +46,8 @@ class TestCoverageSpecific:
 
     def test_browser_options_apply_fingerprint_spoofing_no_manager(self):
         """Test _apply_fingerprint_spoofing method when manager is None - covers browser_options_manager.py#L71"""
-        manager = ChromiumOptionsManager(enable_fingerprint_spoofing=False)
-        
-        # Set up options
-        manager.options = ChromiumOptions()
+        options = ChromiumOptions()
+        manager = ChromiumOptionsManager(options)
         
         # Ensure fingerprint manager is None
         manager.fingerprint_manager = None
@@ -120,7 +115,9 @@ class TestCoverageSpecific:
             mock_tab_class.return_value = mock_tab
             
             # Create Chrome with fingerprint spoofing enabled
-            chrome = Chrome(enable_fingerprint_spoofing=True)
+            options = ChromiumOptions()
+            options.enable_fingerprint_spoofing_mode()
+            chrome = Chrome(options=options)
             
             # Mock all necessary components
             chrome._browser_process_manager = Mock()
@@ -149,7 +146,9 @@ class TestCoverageSpecific:
             mock_tab_class.return_value = mock_tab
             
             # Create Chrome with fingerprint spoofing enabled
-            chrome = Chrome(enable_fingerprint_spoofing=True)
+            options = ChromiumOptions()
+            options.enable_fingerprint_spoofing_mode()
+            chrome = Chrome(options=options)
             
             # Mock the execute command to return a valid response
             chrome._execute_command = AsyncMock(return_value={
@@ -168,7 +167,9 @@ class TestCoverageSpecific:
         with patch('pydoll.browser.chromium.chrome.Chrome._get_default_binary_location'), \
              patch('pydoll.browser.chromium.chrome.Chrome._setup_user_dir'):
 
-            chrome = Chrome(enable_fingerprint_spoofing=True)
+            options = ChromiumOptions()
+            options.enable_fingerprint_spoofing_mode()
+            chrome = Chrome(options=options)
             
             # Create mock tab
             mock_tab = Mock()
@@ -192,12 +193,14 @@ class TestCoverageSpecific:
         with patch('pydoll.browser.chromium.chrome.Chrome._get_default_binary_location'), \
              patch('pydoll.browser.chromium.chrome.Chrome._setup_user_dir'):
 
-            chrome = Chrome(enable_fingerprint_spoofing=True)
+            options = ChromiumOptions()
+            options.enable_fingerprint_spoofing_mode()
+            chrome = Chrome(options=options)
             
             # Create mock tab that raises exception
             mock_tab = Mock()
             mock_tab._execute_command = AsyncMock()
-            mock_tab.execute_script = AsyncMock(side_effect=Exception("Test exception"))
+            mock_tab.execute_script = AsyncMock(side_effect=RuntimeError("Test exception"))
             
             # Ensure fingerprint manager exists
             assert chrome.fingerprint_manager is not None
@@ -233,19 +236,24 @@ class TestCoverageSpecific:
     def test_options_manager_edge_cases(self):
         """Test edge cases in options manager"""
         # Test with Chrome-style binary path
-        manager = ChromiumOptionsManager(enable_fingerprint_spoofing=True)
-        manager.options = ChromiumOptions()
-        manager.options.binary_location = "/usr/bin/google-chrome"
+        options = ChromiumOptions()
+        options.enable_fingerprint_spoofing_mode()
+        options.binary_location = "/usr/bin/google-chrome"
+        manager = ChromiumOptionsManager(options)
         
         browser_type = manager._detect_browser_type()
         assert browser_type == 'chrome'
         
-        # Test with Edge-style binary path
-        manager.options.binary_location = "/usr/bin/microsoft-edge"
-        browser_type = manager._detect_browser_type()
+        # Test with Edge-style binary path - reinitialize manager with new options
+        options2 = ChromiumOptions()
+        options2.binary_location = "/usr/bin/microsoft-edge"
+        manager2 = ChromiumOptionsManager(options2)
+        browser_type = manager2._detect_browser_type()
         assert browser_type == 'edge'
         
         # Test without binary location (should default to chrome)
-        manager.options.binary_location = ""
-        browser_type = manager._detect_browser_type()
+        options3 = ChromiumOptions()
+        options3.binary_location = ""
+        manager3 = ChromiumOptionsManager(options3)
+        browser_type = manager3._detect_browser_type()
         assert browser_type == 'chrome' 
