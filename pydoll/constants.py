@@ -475,8 +475,9 @@ class Scripts:
             }});
         }};
     }}
+    """
 
-    GET_PARENT_NODE = 
+    GET_PARENT_NODE = """
         function() {
             return this.parentElement;
         }
