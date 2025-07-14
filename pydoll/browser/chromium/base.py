@@ -4,10 +4,12 @@ from functools import partial
 from random import randint
 from typing import Any, Callable, Optional, TypeVar
 
-from pydoll.browser.managers.browser_options_manager import BrowserOptionsManager
-from pydoll.browser.managers.browser_process_manager import BrowserProcessManager
-from pydoll.browser.managers.proxy_manager import ProxyManager
-from pydoll.browser.managers.temp_dir_manager import TempDirectoryManager
+from pydoll.browser.interfaces import BrowserOptionsManager
+from pydoll.browser.managers import (
+    BrowserProcessManager,
+    ProxyManager,
+    TempDirectoryManager,
+)
 from pydoll.browser.tab import Tab
 from pydoll.commands import (
     BrowserCommands,
