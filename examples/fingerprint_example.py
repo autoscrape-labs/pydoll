@@ -267,7 +267,7 @@ async def multiple_browsers_example():
     options1 = ChromiumOptions()
     options1.enable_fingerprint_spoofing_mode(config=FingerprintConfig(browser_type="chrome"))
     browser1 = Chrome(options=options1)
-    
+
     options2 = ChromiumOptions()
     options2.enable_fingerprint_spoofing_mode(config=FingerprintConfig(browser_type="chrome"))
     browser2 = Chrome(options=options2)

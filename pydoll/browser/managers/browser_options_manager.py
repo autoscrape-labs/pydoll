@@ -4,6 +4,7 @@ from pydoll.browser.interfaces import BrowserOptionsManager, Options
 from pydoll.browser.options import ChromiumOptions
 from pydoll.exceptions import InvalidOptionsObject
 from pydoll.fingerprint.manager import FingerprintManager
+from pydoll.fingerprint.models import FingerprintConfig
 
 
 class ChromiumOptionsManager(BrowserOptionsManager):
@@ -46,9 +47,8 @@ class ChromiumOptionsManager(BrowserOptionsManager):
             # Convert dict config to FingerprintConfig object if needed
             config = self.options.fingerprint_config
             if isinstance(config, dict):
-                from ...fingerprint.models import FingerprintConfig
                 config = FingerprintConfig.from_dict(config)
-            
+
             self.fingerprint_manager = FingerprintManager(config)
             self._apply_fingerprint_spoofing()
 

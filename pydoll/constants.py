@@ -126,7 +126,6 @@ class Scripts:
         }
     """
 
-
     # Fingerprint spoofing related scripts
     FINGERPRINT_WRAPPER = """
 (function() {{

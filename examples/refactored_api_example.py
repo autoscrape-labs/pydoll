@@ -58,7 +58,10 @@ async def demonstrate_new_api():
     print("4. Using property setters for fine-grained control:")
     options_properties = ChromiumOptions()
     options_properties.enable_fingerprint_spoofing = True
-    options_properties.fingerprint_config = {"enable_webgl_spoofing": False, "include_plugins": False}
+    options_properties.fingerprint_config = {
+        "enable_webgl_spoofing": False,
+        "include_plugins": False
+    }
     options_properties.add_argument('--disable-blink-features=AutomationControlled')
 
     async with Chrome(options=options_properties) as chrome:

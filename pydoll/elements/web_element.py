@@ -356,7 +356,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
 
     async def _click_option_tag(self):
         """Specialized method for clicking <option> elements in dropdowns."""
-        
+
         await self._execute_command(
             RuntimeCommands.call_function_on(
                 object_id=self._object_id,
