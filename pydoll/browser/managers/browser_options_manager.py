@@ -14,20 +14,9 @@ class ChromiumOptionsManager(BrowserOptionsManager):
     for Chrome and Edge browsers.
     """
 
-    def __init__(
-        self,
-        options: Optional[Options] = None,
-        enable_fingerprint_spoofing: bool = False,
-        fingerprint_config=None
-    ):
+    def __init__(self, options: Optional[Options] = None):
         self.options = options
-        self.enable_fingerprint_spoofing = enable_fingerprint_spoofing
-        self.fingerprint_config = fingerprint_config
         self.fingerprint_manager = None
-
-        # Initialize fingerprint manager if spoofing is enabled
-        if enable_fingerprint_spoofing:
-            self.fingerprint_manager = FingerprintManager(fingerprint_config)
 
     def initialize_options(
         self,
@@ -52,16 +41,27 @@ class ChromiumOptionsManager(BrowserOptionsManager):
 
         self.add_default_arguments()
 
-        # Apply fingerprint spoofing if enabled
-        if self.enable_fingerprint_spoofing and self.fingerprint_manager:
+        # Initialize fingerprint manager if spoofing is enabled in options
+        if self.options.enable_fingerprint_spoofing:
+            # Convert dict config to FingerprintConfig object if needed
+            config = self.options.fingerprint_config
+            if isinstance(config, dict):
+                from ...fingerprint.models import FingerprintConfig
+                config = FingerprintConfig.from_dict(config)
+            
+            self.fingerprint_manager = FingerprintManager(config)
             self._apply_fingerprint_spoofing()
 
         return self.options
 
     def add_default_arguments(self):
         """Add default arguments required for CDP integration."""
-        self.options.add_argument('--no-first-run')
-        self.options.add_argument('--no-default-browser-check')
+        if self.options is not None:
+            # Add default arguments only if they don't already exist
+            if '--no-first-run' not in self.options.arguments:
+                self.options.add_argument('--no-first-run')
+            if '--no-default-browser-check' not in self.options.arguments:
+                self.options.add_argument('--no-default-browser-check')
 
     def _apply_fingerprint_spoofing(self):
         """
@@ -78,9 +78,10 @@ class ChromiumOptionsManager(BrowserOptionsManager):
         fingerprint_args = self.fingerprint_manager.get_fingerprint_arguments(browser_type)
 
         # Add fingerprint arguments to options
-        for arg in fingerprint_args:
-            if arg not in self.options.arguments:
-                self.options.add_argument(arg)
+        if self.options is not None:
+            for arg in fingerprint_args:
+                if arg not in self.options.arguments:
+                    self.options.add_argument(arg)
 
     def _detect_browser_type(self) -> str:
         """
