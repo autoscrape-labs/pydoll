@@ -1,13 +1,3 @@
-"""
-Exact tests to cover uncovered lines reported by Codecov:
-- pydoll/fingerprint/generator.py#L335 (fallback browser type)
-- pydoll/fingerprint/manager.py#L55 (return current_fingerprint)  
-- pydoll/fingerprint/manager.py#L262 (return False when file doesn't exist)
-- pydoll/browser/managers/browser_options_manager.py#L71 (early return when no fingerprint manager)
-
-This file merges all tests from test_additional_coverage.py and test_exact_coverage.py.
-"""
-
 import tempfile
 from pathlib import Path
 from unittest.mock import Mock, patch, AsyncMock
@@ -630,7 +620,7 @@ class TestExactCoverage:
     def test_browser_options_manager_line_71_no_fingerprint_manager(self):
         """Test browser_options_manager.py#L71 - early return when no fingerprint manager"""
         # Create manager without fingerprint spoofing enabled
-        manager = ChromiumOptionsManager(enable_fingerprint_spoofing=False)
+        manager = ChromiumOptionsManager()
         manager.options = ChromiumOptions()
         
         # Manually set fingerprint_manager to None to ensure we hit line 71
@@ -680,7 +670,7 @@ class TestExactCoverage:
             assert manager.delete_fingerprint("nonexistent") is False  # Possible line 262
             
         # Test browser options manager (line 71)
-        options_manager = ChromiumOptionsManager(enable_fingerprint_spoofing=False)
+        options_manager = ChromiumOptionsManager()
         options_manager.fingerprint_manager = None
         result = options_manager._apply_fingerprint_spoofing()
         assert result is None
@@ -822,7 +812,7 @@ class TestExactCoverage:
             assert manager.delete_fingerprint("fake") is False
             
         # 3. Test browser options manager (line 71)
-        options_manager = ChromiumOptionsManager(enable_fingerprint_spoofing=False)
+        options_manager = ChromiumOptionsManager()
         options_manager.fingerprint_manager = None
         result = options_manager._apply_fingerprint_spoofing()
         assert result is None
@@ -840,8 +830,9 @@ class TestExactCoverage:
     def test_various_browser_options_scenarios(self):
         """Test various browser options scenarios"""
         # Test fingerprint spoofing enabled but manually set to None
-        manager_enabled = ChromiumOptionsManager(enable_fingerprint_spoofing=True)
-        manager_enabled.options = ChromiumOptions()
+        options = ChromiumOptions()
+        options.enable_fingerprint_spoofing_mode()
+        manager_enabled = ChromiumOptionsManager(options)
         manager_enabled.fingerprint_manager = None  # Manually set to None
         
         # This should hit line 71 early return
@@ -849,7 +840,7 @@ class TestExactCoverage:
         assert result is None
         
         # Test fingerprint spoofing disabled
-        manager_disabled = ChromiumOptionsManager(enable_fingerprint_spoofing=False)
+        manager_disabled = ChromiumOptionsManager()
         manager_disabled.options = ChromiumOptions()
         assert manager_disabled.fingerprint_manager is None
         
