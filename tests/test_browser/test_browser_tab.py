@@ -568,7 +568,7 @@ class TestTabScriptExecution:
         with pytest.raises(InvalidScriptWithElement) as exc_info:
             await tab.execute_script('argument.click()')
         
-        assert str(exc_info.value) == 'Script contains "argument" but no element was provided'
+        assert str(exc_info.value) == 'Script contains "argument." but no element was provided'
         tab._connection_handler.execute_command.assert_not_called()
 
     @pytest.mark.asyncio
