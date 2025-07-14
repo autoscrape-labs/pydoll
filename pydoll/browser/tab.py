@@ -668,8 +668,10 @@ class Tab(FindElementsMixin):  # noqa: PLR0904
         Raises:
             InvalidScriptWithElement: If script contains 'argument' but no element is provided.
         """
-        if 'argument' in script and element is None:
-            raise InvalidScriptWithElement('Script contains "argument" but no element was provided')
+        # Check for scripts that specifically use "argument." (element reference) but don't provide element
+        # This avoids false positives with JavaScript "arguments" object
+        if 'argument.' in script and element is None:
+            raise InvalidScriptWithElement('Script contains "argument." but no element was provided')
 
         if element:
             return await self._execute_script_with_element(script, element)
