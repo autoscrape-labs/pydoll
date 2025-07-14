@@ -663,9 +663,11 @@ class Browser(ABC):  # noqa: PLR0904
         Returns:
             Dictionary with fingerprint information, or None if not enabled.
         """
-        if self.fingerprint_manager:
-            return self.fingerprint_manager.get_fingerprint_summary()
-        return None
+        return (
+            self.fingerprint_manager.get_fingerprint_summary()
+            if self.fingerprint_manager
+            else None
+        )
 
     @abstractmethod
     def _get_default_binary_location(self) -> str:
