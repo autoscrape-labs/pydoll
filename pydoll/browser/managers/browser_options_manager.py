@@ -17,7 +17,7 @@ class ChromiumOptionsManager(BrowserOptionsManager):
 
     def __init__(self, options: Optional[Options] = None):
         self.options = options
-        self.fingerprint_manager = None
+        self.fingerprint_manager: Optional[FingerprintManager] = None
 
     def initialize_options(
         self,
@@ -96,7 +96,7 @@ class ChromiumOptionsManager(BrowserOptionsManager):
                 return 'edge'
         return 'chrome'  # Default to chrome
 
-    def get_fingerprint_manager(self):
+    def get_fingerprint_manager(self) -> Optional[FingerprintManager]:
         """
         Get the fingerprint manager instance.
 
