@@ -1,12 +1,12 @@
-import platform
+import json
+import os
 from unittest.mock import MagicMock, patch
 
 import pytest
 
 from pydoll.browser.chromium.chrome import Chrome
-from pydoll.browser.managers import ChromiumOptionsManager
 from pydoll.browser.options import ChromiumOptions
-from pydoll.exceptions import UnsupportedOS, InvalidBrowserPath
+from pydoll.exceptions import InvalidBrowserPath, UnsupportedOS
 
 
 class TestChromeInitialization:
@@ -379,6 +379,11 @@ class TestChromeIntegration:
         custom_options = ChromiumOptions()
         custom_options.add_argument('--disable-gpu')
         custom_options.add_argument('--no-sandbox')
+        custom_options.prefs_options = {
+        "download": {"directory_upgrade": True},
+        }
+        custom_options.set_default_download_directory('/tmp/all')
+        custom_options.set_block_notifications(True)
         custom_options.binary_location = '/custom/chrome'
         custom_port = 9876
         
@@ -400,7 +405,13 @@ class TestChromeIntegration:
         ) as mock_proxy_manager:
             
             chrome = Chrome(options=custom_options, connection_port=custom_port)
-            
+            chrome._setup_user_dir()
+            with open(
+                os.path.join(chrome._temp_directory_manager._temp_dirs[0].name, 'Default', 'Preferences'), 'r'
+            ) as json_file:
+                preferences = json.loads(json_file.read())
+            assert preferences == custom_options.prefs_options
+
             # Verify correct initialization
             assert chrome.options == custom_options
             assert chrome._connection_port == custom_port
