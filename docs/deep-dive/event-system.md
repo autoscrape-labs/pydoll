@@ -12,17 +12,17 @@ sequenceDiagram
     participant Connection as ConnectionHandler
     participant WebSocket
     participant Browser
-    
+
     Client->>Connection: Register callback for event
     Connection->>Connection: Store callback in registry
-    
+
     Client->>Connection: Enable event domain
     Connection->>WebSocket: Send CDP command to enable domain
     WebSocket->>Browser: Forward command
     Browser-->>WebSocket: Acknowledge domain enabled
     WebSocket-->>Connection: Forward response
     Connection-->>Client: Domain enabled
-    
+
     Browser->>WebSocket: Event occurs, sends CDP event message
     WebSocket->>Connection: Forward event message
     Connection->>Connection: Look up callbacks for this event
@@ -171,7 +171,7 @@ async def handle_navigation(tab, event):
     print(f"Navigation occurred to: {await tab.current_url}")
     
     # Access tab methods directly
-    elements = await tab.find(tag_name="a")
+    elements = await tab.find(tag_name="a", find_all=True)
     print(f"Found {len(elements)} links on the new page")
 
 # Register with partial to bind the tab parameter
@@ -302,18 +302,18 @@ from pydoll.protocol.page.events import PageEvent
 async def scrape_dynamic_content():
     async with Chrome() as browser:
         tab = await browser.start()
-        
+
         # Create a data storage container
         scraped_data = []
         data_complete = asyncio.Event()
-        
+
         # Set up a callback to extract data when AJAX responses are received
         async def extract_data_from_response(tab, event):
             if 'api/products' in event['params']['response']['url']:
                 # Extract the response body
                 request_id = event['params']['requestId']
                 body = await tab.get_network_response_body(request_id)
-                
+
                 # Process the data
                 products = json.loads(body)
                 for product in products:
@@ -322,17 +322,17 @@ async def scrape_dynamic_content():
                         'name': product['name'],
                         'price': product['price']
                     })
-                
+
                 print(f"Extracted {len(products)} products")
-                
+
                 # If we've collected enough data, signal completion
                 if len(scraped_data) >= 100:
                     data_complete.set()
-        
+
         # Set up navigation monitoring
         async def handle_page_load(tab, event):
             print(f"Page loaded: {await tab.current_url}")
-            
+
             # Now that the page is loaded, trigger the infinite scroll
             await tab.execute_script("""
                 function scrollDown() {
@@ -341,25 +341,25 @@ async def scrape_dynamic_content():
                 }
                 scrollDown();
             """)
-        
+
         # Enable events and register callbacks
         await tab.enable_network_events()
         await tab.enable_page_events()
         await tab.on(NetworkEvent.RESPONSE_RECEIVED, partial(extract_data_from_response, tab))
         await tab.on(PageEvent.LOAD_EVENT_FIRED, partial(handle_page_load, tab))
-        
+
         # Navigate to the page with dynamic content
         await tab.go_to("https://example.com/products")
-        
+
         # Wait for data collection to complete or timeout after 60 seconds
         try:
             await asyncio.wait_for(data_complete.wait(), timeout=60)
         except asyncio.TimeoutError:
             print("Timeout reached, continuing with data collected so far")
-        
+
         # Process the collected data
         print(f"Total products collected: {len(scraped_data)}")
-        
+
         return scraped_data
 ```
 
@@ -383,47 +383,47 @@ async def multi_tab_scraping():
     # Create a single browser instance for all tabs
     async with Chrome() as browser:
         tab = await browser.start()
-        
+
         # Categories to scrape
         categories = ['electronics', 'clothing', 'books', 'home']
         base_url = 'https://example.com/products'
-        
+
         # Track results for each category
         results = {category: [] for category in categories}
         completion_events = {category: asyncio.Event() for category in categories}
-        
+
         # Create a callback for processing category data
         async def process_category_data(tab, category, event):
             if f'api/{category}' in event['params'].get('response', {}).get('url', ''):
                 request_id = event['params']['requestId']
                 body, _ = await tab.get_network_response_body(request_id)
                 data = json.loads(body)
-                
+
                 # Add results to the appropriate category
                 results[category].extend(data['items'])
                 print(f"Added {len(data['items'])} items to {category}, total: {len(results[category])}")
-                
+
                 # Signal completion if we have enough data
                 if len(results[category]) >= 20 or data.get('isLastPage', False):
                     completion_events[category].set()
-        
+
         # Prepare tabs, one for each category
         tabs = {}
         for category in categories:
             # Create a new tab
             new_tab = await browser.new_tab()
             tabs[category] = new_tab
-            
+
             # Setup event monitoring for this tab
             await new_tab.enable_network_events()
             await new_tab.on(
                 NetworkEvent.RESPONSE_RECEIVED,
                 partial(process_category_data, new_tab, category)
             )
-            
+
             # Start navigation (don't await here to allow parallel loading)
             asyncio.create_task(new_tab.go_to(f"{base_url}/{category}"))
-        
+
         # Wait for all categories to complete or timeout
         try:
             await asyncio.wait_for(
@@ -432,20 +432,20 @@ async def multi_tab_scraping():
             )
         except asyncio.TimeoutError:
             print("Some categories timed out, proceeding with collected data")
-        
+
         # Display results
         total_items = 0
         for category, items in results.items():
             count = len(items)
             total_items += count
             print(f"{category}: collected {count} items")
-            
+
             # Show sample items
             for item in items[:2]:
                 print(f"  - {item['name']}: ${item['price']}")
-        
+
         print(f"Total items across all categories: {total_items}")
-        
+
         return results
 
 # Run the multi-tab scraper
@@ -467,87 +467,87 @@ from pydoll.protocol.network.events import NetworkEvent
 async def dynamic_tab_creation():
     async with Chrome() as browser:
         main_tab = await browser.start()
-        
+
         # Store results from all product pages
         all_results = []
         # Count active tabs to know when we're done
         active_tabs = 1  # Start with 1 (main tab)
         # Event that signals all work is complete
         all_done = asyncio.Event()
-        
+
         # This callback processes category links and creates a new tab for each
         async def process_category_links(main_tab, event):
             # Check if this is the categories response
             if 'api/categories' not in event['params'].get('response', {}).get('url', ''):
                 return
-                
+
             # Extract categories from the response
             request_id = event['params']['requestId']
             body = await main_tab.get_network_response_body(request_id)
             categories = json.loads(body)
-            
+
             print(f"Found {len(categories)} categories to process")
             nonlocal active_tabs
             active_tabs += len(categories)  # Update tab counter
-            
+
             # Create a new tab for each category
             for category in categories:
                 # Create a new tab
                 new_tab = await browser.new_tab()
-                
+
                 # Setup a callback for this tab
                 async def process_product_data(tab, category_name, event):
                     if 'api/products' not in event['params'].get('response', {}).get('url', ''):
                         return
-                        
+
                     # Process the product data
                     request_id = event['params']['requestId']
                     body = await tab.get_network_response_body(request_id)
                     products = json.loads(body)
-                    
+
                     # Add to results
                     nonlocal all_results
                     all_results.extend(products)
                     print(f"Added {len(products)} products from {category_name}")
-                    
+
                     # Close this tab when done
                     nonlocal active_tabs
                     await tab.close()
                     active_tabs -= 1
-                    
+
                     # If this was the last tab, signal completion
                     if active_tabs == 0:
                         all_done.set()
-                
+
                 # Enable network events on the new tab
                 await new_tab.enable_network_events()
                 await new_tab.on(
                     NetworkEvent.RESPONSE_RECEIVED,
                     partial(process_product_data, new_tab, category['name'])
                 )
-                
+
                 # Navigate to the category page
                 asyncio.create_task(new_tab.go_to(f"https://example.com/products/{category['id']}"))
-        
+
         # Set up the main tab to find categories
         await main_tab.enable_network_events()
         await main_tab.on(
             NetworkEvent.RESPONSE_RECEIVED,
             partial(process_category_links, main_tab)
         )
-        
+
         # Navigate to the main categories page
         await main_tab.go_to("https://example.com/categories")
-        
+
         # Wait for all tabs to complete their work
         try:
             await asyncio.wait_for(all_done.wait(), timeout=60)
         except asyncio.TimeoutError:
             print("Timeout reached, continuing with data collected so far")
-        
+
         # Process results
         print(f"Total products collected: {len(all_results)}")
-        
+
         return all_results
 ```
 
@@ -583,24 +583,24 @@ Events can be used to coordinate actions in response to browser behavior:
 async def wait_for_network_idle():
     network_idle = asyncio.Event()
     in_flight_requests = 0
-    
+
     async def track_request(event):
         nonlocal in_flight_requests
         in_flight_requests += 1
-    
+
     async def track_response(event):
         nonlocal in_flight_requests
         in_flight_requests -= 1
         if in_flight_requests == 0:
             network_idle.set()
-    
+
     await tab.enable_network_events()
     await tab.on(NetworkEvent.REQUEST_WILL_BE_SENT, track_request)
     await tab.on(NetworkEvent.LOADING_FINISHED, track_response)
     await tab.on(NetworkEvent.LOADING_FAILED, track_response)
-    
+
     await network_idle.wait()
-    
+
     # Clean up
     await tab.disable_network_events()
 ```
@@ -619,23 +619,23 @@ async with tab.expect_file_chooser(files="path/to/file.pdf"):
 
 !!! tip "Creating Custom Context Managers"
     You can create custom context managers for common event patterns in your own code:
-    
+
     ```python
     @asynccontextmanager
     async def wait_for_navigation():
         navigation_complete = asyncio.Event()
-        
+
         async def on_navigation(event):
             navigation_complete.set()
-        
+
         # Enable events if not already enabled
         was_enabled = tab.page_events_enabled
         if not was_enabled:
             await tab.enable_page_events()
-            
+
         # Register temporary callback
         await tab.on(PageEvent.FRAME_NAVIGATED, on_navigation, temporary=True)
-        
+
         try:
             yield
             # Wait for navigation to complete
@@ -691,7 +691,7 @@ async def log_request(tab, event):
     url = event['params']['request']['url']
     method = event['params']['request']['method']
     print(f"{method} request to: {url}")
-    
+
     # You can trigger actions based on specific requests
     if 'api/login' in url and method == 'POST':
         print("Login request detected, waiting for response...")
@@ -724,7 +724,7 @@ async def track_attribute_change(tab, event):
     name = event['params']['name']
     value = event['params']['value']
     print(f"Attribute changed on node {node_id}: {name}={value}")
-    
+
     # You can react to specific attribute changes
     if name == 'data-status' and value == 'loaded':
         element = await tab.find(css_selector=f"[data-id='{node_id}']")
@@ -782,7 +782,7 @@ await tab2.on(PageEvent.LOAD_EVENT_FIRED, handle_different_page_load)
 
 !!! info "Domain-Specific Scope"
     Not all event domains are available at both levels. For example:
-    
+
     - **Fetch Events**: Available at both browser and tab levels
     - **Page Events**: Available only at the tab level
     - **Target Events**: Available only at the browser level
