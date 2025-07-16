@@ -468,7 +468,7 @@ class Tab(FindElementsMixin):  # noqa: PLR0904
         """Delete all cookies from current browser context."""
         return await self._execute_command(StorageCommands.clear_cookies(self._browser_context_id))
 
-    async def go_to(self, url: str, timeout: int = 300):
+    async def go_to(self, url: str, timeout: int = 300, wait_until: str = 'load'):
         """
         Navigate to URL and wait for loading to complete.
 
@@ -477,6 +477,7 @@ class Tab(FindElementsMixin):  # noqa: PLR0904
         Args:
             url: Target URL to navigate to.
             timeout: Maximum seconds to wait for page load (default 300).
+            wait_until: load (default) or domcontentloaded
 
         Raises:
             PageLoadTimeout: If page doesn't finish loading within timeout.
@@ -484,12 +485,20 @@ class Tab(FindElementsMixin):  # noqa: PLR0904
         if await self._refresh_if_url_not_changed(url):
             return
 
-        await self._execute_command(PageCommands.navigate(url))
+        if wait_until == 'load':
+            trigger_event = PageEvent.LOAD_EVENT_FIRED
+        elif wait_until == 'domcontentloaded':
+            trigger_event = PageEvent.DOM_CONTENT_EVENT_FIRED
+        else:
+            raise ValueError(
+                f"Invalid wait_until value: {wait_until}. Expecting 'load' or 'domcontentloaded'."
+            )
 
         try:
-            await self._wait_page_load(timeout=timeout)
-        except WaitElementTimeout:
-            raise PageLoadTimeout()
+            async with self._wait_until(trigger_event, timeout=timeout):
+                await self._execute_command(PageCommands.navigate(url))
+        except WaitElementTimeout as exc:
+            raise PageLoadTimeout() from exc
 
     async def refresh(
         self,
@@ -909,6 +918,40 @@ class Tab(FindElementsMixin):  # noqa: PLR0904
             if asyncio.get_event_loop().time() - start_time > timeout:
                 raise WaitElementTimeout('Page load timed out')
             await asyncio.sleep(0.5)
+
+    @asynccontextmanager
+    async def _wait_until(self, trigger_event: PageEvent, timeout: int = 300):
+        """
+        Wait for a specific event to occur within a given timeout.
+
+        Args:
+            trigger_event (str): The event to wait for.
+            timeout (int, optional): Time to wait for the event in seconds. Default 300s.
+
+        Raises:
+            WaitElementTimeout: If the event does not occur within the timeout.
+        """
+        event = asyncio.Event()
+
+        async def event_handler(_):
+            event.set()
+
+        if self.page_events_enabled is False:
+            _before_page_events_enabled = False
+            await self.enable_page_events()
+        else:
+            _before_page_events_enabled = True
+
+        await self.on(trigger_event, event_handler, temporary=True)
+
+        try:
+            yield
+            await asyncio.wait_for(event.wait(), timeout=timeout)
+        except asyncio.TimeoutError as exc:
+            raise WaitElementTimeout(f'Timeout waiting for event: {trigger_event.value}') from exc
+        finally:
+            if _before_page_events_enabled is False:
+                await self.disable_page_events()
 
     async def _bypass_cloudflare(
         self,
