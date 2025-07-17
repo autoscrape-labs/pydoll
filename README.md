@@ -34,12 +34,19 @@ We believe that powerful automation shouldn't require you to become an expert in
 ## 🌟 What makes Pydoll special?
 
 - **Zero Webdrivers**: Say goodbye to webdriver compatibility issues
-- **Native Captcha Bypass**: Handles Cloudflare Turnstile and reCAPTCHA v3*
+- **Human-like Interaction Engine**: Capable of passing behavioral CAPTCHAs like reCAPTCHA v3 or Turnstile, depending on IP reputation and interaction patterns
 - **Asynchronous Performance**: For high-speed automation and multiple simultaneous tasks
 - **Humanized Interactions**: Mimic real user behavior
 - **Simplicity**: With Pydoll, you install and you're ready to automate.
 
->⚠️ The effectiveness of captcha bypass depends on various factors, such as IP address reputation. Pydoll can achieve scores comparable to real users, but cannot handle restrictive configurations or IP blocks.
+### ⚖️ Ethical Use Disclaimer
+Pydoll is designed to simulate realistic browser interactions in order to avoid being flagged as a bot during legitimate automation tasks. It does not break or circumvent CAPTCHA challenges in the traditional sense (e.g. by solving image puzzles or hacking the system).
+
+Instead, it increases the likelihood of being treated as a real user by mimicking human behavior, which can result in passing behavioral-based protections like reCAPTCHA v3 or Cloudflare Turnstile.
+
+We do not support or endorse using this tool to access websites against their terms of service, scrape personal data, or bypass explicit access restrictions.
+
+Use it responsibly. 🚨
 
 ## 📦 Installation
 
