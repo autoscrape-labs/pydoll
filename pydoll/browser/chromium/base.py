@@ -1,8 +1,9 @@
 import asyncio
+import logging
 from abc import ABC, abstractmethod
 from functools import partial
 from random import randint
-from typing import Any, Callable, Optional, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, Optional, TypeVar
 
 from pydoll.browser.interfaces import BrowserOptionsManager
 from pydoll.browser.managers import (
@@ -10,10 +11,13 @@ from pydoll.browser.managers import (
     ProxyManager,
     TempDirectoryManager,
 )
-from pydoll.browser.tab import Tab
+
+if TYPE_CHECKING:
+    from pydoll.browser.tab import Tab
 from pydoll.commands import (
     BrowserCommands,
     FetchCommands,
+    PageCommands,
     RuntimeCommands,
     StorageCommands,
     TargetCommands,
@@ -49,6 +53,8 @@ from pydoll.protocol.target.types import TargetInfo
 
 T = TypeVar('T')
 
+logger = logging.getLogger(__name__)
+
 
 class Browser(ABC):  # noqa: PLR0904
     """
@@ -82,6 +88,12 @@ class Browser(ABC):  # noqa: PLR0904
         self._temp_directory_manager = TempDirectoryManager()
         self._connection_handler = ConnectionHandler(self._connection_port)
 
+        # Store fingerprint manager reference if available
+        self.fingerprint_manager = getattr(options_manager, 'fingerprint_manager', None)
+        self.enable_fingerprint_spoofing = getattr(
+            options_manager, 'enable_fingerprint_spoofing', False
+        )
+
     async def __aenter__(self) -> 'Browser':
         """Async context manager entry."""
         return self
@@ -93,7 +105,7 @@ class Browser(ABC):  # noqa: PLR0904
 
         await self._connection_handler.close()
 
-    async def start(self, headless: bool = False) -> Tab:
+    async def start(self, headless: bool = False) -> 'Tab':
         """
         Start browser process and establish CDP connection.
 
@@ -124,8 +136,16 @@ class Browser(ABC):  # noqa: PLR0904
         await self._verify_browser_running()
         await self._configure_proxy(proxy_config[0], proxy_config[1])
 
+        # Import at runtime to avoid circular import
+        from pydoll.browser.tab import Tab  # noqa: PLC0415
+
         valid_tab_id = await self._get_valid_tab_id(await self.get_targets())
-        return Tab(self, self._connection_port, valid_tab_id)
+        tab = Tab(self, self._connection_port, valid_tab_id)
+
+        # Inject fingerprint spoofing JavaScript if enabled
+        await self._setup_fingerprint_for_tab(tab)
+
+        return tab
 
     async def stop(self):
         """
@@ -190,7 +210,7 @@ class Browser(ABC):  # noqa: PLR0904
         )
         return response['result']['browserContextIds']
 
-    async def new_tab(self, url: str = '', browser_context_id: Optional[str] = None) -> Tab:
+    async def new_tab(self, url: str = '', browser_context_id: Optional[str] = None) -> 'Tab':
         """
         Create new tab for page interaction.
 
@@ -208,7 +228,16 @@ class Browser(ABC):  # noqa: PLR0904
             )
         )
         target_id = response['result']['targetId']
-        return Tab(self, self._connection_port, target_id, browser_context_id)
+
+        # Import at runtime to avoid circular import
+        from pydoll.browser.tab import Tab  # noqa: PLC0415
+
+        tab = Tab(self, self._connection_port, target_id, browser_context_id)
+
+        # Inject fingerprint spoofing JavaScript if enabled
+        await self._setup_fingerprint_for_tab(tab)
+
+        return tab
 
     async def get_targets(self) -> list[TargetInfo]:
         """
@@ -223,7 +252,7 @@ class Browser(ABC):  # noqa: PLR0904
         response: GetTargetsResponse = await self._execute_command(TargetCommands.get_targets())
         return response['result']['targetInfos']
 
-    async def get_opened_tabs(self) -> list[Tab]:
+    async def get_opened_tabs(self) -> list['Tab']:
         """
         Get all opened tabs that are not extensions and have the type 'page'
 
@@ -236,6 +265,10 @@ class Browser(ABC):  # noqa: PLR0904
             for target in targets
             if target['type'] == 'page' and 'extension' not in target['url']
         ]
+
+        # Import at runtime to avoid circular import
+        from pydoll.browser.tab import Tab  # noqa: PLC0415
+
         return [
             Tab(self, self._connection_port, target['targetId'])
             for target in reversed(valid_tab_targets)
@@ -298,7 +331,7 @@ class Browser(ABC):  # noqa: PLR0904
         )
         return response['result']['windowId']
 
-    async def get_window_id_for_tab(self, tab: Tab) -> int:
+    async def get_window_id_for_tab(self, tab: 'Tab') -> int:
         """Get window ID for tab (convenience method)."""
         return await self.get_window_id_for_target(tab._target_id)
 
@@ -583,6 +616,58 @@ class Browser(ABC):  # noqa: PLR0904
             # For all browsers, use a temporary directory
             temp_dir = self._temp_directory_manager.create_temp_dir()
             self.options.arguments.append(f'--user-data-dir={temp_dir.name}')
+
+    async def _setup_fingerprint_for_tab(self, tab):
+        """
+        Setup fingerprint spoofing for a tab if enabled.
+
+        Args:
+            tab: The tab to setup fingerprint spoofing for.
+        """
+        if self.enable_fingerprint_spoofing and self.fingerprint_manager:
+            await self._inject_fingerprint_script(tab)
+
+    async def _inject_fingerprint_script(self, tab):
+        """
+        Inject fingerprint spoofing JavaScript into a tab.
+
+        Args:
+            tab: The tab to inject the script into.
+        """
+        try:
+            # Get the JavaScript injection code
+            assert self.fingerprint_manager is not None
+            script = self.fingerprint_manager.get_fingerprint_js()
+
+            # Inject the script using Page.addScriptToEvaluateOnNewDocument
+            # This ensures the script runs before any page scripts
+            await tab._execute_command(
+                PageCommands.add_script_to_evaluate_on_new_document(script)
+            )
+
+            # Also evaluate immediately for current page if it exists
+            try:
+                await tab.execute_script(script)
+            except (RuntimeError, OSError, ValueError):
+                # Ignore errors for immediate execution as page might not be ready
+                pass
+
+        except (RuntimeError, OSError, ValueError, AssertionError) as e:
+            # Don't let fingerprint injection failures break the browser
+            logger.warning("Failed to inject fingerprint spoofing script: %s", e)
+
+    def get_fingerprint_summary(self) -> Optional[dict]:
+        """
+        Get a summary of the current fingerprint.
+
+        Returns:
+            Dictionary with fingerprint information, or None if not enabled.
+        """
+        return (
+            self.fingerprint_manager.get_fingerprint_summary()
+            if self.fingerprint_manager
+            else None
+        )
 
     @abstractmethod
     def _get_default_binary_location(self) -> str:
