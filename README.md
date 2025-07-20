@@ -17,10 +17,10 @@
 
 <p align="center">
   📖 <a href="https://autoscrape-labs.github.io/pydoll/">Documentation</a> •
-  🚀 <a href="#getting-started">Getting Started</a> •
-  ⚡ <a href="#advanced-features">Advanced Features</a> •
-  🤝 <a href="#contributing">Contributing</a> •
-  💖 <a href="#support-my-work">Support My Work</a>
+  🚀 <a href="#-getting-started">Getting Started</a> •
+  ⚡ <a href="#-advanced-features">Advanced Features</a> •
+  🤝 <a href="#-contributing">Contributing</a> •
+  💖 <a href="#-support-my-work">Support My Work</a>
 </p>
 
 Imagine the following scenario: you need to automate tasks in your browser. Maybe it's testing a web application, collecting data from a site, or even automating repetitive processes. Normally this involves using external drivers, complex configurations, and many compatibility issues.
@@ -143,7 +143,7 @@ For demonstration purposes, the browser is not displayed.
 ![google_seach](./docs/images/google-search-example.gif)
 
 
-In just 5 seconds, we managed to extract all the necessary data! This is the 
+In just 5 seconds, we managed to extract all the necessary data! This is the
 speed you can expect from automation with Pydoll.
 
 
@@ -364,7 +364,7 @@ Please make sure to:
 
 ## 💖 Support My Work
 
-If you find Pydoll useful, consider [supporting me on GitHub](https://github.com/sponsors/thalissonvs).  
+If you find Pydoll useful, consider [supporting me on GitHub](https://github.com/sponsors/thalissonvs).
 You'll get access to exclusive benefits like priority support, custom features and much more!
 
 Can't sponsor right now? No problem — you can still help a lot by:
