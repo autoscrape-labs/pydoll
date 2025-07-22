@@ -379,11 +379,11 @@ class TestChromeIntegration:
         custom_options = ChromiumOptions()
         custom_options.add_argument('--disable-gpu')
         custom_options.add_argument('--no-sandbox')
-        custom_options.prefs_options = {
+        custom_options.browser_preferences = {
         "download": {"directory_upgrade": True},
         }
         custom_options.set_default_download_directory('/tmp/all')
-        custom_options.set_block_notifications(True)
+        custom_options.block_notifications = True
         custom_options.binary_location = '/custom/chrome'
         custom_port = 9876
         
@@ -410,7 +410,7 @@ class TestChromeIntegration:
                 os.path.join(chrome._temp_directory_manager._temp_dirs[0].name, 'Default', 'Preferences'), 'r'
             ) as json_file:
                 preferences = json.loads(json_file.read())
-            assert preferences == custom_options.prefs_options
+            assert preferences == custom_options.browser_preferences
 
             # Verify correct initialization
             assert chrome.options == custom_options

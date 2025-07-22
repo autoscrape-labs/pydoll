@@ -580,9 +580,10 @@ class Browser(ABC):  # noqa: PLR0904
     def _setup_user_dir(self):
         """Setup temporary user data directory if not specified in options."""
         temp_dir = self._temp_directory_manager.create_temp_dir()
-        if self.options.prefs_options:
+        print(self.options.browser_preferences)
+        if self.options.browser_preferences:
             os.mkdir(os.path.join(temp_dir.name, 'Default'))
-            preferences = self.options.prefs_options
+            preferences = self.options.browser_preferences
             with open(
                 os.path.join(temp_dir.name, 'Default', 'Preferences'), 'w', encoding='utf-8'
             ) as json_file:
