@@ -1,4 +1,6 @@
 import asyncio
+import json
+import os
 from abc import ABC, abstractmethod
 from functools import partial
 from random import randint
@@ -117,9 +119,7 @@ class Browser(ABC):  # noqa: PLR0904
         proxy_config = self._proxy_manager.get_proxy_credentials()
 
         self._browser_process_manager.start_browser_process(
-            binary_location,
-            self._connection_port,
-            self.options.arguments,
+            binary_location, self._connection_port, self.options.arguments
         )
         await self._verify_browser_running()
         await self._configure_proxy(proxy_config[0], proxy_config[1])
@@ -579,9 +579,18 @@ class Browser(ABC):  # noqa: PLR0904
 
     def _setup_user_dir(self):
         """Setup temporary user data directory if not specified in options."""
+        temp_dir = self._temp_directory_manager.create_temp_dir()
+        print(self.options.browser_preferences)
+        if self.options.browser_preferences:
+            os.mkdir(os.path.join(temp_dir.name, 'Default'))
+            preferences = self.options.browser_preferences
+            with open(
+                os.path.join(temp_dir.name, 'Default', 'Preferences'), 'w', encoding='utf-8'
+            ) as json_file:
+                json.dump(preferences, json_file)
+
         if '--user-data-dir' not in [arg.split('=')[0] for arg in self.options.arguments]:
             # For all browsers, use a temporary directory
-            temp_dir = self._temp_directory_manager.create_temp_dir()
             self.options.arguments.append(f'--user-data-dir={temp_dir.name}')
 
     @abstractmethod

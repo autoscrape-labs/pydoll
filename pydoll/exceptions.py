@@ -251,3 +251,9 @@ class InvalidScriptWithElement(ScriptException):
     """Raised when a script contains 'argument' but no element is provided."""
 
     message = 'Script contains "argument" but no element was provided'
+
+
+class WrongPrefsDict(PydollException):
+    """Raised when the prefs dict provided contains the 'prefs' key"""
+
+    message = 'The dict can not contain "prefs" key, provide only the prefs options'
