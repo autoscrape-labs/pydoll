@@ -1,3 +1,4 @@
+import asyncio
 import base64
 import pytest
 import pytest_asyncio
@@ -293,16 +294,21 @@ class TestTabNavigation:
     @pytest.mark.asyncio
     async def test_go_to_new_url(self, tab):
         """Test navigating to a new URL."""
+        # This test now needs to account for the calls made by _wait_until
         tab._connection_handler.execute_command.side_effect = [
-            {'result': {'result': {'value': 'https://old-url.com'}}},  # current_url
-            {'result': {'frameId': 'frame-id'}},  # navigate command
-            {'result': {'result': {'value': 'complete'}}},  # _wait_page_load
+            {'result': {'result': {'value': 'https://old-url.com'}}},  # 1. current_url
+            {'result': {}},                                          # 2. enable_page_events
+            {'result': {'frameId': 'frame-id'}},                      # 3. navigate command
+            {'result': {}},                                          # 4. disable_page_events
         ]
-        
-        await tab.go_to('https://example.com')
-        
-        # Should call current_url, navigate, and _wait_page_load
-        assert tab._connection_handler.execute_command.call_count == 3
+
+        # We need to prevent asyncio.wait_for from actually waiting and timing out
+        with patch('asyncio.wait_for', new_callable=AsyncMock) as mock_wait_for:
+            await tab.go_to('https://example.com')
+
+        # Should call: current_url, enable_page_events, navigate, disable_page_events
+        assert tab._connection_handler.execute_command.call_count == 4
+        mock_wait_for.assert_awaited_once()
 
     @pytest.mark.asyncio
     async def test_go_to_same_url(self, tab):
@@ -320,21 +326,32 @@ class TestTabNavigation:
 
     @pytest.mark.asyncio
     async def test_go_to_timeout(self, tab):
-        """Test navigation timeout."""
-        # Mock current_url to return different URL
+        """Test navigation timeout with the _wait_until context manager."""
+        # Mock current_url to return a different URL
         tab._connection_handler.execute_command.side_effect = [
             {'result': {'result': {'value': 'https://old-url.com'}}},  # current_url
+            {'result': {}},  # enable_page_events
             {'result': {'frameId': 'frame-id'}},  # navigate command
-            {'result': {'result': {'value': 'loading'}}},  # _wait_page_load (loading state)
-            {'result': {'result': {'value': 'loading'}}},  # _wait_page_load (still loading)
+            {'result': {}},  # disable_page_events
         ]
-        
-        # Mock time to simulate timeout
-        with patch('pydoll.browser.tab.asyncio.get_event_loop') as mock_loop:
-            mock_loop.return_value.time.side_effect = [0, 1]  # timeout after 1 second
-            with patch('pydoll.browser.tab.asyncio.sleep', AsyncMock()):
-                with pytest.raises(PageLoadTimeout):
-                    await tab.go_to('https://example.com', timeout=0.5)
+
+        # Patch asyncio.wait_for to simulate a timeout
+        with patch('asyncio.wait_for', side_effect=asyncio.TimeoutError):
+            with pytest.raises(PageLoadTimeout):
+                await tab.go_to('https://example.com', timeout=0.1)
+
+        # Check that page events were enabled and disabled
+        assert tab._connection_handler.execute_command.call_count == 4
+
+    @pytest.mark.asyncio
+    async def test_go_to_invalid_wait_until(self, tab):
+        """Test go_to with an invalid wait_until value."""
+        tab._connection_handler.execute_command.side_effect = [
+            {'result': {'result': {'value': 'https://old-url.com'}}},  # current_url
+        ]
+
+        with pytest.raises(ValueError, match="Invalid wait_until value: invalid_value"):
+            await tab.go_to('https://example.com', wait_until='invalid_value')
 
     @pytest.mark.asyncio
     async def test_refresh(self, tab):
@@ -1181,6 +1198,16 @@ class TestTabUtilityMethods:
             with patch('pydoll.browser.tab.asyncio.sleep', AsyncMock()):
                 with pytest.raises(WaitElementTimeout, match="Page load timed out"):
                     await tab._wait_page_load(timeout=0.5)
+
+    @pytest.mark.asyncio
+    async def test_wait_until_timeout(self, tab):
+        """Test _wait_until raises WaitElementTimeout on asyncio.TimeoutError."""
+        from pydoll.protocol.page.events import PageEvent
+
+        with patch('asyncio.wait_for', side_effect=asyncio.TimeoutError):
+            with pytest.raises(WaitElementTimeout, match="Timeout waiting for event: Page.loadEventFired"):
+                async with tab._wait_until(PageEvent.LOAD_EVENT_FIRED, timeout=0.1):
+                    pass  # The timeout is simulated by the patch
 
     @pytest.mark.asyncio
     async def test_refresh_if_url_not_changed_same_url(self, tab):
