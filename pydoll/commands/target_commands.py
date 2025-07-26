@@ -141,7 +141,7 @@ class TargetCommands:
 
     @staticmethod
     def create_target(  # noqa: PLR0913, PLR0917
-        url: str,
+        url: str = 'about:blank',
         left: Optional[int] = None,
         top: Optional[int] = None,
         width: Optional[int] = None,

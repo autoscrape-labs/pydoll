@@ -43,6 +43,7 @@ target-version = "py310"
 [tool.ruff.lint]
 preview = true
 select = ['I', 'F', 'E', 'W', 'PL', 'PT']
+ignore = ['E701']
 exclude = ['tests', 'tests/*']
 
 [tool.ruff.format]

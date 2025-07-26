@@ -223,7 +223,6 @@ class Browser(ABC):  # noqa: PLR0904
         """
         response: CreateTargetResponse = await self._execute_command(
             TargetCommands.create_target(
-                url=url,
                 browser_context_id=browser_context_id,
             )
         )
@@ -236,6 +235,8 @@ class Browser(ABC):  # noqa: PLR0904
 
         # Inject fingerprint spoofing JavaScript if enabled
         await self._setup_fingerprint_for_tab(tab)
+
+        if url: await tab.go_to(url)
 
         return tab
 
