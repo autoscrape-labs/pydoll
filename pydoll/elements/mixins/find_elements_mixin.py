@@ -1,5 +1,5 @@
 import asyncio
-from typing import TYPE_CHECKING, Literal, Optional, TypeVar, Union, overload
+from typing import TYPE_CHECKING, Optional, TypeVar, Union
 
 from pydoll.commands import (
     DomCommands,
@@ -43,76 +43,6 @@ class FindElementsMixin:
     Classes using this mixin gain powerful element discovery without implementing
     complex location logic themselves.
     """
-
-    @overload
-    async def find(
-        self,
-        id: Optional[str] = ...,
-        class_name: Optional[str] = ...,
-        name: Optional[str] = ...,
-        tag_name: Optional[str] = ...,
-        text: Optional[str] = ...,
-        timeout: int = ...,
-        find_all: Literal[False] = False,
-        raise_exc: Literal[True] = True,
-        **attributes: dict[str, str],
-    ) -> 'WebElement': ...
-
-    @overload
-    async def find(
-        self,
-        id: Optional[str] = ...,
-        class_name: Optional[str] = ...,
-        name: Optional[str] = ...,
-        tag_name: Optional[str] = ...,
-        text: Optional[str] = ...,
-        timeout: int = ...,
-        find_all: Literal[True] = True,
-        raise_exc: Literal[True] = True,
-        **attributes: dict[str, str],
-    ) -> list['WebElement']: ...
-
-    @overload
-    async def find(
-        self,
-        id: Optional[str] = ...,
-        class_name: Optional[str] = ...,
-        name: Optional[str] = ...,
-        tag_name: Optional[str] = ...,
-        text: Optional[str] = ...,
-        timeout: int = ...,
-        find_all: Literal[True] = True,
-        raise_exc: Literal[False] = False,
-        **attributes: dict[str, str],
-    ) -> Optional[list['WebElement']]: ...
-
-    @overload
-    async def find(
-        self,
-        id: Optional[str] = ...,
-        class_name: Optional[str] = ...,
-        name: Optional[str] = ...,
-        tag_name: Optional[str] = ...,
-        text: Optional[str] = ...,
-        timeout: int = ...,
-        find_all: Literal[False] = False,
-        raise_exc: Literal[False] = False,
-        **attributes: dict[str, str],
-    ) -> Optional['WebElement']: ...
-
-    @overload
-    async def find(
-        self,
-        id: Optional[str] = ...,
-        class_name: Optional[str] = ...,
-        name: Optional[str] = ...,
-        tag_name: Optional[str] = ...,
-        text: Optional[str] = ...,
-        timeout: int = ...,
-        find_all: bool = ...,
-        raise_exc: bool = ...,
-        **attributes: dict[str, str],
-    ) -> Union['WebElement', list['WebElement'], None]: ...
 
     async def find(  # noqa: PLR0913, PLR0917
         self,
@@ -170,51 +100,6 @@ class FindElementsMixin:
         return await self.find_or_wait_element(
             by, value, timeout=timeout, find_all=find_all, raise_exc=raise_exc
         )
-
-    @overload
-    async def query(
-        self,
-        expression: str,
-        timeout: int = ...,
-        find_all: Literal[False] = False,
-        raise_exc: Literal[True] = True,
-    ) -> 'WebElement': ...
-
-    @overload
-    async def query(
-        self,
-        expression: str,
-        timeout: int = ...,
-        find_all: Literal[False] = False,
-        raise_exc: Literal[False] = False,
-    ) -> Optional['WebElement']: ...
-
-    @overload
-    async def query(
-        self,
-        expression: str,
-        timeout: int = ...,
-        find_all: Literal[True] = True,
-        raise_exc: Literal[True] = True,
-    ) -> list['WebElement']: ...
-
-    @overload
-    async def query(
-        self,
-        expression: str,
-        timeout: int = ...,
-        find_all: Literal[True] = True,
-        raise_exc: Literal[False] = False,
-    ) -> Optional[list['WebElement']]: ...
-
-    @overload
-    async def query(
-        self,
-        expression: str,
-        timeout: int = ...,
-        find_all: bool = ...,
-        raise_exc: bool = ...,
-    ) -> Union['WebElement', list['WebElement'], None]: ...
 
     async def query(
         self, expression: str, timeout: int = 0, find_all: bool = False, raise_exc: bool = True

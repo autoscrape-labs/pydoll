@@ -566,18 +566,19 @@ async def test_multiple_tab_handling(mock_browser):
     # Simulate getting multiple tabs
     mock_browser._connection_handler.execute_command.side_effect = [
         {'result': {'targetId': 'tab1'}},
-        {'result': {'targetId': 'tab2'}},
+        {'result': {'targetId': 'tab2'}}
     ]
     
-    tab1 = await mock_browser.new_tab()
-    tab2 = await mock_browser.new_tab()
+    tab1 = await mock_browser.new_tab(url='https://example1.com')
+    tab2 = await mock_browser.new_tab(url='https://example2.com')
     
     assert tab1._target_id == 'tab1'
     assert tab2._target_id == 'tab2'
     
     # Verify that correct calls were made
     calls = mock_browser._connection_handler.execute_command.call_args_list
-    assert len(calls) == 2
+    assert calls[0][0][0] == TargetCommands.create_target('https://example1.com', None)
+    assert calls[1][0][0] == TargetCommands.create_target('https://example2.com', None)
 
 
 # New tests for _get_valid_tab_id
@@ -1193,7 +1194,7 @@ async def test_get_opened_tabs_integration_with_new_tab(mock_browser):
     }
     
     # Create a new tab
-    new_tab = await mock_browser.new_tab()
+    new_tab = await mock_browser.new_tab('https://example.com')
     assert new_tab._target_id == 'new_tab_1'
     
     # Mock updated targets after tab creation
