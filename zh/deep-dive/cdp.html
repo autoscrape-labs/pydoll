@@ -8,13 +8,13 @@
       
       
       
-        <link rel="canonical" href="https://autoscrape-labs.github.io/pydoll/zh/api/index.html">
+        <link rel="canonical" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/cdp.html">
       
       
-        <link rel="prev" href="../deep-dive/network-capabilities.html">
+        <link rel="prev" href="index.html">
       
       
-        <link rel="next" href="browser/chrome.html">
+        <link rel="next" href="connection-layer.html">
       
       
       <link rel="icon" href="../../images/favicon.png">
@@ -22,7 +22,7 @@
     
     
       
-        <title>概述 - Pydoll - 异步网页自动化库</title>
+        <title>Chrome DevTools 协议 - Pydoll - 异步网页自动化库</title>
       
     
     
@@ -82,7 +82,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#api" class="md-skip">
+        <a href="#chrome-devtools-cdp" class="md-skip">
           跳转至
         </a>
       
@@ -118,7 +118,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              概述
+              Chrome DevTools 协议
             
           </span>
         </div>
@@ -165,13 +165,13 @@
       <ul class="md-select__list">
         
           <li class="md-select__item">
-            <a href="../../api/index.html" hreflang="en" class="md-select__link">
+            <a href="../../deep-dive/cdp.html" hreflang="en" class="md-select__link">
               English
             </a>
           </li>
         
           <li class="md-select__item">
-            <a href="index.html" hreflang="zh" class="md-select__link">
+            <a href="cdp.html" hreflang="zh" class="md-select__link">
               中文
             </a>
           </li>
@@ -287,11 +287,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../deep-dive/index.html" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="index.html" class="md-tabs__link">
           
   
   
@@ -309,13 +311,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="index.html" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../api/index.html" class="md-tabs__link">
           
   
   
@@ -428,273 +428,6 @@
       
   
   
-  
-  
-    
-    
-      
-        
-          
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
-        
-          
-          <div class="md-nav__link md-nav__container">
-            <a href="../deep-dive/index.html" class="md-nav__link ">
-              
-  
-  
-  <span class="md-ellipsis">
-    深入了解
-    
-  </span>
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3">
-            <span class="md-nav__icon md-icon"></span>
-            深入了解
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../deep-dive/cdp.html" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Chrome DevTools 协议
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../deep-dive/connection-layer.html" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    连接层
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../deep-dive/browser-domain.html" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    浏览器域
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../deep-dive/tab-domain.html" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    标签页域
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../deep-dive/find-elements-mixin.html" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    查找元素混合器
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../deep-dive/webelement-domain.html" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Web元素域
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../deep-dive/event-system.html" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    事件系统
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../deep-dive/network-capabilities.html" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    网络功能
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
     
   
   
@@ -704,6 +437,10 @@
       
         
           
+        
+      
+        
+      
         
       
         
@@ -734,11 +471,412 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="index.html" class="md-nav__link md-nav__link--active">
+            <a href="index.html" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    深入了解
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            深入了解
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Chrome DevTools 协议
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="cdp.html" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Chrome DevTools 协议
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#cdp" class="md-nav__link">
+    <span class="md-ellipsis">
+      什么是CDP？
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#websocket" class="md-nav__link">
+    <span class="md-ellipsis">
+      WebSocket通信机制
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cdp_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      核心CDP功能域
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      事件驱动架构
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cdp_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      直接CDP集成的性能优势
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="直接CDP集成的性能优势">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. 消除协议转换层
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. 高效的命令批处理
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. 异步操作支持
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. 精细化控制能力
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      总结
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="connection-layer.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    连接层
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="browser-domain.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    浏览器域
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tab-domain.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    标签页域
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="find-elements-mixin.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    查找元素混合器
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="webelement-domain.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Web元素域
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="event-system.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    事件系统
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="network-capabilities.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    网络功能
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../api/index.html" class="md-nav__link ">
               
   
   
@@ -751,13 +889,13 @@
             </a>
             
               
-              <label class="md-nav__link md-nav__link--active" for="__nav_4" id="__nav_4_label" tabindex="">
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             API 参考
@@ -791,13 +929,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -806,7 +941,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_2" >
         
           
-          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="">
+          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="0">
             
   
   
@@ -833,7 +968,7 @@
   
   
     <li class="md-nav__item">
-      <a href="browser/chrome.html" class="md-nav__link">
+      <a href="../api/browser/chrome.html" class="md-nav__link">
         
   
   
@@ -856,7 +991,7 @@
   
   
     <li class="md-nav__item">
-      <a href="browser/edge.html" class="md-nav__link">
+      <a href="../api/browser/edge.html" class="md-nav__link">
         
   
   
@@ -879,7 +1014,7 @@
   
   
     <li class="md-nav__item">
-      <a href="browser/options.html" class="md-nav__link">
+      <a href="../api/browser/options.html" class="md-nav__link">
         
   
   
@@ -902,7 +1037,7 @@
   
   
     <li class="md-nav__item">
-      <a href="browser/tab.html" class="md-nav__link">
+      <a href="../api/browser/tab.html" class="md-nav__link">
         
   
   
@@ -925,7 +1060,7 @@
   
   
     <li class="md-nav__item">
-      <a href="browser/managers.html" class="md-nav__link">
+      <a href="../api/browser/managers.html" class="md-nav__link">
         
   
   
@@ -968,13 +1103,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -983,7 +1115,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_3" >
         
           
-          <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="">
+          <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
             
   
   
@@ -1010,7 +1142,7 @@
   
   
     <li class="md-nav__item">
-      <a href="elements/web_element.html" class="md-nav__link">
+      <a href="../api/elements/web_element.html" class="md-nav__link">
         
   
   
@@ -1033,7 +1165,7 @@
   
   
     <li class="md-nav__item">
-      <a href="elements/mixins.html" class="md-nav__link">
+      <a href="../api/elements/mixins.html" class="md-nav__link">
         
   
   
@@ -1076,13 +1208,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -1091,7 +1220,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_4" >
         
           
-          <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="">
+          <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="0">
             
   
   
@@ -1118,7 +1247,7 @@
   
   
     <li class="md-nav__item">
-      <a href="connection/connection.html" class="md-nav__link">
+      <a href="../api/connection/connection.html" class="md-nav__link">
         
   
   
@@ -1141,7 +1270,7 @@
   
   
     <li class="md-nav__item">
-      <a href="connection/managers.html" class="md-nav__link">
+      <a href="../api/connection/managers.html" class="md-nav__link">
         
   
   
@@ -1202,13 +1331,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -1218,7 +1344,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="commands/index.html" class="md-nav__link ">
+            <a href="../api/commands/index.html" class="md-nav__link ">
               
   
   
@@ -1231,7 +1357,7 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_4_5" id="__nav_4_5_label" tabindex="">
+              <label class="md-nav__link " for="__nav_4_5" id="__nav_4_5_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
@@ -1253,7 +1379,7 @@
   
   
     <li class="md-nav__item">
-      <a href="commands/browser.html" class="md-nav__link">
+      <a href="../api/commands/browser.html" class="md-nav__link">
         
   
   
@@ -1276,7 +1402,7 @@
   
   
     <li class="md-nav__item">
-      <a href="commands/dom.html" class="md-nav__link">
+      <a href="../api/commands/dom.html" class="md-nav__link">
         
   
   
@@ -1299,7 +1425,7 @@
   
   
     <li class="md-nav__item">
-      <a href="commands/input.html" class="md-nav__link">
+      <a href="../api/commands/input.html" class="md-nav__link">
         
   
   
@@ -1322,7 +1448,7 @@
   
   
     <li class="md-nav__item">
-      <a href="commands/network.html" class="md-nav__link">
+      <a href="../api/commands/network.html" class="md-nav__link">
         
   
   
@@ -1345,7 +1471,7 @@
   
   
     <li class="md-nav__item">
-      <a href="commands/page.html" class="md-nav__link">
+      <a href="../api/commands/page.html" class="md-nav__link">
         
   
   
@@ -1368,7 +1494,7 @@
   
   
     <li class="md-nav__item">
-      <a href="commands/runtime.html" class="md-nav__link">
+      <a href="../api/commands/runtime.html" class="md-nav__link">
         
   
   
@@ -1391,7 +1517,7 @@
   
   
     <li class="md-nav__item">
-      <a href="commands/storage.html" class="md-nav__link">
+      <a href="../api/commands/storage.html" class="md-nav__link">
         
   
   
@@ -1414,7 +1540,7 @@
   
   
     <li class="md-nav__item">
-      <a href="commands/target.html" class="md-nav__link">
+      <a href="../api/commands/target.html" class="md-nav__link">
         
   
   
@@ -1437,7 +1563,7 @@
   
   
     <li class="md-nav__item">
-      <a href="commands/fetch.html" class="md-nav__link">
+      <a href="../api/commands/fetch.html" class="md-nav__link">
         
   
   
@@ -1480,13 +1606,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -1495,7 +1618,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_6" >
         
           
-          <label class="md-nav__link" for="__nav_4_6" id="__nav_4_6_label" tabindex="">
+          <label class="md-nav__link" for="__nav_4_6" id="__nav_4_6_label" tabindex="0">
             
   
   
@@ -1522,7 +1645,7 @@
   
   
     <li class="md-nav__item">
-      <a href="protocol/commands.html" class="md-nav__link">
+      <a href="../api/protocol/commands.html" class="md-nav__link">
         
   
   
@@ -1545,7 +1668,7 @@
   
   
     <li class="md-nav__item">
-      <a href="protocol/events.html" class="md-nav__link">
+      <a href="../api/protocol/events.html" class="md-nav__link">
         
   
   
@@ -1590,13 +1713,10 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
@@ -1605,7 +1725,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_7" >
         
           
-          <label class="md-nav__link" for="__nav_4_7" id="__nav_4_7_label" tabindex="">
+          <label class="md-nav__link" for="__nav_4_7" id="__nav_4_7_label" tabindex="0">
             
   
   
@@ -1632,7 +1752,7 @@
   
   
     <li class="md-nav__item">
-      <a href="core/constants.html" class="md-nav__link">
+      <a href="../api/core/constants.html" class="md-nav__link">
         
   
   
@@ -1655,7 +1775,7 @@
   
   
     <li class="md-nav__item">
-      <a href="core/exceptions.html" class="md-nav__link">
+      <a href="../api/core/exceptions.html" class="md-nav__link">
         
   
   
@@ -1678,7 +1798,7 @@
   
   
     <li class="md-nav__item">
-      <a href="core/utils.html" class="md-nav__link">
+      <a href="../api/core/utils.html" class="md-nav__link">
         
   
   
@@ -1736,171 +1856,96 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#cdp" class="md-nav__link">
+    <span class="md-ellipsis">
+      什么是CDP？
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#websocket" class="md-nav__link">
+    <span class="md-ellipsis">
+      WebSocket通信机制
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cdp_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      核心CDP功能域
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#_1" class="md-nav__link">
     <span class="md-ellipsis">
-      概述
+      事件驱动架构
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="概述">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cdp_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      直接CDP集成的性能优势
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="直接CDP集成的性能优势">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. 消除协议转换层
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. 高效的命令批处理
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. 异步操作支持
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. 精细化控制能力
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
-      浏览器模块
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_3" class="md-nav__link">
-    <span class="md-ellipsis">
-      元素模块
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
-    <span class="md-ellipsis">
-      连接模块
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
-    <span class="md-ellipsis">
-      命令模块
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_6" class="md-nav__link">
-    <span class="md-ellipsis">
-      协议模块
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_7" class="md-nav__link">
-    <span class="md-ellipsis">
-      核心模块
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#_8" class="md-nav__link">
-    <span class="md-ellipsis">
-      快捷导航
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="快捷导航">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#_9" class="md-nav__link">
-    <span class="md-ellipsis">
-      常用类
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_10" class="md-nav__link">
-    <span class="md-ellipsis">
-      关键枚举和常量
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_11" class="md-nav__link">
-    <span class="md-ellipsis">
-      常见异常类型
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#_12" class="md-nav__link">
-    <span class="md-ellipsis">
-      使用模式
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="使用模式">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#_13" class="md-nav__link">
-    <span class="md-ellipsis">
-      基本浏览器自动化
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_14" class="md-nav__link">
-    <span class="md-ellipsis">
-      元素定位
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_15" class="md-nav__link">
-    <span class="md-ellipsis">
-      事件处理
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#_16" class="md-nav__link">
-    <span class="md-ellipsis">
-      类型提示
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#asyncawait" class="md-nav__link">
-    <span class="md-ellipsis">
-      Async/Await 支持
+      总结
     </span>
   </a>
   
@@ -1925,186 +1970,184 @@
   
 
 
-<h1 id="api">API 参考</h1>
-<p>这里是Pydoll API 参考！本节提供 Pydoll 库中所有类、方法和函数的详尽文档。</p>
-<h2 id="_1">概述</h2>
-<p>Pydoll 几个关键模块组成，每个模块在浏览器自动化中都有特定的用途：</p>
-<h3 id="_2">浏览器模块</h3>
-<p>浏览器模块可以管理浏览器实例和生命周期。</p>
+<h1 id="chrome-devtools-cdp">Chrome DevTools 协议(CDP)</h1>
+<p>Chrome DevTools 协议(CDP)是Pydoll能够不依赖传统WebDriver控制浏览器的核心技术基础。理解CDP的工作原理，有助于深入掌握Pydoll的功能特性和内部架构设计。</p>
+<h2 id="cdp">什么是CDP？</h2>
+<p>Chrome DevTools 协议是由Chromium团队开发的一个强大接口，它允许通过编程方式与基于Chromium的浏览器进行交互。当您在Chrome开发者工具中检查网页时使用的正是这个协议，只不过Pydoll将其暴露为可编程API供自动化工具调用。</p>
+<p>CDP提供了一套全面的方法和事件接口，用于与浏览器内部机制进行交互。这使得我们可以对浏览器的各个方面实现精细化控制——从页面导航、DOM操作、网络请求拦截，到性能指标监控等所有功能。</p>
+<div class="admonition info">
+<p class="admonition-title">CDP发展历程</p>
+<p>自推出以来，Chrome DevTools 协议一直在持续演进。Google会在每个Chrome版本发布时维护并更新该协议，定期新增功能并改进现有特性。</p>
+<p>虽然该协议最初是为Chrome开发者工具设计的，但其全面的功能特性使其成为新一代浏览器自动化工具(如Puppeteer、Playwright以及Pydoll)的基础架构。</p>
+</div>
+<h2 id="websocket">WebSocket通信机制</h2>
+<p>CDP架构设计中最关键的决定之一是采用WebSocket进行通信。当基于Chromium的浏览器以远程调试模式启动时，会在指定端口开启一个WebSocket服务器：</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>chrome --remote-debugging-port=9222
+</span></code></pre></div>
+<p>Pydoll通过连接这个WebSocket端点，与浏览器建立双向通信通道。该连接具有以下特点：</p>
+<ol>
+<li><strong>持久化连接</strong> - 在整个自动化会话期间保持连接状态</li>
+<li><strong>实时事件推送</strong> - 支持浏览器主动向客户端推送事件</li>
+<li><strong>命令下发通道</strong> - 允许向浏览器发送控制指令</li>
+<li><strong>二进制数据传输</strong> - 高效传输截图、PDF等二进制资源</li>
+</ol>
+<p>WebSocket协议特别适合浏览器自动化场景，因为它具备：</p>
 <ul>
-<li><strong><a href="browser/chrome.html">Chrome</a></strong> - Chrome 浏览器自动化</li>
-<li><strong><a href="browser/edge.html">Edge</a></strong> - Microsoft Edge 浏览器自动化  </li>
-<li><strong><a href="browser/options.html">Options</a></strong> - 浏览器配置选项  </li>
-<li><strong><a href="browser/tab.html">Tab</a></strong> - 页面标签和交互  </li>
-<li><strong><a href="browser/managers.html">Managers</a></strong> - 浏览器生命周期管理器  </li>
+<li><strong>低延迟通信</strong> - 满足响应式自动化的需求</li>
+<li><strong>双向消息传递</strong> - 支持事件驱动架构的核心特性</li>
+<li><strong>持久连接</strong> - 避免每次操作都重新建立连接的开销</li>
 </ul>
-<h3 id="_3">元素模块</h3>
-<p>元素模块提供与网页元素交互的功能。</p>
-<ul>
-<li><strong><a href="elements/web_element.html">WebElement</a></strong> - 网页元素交互</li>
-<li><strong><a href="elements/mixins.html">Mixins</a></strong> - 可复用的元素交互功能</li>
-</ul>
-<h3 id="_4">连接模块</h3>
-<p>连接模块通过 Chrome DevTools 协议处理与浏览器的通信。</p>
-<ul>
-<li><strong><a href="connection/connection.html">Connection Handler</a></strong> - WebSocket连接管理器</li>
-<li><strong><a href="connection/managers.html">Managers</a></strong> - 连接生命周期管理器</li>
-</ul>
-<h3 id="_5">命令模块</h3>
-<p>命令模块提供低级 Chrome DevTools 协议命令实现。</p>
-<ul>
-<li><strong><a href="commands/index.html">Commands Overview</a></strong> - CDP command implementations by domain</li>
-</ul>
-<h3 id="_6">协议模块</h3>
-<p>协议模块实现了 Chrome DevTools 协议命令和事件。</p>
-<ul>
-<li><strong><a href="protocol/commands.html">Commands</a></strong> - CDP 命令封装</li>
-<li><strong><a href="protocol/events.html">Events</a></strong> - CDP 事件处理</li>
-</ul>
-<h3 id="_7">核心模块</h3>
-<p>核心模块包含基础程序、常量和异常。</p>
-<ul>
-<li><strong><a href="core/constants.html">Constants</a></strong> - 库常量和枚举</li>
-<li><strong><a href="core/exceptions.html">Exceptions</a></strong> - 自定义异常类</li>
-<li><strong><a href="core/utils.html">Utils</a></strong> - 实用功能</li>
-</ul>
-<h2 id="_8">快捷导航</h2>
-<h3 id="_9">常用类</h3>
+<p>以下是Pydoll与浏览器通信机制的简化示意图：</p>
+<pre class="mermaid"><code>sequenceDiagram
+    participant App as Pydoll Application
+    participant WS as WebSocket Connection
+    participant Browser as Chrome Browser
+
+    App -&gt;&gt; WS: Command: navigate to URL
+    WS -&gt;&gt; Browser: Execute navigation
+
+    Browser --&gt;&gt; WS: Send page load event
+    WS --&gt;&gt; App: Receive page load event</code></pre>
+<div class="admonition info">
+<p class="admonition-title">WebSocket与HTTP对比</p>
+<p>早期的浏览器自动化协议通常依赖HTTP端点进行通信。CDP改用WebSocket代表了架构上的重大改进，使得自动化控制更加实时响应，事件监控更加高效。</p>
+<p>基于HTTP的协议需要持续轮询来检测状态变化，这会产生额外开销和延迟。而WebSocket允许浏览器在事件发生时立即向自动化脚本推送通知，实现近乎零延迟的事件响应。</p>
+</div>
+<h2 id="cdp_1">核心CDP功能域</h2>
+<p>CDP被划分为多个逻辑功能域，每个域负责浏览器特定方面的功能控制。其中最重要的几个功能域包括：</p>
 <table>
 <thead>
 <tr>
-<th>类</th>
-<th>功能</th>
-<th>模块</th>
+<th>功能域</th>
+<th>职责范围</th>
+<th>典型应用场景</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>Chrome</code></td>
-<td>Chrome浏览器自动化</td>
-<td><code>pydoll.browser.chromium</code></td>
+<td><strong>Browser</strong></td>
+<td>浏览器应用本身的控制</td>
+<td>窗口管理、浏览器上下文创建</td>
 </tr>
 <tr>
-<td><code>Edge</code></td>
-<td>Edge浏览器自动化</td>
-<td><code>pydoll.browser.chromium</code></td>
+<td><strong>Page</strong></td>
+<td>页面生命周期交互</td>
+<td>页面导航、JavaScript执行、框架管理</td>
 </tr>
 <tr>
-<td><code>Tab</code></td>
-<td>标签页交互和控制</td>
-<td><code>pydoll.browser.tab</code></td>
+<td><strong>DOM</strong></td>
+<td>页面结构访问</td>
+<td>选择器查询、属性修改、事件监听</td>
 </tr>
 <tr>
-<td><code>WebElement</code></td>
-<td>元素交互</td>
-<td><code>pydoll.elements.web_element</code></td>
+<td><strong>Network</strong></td>
+<td>网络流量监控与控制</td>
+<td>请求拦截、响应检查、缓存管理</td>
 </tr>
 <tr>
-<td><code>ChromiumOptions</code></td>
-<td>浏览器配置</td>
-<td><code>pydoll.browser.options</code></td>
+<td><strong>Runtime</strong></td>
+<td>JavaScript执行环境</td>
+<td>表达式求值、函数调用、异常处理</td>
+</tr>
+<tr>
+<td><strong>Input</strong></td>
+<td>用户交互模拟</td>
+<td>鼠标移动、键盘输入、触摸事件</td>
+</tr>
+<tr>
+<td><strong>Target</strong></td>
+<td>浏览器上下文和目标管理</td>
+<td>标签页创建、iframe访问、弹窗处理</td>
+</tr>
+<tr>
+<td><strong>Fetch</strong></td>
+<td>底层网络拦截</td>
+<td>请求修改、响应模拟、身份验证</td>
 </tr>
 </tbody>
 </table>
-<h3 id="_10">关键枚举和常量</h3>
-<table>
-<thead>
-<tr>
-<th>名称</th>
-<th>功能</th>
-<th>模块</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>By</code></td>
-<td>元素选择器策略</td>
-<td><code>pydoll.constants</code></td>
-</tr>
-<tr>
-<td><code>Key</code></td>
-<td>键盘按键常量</td>
-<td><code>pydoll.constants</code></td>
-</tr>
-<tr>
-<td><code>PermissionType</code></td>
-<td>浏览器权限类型</td>
-<td><code>pydoll.constants</code></td>
-</tr>
-</tbody>
-</table>
-<h3 id="_11">常见异常类型</h3>
-<table>
-<thead>
-<tr>
-<th>异常</th>
-<th>原因</th>
-<th>模块</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>ElementNotFound</code></td>
-<td>元素在DOM未找到</td>
-<td><code>pydoll.exceptions</code></td>
-</tr>
-<tr>
-<td><code>WaitElementTimeout</code></td>
-<td>元素等待超时</td>
-<td><code>pydoll.exceptions</code></td>
-</tr>
-<tr>
-<td><code>BrowserNotStarted</code></td>
-<td>浏览器未开启</td>
-<td><code>pydoll.exceptions</code></td>
-</tr>
-</tbody>
-</table>
-<h2 id="_12">使用模式</h2>
-<h3 id="_13">基本浏览器自动化</h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.chromium</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">()</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s2">&quot;https://example.com&quot;</span><span class="p">)</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">element</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s2">&quot;my-element&quot;</span><span class="p">)</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="k">await</span> <span class="n">element</span><span class="o">.</span><span class="n">click</span><span class="p">()</span>
+<p>Pydoll将这些CDP功能域映射为更符合直觉的API结构，同时完整保留了底层协议的全部功能。</p>
+<h2 id="_1">事件驱动架构</h2>
+<p>CDP最强大的特性之一是其事件系统。该协议允许客户端订阅浏览器在正常运行期间发出的各种事件。这些事件几乎涵盖了浏览器行为的所有方面：</p>
+<ul>
+<li><strong>生命周期事件</strong>：页面加载、框架导航、目标创建</li>
+<li><strong>DOM事件</strong>：元素变化、属性修改</li>
+<li><strong>网络事件</strong>：请求/响应周期、WebSocket消息</li>
+<li><strong>执行事件</strong>：JavaScript异常、控制台消息</li>
+<li><strong>性能事件</strong>：渲染、脚本执行等性能指标</li>
+</ul>
+<p>当您在Pydoll中启用事件监控(例如通过<code>page.enable_network_events()</code>)时，库会自动与浏览器建立必要的订阅关系，并为代码提供响应这些事件的钩子函数。</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.events.network</span><span class="w"> </span><span class="kn">import</span> <span class="n">NetworkEvents</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on_request</span><span class="p">(</span><span class="n">page</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">url</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">][</span><span class="s1">&#39;request&#39;</span><span class="p">][</span><span class="s1">&#39;url&#39;</span><span class="p">]</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Request to: </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="c1"># Subscribe to network request events</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="k">await</span> <span class="n">page</span><span class="o">.</span><span class="n">enable_network_events</span><span class="p">()</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="k">await</span> <span class="n">page</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="n">NetworkEvents</span><span class="o">.</span><span class="n">REQUEST_WILL_BE_SENT</span><span class="p">,</span> <span class="n">partial</span><span class="p">(</span><span class="n">on_request</span><span class="p">,</span> <span class="n">page</span><span class="p">))</span>
 </span></code></pre></div>
-<h3 id="_14">元素定位</h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Using the modern find() method</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">element</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s2">&quot;username&quot;</span><span class="p">)</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">element</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">tag_name</span><span class="o">=</span><span class="s2">&quot;button&quot;</span><span class="p">,</span> <span class="n">class_name</span><span class="o">=</span><span class="s2">&quot;submit&quot;</span><span class="p">)</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="c1"># Using CSS selectors or XPath</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="n">element</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;#username&quot;</span><span class="p">)</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="n">element</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;//button[@class=&#39;submit&#39;]&quot;</span><span class="p">)</span>
-</span></code></pre></div>
-<h3 id="_15">事件处理</h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">enable_page_events</span><span class="p">()</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="s1">&#39;Page.loadEventFired&#39;</span><span class="p">,</span> <span class="n">handle_page_load</span><span class="p">)</span>
-</span></code></pre></div>
-<h2 id="_16">类型提示</h2>
-<p>Pydoll 具有完整的类型支持，并提供全面的类型提示，以提供更好的 IDE 支持和代码安全性。所有公共 API 均包含正确的类型注释。</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.elements.web_element</span><span class="w"> </span><span class="kn">import</span> <span class="n">WebElement</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># Methods return properly typed objects</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">element</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">WebElement</span><span class="p">]</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">,</span> <span class="n">raise_exc</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">elements</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">WebElement</span><span class="p">]</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">class_name</span><span class="o">=</span><span class="s2">&quot;item&quot;</span><span class="p">,</span> <span class="n">find_all</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span></code></pre></div>
-<h2 id="asyncawait">Async/Await 支持</h2>
-<p>所有 Pydoll 操作都是异步的，必须与 <code>async</code>/<code>await</code> 一起使用：</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="c1"># All Pydoll operations are async</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">()</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>        <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s2">&quot;https://example.com&quot;</span><span class="p">)</span>
-</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>
-</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
-</span></code></pre></div>
-<p>浏览以下部分以了解每个模块的完整 API 文档。</p>
+<p>这种事件驱动的方式使得自动化脚本能够即时响应浏览器状态变化，无需依赖低效的轮询机制或人为设置的延迟。</p>
+<h2 id="cdp_2">直接CDP集成的性能优势</h2>
+<p>与传统的基于WebDriver的自动化方案相比，Pydoll直接使用CDP协议具有以下显著的性能优势：</p>
+<h3 id="1">1. 消除协议转换层</h3>
+<p>传统的基于WebDriver的工具(如Selenium)采用多层架构设计：</p>
+<pre class="mermaid"><code>graph LR
+    AS[Automation Script] --&gt; WC[WebDriver Client]
+    WC --&gt; WS[WebDriver Server]
+    WS --&gt; B[Browser]</code></pre>
+<p>每个层级都会引入额外的开销，特别是WebDriver服务器作为WebDriver协议与浏览器原生API之间的转换层，带来了显著的性能损耗。</p>
+<p>Pydoll的实现方式则进行了大幅简化：</p>
+<pre class="mermaid"><code>graph LR
+    AS[Automation Script] --&gt; P[Pydoll]
+    P --&gt; B[Browser via CDP]</code></pre>
+<p>这种直接通信方式消除了中间服务器的计算和网络开销，从而实现了更快的操作响应速度。</p>
+<h3 id="2">2. 高效的命令批处理</h3>
+<p>CDP支持在单条消息中批量发送多个命令，显著减少了复杂操作所需的往返通信次数。这对于需要多步骤完成的操作（例如先定位元素再进行交互）尤其有价值。</p>
+<h3 id="3">3. 异步操作支持</h3>
+<p>CDP基于WebSocket的事件驱动架构与Python的asyncio框架完美契合，能够实现真正的异步操作。这使得Pydoll可以：</p>
+<ul>
+<li>并发执行多个操作</li>
+<li>在事件发生时立即进行处理</li>
+<li>在I/O操作期间避免阻塞主线程</li>
+</ul>
+<pre class="mermaid"><code>graph TD
+    subgraph "Pydoll Async Architecture"
+        EL[Event Loop]
+
+        subgraph "Concurrent Tasks"
+            T1[Task 1: Navigate]
+            T2[Task 2: Wait for Element]
+            T3[Task 3: Handle Network Events]
+        end
+
+        EL --&gt; T1
+        EL --&gt; T2
+        EL --&gt; T3
+
+        T1 --&gt; WS[WebSocket Connection]
+        T2 --&gt; WS
+        T3 --&gt; WS
+
+        WS --&gt; B[Browser]
+    end</code></pre>
+<div class="admonition info">
+<p class="admonition-title">异步性能优势</p>
+<p>asyncio与CDP的结合能产生倍增效应的性能提升。基准测试表明，Pydoll的异步模式可以并行处理多个页面，且接近线性扩展；而传统同步工具随着并发量增加会出现收益递减现象。</p>
+<p>举例来说，抓取10个平均加载时间为2秒的页面时，同步工具可能需要超过20秒，而Pydoll的异步架构仅需略高于2秒（加上极小的系统开销）。</p>
+</div>
+<h3 id="4">4. 精细化控制能力</h3>
+<p>相较于WebDriver协议，CDP为浏览器行为提供了更精细的控制粒度。这使得Pydoll能够针对常见操作实现优化策略：</p>
+<ul>
+<li>更精确的等待条件（而非固定超时）</li>
+<li>直接访问浏览器缓存和存储系统</li>
+<li>在特定上下文中定向执行JavaScript</li>
+<li>细粒度的网络控制以实现请求优化</li>
+</ul>
+<h2 id="_2">总结</h2>
+<p>Chrome DevTools协议构成了Pydoll零WebDriver浏览器自动化方案的核心基础。通过充分利用CDP的WebSocket通信机制、全面的功能域覆盖、事件驱动架构以及直接浏览器集成等特性，Pydoll在性能和可靠性方面均超越了传统自动化工具。</p>
+<p>在后续章节中，我们将深入探讨Pydoll如何具体实现各个CDP功能域，并将底层协议转化为直观易用的开发者API。</p>
 
 
 

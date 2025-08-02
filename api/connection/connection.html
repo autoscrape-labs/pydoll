@@ -8,28 +8,28 @@
       
       
       
-        <link rel="canonical" href="https://autoscrape-labs.github.io/pydoll/api/index.html">
+        <link rel="canonical" href="https://autoscrape-labs.github.io/pydoll/api/connection/connection.html">
       
       
-        <link rel="prev" href="../deep-dive/network-capabilities.html">
+        <link rel="prev" href="../elements/mixins.html">
       
       
-        <link rel="next" href="browser/chrome.html">
+        <link rel="next" href="managers.html">
       
       
-      <link rel="icon" href="../images/favicon.png">
+      <link rel="icon" href="../../images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.16">
     
     
       
-        <title>Overview - Pydoll - Async Web Automation Library</title>
+        <title>Connection Handler - Pydoll - Async Web Automation Library</title>
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.7e37652d.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.7e37652d.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
       
       
 
@@ -48,13 +48,13 @@
       
     
     
-      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../stylesheets/termynal.css">
+      <link rel="stylesheet" href="../../stylesheets/termynal.css">
     
-      <link rel="stylesheet" href="../stylesheets/extra.css">
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
     
-    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#api-reference" class="md-skip">
+        <a href="#connection-handler" class="md-skip">
           Skip to content
         </a>
       
@@ -96,7 +96,7 @@
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../index.html" title="Pydoll - Async Web Automation Library" class="md-header__button md-logo" aria-label="Pydoll - Async Web Automation Library" data-md-component="logo">
+    <a href="../../index.html" title="Pydoll - Async Web Automation Library" class="md-header__button md-logo" aria-label="Pydoll - Async Web Automation Library" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11 15H6l7-14v8h5l-7 14z"/></svg>
@@ -116,7 +116,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Overview
+              Connection Handler
             
           </span>
         </div>
@@ -163,13 +163,13 @@
       <ul class="md-select__list">
         
           <li class="md-select__item">
-            <a href="index.html" hreflang="en" class="md-select__link">
+            <a href="connection.html" hreflang="en" class="md-select__link">
               English
             </a>
           </li>
         
           <li class="md-select__item">
-            <a href="../zh/api/index.html" hreflang="zh" class="md-select__link">
+            <a href="../../zh/api/connection/connection.html" hreflang="zh" class="md-select__link">
               中文
             </a>
           </li>
@@ -249,7 +249,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../index.html" class="md-tabs__link">
+      <a href="../../index.html" class="md-tabs__link">
         
   
   
@@ -268,7 +268,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../features.html" class="md-tabs__link">
+      <a href="../../features.html" class="md-tabs__link">
         
   
   
@@ -289,7 +289,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../deep-dive/index.html" class="md-tabs__link">
+        <a href="../../deep-dive/index.html" class="md-tabs__link">
           
   
   
@@ -313,7 +313,7 @@
     
     
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="index.html" class="md-tabs__link">
+        <a href="../index.html" class="md-tabs__link">
           
   
   
@@ -355,7 +355,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../index.html" title="Pydoll - Async Web Automation Library" class="md-nav__button md-logo" aria-label="Pydoll - Async Web Automation Library" data-md-component="logo">
+    <a href="../../index.html" title="Pydoll - Async Web Automation Library" class="md-nav__button md-logo" aria-label="Pydoll - Async Web Automation Library" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11 15H6l7-14v8h5l-7 14z"/></svg>
@@ -385,7 +385,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../index.html" class="md-nav__link">
+      <a href="../../index.html" class="md-nav__link">
         
   
   
@@ -407,7 +407,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../features.html" class="md-nav__link">
+      <a href="../../features.html" class="md-nav__link">
         
   
   
@@ -470,7 +470,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../deep-dive/index.html" class="md-nav__link ">
+            <a href="../../deep-dive/index.html" class="md-nav__link ">
               
   
   
@@ -505,7 +505,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../deep-dive/cdp.html" class="md-nav__link">
+      <a href="../../deep-dive/cdp.html" class="md-nav__link">
         
   
   
@@ -528,7 +528,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../deep-dive/connection-layer.html" class="md-nav__link">
+      <a href="../../deep-dive/connection-layer.html" class="md-nav__link">
         
   
   
@@ -551,7 +551,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../deep-dive/browser-domain.html" class="md-nav__link">
+      <a href="../../deep-dive/browser-domain.html" class="md-nav__link">
         
   
   
@@ -574,7 +574,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../deep-dive/tab-domain.html" class="md-nav__link">
+      <a href="../../deep-dive/tab-domain.html" class="md-nav__link">
         
   
   
@@ -597,7 +597,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../deep-dive/find-elements-mixin.html" class="md-nav__link">
+      <a href="../../deep-dive/find-elements-mixin.html" class="md-nav__link">
         
   
   
@@ -620,7 +620,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../deep-dive/webelement-domain.html" class="md-nav__link">
+      <a href="../../deep-dive/webelement-domain.html" class="md-nav__link">
         
   
   
@@ -643,7 +643,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../deep-dive/event-system.html" class="md-nav__link">
+      <a href="../../deep-dive/event-system.html" class="md-nav__link">
         
   
   
@@ -666,7 +666,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../deep-dive/network-capabilities.html" class="md-nav__link">
+      <a href="../../deep-dive/network-capabilities.html" class="md-nav__link">
         
   
   
@@ -736,7 +736,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="index.html" class="md-nav__link md-nav__link--active">
+            <a href="../index.html" class="md-nav__link ">
               
   
   
@@ -749,7 +749,7 @@
             </a>
             
               
-              <label class="md-nav__link md-nav__link--active" for="__nav_4" id="__nav_4_label" tabindex="">
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
@@ -831,7 +831,7 @@
   
   
     <li class="md-nav__item">
-      <a href="browser/chrome.html" class="md-nav__link">
+      <a href="../browser/chrome.html" class="md-nav__link">
         
   
   
@@ -854,7 +854,7 @@
   
   
     <li class="md-nav__item">
-      <a href="browser/edge.html" class="md-nav__link">
+      <a href="../browser/edge.html" class="md-nav__link">
         
   
   
@@ -877,7 +877,7 @@
   
   
     <li class="md-nav__item">
-      <a href="browser/options.html" class="md-nav__link">
+      <a href="../browser/options.html" class="md-nav__link">
         
   
   
@@ -900,7 +900,7 @@
   
   
     <li class="md-nav__item">
-      <a href="browser/tab.html" class="md-nav__link">
+      <a href="../browser/tab.html" class="md-nav__link">
         
   
   
@@ -923,7 +923,7 @@
   
   
     <li class="md-nav__item">
-      <a href="browser/managers.html" class="md-nav__link">
+      <a href="../browser/managers.html" class="md-nav__link">
         
   
   
@@ -1008,7 +1008,7 @@
   
   
     <li class="md-nav__item">
-      <a href="elements/web_element.html" class="md-nav__link">
+      <a href="../elements/web_element.html" class="md-nav__link">
         
   
   
@@ -1031,7 +1031,7 @@
   
   
     <li class="md-nav__item">
-      <a href="elements/mixins.html" class="md-nav__link">
+      <a href="../elements/mixins.html" class="md-nav__link">
         
   
   
@@ -1059,8 +1059,10 @@
                 
   
   
+    
   
   
+  
     
     
       
@@ -1080,13 +1082,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_4" checked>
         
           
           <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="">
@@ -1102,7 +1102,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_4_4">
             <span class="md-nav__icon md-icon"></span>
             Connection
@@ -1113,10 +1113,32 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="connection/connection.html" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Connection Handler
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="connection.html" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1127,6 +1149,113 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#pydoll.connection.connection_handler.ConnectionHandler" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ConnectionHandler
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" ConnectionHandler">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.connection.connection_handler.ConnectionHandler.network_logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;network_logs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.connection.connection_handler.ConnectionHandler.dialog" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;dialog
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.connection.connection_handler.ConnectionHandler.ping" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;ping
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.connection.connection_handler.ConnectionHandler.execute_command" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;execute_command
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.connection.connection_handler.ConnectionHandler.register_callback" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;register_callback
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.connection.connection_handler.ConnectionHandler.remove_callback" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;remove_callback
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.connection.connection_handler.ConnectionHandler.clear_callbacks" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;clear_callbacks
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.connection.connection_handler.ConnectionHandler.close" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;close
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1139,7 +1268,7 @@
   
   
     <li class="md-nav__item">
-      <a href="connection/managers.html" class="md-nav__link">
+      <a href="managers.html" class="md-nav__link">
         
   
   
@@ -1216,7 +1345,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="commands/index.html" class="md-nav__link ">
+            <a href="../commands/index.html" class="md-nav__link ">
               
   
   
@@ -1251,7 +1380,7 @@
   
   
     <li class="md-nav__item">
-      <a href="commands/browser.html" class="md-nav__link">
+      <a href="../commands/browser.html" class="md-nav__link">
         
   
   
@@ -1274,7 +1403,7 @@
   
   
     <li class="md-nav__item">
-      <a href="commands/dom.html" class="md-nav__link">
+      <a href="../commands/dom.html" class="md-nav__link">
         
   
   
@@ -1297,7 +1426,7 @@
   
   
     <li class="md-nav__item">
-      <a href="commands/input.html" class="md-nav__link">
+      <a href="../commands/input.html" class="md-nav__link">
         
   
   
@@ -1320,7 +1449,7 @@
   
   
     <li class="md-nav__item">
-      <a href="commands/network.html" class="md-nav__link">
+      <a href="../commands/network.html" class="md-nav__link">
         
   
   
@@ -1343,7 +1472,7 @@
   
   
     <li class="md-nav__item">
-      <a href="commands/page.html" class="md-nav__link">
+      <a href="../commands/page.html" class="md-nav__link">
         
   
   
@@ -1366,7 +1495,7 @@
   
   
     <li class="md-nav__item">
-      <a href="commands/runtime.html" class="md-nav__link">
+      <a href="../commands/runtime.html" class="md-nav__link">
         
   
   
@@ -1389,7 +1518,7 @@
   
   
     <li class="md-nav__item">
-      <a href="commands/storage.html" class="md-nav__link">
+      <a href="../commands/storage.html" class="md-nav__link">
         
   
   
@@ -1412,7 +1541,7 @@
   
   
     <li class="md-nav__item">
-      <a href="commands/target.html" class="md-nav__link">
+      <a href="../commands/target.html" class="md-nav__link">
         
   
   
@@ -1435,7 +1564,7 @@
   
   
     <li class="md-nav__item">
-      <a href="commands/fetch.html" class="md-nav__link">
+      <a href="../commands/fetch.html" class="md-nav__link">
         
   
   
@@ -1520,7 +1649,7 @@
   
   
     <li class="md-nav__item">
-      <a href="protocol/commands.html" class="md-nav__link">
+      <a href="../protocol/commands.html" class="md-nav__link">
         
   
   
@@ -1543,7 +1672,7 @@
   
   
     <li class="md-nav__item">
-      <a href="protocol/events.html" class="md-nav__link">
+      <a href="../protocol/events.html" class="md-nav__link">
         
   
   
@@ -1630,7 +1759,7 @@
   
   
     <li class="md-nav__item">
-      <a href="core/constants.html" class="md-nav__link">
+      <a href="../core/constants.html" class="md-nav__link">
         
   
   
@@ -1653,7 +1782,7 @@
   
   
     <li class="md-nav__item">
-      <a href="core/exceptions.html" class="md-nav__link">
+      <a href="../core/exceptions.html" class="md-nav__link">
         
   
   
@@ -1676,7 +1805,7 @@
   
   
     <li class="md-nav__item">
-      <a href="core/utils.html" class="md-nav__link">
+      <a href="../core/utils.html" class="md-nav__link">
         
   
   
@@ -1734,64 +1863,82 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
+  <a href="#pydoll.connection.connection_handler.ConnectionHandler" class="md-nav__link">
     <span class="md-ellipsis">
-      Overview
+      <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ConnectionHandler
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Overview">
+    <nav class="md-nav" aria-label=" ConnectionHandler">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#browser-module" class="md-nav__link">
+  <a href="#pydoll.connection.connection_handler.ConnectionHandler.network_logs" class="md-nav__link">
     <span class="md-ellipsis">
-      Browser Module
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;network_logs
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#elements-module" class="md-nav__link">
+  <a href="#pydoll.connection.connection_handler.ConnectionHandler.dialog" class="md-nav__link">
     <span class="md-ellipsis">
-      Elements Module
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;dialog
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#connection-module" class="md-nav__link">
+  <a href="#pydoll.connection.connection_handler.ConnectionHandler.ping" class="md-nav__link">
     <span class="md-ellipsis">
-      Connection Module
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;ping
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#commands-module" class="md-nav__link">
+  <a href="#pydoll.connection.connection_handler.ConnectionHandler.execute_command" class="md-nav__link">
     <span class="md-ellipsis">
-      Commands Module
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;execute_command
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#protocol-module" class="md-nav__link">
+  <a href="#pydoll.connection.connection_handler.ConnectionHandler.register_callback" class="md-nav__link">
     <span class="md-ellipsis">
-      Protocol Module
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;register_callback
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#core-module" class="md-nav__link">
+  <a href="#pydoll.connection.connection_handler.ConnectionHandler.remove_callback" class="md-nav__link">
     <span class="md-ellipsis">
-      Core Module
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;remove_callback
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.connection.connection_handler.ConnectionHandler.clear_callbacks" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;clear_callbacks
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.connection.connection_handler.ConnectionHandler.close" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;close
     </span>
   </a>
   
@@ -1799,108 +1946,6 @@
         
       </ul>
     </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#quick-navigation" class="md-nav__link">
-    <span class="md-ellipsis">
-      Quick Navigation
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Quick Navigation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#most-common-classes" class="md-nav__link">
-    <span class="md-ellipsis">
-      Most Common Classes
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#key-enums-and-constants" class="md-nav__link">
-    <span class="md-ellipsis">
-      Key Enums and Constants
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#common-exceptions" class="md-nav__link">
-    <span class="md-ellipsis">
-      Common Exceptions
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#usage-patterns" class="md-nav__link">
-    <span class="md-ellipsis">
-      Usage Patterns
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Usage Patterns">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#basic-browser-automation" class="md-nav__link">
-    <span class="md-ellipsis">
-      Basic Browser Automation
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#element-finding" class="md-nav__link">
-    <span class="md-ellipsis">
-      Element Finding
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#event-handling" class="md-nav__link">
-    <span class="md-ellipsis">
-      Event Handling
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#type-hints" class="md-nav__link">
-    <span class="md-ellipsis">
-      Type Hints
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#asyncawait-support" class="md-nav__link">
-    <span class="md-ellipsis">
-      Async/Await Support
-    </span>
-  </a>
   
 </li>
       
@@ -1923,186 +1968,547 @@
   
 
 
-<h1 id="api-reference">API Reference</h1>
-<p>Welcome to the Pydoll API Reference! This section provides comprehensive documentation for all classes, methods, and functions available in the Pydoll library.</p>
-<h2 id="overview">Overview</h2>
-<p>Pydoll is organized into several key modules, each serving a specific purpose in browser automation:</p>
-<h3 id="browser-module">Browser Module</h3>
-<p>The browser module contains classes for managing browser instances and their lifecycle.</p>
-<ul>
-<li><strong><a href="browser/chrome.html">Chrome</a></strong> - Chrome browser automation</li>
-<li><strong><a href="browser/edge.html">Edge</a></strong> - Microsoft Edge browser automation  </li>
-<li><strong><a href="browser/options.html">Options</a></strong> - Browser configuration options</li>
-<li><strong><a href="browser/tab.html">Tab</a></strong> - Tab management and interaction</li>
-<li><strong><a href="browser/managers.html">Managers</a></strong> - Browser lifecycle managers</li>
-</ul>
-<h3 id="elements-module">Elements Module</h3>
-<p>The elements module provides classes for interacting with web page elements.</p>
-<ul>
-<li><strong><a href="elements/web_element.html">WebElement</a></strong> - Individual element interaction</li>
-<li><strong><a href="elements/mixins.html">Mixins</a></strong> - Reusable element functionality</li>
-</ul>
-<h3 id="connection-module">Connection Module</h3>
-<p>The connection module handles communication with the browser through the Chrome DevTools Protocol.</p>
-<ul>
-<li><strong><a href="connection/connection.html">Connection Handler</a></strong> - WebSocket connection management</li>
-<li><strong><a href="connection/managers.html">Managers</a></strong> - Connection lifecycle managers</li>
-</ul>
-<h3 id="commands-module">Commands Module</h3>
-<p>The commands module provides low-level Chrome DevTools Protocol command implementations.</p>
-<ul>
-<li><strong><a href="commands/index.html">Commands Overview</a></strong> - CDP command implementations by domain</li>
-</ul>
-<h3 id="protocol-module">Protocol Module</h3>
-<p>The protocol module implements the Chrome DevTools Protocol commands and events.</p>
-<ul>
-<li><strong><a href="protocol/commands.html">Commands</a></strong> - CDP command implementations</li>
-<li><strong><a href="protocol/events.html">Events</a></strong> - CDP event handling</li>
-</ul>
-<h3 id="core-module">Core Module</h3>
-<p>The core module contains fundamental utilities, constants, and exceptions.</p>
-<ul>
-<li><strong><a href="core/constants.html">Constants</a></strong> - Library constants and enums</li>
-<li><strong><a href="core/exceptions.html">Exceptions</a></strong> - Custom exception classes</li>
-<li><strong><a href="core/utils.html">Utils</a></strong> - Utility functions</li>
-</ul>
-<h2 id="quick-navigation">Quick Navigation</h2>
-<h3 id="most-common-classes">Most Common Classes</h3>
+<h1 id="connection-handler">Connection Handler</h1>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="pydoll.connection.connection_handler.ConnectionHandler" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">pydoll.connection.connection_handler.ConnectionHandler</span>
+
+
+</h2>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">ConnectionHandler</span><span class="p">(</span><span class="n">connection_port</span><span class="p">,</span> <span class="n">page_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ws_address_resolver</span><span class="o">=</span><span class="n"><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-function&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-function-name&quot;&gt;get_browser_ws_address&lt;/span&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-async&quot;&gt;&lt;code&gt;async&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt; (&lt;code&gt;pydoll.utils.get_browser_ws_address&lt;/code&gt;)" href="../core/utils.html#pydoll.utils.get_browser_ws_address">get_browser_ws_address</a></span><span class="p">,</span> <span class="n">ws_connector</span><span class="o">=</span><span class="n"><span title="websockets.connect">connect</span></span><span class="p">)</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents first">
+
+
+        <p>WebSocket connection manager for Chrome DevTools Protocol endpoints.</p>
+<p>Handles connection lifecycle, command execution, and event subscription
+for both browser-level and page-level CDP endpoints.</p>
+
+        <p>Initialize connection handler.</p>
+
+
 <table>
-<thead>
-<tr>
-<th>Class</th>
-<th>Purpose</th>
-<th>Module</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>Chrome</code></td>
-<td>Chrome browser automation</td>
-<td><code>pydoll.browser.chromium</code></td>
-</tr>
-<tr>
-<td><code>Edge</code></td>
-<td>Edge browser automation</td>
-<td><code>pydoll.browser.chromium</code></td>
-</tr>
-<tr>
-<td><code>Tab</code></td>
-<td>Tab interaction and control</td>
-<td><code>pydoll.browser.tab</code></td>
-</tr>
-<tr>
-<td><code>WebElement</code></td>
-<td>Element interaction</td>
-<td><code>pydoll.elements.web_element</code></td>
-</tr>
-<tr>
-<td><code>ChromiumOptions</code></td>
-<td>Browser configuration</td>
-<td><code>pydoll.browser.options</code></td>
-</tr>
-</tbody>
-</table>
-<h3 id="key-enums-and-constants">Key Enums and Constants</h3>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>connection_port</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Browser's debugging server port.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="int">int</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>page_id</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Target page ID. If None, connects to browser-level endpoint.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="typing.Optional">Optional</span>[<span title="str">str</span>]</code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>None</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>ws_address_resolver</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Function to resolve WebSocket URL from port.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="typing.Callable">Callable</span>[[<span title="int">int</span>], <span title="typing.Coroutine">Coroutine</span>[<span title="typing.Any">Any</span>, <span title="typing.Any">Any</span>, <span title="str">str</span>]]</code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-function&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-function-name&quot;&gt;get_browser_ws_address&lt;/span&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-async&quot;&gt;&lt;code&gt;async&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt; (&lt;code&gt;pydoll.utils.get_browser_ws_address&lt;/code&gt;)" href="../core/utils.html#pydoll.utils.get_browser_ws_address">get_browser_ws_address</a></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>ws_connector</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>WebSocket connection factory (mainly for testing).</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="type">type</span>[<span title="websockets.asyncio.client.connect">connect</span>]</code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code><span title="websockets.connect">connect</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="pydoll.connection.connection_handler.ConnectionHandler.network_logs" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">network_logs</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">network_logs</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Access captured network request and response logs.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="pydoll.connection.connection_handler.ConnectionHandler.dialog" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">dialog</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">dialog</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Access currently active JavaScript dialog information.</p>
+
+    </div>
+
+</div>
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="pydoll.connection.connection_handler.ConnectionHandler.ping" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">ping</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">ping</span><span class="p">()</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Test if WebSocket connection is active and responsive.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="pydoll.connection.connection_handler.ConnectionHandler.execute_command" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">execute_command</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">execute_command</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Send CDP command and await response.</p>
+
+
 <table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Purpose</th>
-<th>Module</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>By</code></td>
-<td>Element selector strategies</td>
-<td><code>pydoll.constants</code></td>
-</tr>
-<tr>
-<td><code>Key</code></td>
-<td>Keyboard key constants</td>
-<td><code>pydoll.constants</code></td>
-</tr>
-<tr>
-<td><code>PermissionType</code></td>
-<td>Browser permission types</td>
-<td><code>pydoll.constants</code></td>
-</tr>
-</tbody>
-</table>
-<h3 id="common-exceptions">Common Exceptions</h3>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>command</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>CDP command to send.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.connection.connection_handler.T">T</span>]</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>timeout</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Maximum seconds to wait for response.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="int">int</span></code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>10</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
 <table>
-<thead>
-<tr>
-<th>Exception</th>
-<th>When Raised</th>
-<th>Module</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>ElementNotFound</code></td>
-<td>Element not found in DOM</td>
-<td><code>pydoll.exceptions</code></td>
-</tr>
-<tr>
-<td><code>WaitElementTimeout</code></td>
-<td>Element wait timeout</td>
-<td><code>pydoll.exceptions</code></td>
-</tr>
-<tr>
-<td><code>BrowserNotStarted</code></td>
-<td>Browser not started</td>
-<td><code>pydoll.exceptions</code></td>
-</tr>
-</tbody>
-</table>
-<h2 id="usage-patterns">Usage Patterns</h2>
-<h3 id="basic-browser-automation">Basic Browser Automation</h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.chromium</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">()</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s2">&quot;https://example.com&quot;</span><span class="p">)</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">element</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s2">&quot;my-element&quot;</span><span class="p">)</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="k">await</span> <span class="n">element</span><span class="o">.</span><span class="n">click</span><span class="p">()</span>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <span class="doc-returns-annotation">
+                    <code><span title="pydoll.connection.connection_handler.T">T</span></code>
+                </span>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>Parsed response object matching command's expected type.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RAISES</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+              <span class="doc-raises-annotation">
+                  <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;CommandExecutionTimeout&lt;/span&gt; (&lt;code&gt;pydoll.exceptions.CommandExecutionTimeout&lt;/code&gt;)" href="../core/exceptions.html#pydoll.exceptions.CommandExecutionTimeout">CommandExecutionTimeout</a></code>
+              </span>
+            </td>
+            <td class="doc-raises-details">
+              <div class="doc-md-description">
+                <p>If browser doesn't respond within timeout.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+              <span class="doc-raises-annotation">
+                  <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;WebSocketConnectionClosed&lt;/span&gt; (&lt;code&gt;pydoll.exceptions.WebSocketConnectionClosed&lt;/code&gt;)" href="../core/exceptions.html#pydoll.exceptions.WebSocketConnectionClosed">WebSocketConnectionClosed</a></code>
+              </span>
+            </td>
+            <td class="doc-raises-details">
+              <div class="doc-md-description">
+                <p>If connection closes during execution.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="pydoll.connection.connection_handler.ConnectionHandler.register_callback" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">register_callback</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">register_callback</span><span class="p">(</span><span class="n">event_name</span><span class="p">,</span> <span class="n">callback</span><span class="p">,</span> <span class="n">temporary</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </span></code></pre></div>
-<h3 id="element-finding">Element Finding</h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Using the modern find() method</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">element</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s2">&quot;username&quot;</span><span class="p">)</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">element</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">tag_name</span><span class="o">=</span><span class="s2">&quot;button&quot;</span><span class="p">,</span> <span class="n">class_name</span><span class="o">=</span><span class="s2">&quot;submit&quot;</span><span class="p">)</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="c1"># Using CSS selectors or XPath</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="n">element</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;#username&quot;</span><span class="p">)</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="n">element</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;//button[@class=&#39;submit&#39;]&quot;</span><span class="p">)</span>
+
+    <div class="doc doc-contents ">
+
+        <p>Register event listener for CDP events.</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>event_name</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>CDP event name (e.g., 'Page.loadEventFired').</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="str">str</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>callback</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Async function called when event occurs.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="typing.Callable">Callable</span>[[<span title="dict">dict</span>], <span title="typing.Awaitable">Awaitable</span>[None]]</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>temporary</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>If True, callback removed after first trigger.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="bool">bool</span></code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>False</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <span class="doc-returns-annotation">
+                    <code><span title="int">int</span></code>
+                </span>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>Callback ID for later removal.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Note</summary>
+  <p>Corresponding CDP domain must be enabled before events fire.</p>
+</details>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="pydoll.connection.connection_handler.ConnectionHandler.remove_callback" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">remove_callback</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">remove_callback</span><span class="p">(</span><span class="n">callback_id</span><span class="p">)</span>
 </span></code></pre></div>
-<h3 id="event-handling">Event Handling</h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">enable_page_events</span><span class="p">()</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="s1">&#39;Page.loadEventFired&#39;</span><span class="p">,</span> <span class="n">handle_page_load</span><span class="p">)</span>
+
+    <div class="doc doc-contents ">
+
+        <p>Remove registered event callback by ID.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="pydoll.connection.connection_handler.ConnectionHandler.clear_callbacks" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">clear_callbacks</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">clear_callbacks</span><span class="p">()</span>
 </span></code></pre></div>
-<h2 id="type-hints">Type Hints</h2>
-<p>Pydoll is fully typed and provides comprehensive type hints for better IDE support and code safety. All public APIs include proper type annotations.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.elements.web_element</span><span class="w"> </span><span class="kn">import</span> <span class="n">WebElement</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># Methods return properly typed objects</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">element</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">WebElement</span><span class="p">]</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">,</span> <span class="n">raise_exc</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">elements</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">WebElement</span><span class="p">]</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">class_name</span><span class="o">=</span><span class="s2">&quot;item&quot;</span><span class="p">,</span> <span class="n">find_all</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <div class="doc doc-contents ">
+
+        <p>Remove all registered event callbacks.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="pydoll.connection.connection_handler.ConnectionHandler.close" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">close</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">close</span><span class="p">()</span>
 </span></code></pre></div>
-<h2 id="asyncawait-support">Async/Await Support</h2>
-<p>All Pydoll operations are asynchronous and must be used with <code>async</code>/<code>await</code>:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="c1"># All Pydoll operations are async</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">()</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>        <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s2">&quot;https://example.com&quot;</span><span class="p">)</span>
-</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>
-</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
-</span></code></pre></div>
-<p>Browse the sections below to explore the complete API documentation for each module. </p>
+
+    <div class="doc doc-contents ">
+
+        <p>Close WebSocket connection and release resources.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
 
 
 
@@ -2157,14 +2563,14 @@
     
     
       
-      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.indexes", "navigation.expand", "navigation.path", "navigation.top", "toc.follow", "content.code.copy", "content.code.select", "content.tooltips", "search.highlight", "search.suggest"], "search": "../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.indexes", "navigation.expand", "navigation.path", "navigation.top", "toc.follow", "content.code.copy", "content.code.select", "content.tooltips", "search.highlight", "search.suggest"], "search": "../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.50899def.min.js"></script>
+      <script src="../../assets/javascripts/bundle.50899def.min.js"></script>
       
-        <script src="../scripts/termynal.js"></script>
+        <script src="../../scripts/termynal.js"></script>
       
-        <script src="../scripts/extra.js"></script>
+        <script src="../../scripts/extra.js"></script>
       
         <script src="https://unpkg.com/mermaid@10.0.0/dist/mermaid.min.js"></script>
       
