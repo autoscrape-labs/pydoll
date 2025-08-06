@@ -1,521 +1,521 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/index.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/index.html"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/index.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/features.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/features/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/features.html"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/features.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/features/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/features/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/api/index.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/api/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/index.html"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/index.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/api/browser/chrome.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/api/browser/chrome/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/browser/chrome.html"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/browser/chrome.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/browser/chrome/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/browser/chrome/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/api/browser/edge.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/api/browser/edge/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/browser/edge.html"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/browser/edge.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/browser/edge/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/browser/edge/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/api/browser/managers.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/api/browser/managers/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/browser/managers.html"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/browser/managers.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/browser/managers/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/browser/managers/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/api/browser/options.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/api/browser/options/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/browser/options.html"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/browser/options.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/browser/options/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/browser/options/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/api/browser/tab.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/api/browser/tab/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/browser/tab.html"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/browser/tab.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/browser/tab/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/browser/tab/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/api/commands/index.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/api/commands/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/index.html"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/index.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/api/commands/browser.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/api/commands/browser/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/browser.html"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/browser.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/browser/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/browser/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/api/commands/dom.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/api/commands/dom/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/dom.html"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/dom.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/dom/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/dom/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/api/commands/fetch.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/api/commands/fetch/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/fetch.html"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/fetch.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/fetch/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/fetch/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/api/commands/input.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/api/commands/input/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/input.html"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/input.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/input/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/input/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/api/commands/network.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/api/commands/network/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/network.html"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/network.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/network/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/network/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/api/commands/page.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/api/commands/page/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/page.html"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/page.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/page/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/page/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/api/commands/runtime.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/api/commands/runtime/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/runtime.html"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/runtime.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/runtime/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/runtime/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/api/commands/storage.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/api/commands/storage/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/storage.html"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/storage.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/storage/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/storage/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/api/commands/target.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/api/commands/target/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/target.html"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/target.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/target/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/target/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/api/connection/connection.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/api/connection/connection/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/connection/connection.html"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/connection/connection.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/connection/connection/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/connection/connection/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/api/connection/managers.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/api/connection/managers/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/connection/managers.html"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/connection/managers.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/connection/managers/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/connection/managers/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/api/core/constants.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/api/core/constants/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/core/constants.html"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/core/constants.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/core/constants/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/core/constants/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/api/core/exceptions.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/api/core/exceptions/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/core/exceptions.html"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/core/exceptions.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/core/exceptions/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/core/exceptions/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/api/core/utils.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/api/core/utils/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/core/utils.html"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/core/utils.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/core/utils/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/core/utils/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/api/elements/mixins.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/api/elements/mixins/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/elements/mixins.html"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/elements/mixins.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/elements/mixins/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/elements/mixins/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/api/elements/web_element.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/api/elements/web_element/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/elements/web_element.html"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/elements/web_element.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/elements/web_element/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/elements/web_element/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/api/protocol/commands.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/api/protocol/commands/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/protocol/commands.html"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/protocol/commands.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/protocol/commands/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/protocol/commands/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/api/protocol/events.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/api/protocol/events/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/protocol/events.html"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/protocol/events.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/protocol/events/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/protocol/events/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/deep-dive/index.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/deep-dive/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/index.html"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/index.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/deep-dive/browser-domain.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/deep-dive/browser-domain/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/browser-domain.html"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/browser-domain.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/browser-domain/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/browser-domain/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/deep-dive/browser-preferences.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/deep-dive/browser-preferences/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/browser-preferences.html"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/browser-preferences.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/browser-preferences/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/browser-preferences/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/deep-dive/cdp.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/deep-dive/cdp/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/cdp.html"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/cdp.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/cdp/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/cdp/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/deep-dive/connection-layer.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/deep-dive/connection-layer/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/connection-layer.html"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/connection-layer.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/connection-layer/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/connection-layer/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/deep-dive/event-system.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/deep-dive/event-system/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/event-system.html"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/event-system.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/event-system/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/event-system/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/deep-dive/find-elements-mixin.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/deep-dive/find-elements-mixin/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/find-elements-mixin.html"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/find-elements-mixin.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/find-elements-mixin/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/find-elements-mixin/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/deep-dive/network-capabilities.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/deep-dive/network-capabilities/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/network-capabilities.html"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/network-capabilities.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/network-capabilities/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/network-capabilities/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/deep-dive/tab-domain.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/deep-dive/tab-domain/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/tab-domain.html"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/tab-domain.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/tab-domain/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/tab-domain/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/deep-dive/webelement-domain.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/deep-dive/webelement-domain/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/webelement-domain.html"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/webelement-domain.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/webelement-domain/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/webelement-domain/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/zh/index.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/zh/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/index.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/index.html"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/zh/features.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/zh/features/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/features.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/features.html"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/features/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/features/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/index.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/index.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/index.html"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/browser/chrome.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/browser/chrome/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/browser/chrome.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/browser/chrome.html"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/browser/chrome/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/browser/chrome/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/browser/edge.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/browser/edge/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/browser/edge.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/browser/edge.html"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/browser/edge/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/browser/edge/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/browser/managers.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/browser/managers/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/browser/managers.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/browser/managers.html"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/browser/managers/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/browser/managers/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/browser/options.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/browser/options/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/browser/options.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/browser/options.html"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/browser/options/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/browser/options/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/browser/tab.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/browser/tab/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/browser/tab.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/browser/tab.html"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/browser/tab/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/browser/tab/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/commands/index.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/commands/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/index.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/index.html"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/commands/browser.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/commands/browser/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/browser.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/browser.html"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/browser/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/browser/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/commands/dom.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/commands/dom/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/dom.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/dom.html"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/dom/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/dom/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/commands/fetch.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/commands/fetch/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/fetch.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/fetch.html"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/fetch/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/fetch/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/commands/input.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/commands/input/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/input.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/input.html"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/input/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/input/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/commands/network.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/commands/network/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/network.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/network.html"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/network/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/network/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/commands/page.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/commands/page/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/page.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/page.html"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/page/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/page/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/commands/runtime.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/commands/runtime/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/runtime.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/runtime.html"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/runtime/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/runtime/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/commands/storage.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/commands/storage/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/storage.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/storage.html"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/storage/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/storage/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/commands/target.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/commands/target/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/target.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/target.html"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/commands/target/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/commands/target/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/connection/connection.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/connection/connection/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/connection/connection.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/connection/connection.html"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/connection/connection/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/connection/connection/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/connection/managers.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/connection/managers/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/connection/managers.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/connection/managers.html"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/connection/managers/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/connection/managers/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/core/constants.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/core/constants/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/core/constants.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/core/constants.html"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/core/constants/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/core/constants/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/core/exceptions.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/core/exceptions/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/core/exceptions.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/core/exceptions.html"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/core/exceptions/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/core/exceptions/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/core/utils.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/core/utils/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/core/utils.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/core/utils.html"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/core/utils/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/core/utils/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/elements/mixins.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/elements/mixins/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/elements/mixins.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/elements/mixins.html"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/elements/mixins/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/elements/mixins/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/elements/web_element.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/elements/web_element/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/elements/web_element.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/elements/web_element.html"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/elements/web_element/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/elements/web_element/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/protocol/commands.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/protocol/commands/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/protocol/commands.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/protocol/commands.html"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/protocol/commands/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/protocol/commands/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/protocol/events.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/zh/api/protocol/events/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/protocol/events.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/protocol/events.html"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/api/protocol/events/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/api/protocol/events/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/zh/deep-dive/index.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/zh/deep-dive/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/index.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/index.html"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/zh/deep-dive/browser-domain.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/zh/deep-dive/browser-domain/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/browser-domain.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/browser-domain.html"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/browser-domain/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/browser-domain/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/zh/deep-dive/browser-preferences.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/zh/deep-dive/browser-preferences/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/browser-preferences.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/browser-preferences.html"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/browser-preferences/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/browser-preferences/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/zh/deep-dive/cdp.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/zh/deep-dive/cdp/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/cdp.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/cdp.html"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/cdp/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/cdp/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/zh/deep-dive/connection-layer.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/zh/deep-dive/connection-layer/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/connection-layer.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/connection-layer.html"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/connection-layer/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/connection-layer/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/zh/deep-dive/event-system.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/zh/deep-dive/event-system/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/event-system.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/event-system.html"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/event-system/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/event-system/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/zh/deep-dive/find-elements-mixin.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/zh/deep-dive/find-elements-mixin/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/find-elements-mixin.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/find-elements-mixin.html"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/find-elements-mixin/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/find-elements-mixin/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/zh/deep-dive/network-capabilities.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/zh/deep-dive/network-capabilities/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/network-capabilities.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/network-capabilities.html"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/network-capabilities/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/network-capabilities/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/zh/deep-dive/tab-domain.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/zh/deep-dive/tab-domain/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/tab-domain.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/tab-domain.html"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/tab-domain/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/tab-domain/"/>
     </url>
     <url>
-        <loc>https://autoscrape-labs.github.io/pydoll/zh/deep-dive/webelement-domain.html</loc>
-        <lastmod>2025-08-02</lastmod>
+        <loc>https://autoscrape-labs.github.io/pydoll/zh/deep-dive/webelement-domain/</loc>
+        <lastmod>2025-08-06</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/webelement-domain.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/webelement-domain.html"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://autoscrape-labs.github.io/pydoll/zh/deep-dive/webelement-domain/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://autoscrape-labs.github.io/pydoll/deep-dive/webelement-domain/"/>
     </url>
 </urlset>
