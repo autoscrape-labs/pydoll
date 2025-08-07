@@ -14,7 +14,7 @@
         <link rel="prev" href="../target/">
       
       
-        <link rel="next" href="../../protocol/commands/">
+        <link rel="next" href="../../protocol/base/">
       
       
       <link rel="icon" href="../../../images/favicon.png">
@@ -1797,6 +1797,22 @@
       
         
       
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
     
     
     
@@ -1845,12 +1861,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../protocol/commands/" class="md-nav__link">
+      <a href="../../protocol/base/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Commands
+    Base Types
     
   </span>
   
@@ -1868,12 +1884,196 @@
   
   
     <li class="md-nav__item">
-      <a href="../../protocol/events/" class="md-nav__link">
+      <a href="../../protocol/browser/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Events
+    Browser
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../protocol/dom/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    DOM
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../protocol/fetch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Fetch
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../protocol/input/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Input
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../protocol/network/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Network
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../protocol/page/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Page
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../protocol/runtime/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Runtime
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../protocol/storage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Storage
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../protocol/target/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Target
     
   </span>
   
@@ -2494,7 +2694,7 @@ headers, and body before continuing.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<span title="pydoll.protocol.network.types.RequestMethod">RequestMethod</span>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;RequestMethod&lt;/span&gt; (&lt;code&gt;pydoll.protocol.network.types.RequestMethod&lt;/code&gt;)" href="../../protocol/network/#pydoll.protocol.network.types.RequestMethod">RequestMethod</a>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -2536,7 +2736,7 @@ in the fetch request. Defaults to None.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<span title="list">list</span>[<span title="pydoll.protocol.fetch.types.HeaderEntry">HeaderEntry</span>]]</code>
+                      <code><span title="typing.Optional">Optional</span>[<span title="list">list</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;HeaderEntry&lt;/span&gt; (&lt;code&gt;pydoll.protocol.fetch.types.HeaderEntry&lt;/code&gt;)" href="../../protocol/fetch/#pydoll.protocol.fetch.types.HeaderEntry">HeaderEntry</a>]]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -2581,7 +2781,12 @@ should be intercepted. Defaults to None.</p>
           <tr class="doc-section-item">
             <td>
                 <span class="doc-returns-annotation">
-                    <code><span title="pydoll.protocol.fetch.methods.ContinueRequestCommand">ContinueRequestCommand</span></code>
+                    <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;ContinueRequestCommand&lt;/span&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-module-attribute&quot;&gt;&lt;code&gt;module-attribute&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt; (&lt;code&gt;pydoll.protocol.fetch.methods.ContinueRequestCommand&lt;/code&gt;)" href="../../protocol/fetch/#pydoll.protocol.fetch.methods.ContinueRequestCommand">ContinueRequestCommand</a></code>
                 </span>
             </td>
             <td class="doc-returns-details">
@@ -2657,7 +2862,7 @@ challenge response type.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.fetch.types.AuthChallengeResponseType">AuthChallengeResponseType</span></code>
+                      <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;AuthChallengeResponseType&lt;/span&gt; (&lt;code&gt;pydoll.protocol.fetch.types.AuthChallengeResponseType&lt;/code&gt;)" href="../../protocol/fetch/#pydoll.protocol.fetch.types.AuthChallengeResponseType">AuthChallengeResponseType</a></code>
                   </span>
               </p>
             </td>
@@ -2719,7 +2924,12 @@ Defaults to None.</p>
           <tr class="doc-section-item">
             <td>
                 <span class="doc-returns-annotation">
-                    <code><span title="pydoll.protocol.fetch.methods.ContinueWithAuthCommand">ContinueWithAuthCommand</span></code>
+                    <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;ContinueWithAuthCommand&lt;/span&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-module-attribute&quot;&gt;&lt;code&gt;module-attribute&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt; (&lt;code&gt;pydoll.protocol.fetch.methods.ContinueWithAuthCommand&lt;/code&gt;)" href="../../protocol/fetch/#pydoll.protocol.fetch.methods.ContinueWithAuthCommand">ContinueWithAuthCommand</a></code>
                 </span>
             </td>
             <td class="doc-returns-details">
@@ -2769,7 +2979,12 @@ authentication.</p>
           <tr class="doc-section-item">
             <td>
                 <span class="doc-returns-annotation">
-                    <code><span title="pydoll.protocol.fetch.methods.DisableCommand">DisableCommand</span></code>
+                    <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;DisableCommand&lt;/span&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-module-attribute&quot;&gt;&lt;code&gt;module-attribute&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt; (&lt;code&gt;pydoll.protocol.fetch.methods.DisableCommand&lt;/code&gt;)" href="../../protocol/fetch/#pydoll.protocol.fetch.methods.DisableCommand">DisableCommand</a></code>
                 </span>
             </td>
             <td class="doc-returns-details">
@@ -2866,7 +3081,7 @@ Defaults to None.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<span title="pydoll.protocol.fetch.types.ResourceType">ResourceType</span>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;ResourceType&lt;/span&gt; (&lt;code&gt;pydoll.protocol.fetch.types.ResourceType&lt;/code&gt;)" href="../../protocol/network/#pydoll.protocol.network.types.ResourceType">ResourceType</a>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -2887,7 +3102,7 @@ Defaults to None.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<span title="pydoll.protocol.fetch.types.RequestStage">RequestStage</span>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;RequestStage&lt;/span&gt; (&lt;code&gt;pydoll.protocol.fetch.types.RequestStage&lt;/code&gt;)" href="../../protocol/fetch/#pydoll.protocol.fetch.types.RequestStage">RequestStage</a>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -2911,7 +3126,12 @@ Defaults to None.</p>
           <tr class="doc-section-item">
             <td>
                 <span class="doc-returns-annotation">
-                    <code><span title="pydoll.protocol.fetch.methods.EnableCommand">EnableCommand</span></code>
+                    <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;EnableCommand&lt;/span&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-module-attribute&quot;&gt;&lt;code&gt;module-attribute&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt; (&lt;code&gt;pydoll.protocol.fetch.methods.EnableCommand&lt;/code&gt;)" href="../../protocol/fetch/#pydoll.protocol.fetch.methods.EnableCommand">EnableCommand</a></code>
                 </span>
             </td>
             <td class="doc-returns-details">
@@ -2985,7 +3205,7 @@ operation, providing a reason for the failure.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.network.types.ErrorReason">ErrorReason</span></code>
+                      <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;ErrorReason&lt;/span&gt; (&lt;code&gt;pydoll.protocol.network.types.ErrorReason&lt;/code&gt;)" href="../../protocol/network/#pydoll.protocol.network.types.ErrorReason">ErrorReason</a></code>
                   </span>
               </p>
             </td>
@@ -3005,7 +3225,12 @@ operation, providing a reason for the failure.</p>
           <tr class="doc-section-item">
             <td>
                 <span class="doc-returns-annotation">
-                    <code><span title="pydoll.protocol.fetch.methods.FailRequestCommand">FailRequestCommand</span></code>
+                    <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;FailRequestCommand&lt;/span&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-module-attribute&quot;&gt;&lt;code&gt;module-attribute&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt; (&lt;code&gt;pydoll.protocol.fetch.methods.FailRequestCommand&lt;/code&gt;)" href="../../protocol/fetch/#pydoll.protocol.fetch.methods.FailRequestCommand">FailRequestCommand</a></code>
                 </span>
             </td>
             <td class="doc-returns-details">
@@ -3096,7 +3321,7 @@ Defaults to None.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<span title="list">list</span>[<span title="pydoll.protocol.fetch.types.HeaderEntry">HeaderEntry</span>]]</code>
+                      <code><span title="typing.Optional">Optional</span>[<span title="list">list</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;HeaderEntry&lt;/span&gt; (&lt;code&gt;pydoll.protocol.fetch.types.HeaderEntry&lt;/code&gt;)" href="../../protocol/fetch/#pydoll.protocol.fetch.types.HeaderEntry">HeaderEntry</a>]]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -3161,7 +3386,12 @@ Defaults to None.</p>
           <tr class="doc-section-item">
             <td>
                 <span class="doc-returns-annotation">
-                    <code><span title="pydoll.protocol.fetch.methods.FulfillRequestCommand">FulfillRequestCommand</span></code>
+                    <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;FulfillRequestCommand&lt;/span&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-module-attribute&quot;&gt;&lt;code&gt;module-attribute&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt; (&lt;code&gt;pydoll.protocol.fetch.methods.FulfillRequestCommand&lt;/code&gt;)" href="../../protocol/fetch/#pydoll.protocol.fetch.methods.FulfillRequestCommand">FulfillRequestCommand</a></code>
                 </span>
             </td>
             <td class="doc-returns-details">
@@ -3240,7 +3470,12 @@ from.</p>
           <tr class="doc-section-item">
             <td>
                 <span class="doc-returns-annotation">
-                    <code><span title="pydoll.protocol.fetch.methods.GetResponseBodyCommand">GetResponseBodyCommand</span></code>
+                    <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;GetResponseBodyCommand&lt;/span&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-module-attribute&quot;&gt;&lt;code&gt;module-attribute&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt; (&lt;code&gt;pydoll.protocol.fetch.methods.GetResponseBodyCommand&lt;/code&gt;)" href="../../protocol/fetch/#pydoll.protocol.fetch.methods.GetResponseBodyCommand">GetResponseBodyCommand</a></code>
                 </span>
             </td>
             <td class="doc-returns-details">
@@ -3339,7 +3574,7 @@ Defaults to None.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<span title="list">list</span>[<span title="pydoll.protocol.fetch.types.HeaderEntry">HeaderEntry</span>]]</code>
+                      <code><span title="typing.Optional">Optional</span>[<span title="list">list</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;HeaderEntry&lt;/span&gt; (&lt;code&gt;pydoll.protocol.fetch.types.HeaderEntry&lt;/code&gt;)" href="../../protocol/fetch/#pydoll.protocol.fetch.types.HeaderEntry">HeaderEntry</a>]]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -3384,7 +3619,12 @@ Defaults to None.</p>
           <tr class="doc-section-item">
             <td>
                 <span class="doc-returns-annotation">
-                    <code><span title="pydoll.protocol.fetch.methods.ContinueResponseCommand">ContinueResponseCommand</span></code>
+                    <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;ContinueResponseCommand&lt;/span&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-module-attribute&quot;&gt;&lt;code&gt;module-attribute&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt; (&lt;code&gt;pydoll.protocol.fetch.methods.ContinueResponseCommand&lt;/code&gt;)" href="../../protocol/fetch/#pydoll.protocol.fetch.methods.ContinueResponseCommand">ContinueResponseCommand</a></code>
                 </span>
             </td>
             <td class="doc-returns-details">
@@ -3463,7 +3703,12 @@ body stream from.</p>
           <tr class="doc-section-item">
             <td>
                 <span class="doc-returns-annotation">
-                    <code><span title="pydoll.protocol.fetch.methods.TakeResponseBodyAsStreamCommand">TakeResponseBodyAsStreamCommand</span></code>
+                    <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;TakeResponseBodyAsStreamCommand&lt;/span&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-module-attribute&quot;&gt;&lt;code&gt;module-attribute&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt; (&lt;code&gt;pydoll.protocol.fetch.methods.TakeResponseBodyAsStreamCommand&lt;/code&gt;)" href="../../protocol/fetch/#pydoll.protocol.fetch.methods.TakeResponseBodyAsStreamCommand">TakeResponseBodyAsStreamCommand</a></code>
                 </span>
             </td>
             <td class="doc-returns-details">
