@@ -2345,7 +2345,7 @@ that might have been started with dispatchDragEvent or by other means.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.input.methods.CancelDraggingCommand">CancelDraggingCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -2403,7 +2403,7 @@ key releases, and character inputs.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;KeyEventType&lt;/span&gt; (&lt;code&gt;pydoll.constants.KeyEventType&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.KeyEventType">KeyEventType</a></code>
+                      <code><span title="pydoll.protocol.input.types.KeyEventType">KeyEventType</span></code>
                   </span>
               </p>
             </td>
@@ -2421,7 +2421,7 @@ key releases, and character inputs.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;KeyModifier&lt;/span&gt; (&lt;code&gt;pydoll.constants.KeyModifier&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.KeyModifier">KeyModifier</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<span title="pydoll.protocol.input.types.KeyModifier">KeyModifier</span>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -2667,7 +2667,7 @@ context of active modifiers, keyboard layout, etc. (e.g., 'AltGr')
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;KeyLocation&lt;/span&gt; (&lt;code&gt;pydoll.constants.KeyLocation&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.KeyLocation">KeyLocation</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<span title="pydoll.protocol.input.types.KeyLocation">KeyLocation</span>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -2721,7 +2721,7 @@ context of active modifiers, keyboard layout, etc. (e.g., 'AltGr')
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.input.methods.DispatchKeyEventCommand">DispatchKeyEventCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -2779,7 +2779,7 @@ movements, and wheel scrolling.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;MouseEventType&lt;/span&gt; (&lt;code&gt;pydoll.constants.MouseEventType&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.MouseEventType">MouseEventType</a></code>
+                      <code><span title="pydoll.protocol.input.types.MouseEventType">MouseEventType</span></code>
                   </span>
               </p>
             </td>
@@ -2829,7 +2829,7 @@ Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0).</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;KeyModifier&lt;/span&gt; (&lt;code&gt;pydoll.constants.KeyModifier&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.KeyModifier">KeyModifier</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<span title="pydoll.protocol.input.types.KeyModifier">KeyModifier</span>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -2870,7 +2870,7 @@ Allowed values: "none", "left", "middle", "right", "back", "forward".</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;MouseButton&lt;/span&gt; (&lt;code&gt;pydoll.constants.MouseButton&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.MouseButton">MouseButton</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<span title="pydoll.protocol.input.types.MouseButton">MouseButton</span>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -3060,7 +3060,7 @@ Positive values scroll up.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;PointerType&lt;/span&gt; (&lt;code&gt;pydoll.constants.PointerType&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.PointerType">PointerType</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<span title="pydoll.protocol.input.types.PointerType">PointerType</span>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -3092,7 +3092,7 @@ Positive values scroll up.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.input.methods.DispatchMouseEventCommand">DispatchMouseEventCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3117,7 +3117,7 @@ Positive values scroll up.</p>
   </span>
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">dispatch_touch_event</span><span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="n">touch_points</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">modifiers</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">dispatch_touch_event</span><span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="n">touch_points</span><span class="p">,</span> <span class="n">modifiers</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3152,7 +3152,7 @@ or emulated touch environments.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;TouchEventType&lt;/span&gt; (&lt;code&gt;pydoll.constants.TouchEventType&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.TouchEventType">TouchEventType</a></code>
+                      <code><span title="pydoll.protocol.input.types.TouchEventType">TouchEventType</span></code>
                   </span>
               </p>
             </td>
@@ -3171,11 +3171,7 @@ or emulated touch environments.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<span title="list">list</span>[<span title="pydoll.protocol.input.params.TouchPoint">TouchPoint</span>]]</code>
-                  </span>
-                  <span class="doc-param-default">
-                    <b>DEFAULT:</b>
-                      <code>None</code>
+                      <code><span title="list">list</span>[<span title="pydoll.protocol.input.methods.TouchPoint">TouchPoint</span>]</code>
                   </span>
               </p>
             </td>
@@ -3192,7 +3188,7 @@ or emulated touch environments.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;KeyModifier&lt;/span&gt; (&lt;code&gt;pydoll.constants.KeyModifier&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.KeyModifier">KeyModifier</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<span title="pydoll.protocol.input.types.KeyModifier">KeyModifier</span>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -3244,7 +3240,7 @@ or emulated touch environments.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.input.methods.DispatchTouchEventCommand">DispatchTouchEventCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3269,13 +3265,13 @@ or emulated touch environments.</p>
   </span>
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">set_ignore_input_events</span><span class="p">(</span><span class="n">enabled</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">set_ignore_input_events</span><span class="p">(</span><span class="n">ignore</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
 
         <p>Generates a command to ignore input events (useful while auditing page).</p>
-<p>When enabled, all input events will be ignored, which can be useful
+<p>When ignore is true, all input events will be ignored, which can be useful
 during automated tests or when you want to prevent user interaction
 while performing certain operations.</p>
 
@@ -3290,7 +3286,7 @@ while performing certain operations.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>enabled</code>
+                <code>ignore</code>
             </td>
             <td class="doc-param-details">
               <div class="doc-md-description">
@@ -3327,7 +3323,7 @@ while performing certain operations.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.input.methods.SetIgnoreInputEventsCommand">SetIgnoreInputEventsCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3352,7 +3348,7 @@ while performing certain operations.</p>
   </span>
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">dispatch_drag_event</span><span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">modifiers</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">dispatch_drag_event</span><span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">modifiers</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3385,7 +3381,7 @@ by dispatching drag events at specific coordinates.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;DragEventType&lt;/span&gt; (&lt;code&gt;pydoll.constants.DragEventType&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.DragEventType">DragEventType</a></code>
+                      <code><span title="pydoll.protocol.input.types.DragEventType">DragEventType</span></code>
                   </span>
               </p>
             </td>
@@ -3434,11 +3430,7 @@ by dispatching drag events at specific coordinates.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<span title="pydoll.protocol.input.params.DragData">DragData</span>]</code>
-                  </span>
-                  <span class="doc-param-default">
-                    <b>DEFAULT:</b>
-                      <code>None</code>
+                      <code><span title="pydoll.protocol.input.methods.DragData">DragData</span></code>
                   </span>
               </p>
             </td>
@@ -3455,7 +3447,7 @@ by dispatching drag events at specific coordinates.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;KeyModifier&lt;/span&gt; (&lt;code&gt;pydoll.constants.KeyModifier&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.KeyModifier">KeyModifier</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<span title="pydoll.protocol.input.types.KeyModifier">KeyModifier</span>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -3487,7 +3479,7 @@ by dispatching drag events at specific coordinates.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.input.methods.DispatchDragEventCommand">DispatchDragEventCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3545,7 +3537,7 @@ useful for testing touch interactions in environments where touch is not availab
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;MouseEventType&lt;/span&gt; (&lt;code&gt;pydoll.constants.MouseEventType&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.MouseEventType">MouseEventType</a></code>
+                      <code><span title="pydoll.protocol.input.types.MouseEventType">MouseEventType</span></code>
                   </span>
               </p>
             </td>
@@ -3593,7 +3585,7 @@ useful for testing touch interactions in environments where touch is not availab
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;MouseButton&lt;/span&gt; (&lt;code&gt;pydoll.constants.MouseButton&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.MouseButton">MouseButton</a></code>
+                      <code><span title="pydoll.protocol.input.types.MouseButton">MouseButton</span></code>
                   </span>
               </p>
             </td>
@@ -3671,7 +3663,7 @@ useful for testing touch interactions in environments where touch is not availab
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;KeyModifier&lt;/span&gt; (&lt;code&gt;pydoll.constants.KeyModifier&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.KeyModifier">KeyModifier</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<span title="pydoll.protocol.input.types.KeyModifier">KeyModifier</span>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -3724,7 +3716,7 @@ useful for testing touch interactions in environments where touch is not availab
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.input.methods.EmulateTouchFromMouseEventCommand">EmulateTouchFromMouseEventCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3883,7 +3875,7 @@ Use imeSetComposition with empty string as text to cancel composition.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.input.methods.ImeSetCompositionCommand">ImeSetCompositionCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3966,7 +3958,7 @@ clipboard pastes.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.input.methods.InsertTextCommand">InsertTextCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -4052,7 +4044,7 @@ drag and drop behavior in automated tests.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.input.methods.SetInterceptDragsCommand">SetInterceptDragsCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -4158,7 +4150,7 @@ pinch-to-zoom functionality in web applications.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<span title="float">float</span>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<span title="int">int</span>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -4181,7 +4173,7 @@ pinch-to-zoom functionality in web applications.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;GestureSourceType&lt;/span&gt; (&lt;code&gt;pydoll.constants.GestureSourceType&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.GestureSourceType">GestureSourceType</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<span title="pydoll.protocol.input.types.GestureSourceType">GestureSourceType</span>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -4213,7 +4205,7 @@ pinch-to-zoom functionality in web applications.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.input.methods.SynthesizePinchGestureCommand">SynthesizePinchGestureCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -4428,7 +4420,7 @@ behavior in web applications.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;GestureSourceType&lt;/span&gt; (&lt;code&gt;pydoll.constants.GestureSourceType&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.GestureSourceType">GestureSourceType</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<span title="pydoll.protocol.input.types.GestureSourceType">GestureSourceType</span>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -4521,7 +4513,7 @@ behavior in web applications.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.input.methods.SynthesizeScrollGestureCommand">SynthesizeScrollGestureCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -4652,7 +4644,7 @@ touch interaction in web applications.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;GestureSourceType&lt;/span&gt; (&lt;code&gt;pydoll.constants.GestureSourceType&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.GestureSourceType">GestureSourceType</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<span title="pydoll.protocol.input.types.GestureSourceType">GestureSourceType</span>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -4684,7 +4676,7 @@ touch interaction in web applications.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.input.methods.SynthesizeTapGestureCommand">SynthesizeTapGestureCommand</span></code>
                   </span>
                 </p>
             </td>

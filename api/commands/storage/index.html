@@ -2941,7 +2941,7 @@ of storage without the need for traditional webdrivers.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Command</code>
+                <code>ClearCookiesCommand</code>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
@@ -2950,7 +2950,7 @@ of storage without the need for traditional webdrivers.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.storage.methods.ClearCookiesCommand">ClearCookiesCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3039,7 +3039,7 @@ of storage without the need for traditional webdrivers.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Command</code>
+                <code>ClearDataForOriginCommand</code>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
@@ -3048,7 +3048,7 @@ of storage without the need for traditional webdrivers.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.storage.methods.ClearDataForOriginCommand">ClearDataForOriginCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3139,16 +3139,17 @@ of storage without the need for traditional webdrivers.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Command</code>
+                <code>ClearDataForStorageKeyCommand</code>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
-                <p>The CDP command to clear data for the specified storage key.</p>
+                <p>The CDP command to clear data for the specified storage
+key.</p>
               </div>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.storage.methods.ClearDataForStorageKeyCommand">ClearDataForStorageKeyCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3224,17 +3225,17 @@ of storage without the need for traditional webdrivers.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Command</code>
+                <code>GetCookiesCommand</code>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
-                <p>The CDP command to get all cookies, which will return an array of Cookie
-objects.</p>
+                <p>The CDP command to get all cookies, which will return an array
+of Cookie objects.</p>
               </div>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.storage.responses.GetCookiesResponse">GetCookiesResponse</span>]</code>
+                      <code><span title="pydoll.protocol.storage.methods.GetCookiesCommand">GetCookiesCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3307,16 +3308,17 @@ partitions in the browser.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Command</code>
+                <code>GetStorageKeyForFrameCommand</code>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
-                <p>The CDP command to get the storage key for the specified frame.</p>
+                <p>The CDP command to get the storage key for the specified
+frame.</p>
               </div>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.storage.responses.GetStorageKeyForFrameResponse">GetStorageKeyForFrameResponse</span>]</code>
+                      <code><span title="pydoll.protocol.storage.methods.GetStorageKeyForFrameCommand">GetStorageKeyForFrameCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3388,7 +3390,7 @@ partitions in the browser.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Command</code>
+                <code>GetUsageAndQuotaCommand</code>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
@@ -3401,7 +3403,7 @@ partitions in the browser.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.storage.responses.GetUsageAndQuotaResponse">GetUsageAndQuotaResponse</span>]</code>
+                      <code><span title="pydoll.protocol.storage.methods.GetUsageAndQuotaCommand">GetUsageAndQuotaCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3493,7 +3495,7 @@ partitions in the browser.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Command</code>
+                <code>SetCookiesCommand</code>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
@@ -3502,7 +3504,7 @@ partitions in the browser.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.storage.methods.SetCookiesCommand">SetCookiesCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3607,16 +3609,17 @@ systems (part of Google's Privacy Sandbox).</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Command</code>
+                <code>SetProtectedAudienceKAnonymityCommand</code>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
-                <p>The CDP command to set protected audience K-anonymity.</p>
+                <p>The CDP command to set protected audience
+K-anonymity.</p>
               </div>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.storage.methods.SetProtectedAudienceKAnonymityCommand">SetProtectedAudienceKAnonymityCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3689,16 +3692,17 @@ to its Cache Storage.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Command</code>
+                <code>TrackCacheStorageForOriginCommand</code>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
-                <p>The CDP command to register monitoring of the origin's Cache Storage.</p>
+                <p>The CDP command to register monitoring of the
+origin's Cache Storage.</p>
               </div>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.storage.methods.TrackCacheStorageForOriginCommand">TrackCacheStorageForOriginCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3772,16 +3776,17 @@ for more precise isolation.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Command</code>
+                <code>TrackCacheStorageForStorageKeyCommand</code>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
-                <p>The CDP command to register monitoring of the key's Cache Storage.</p>
+                <p>The CDP command to register monitoring of
+the key's Cache Storage.</p>
               </div>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.storage.methods.TrackCacheStorageForStorageKeyCommand">TrackCacheStorageForStorageKeyCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3855,16 +3860,17 @@ large amounts of structured data.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Command</code>
+                <code>TrackIndexedDBForOriginCommand</code>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
-                <p>The CDP command to register monitoring of the origin's IndexedDB.</p>
+                <p>The CDP command to register monitoring of
+the origin's IndexedDB.</p>
               </div>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.storage.methods.TrackIndexedDBForOriginCommand">TrackIndexedDBForOriginCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3938,16 +3944,17 @@ for more precise isolation.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Command</code>
+                <code>TrackIndexedDBForStorageKeyCommand</code>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
-                <p>The CDP command to register monitoring of the key's IndexedDB.</p>
+                <p>The CDP command to register monitoring of
+the key's IndexedDB.</p>
               </div>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.storage.methods.TrackIndexedDBForStorageKeyCommand">TrackIndexedDBForStorageKeyCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -4020,16 +4027,17 @@ about changes to its Cache Storage.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Command</code>
+                <code>UntrackCacheStorageForOriginCommand</code>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
-                <p>The CDP command to cancel monitoring of the origin's Cache Storage.</p>
+                <p>The CDP command to cancel monitoring of the
+origin's Cache Storage.</p>
               </div>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.storage.methods.UntrackCacheStorageForOriginCommand">UntrackCacheStorageForOriginCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -4103,16 +4111,17 @@ track_cache_storage_for_storage_key.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Command</code>
+                <code>UntrackCacheStorageForStorageKeyCommand</code>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
-                <p>The CDP command to cancel monitoring of the key's Cache Storage.</p>
+                <p>The CDP command to cancel monitoring of
+the key's Cache Storage.</p>
               </div>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.storage.methods.UntrackCacheStorageForStorageKeyCommand">UntrackCacheStorageForStorageKeyCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -4185,16 +4194,17 @@ about changes to its IndexedDB.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Command</code>
+                <code>UntrackIndexedDBForOriginCommand</code>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
-                <p>The CDP command to cancel monitoring of the origin's IndexedDB.</p>
+                <p>The CDP command to cancel monitoring of
+the origin's IndexedDB.</p>
               </div>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.storage.methods.UntrackIndexedDBForOriginCommand">UntrackIndexedDBForOriginCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -4267,16 +4277,17 @@ about changes to its IndexedDB.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Command</code>
+                <code>UntrackIndexedDBForStorageKeyCommand</code>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
-                <p>The CDP command to cancel monitoring of the key's IndexedDB.</p>
+                <p>The CDP command to cancel monitoring
+of the key's IndexedDB.</p>
               </div>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.storage.methods.UntrackIndexedDBForStorageKeyCommand">UntrackIndexedDBForStorageKeyCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -4349,7 +4360,7 @@ with privacy protections.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Command</code>
+                <code>ClearSharedStorageEntriesCommand</code>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
@@ -4358,7 +4369,7 @@ with privacy protections.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.storage.methods.ClearSharedStorageEntriesCommand">ClearSharedStorageEntriesCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -4432,7 +4443,7 @@ records, intact.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Command</code>
+                <code>ClearTrustTokensCommand</code>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
@@ -4442,7 +4453,7 @@ records, intact.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.storage.responses.ClearTrustTokensResponse">ClearTrustTokensResponse</span>]</code>
+                      <code><span title="pydoll.protocol.storage.methods.ClearTrustTokensCommand">ClearTrustTokensCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -4529,7 +4540,7 @@ records, intact.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Command</code>
+                <code>DeleteSharedStorageEntryCommand</code>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
@@ -4538,7 +4549,7 @@ records, intact.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.storage.methods.DeleteSharedStorageEntryCommand">DeleteSharedStorageEntryCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -4593,7 +4604,7 @@ to delete.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.storage.params.StorageBucket">StorageBucket</span></code>
+                      <code><span title="pydoll.protocol.storage.types.StorageBucket">StorageBucket</span></code>
                   </span>
               </p>
             </td>
@@ -4612,7 +4623,7 @@ to delete.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Command</code>
+                <code>DeleteStorageBucketCommand</code>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
@@ -4621,7 +4632,7 @@ to delete.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.storage.methods.DeleteStorageBucketCommand">DeleteStorageBucketCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -4711,16 +4722,17 @@ Privacy Sandbox's third-party cookie policies.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Command</code>
+                <code>GetAffectedUrlsForThirdPartyCookieMetadataCommand</code>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
-                <p>The CDP command to get URLs affected by third-party cookie metadata.</p>
+                <p>The CDP command to get URLs
+affected by third-party cookie metadata.</p>
               </div>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.storage.responses.GetAffectedUrlsForThirdPartyCookieMetadataResponse">GetAffectedUrlsForThirdPartyCookieMetadataResponse</span>]</code>
+                      <code><span title="pydoll.protocol.storage.methods.GetAffectedUrlsForThirdPartyCookieMetadataCommand">GetAffectedUrlsForThirdPartyCookieMetadataCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -4809,7 +4821,7 @@ advertising, enabling in-browser ad auctions.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Command</code>
+                <code>GetInterestGroupDetailsCommand</code>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
@@ -4818,7 +4830,7 @@ advertising, enabling in-browser ad auctions.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.storage.responses.GetInterestGroupDetailsResponse">GetInterestGroupDetailsResponse</span>]</code>
+                      <code><span title="pydoll.protocol.storage.methods.GetInterestGroupDetailsCommand">GetInterestGroupDetailsCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -4843,7 +4855,7 @@ advertising, enabling in-browser ad auctions.</p>
   </span>
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">get_related_website_sets</span><span class="p">(</span><span class="n">sets</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">get_related_website_sets</span><span class="p">()</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4870,10 +4882,6 @@ to share some data, despite third-party cookie restrictions.</p>
                 <p>list of RelatedWebsiteSet objects.</p>
               </div>
               <p>
-                  <span class="doc-param-annotation">
-                    <b>TYPE:</b>
-                      <code><span title="list">list</span>[<span title="pydoll.protocol.storage.params.RelatedWebsiteSet">RelatedWebsiteSet</span>]</code>
-                  </span>
               </p>
             </td>
           </tr>
@@ -4891,7 +4899,7 @@ to share some data, despite third-party cookie restrictions.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Command</code>
+                <code>GetRelatedWebsiteSetsCommand</code>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
@@ -4900,7 +4908,7 @@ to share some data, despite third-party cookie restrictions.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.storage.responses.GetRelatedWebsiteSetsResponse">GetRelatedWebsiteSetsResponse</span>]</code>
+                      <code><span title="pydoll.protocol.storage.methods.GetRelatedWebsiteSetsCommand">GetRelatedWebsiteSetsCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -4971,7 +4979,7 @@ to share some data, despite third-party cookie restrictions.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Command</code>
+                <code>GetSharedStorageEntriesCommand</code>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
@@ -4980,7 +4988,7 @@ to share some data, despite third-party cookie restrictions.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.storage.responses.GetSharedStorageEntriesResponse">GetSharedStorageEntriesResponse</span>]</code>
+                      <code><span title="pydoll.protocol.storage.methods.GetSharedStorageEntriesCommand">GetSharedStorageEntriesCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -5052,7 +5060,7 @@ to share some data, despite third-party cookie restrictions.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Command</code>
+                <code>GetSharedStorageMetadataCommand</code>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
@@ -5061,7 +5069,7 @@ to share some data, despite third-party cookie restrictions.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.storage.responses.GetSharedStorageMetadataResponse">GetSharedStorageMetadataResponse</span>]</code>
+                      <code><span title="pydoll.protocol.storage.methods.GetSharedStorageMetadataCommand">GetSharedStorageMetadataCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -5104,7 +5112,7 @@ to share some data, despite third-party cookie restrictions.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Command</code>
+                <code>GetTrustTokensCommand</code>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
@@ -5114,7 +5122,7 @@ to share some data, despite third-party cookie restrictions.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.storage.responses.GetTrustTokensResponse">GetTrustTokensResponse</span>]</code>
+                      <code><span title="pydoll.protocol.storage.methods.GetTrustTokensCommand">GetTrustTokensCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -5208,7 +5216,7 @@ different storage conditions.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Command</code>
+                <code>OverrideQuotaForOriginCommand</code>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
@@ -5217,7 +5225,7 @@ different storage conditions.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.storage.methods.OverrideQuotaForOriginCommand">OverrideQuotaForOriginCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -5290,7 +5298,7 @@ or specific operations to preserve user privacy.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Command</code>
+                <code>ResetSharedStorageBudgetCommand</code>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
@@ -5299,7 +5307,7 @@ or specific operations to preserve user privacy.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.storage.methods.ResetSharedStorageBudgetCommand">ResetSharedStorageBudgetCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -5345,7 +5353,7 @@ This command activates protections against this technique.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Command</code>
+                <code>RunBounceTrackingMitigationsCommand</code>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
@@ -5354,7 +5362,7 @@ This command activates protections against this technique.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.storage.responses.RunBounceTrackingMitigationsResponse">RunBounceTrackingMitigationsResponse</span>]</code>
+                      <code><span title="pydoll.protocol.storage.methods.RunBounceTrackingMitigationsCommand">RunBounceTrackingMitigationsCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -5400,16 +5408,17 @@ are waiting to be sent.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Command</code>
+                <code>SendPendingAttributionReportsCommand</code>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
-                <p>The CDP command to send pending attribution reports.</p>
+                <p>The CDP command to send pending attribution
+reports.</p>
               </div>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.storage.responses.SendPendingAttributionReportsResponse">SendPendingAttributionReportsResponse</span>]</code>
+                      <code><span title="pydoll.protocol.storage.methods.SendPendingAttributionReportsCommand">SendPendingAttributionReportsCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -5434,7 +5443,7 @@ are waiting to be sent.</p>
   </span>
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">set_attribution_reporting_local_testing_mode</span><span class="p">(</span><span class="n">enable</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">set_attribution_reporting_local_testing_mode</span><span class="p">(</span><span class="n">enabled</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5461,10 +5470,6 @@ by removing restrictions like delays and rate limits that would normally apply.<
                 <p>True to enable local testing mode, False to disable it.</p>
               </div>
               <p>
-                  <span class="doc-param-annotation">
-                    <b>TYPE:</b>
-                      <code><span title="bool">bool</span></code>
-                  </span>
               </p>
             </td>
           </tr>
@@ -5482,16 +5487,17 @@ by removing restrictions like delays and rate limits that would normally apply.<
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Command</code>
+                <code>SetAttributionReportingLocalTestingModeCommand</code>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
-                <p>The CDP command to set Attribution Reporting local testing mode.</p>
+                <p>The CDP command to set Attribution
+Reporting local testing mode.</p>
               </div>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.storage.methods.SetAttributionReportingLocalTestingModeCommand">SetAttributionReportingLocalTestingModeCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -5562,16 +5568,17 @@ by removing restrictions like delays and rate limits that would normally apply.<
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Command</code>
+                <code>SetAttributionReportingTrackingCommand</code>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
-                <p>The CDP command to set Attribution Reporting tracking.</p>
+                <p>The CDP command to set Attribution
+Reporting tracking.</p>
               </div>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.storage.methods.SetAttributionReportingTrackingCommand">SetAttributionReportingTrackingCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -5644,16 +5651,17 @@ allow for in-browser ad auctions in a privacy-preserving way.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Command</code>
+                <code>SetInterestGroupAuctionTrackingCommand</code>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
-                <p>The CDP command to set interest group auction tracking.</p>
+                <p>The CDP command to set interest group
+auction tracking.</p>
               </div>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.storage.methods.SetInterestGroupAuctionTrackingCommand">SetInterestGroupAuctionTrackingCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -5724,7 +5732,7 @@ allow for in-browser ad auctions in a privacy-preserving way.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Command</code>
+                <code>SetInterestGroupTrackingCommand</code>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
@@ -5733,7 +5741,7 @@ allow for in-browser ad auctions in a privacy-preserving way.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.storage.methods.SetInterestGroupTrackingCommand">SetInterestGroupTrackingCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -5856,7 +5864,7 @@ allow for in-browser ad auctions in a privacy-preserving way.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Command</code>
+                <code>SetSharedStorageEntryCommand</code>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
@@ -5865,7 +5873,7 @@ allow for in-browser ad auctions in a privacy-preserving way.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.storage.methods.SetSharedStorageEntryCommand">SetSharedStorageEntryCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -5937,7 +5945,7 @@ allow for in-browser ad auctions in a privacy-preserving way.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Command</code>
+                <code>SetSharedStorageTrackingCommand</code>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
@@ -5946,7 +5954,7 @@ allow for in-browser ad auctions in a privacy-preserving way.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.storage.methods.SetSharedStorageTrackingCommand">SetSharedStorageTrackingCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -6034,7 +6042,7 @@ allow for in-browser ad auctions in a privacy-preserving way.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>Command</code>
+                <code>SetStorageBucketTrackingCommand</code>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
@@ -6043,7 +6051,7 @@ allow for in-browser ad auctions in a privacy-preserving way.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.storage.methods.SetStorageBucketTrackingCommand">SetStorageBucketTrackingCommand</span></code>
                   </span>
                 </p>
             </td>

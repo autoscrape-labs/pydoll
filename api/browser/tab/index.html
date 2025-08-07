@@ -1005,6 +1005,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pydoll.browser.tab.Tab.request" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;request
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pydoll.browser.tab.Tab.intercept_file_chooser_dialog_enabled" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;intercept_file_chooser_dialog_enabled
@@ -1359,6 +1368,15 @@
   <a href="#pydoll.browser.tab.Tab.on" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;on
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.browser.tab.Tab.clear_callbacks" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;clear_callbacks
     </span>
   </a>
   
@@ -2278,6 +2296,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pydoll.browser.tab.Tab.request" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;request
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pydoll.browser.tab.Tab.intercept_file_chooser_dialog_enabled" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;intercept_file_chooser_dialog_enabled
@@ -2638,6 +2665,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pydoll.browser.tab.Tab.clear_callbacks" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;clear_callbacks
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pydoll.browser.tab.Tab.find" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;find
@@ -2929,6 +2965,58 @@ only one Tab instance exists per browser tab.</p>
     <div class="doc doc-contents ">
 
         <p>Whether CDP Runtime domain events are enabled.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="pydoll.browser.tab.Tab.request" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">request</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">request</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Get the request object for making HTTP requests using the browser's fetch API.</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>Request</code>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>An instance of the Request class for making HTTP requests.</p>
+              </div>
+                <p>
+                  <span class="doc-returns-annotation">
+                    <b>TYPE:</b>
+                      <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;pydoll.browser.requests.request.Request&lt;/span&gt; (&lt;code&gt;pydoll.browser.requests.Request&lt;/code&gt;)" href="../requests/#pydoll.browser.requests.request.Request">Request</a></code>
+                  </span>
+                </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
     </div>
 
@@ -3241,7 +3329,7 @@ only one Tab instance exists per browser tab.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;ResourceType&lt;/span&gt; (&lt;code&gt;pydoll.constants.ResourceType&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.ResourceType">ResourceType</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<span title="pydoll.protocol.network.types.ResourceType">ResourceType</span>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -3261,7 +3349,7 @@ only one Tab instance exists per browser tab.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;RequestStage&lt;/span&gt; (&lt;code&gt;pydoll.constants.RequestStage&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.RequestStage">RequestStage</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<span title="pydoll.protocol.fetch.types.RequestStage">RequestStage</span>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -3964,7 +4052,12 @@ only one Tab instance exists per browser tab.</p>
           <tr class="doc-section-item">
             <td>
                 <span class="doc-returns-annotation">
-                    <code><span title="list">list</span>[<span title="pydoll.protocol.network.types.NetworkLog">NetworkLog</span>]</code>
+                    <code><span title="list">list</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;RequestWillBeSentEvent&lt;/span&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-module-attribute&quot;&gt;&lt;code&gt;module-attribute&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt; (&lt;code&gt;pydoll.protocol.network.events.RequestWillBeSentEvent&lt;/code&gt;)" href="../../protocol/events/#pydoll.protocol.network.events.RequestWillBeSentEvent">RequestWillBeSentEvent</a>]</code>
                 </span>
             </td>
             <td class="doc-returns-details">
@@ -4806,8 +4899,8 @@ only one Tab instance exists per browser tab.</p>
 
 </h3>
           <div class="doc-overloads">
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">execute_script</span><span class="p">(</span><span class="n">script</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="pydoll.protocol.runtime.responses.EvaluateResponse">EvaluateResponse</span></span>
-</span></code></pre></div><div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">execute_script</span><span class="p">(</span><span class="n">script</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">element</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;pydoll.elements.web_element.WebElement&lt;/span&gt;" href="../../elements/web_element/#pydoll.elements.web_element.WebElement">WebElement</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="pydoll.protocol.runtime.responses.CallFunctionOnResponse">CallFunctionOnResponse</span></span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">execute_script</span><span class="p">(</span><span class="n">script</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="pydoll.protocol.runtime.methods.EvaluateResponse">EvaluateResponse</span></span>
+</span></code></pre></div><div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">execute_script</span><span class="p">(</span><span class="n">script</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">element</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;pydoll.elements.web_element.WebElement&lt;/span&gt;" href="../../elements/web_element/#pydoll.elements.web_element.WebElement">WebElement</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="pydoll.protocol.runtime.methods.CallFunctionOnResponse">CallFunctionOnResponse</span></span>
 </span></code></pre></div>          </div>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">execute_script</span><span class="p">(</span><span class="n">script</span><span class="p">,</span> <span class="n">element</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </span></code></pre></div>
@@ -5231,6 +5324,30 @@ await page.execute_script('argument.value = "Hello"', element)</p>
   <summary>Note</summary>
   <p>Corresponding domain must be enabled before events fire.</p>
 </details>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="pydoll.browser.tab.Tab.clear_callbacks" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">clear_callbacks</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">clear_callbacks</span><span class="p">()</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Clear all registered event callbacks.</p>
+
 
     </div>
 

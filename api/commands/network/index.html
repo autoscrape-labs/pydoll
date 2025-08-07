@@ -2726,7 +2726,7 @@ resource loading. It affects all cached resources including:
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.network.methods.ClearBrowserCacheCommand">ClearBrowserCacheCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -2773,7 +2773,7 @@ cookies that might affect the application's behavior.</p>
           <tr class="doc-section-item">
             <td>
                 <span class="doc-returns-annotation">
-                    <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                    <code><span title="pydoll.protocol.network.methods.ClearBrowserCookiesCommand">ClearBrowserCookiesCommand</span></code>
                 </span>
             </td>
             <td class="doc-returns-details">
@@ -2941,7 +2941,7 @@ cookies that might affect the application's behavior.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.network.methods.ClearCookiesCommand">ClearCookiesCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3001,7 +3001,7 @@ cookies that might affect the application's behavior.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.network.methods.DisableCommand">DisableCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3129,7 +3129,7 @@ cookies that might affect the application's behavior.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.network.methods.EnableCommand">EnableCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3216,7 +3216,7 @@ cookies that might affect the application's behavior.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.network.responses.GetCookiesResponse">GetCookiesResponse</span>]</code>
+                      <code><span title="pydoll.protocol.network.methods.GetCookiesCommand">GetCookiesCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3308,7 +3308,7 @@ cookies that might affect the application's behavior.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.network.responses.GetRequestPostDataResponse">GetRequestPostDataResponse</span>]</code>
+                      <code><span title="pydoll.protocol.network.methods.GetRequestPostDataCommand">GetRequestPostDataCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3397,7 +3397,7 @@ cookies that might affect the application's behavior.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.network.responses.GetResponseBodyResponse">GetResponseBodyResponse</span>]</code>
+                      <code><span title="pydoll.protocol.network.methods.GetResponseBodyCommand">GetResponseBodyCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3482,7 +3482,7 @@ cookies that might affect the application's behavior.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.network.methods.SetCacheDisabledCommand">SetCacheDisabledCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3673,7 +3673,7 @@ cookies that might affect the application's behavior.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;CookieSameSite&lt;/span&gt; (&lt;code&gt;pydoll.constants.CookieSameSite&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.CookieSameSite">CookieSameSite</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<span title="pydoll.protocol.network.types.CookieSameSite">CookieSameSite</span>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -3713,7 +3713,7 @@ cookies that might affect the application's behavior.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;CookiePriority&lt;/span&gt; (&lt;code&gt;pydoll.constants.CookiePriority&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.CookiePriority">CookiePriority</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<span title="pydoll.protocol.network.types.CookiePriority">CookiePriority</span>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -3753,7 +3753,7 @@ cookies that might affect the application's behavior.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;CookieSourceScheme&lt;/span&gt; (&lt;code&gt;pydoll.constants.CookieSourceScheme&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.CookieSourceScheme">CookieSourceScheme</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<span title="pydoll.protocol.network.types.CookieSourceScheme">CookieSourceScheme</span>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -3825,7 +3825,7 @@ cookies that might affect the application's behavior.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.network.responses.SetCookieResponse">SetCookieResponse</span>]</code>
+                      <code><span title="pydoll.protocol.network.methods.SetCookieCommand">SetCookieCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3887,7 +3887,7 @@ cookies that might affect the application's behavior.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="list">list</span>[<span title="pydoll.protocol.network.params.SetCookieParams">SetCookieParams</span>]</code>
+                      <code><span title="list">list</span>[<span title="pydoll.protocol.network.methods.SetCookieParams">SetCookieParams</span>]</code>
                   </span>
               </p>
             </td>
@@ -3915,7 +3915,7 @@ cookies that might affect the application's behavior.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.network.methods.SetCookiesCommand">SetCookiesCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3975,7 +3975,7 @@ cookies that might affect the application's behavior.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="list">list</span>[<span title="pydoll.protocol.network.params.HeaderEntry">HeaderEntry</span>]</code>
+                      <code><span title="list">list</span>[<span title="pydoll.protocol.network.methods.HeaderEntry">HeaderEntry</span>]</code>
                   </span>
               </p>
             </td>
@@ -4007,7 +4007,7 @@ cookies that might affect the application's behavior.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.network.methods.SetExtraHTTPHeadersCommand">SetExtraHTTPHeadersCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -4120,7 +4120,7 @@ cookies that might affect the application's behavior.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<span title="pydoll.protocol.network.params.UserAgentMetadata">UserAgentMetadata</span>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<span title="pydoll.protocol.emulation.types.UserAgentMetadata">UserAgentMetadata</span>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -4152,7 +4152,7 @@ cookies that might affect the application's behavior.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.network.methods.SetUserAgentOverrideCommand">SetUserAgentOverrideCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -4216,7 +4216,7 @@ cookies that might affect the application's behavior.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.network.methods.ClearAcceptedEncodingsOverrideCommand">ClearAcceptedEncodingsOverrideCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -4301,7 +4301,7 @@ cookies that might affect the application's behavior.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.network.methods.EnableReportingApiCommand">EnableReportingApiCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -4443,7 +4443,7 @@ cookies that might affect the application's behavior.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.network.responses.SearchInResponseBodyResponse">SearchInResponseBodyResponse</span>]</code>
+                      <code><span title="pydoll.protocol.network.methods.SearchInResponseBodyCommand">SearchInResponseBodyCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -4532,7 +4532,7 @@ cookies that might affect the application's behavior.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.network.methods.SetBlockedURLsCommand">SetBlockedURLsCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -4622,7 +4622,7 @@ cookies that might affect the application's behavior.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.network.methods.SetBypassServiceWorkerCommand">SetBypassServiceWorkerCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -4711,7 +4711,7 @@ cookies that might affect the application's behavior.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.network.responses.GetCertificateResponse">GetCertificateResponse</span>]</code>
+                      <code><span title="pydoll.protocol.network.methods.GetCertificateCommand">GetCertificateCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -4801,7 +4801,7 @@ cookies that might affect the application's behavior.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.network.responses.GetResponseBodyForInterceptionResponse">GetResponseBodyForInterceptionResponse</span>]</code>
+                      <code><span title="pydoll.protocol.network.methods.GetResponseBodyForInterceptionCommand">GetResponseBodyForInterceptionCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -4862,7 +4862,7 @@ cookies that might affect the application's behavior.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="list">list</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;ContentEncoding&lt;/span&gt; (&lt;code&gt;pydoll.constants.ContentEncoding&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.ContentEncoding">ContentEncoding</a>]</code>
+                      <code><span title="list">list</span>[<span title="pydoll.protocol.network.types.ContentEncoding">ContentEncoding</span>]</code>
                   </span>
               </p>
             </td>
@@ -4890,7 +4890,7 @@ cookies that might affect the application's behavior.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.network.methods.SetAcceptedEncodingsCommand">SetAcceptedEncodingsCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -4979,7 +4979,7 @@ cookies that might affect the application's behavior.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.network.methods.SetAttachDebugStackCommand">SetAttachDebugStackCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -5108,7 +5108,7 @@ cookies that might affect the application's behavior.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.network.methods.SetCookieControlsCommand">SetCookieControlsCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -5197,7 +5197,7 @@ cookies that might affect the application's behavior.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.network.responses.StreamResourceContentResponse">StreamResourceContentResponse</span>]</code>
+                      <code><span title="pydoll.protocol.network.methods.StreamResourceContentCommand">StreamResourceContentCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -5286,7 +5286,7 @@ cookies that might affect the application's behavior.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.network.responses.TakeResponseBodyForInterceptionAsStreamResponse">TakeResponseBodyForInterceptionAsStreamResponse</span>]</code>
+                      <code><span title="pydoll.protocol.network.methods.TakeResponseBodyForInterceptionAsStreamCommand">TakeResponseBodyForInterceptionAsStreamCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -5411,7 +5411,7 @@ cookies that might affect the application's behavior.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;ConnectionType&lt;/span&gt; (&lt;code&gt;pydoll.constants.ConnectionType&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.ConnectionType">ConnectionType</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<span title="pydoll.protocol.network.types.ConnectionType">ConnectionType</span>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -5507,7 +5507,7 @@ cookies that might affect the application's behavior.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.network.methods.EmulateNetworkConditionsCommand">EmulateNetworkConditionsCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -5596,7 +5596,7 @@ cookies that might affect the application's behavior.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.network.responses.GetSecurityIsolationStatusResponse">GetSecurityIsolationStatusResponse</span>]</code>
+                      <code><span title="pydoll.protocol.network.methods.GetSecurityIsolationStatusCommand">GetSecurityIsolationStatusCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -5722,7 +5722,7 @@ cookies that might affect the application's behavior.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.network.responses.LoadNetworkResourceResponse">LoadNetworkResourceResponse</span>]</code>
+                      <code><span title="pydoll.protocol.network.methods.LoadNetworkResourceCommand">LoadNetworkResourceCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -5812,7 +5812,7 @@ cookies that might affect the application's behavior.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.network.methods.ReplayXHRCommand">ReplayXHRCommand</span></code>
                   </span>
                 </p>
             </td>

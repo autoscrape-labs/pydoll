@@ -2469,7 +2469,7 @@ headers, and body before continuing.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;RequestMethod&lt;/span&gt; (&lt;code&gt;pydoll.constants.RequestMethod&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.RequestMethod">RequestMethod</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<span title="pydoll.protocol.network.types.RequestMethod">RequestMethod</span>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -2511,7 +2511,7 @@ in the fetch request. Defaults to None.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<span title="list">list</span>[<span title="pydoll.protocol.fetch.params.HeaderEntry">HeaderEntry</span>]]</code>
+                      <code><span title="typing.Optional">Optional</span>[<span title="list">list</span>[<span title="pydoll.protocol.fetch.types.HeaderEntry">HeaderEntry</span>]]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -2556,7 +2556,7 @@ should be intercepted. Defaults to None.</p>
           <tr class="doc-section-item">
             <td>
                 <span class="doc-returns-annotation">
-                    <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                    <code><span title="pydoll.protocol.fetch.methods.ContinueRequestCommand">ContinueRequestCommand</span></code>
                 </span>
             </td>
             <td class="doc-returns-details">
@@ -2632,7 +2632,7 @@ challenge response type.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;AuthChallengeResponseValues&lt;/span&gt; (&lt;code&gt;pydoll.constants.AuthChallengeResponseValues&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.AuthChallengeResponseValues">AuthChallengeResponseValues</a></code>
+                      <code><span title="pydoll.protocol.fetch.types.AuthChallengeResponseType">AuthChallengeResponseType</span></code>
                   </span>
               </p>
             </td>
@@ -2694,7 +2694,7 @@ Defaults to None.</p>
           <tr class="doc-section-item">
             <td>
                 <span class="doc-returns-annotation">
-                    <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                    <code><span title="pydoll.protocol.fetch.methods.ContinueWithAuthCommand">ContinueWithAuthCommand</span></code>
                 </span>
             </td>
             <td class="doc-returns-details">
@@ -2744,7 +2744,7 @@ authentication.</p>
           <tr class="doc-section-item">
             <td>
                 <span class="doc-returns-annotation">
-                    <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                    <code><span title="pydoll.protocol.fetch.methods.DisableCommand">DisableCommand</span></code>
                 </span>
             </td>
             <td class="doc-returns-details">
@@ -2841,7 +2841,7 @@ Defaults to None.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;ResourceType&lt;/span&gt; (&lt;code&gt;pydoll.constants.ResourceType&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.ResourceType">ResourceType</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<span title="pydoll.protocol.fetch.types.ResourceType">ResourceType</span>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -2862,7 +2862,7 @@ Defaults to None.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;RequestStage&lt;/span&gt; (&lt;code&gt;pydoll.constants.RequestStage&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.RequestStage">RequestStage</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<span title="pydoll.protocol.fetch.types.RequestStage">RequestStage</span>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -2886,7 +2886,7 @@ Defaults to None.</p>
           <tr class="doc-section-item">
             <td>
                 <span class="doc-returns-annotation">
-                    <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                    <code><span title="pydoll.protocol.fetch.methods.EnableCommand">EnableCommand</span></code>
                 </span>
             </td>
             <td class="doc-returns-details">
@@ -2960,7 +2960,7 @@ operation, providing a reason for the failure.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;NetworkErrorReason&lt;/span&gt; (&lt;code&gt;pydoll.constants.NetworkErrorReason&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.NetworkErrorReason">NetworkErrorReason</a></code>
+                      <code><span title="pydoll.protocol.network.types.ErrorReason">ErrorReason</span></code>
                   </span>
               </p>
             </td>
@@ -2980,7 +2980,7 @@ operation, providing a reason for the failure.</p>
           <tr class="doc-section-item">
             <td>
                 <span class="doc-returns-annotation">
-                    <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                    <code><span title="pydoll.protocol.fetch.methods.FailRequestCommand">FailRequestCommand</span></code>
                 </span>
             </td>
             <td class="doc-returns-details">
@@ -3071,7 +3071,7 @@ Defaults to None.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<span title="list">list</span>[<span title="pydoll.protocol.fetch.params.HeaderEntry">HeaderEntry</span>]]</code>
+                      <code><span title="typing.Optional">Optional</span>[<span title="list">list</span>[<span title="pydoll.protocol.fetch.types.HeaderEntry">HeaderEntry</span>]]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -3136,7 +3136,7 @@ Defaults to None.</p>
           <tr class="doc-section-item">
             <td>
                 <span class="doc-returns-annotation">
-                    <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                    <code><span title="pydoll.protocol.fetch.methods.FulfillRequestCommand">FulfillRequestCommand</span></code>
                 </span>
             </td>
             <td class="doc-returns-details">
@@ -3215,7 +3215,7 @@ from.</p>
           <tr class="doc-section-item">
             <td>
                 <span class="doc-returns-annotation">
-                    <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.fetch.responses.GetResponseBodyResponse">GetResponseBodyResponse</span>]</code>
+                    <code><span title="pydoll.protocol.fetch.methods.GetResponseBodyCommand">GetResponseBodyCommand</span></code>
                 </span>
             </td>
             <td class="doc-returns-details">
@@ -3314,7 +3314,7 @@ Defaults to None.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<span title="list">list</span>[<span title="pydoll.protocol.fetch.params.HeaderEntry">HeaderEntry</span>]]</code>
+                      <code><span title="typing.Optional">Optional</span>[<span title="list">list</span>[<span title="pydoll.protocol.fetch.types.HeaderEntry">HeaderEntry</span>]]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -3359,7 +3359,7 @@ Defaults to None.</p>
           <tr class="doc-section-item">
             <td>
                 <span class="doc-returns-annotation">
-                    <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                    <code><span title="pydoll.protocol.fetch.methods.ContinueResponseCommand">ContinueResponseCommand</span></code>
                 </span>
             </td>
             <td class="doc-returns-details">
@@ -3438,7 +3438,7 @@ body stream from.</p>
           <tr class="doc-section-item">
             <td>
                 <span class="doc-returns-annotation">
-                    <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.fetch.responses.TakeResponseBodyAsStreamResponse">TakeResponseBodyAsStreamResponse</span>]</code>
+                    <code><span title="pydoll.protocol.fetch.methods.TakeResponseBodyAsStreamCommand">TakeResponseBodyAsStreamCommand</span></code>
                 </span>
             </td>
             <td class="doc-returns-details">

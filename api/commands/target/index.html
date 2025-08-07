@@ -2554,7 +2554,7 @@ including creating, activating, attaching to, and closing targets through CDP co
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.target.methods.ActivateTargetCommand">ActivateTargetCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -2658,7 +2658,7 @@ This is essential for controlling and automating targets like browser tabs.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.target.responses.AttachToTargetResponse">AttachToTargetResponse</span>]</code>
+                      <code><span title="pydoll.protocol.target.methods.AttachToTargetCommand">AttachToTargetCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -2740,7 +2740,7 @@ clicking the close button on a browser tab.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.target.methods.CloseTargetCommand">CloseTargetCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -2895,7 +2895,7 @@ This is useful for testing multiple users or isolating sessions.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.target.responses.CreateBrowserContextResponse">CreateBrowserContextResponse</span>]</code>
+                      <code><span title="pydoll.protocol.target.methods.CreateBrowserContextCommand">CreateBrowserContextCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3051,7 +3051,7 @@ properties such as position, size, and browser context.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;WindowState&lt;/span&gt; (&lt;code&gt;pydoll.constants.WindowState&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.WindowState">WindowState</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<span title="pydoll.protocol.browser.types.WindowState">WindowState</span>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -3212,7 +3212,7 @@ of the created target.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.target.responses.CreateTargetResponse">CreateTargetResponse</span>]</code>
+                      <code><span title="pydoll.protocol.target.methods.CreateTargetCommand">CreateTargetCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3298,7 +3298,7 @@ cannot send commands to it.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.target.methods.DetachFromTargetCommand">DetachFromTargetCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3380,7 +3380,7 @@ their beforeunload hooks. This is similar to closing an incognito profile.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.target.methods.DisposeBrowserContextCommand">DisposeBrowserContextCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3435,7 +3435,7 @@ multiple isolated browser sessions.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.target.responses.GetBrowserContextsResponse">GetBrowserContextsResponse</span>]</code>
+                      <code><span title="pydoll.protocol.target.methods.GetBrowserContextsCommand">GetBrowserContextsCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3525,7 +3525,7 @@ attaching to them.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.target.responses.GetTargetsResponse">GetTargetsResponse</span>]</code>
+                      <code><span title="pydoll.protocol.target.methods.GetTargetsCommand">GetTargetsCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3550,7 +3550,7 @@ attaching to them.</p>
   </span>
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">set_auto_attach</span><span class="p">(</span><span class="n">auto_attach</span><span class="p">,</span> <span class="n">wait_for_debugger_on_start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">flatten</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">set_auto_attach</span><span class="p">(</span><span class="n">auto_attach</span><span class="p">,</span> <span class="n">wait_for_debugger_on_start</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">flatten</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3598,11 +3598,11 @@ it automatically detaches from all currently attached targets.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<span title="bool">bool</span>]</code>
+                      <code><span title="bool">bool</span></code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
-                      <code>None</code>
+                      <code>False</code>
                   </span>
               </p>
             </td>
@@ -3672,7 +3672,7 @@ it automatically detaches from all currently attached targets.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.target.methods.SetAutoAttachCommand">SetAutoAttachCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3776,7 +3776,7 @@ for monitoring when new tabs, workers, or other targets are created or destroyed
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.target.methods.SetDiscoverTargetsCommand">SetDiscoverTargetsCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3860,7 +3860,7 @@ represents the browser itself rather than a page or other content.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.target.responses.AttachToBrowserTargetResponse">AttachToBrowserTargetResponse</span>]</code>
+                      <code><span title="pydoll.protocol.target.methods.AttachToBrowserTargetCommand">AttachToBrowserTargetCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3943,7 +3943,7 @@ such as its type, URL, title, and other properties.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.target.responses.GetTargetInfoResponse">GetTargetInfoResponse</span>]</code>
+                      <code><span title="pydoll.protocol.target.methods.GetTargetInfoCommand">GetTargetInfoCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3998,7 +3998,7 @@ on remote devices or in different browser instances.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="list">list</span>[<span title="pydoll.protocol.target.params.RemoteLocation">RemoteLocation</span>]</code>
+                      <code><span title="list">list</span>[<span title="pydoll.protocol.target.types.RemoteLocation">RemoteLocation</span>]</code>
                   </span>
               </p>
             </td>
@@ -4026,7 +4026,7 @@ on remote devices or in different browser instances.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.target.methods.SetRemoteLocationsCommand">SetRemoteLocationsCommand</span></code>
                   </span>
                 </p>
             </td>

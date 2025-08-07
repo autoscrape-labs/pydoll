@@ -3143,7 +3143,7 @@ making it more lightweight for isolated element inspection operations.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.dom.responses.DescribeNodeResponse">DescribeNodeResponse</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.DescribeNodeCommand">DescribeNodeCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3199,7 +3199,7 @@ operations and want to minimize background processing.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.DisableCommand">DisableCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3256,7 +3256,7 @@ many DOM operations would fail or provide incomplete information.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;IncludeWhitespace&lt;/span&gt; (&lt;code&gt;pydoll.constants.IncludeWhitespace&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.IncludeWhitespace">IncludeWhitespace</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<span title="pydoll.protocol.dom.types.IncludeWhitespace">IncludeWhitespace</span>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -3288,7 +3288,7 @@ many DOM operations would fail or provide incomplete information.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.EnableCommand">EnableCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3415,7 +3415,7 @@ important for testing proper tab order and keyboard accessibility of web pages.<
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.FocusCommand">FocusCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3500,7 +3500,7 @@ without parsing HTML or using JavaScript evaluation.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.dom.responses.GetAttributesResponse">GetAttributesResponse</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.GetAttributesCommand">GetAttributesCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3629,7 +3629,7 @@ for spatial analysis and precision interactions with elements on the page.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.dom.responses.GetBoxModelResponse">GetBoxModelResponse</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.GetBoxModelCommand">GetBoxModelCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3739,7 +3739,7 @@ for the current target, making it a good starting point for DOM interaction.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.dom.responses.GetDocumentResponse">GetDocumentResponse</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.GetDocumentCommand">GetDocumentCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -3881,7 +3881,7 @@ spatially-oriented interactions.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.dom.responses.GetNodeForLocationResponse">GetNodeForLocationResponse</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.GetNodeForLocationCommand">GetNodeForLocationCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -4009,7 +4009,7 @@ preserves the full markup structure including tags, attributes, and child elemen
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.dom.responses.GetOuterHTMLResponse">GetOuterHTMLResponse</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.GetOuterHTMLCommand">GetOuterHTMLCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -4064,7 +4064,7 @@ proceeding to the next element to avoid visual clutter or interference.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.HideHighlightCommand">HideHighlightCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -4118,7 +4118,7 @@ to visually confirm which elements are being selected by selectors or coordinate
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.HighlightNodeCommand">HighlightNodeCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -4173,7 +4173,7 @@ regions that don't correspond directly to DOM elements.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.HighlightRectCommand">HighlightRectCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -4293,7 +4293,7 @@ rearranging elements, such as sortable lists, kanban boards, or drag-and-drop in
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.dom.responses.MoveToResponse">MoveToResponse</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.MoveToCommand">MoveToCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -4393,7 +4393,7 @@ scoped searches within specific sections of the page.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.dom.responses.QuerySelectorResponse">QuerySelectorResponse</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.QuerySelectorCommand">QuerySelectorCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -4493,7 +4493,7 @@ number of elements are present.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.dom.responses.QuerySelectorAllResponse">QuerySelectorAllResponse</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.QuerySelectorAllCommand">QuerySelectorAllCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -4592,7 +4592,7 @@ attributes are removed or for preparing elements for specific test conditions.</
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.RemoveAttributeCommand">RemoveAttributeCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -4675,7 +4675,7 @@ a page for focused testing scenarios.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.RemoveNodeCommand">RemoveNodeCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -4799,7 +4799,7 @@ the entire tree at once. Child nodes are returned as setChildNodes events.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.RequestChildNodesCommand">RequestChildNodesCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -4882,7 +4882,7 @@ might only be available as JavaScript references (e.g., from event handlers).</p
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.dom.responses.RequestNodeResponse">RequestNodeResponse</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.RequestNodeCommand">RequestNodeCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -5029,7 +5029,7 @@ This enables executing JavaScript operations on nodes identified through CDP.</p
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.dom.responses.ResolveNodeResponse">ResolveNodeResponse</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.ResolveNodeCommand">ResolveNodeCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -5145,7 +5145,7 @@ command essential for working with elements that may not be initially visible.</
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<span title="pydoll.protocol.dom.params.Rect">Rect</span>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<span title="pydoll.protocol.dom.methods.Rect">Rect</span>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -5177,7 +5177,7 @@ command essential for working with elements that may not be initially visible.</
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.ScrollIntoViewIfNeededCommand">ScrollIntoViewIfNeededCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -5297,7 +5297,7 @@ exactly how attributes would be defined in HTML source code.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.SetAttributesAsTextCommand">SetAttributesAsTextCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -5412,7 +5412,7 @@ setting up specific test conditions by controlling element attributes directly.<
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.SetAttributeValueCommand">SetAttributeValueCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -5555,7 +5555,7 @@ a file input, allowing automated tests to provide files programmatically.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.SetFileInputFilesCommand">SetFileInputFilesCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -5654,7 +5654,7 @@ impact of semantic HTML choices on accessibility and behavior.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.dom.responses.SetNodeNameResponse">SetNodeNameResponse</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.SetNodeNameCommand">SetNodeNameCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -5753,7 +5753,7 @@ surrounding HTML structure.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.SetNodeValueCommand">SetNodeValueCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -5853,7 +5853,7 @@ dynamically inserted content.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.SetOuterHTMLCommand">SetOuterHTMLCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -5936,7 +5936,7 @@ in use or where classes are dynamically applied.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.dom.responses.CollectClassNamesFromSubtreeResponse">CollectClassNamesFromSubtreeResponse</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.CollectClassNamesFromSubtreeCommand">CollectClassNamesFromSubtreeCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -6056,7 +6056,7 @@ testing how multiple instances of the same component behave.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.dom.responses.CopyToResponse">CopyToResponse</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.CopyToCommand">CopyToCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -6138,7 +6138,7 @@ a session, allowing explicit cleanup of search results that are no longer needed
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.DiscardSearchResultsCommand">DiscardSearchResultsCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -6241,7 +6241,7 @@ where you might locate text but need to find the actual link around it.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.dom.responses.GetAnchorElementResponse">GetAnchorElementResponse</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.GetAnchorElementCommand">GetAnchorElementCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -6332,7 +6332,7 @@ dealing with scrollable containers.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;PhysicalAxes&lt;/span&gt; (&lt;code&gt;pydoll.constants.PhysicalAxes&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.PhysicalAxes">PhysicalAxes</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<span title="pydoll.protocol.dom.types.PhysicalAxes">PhysicalAxes</span>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -6352,7 +6352,7 @@ dealing with scrollable containers.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;LogicalAxes&lt;/span&gt; (&lt;code&gt;pydoll.constants.LogicalAxes&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.LogicalAxes">LogicalAxes</a>]</code>
+                      <code><span title="typing.Optional">Optional</span>[<span title="pydoll.protocol.dom.types.LogicalAxes">LogicalAxes</span>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -6404,7 +6404,7 @@ dealing with scrollable containers.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.dom.responses.GetContainerForNodeResponse">GetContainerForNodeResponse</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.GetContainerForNodeCommand">GetContainerForNodeCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -6531,7 +6531,7 @@ This is more precise than getBoxModel for complex layouts.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.dom.responses.GetContentQuadsResponse">GetContentQuadsResponse</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.GetContentQuadsCommand">GetContentQuadsCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -6586,7 +6586,7 @@ JavaScript) are a common cause of memory leaks in web applications.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.dom.responses.GetDetachedDomNodesResponse">GetDetachedDomNodesResponse</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.GetDetachedDomNodesCommand">GetDetachedDomNodesCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -6657,7 +6657,7 @@ useful for simulating keyboard navigation or for analyzing element relationships
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;ElementRelation&lt;/span&gt; (&lt;code&gt;pydoll.constants.ElementRelation&lt;/code&gt;)" href="../../core/constants/#pydoll.constants.ElementRelation">ElementRelation</a></code>
+                      <code><span title="pydoll.protocol.dom.types.RelationType">RelationType</span></code>
                   </span>
               </p>
             </td>
@@ -6685,7 +6685,7 @@ useful for simulating keyboard navigation or for analyzing element relationships
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.dom.responses.GetElementByRelationResponse">GetElementByRelationResponse</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.GetElementByRelationCommand">GetElementByRelationCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -6768,7 +6768,7 @@ file input elements or created programmatically.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.dom.responses.GetFileInfoResponse">GetFileInfoResponse</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.GetFileInfoCommand">GetFileInfoCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -6851,7 +6851,7 @@ in the parent document.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.dom.responses.GetFrameOwnerResponse">GetFrameOwnerResponse</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.GetFrameOwnerCommand">GetFrameOwnerCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -6922,7 +6922,7 @@ for finding elements that match specific visual criteria.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="list">list</span>[<span title="pydoll.protocol.dom.params.CSSComputedStyleProperty">CSSComputedStyleProperty</span>]</code>
+                      <code><span title="list">list</span>[<span title="pydoll.protocol.dom.methods.CSSComputedStyleProperty">CSSComputedStyleProperty</span>]</code>
                   </span>
               </p>
             </td>
@@ -6970,7 +6970,7 @@ for finding elements that match specific visual criteria.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.dom.responses.GetNodesForSubtreeByStyleResponse">GetNodesForSubtreeByStyleResponse</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.GetNodesForSubtreeByStyleCommand">GetNodesForSubtreeByStyleCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -7053,7 +7053,7 @@ the relationship between their code and the resulting DOM structure.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.dom.responses.GetNodeStackTracesResponse">GetNodeStackTracesResponse</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.GetNodeStackTracesCommand">GetNodeStackTracesCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -7136,7 +7136,7 @@ container element.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.dom.responses.GetQueryingDescendantForContainerResponse">GetQueryingDescendantForContainerResponse</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.GetQueryingDescendantsForContainerCommand">GetQueryingDescendantsForContainerCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -7219,7 +7219,7 @@ optimizing rendering performance.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.dom.responses.GetRelayoutBoundaryResponse">GetRelayoutBoundaryResponse</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.GetRelayoutBoundaryCommand">GetRelayoutBoundaryCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -7334,7 +7334,7 @@ be inefficient to transfer all at once.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.dom.responses.GetSearchResultsResponse">GetSearchResultsResponse</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.GetSearchResultsCommand">GetSearchResultsCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -7389,7 +7389,7 @@ the normal document flow.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.dom.responses.GetTopLayerElementsResponse">GetTopLayerElementsResponse</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.GetTopLayerElementsCommand">GetTopLayerElementsCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -7444,7 +7444,7 @@ complex sequences of DOM operations that should be treated as a unit.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.MarkUndoableStateCommand">MarkUndoableStateCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -7547,7 +7547,7 @@ or content across the entire document without knowing the exact structure.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.dom.responses.PerformSearchResponse">PerformSearchResponse</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.PerformSearchCommand">PerformSearchCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -7630,7 +7630,7 @@ with systems that identify elements by path rather than by ID.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.dom.responses.PushNodeByPathToFrontendResponse">PushNodeByPathToFrontendResponse</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.PushNodeByPathToFrontendCommand">PushNodeByPathToFrontendCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -7712,7 +7712,7 @@ node IDs and need to convert them to frontend node IDs for further operations.</
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.dom.responses.PushNodesByBackendIdsToFrontendResponse">PushNodesByBackendIdsToFrontendResponse</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.PushNodesByBackendIdsToFrontendCommand">PushNodesByBackendIdsToFrontendCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -7767,7 +7767,7 @@ forth through a sequence of changes.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.RedoCommand">RedoCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -7850,7 +7850,7 @@ debugging or experimentation.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.SetInspectedNodeCommand">SetInspectedNodeCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -7933,7 +7933,7 @@ to understand where and why specific DOM elements are being created.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.SetNodeStackTracesEnabledCommand">SetNodeStackTracesEnabledCommand</span></code>
                   </span>
                 </p>
             </td>
@@ -7988,7 +7988,7 @@ when needed.</p>
                 <p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
-                      <code><span title="pydoll.protocol.base.Command">Command</span>[<span title="pydoll.protocol.base.Response">Response</span>]</code>
+                      <code><span title="pydoll.protocol.dom.methods.UndoCommand">UndoCommand</span></code>
                   </span>
                 </p>
             </td>
