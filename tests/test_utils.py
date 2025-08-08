@@ -206,6 +206,17 @@ class TestUtils:
             with pytest.raises(exceptions.InvalidBrowserPath):
                 validate_browser_paths([non_executable])
 
+    @pytest.mark.skipif(sys.platform.startswith('win'), reason='No executable bit on NTFS on Windows')
+    def test_validate_browser_paths_directory_instead_of_file(self):
+        """
+        Test validate_browser_paths with a directory path.
+        Verifies that directories are not treated as valid executables even if they have execute permission.
+        """
+        with tempfile.TemporaryDirectory() as temp_dir:
+            os.chmod(temp_dir, 0o755)
+            with pytest.raises(exceptions.InvalidBrowserPath):
+                validate_browser_paths([temp_dir])
+
     def test_validate_browser_paths_empty_list(self):
         """
         Test validate_browser_paths with empty path list.
