@@ -21,6 +21,7 @@ from pydoll.exceptions import (
     ElementNotFound,
     ElementNotInteractable,
     ElementNotVisible,
+    WaitElementTimeout,
 )
 from pydoll.protocol.dom.methods import (
     GetBoxModelResponse,
@@ -179,6 +180,50 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         """Scroll element into visible viewport."""
         command = DomCommands.scroll_into_view_if_needed(object_id=self._object_id)
         await self._execute_command(command)
+
+    async def wait_until(
+        self,
+        *,
+        is_visible: bool = False,
+        is_interactable: bool = False,
+        timeout: int = 0,
+    ):
+        """Wait for element to meet specified conditions.
+
+        Raises:
+            ValueError: If neither ``is_visible`` nor ``is_interactable`` is True.
+            WaitElementTimeout: If the condition is not met within ``timeout``.
+        """
+        checks_map = [
+            (is_visible, self._is_element_visible),
+            (is_interactable, self._is_element_interactable),
+        ]
+        checks = [func for flag, func in checks_map if flag]
+        if not checks:
+            raise ValueError(
+                'At least one of is_visible or is_interactable must be True'
+            )
+
+        condition_parts = []
+        if is_visible:
+            condition_parts.append('visible')
+        if is_interactable:
+            condition_parts.append('interactable')
+        condition_msg = ' and '.join(condition_parts)
+
+        loop = asyncio.get_event_loop()
+        start_time = loop.time()
+        while True:
+            results = await asyncio.gather(*(check() for check in checks))
+            if all(results):
+                return
+
+            if timeout and loop.time() - start_time > timeout:
+                raise WaitElementTimeout(
+                    f'Timed out waiting for element to become {condition_msg}'
+                )
+
+            await asyncio.sleep(0.5)
 
     async def click_using_js(self):
         """
@@ -373,6 +418,13 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
     async def _is_element_on_top(self):
         """Check if element is topmost at its center point (not covered by overlays)."""
         result = await self._execute_script(Scripts.ELEMENT_ON_TOP, return_by_value=True)
+        return result['result']['result']['value']
+
+    async def _is_element_interactable(self):
+        """Check if element is interactable based on visibility and position."""
+        result = await self._execute_script(
+            Scripts.ELEMENT_INTERACTIVE, return_by_value=True
+        )
         return result['result']['result']['value']
 
     async def _execute_script(self, script: str, return_by_value: bool = False):

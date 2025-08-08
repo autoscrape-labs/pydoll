@@ -25,11 +25,39 @@ class Scripts:
     ELEMENT_ON_TOP = """
     function() {
         const rect = this.getBoundingClientRect();
-        const elementFromPoint = document.elementFromPoint(
-            rect.x + rect.width / 2,
-            rect.y + rect.height / 2
-        );
-        return elementFromPoint === this;
+        const x = rect.x + rect.width / 2;
+        const y = rect.y + rect.height / 2;
+        const elementFromPoint = document.elementFromPoint(x, y);
+        if (!elementFromPoint) {
+            return false;
+        }
+        return elementFromPoint === this || this.contains(elementFromPoint);
+    }
+    """
+
+    ELEMENT_INTERACTIVE = """
+    function() {
+        const style = window.getComputedStyle(this);
+        const rect = this.getBoundingClientRect();
+        if (
+            rect.width <= 0 ||
+            rect.height <= 0 ||
+            style.visibility === 'hidden' ||
+            style.display === 'none' ||
+            style.pointerEvents === 'none'
+        ) {
+            return false;
+        }
+        const x = rect.x + rect.width / 2;
+        const y = rect.y + rect.height / 2;
+        const elementFromPoint = document.elementFromPoint(x, y);
+        if (!elementFromPoint || (elementFromPoint !== this && !this.contains(elementFromPoint))) {
+            return false;
+        }
+        if (this.disabled) {
+            return false;
+        }
+        return true;
     }
     """
 

@@ -74,6 +74,7 @@ classDiagram
         +get_attribute(name: str)
         +set_input_files(files: list[str])
         +scroll_into_view()
+        +wait_until()
         +take_screenshot(path: str)
         +text
         +inner_html
@@ -366,7 +367,7 @@ async def _execute_script(
 
 ## 元素状态验证
 
-WebElement 提供了检查元素可见性和可交互性的方法：
+WebElement 提供了检查元素可见性和可交互性的方法，并可等待这些条件满足：
 
 
 ```python
@@ -375,7 +376,17 @@ is_visible = await element._is_element_visible()
 
 # Check if element is the topmost at its position
 is_on_top = await element._is_element_on_top()
+
+# Check if element can be interacted with
+is_interactable = await element._is_element_interactable()
+
+# Wait until the element is ready for interaction
+await element.wait_until(is_visible=True, is_interactable=True, timeout=5)
+
+# 未在限定时间内满足条件时会抛出 ``WaitElementTimeout``。
 ```
+
+如果同时传入 ``is_visible`` 和 ``is_interactable``，必须同时满足这两个条件。
 
 这些验证对于实现可靠的自动化至关重要，可在尝试操作前确保元素可被交互。
 

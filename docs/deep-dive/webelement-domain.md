@@ -73,6 +73,7 @@ classDiagram
         +get_attribute(name: str)
         +set_input_files(files: list[str])
         +scroll_into_view()
+        +wait_until()
         +take_screenshot(path: str)
         +text
         +inner_html
@@ -373,7 +374,18 @@ is_visible = await element._is_element_visible()
 
 # Check if element is the topmost at its position
 is_on_top = await element._is_element_on_top()
+
+# Check if element can be interacted with
+is_interactable = await element._is_element_interactable()
+
+# Wait until the element is ready for interaction
+await element.wait_until(is_visible=True, is_interactable=True, timeout=5)
+
+# Raises ``WaitElementTimeout`` if the conditions aren't met in time.
 ```
+
+If both ``is_visible`` and ``is_interactable`` are set to ``True``, the element
+must satisfy **both** conditions to proceed.
 
 These verifications are crucial for reliable automation, ensuring that elements can be interacted with before attempting operations.
 
