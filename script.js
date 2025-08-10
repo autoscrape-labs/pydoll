@@ -160,6 +160,32 @@
   bindCopy('copyRequestsBtn', 'codeRequests')
   bindCopy('copyPrefsBtn', 'codePrefs')
 
+  // Mobile menu toggle
+  const mobileMenuButton = document.getElementById('mobileMenuButton')
+  const mobileMenu = document.getElementById('mobileMenu')
+  const iconMenu = document.getElementById('iconMenu')
+  const iconClose = document.getElementById('iconClose')
+  if (mobileMenuButton && mobileMenu && iconMenu && iconClose) {
+    const setExpanded = (expanded) => {
+      mobileMenuButton.setAttribute('aria-expanded', String(expanded))
+      mobileMenu.classList.toggle('hidden', !expanded)
+      iconMenu.classList.toggle('hidden', expanded)
+      iconClose.classList.toggle('hidden', !expanded)
+    }
+    mobileMenuButton.addEventListener('click', () => {
+      const isOpen = mobileMenuButton.getAttribute('aria-expanded') === 'true'
+      setExpanded(!isOpen)
+    })
+    // Close on escape and when clicking links
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') setExpanded(false)
+    })
+    mobileMenu.addEventListener('click', (e) => {
+      const target = e.target
+      if (target instanceof HTMLElement && target.tagName === 'A') setExpanded(false)
+    })
+  }
+
   // (CTA final não requer JS adicional)
 })()
 
