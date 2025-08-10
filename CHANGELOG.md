@@ -1,3 +1,15 @@
+## 2.6.0 (2025-08-10)
+
+### Feat
+
+- add DownloadTimeout exception for file download timeouts
+- add context manager for handling file downloads in Tab class
+
+### Refactor
+
+- add type checking for connection handler in mixin class
+- add type overloads for event callback in Browser class
+
 ## 2.5.0 (2025-08-07)
 
 ### Feat
