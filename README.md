@@ -17,7 +17,7 @@
 
 
 <p align="center">
-  📖 <a href="https://autoscrape-labs.github.io/pydoll/">Documentation</a> •
+  📖 <a href="https://pydoll.tech/">Documentation</a> •
   🚀 <a href="#-getting-started">Getting Started</a> •
   ⚡ <a href="#-advanced-features">Advanced Features</a> •
   🤝 <a href="#-contributing">Contributing</a> •
@@ -209,7 +209,7 @@ options.browser_preferences = {
 
 This level of control was previously only available to Chrome extension developers - now it's in your automation toolkit!
 
-Check the [documentation](https://autoscrape-labs.github.io/pydoll/features/#custom-browser-preferences/) for more details.
+Check the [documentation](https://pydoll.tech/docs/features/#custom-browser-preferences/) for more details.
 
 ### New `get_parent_element()` method
 Retrieve the parent of any WebElement, making it easier to navigate the DOM structure:
@@ -520,7 +520,7 @@ options.add_argument('--disable-dev-shm-usage')
 
 ## 📚 Documentation
 
-For complete documentation, detailed examples and deep dives into all Pydoll functionalities, visit our [official documentation](https://autoscrape-labs.github.io/pydoll/).
+For complete documentation, detailed examples and deep dives into all Pydoll functionalities, visit our [official documentation](https://pydoll.tech/).
 
 The documentation includes:
 - **Getting Started Guide** - Step-by-step tutorials
