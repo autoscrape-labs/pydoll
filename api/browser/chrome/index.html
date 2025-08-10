@@ -1109,6 +1109,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pydoll.browser.chromium.Chrome.remove_callback" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;remove_callback
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pydoll.browser.chromium.Chrome.enable_fetch_events" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;enable_fetch_events
@@ -2521,6 +2530,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pydoll.browser.chromium.Chrome.remove_callback" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;remove_callback
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pydoll.browser.chromium.Chrome.enable_fetch_events" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;enable_fetch_events
@@ -3791,6 +3809,10 @@ Only specified properties are changed.</p>
   </span>
 
 </h3>
+          <div class="doc-overloads">
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">on</span><span class="p">(</span><span class="n">event_name</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">callback</span><span class="p">:</span> <span class="n"><span title="typing.Callable">Callable</span></span><span class="p">[[</span><span class="n"><span title="typing.Any">Any</span></span><span class="p">],</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">],</span> <span class="n">temporary</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="int">int</span></span>
+</span></code></pre></div><div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">on</span><span class="p">(</span><span class="n">event_name</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">callback</span><span class="p">:</span> <span class="n"><span title="typing.Callable">Callable</span></span><span class="p">[[</span><span class="n"><span title="typing.Any">Any</span></span><span class="p">],</span> <span class="n"><span title="typing.Awaitable">Awaitable</span></span><span class="p">[</span><span class="n"><span title="typing.Any">Any</span></span><span class="p">]],</span> <span class="n">temporary</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="int">int</span></span>
+</span></code></pre></div>          </div>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">on</span><span class="p">(</span><span class="n">event_name</span><span class="p">,</span> <span class="n">callback</span><span class="p">,</span> <span class="n">temporary</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </span></code></pre></div>
 
@@ -3817,10 +3839,6 @@ Only specified properties are changed.</p>
                 <p>CDP event name (e.g., "Network.responseReceived").</p>
               </div>
               <p>
-                  <span class="doc-param-annotation">
-                    <b>TYPE:</b>
-                      <code><span title="str">str</span></code>
-                  </span>
               </p>
             </td>
           </tr>
@@ -3833,10 +3851,6 @@ Only specified properties are changed.</p>
                 <p>Function called on event (sync or async).</p>
               </div>
               <p>
-                  <span class="doc-param-annotation">
-                    <b>TYPE:</b>
-                      <code><span title="typing.Callable">Callable</span>[[<span title="typing.Any">Any</span>], <span title="typing.Any">Any</span>]</code>
-                  </span>
               </p>
             </td>
           </tr>
@@ -3892,6 +3906,30 @@ Only specified properties are changed.</p>
   <summary>Note</summary>
   <p>For page-specific events, use Tab.on() instead.</p>
 </details>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="pydoll.browser.chromium.Chrome.remove_callback" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">remove_callback</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">remove_callback</span><span class="p">(</span><span class="n">callback_id</span><span class="p">)</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Remove callback from browser.</p>
+
 
     </div>
 
