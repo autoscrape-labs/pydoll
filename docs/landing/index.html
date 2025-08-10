@@ -14,7 +14,7 @@
     <meta property="og:title" content="Pydoll - Automate the Web, naturally" />
     <meta property="og:description" content="Browser automation for web scraping with human-like interactions, browser-context requests and captcha bypass (Cloudflare, reCAPTCHA)." />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://github.com/user-attachments/assets/219f2dbc-37ed-4aea-a289-ba39cdbb335d" />
+    <meta property="og:image" content="https://pydoll.tech/images/E2ECED-cinza-azulado.png" />
     <meta property="og:url" content="https://pydoll.tech/" />
     <meta property="og:site_name" content="Pydoll" />
     <meta property="og:locale" content="en_US" />
@@ -24,12 +24,11 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Pydoll - Automate the Web, naturally" />
     <meta name="twitter:description" content="Browser automation for web scraping, browser-context requests and captcha bypass (Cloudflare, reCAPTCHA)." />
-    <meta name="twitter:image" content="https://github.com/user-attachments/assets/219f2dbc-37ed-4aea-a289-ba39cdbb335d" />
+    <meta name="twitter:image" content="https://pydoll.tech/images/E2ECED-cinza-azulado.png" />
 
     <!-- Performance hints -->
     <link rel="preconnect" href="https://cdn.tailwindcss.com" />
     <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-    <link rel="preconnect" href="https://github.com" crossorigin />
     <link rel="preconnect" href="https://pydoll.tech/" />
 
     <!-- Favicon -->
@@ -43,10 +42,26 @@
         "@context": "https://schema.org",
         "@graph": [
           {
+            "@type": "Organization",
+            "@id": "https://pydoll.tech/#org",
+            "name": "Pydoll",
+            "url": "https://pydoll.tech/",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://pydoll.tech/images/E2ECED-cinza-azulado.png"
+            },
+            "sameAs": [
+              "https://github.com/autoscrape-labs/pydoll",
+              "https://pypi.org/project/pydoll-python/",
+            ]
+          },
+          {
             "@type": "WebSite",
             "@id": "https://pydoll.tech/#website",
             "name": "Pydoll",
             "url": "https://pydoll.tech/",
+            "publisher": { "@id": "https://pydoll.tech/#org" },
+            "inLanguage": "en",
             "potentialAction": {
               "@type": "SearchAction",
               "target": "https://pydoll.tech/docs/search/?q={search_term_string}",
@@ -57,9 +72,10 @@
             "@type": "WebPage",
             "@id": "https://pydoll.tech/#webpage",
             "url": "https://pydoll.tech/",
-            "name": "Pydoll - Async Web Automation Library",
+            "name": "Pydoll - Automate the Web, naturally",
             "isPartOf": { "@id": "https://pydoll.tech/#website" },
-            "description": "Browser automation (CDP) for web scraping with human-like interactions, browser-context requests and captcha bypass (Cloudflare, reCAPTCHA)."
+            "about": { "@id": "https://pydoll.tech/#software" },
+            "description": "Pydoll is a Python CDP browser automation library for web scraping, with human-like interactions, browser-context requests, and CAPTCHA handling."
           },
           {
             "@type": "SoftwareApplication",
@@ -68,55 +84,32 @@
             "applicationCategory": "DeveloperApplication",
             "operatingSystem": "Windows, macOS, Linux",
             "programmingLanguage": "Python",
-            "url": "https://github.com/autoscrape-labs/pydoll",
-            "image": "https://github.com/user-attachments/assets/219f2dbc-37ed-4aea-a289-ba39cdbb335d",
-            "description": "Browser automation (CDP) for web scraping with human-like interactions, browser-context requests and captcha bypass (Cloudflare, reCAPTCHA).",
-            "keywords": [
-              "pydoll",
-              "browser automation",
-              "web automation",
-              "web scraping",
-              "data extraction",
-              "crawler",
-              "headless browser",
-              "chrome devtools protocol",
-              "python cdp",
-              "playwright",
-              "puppeteer",
-              "selenium alternative",
-              "antibot",
-              "captcha bypass",
-              "cloudflare turnstile",
-              "recaptcha",
-              "async python",
-              "automation library",
-              "scraping framework"
-            ],
+            "url": "https://pydoll.tech/",
+            "image": "https://pydoll.tech/images/E2ECED-cinza-azulado.png",
+            "description": "Python library for browser automation via Chrome DevTools Protocol (CDP), with human-like interactions, browser-context requests, and CAPTCHA handling.",
+            "publisher": { "@id": "https://pydoll.tech/#org" },
             "offers": {
               "@type": "Offer",
               "price": "0",
               "priceCurrency": "USD"
-            }
-          },
-          {
-            "@type": "SoftwareSourceCode",
-            "name": "Pydoll",
+            },
             "codeRepository": "https://github.com/autoscrape-labs/pydoll",
-            "programmingLanguage": "Python",
-            "license": "https://github.com/autoscrape-labs/pydoll/blob/main/LICENSE",
-            "description": "Python library for browser automation via Chrome DevTools Protocol (CDP), with human-like interactions, browser-context requests and captcha bypass (Cloudflare, reCAPTCHA).",
+            "sameAs": [
+              "https://github.com/autoscrape-labs/pydoll",
+              "https://pypi.org/project/pydoll-python/"
+            ],
             "keywords": [
-              "pydoll",
+              "Pydoll",
               "browser automation",
               "web scraping",
-              "chrome devtools protocol",
-              "async python",
-              "captcha bypass"
-            ],
-            "url": "https://pydoll.tech/"
+              "Chrome DevTools Protocol",
+              "async Python",
+              "captcha"
+            ]
           },
           {
             "@type": "FAQPage",
+            "@id": "https://pydoll.tech/#faq",
             "mainEntity": [
               {
                 "@type": "Question",
@@ -131,23 +124,7 @@
                 "name": "Can Pydoll handle CAPTCHAs like Cloudflare Turnstile or reCAPTCHA v3?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "It provides human-like interactions (movement, click, typing) and a helper to attempt Turnstile bypass. Effectiveness depends on IP reputation and interaction pattern. Combine with quality proxies and good navigation practices."
-                }
-              },
-              {
-                "@type": "Question",
-                "name": "What are browser-context requests and when to use them?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "With tab.request you perform HTTP in the same tab context: cookies, session and CORS are automatically inherited. Ideal for hybrid automation — log in via UI and then call authenticated application APIs."
-                }
-              },
-              {
-                "@type": "Question",
-                "name": "What are the practical differentiators: concurrency, events and preferences?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "Concurrency with asyncio.gather, reactive events (Page/Network/Runtime) for responsive automations and browser preferences control for silent downloads, languages and more."
+                  "text": "It provides human-like interactions and a helper to attempt Turnstile bypass. Effectiveness depends on IP reputation and interaction patterns. Combine with quality proxies and good navigation practices."
                 }
               }
             ]
@@ -206,7 +183,7 @@
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="flex h-16 items-center justify-between">
           <a href="https://github.com/autoscrape-labs/pydoll" target="_blank" rel="noopener" class="flex items-center gap-3">
-            <img src="https://github.com/user-attachments/assets/219f2dbc-37ed-4aea-a289-ba39cdbb335d" alt="Pydoll" class="h-8 w-auto" />
+            <img src="https://pydoll.tech/images/E2ECED-cinza-azulado.png" alt="Pydoll" class="h-8 w-auto" />
 
           </a>
           <nav class="flex items-center gap-2 sm:gap-3">
@@ -230,7 +207,7 @@
       <div class="mx-auto max-w-7xl px-4 pb-12 pt-16 sm:pb-16 sm:pt-24 lg:flex lg:items-center lg:gap-12 lg:px-8">
         <div class="mx-auto max-w-2xl lg:mx-0 lg:flex-auto">
           <h1 class="text-4xl font-bold tracking-tight sm:text-6xl">
-            Automate the Web, naturally
+            Pydoll: Automate the Web, naturally
           </h1>
           <p class="mt-6 text-lg leading-8 text-slate-300">
             Pydoll connects directly to the Chrome DevTools Protocol. No WebDrivers, with human-like interactions, asynchronous performance and the ability to handle behavioral CAPTCHAs
@@ -584,8 +561,8 @@ asyncio.run(main())
       <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div class="flex flex-col items-center justify-between gap-4 sm:flex-row">
           <div class="flex items-center gap-3">
-            <img src="https://github.com/user-attachments/assets/219f2dbc-37ed-4aea-a289-ba39cdbb335d" alt="Pydoll" class="h-6 w-auto" />
-            <p class="text-sm text-slate-400">Pydoll — making browser automation magical ✨</p>
+            <img src="https://pydoll.tech/images/E2ECED-cinza-azulado.png" alt="Pydoll" class="h-6 w-auto" />
+            <p class="text-sm text-slate-400">Pydoll - making browser automation magical ✨</p>
           </div>
           <div class="flex items-center gap-3 text-sm text-slate-400">
             <a href="https://github.com/autoscrape-labs/pydoll" target="_blank" rel="noopener" class="hover:text-white">GitHub</a>
