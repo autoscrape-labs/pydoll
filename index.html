@@ -39,153 +39,123 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Schema.org: SoftwareApplication / SoftwareSourceCode -->
     <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "Pydoll",
-      "applicationCategory": "DeveloperApplication",
-      "operatingSystem": "Windows, macOS, Linux",
-      "programmingLanguage": "Python",
-      "url": "https://github.com/autoscrape-labs/pydoll",
-      "image": "https://github.com/user-attachments/assets/219f2dbc-37ed-4aea-a289-ba39cdbb335d",
-      "description": "Browser automation (CDP) for web scraping with human-like interactions, browser-context requests and captcha bypass (Cloudflare, reCAPTCHA).",
-      "keywords": [
-        "pydoll",
-        "browser automation",
-        "web automation",
-        "web scraping",
-        "scraping",
-        "data scraping",
-        "data extraction",
-        "crawler",
-        "crawling",
-        "headless browser",
-        "headless chrome",
-        "chrome devtools protocol",
-        "devtools protocol",
-        "cdp",
-        "python cdp",
-        "chrome cdp",
-        "playwright",
-        "puppeteer",
-        "selenium",
-        "selenium alternative",
-        "pyppeteer",
-        "undetected chromedriver",
-        "stealth",
-        "antibot",
-        "anti bot",
-        "bot detection",
-        "fingerprinting",
-        "captcha bypass",
-        "bypass cloudflare",
-        "cloudflare turnstile",
-        "recaptcha",
-        "hcaptcha",
-        "captcha solver",
-        "automation python",
-        "async python",
-        "asyncio",
-        "network interception",
-        "request interception",
-        "browser context requests",
-        "http requests browser context",
-        "humanized interactions",
-        "human-like interactions",
-        "automation library",
-        "scraping framework",
-        "scrapy",
-        "beautifulsoup",
-        "bs4",
-        "requests",
-        "aiohttp",
-        "automação de navegador",
-        "automação web",
-        "raspagem de dados",
-        "coleta de dados",
-        "robô",
-        "bot",
-        "detecção de bot",
-        "interações humanizadas",
-        "assíncrono",
-        "concorrência",
-        "múltiplas abas",
-        "preferências do navegador",
-        "downloads silenciosos"
-      ],
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://pydoll.tech/#website",
+            "name": "Pydoll",
+            "url": "https://pydoll.tech/",
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": "https://pydoll.tech/docs/search/?q={search_term_string}",
+              "query-input": "required name=search_term_string"
+            }
+          },
+          {
+            "@type": "WebPage",
+            "@id": "https://pydoll.tech/#webpage",
+            "url": "https://pydoll.tech/",
+            "name": "Pydoll - Async Web Automation Library",
+            "isPartOf": { "@id": "https://pydoll.tech/#website" },
+            "description": "Browser automation (CDP) for web scraping with human-like interactions, browser-context requests and captcha bypass (Cloudflare, reCAPTCHA)."
+          },
+          {
+            "@type": "SoftwareApplication",
+            "@id": "https://pydoll.tech/#software",
+            "name": "Pydoll",
+            "applicationCategory": "DeveloperApplication",
+            "operatingSystem": "Windows, macOS, Linux",
+            "programmingLanguage": "Python",
+            "url": "https://github.com/autoscrape-labs/pydoll",
+            "image": "https://github.com/user-attachments/assets/219f2dbc-37ed-4aea-a289-ba39cdbb335d",
+            "description": "Browser automation (CDP) for web scraping with human-like interactions, browser-context requests and captcha bypass (Cloudflare, reCAPTCHA).",
+            "keywords": [
+              "pydoll",
+              "browser automation",
+              "web automation",
+              "web scraping",
+              "data extraction",
+              "crawler",
+              "headless browser",
+              "chrome devtools protocol",
+              "python cdp",
+              "playwright",
+              "puppeteer",
+              "selenium alternative",
+              "antibot",
+              "captcha bypass",
+              "cloudflare turnstile",
+              "recaptcha",
+              "async python",
+              "automation library",
+              "scraping framework"
+            ],
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD"
+            }
+          },
+          {
+            "@type": "SoftwareSourceCode",
+            "name": "Pydoll",
+            "codeRepository": "https://github.com/autoscrape-labs/pydoll",
+            "programmingLanguage": "Python",
+            "license": "https://github.com/autoscrape-labs/pydoll/blob/main/LICENSE",
+            "description": "Python library for browser automation via Chrome DevTools Protocol (CDP), with human-like interactions, browser-context requests and captcha bypass (Cloudflare, reCAPTCHA).",
+            "keywords": [
+              "pydoll",
+              "browser automation",
+              "web scraping",
+              "chrome devtools protocol",
+              "async python",
+              "captcha bypass"
+            ],
+            "url": "https://pydoll.tech/"
+          },
+          {
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "What is Pydoll and why doesn't it use WebDriver?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Pydoll is a Python library that controls the browser via the Chrome DevTools Protocol (CDP), eliminating WebDrivers. This reduces layers, improves reliability and gives direct access to page events, network interception and JavaScript execution in the real tab context."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Can Pydoll handle CAPTCHAs like Cloudflare Turnstile or reCAPTCHA v3?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "It provides human-like interactions (movement, click, typing) and a helper to attempt Turnstile bypass. Effectiveness depends on IP reputation and interaction pattern. Combine with quality proxies and good navigation practices."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "What are browser-context requests and when to use them?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "With tab.request you perform HTTP in the same tab context: cookies, session and CORS are automatically inherited. Ideal for hybrid automation — log in via UI and then call authenticated application APIs."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "What are the practical differentiators: concurrency, events and preferences?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Concurrency with asyncio.gather, reactive events (Page/Network/Runtime) for responsive automations and browser preferences control for silent downloads, languages and more."
+                }
+              }
+            ]
+          }
+        ]
       }
-    }
-    </script>
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "What is Pydoll and why doesn't it use WebDriver?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Pydoll is a Python library that controls the browser via the Chrome DevTools Protocol (CDP), eliminating WebDrivers. This reduces layers, improves reliability and gives direct access to page events, network interception and JavaScript execution in the real tab context."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Can Pydoll handle CAPTCHAs like Cloudflare Turnstile or reCAPTCHA v3?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "It provides human-like interactions (movement, click, typing) and a helper to attempt Turnstile bypass. Effectiveness depends on IP reputation and interaction pattern. Combine with quality proxies and good navigation practices."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "What are browser-context requests and when to use them?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "With tab.request you perform HTTP in the same tab context: cookies, session and CORS are automatically inherited. Ideal for hybrid automation — log in via UI and then call authenticated application APIs."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "What are the practical differentiators: concurrency, events and preferences?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Concurrency with asyncio.gather, reactive events (Page/Network/Runtime) for responsive automations and browser preferences control for silent downloads, languages and more."
-          }
-        }
-      ]
-    }
-    </script>
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareSourceCode",
-      "name": "Pydoll",
-      "codeRepository": "https://github.com/autoscrape-labs/pydoll",
-      "programmingLanguage": "Python",
-      "license": "https://github.com/autoscrape-labs/pydoll/blob/main/LICENSE",
-      "description": "Python library for browser automation via Chrome DevTools Protocol (CDP), with human-like interactions, browser-context requests and captcha bypass (Cloudflare, reCAPTCHA).",
-      "keywords": "pydoll, browser automation, web automation, web scraping, scraping, data scraping, data extraction, crawler, crawling, headless browser, headless chrome, chrome devtools protocol, devtools protocol, cdp, python cdp, chrome cdp, playwright, puppeteer, selenium, selenium alternative, pyppeteer, undetected chromedriver, stealth, antibot, anti bot, bot detection, fingerprinting, captcha bypass, bypass cloudflare, cloudflare turnstile, recaptcha, hcaptcha, captcha solver, automation python, async python, asyncio, network interception, request interception, browser context requests, http requests browser context, humanized interactions, human-like interactions, automation library, scraping framework, scrapy, beautifulsoup, bs4, requests, aiohttp, automação de navegador, automação web, raspagem de dados, coleta de dados, robô, bot, detecção de bot, interações humanizadas, assíncrono, concorrência, múltiplas abas, preferências do navegador, downloads silenciosos",
-      "url": "https://github.com/autoscrape-labs/pydoll"
-    }
-    </script>
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "Pydoll",
-      "url": "https://autoscrape-labs.github.io/pydoll/",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "https://autoscrape-labs.github.io/pydoll/search/?q={search_term_string}",
-        "query-input": "required name=search_term_string"
-      }
-    }
-    </script>
+      </script>
+      
     <script>
       tailwind.config = {
         theme: {
