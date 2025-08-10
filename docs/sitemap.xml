@@ -1,0 +1,647 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+    <url>
+        <loc>https://pydoll.tech/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/features/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/features/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/features/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/api/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/api/browser/chrome/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/browser/chrome/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/browser/chrome/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/api/browser/edge/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/browser/edge/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/browser/edge/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/api/browser/managers/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/browser/managers/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/browser/managers/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/api/browser/options/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/browser/options/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/browser/options/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/api/browser/requests/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/browser/requests/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/browser/requests/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/api/browser/tab/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/browser/tab/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/browser/tab/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/api/commands/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/commands/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/commands/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/api/commands/browser/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/commands/browser/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/commands/browser/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/api/commands/dom/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/commands/dom/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/commands/dom/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/api/commands/fetch/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/commands/fetch/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/commands/fetch/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/api/commands/input/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/commands/input/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/commands/input/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/api/commands/network/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/commands/network/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/commands/network/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/api/commands/page/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/commands/page/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/commands/page/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/api/commands/runtime/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/commands/runtime/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/commands/runtime/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/api/commands/storage/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/commands/storage/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/commands/storage/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/api/commands/target/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/commands/target/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/commands/target/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/api/connection/connection/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/connection/connection/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/connection/connection/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/api/connection/managers/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/connection/managers/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/connection/managers/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/api/core/constants/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/core/constants/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/core/constants/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/api/core/exceptions/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/core/exceptions/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/core/exceptions/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/api/core/utils/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/core/utils/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/core/utils/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/api/elements/mixins/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/elements/mixins/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/elements/mixins/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/api/elements/web_element/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/elements/web_element/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/elements/web_element/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/api/protocol/base/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/protocol/base/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/protocol/base/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/api/protocol/browser/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/protocol/browser/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/protocol/browser/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/api/protocol/dom/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/protocol/dom/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/protocol/dom/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/api/protocol/fetch/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/protocol/fetch/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/protocol/fetch/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/api/protocol/input/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/protocol/input/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/protocol/input/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/api/protocol/network/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/protocol/network/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/protocol/network/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/api/protocol/page/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/protocol/page/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/protocol/page/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/api/protocol/runtime/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/protocol/runtime/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/protocol/runtime/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/api/protocol/storage/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/protocol/storage/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/protocol/storage/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/api/protocol/target/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/protocol/target/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/protocol/target/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/deep-dive/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/deep-dive/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/deep-dive/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/deep-dive/browser-domain/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/deep-dive/browser-domain/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/deep-dive/browser-domain/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/deep-dive/browser-preferences/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/deep-dive/browser-preferences/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/deep-dive/browser-preferences/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/deep-dive/cdp/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/deep-dive/cdp/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/deep-dive/cdp/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/deep-dive/connection-layer/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/deep-dive/connection-layer/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/deep-dive/connection-layer/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/deep-dive/event-system/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/deep-dive/event-system/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/deep-dive/event-system/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/deep-dive/find-elements-mixin/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/deep-dive/find-elements-mixin/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/deep-dive/find-elements-mixin/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/deep-dive/network-capabilities/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/deep-dive/network-capabilities/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/deep-dive/network-capabilities/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/deep-dive/tab-domain/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/deep-dive/tab-domain/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/deep-dive/tab-domain/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/deep-dive/webelement-domain/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/deep-dive/webelement-domain/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/deep-dive/webelement-domain/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/features/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/features/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/features/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/api/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/api/browser/chrome/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/browser/chrome/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/browser/chrome/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/api/browser/edge/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/browser/edge/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/browser/edge/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/api/browser/managers/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/browser/managers/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/browser/managers/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/api/browser/options/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/browser/options/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/browser/options/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/api/browser/requests/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/browser/requests/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/browser/requests/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/api/browser/tab/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/browser/tab/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/browser/tab/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/api/commands/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/commands/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/commands/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/api/commands/browser/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/commands/browser/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/commands/browser/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/api/commands/dom/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/commands/dom/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/commands/dom/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/api/commands/fetch/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/commands/fetch/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/commands/fetch/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/api/commands/input/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/commands/input/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/commands/input/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/api/commands/network/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/commands/network/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/commands/network/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/api/commands/page/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/commands/page/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/commands/page/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/api/commands/runtime/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/commands/runtime/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/commands/runtime/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/api/commands/storage/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/commands/storage/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/commands/storage/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/api/commands/target/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/commands/target/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/commands/target/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/api/connection/connection/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/connection/connection/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/connection/connection/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/api/connection/managers/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/connection/managers/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/connection/managers/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/api/core/constants/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/core/constants/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/core/constants/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/api/core/exceptions/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/core/exceptions/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/core/exceptions/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/api/core/utils/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/core/utils/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/core/utils/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/api/elements/mixins/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/elements/mixins/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/elements/mixins/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/api/elements/web_element/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/elements/web_element/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/elements/web_element/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/api/protocol/base/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/protocol/base/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/protocol/base/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/api/protocol/browser/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/protocol/browser/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/protocol/browser/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/api/protocol/dom/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/protocol/dom/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/protocol/dom/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/api/protocol/fetch/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/protocol/fetch/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/protocol/fetch/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/api/protocol/input/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/protocol/input/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/protocol/input/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/api/protocol/network/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/protocol/network/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/protocol/network/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/api/protocol/page/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/protocol/page/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/protocol/page/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/api/protocol/runtime/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/protocol/runtime/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/protocol/runtime/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/api/protocol/storage/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/protocol/storage/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/protocol/storage/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/api/protocol/target/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/api/protocol/target/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/api/protocol/target/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/deep-dive/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/deep-dive/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/deep-dive/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/deep-dive/browser-domain/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/deep-dive/browser-domain/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/deep-dive/browser-domain/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/deep-dive/browser-preferences/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/deep-dive/browser-preferences/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/deep-dive/browser-preferences/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/deep-dive/cdp/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/deep-dive/cdp/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/deep-dive/cdp/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/deep-dive/connection-layer/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/deep-dive/connection-layer/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/deep-dive/connection-layer/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/deep-dive/event-system/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/deep-dive/event-system/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/deep-dive/event-system/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/deep-dive/find-elements-mixin/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/deep-dive/find-elements-mixin/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/deep-dive/find-elements-mixin/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/deep-dive/network-capabilities/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/deep-dive/network-capabilities/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/deep-dive/network-capabilities/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/deep-dive/tab-domain/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/deep-dive/tab-domain/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/deep-dive/tab-domain/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/zh/deep-dive/webelement-domain/</loc>
+        <lastmod>2025-08-10</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/zh/deep-dive/webelement-domain/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/deep-dive/webelement-domain/"/>
+    </url>
+</urlset>
