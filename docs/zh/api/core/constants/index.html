@@ -2014,6 +2014,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pydoll.constants.Scripts.ELEMENT_INTERACTIVE" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;ELEMENT_INTERACTIVE
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pydoll.constants.Scripts.CLICK" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;CLICK
@@ -2827,6 +2836,15 @@
   <a href="#pydoll.constants.Scripts.ELEMENT_ON_TOP" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;ELEMENT_ON_TOP
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.constants.Scripts.ELEMENT_INTERACTIVE" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;ELEMENT_INTERACTIVE
     </span>
   </a>
   
@@ -3749,7 +3767,30 @@
   </span>
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">ELEMENT_ON_TOP</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">    function() {</span><span class="se">\n</span><span class="s1">        const rect = this.getBoundingClientRect();</span><span class="se">\n</span><span class="s1">        const elementFromPoint = document.elementFromPoint(</span><span class="se">\n</span><span class="s1">            rect.x + rect.width / 2,</span><span class="se">\n</span><span class="s1">            rect.y + rect.height / 2</span><span class="se">\n</span><span class="s1">        );</span><span class="se">\n</span><span class="s1">        return elementFromPoint === this;</span><span class="se">\n</span><span class="s1">    }</span><span class="se">\n</span><span class="s1">    &#39;</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">ELEMENT_ON_TOP</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">    function() {</span><span class="se">\n</span><span class="s1">        const rect = this.getBoundingClientRect();</span><span class="se">\n</span><span class="s1">        const x = rect.x + rect.width / 2;</span><span class="se">\n</span><span class="s1">        const y = rect.y + rect.height / 2;</span><span class="se">\n</span><span class="s1">        const elementFromPoint = document.elementFromPoint(x, y);</span><span class="se">\n</span><span class="s1">        if (!elementFromPoint) {</span><span class="se">\n</span><span class="s1">            return false;</span><span class="se">\n</span><span class="s1">        }</span><span class="se">\n</span><span class="s1">        return elementFromPoint === this || this.contains(elementFromPoint);</span><span class="se">\n</span><span class="s1">    }</span><span class="se">\n</span><span class="s1">    &#39;</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="pydoll.constants.Scripts.ELEMENT_INTERACTIVE" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">ELEMENT_INTERACTIVE</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">ELEMENT_INTERACTIVE</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">    function() {</span><span class="se">\n</span><span class="s2">        const style = window.getComputedStyle(this);</span><span class="se">\n</span><span class="s2">        const rect = this.getBoundingClientRect();</span><span class="se">\n</span><span class="s2">        if (</span><span class="se">\n</span><span class="s2">            rect.width &lt;= 0 ||</span><span class="se">\n</span><span class="s2">            rect.height &lt;= 0 ||</span><span class="se">\n</span><span class="s2">            style.visibility === &#39;hidden&#39; ||</span><span class="se">\n</span><span class="s2">            style.display === &#39;none&#39; ||</span><span class="se">\n</span><span class="s2">            style.pointerEvents === &#39;none&#39;</span><span class="se">\n</span><span class="s2">        ) {</span><span class="se">\n</span><span class="s2">            return false;</span><span class="se">\n</span><span class="s2">        }</span><span class="se">\n</span><span class="s2">        const x = rect.x + rect.width / 2;</span><span class="se">\n</span><span class="s2">        const y = rect.y + rect.height / 2;</span><span class="se">\n</span><span class="s2">        const elementFromPoint = document.elementFromPoint(x, y);</span><span class="se">\n</span><span class="s2">        if (!elementFromPoint || (elementFromPoint !== this &amp;&amp; !this.contains(elementFromPoint))) {</span><span class="se">\n</span><span class="s2">            return false;</span><span class="se">\n</span><span class="s2">        }</span><span class="se">\n</span><span class="s2">        if (this.disabled) {</span><span class="se">\n</span><span class="s2">            return false;</span><span class="se">\n</span><span class="s2">        }</span><span class="se">\n</span><span class="s2">        return true;</span><span class="se">\n</span><span class="s2">    }</span><span class="se">\n</span><span class="s2">    &quot;</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">

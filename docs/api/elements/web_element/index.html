@@ -1210,6 +1210,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pydoll.elements.web_element.WebElement.wait_until" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;wait_until
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pydoll.elements.web_element.WebElement.click_using_js" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;click_using_js
@@ -2359,6 +2368,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pydoll.elements.web_element.WebElement.wait_until" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;wait_until
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pydoll.elements.web_element.WebElement.click_using_js" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;click_using_js
@@ -2944,6 +2962,66 @@ For dynamic attributes, consider using JavaScript execution.</p>
     <div class="doc doc-contents ">
 
         <p>Scroll element into visible viewport.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="pydoll.elements.web_element.WebElement.wait_until" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">wait_until</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">wait_until</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">is_visible</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">is_interactable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Wait for element to meet specified conditions.</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RAISES</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+              <span class="doc-raises-annotation">
+                  <code><span title="ValueError">ValueError</span></code>
+              </span>
+            </td>
+            <td class="doc-raises-details">
+              <div class="doc-md-description">
+                <p>If neither <code>is_visible</code> nor <code>is_interactable</code> is True.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+              <span class="doc-raises-annotation">
+                  <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;WaitElementTimeout&lt;/span&gt; (&lt;code&gt;pydoll.exceptions.WaitElementTimeout&lt;/code&gt;)" href="../../core/exceptions/#pydoll.exceptions.WaitElementTimeout">WaitElementTimeout</a></code>
+              </span>
+            </td>
+            <td class="doc-raises-details">
+              <div class="doc-md-description">
+                <p>If the condition is not met within <code>timeout</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     </div>
