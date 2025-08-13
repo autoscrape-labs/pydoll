@@ -14,7 +14,7 @@
     <meta property="og:title" content="Pydoll - Automate the Web, naturally" />
     <meta property="og:description" content="Browser automation for web scraping with human-like interactions, browser-context requests and captcha bypass (Cloudflare, reCAPTCHA)." />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://pydoll.tech/images/E2ECED-cinza-azulado.png" />
+    <meta property="og:image" content="https://pydoll.tech/images/logo.png" />
     <meta property="og:url" content="https://pydoll.tech/" />
     <meta property="og:site_name" content="Pydoll" />
     <meta property="og:locale" content="en_US" />
@@ -24,7 +24,7 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Pydoll - Automate the Web, naturally" />
     <meta name="twitter:description" content="Browser automation for web scraping, browser-context requests and captcha bypass (Cloudflare, reCAPTCHA)." />
-    <meta name="twitter:image" content="https://pydoll.tech/images/E2ECED-cinza-azulado.png" />
+    <meta name="twitter:image" content="https://pydoll.tech/images/logo.png" />
 
     <!-- Performance hints -->
     <link rel="preconnect" href="https://cdn.tailwindcss.com" />
@@ -32,7 +32,7 @@
     <link rel="preconnect" href="https://pydoll.tech/" />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="./docs/images/favicon.png" />
+    <link rel="icon" type="image/png" href="/images/favicon.png" />
 
     <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -48,10 +48,9 @@
             "url": "https://pydoll.tech/",
             "logo": {
               "@type": "ImageObject",
-              "url": "https://pydoll.tech/images/E2ECED-cinza-azulado.png"
+              "url": "https://pydoll.tech/images/logo.png"
             },
             "sameAs": [
-              "https://github.com/autoscrape-labs/pydoll",
               "https://pypi.org/project/pydoll-python/"
             ]
           },
@@ -85,7 +84,7 @@
             "operatingSystem": "Windows, macOS, Linux",
             "programmingLanguage": "Python",
             "url": "https://pydoll.tech/",
-            "image": "https://pydoll.tech/images/E2ECED-cinza-azulado.png",
+            "image": "https://pydoll.tech/images/logo.png",
             "description": "Python library for browser automation via Chrome DevTools Protocol (CDP), with human-like interactions, browser-context requests, and CAPTCHA handling.",
             "publisher": { "@id": "https://pydoll.tech/#org" },
             "offers": {
@@ -95,7 +94,6 @@
             },
             "codeRepository": "https://github.com/autoscrape-labs/pydoll",
             "sameAs": [
-              "https://github.com/autoscrape-labs/pydoll",
               "https://pypi.org/project/pydoll-python/"
             ],
             "keywords": [
@@ -105,7 +103,8 @@
               "Chrome DevTools Protocol",
               "async Python",
               "captcha"
-            ]
+            ],
+            "mainEntityOfPage": {"@id":"https://pydoll.tech/#webpage"},
           },
           {
             "@type": "FAQPage",
@@ -182,9 +181,8 @@
     <header class="sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-slate-950/60">
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="flex h-16 items-center justify-between">
-          <a href="https://github.com/autoscrape-labs/pydoll" target="_blank" rel="noopener" class="flex items-center gap-3">
-            <img src="https://pydoll.tech/images/E2ECED-cinza-azulado.png" alt="Pydoll" class="h-8 w-auto" />
-
+          <a href="/" class="flex items-center gap-3">
+            <img src="https://pydoll.tech/images/logo.png" alt="Pydoll" class="h-8 w-auto" />
           </a>
           <!-- Desktop nav -->
           <nav class="hidden items-center gap-2 sm:flex sm:gap-3">
