@@ -1,3 +1,6 @@
 User-agent: *
-Allow: /
+Disallow: /docs/search/
+Disallow: /docs/404.html
+
 Sitemap: https://pydoll.tech/sitemap.xml
+Sitemap: https://pydoll.tech/docs/sitemap.xml
