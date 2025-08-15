@@ -1,27 +1,24 @@
+import asyncio
+import json
+from pathlib import Path
+from unittest.mock import AsyncMock, patch
+
 import pytest
 import pytest_asyncio
-from unittest.mock import AsyncMock, MagicMock, patch, mock_open
-import json
-import asyncio
 
+from pydoll.browser.chromium import Chrome
+from pydoll.commands import DomCommands, RuntimeCommands
+from pydoll.constants import Key
+from pydoll.elements.web_element import WebElement
 from pydoll.exceptions import (
-    ElementNotVisible,
-    ElementNotInteractable,
-    ElementNotFound,
     ElementNotAFileInput,
+    ElementNotFound,
+    ElementNotInteractable,
+    ElementNotVisible,
     WaitElementTimeout,
 )
-from pydoll.commands import (
-    DomCommands,
-    InputCommands,
-    PageCommands,
-    RuntimeCommands,
-)
-from pydoll.constants import Key
+from pydoll.browser.options import ChromiumOptions as Options
 from pydoll.protocol.input.types import KeyModifier
-
-
-from pydoll.elements.web_element import WebElement
 
 
 @pytest_asyncio.fixture
@@ -37,11 +34,16 @@ async def mock_connection_handler():
 def web_element(mock_connection_handler):
     """Basic WebElement fixture with common attributes."""
     attributes_list = [
-        'id', 'test-id',
-        'class', 'test-class',
-        'value', 'test-value',
-        'tag_name', 'div',
-        'type', 'text'
+        'id',
+        'test-id',
+        'class',
+        'test-class',
+        'value',
+        'test-value',
+        'tag_name',
+        'div',
+        'type',
+        'text',
     ]
     return WebElement(
         object_id='test-object-id',
@@ -56,10 +58,14 @@ def web_element(mock_connection_handler):
 def input_element(mock_connection_handler):
     """Input element fixture for form-related tests."""
     attributes_list = [
-        'id', 'input-id',
-        'tag_name', 'input',
-        'type', 'text',
-        'value', 'initial-value'
+        'id',
+        'input-id',
+        'tag_name',
+        'input',
+        'type',
+        'text',
+        'value',
+        'initial-value',
     ]
     return WebElement(
         object_id='input-object-id',
@@ -73,11 +79,7 @@ def input_element(mock_connection_handler):
 @pytest.fixture
 def file_input_element(mock_connection_handler):
     """File input element fixture for file upload tests."""
-    attributes_list = [
-        'id', 'file-input-id',
-        'tag_name', 'input',
-        'type', 'file'
-    ]
+    attributes_list = ['id', 'file-input-id', 'tag_name', 'input', 'type', 'file']
     return WebElement(
         object_id='file-input-object-id',
         connection_handler=mock_connection_handler,
@@ -90,11 +92,7 @@ def file_input_element(mock_connection_handler):
 @pytest.fixture
 def option_element(mock_connection_handler):
     """Option element fixture for dropdown tests."""
-    attributes_list = [
-        'tag_name', 'option',
-        'value', 'option-value',
-        'id', 'option-id'
-    ]
+    attributes_list = ['tag_name', 'option', 'value', 'option-value', 'id', 'option-id']
     return WebElement(
         object_id='option-object-id',
         connection_handler=mock_connection_handler,
@@ -107,11 +105,7 @@ def option_element(mock_connection_handler):
 @pytest.fixture
 def disabled_element(mock_connection_handler):
     """Disabled element fixture for testing enabled/disabled state."""
-    attributes_list = [
-        'id', 'disabled-id',
-        'tag_name', 'button',
-        'disabled', 'true'
-    ]
+    attributes_list = ['id', 'disabled-id', 'tag_name', 'button', 'disabled', 'true']
     return WebElement(
         object_id='disabled-object-id',
         connection_handler=mock_connection_handler,
@@ -134,15 +128,13 @@ class TestWebElementInitialization:
             'class_name': 'test-class',
             'value': 'test-value',
             'tag_name': 'div',
-            'type': 'text'
+            'type': 'text',
         }
 
     def test_web_element_initialization_empty_attributes(self, mock_connection_handler):
         """Test WebElement initialization with empty attributes list."""
         element = WebElement(
-            object_id='empty-id',
-            connection_handler=mock_connection_handler,
-            attributes_list=[]
+            object_id='empty-id', connection_handler=mock_connection_handler, attributes_list=[]
         )
         assert element._attributes == {}
         assert element._search_method is None
@@ -151,13 +143,13 @@ class TestWebElementInitialization:
     def test_web_element_initialization_odd_attributes(self, mock_connection_handler):
         """Test WebElement initialization with odd number of attributes (causes IndexError)."""
         attributes_list = ['id', 'test-id', 'class']  # Missing value for 'class'
-        
+
         # This should raise IndexError because _def_attributes doesn't handle odd lists
         with pytest.raises(IndexError):
             WebElement(
                 object_id='odd-id',
                 connection_handler=mock_connection_handler,
-                attributes_list=attributes_list
+                attributes_list=attributes_list,
             )
 
     def test_class_attribute_renamed_to_class_name(self, mock_connection_handler):
@@ -166,7 +158,7 @@ class TestWebElementInitialization:
         element = WebElement(
             object_id='class-test',
             connection_handler=mock_connection_handler,
-            attributes_list=attributes_list
+            attributes_list=attributes_list,
         )
         assert 'class' not in element._attributes
         assert element._attributes['class_name'] == 'my-class'
@@ -193,7 +185,7 @@ class TestWebElementProperties:
         element = WebElement(
             object_id='empty-element',
             connection_handler=mock_connection_handler,
-            attributes_list=[]
+            attributes_list=[],
         )
         assert element.value is None
         assert element.class_name is None
@@ -277,7 +269,7 @@ class TestWebElementMethods:
         """Test insert_text method."""
         test_text = 'Hello World'
         await input_element.insert_text(test_text)
-        
+
         input_element._connection_handler.execute_command.assert_called_once()
 
     @pytest.mark.asyncio
@@ -291,7 +283,7 @@ class TestWebElementMethods:
         # Should call execute_command for each character
         assert input_element._connection_handler.execute_command.call_count == len(test_text)
         assert input_element.click.call_count == 1
-        
+
         # Verify sleep was called between characters
         assert mock_sleep.call_count == len(test_text)
         mock_sleep.assert_called_with(0.05)
@@ -310,18 +302,12 @@ class TestWebElementMethods:
     @pytest.mark.asyncio
     async def test_get_parent_element_success(self, web_element):
         """Test successful parent element retrieval."""
-        script_response = {
-            'result': {
-                'result': {
-                    'objectId': 'parent-object-id'
-                }
-            }
-        }
+        script_response = {'result': {'result': {'objectId': 'parent-object-id'}}}
         describe_response = {
             'result': {
                 'node': {
                     'nodeName': 'DIV',
-                    'attributes': ['id', 'parent-container', 'class', 'container']
+                    'attributes': ['id', 'parent-container', 'class', 'container'],
                 }
             }
         }
@@ -329,7 +315,7 @@ class TestWebElementMethods:
             script_response,  # Script execution
             describe_response,  # Describe node
         ]
-        
+
         parent_element = await web_element.get_parent_element()
 
         assert isinstance(parent_element, WebElement)
@@ -337,18 +323,14 @@ class TestWebElementMethods:
         assert parent_element._attributes == {
             'id': 'parent-container',
             'class_name': 'container',
-            'tag_name': 'div'
+            'tag_name': 'div',
         }
         web_element._connection_handler.execute_command.assert_called()
 
     @pytest.mark.asyncio
     async def test_get_parent_element_not_found(self, web_element):
         """Test parent element not found raises ElementNotFound."""
-        script_response = {
-            'result': {
-                'result': {}  # No objectId
-            }
-        }
+        script_response = {'result': {'result': {}}}  # No objectId
 
         web_element._connection_handler.execute_command.return_value = script_response
 
@@ -358,33 +340,31 @@ class TestWebElementMethods:
     @pytest.mark.asyncio
     async def test_get_parent_element_with_complex_attributes(self, web_element):
         """Test parent element with complex attribute list."""
-        script_response = {
-            'result': {
-                'result': {
-                    'objectId': 'complex-parent-id'
-                }
-            }
-        }
+        script_response = {'result': {'result': {'objectId': 'complex-parent-id'}}}
 
         describe_response = {
             'result': {
                 'node': {
                     'nodeName': 'SECTION',
                     'attributes': [
-                        'id', 'main-section',
-                        'class', 'content-wrapper',
-                        'data-testid', 'parent-element',
-                        'aria-label', 'Main content area'
-                    ]
+                        'id',
+                        'main-section',
+                        'class',
+                        'content-wrapper',
+                        'data-testid',
+                        'parent-element',
+                        'aria-label',
+                        'Main content area',
+                    ],
                 }
             }
         }
-        
+
         web_element._connection_handler.execute_command.side_effect = [
             script_response,
             describe_response,
         ]
-        
+
         parent_element = await web_element.get_parent_element()
 
         assert isinstance(parent_element, WebElement)
@@ -394,42 +374,28 @@ class TestWebElementMethods:
             'class_name': 'content-wrapper',
             'data-testid': 'parent-element',
             'aria-label': 'Main content area',
-            'tag_name': 'section'
+            'tag_name': 'section',
         }
 
     @pytest.mark.asyncio
     async def test_get_parent_element_root_element(self, web_element):
         """Test getting parent of root element (should return document body)."""
-        script_response = {
-            'result': {
-                'result': {
-                    'objectId': 'body-object-id'
-                }
-            }
-        }
-        
+        script_response = {'result': {'result': {'objectId': 'body-object-id'}}}
+
         describe_response = {
-            'result': {
-                'node': {
-                    'nodeName': 'BODY',
-                    'attributes': ['class', 'page-body']
-                }
-            }
+            'result': {'node': {'nodeName': 'BODY', 'attributes': ['class', 'page-body']}}
         }
-        
+
         web_element._connection_handler.execute_command.side_effect = [
             script_response,
             describe_response,
         ]
-        
+
         parent_element = await web_element.get_parent_element()
 
         assert isinstance(parent_element, WebElement)
         assert parent_element._object_id == 'body-object-id'
-        assert parent_element._attributes == {
-            'class_name': 'page-body',
-            'tag_name': 'body'
-        }
+        assert parent_element._attributes == {'class_name': 'page-body', 'tag_name': 'body'}
 
 
 class TestWebElementKeyboardInteraction:
@@ -440,27 +406,27 @@ class TestWebElementKeyboardInteraction:
         """Test key_down method."""
         key = Key.ENTER
         modifiers = KeyModifier.CTRL
-        
+
         await web_element.key_down(key, modifiers)
-        
+
         web_element._connection_handler.execute_command.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_key_down_without_modifiers(self, web_element):
         """Test key_down without modifiers."""
         key = Key.TAB
-        
+
         await web_element.key_down(key)
-        
+
         web_element._connection_handler.execute_command.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_key_up(self, web_element):
         """Test key_up method."""
         key = Key.ESCAPE
-        
+
         await web_element.key_up(key)
-        
+
         web_element._connection_handler.execute_command.assert_called_once()
 
     @pytest.mark.asyncio
@@ -468,10 +434,10 @@ class TestWebElementKeyboardInteraction:
         """Test press_keyboard_key method (key down + up)."""
         key = Key.SPACE
         modifiers = KeyModifier.SHIFT
-        
+
         with patch('asyncio.sleep') as mock_sleep:
             await web_element.press_keyboard_key(key, modifiers, interval=0.05)
-        
+
         # Should call key_down and key_up
         assert web_element._connection_handler.execute_command.call_count == 2
         mock_sleep.assert_called_once_with(0.05)
@@ -480,10 +446,10 @@ class TestWebElementKeyboardInteraction:
     async def test_press_keyboard_key_default_interval(self, web_element):
         """Test press_keyboard_key with default interval."""
         key = Key.ENTER
-        
+
         with patch('asyncio.sleep') as mock_sleep:
             await web_element.press_keyboard_key(key)
-        
+
         mock_sleep.assert_called_once_with(0.1)
 
 
@@ -499,9 +465,9 @@ class TestWebElementClicking:
         web_element._execute_script = AsyncMock(
             return_value={'result': {'result': {'value': True}}}
         )
-        
+
         await web_element.click_using_js()
-        
+
         web_element.scroll_into_view.assert_called_once()
         web_element._is_element_visible.assert_called_once()
 
@@ -530,9 +496,9 @@ class TestWebElementClicking:
     async def test_click_using_js_option_element(self, option_element):
         """Test JavaScript click on option element uses specialized method."""
         option_element._click_option_tag = AsyncMock()
-        
+
         await option_element.click_using_js()
-        
+
         option_element._click_option_tag.assert_called_once()
 
     @pytest.mark.asyncio
@@ -546,10 +512,10 @@ class TestWebElementClicking:
             None,  # mouse press
             None,  # mouse release
         ]
-        
+
         with patch('asyncio.sleep') as mock_sleep:
             await web_element.click(x_offset=5, y_offset=10, hold_time=0.2)
-        
+
         # Should call mouse press and release
         assert web_element._connection_handler.execute_command.call_count == 3
         mock_sleep.assert_called_once_with(0.2)
@@ -566,9 +532,9 @@ class TestWebElementClicking:
     async def test_click_option_element(self, option_element):
         """Test click on option element uses specialized method."""
         option_element._click_option_tag = AsyncMock()
-        
+
         await option_element.click()
-        
+
         option_element._click_option_tag.assert_called_once()
 
     @pytest.mark.asyncio
@@ -576,7 +542,7 @@ class TestWebElementClicking:
         """Test click falls back to JS bounds when CDP bounds fail."""
         web_element._is_element_visible = AsyncMock(return_value=True)
         web_element.scroll_into_view = AsyncMock()
-        
+
         # First call (bounds) raises KeyError, second call (JS bounds) succeeds
         js_bounds = {'x': 10, 'y': 20, 'width': 100, 'height': 50}
         web_element._connection_handler.execute_command.side_effect = [
@@ -585,9 +551,9 @@ class TestWebElementClicking:
             None,  # mouse press
             None,  # mouse release
         ]
-        
+
         await web_element.click()
-        
+
         # Should call bounds, JS bounds, mouse press, and mouse release
         assert web_element._connection_handler.execute_command.call_count == 4
 
@@ -595,7 +561,7 @@ class TestWebElementClicking:
     async def test_click_option_tag_method(self, option_element):
         """Test _click_option_tag method."""
         await option_element._click_option_tag()
-        
+
         # Should execute script with option value
         option_element._connection_handler.execute_command.assert_called_once()
 
@@ -607,16 +573,16 @@ class TestWebElementFileInput:
     async def test_set_input_files_success(self, file_input_element):
         """Test successful file input setting."""
         files = ['/path/to/file1.txt', '/path/to/file2.pdf']
-        
+
         await file_input_element.set_input_files(files)
-        
+
         file_input_element._connection_handler.execute_command.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_set_input_files_not_file_input(self, web_element):
         """Test set_input_files on non-file input element."""
         files = ['/path/to/file.txt']
-        
+
         with pytest.raises(ElementNotAFileInput):
             await web_element.set_input_files(files)
 
@@ -624,7 +590,7 @@ class TestWebElementFileInput:
     async def test_set_input_files_input_but_wrong_type(self, input_element):
         """Test set_input_files on input element with wrong type."""
         files = ['/path/to/file.txt']
-        
+
         with pytest.raises(ElementNotAFileInput):
             await input_element.set_input_files(files)
 
@@ -637,22 +603,22 @@ class TestWebElementScreenshot:
         """Test successful element screenshot."""
         bounds = {'x': 10, 'y': 20, 'width': 100, 'height': 50}
         screenshot_data = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/wcAAgAB/edzE+oAAAAASUVORK5CYII='
-        
+
         web_element._connection_handler.execute_command.side_effect = [
             {'result': {'result': {'value': json.dumps(bounds)}}},  # get_bounds_using_js
             {'result': {'data': screenshot_data}},  # capture_screenshot
         ]
-        
+
         screenshot_path = tmp_path / 'element.jpg'
-        
+
         # Mock aiofiles.open properly for async context manager
         mock_file = AsyncMock()
         mock_file.write = AsyncMock()
-        
+
         with patch('aiofiles.open') as mock_aiofiles_open:
             mock_aiofiles_open.return_value.__aenter__.return_value = mock_file
             await web_element.take_screenshot(str(screenshot_path), quality=90)
-        
+
         # Should call get_bounds_using_js and capture_screenshot
         assert web_element._connection_handler.execute_command.call_count == 2
 
@@ -665,17 +631,17 @@ class TestWebElementScreenshot:
             {'result': {'result': {'value': json.dumps(bounds)}}},
             {'result': {'data': screenshot_data}},
         ]
-        
+
         screenshot_path = tmp_path / 'element_default.jpg'
-        
+
         # Mock aiofiles.open properly for async context manager
         mock_file = AsyncMock()
         mock_file.write = AsyncMock()
-        
+
         with patch('aiofiles.open') as mock_aiofiles_open:
             mock_aiofiles_open.return_value.__aenter__.return_value = mock_file
             await web_element.take_screenshot(str(screenshot_path))
-        
+
         # Should call get_bounds_using_js and capture_screenshot
         assert web_element._connection_handler.execute_command.call_count == 2
 
@@ -689,7 +655,7 @@ class TestWebElementVisibility:
         web_element._execute_script = AsyncMock(
             return_value={'result': {'result': {'value': True}}}
         )
-        
+
         result = await web_element._is_element_visible()
         assert result is True
 
@@ -699,7 +665,7 @@ class TestWebElementVisibility:
         web_element._execute_script = AsyncMock(
             return_value={'result': {'result': {'value': False}}}
         )
-        
+
         result = await web_element._is_element_visible()
         assert result is False
 
@@ -709,7 +675,7 @@ class TestWebElementVisibility:
         web_element._execute_script = AsyncMock(
             return_value={'result': {'result': {'value': True}}}
         )
-        
+
         result = await web_element._is_element_on_top()
         assert result is True
 
@@ -857,9 +823,7 @@ class TestWebElementUtilityMethods:
     def test_def_attributes_empty_list(self, mock_connection_handler):
         """Test _def_attributes with empty list."""
         element = WebElement(
-            object_id='test',
-            connection_handler=mock_connection_handler,
-            attributes_list=[]
+            object_id='test', connection_handler=mock_connection_handler, attributes_list=[]
         )
         assert element._attributes == {}
 
@@ -869,7 +833,7 @@ class TestWebElementUtilityMethods:
         element = WebElement(
             object_id='test',
             connection_handler=mock_connection_handler,
-            attributes_list=attributes_list
+            attributes_list=attributes_list,
         )
         assert element._attributes == {'class_name': 'my-class', 'id': 'my-id'}
 
@@ -879,16 +843,18 @@ class TestWebElementUtilityMethods:
         script = 'return this.tagName;'
         expected_response = {'result': {'result': {'value': 'DIV'}}}
         web_element._connection_handler.execute_command.return_value = expected_response
-        
+
         result = await web_element._execute_script(script, return_by_value=True)
-        
+
         assert result == expected_response
         expected_command = RuntimeCommands.call_function_on(
             object_id='test-object-id',
             function_declaration=script,
             return_by_value=True,
         )
-        web_element._connection_handler.execute_command.assert_called_once_with(expected_command, timeout=60)
+        web_element._connection_handler.execute_command.assert_called_once_with(
+            expected_command, timeout=60
+        )
 
     def test_repr(self, web_element):
         """Test __repr__ method."""
@@ -907,18 +873,16 @@ class TestWebElementFindMethods:
         """Test successful element finding."""
         node_response = {'result': {'result': {'objectId': 'found-element-id'}}}
         describe_response = {
-            'result': {
-                'node': {'nodeName': 'BUTTON', 'attributes': ['class', 'btn']}
-            }
+            'result': {'node': {'nodeName': 'BUTTON', 'attributes': ['class', 'btn']}}
         }
-        
+
         web_element._connection_handler.execute_command.side_effect = [
             node_response,
             describe_response,
         ]
-        
+
         element = await web_element.find(id='button-id')
-        
+
         assert isinstance(element, WebElement)
         assert element._object_id == 'found-element-id'
         assert element._attributes['class_name'] == 'btn'
@@ -926,20 +890,16 @@ class TestWebElementFindMethods:
     @pytest.mark.asyncio
     async def test_find_element_not_found_with_exception(self, web_element):
         """Test element not found raises exception."""
-        web_element._connection_handler.execute_command.return_value = {
-            'result': {'result': {}}
-        }
-        
+        web_element._connection_handler.execute_command.return_value = {'result': {'result': {}}}
+
         with pytest.raises(ElementNotFound):
             await web_element.find(id='nonexistent')
 
     @pytest.mark.asyncio
     async def test_find_element_not_found_no_exception(self, web_element):
         """Test element not found returns None when raise_exc=False."""
-        web_element._connection_handler.execute_command.return_value = {
-            'result': {'result': {}}
-        }
-        
+        web_element._connection_handler.execute_command.return_value = {'result': {'result': {}}}
+
         result = await web_element.find(id='nonexistent', raise_exc=False)
         assert result is None
 
@@ -956,20 +916,18 @@ class TestWebElementFindMethods:
             }
         }
         describe_response = {
-            'result': {
-                'node': {'nodeName': 'LI', 'attributes': ['class', 'item']}
-            }
+            'result': {'node': {'nodeName': 'LI', 'attributes': ['class', 'item']}}
         }
-        
+
         web_element._connection_handler.execute_command.side_effect = [
             find_response,
             properties_response,
             describe_response,
             describe_response,
         ]
-        
+
         elements = await web_element.find(class_name='item', find_all=True)
-        
+
         assert len(elements) == 2
         assert all(isinstance(elem, WebElement) for elem in elements)
         assert elements[0]._object_id == 'child-1'
@@ -979,22 +937,18 @@ class TestWebElementFindMethods:
     async def test_find_with_timeout_success(self, web_element):
         """Test find with timeout succeeds on retry."""
         node_response = {'result': {'result': {'objectId': 'delayed-element'}}}
-        describe_response = {
-            'result': {
-                'node': {'nodeName': 'DIV', 'attributes': []}
-            }
-        }
-        
+        describe_response = {'result': {'node': {'nodeName': 'DIV', 'attributes': []}}}
+
         # First call returns empty, second call succeeds
         web_element._connection_handler.execute_command.side_effect = [
             {'result': {'result': {}}},  # First attempt fails
             node_response,  # Second attempt succeeds
             describe_response,
         ]
-        
+
         with patch('asyncio.sleep') as mock_sleep:
             element = await web_element.find(id='delayed', timeout=2)
-        
+
         assert isinstance(element, WebElement)
         assert element._object_id == 'delayed-element'
         mock_sleep.assert_called()
@@ -1002,13 +956,17 @@ class TestWebElementFindMethods:
     @pytest.mark.asyncio
     async def test_find_with_timeout_failure(self, web_element):
         """Test find with timeout raises WaitElementTimeout."""
-        web_element._connection_handler.execute_command.return_value = {
-            'result': {'result': {}}
-        }
-        
+        web_element._connection_handler.execute_command.return_value = {'result': {'result': {}}}
+
         with patch('asyncio.get_event_loop') as mock_loop:
-            mock_loop.return_value.time.side_effect = [0, 0.5, 1.0, 1.5, 2.1]  # Simulate time progression
-            
+            mock_loop.return_value.time.side_effect = [
+                0,
+                0.5,
+                1.0,
+                1.5,
+                2.1,
+            ]  # Simulate time progression
+
             with pytest.raises(WaitElementTimeout):
                 await web_element.find(id='never-appears', timeout=2)
 
@@ -1017,18 +975,16 @@ class TestWebElementFindMethods:
         """Test query method with CSS selector."""
         node_response = {'result': {'result': {'objectId': 'queried-element'}}}
         describe_response = {
-            'result': {
-                'node': {'nodeName': 'A', 'attributes': ['href', 'http://example.com']}
-            }
+            'result': {'node': {'nodeName': 'A', 'attributes': ['href', 'http://example.com']}}
         }
-        
+
         web_element._connection_handler.execute_command.side_effect = [
             node_response,
             describe_response,
         ]
-        
+
         element = await web_element.query('a[href*="example"]')
-        
+
         assert isinstance(element, WebElement)
         assert element._object_id == 'queried-element'
 
@@ -1036,25 +992,23 @@ class TestWebElementFindMethods:
     async def test_query_xpath(self, web_element):
         """Test query method with XPath expression."""
         node_response = {'result': {'result': {'objectId': 'xpath-element'}}}
-        describe_response = {
-            'result': {
-                'node': {'nodeName': 'SPAN', 'attributes': []}
-            }
-        }
-        
+        describe_response = {'result': {'node': {'nodeName': 'SPAN', 'attributes': []}}}
+
         web_element._connection_handler.execute_command.side_effect = [
             node_response,
             describe_response,
         ]
-        
+
         element = await web_element.query('//span[text()="Click me"]')
-        
+
         assert isinstance(element, WebElement)
         assert element._object_id == 'xpath-element'
 
     def test_find_no_criteria_raises_error(self, web_element):
         """Test find with no search criteria raises ValueError."""
-        with pytest.raises(ValueError, match='At least one of the following arguments must be provided'):
+        with pytest.raises(
+            ValueError, match='At least one of the following arguments must be provided'
+        ):
             asyncio.run(web_element.find())
 
 
@@ -1065,7 +1019,7 @@ class TestWebElementEdgeCases:
     async def test_bounds_property_with_connection_error(self, web_element):
         """Test bounds property when connection fails."""
         web_element._connection_handler.execute_command.side_effect = Exception("Connection failed")
-        
+
         with pytest.raises(Exception, match="Connection failed"):
             await web_element.bounds
 
@@ -1076,7 +1030,7 @@ class TestWebElementEdgeCases:
         web_element._connection_handler.execute_command.return_value = {
             'result': {'outerHTML': malformed_html}
         }
-        
+
         # BeautifulSoup should handle malformed HTML gracefully
         text = await web_element.text
         assert 'Unclosed tag' in text
@@ -1093,10 +1047,10 @@ class TestWebElementEdgeCases:
             None,  # mouse press
             None,  # mouse release
         ]
-        
+
         with patch('asyncio.sleep') as mock_sleep:
             await web_element.click(hold_time=0)
-        
+
         mock_sleep.assert_called_once_with(0)
 
     @pytest.mark.asyncio
@@ -1113,9 +1067,195 @@ class TestWebElementEdgeCases:
     async def test_set_input_files_empty_list(self, file_input_element):
         """Test set_input_files with empty file list."""
         await file_input_element.set_input_files([])
-        
+
         expected_command = DomCommands.set_file_input_files(
-            files=[], 
-            object_id='file-input-object-id'
+            files=[], object_id='file-input-object-id'
         )
-        file_input_element._connection_handler.execute_command.assert_called_once_with(expected_command, timeout=60)
+        file_input_element._connection_handler.execute_command.assert_called_once_with(
+            expected_command, timeout=60
+        )
+
+
+class TestWebElementGetChildren:
+    """Integration tests for WebElement get_children_elements method using real HTML."""
+
+    @pytest.mark.asyncio
+    async def test_get_children_elements_basic(self):
+        """Test get_children_elements with basic depth using real HTML."""
+
+        # Get the path to our test HTML file
+        test_file = Path(__file__).parent / 'pages' / 'test_children.html'
+        file_url = f'file://{test_file.absolute()}'
+        options = Options()
+        options.headless = True
+        
+        async with Chrome(options=options) as browser:
+            tab = await browser.start()
+            await tab.go_to(file_url)
+
+            # Find the parent element
+            parent_element = await tab.find(id='parent-element')
+
+            # Test get_children_elements with depth 3
+            nodes = await parent_element.get_children_elements(3)
+
+            # Verify results - should get all direct children and nested children up to depth 3
+            assert len(nodes) > 0
+            assert all(isinstance(node, WebElement) for node in nodes)
+
+            # Check that we have the expected direct children
+            child_ids = []
+            for node in nodes:
+                node_id = node.get_attribute('id')
+                if node_id:
+                    child_ids.append(node_id)
+
+            # Should include direct children
+            expected_direct_children = [
+                'child1',
+                'child2',
+                'child3',
+                'link1',
+                'link2',
+                'nested-parent',
+            ]
+            for expected_id in expected_direct_children:
+                assert (
+                    expected_id in child_ids
+                ), f"Expected child {expected_id} not found in {child_ids}"
+
+            # Should also include nested children (depth 3)
+            expected_nested_children = ['nested-child1', 'nested-child2', 'nested-link']
+            for expected_id in expected_nested_children:
+                assert (
+                    expected_id in child_ids
+                ), f"Expected nested child {expected_id} not found in {child_ids}"
+
+    @pytest.mark.asyncio
+    async def test_get_children_elements_with_tag_filter(self):
+        """Test get_children_elements with tag filter using real HTML."""
+
+        # Get the path to our test HTML file
+        test_file = Path(__file__).parent / 'pages' / 'test_children.html'
+        file_url = f'file://{test_file.absolute()}'
+        options = Options()
+        options.headless = True
+        
+        async with Chrome(options=options) as browser:
+            tab = await browser.start()
+            await tab.go_to(file_url)
+
+            # Find the parent element
+            parent_element = await tab.find(id='parent-element')
+
+            # Test get_children_elements with tag filter for 'a' tags
+            nodes_filter = await parent_element.get_children_elements(4, ['a'])
+
+            # Verify results - should only get anchor tags
+            assert len(nodes_filter) > 0
+            assert all(isinstance(node, WebElement) for node in nodes_filter)
+
+            # Check that all returned elements are anchor tags
+            for node in nodes_filter:
+                tag_name = node.get_attribute('tag_name')
+                assert tag_name.lower() == 'a', f"Expected 'a' tag, got '{tag_name}'"
+
+            # Check that we have the expected anchor elements
+            link_ids = []
+            for node in nodes_filter:
+                node_id = node.get_attribute('id')
+                if node_id:
+                    link_ids.append(node_id)
+
+            # Should include both direct and nested anchor tags
+            expected_links = ['link1', 'link2', 'nested-link']
+            for expected_id in expected_links:
+                assert (
+                    expected_id in link_ids
+                ), f"Expected link {expected_id} not found in {link_ids}"
+
+    @pytest.mark.asyncio
+    async def test_get_children_elements_depth_limit(self):
+        """Test get_children_elements with depth limit."""
+
+        # Get the path to our test HTML file
+        test_file = Path(__file__).parent / 'pages' / 'test_children.html'
+        file_url = f'file://{test_file.absolute()}'
+        options = Options()
+        options.headless = True
+        
+        async with Chrome(options=options) as browser:
+            tab = await browser.start()
+            await tab.go_to(file_url)
+
+            # Find the parent element
+            parent_element = await tab.find(id='parent-element')
+
+            # Test with depth 1 - should only get direct children
+            nodes_depth_1 = await parent_element.get_children_elements(1)
+
+            # Get IDs of elements found with depth 1
+            depth_1_ids = []
+            for node in nodes_depth_1:
+                node_id = node.get_attribute('id')
+                if node_id:
+                    depth_1_ids.append(node_id)
+
+            # Should include direct children but not nested ones
+            expected_direct = ['child1', 'child2', 'child3', 'link1', 'link2', 'nested-parent']
+            for expected_id in expected_direct:
+                assert expected_id in depth_1_ids, f"Expected direct child {expected_id} not found"
+
+            # Should NOT include nested children with depth 1
+            unexpected_nested = ['nested-child1', 'nested-child2', 'nested-link']
+            for unexpected_id in unexpected_nested:
+                assert (
+                    unexpected_id not in depth_1_ids
+                ), f"Unexpected nested child {unexpected_id} found with depth 1"
+
+    @pytest.mark.asyncio
+    async def test_get_children_elements_empty_result(self):
+        """Test get_children_elements on element with no children."""
+
+        # Get the path to our test HTML file
+        test_file = Path(__file__).parent / 'pages' / 'test_children.html'
+        file_url = f'file://{test_file.absolute()}'
+        options = Options()
+        options.headless = True
+        async with Chrome(options=options) as browser:
+            tab = await browser.start()
+            await tab.go_to(file_url)
+
+            # Find a leaf element (no children)
+            leaf_element = await tab.find(id='child1')
+
+            # Test get_children_elements on element with no children
+            nodes = await leaf_element.get_children_elements(2)
+
+            # Should return empty list
+            assert isinstance(nodes, list)
+            assert len(nodes) == 0
+
+    @pytest.mark.asyncio
+    async def test_get_children_elements_element_not_found_exception(self):
+        """Test get_children_elements raises ElementNotFound when script fails."""
+        # Create a mock element that will fail the script execution
+        mock_connection_handler = AsyncMock()
+        
+        # Mock script result without objectId (simulates script failure)
+        mock_connection_handler.execute_command.return_value = {
+            'result': {
+                'result': {}  # No objectId key
+            }
+        }
+        
+        # Create a WebElement with the mock connection
+        element = WebElement(
+            object_id='test-element-id',
+            connection_handler=mock_connection_handler,
+            attributes_list=['id', 'test-element', 'tag_name', 'div']
+        )
+        
+        # Should raise ElementNotFound when script returns no objectId
+        with pytest.raises(ElementNotFound, match='Child element not found for element'):
+            await element.get_children_elements(1)

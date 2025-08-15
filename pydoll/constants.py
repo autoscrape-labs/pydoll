@@ -152,6 +152,33 @@ class Scripts:
         }
     """
 
+    GET_CHILDREN_NODE = """
+        function() {{
+            function getChildrenUntilDepth(element, maxDepth, tagFilter = [], currentDepth = 1)
+            {{
+                if (currentDepth > maxDepth) return [];
+
+                const children = Array.from(element.children);
+                let filtered = tagFilter.length === 0
+                    ? children
+                : children.filter(child => tagFilter.includes(child.tagName.toLowerCase()));
+
+                let allDescendants = [...filtered];
+
+                for (let child of children)
+                {{
+                    allDescendants.push(
+                    ...getChildrenUntilDepth(child, maxDepth, tagFilter, currentDepth + 1)
+                    );
+                }}
+
+                return allDescendants;
+            }}
+
+            return getChildrenUntilDepth(this, {max_depth}, {tag_filter});
+        }}
+    """
+
     MAKE_REQUEST = """
 (async function() {{
     async function makeRequest(url, options) {{
