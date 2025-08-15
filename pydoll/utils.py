@@ -159,7 +159,7 @@ def validate_browser_paths(paths: list[str]) -> str:
         InvalidBrowserPath: If the browser executable is not found at the path.
     """
     for path in paths:
-        if os.path.exists(path) and os.access(path, os.X_OK):
+        if os.path.isfile(path) and os.access(path, os.X_OK):
             return path
     raise InvalidBrowserPath(f'No valid browser path found in: {paths}')
 
