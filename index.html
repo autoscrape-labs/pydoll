@@ -32,7 +32,9 @@
     <link rel="preconnect" href="https://pydoll.tech/" />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="https://pydoll.tech/images/favicon.png" />
+    <link rel="icon" type="image/png" href="/images/favicon.png" sizes="48x48 32x32 16x16" />
+    <link rel="shortcut icon" type="image/png" href="/images/favicon.png" />
+    <link rel="apple-touch-icon" href="/images/favicon.png" />
 
     <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -250,9 +252,8 @@
       </div>
     </section>
 
-
     <!-- Quick Intro / Features -->
-    <section class="mx-auto max-w-7xl px-4 pt-16 pb-8 sm:px-6 lg:px-8">
+    <section class="mx-auto max-w-7xl px-4 pt-10 pb-6 sm:px-6 lg:px-8">
       <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         <div class="reveal tilt-card rounded-xl border border-white/10 bg-slate-900/40 p-6 transition-transform duration-200 hover:shadow-[0_10px_30px_rgba(99,102,241,0.15)]">
           <h3 class="flex items-center gap-2 text-lg font-semibold">
@@ -317,9 +318,37 @@
       </div>
     </section>
 
+    <!-- Stars Goal Section -->
+    <section id="stars-goal" class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <div class="reveal tilt-card rounded-xl border border-white/10 bg-slate-900/60 p-5 sm:p-6 transition-transform duration-200 hover:shadow-[0_10px_30px_rgba(99,102,241,0.15)]">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div class="min-w-0">
+            <h3 class="text-xl font-semibold">Help us reach 10k stars</h3>
+            <p class="mt-1 text-sm text-slate-300">Help us reach 10k stars and keep the project alive and relevant!</p>
+            <div class="mt-4">
+              <div class="flex items-center justify-between text-xs text-slate-400">
+                <span id="starsProgressLabel">0 / 10,000</span>
+                <span id="starsProgressPct">0%</span>
+              </div>
+              <div class="mt-2 h-2 w-full rounded-full bg-white/10 overflow-hidden">
+                <div id="starsProgressBar" class="h-2 rounded-full bg-brand-500" style="width:0%"></div>
+              </div>
+            </div>
+          </div>
+          <div class="flex flex-col items-start sm:items-end gap-3">
+            <div class="min-w-[220px]">
+              <p class="text-xs font-medium text-slate-300">Latest stargazers</p>
+              <ul id="stargazersList" class="mt-2 flex flex-wrap items-center gap-2">
+                <!-- Filled via JS -->
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
     <!-- Install CTA -->
     <section id="install" class="overflow-x-hidden">
-      <div class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div class="grid grid-cols-1 items-center gap-8 lg:grid-cols-2">
           <div class="min-w-0">
             <h2 class="text-2xl font-bold tracking-tight">Install and get started in seconds</h2>
@@ -367,7 +396,7 @@ asyncio.run(main())
     </section>
 
     <!-- Highlights (vertical minimalist cards) -->
-    <section class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+    <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
       <div class="mb-6">
         <h2 class="text-2xl font-bold tracking-tight">Highlights</h2>
         <p class="mt-1 text-sm text-slate-300">Key capabilities with simple examples.</p>
@@ -518,7 +547,7 @@ asyncio.run(main())
       </div>
     </div>
     <!-- FAQ (near footer) -->
-    <section id="faq" class="mx-auto max-w-7xl px-4 pt-4 pb-12 sm:px-6 lg:px-8">
+    <section id="faq" class="mx-auto max-w-7xl px-4 pt-4 pb-10 sm:px-6 lg:px-8">
         <div class="mb-6">
           <h2 class="text-2xl font-bold tracking-tight">Frequently asked questions</h2>
           <p class="mt-1 text-sm text-slate-300">Top questions about Pydoll, its features and use cases.</p>
@@ -554,8 +583,9 @@ asyncio.run(main())
           </details>
         </div>
       </section>
+    
     <!-- Final CTA (full width) -->
-    <section class="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
+    <section class="mx-auto max-w-7xl px-4 pb-10 sm:px-6 lg:px-8">
       <div class="reveal rounded-xl border border-white/10 bg-slate-900/60 p-5 sm:p-6">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -576,7 +606,7 @@ asyncio.run(main())
       <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div class="flex flex-col items-center justify-between gap-4 sm:flex-row">
           <div class="flex items-center gap-3">
-            <img src="https://pydoll.tech/images/E2ECED-cinza-azulado.png" alt="Pydoll" class="h-6 w-auto" />
+            <img src="https://pydoll.tech/images/logo.png" alt="Pydoll" class="h-6 w-auto" />
             <p class="text-sm text-slate-400">Pydoll - making browser automation magical ✨</p>
           </div>
           <div class="flex items-center gap-3 text-sm text-slate-400">
