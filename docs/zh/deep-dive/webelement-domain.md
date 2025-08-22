@@ -219,7 +219,7 @@ async def click(
     if self._is_option_tag():
         return await self.click_option_tag()
 
-    if not await self._is_element_visible():
+    if not await self.is_visible():
         raise exceptions.ElementNotVisible(
             'Element is not visible on the page.'
         )
@@ -342,16 +342,16 @@ WebElement 为需要直接操作DOM的操作提供了与JavaScript的无缝集�
 
 ```python
 # Execute JavaScript in the context of this element
-await element._execute_script("this.style.border = '2px solid red';")
+await element.execute_script("this.style.border = '2px solid red';")
 
 # Get result from JavaScript execution
-visibility = await element._is_element_visible()
+visibility = await element.is_visible()
 ```
 
 该实现通过CDP Runtime域执行JavaScript，并将元素作为上下文：
 
 ```python
-async def _execute_script(
+async def execute_script(
     self, script: str, return_by_value: bool = False
 ):
     """
@@ -371,10 +371,13 @@ WebElement 提供了检查元素可见性和可交互性的方法：
 
 ```python
 # Check if element is visible
-is_visible = await element._is_element_visible()
+is_visible = await element.is_visible()
 
 # Check if element is the topmost at its position
-is_on_top = await element._is_element_on_top()
+is_on_top = await element.is_on_top()
+
+# Check if element is interactable
+is_interactable = await element.is_interactable()
 ```
 
 这些验证对于实现可靠的自动化至关重要，可在尝试操作前确保元素可被交互。

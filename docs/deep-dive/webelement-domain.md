@@ -217,7 +217,7 @@ async def click(
     if self._is_option_tag():
         return await self.click_option_tag()
 
-    if not await self._is_element_visible():
+    if not await self.is_visible():
         raise exceptions.ElementNotVisible(
             'Element is not visible on the page.'
         )
@@ -341,16 +341,16 @@ WebElement provides seamless integration with JavaScript for operations that req
 
 ```python
 # Execute JavaScript in the context of this element
-await element._execute_script("this.style.border = '2px solid red';")
+await element.execute_script("this.style.border = '2px solid red';")
 
 # Get result from JavaScript execution
-visibility = await element._is_element_visible()
+visibility = await element.is_visible()
 ```
 
 The implementation uses the CDP Runtime domain to execute JavaScript with the element as the context:
 
 ```python
-async def _execute_script(
+async def execute_script(
     self, script: str, return_by_value: bool = False
 ):
     """
@@ -369,10 +369,13 @@ WebElement provides methods to check the element's visibility and interactabilit
 
 ```python
 # Check if element is visible
-is_visible = await element._is_element_visible()
+is_visible = await element.is_visible()
 
 # Check if element is the topmost at its position
-is_on_top = await element._is_element_on_top()
+is_on_top = await element.is_on_top()
+
+# Check if element is interactable
+is_interactable = await element.is_interactable()
 ```
 
 These verifications are crucial for reliable automation, ensuring that elements can be interacted with before attempting operations.
