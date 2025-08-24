@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0b1220" />
     <title>Pydoll - Automate the Web, naturally</title>
-    <meta name="description" content="Pydoll is a Python browser automation (CDP) library for web scraping, captcha bypass (Cloudflare, reCAPTCHA), human-like interactions, and browser-context requests." />
-    <meta name="keywords" content="pydoll, browser automation, web automation, web scraping, scraping, data scraping, data extraction, crawler, crawling, headless browser, headless chrome, chrome devtools protocol, devtools protocol, cdp, python cdp, chrome cdp, playwright, puppeteer, selenium, selenium alternative, pyppeteer, undetected chromedriver, stealth, antibot, anti bot, bot detection, fingerprinting, captcha bypass, bypass cloudflare, cloudflare turnstile, recaptcha, hcaptcha, captcha solver, automation python, async python, asyncio, network interception, request interception, browser context requests, http requests browser context, humanized interactions, human-like interactions, automation library, scraping framework, scrapy, beautifulsoup, bs4, requests, aiohttp, automação de navegador, automação web, raspagem de dados, coleta de dados, robô, bot, detecção de bot, interações humanizadas, assíncrono, concorrência, múltiplas abas, preferências do navegador, downloads silenciosos" />
+    <meta name="description" content="Pydoll is a Python browser automation library built on CDP with zero configuration, async performance, intuitive API, and full type safety. Simple, powerful web automation." />
+    <meta name="keywords" content="pydoll, browser automation, web automation, web scraping, scraping, data scraping, data extraction, crawler, crawling, headless browser, headless chrome, chrome devtools protocol, devtools protocol, cdp, python cdp, chrome cdp, async python, asyncio, network interception, request interception, browser context requests, http requests browser context, humanized interactions, human-like interactions, automation library, scraping framework, type safety, zero configuration, concurrent automation, browser preferences, downloads, python automation, modern web scraping" />
     <meta name="robots" content="index,follow" />
     <link rel="canonical" href="https://pydoll.tech/" />
 
     <!-- Open Graph -->
     <meta property="og:title" content="Pydoll - Automate the Web, naturally" />
-    <meta property="og:description" content="Browser automation for web scraping with human-like interactions, browser-context requests and captcha bypass (Cloudflare, reCAPTCHA)." />
+    <meta property="og:description" content="Python browser automation with zero configuration, async performance, intuitive API, and full type safety. Simple, powerful web automation." />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="https://pydoll.tech/images/logo.png" />
     <meta property="og:url" content="https://pydoll.tech/" />
@@ -23,7 +23,7 @@
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Pydoll - Automate the Web, naturally" />
-    <meta name="twitter:description" content="Browser automation for web scraping, browser-context requests and captcha bypass (Cloudflare, reCAPTCHA)." />
+    <meta name="twitter:description" content="Python browser automation with zero configuration, async performance, intuitive API, and full type safety." />
     <meta name="twitter:image" content="https://pydoll.tech/images/logo.png" />
 
     <!-- Performance hints -->
@@ -76,7 +76,7 @@
             "name": "Pydoll - Automate the Web, naturally",
             "isPartOf": { "@id": "https://pydoll.tech/#website" },
             "about": { "@id": "https://pydoll.tech/#software" },
-            "description": "Pydoll is a Python CDP browser automation library for web scraping, with human-like interactions, browser-context requests, and CAPTCHA handling."
+            "description": "Pydoll is a Python CDP browser automation library for web scraping, with zero configuration, async performance, and intuitive API."
           },
           {
             "@type": "SoftwareApplication",
@@ -87,7 +87,7 @@
             "programmingLanguage": "Python",
             "url": "https://pydoll.tech/",
             "image": "https://pydoll.tech/images/logo.png",
-            "description": "Python library for browser automation via Chrome DevTools Protocol (CDP), with human-like interactions, browser-context requests, and CAPTCHA handling.",
+            "description": "Python library for browser automation via Chrome DevTools Protocol (CDP), with zero configuration, async performance, intuitive API, and full type safety.",
             "publisher": { "@id": "https://pydoll.tech/#org" },
             "offers": {
               "@type": "Offer",
@@ -104,7 +104,9 @@
               "web scraping",
               "Chrome DevTools Protocol",
               "async Python",
-              "captcha"
+              "type safety",
+              "zero configuration",
+              "concurrent automation"
             ],
             "mainEntityOfPage": {"@id":"https://pydoll.tech/#webpage"}
           },
@@ -122,10 +124,10 @@
               },
               {
                 "@type": "Question",
-                "name": "Can Pydoll handle CAPTCHAs like Cloudflare Turnstile or reCAPTCHA v3?",
+                "name": "What makes Pydoll's setup so simple compared to other automation tools?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "It provides human-like interactions and a helper to attempt Turnstile bypass. Effectiveness depends on IP reputation and interaction patterns. Combine with quality proxies and good navigation practices."
+                  "text": "Just 'pip install pydoll-python' and you're ready. No WebDriver downloads, no PATH configuration, no version matching issues. Pydoll connects directly to Chrome via CDP, eliminating the entire driver layer that causes most automation headaches."
                 }
               }
             ]
@@ -170,12 +172,28 @@
       .tilt-card:hover { transition: transform .06s ease; }
       pre[class*="language-"], code[class*="language-"] {
         background: var(--code-bg) !important;
-        font-size: 12px !important;
-        line-height: 1.55 !important;
+        font-size: 13px !important;
+        line-height: 1.5 !important;
       }
-      pre[class*="language-"] { border: 1px solid rgba(255,255,255,0.1); }
+      pre[class*="language-"] { 
+        border: 1px solid rgba(255,255,255,0.1); 
+        border-radius: 8px;
+        margin: 0;
+      }
       /* Remove inner padding from code so pre controls spacing */
-      pre[class*="language-"] > code { background: transparent !important; }
+      pre[class*="language-"] > code { 
+        background: transparent !important; 
+        padding: 0;
+      }
+      /* Ensure syntax highlighting works */
+      .token.keyword { color: #c792ea !important; }
+      .token.string { color: #c3e88d !important; }
+      .token.function { color: #82aaff !important; }
+      .token.comment { color: #546e7a !important; }
+      .token.operator { color: #89ddff !important; }
+      .token.punctuation { color: #89ddff !important; }
+      .token.builtin { color: #ffcb6b !important; }
+      .token.class-name { color: #ffcb6b !important; }
     </style>
   </head>
   <body class="bg-slate-950 text-slate-100 antialiased">
@@ -192,9 +210,10 @@
             <a href="#install" class="px-3 py-2 text-sm font-medium text-slate-200 hover:text-white">Install</a>
             <a href="#faq" class="px-3 py-2 text-sm font-medium text-slate-200 hover:text-white">FAQ</a>
             <a href="https://github.com/sponsors/thalissonvs" target="_blank" rel="noopener" class="px-3 py-2 text-sm font-medium text-slate-200 hover:text-white">Sponsor</a>
-            <a href="https://github.com/autoscrape-labs/pydoll" target="_blank" rel="noopener" aria-label="Star on GitHub" class="inline-flex items-center gap-2 rounded-md bg-brand-500 px-3 py-2 text-sm font-semibold text-white shadow hover:bg-brand-400">
-              ⭐ Star
-              <span id="starCount" class="hidden rounded bg-white/10 px-2 py-0.5 text-white/80 sm:inline-block">...</span>
+            <a href="https://github.com/autoscrape-labs/pydoll" target="_blank" rel="noopener" aria-label="Star on GitHub" class="inline-flex items-center gap-2 rounded-md bg-yellow-500 px-3 py-2 text-sm font-semibold text-slate-900 shadow hover:bg-yellow-400">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15 9 22 9 17 14 19 22 12 18 5 22 7 14 2 9 9 9 12 2"/></svg>
+              Star
+              <span id="starCount" class="hidden rounded px-2 py-0.5 text-slate-900 sm:inline-block">...</span>
             </a>
           </nav>
           <!-- Mobile toggle -->
@@ -211,7 +230,7 @@
             <a href="#install" class="block rounded-md px-3 py-2 text-sm font-medium text-slate-200 hover:bg-white/5">Install</a>
             <a href="#faq" class="block rounded-md px-3 py-2 text-sm font-medium text-slate-200 hover:bg-white/5">FAQ</a>
             <a href="https://github.com/sponsors/thalissonvs" target="_blank" rel="noopener" class="block rounded-md px-3 py-2 text-sm font-medium text-slate-200 hover:bg-white/5">Sponsor</a>
-            <a href="https://github.com/autoscrape-labs/pydoll" target="_blank" rel="noopener" class="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-md bg-brand-500 px-3 py-2 text-sm font-semibold text-white shadow hover:bg-brand-400">⭐ Star</a>
+            <a href="https://github.com/autoscrape-labs/pydoll" target="_blank" rel="noopener" class="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-md bg-yellow-500 px-3 py-2 text-sm font-semibold text-slate-900 shadow hover:bg-yellow-400"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15 9 22 9 17 14 19 22 12 18 5 22 7 14 2 9 9 9 12 2"/></svg> Star</a>
           </div>
         </div>
       </div>
@@ -221,18 +240,19 @@
     <section id="hero" class="relative overflow-hidden">
       <div id="heroGradient" class="pointer-events-none absolute inset-0 -z-10 h-full bg-gradient-to-b from-indigo-600/30 via-fuchsia-600/10 to-transparent blur-3xl"></div>
       <div id="cursorGlow" aria-hidden="true" class="pointer-events-none absolute -z-10 hidden h-72 w-72 rounded-full bg-gradient-to-tr from-brand-500/25 via-fuchsia-500/15 to-transparent blur-3xl sm:block" style="left:0;top:0;"></div>
-      <div class="mx-auto max-w-7xl px-4 pb-12 pt-16 sm:pb-16 sm:pt-24 lg:flex lg:items-center lg:gap-12 lg:px-8">
+      <div class="mx-auto max-w-7xl px-4 pb-12 pt-16 sm:pb-16 sm:pt-24 lg:flex lg:items-start lg:gap-12 lg:px-8">
         <div class="mx-auto max-w-2xl lg:mx-0 lg:flex-auto">
           <h1 class="text-4xl font-bold tracking-tight sm:text-6xl">
-            Pydoll: Automate the Web, naturally
+            Pydoll: automate the web, naturally
           </h1>
           <p class="mt-6 text-lg leading-8 text-slate-300">
-            Pydoll connects directly to the Chrome DevTools Protocol. No WebDrivers, with human-like interactions, asynchronous performance and the ability to handle behavioral CAPTCHAs
-            (e.g., Cloudflare Turnstile, reCAPTCHA v3), depending on IP reputation and interaction patterns.
+            Built from scratch with zero configuration complexity, Pydoll connects directly to the Chrome DevTools Protocol. 
+            No WebDrivers, no setup headaches - just async performance, intuitive API, and full type safety.
           </p>
           <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <a href="https://github.com/autoscrape-labs/pydoll" target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-2 rounded-md bg-brand-500 px-5 py-3 text-base font-semibold text-white shadow hover:bg-brand-400">
-              ⭐ Star on GitHub
+            <a href="https://github.com/autoscrape-labs/pydoll" target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-2 rounded-md bg-yellow-500 px-5 py-3 text-base font-semibold text-slate-900 shadow hover:bg-yellow-400">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15 9 22 9 17 14 19 22 12 18 5 22 7 14 2 9 9 9 12 2"/></svg>
+              Star on GitHub
             </a>
             <a href="https://pydoll.tech/docs/" target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-2 rounded-md border border-white/10 px-5 py-3 text-base font-semibold text-white/90 hover:bg-white/5">
               📖 View Documentation
@@ -244,10 +264,30 @@
           
         </div>
         <div class="mt-12 w-full lg:mt-0 lg:max-w-xl lg:flex-none reveal">
-          <div class="tilt-card relative overflow-hidden rounded-xl border border-white/10 bg-slate-900/40 p-2 shadow-xl">
-            <img src="./docs/images/cloudflare-example.gif" alt="Bypass Cloudflare com Pydoll" class="w-full rounded-lg ring-1 ring-white/10" decoding="async" />
+          <div class="tilt-card relative overflow-hidden rounded-xl border border-white/10 bg-slate-900/40 p-6 shadow-xl">
+            <div class="space-y-4">
+              <div class="flex items-center gap-3">
+              </div>
+              <div class="rounded-lg bg-slate-950 p-1">
+                <pre class="language-python"><code class="language-python">async def extract_github_data():
+   async with Chrome() as browser:
+      tab = await browser.start()
+      await tab.go_to('https://github.com/autoscrape-labs/pydoll')
+      # Extract data with readable code
+      stars = await (await tab.find(
+        id='repo-stars-counter-star')
+      ).text
+      description = await (await tab.query(
+        '//h2[contains(text(), "About")]/following-sibling::p')
+      ).text
+      print(f"⭐ Stars: {stars}", f"📝 Description: {description}")</code></pre>
+              </div>
+              <div class="flex items-center justify-between text-xs text-slate-400">
+                <span>✨ Simple, powerful, async</span>
+                <span>🚀 Ready in seconds</span>
+              </div>
+            </div>
           </div>
-          <p class="mt-4 text-center text-xs text-slate-400">Cloudflare captcha bypass example</p>
         </div>
       </div>
     </section>
@@ -255,38 +295,37 @@
     <!-- Quick Intro / Features -->
     <section class="mx-auto max-w-7xl px-4 pt-10 pb-6 sm:px-6 lg:px-8">
       <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        <div class="reveal tilt-card rounded-xl border border-white/10 bg-slate-900/40 p-6 transition-transform duration-200 hover:shadow-[0_10px_30px_rgba(99,102,241,0.15)]">
+        <div id="cardZeroConfig" role="button" aria-controls="modalZeroConfig" class="reveal tilt-card cursor-pointer rounded-xl border border-white/10 bg-slate-900/40 p-6 transition-transform duration-200 hover:bg-white/5">
           <h3 class="flex items-center gap-2 text-lg font-semibold">
             <svg class="h-5 w-5 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <circle cx="12" cy="12" r="9"></circle>
               <line x1="5" y1="5" x2="19" y2="19"></line>
             </svg>
-            <span>Zero WebDrivers</span>
+            <span>Zero Configuration</span>
           </h3>
-          <p class="mt-2 text-sm text-slate-300">Direct CDP integration to reduce complexity and increase reliability.</p>
+          <p class="mt-2 text-sm text-slate-300">Install and automate immediately. No drivers, no PATH variables, no setup hell.</p>
         </div>
-        <div class="reveal tilt-card rounded-xl border border-white/10 bg-slate-900/40 p-6 transition-transform duration-200 hover:shadow-[0_10px_30px_rgba(99,102,241,0.15)]">
-          <h3 class="flex items-center gap-2 text-lg font-semibold">
-            <svg class="h-5 w-5 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <line x1="12" y1="6" x2="12" y2="18"></line>
-              <line x1="6" y1="12" x2="18" y2="12"></line>
-              <circle cx="12" cy="12" r="1.5"></circle>
-            </svg>
-            <span>Human-like interactions</span>
-          </h3>
-          <p class="mt-2 text-sm text-slate-300">Clicks, navigation and typing that simulate human behavior.</p>
-        </div>
-        <div class="reveal tilt-card rounded-xl border border-white/10 bg-slate-900/40 p-6 transition-transform duration-200 hover:shadow-[0_10px_30px_rgba(99,102,241,0.15)]">
+        <div id="cardAsync" role="button" aria-controls="modalAsync" class="reveal tilt-card cursor-pointer rounded-xl border border-white/10 bg-slate-900/40 p-6 transition-transform duration-200 hover:bg-white/5">
           <h3 class="flex items-center gap-2 text-lg font-semibold">
             <svg class="h-5 w-5 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <polyline points="8,7 4,12 8,17"></polyline>
               <polyline points="16,7 20,12 16,17"></polyline>
             </svg>
-            <span>Async and scalable</span>
+            <span>Async by Design</span>
           </h3>
-          <p class="mt-2 text-sm text-slate-300">Automate multiple tabs and tasks in parallel with asyncio.</p>
+          <p class="mt-2 text-sm text-slate-300">Built for concurrent automation with true async/await support from day one.</p>
         </div>
-        <div class="reveal tilt-card rounded-xl border border-white/10 bg-slate-900/40 p-6 transition-transform duration-200 hover:shadow-[0_10px_30px_rgba(99,102,241,0.15)]">
+        <div id="cardTypeSafety" role="button" aria-controls="modalTypeSafety" class="reveal tilt-card cursor-pointer rounded-xl border border-white/10 bg-slate-900/40 p-6 transition-transform duration-200 hover:bg-white/5">
+          <h3 class="flex items-center gap-2 text-lg font-semibold">
+            <svg class="h-5 w-5 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M9 12l2 2 4-4"></path>
+              <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9c1.7 0 3.28.47 4.64 1.28"></path>
+            </svg>
+            <span>Full Type Safety</span>
+          </h3>
+          <p class="mt-2 text-sm text-slate-300">Complete type annotations. Your IDE knows exactly what each method returns.</p>
+        </div>
+        <div id="cardRequests" role="button" aria-controls="modalRequests" class="reveal tilt-card cursor-pointer rounded-xl border border-white/10 bg-slate-900/40 p-6 transition-transform duration-200 hover:bg-white/5">
           <h3 class="flex items-center gap-2 text-lg font-semibold">
             <svg class="h-5 w-5 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <circle cx="12" cy="12" r="9"></circle>
@@ -297,34 +336,160 @@
           </h3>
           <p class="mt-2 text-sm text-slate-300">Use <code>tab.request</code> to automatically inherit cookies, CORS and session state.</p>
         </div>
-        <div class="reveal tilt-card rounded-xl border border-white/10 bg-slate-900/40 p-6 transition-transform duration-200 hover:shadow-[0_10px_30px_rgba(99,102,241,0.15)]">
+        <div id="cardIntuitive" role="button" aria-controls="modalIntuitive" class="reveal tilt-card cursor-pointer rounded-xl border border-white/10 bg-slate-900/40 p-6 transition-transform duration-200 hover:bg-white/5">
           <h3 class="flex items-center gap-2 text-lg font-semibold">
             <svg class="h-5 w-5 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M12 4l8 4v5a8 8 0 0 1-8 7 8 8 0 0 1-8-7V8l8-4z"></path>
+              <line x1="12" y1="6" x2="12" y2="18"></line>
+              <line x1="6" y1="12" x2="18" y2="12"></line>
+              <circle cx="12" cy="12" r="1.5"></circle>
             </svg>
-            <span>Network interception</span>
+            <span>Intuitive API</span>
           </h3>
-          <p class="mt-2 text-sm text-slate-300">Monitor, modify and fulfill requests with flexibility.</p>
+          <p class="mt-2 text-sm text-slate-300">Element finding feels like natural language. Simple, readable automation code.</p>
         </div>
-        <div class="reveal tilt-card rounded-xl border border-white/10 bg-slate-900/40 p-6 transition-transform duration-200 hover:shadow-[0_10px_30px_rgba(99,102,241,0.15)]">
+        <div id="cardEvents" role="button" aria-controls="modalEvents" class="reveal tilt-card cursor-pointer rounded-xl border border-white/10 bg-slate-900/40 p-6 transition-transform duration-200 hover:bg-white/5">
           <h3 class="flex items-center gap-2 text-lg font-semibold">
             <svg class="h-5 w-5 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <polyline points="3,12 8,12 10,8 12,16 14,12 21,12"></polyline>
             </svg>
-            <span>Reactive events</span>
+            <span>Event-driven automation</span>
           </h3>
           <p class="mt-2 text-sm text-slate-300">React to page, network and runtime events in real-time.</p>
         </div>
       </div>
     </section>
 
+    <!-- Feature Modals -->
+    <div id="modalZeroConfig" class="fixed inset-0 z-[999] hidden items-center justify-center bg-black/70 p-4">
+      <div class="relative w-full max-w-3xl rounded-xl border border-white/10 bg-slate-900 p-4 sm:p-6 shadow-2xl">
+        <button id="closeZeroConfigModal" aria-label="Close" class="absolute right-3 top-3 rounded-full border border-white/10 bg-slate-800/80 p-1.5 text-slate-300 hover:bg-slate-700 hover:text-white">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+        <div class="mb-3 flex items-center justify-between pr-10">
+          <h4 class="text-lg font-semibold">Zero Configuration</h4>
+        </div>
+        <p class="mb-3 text-sm text-slate-300">Install and automate with a single command. No drivers, no PATH, no setup hell.</p>
+        <pre id="zeroConfigCode" class="language-python overflow-x-auto rounded-lg border border-white/10 bg-slate-950 p-4"><code class="language-python">from pydoll.browser import Chrome
+
+async def run():
+    async with Chrome() as browser:
+        tab = await browser.start()
+        await tab.go_to('https://example.com')
+</code></pre>
+      </div>
+    </div>
+
+    <div id="modalAsync" class="fixed inset-0 z-[999] hidden items-center justify-center bg-black/70 p-4">
+      <div class="relative w-full max-w-3xl rounded-xl border border-white/10 bg-slate-900 p-4 sm:p-6 shadow-2xl">
+        <button id="closeAsyncModal" aria-label="Close" class="absolute right-3 top-3 rounded-full border border-white/10 bg-slate-800/80 p-1.5 text-slate-300 hover:bg-slate-700 hover:text-white">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+        <div class="mb-3 flex items-center justify-between pr-10">
+          <h4 class="text-lg font-semibold">Async by Design</h4>
+        </div>
+        <p class="mb-3 text-sm text-slate-300">Run multiple tabs concurrently with true async/await.</p>
+        <pre id="asyncCode" class="language-python overflow-x-auto rounded-lg border border-white/10 bg-slate-950 p-4"><code class="language-python">import asyncio
+from pydoll.browser import Chrome
+
+async def scrape(url, tab):
+    await tab.go_to(url)
+    return await tab.execute_script('return document.title')
+
+async def main():
+    browser = Chrome()
+    tab1 = await browser.start()
+    tab2 = await browser.new_tab()
+    titles = await asyncio.gather(
+        scrape('https://google.com', tab1),
+        scrape('https://github.com', tab2),
+    )
+    print(titles)
+</code></pre>
+      </div>
+    </div>
+
+    <div id="modalTypeSafety" class="fixed inset-0 z-[999] hidden items-center justify-center bg-black/70 p-4">
+      <div class="relative w-full max-w-3xl rounded-xl border border-white/10 bg-slate-900 p-4 sm:p-6 shadow-2xl">
+        <button id="closeTypeSafetyModal" aria-label="Close" class="absolute right-3 top-3 rounded-full border border-white/10 bg-slate-800/80 p-1.5 text-slate-300 hover:bg-slate-700 hover:text-white">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+        <div class="mb-3 flex items-center justify-between pr-10">
+          <h4 class="text-lg font-semibold">Full Type Safety</h4>
+        </div>
+        <p class="mb-3 text-sm text-slate-300">Your IDE knows exactly what each call returns.</p>
+        <pre id="typeSafetyCode" class="language-python overflow-x-auto rounded-lg border border-white/10 bg-slate-950 p-4"><code class="language-python"># The IDE knows exactly what each call returns:
+await tab.find(id='username')                 # → WebElement
+await tab.find(id='username', find_all=True)  # → list[WebElement]
+await tab.find(id='username', raise_exc=False)  # → WebElement | None
+</code></pre>
+      </div>
+    </div>
+
+    <div id="modalRequests" class="fixed inset-0 z-[999] hidden items-center justify-center bg-black/70 p-4">
+      <div class="relative w-full max-w-3xl rounded-xl border border-white/10 bg-slate-900 p-4 sm:p-6 shadow-2xl">
+        <button id="closeRequestsModal" aria-label="Close" class="absolute right-3 top-3 rounded-full border border-white/10 bg-slate-800/80 p-1.5 text-slate-300 hover:bg-slate-700 hover:text-white">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+        <div class="mb-3 flex items-center justify-between pr-10">
+          <h4 class="text-lg font-semibold">Browser-context requests</h4>
+        </div>
+        <p class="mb-3 text-sm text-slate-300">Perform HTTP in the same context as the tab: cookies, session and CORS are inherited automatically.</p>
+        <pre id="requestsModalCode" class="language-python overflow-x-auto rounded-lg border border-white/10 bg-slate-950 p-4"><code class="language-python">await tab.go_to('https://app.example.com/login')
+await (await tab.find(id='email')).type_text('user@example.com')
+await (await tab.find(id='password')).type_text('secret')
+await (await tab.find(type='submit')).click()
+
+response = await tab.request.get('https://app.example.com/api/user/profile')
+print(response.json())
+</code></pre>
+      </div>
+    </div>
+
+    <div id="modalIntuitive" class="fixed inset-0 z-[999] hidden items-center justify-center bg-black/70 p-4">
+      <div class="relative w-full max-w-3xl rounded-xl border border-white/10 bg-slate-900 p-4 sm:p-6 shadow-2xl">
+        <button id="closeIntuitiveModal" aria-label="Close" class="absolute right-3 top-3 rounded-full border border-white/10 bg-slate-800/80 p-1.5 text-slate-300 hover:bg-slate-700 hover:text-white">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+        <div class="mb-3 flex items-center justify-between pr-10">
+          <h4 class="text-lg font-semibold">Intuitive API</h4>
+        </div>
+        <p class="mb-3 text-sm text-slate-300">Readable element finding using attributes, CSS or XPath.</p>
+        <pre id="intuitiveCode" class="language-python overflow-x-auto rounded-lg border border-white/10 bg-slate-950 p-4"><code class="language-python">button = await tab.find(tag_name='button', text='Submit', class_name='btn-primary')
+await button.click()
+
+el = await tab.query('div[data-testid="awesome-element"]')
+</code></pre>
+      </div>
+    </div>
+
+    <div id="modalEvents" class="fixed inset-0 z-[999] hidden items-center justify-center bg-black/70 p-4">
+      <div class="relative w-full max-w-3xl rounded-xl border border-white/10 bg-slate-900 p-4 sm:p-6 shadow-2xl">
+        <button id="closeEventsModal" aria-label="Close" class="absolute right-3 top-3 rounded-full border border-white/10 bg-slate-800/80 p-1.5 text-slate-300 hover:bg-slate-700 hover:text-white">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+        <div class="mb-3 flex items-center justify-between pr-10">
+          <h4 class="text-lg font-semibold">Event-driven automation</h4>
+        </div>
+        <p class="mb-3 text-sm text-slate-300">React to page and network changes in real-time using the built-in event system.</p>
+        <pre id="eventsCode" class="language-python overflow-x-auto rounded-lg border border-white/10 bg-slate-950 p-4"><code class="language-python"># Enable and listen to network events
+await tab.enable_network_events()
+
+async def on_response(params):
+    info = params.get('response', {})
+    print('status:', info.get('status'))
+
+await tab.on('Network.responseReceived', on_response)
+</code></pre>
+      </div>
+    </div>
+
     <!-- Stars Goal Section -->
     <section id="stars-goal" class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-      <div class="reveal tilt-card rounded-xl border border-white/10 bg-slate-900/60 p-5 sm:p-6 transition-transform duration-200 hover:shadow-[0_10px_30px_rgba(99,102,241,0.15)]">
+      <div class="reveal rounded-xl border border-white/10 bg-slate-900/60 p-5 sm:p-6 transition-transform duration-200 hover:shadow-[0_10px_30px_rgba(99,102,241,0.15)]">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div class="min-w-0">
             <h3 class="text-xl font-semibold">Help us reach 10k stars</h3>
-            <p class="mt-1 text-sm text-slate-300">Help us reach 10k stars and keep the project alive and relevant!</p>
+            <p class="mt-1 text-sm text-slate-300">🚀 Your star means more features, more contributors, and a stronger community.</p>
             <div class="mt-4">
               <div class="flex items-center justify-between text-xs text-slate-400">
                 <span id="starsProgressLabel">0 / 10,000</span>
@@ -362,15 +527,17 @@
             <!-- Quick code example -->
             <div class="mt-6">
               <p class="mb-2 text-sm text-slate-300">Quick example:</p>
-              <pre class="language-python overflow-x-auto max-w-full rounded-lg border border-white/10 bg-slate-950 p-4 text-[12px] leading-relaxed"><code class="language-python">import asyncio
-from pydoll.browser.chromium import Chrome
+              <pre class="language-python overflow-x-auto max-w-full rounded-lg border border-white/10 bg-slate-950 p-4"><code class="language-python">import asyncio
+from pydoll.browser import Chrome
 
 async def main():
     async with Chrome() as browser:
         tab = await browser.start()
-        await tab.go_to('https://example.com')
-        title = await tab.execute_script('return document.title')
-        print(title)
+        await tab.go_to('https://google.com')
+        
+        search_box = await tab.find(name='q')
+        await search_box.type_text('Pydoll')
+        await search_box.press_keyboard_key('Enter')
 
 asyncio.run(main())
 </code></pre>
@@ -380,206 +547,98 @@ asyncio.run(main())
               <a href="https://github.com/sponsors/thalissonvs" target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-2 rounded-md border border-white/10 px-4 py-2 text-sm font-semibold text-white/90 hover:bg-white/5">Support the project</a>
             </div>
           </div>
-          <div class="relative min-w-0 w-full overflow-hidden rounded-xl border border-white/10 bg-slate-950 shadow-xl">
-            <div class="flex items-center gap-2 border-b border-white/10 bg-slate-900/80 px-3 py-2">
-              <span class="h-2.5 w-2.5 rounded-full bg-red-400/70"></span>
-              <span class="h-2.5 w-2.5 rounded-full bg-yellow-400/70"></span>
-              <span class="h-2.5 w-2.5 rounded-full bg-green-400/70"></span>
-              <span class="ml-3 text-[10px] font-medium tracking-wide text-slate-400">terminal</span>
+          <div class="reveal rounded-xl p-6 shadow-xl h-full flex flex-col justify-between">
+            <div class="space-y-6">
+              <div class="text-center space-y-4">
+                <div class="mx-auto h-16 w-16 rounded-full bg-brand-500/10 flex items-center justify-center">
+                  <svg class="h-8 w-8 text-brand-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="8,7 4,12 8,17"></polyline>
+                    <polyline points="16,7 20,12 16,17"></polyline>
+                  </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-slate-200">Zero to automation in seconds</h3>
+                <p class="text-sm text-slate-300">Install once, automate forever.<br/>No drivers, no config, no headaches.</p>
+              </div>
+              
+              <div class="space-y-4 border border-white/10 pt-4 p-4 rounded-lg">
+                <div class="flex items-start gap-3">
+                  <div class="h-2 w-2 rounded-full bg-green-400 mt-1.5"></div>
+                  <div class="flex-1">
+                    <h4 class="text-sm font-medium text-slate-200">Async by design</h4>
+                    <p class="text-xs text-slate-400 mt-1">Built for concurrent automation with true async/await support</p>
+                  </div>
+                </div>
+                <div class="flex items-start gap-3">
+                  <div class="h-2 w-2 rounded-full bg-blue-400 mt-1.5"></div>
+                  <div class="flex-1">
+                    <h4 class="text-sm font-medium text-slate-200">Type safe</h4>
+                    <p class="text-xs text-slate-400 mt-1">Complete type annotations - your IDE knows exactly what each method returns</p>
+                  </div>
+                </div>
+                <div class="flex items-start gap-3">
+                  <div class="h-2 w-2 rounded-full bg-purple-400 mt-1.5"></div>
+                  <div class="flex-1">
+                    <h4 class="text-sm font-medium text-slate-200">CDP direct</h4>
+                    <p class="text-xs text-slate-400 mt-1">No WebDrivers, no compatibility issues - direct Chrome connection</p>
+                  </div>
+                </div>
+                <div class="flex items-start gap-3">
+                  <div class="h-2 w-2 rounded-full bg-yellow-400 mt-1.5"></div>
+                  <div class="flex-1">
+                    <h4 class="text-sm font-medium text-slate-200">Intuitive API</h4>
+                    <p class="text-xs text-slate-400 mt-1">Element finding feels like natural language - simple and readable</p>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="relative h-64 sm:h-72 md:h-80 lg:h-80">
-              <img src="./docs/images/google-search-example.gif" alt="Pydoll automation example" class="absolute inset-0 h-full w-full object-contain" loading="lazy" decoding="async" />
-            </div>
+
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Highlights (vertical minimalist cards) -->
-    <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-      <div class="mb-6">
-        <h2 class="text-2xl font-bold tracking-tight">Highlights</h2>
-        <p class="mt-1 text-sm text-slate-300">Key capabilities with simple examples.</p>
-      </div>
 
-      <div class="space-y-6">
-        <!-- Card: Concurrent automation -->
-        <div class="reveal rounded-xl border border-white/10 bg-slate-900/40 p-5 sm:p-6">
-          <h3 class="text-xl font-semibold">Concurrent automation</h3>
-          <p class="mt-1 text-sm text-slate-300">Process multiple tabs in parallel with a straightforward API.</p>
-          <pre id="codeConcurrent" class="language-python mt-4 overflow-x-auto rounded-lg border border-white/10 bg-slate-950 p-4 text-[12px] leading-relaxed"><code class="language-python">import asyncio
-from pydoll.browser.chromium import Chrome
-
-async def scrape_page(url, tab):
-    await tab.go_to(url)
-    return await tab.execute_script('return document.title')
-
-async def main():
-    browser = Chrome()
-    tab1 = await browser.start()
-    tab2 = await browser.new_tab()
-    titles = await asyncio.gather(
-        scrape_page('https://google.com', tab1),
-        scrape_page('https://github.com', tab2),
-    )
-    print(titles)
-
-asyncio.run(main())
-</code></pre>
-          <div class="mt-2">
-            <button id="copyConcurrentBtn" class="rounded-md border border-white/10 bg-slate-800/80 px-3 py-1.5 text-xs font-semibold text-slate-100 hover:bg-slate-700">Copy</button>
-            <button id="openConcurrentModal" class="ml-2 rounded-md border border-white/10 bg-slate-800/80 px-3 py-1.5 text-xs font-semibold text-slate-100 hover:bg-slate-700">View full example</button>
-          </div>
-          <div class="mt-4 grid gap-2 text-sm text-slate-300">
-            <div class="flex items-start gap-3">
-              <svg class="mt-0.5 h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
-              <p><span class="font-medium text-slate-200">Multiple tabs</span>: create and manage <code>tab1</code> and <code>tab2</code> in the same browser.</p>
-            </div>
-            <div class="flex items-start gap-3">
-              <svg class="mt-0.5 h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="8,7 4,12 8,17"/><polyline points="16,7 20,12 16,17"/></svg>
-              <p><span class="font-medium text-slate-200">Parallel execution</span>: use <code>asyncio.gather</code> to run tasks simultaneously.</p>
-            </div>
-            <div class="flex items-start gap-3">
-              <svg class="mt-0.5 h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20l9-16H3l9 16z"/></svg>
-              <p><span class="font-medium text-slate-200">Consistent API</span>: same API per tab, no boilerplate.</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Card: Browser-context requests -->
-        <div class="reveal rounded-xl border border-white/10 bg-slate-900/40 p-5 sm:p-6">
-          <h3 class="text-xl font-semibold">Browser‑context requests</h3>
-          <p class="mt-1 text-sm text-slate-300">Make HTTP calls that inherit session, cookies and CORS from the browser.</p>
-          <pre id="codeRequests" class="language-python mt-4 overflow-x-auto rounded-lg border border-white/10 bg-slate-950 p-4 text-[12px] leading-relaxed"><code class="language-python">from pydoll.browser.chromium import Chrome
-
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://example.com/login')
-        # ... realize o login ...
-        response = await tab.request.get('https://example.com/api/user/profile')
-        print(response.json())
-</code></pre>
-          <div class="mt-2">
-            <button id="copyRequestsBtn" class="rounded-md border border-white/10 bg-slate-800/80 px-3 py-1.5 text-xs font-semibold text-slate-100 hover:bg-slate-700">Copy</button>
-          </div>
-          <div class="mt-4 grid gap-2 text-sm text-slate-300">
-            <div class="flex items-start gap-3">
-              <svg class="mt-0.5 h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
-              <p><span class="font-medium text-slate-200">Shared session</span>: browser cookies and auth automatically.</p>
-            </div>
-            <div class="flex items-start gap-3">
-              <svg class="mt-0.5 h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><line x1="3" y1="12" x2="21" y2="12"/></svg>
-              <p><span class="font-medium text-slate-200">CORS respected</span>: same policies as the browser.</p>
-            </div>
-            <div class="flex items-start gap-3">
-              <svg class="mt-0.5 h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
-              <p><span class="font-medium text-slate-200">Direct JSON</span>: access <code>response.json()</code> effortlessly.</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Card: Browser preferences -->
-        <div class="reveal rounded-xl border border-white/10 bg-slate-900/40 p-5 sm:p-6">
-          <h3 class="text-xl font-semibold">Browser preferences</h3>
-          <p class="mt-1 text-sm text-slate-300">Fine-grained Chrome behavior control with handy helpers.</p>
-          <pre id="codePrefs" class="language-python mt-4 overflow-x-auto rounded-lg border border-white/10 bg-slate-950 p-4 text-[12px] leading-relaxed"><code class="language-python">from pydoll.browser.options import ChromiumOptions
-
-options = ChromiumOptions()
-options.set_default_download_directory('/tmp/downloads')
-options.set_accept_languages('en-US,en,pt-BR')
-options.prompt_for_download = False
-</code></pre>
-          <div class="mt-2">
-            <button id="copyPrefsBtn" class="rounded-md border border-white/10 bg-slate-800/80 px-3 py-1.5 text-xs font-semibold text-slate-100 hover:bg-slate-700">Copy</button>
-          </div>
-          <div class="mt-4 grid gap-2 text-sm text-slate-300">
-            <div class="flex items-start gap-3">
-              <svg class="mt-0.5 h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
-              <p><span class="font-medium text-slate-200">Silent downloads</span>: no prompts or dialogs.</p>
-            </div>
-            <div class="flex items-start gap-3">
-              <svg class="mt-0.5 h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><line x1="3" y1="12" x2="21" y2="12"/></svg>
-              <p><span class="font-medium text-slate-200">Language and locale</span>: adjust <code>accept_languages</code>.</p>
-            </div>
-            <div class="flex items-start gap-3">
-              <svg class="mt-0.5 h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
-              <p><span class="font-medium text-slate-200">Less friction</span>: disable download prompts and distractions.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-    
-    
-    <!-- Modal: Concurrent automation -->
-    <div id="concurrentModal" class="fixed inset-0 z-[999] hidden items-center justify-center bg-black/70 p-4">
-      <div class="relative w-full max-w-3xl rounded-xl border border-white/10 bg-slate-900 p-4 sm:p-6 shadow-2xl">
-        <button id="closeConcurrentModal" aria-label="Fechar" class="absolute right-3 top-3 rounded-full border border-white/10 bg-slate-800/80 p-1.5 text-slate-300 hover:bg-slate-700 hover:text-white">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
-        <div class="mb-3 flex items-center justify-between pr-10">
-          <h4 class="text-lg font-semibold">Concurrent automation example</h4>
-          <button id="copyConcurrentCode" class="rounded-md border border-white/10 bg-slate-800/80 px-3 py-1.5 text-xs font-semibold text-slate-100 hover:bg-slate-700">Copy</button>
-        </div>
-        <div>
-          <pre id="concurrentCodeBlock" class="language-python overflow-x-auto rounded-lg border border-white/10 bg-slate-950 p-4 text-[12px] leading-relaxed"><code class="language-python">import asyncio
-from pydoll.browser.chromium import Chrome
-
-async def scrape_page(url, tab):
-    await tab.go_to(url)
-    title = await tab.execute_script('return document.title')
-    return title
-
-async def main():
-    browser = Chrome()
-    tab1 = await browser.start()
-    tab2 = await browser.new_tab()
-    results = await asyncio.gather(
-        scrape_page('https://google.com', tab1),
-        scrape_page('https://github.com', tab2),
-    )
-    print(results)
-
-asyncio.run(main())
-</code></pre>
-        </div>
-      </div>
-    </div>
     <!-- FAQ (near footer) -->
     <section id="faq" class="mx-auto max-w-7xl px-4 pt-4 pb-10 sm:px-6 lg:px-8">
         <div class="mb-6">
           <h2 class="text-2xl font-bold tracking-tight">Frequently asked questions</h2>
           <p class="mt-1 text-sm text-slate-300">Top questions about Pydoll, its features and use cases.</p>
         </div>
-        <div class="grid gap-3 sm:gap-4">
-          <details class="group rounded-lg border border-white/10 bg-slate-900/40 p-4">
+        <div class="grid gap-3 sm:gap-4 ">
+          <details class="group rounded-lg border border-white/10 bg-slate-900/40 p-4 hover:shadow-[0_10px_30px_rgba(99,102,241,0.15)]">
             <summary class="flex cursor-pointer list-none items-center gap-2 font-medium text-slate-200">
               <svg class="h-4 w-4 text-slate-400 group-open:rotate-90 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
               What is Pydoll and why doesn't it use WebDriver?
             </summary>
             <p class="mt-2 text-sm text-slate-300">Pydoll is a Python library that controls the browser via the <strong>Chrome DevTools Protocol (CDP)</strong>, eliminating WebDrivers. This reduces layers, improves reliability and gives direct access to advanced capabilities like page events, network interception and JavaScript execution in the real tab context.</p>
           </details>
-          <details class="group rounded-lg border border-white/10 bg-slate-900/40 p-4">
+          <details class="group rounded-lg border border-white/10 bg-slate-900/40 p-4 hover:shadow-[0_10px_30px_rgba(99,102,241,0.15)]">
             <summary class="flex cursor-pointer list-none items-center gap-2 font-medium text-slate-200">
               <svg class="h-4 w-4 text-slate-400 group-open:rotate-90 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
-              Can Pydoll handle CAPTCHAs like Cloudflare Turnstile or reCAPTCHA v3?
+              How does Pydoll's type safety work in practice?
             </summary>
-            <p class="mt-2 text-sm text-slate-300">It provides <strong>human-like interactions</strong> (movement, click, typing) and a helper to <strong>attempt</strong> Turnstile bypass. Effectiveness depends on IP reputation and interaction patterns. For critical flows, combine with quality proxies and good browsing practices.</p>
+            <p class="mt-2 text-sm text-slate-300">Every method is fully typed with precise return annotations. Your IDE knows that <code>await tab.find(id='btn')</code> returns <code>WebElement</code>, <code>find_all=True</code> returns <code>list[WebElement]</code>, and <code>raise_exc=False</code> returns <code>WebElement | None</code>. This eliminates guesswork and catches errors before runtime.</p>
           </details>
-          <details class="group rounded-lg border border-white/10 bg-slate-900/40 p-4">
+          <details class="group rounded-lg border border-white/10 bg-slate-900/40 p-4 hover:shadow-[0_10px_30px_rgba(99,102,241,0.15)]">
             <summary class="flex cursor-pointer list-none items-center gap-2 font-medium text-slate-200">
               <svg class="h-4 w-4 text-slate-400 group-open:rotate-90 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
               What are “browser‑context requests” and when to use them?
             </summary>
             <p class="mt-2 text-sm text-slate-300">With <code>tab.request</code> you perform HTTP in the <strong>same context</strong> as the tab: cookies, session, headers and CORS are automatically inherited. Ideal for hybrid automation: log in via UI and then call the app's authenticated APIs with simplicity and speed.</p>
           </details>
-          <details class="group rounded-lg border border-white/10 bg-slate-900/40 p-4">
+          <details class="group rounded-lg border border-white/10 bg-slate-900/40 p-4 hover:shadow-[0_10px_30px_rgba(99,102,241,0.15)]">
             <summary class="flex cursor-pointer list-none items-center gap-2 font-medium text-slate-200">
               <svg class="h-4 w-4 text-slate-400 group-open:rotate-90 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
-              What are the practical differentiators: concurrency, events and preferences?
+              What makes Pydoll's setup so simple compared to other tools?
             </summary>
-            <p class="mt-2 text-sm text-slate-300">- <strong>Concurrency</strong>: multiple tabs/processes with <code>asyncio.gather</code>.<br/>- <strong>Reactive events</strong>: listen to <code>Page</code>, <code>Network</code> and <code>Runtime</code> to react in real-time.<br/>- <strong>Browser preferences</strong>: control silent downloads, languages and internal policies via <code>ChromiumOptions</code>.</p>
+            <p class="mt-2 text-sm text-slate-300">Just <code>pip install pydoll-python</code> and you're ready. No WebDriver downloads, no PATH configuration, no version matching hell. Pydoll connects directly to Chrome via CDP, eliminating the entire driver layer that causes most automation headaches.</p>
+          </details>
+          <details class="group rounded-lg border border-white/10 bg-slate-900/40 p-4 hover:shadow-[0_10px_30px_rgba(99,102,241,0.15)]">
+            <summary class="flex cursor-pointer list-none items-center gap-2 font-medium text-slate-200">
+              <svg class="h-4 w-4 text-slate-400 group-open:rotate-90 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+              How does concurrent automation work with multiple tabs?
+            </summary>
+            <p class="mt-2 text-sm text-slate-300">Pydoll is async-first, so you can run multiple tabs simultaneously with <code>asyncio.gather</code>. Create tabs with <code>await browser.new_tab()</code>, then process them in parallel. Each tab maintains its own session and state, giving you true concurrent automation without complexity.</p>
           </details>
         </div>
       </section>
@@ -593,9 +652,9 @@ asyncio.run(main())
           <p class="mt-1 text-sm text-slate-200/90">Star it, contribute to the repo or sponsor the development.</p>
           </div>
           <div class="flex flex-wrap gap-2">
-            <a href="https://github.com/autoscrape-labs/pydoll" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-md bg-brand-500 px-3 py-2 text-sm font-semibold text-white hover:bg-brand-400">⭐ Star</a>
+            <a href="https://github.com/autoscrape-labs/pydoll" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-md bg-yellow-500 px-3 py-2 text-sm font-semibold text-slate-900 hover:bg-yellow-400">⭐ Star</a>
             <a href="https://github.com/autoscrape-labs/pydoll/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-md border border-white/10 px-3 py-2 text-sm font-semibold text-white/90 hover:bg-white/5">👩‍💻 Contribute</a>
-            <a href="https://github.com/sponsors/thalissonvs" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-md bg-brand-500 px-3 py-2 text-sm font-semibold text-white hover:bg-brand-400">💖 Sponsor</a>
+            <a href="https://github.com/sponsors/thalissonvs" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-md bg-yellow-500 px-3 py-2 text-sm font-semibold text-slate-900 hover:bg-yellow-400">💖 Sponsor</a>
           </div>
         </div>
       </div>
@@ -607,7 +666,7 @@ asyncio.run(main())
         <div class="flex flex-col items-center justify-between gap-4 sm:flex-row">
           <div class="flex items-center gap-3">
             <img src="https://pydoll.tech/images/logo.png" alt="Pydoll" class="h-6 w-auto" />
-            <p class="text-sm text-slate-400">Pydoll - making browser automation magical ✨</p>
+            <p class="text-sm text-slate-400">Pydoll - making web automation simple and powerful</p>
           </div>
           <div class="flex items-center gap-3 text-sm text-slate-400">
             <a href="https://github.com/autoscrape-labs/pydoll" target="_blank" rel="noopener" class="hover:text-white">GitHub</a>
@@ -623,6 +682,14 @@ asyncio.run(main())
     <!-- JS -->
     <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+    <script>
+      // Force Prism highlighting after DOM load
+      document.addEventListener('DOMContentLoaded', function() {
+        if (typeof Prism !== 'undefined') {
+          Prism.highlightAll();
+        }
+      });
+    </script>
     <script src="./script.js" defer></script>
   </body>
   </html>

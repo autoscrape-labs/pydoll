@@ -74,7 +74,7 @@
       const starsFmt = starsCount.toLocaleString('pt-BR')
 
       const starCount = document.getElementById('starCount')
-      if (starCount) starCount.textContent = `${starsFmt}★`
+      if (starCount) starCount.textContent = `${starsFmt}`
 
       // Update progress bar to 10k
       const GOAL = 10000
@@ -304,6 +304,35 @@
   }
 
   // (CTA final não requer JS adicional)
+
+  // Feature cards -> modals
+  const modalMap = [
+    { card: 'cardZeroConfig', modal: 'modalZeroConfig', close: 'closeZeroConfigModal' },
+    { card: 'cardAsync', modal: 'modalAsync', close: 'closeAsyncModal' },
+    { card: 'cardTypeSafety', modal: 'modalTypeSafety', close: 'closeTypeSafetyModal' },
+    { card: 'cardRequests', modal: 'modalRequests', close: 'closeRequestsModal' },
+    { card: 'cardIntuitive', modal: 'modalIntuitive', close: 'closeIntuitiveModal' },
+    { card: 'cardEvents', modal: 'modalEvents', close: 'closeEventsModal' },
+  ]
+
+  const toggleGenericModal = (el, show) => {
+    if (!el) return
+    el.classList.toggle('hidden', !show)
+    el.classList.toggle('flex', show)
+  }
+
+  modalMap.forEach(({ card, modal, close }) => {
+    const cardEl = document.getElementById(card)
+    const modalEl = document.getElementById(modal)
+    const closeEl = document.getElementById(close)
+
+    if (cardEl && modalEl) cardEl.addEventListener('click', () => toggleGenericModal(modalEl, true))
+    if (closeEl && modalEl) closeEl.addEventListener('click', () => toggleGenericModal(modalEl, false))
+    if (modalEl) {
+      modalEl.addEventListener('click', (e) => { if (e.target === modalEl) toggleGenericModal(modalEl, false) })
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') toggleGenericModal(modalEl, false) })
+    }
+  })
 })()
 
 
