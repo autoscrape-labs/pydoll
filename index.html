@@ -179,6 +179,8 @@
         border: 1px solid rgba(255,255,255,0.1); 
         border-radius: 8px;
         margin: 0;
+        overflow-x: auto;
+        overflow-y: hidden; /* avoid vertical scrollbar differences (Chrome vs Firefox) */
       }
       /* Remove inner padding from code so pre controls spacing */
       pre[class*="language-"] > code { 
