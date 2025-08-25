@@ -2129,6 +2129,24 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pydoll.constants.Scripts.GET_CHILDREN_NODE" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;GET_CHILDREN_NODE
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.constants.Scripts.GET_SIBLINGS_NODE" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;GET_SIBLINGS_NODE
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pydoll.constants.Scripts.MAKE_REQUEST" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;MAKE_REQUEST
@@ -2951,6 +2969,24 @@
   <a href="#pydoll.constants.Scripts.GET_PARENT_NODE" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;GET_PARENT_NODE
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.constants.Scripts.GET_CHILDREN_NODE" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;GET_CHILDREN_NODE
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.constants.Scripts.GET_SIBLINGS_NODE" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;GET_SIBLINGS_NODE
     </span>
   </a>
   
@@ -4065,6 +4101,52 @@
 
 </h4>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">GET_PARENT_NODE</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">        function() {</span><span class="se">\n</span><span class="s1">            return this.parentElement;</span><span class="se">\n</span><span class="s1">        }</span><span class="se">\n</span><span class="s1">    &#39;</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="pydoll.constants.Scripts.GET_CHILDREN_NODE" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">GET_CHILDREN_NODE</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">GET_CHILDREN_NODE</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">        function() {{</span><span class="se">\n</span><span class="s1">            function getChildrenUntilDepth(element, maxDepth, tagFilter = [], currentDepth = 1)</span><span class="se">\n</span><span class="s1">            {{</span><span class="se">\n</span><span class="s1">                if (currentDepth &gt; maxDepth) return [];</span><span class="se">\n\n</span><span class="s1">                const children = Array.from(element.children);</span><span class="se">\n</span><span class="s1">                let filtered = tagFilter.length === 0</span><span class="se">\n</span><span class="s1">                    ? children</span><span class="se">\n</span><span class="s1">                : children.filter(child =&gt; tagFilter.includes(child.tagName.toLowerCase()));</span><span class="se">\n\n</span><span class="s1">                let allDescendants = [...filtered];</span><span class="se">\n\n</span><span class="s1">                for (let child of children)</span><span class="se">\n</span><span class="s1">                {{</span><span class="se">\n</span><span class="s1">                    allDescendants.push(</span><span class="se">\n</span><span class="s1">                    ...getChildrenUntilDepth(child, maxDepth, tagFilter, currentDepth + 1)</span><span class="se">\n</span><span class="s1">                    );</span><span class="se">\n</span><span class="s1">                }}</span><span class="se">\n\n</span><span class="s1">                return allDescendants;</span><span class="se">\n</span><span class="s1">            }}</span><span class="se">\n\n</span><span class="s1">            return getChildrenUntilDepth(this, </span><span class="si">{max_depth}</span><span class="s1">, </span><span class="si">{tag_filter}</span><span class="s1">);</span><span class="se">\n</span><span class="s1">        }}</span><span class="se">\n</span><span class="s1">    &#39;</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="pydoll.constants.Scripts.GET_SIBLINGS_NODE" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">GET_SIBLINGS_NODE</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">GET_SIBLINGS_NODE</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">        function() {{</span><span class="se">\n</span><span class="s1">            function getSiblingsUntilDepth(element, tagFilter = [])</span><span class="se">\n</span><span class="s1">            {{</span><span class="se">\n</span><span class="s1">                const parent = element.parentElement;</span><span class="se">\n</span><span class="s1">                const siblings = Array.from(parent.children);</span><span class="se">\n</span><span class="s1">                let filtered = tagFilter.length === 0</span><span class="se">\n</span><span class="s1">                    ? siblings.filter(child =&gt; child !== element)</span><span class="se">\n</span><span class="s1">                : siblings.filter(child =&gt;</span><span class="se">\n</span><span class="s1">                    tagFilter.includes(child.tagName.toLowerCase()) &amp;&amp; child !== element);</span><span class="se">\n\n</span><span class="s1">                let allDescendants = [...filtered];</span><span class="se">\n\n</span><span class="s1">                return allDescendants;</span><span class="se">\n</span><span class="s1">            }}</span><span class="se">\n\n</span><span class="s1">            return getSiblingsUntilDepth(this, </span><span class="si">{tag_filter}</span><span class="s1">);</span><span class="se">\n</span><span class="s1">        }}</span><span class="se">\n</span><span class="s1">    &#39;</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
