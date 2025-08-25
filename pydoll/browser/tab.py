@@ -1065,7 +1065,10 @@ class Tab(FindElementsMixin):
             response: EvaluateResponse = await self._execute_command(
                 RuntimeCommands.evaluate(expression='document.readyState')
             )
-            if response['result']['result']['value'] == 'complete':
+            if (
+                response['result']['result']['value']
+                == self._browser.options.page_load_state.value
+            ):
                 break
             if asyncio.get_event_loop().time() - start_time > timeout:
                 raise WaitElementTimeout('Page load timed out')
