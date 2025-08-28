@@ -59,6 +59,53 @@ Pydoll支持操作任何Chromium核心的浏览器:
 - **高质量 PDF 导出**：从网页生成 PDF 文档
 - **自定义格式**：即将推出！
 
+## 远程连接与混合自动化
+
+### 通过 WebSocket 连接已运行的浏览器
+
+只需提供 DevTools 的 WebSocket 地址，即可远程控制已经在运行的浏览器实例：
+
+```python
+import asyncio
+from pydoll.browser.chromium import Chrome
+
+async def main():
+    chrome = Chrome()
+    tab = await chrome.connect('ws://YOUR_HOST:9222/devtools/browser/XXXX')
+
+    await tab.go_to('https://example.com')
+    title = await tab.execute_script('return document.title')
+    print(title)
+
+asyncio.run(main())
+```
+
+非常适合 CI、容器、远程主机或共享调试目标——无需本地启动，只需指向 WS 端点即可自动化。
+
+### 自带 CDP：用 Pydoll 封装已有会话
+
+如果你已经有自己的 CDP 集成，也可以将其与 Pydoll 的高级 API 结合使用。只要你知道元素的 `objectId`，就能直接构造 `WebElement`：
+
+```python
+from pydoll.connection import ConnectionHandler
+from pydoll.elements.web_element import WebElement
+
+# 你的 DevTools WebSocket 地址，以及通过 CDP 获取到的元素 objectId
+ws = 'ws://YOUR_HOST:9222/devtools/page/ABCDEF...'
+object_id = 'REMOTE_ELEMENT_OBJECT_ID'
+
+connection_handler = ConnectionHandler(ws_address=ws)
+element = WebElement(object_id=object_id, connection_handler=connection_handler)
+
+# 立刻使用完整的 WebElement API
+visible = await element.is_visible()
+await element.wait_until(is_interactable=True, timeout=10)
+await element.click()
+text = await element.text
+```
+
+这种混合模式让你可以将底层的 CDP 能力（用于发现、注入或自定义流程）与 Pydoll 更易用的元素 API 顺畅结合。
+
 ## 直观的元素查找
 
 Pydoll v2.0+ 引入了一种革命性的元素查找方法，比传统的基于选择器的方法更直观、更强大。
@@ -139,6 +186,44 @@ async def query_examples():
 
 asyncio.run(query_examples())
 ```
+
+### DOM 遍历助手：get_children_elements() 与 get_siblings_elements()
+
+从已知锚点按树形结构遍历 DOM，更加明确且安全：
+
+- get_children_elements(max_depth: int = 1, tag_filter: list[str] | None = None, raise_exc: bool = False) -> list[WebElement]
+  - 使用先序遍历返回后代元素（先直接子元素，再其后代），深度不超过 max_depth
+  - max_depth=1 仅返回直接子元素；2 包含孙辈元素，以此类推
+  - tag_filter 用于按标签名过滤（小写，如 ['a', 'li']）
+  - 当 raise_exc=True 且脚本解析失败时会抛出 ElementNotFound
+
+- get_siblings_elements(tag_filter: list[str] | None = None, raise_exc: bool = False) -> list[WebElement]
+  - 返回与当前元素同一父节点下的兄弟元素（不包含当前元素）
+  - tag_filter 可按标签名过滤；返回顺序与父节点的子元素顺序一致
+
+```python
+# 文档顺序的直接子元素
+container = await tab.find(id='cards')
+children = await container.get_children_elements(max_depth=1)
+
+# 包含孙辈
+descendants = await container.get_children_elements(max_depth=2)
+
+# 按标签过滤
+links = await container.get_children_elements(max_depth=4, tag_filter=['a'])
+
+# 横向遍历
+active = await tab.find(class_name='item-active')
+siblings = await active.get_siblings_elements()
+link_siblings = await active.get_siblings_elements(tag_filter=['a'])
+```
+
+性能与正确性提示：
+
+- DOM 是树结构：深度增加会迅速扩展宽度。优先使用较小的 max_depth，并结合 tag_filter 限制范围。
+- 顺序：子元素遵循文档顺序；兄弟元素遵循父节点的子元素顺序，便于稳定迭代。
+- iFrame：每个 iframe 是独立的 DOM 树。使用 `tab.get_frame(iframe_element)` 进入后，再在该 frame 内调用这些助手。
+- 大型文档：深层遍历可能访问大量节点。建议将浅层遍历与基于锚点的精确 `find()`/`query()` 结合，以获得更佳性能。
 
 ## 原生 Cloudflare 验证码绕过
 

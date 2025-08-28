@@ -2205,12 +2205,12 @@
 
 
 </h2>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">ConnectionHandler</span><span class="p">(</span><span class="n">connection_port</span><span class="p">,</span> <span class="n">page_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ws_address_resolver</span><span class="o">=</span><span class="n"><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-function&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-function-name&quot;&gt;get_browser_ws_address&lt;/span&gt;
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">ConnectionHandler</span><span class="p">(</span><span class="n">connection_port</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">page_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ws_address_resolver</span><span class="o">=</span><span class="n"><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-function&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-function-name&quot;&gt;get_browser_ws_address&lt;/span&gt;
 
 
   &lt;span class=&quot;doc doc-labels&quot;&gt;
       &lt;small class=&quot;doc doc-label doc-label-async&quot;&gt;&lt;code&gt;async&lt;/code&gt;&lt;/small&gt;
-  &lt;/span&gt; (&lt;code&gt;pydoll.utils.get_browser_ws_address&lt;/code&gt;)" href="../../core/utils/#pydoll.utils.get_browser_ws_address">get_browser_ws_address</a></span><span class="p">,</span> <span class="n">ws_connector</span><span class="o">=</span><span class="n"><span title="websockets.connect">connect</span></span><span class="p">)</span>
+  &lt;/span&gt; (&lt;code&gt;pydoll.utils.get_browser_ws_address&lt;/code&gt;)" href="../../core/utils/#pydoll.utils.get_browser_ws_address">get_browser_ws_address</a></span><span class="p">,</span> <span class="n">ws_connector</span><span class="o">=</span><span class="n"><span title="websockets.connect">connect</span></span><span class="p">,</span> <span class="n">ws_address</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents first">
@@ -2242,7 +2242,11 @@ for both browser-level and page-level CDP endpoints.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="int">int</span></code>
+                      <code><span title="typing.Optional">Optional</span>[<span title="int">int</span>]</code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>None</code>
                   </span>
               </p>
             </td>
@@ -2312,8 +2316,29 @@ for both browser-level and page-level CDP endpoints.</p>
               </p>
             </td>
           </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>ws_address</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>WebSocket address. It has priority over connection_port and page_id.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="typing.Optional">Optional</span>[<span title="str">str</span>]</code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>None</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
       </tbody>
     </table>
+
 
 
 
@@ -2379,6 +2404,7 @@ for both browser-level and page-level CDP endpoints.</p>
     </div>
 
 </div>
+
 
 
 

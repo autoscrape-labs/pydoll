@@ -904,6 +904,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pydoll.browser.chromium.Chrome.connect" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;connect
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pydoll.browser.chromium.Chrome.start" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;start
@@ -2325,6 +2334,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pydoll.browser.chromium.Chrome.connect" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;connect
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pydoll.browser.chromium.Chrome.start" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;start
@@ -2712,6 +2730,7 @@
 
 
 
+
   <div class="doc doc-children">
 
 
@@ -2743,6 +2762,91 @@
 </div>
 
 
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="pydoll.browser.chromium.Chrome.connect" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">connect</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">connect</span><span class="p">(</span><span class="n">ws_address</span><span class="p">)</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Connect to browser using WebSocket address. When we set
+the _ws_address attribute, the connection handler will use
+this address instead of resolving it from the connection port.</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>ws_address</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>WebSocket address of the browser.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="str">str</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <span class="doc-returns-annotation">
+                    <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;pydoll.browser.tab.Tab&lt;/span&gt;" href="../../../../api/browser/tab/#pydoll.browser.tab.Tab">Tab</a></code>
+                </span>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>The first tab in the list of opened tabs.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Note</summary>
+  <p>You are supposed to use this method only if you want to connect to a browser
+that is already running.</p>
+</details>
+
+    </div>
+
+</div>
 
 <div class="doc doc-object doc-function">
 
@@ -3222,7 +3326,9 @@ Useful for debugging and managing multiple tabs.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Get all opened tabs that are not extensions and have the type 'page'</p>
+        <p>Get all opened tabs that are not extensions and have the type 'page'.
+Tabs that are already opened will be returned as is. If a new target is opened,
+a new Tab instance will be created.</p>
 
 
 <table>
