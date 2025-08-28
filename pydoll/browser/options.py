@@ -1,6 +1,7 @@
 from contextlib import suppress
 
 from pydoll.browser.interfaces import Options
+from pydoll.constants import PageLoadState
 from pydoll.exceptions import (
     ArgumentAlreadyExistsInOptions,
     ArgumentNotFoundInOptions,
@@ -28,6 +29,7 @@ class ChromiumOptions(Options):
         self._start_timeout = 10
         self._browser_preferences = {}
         self._headless = False
+        self._page_load_state = PageLoadState.COMPLETE
 
     @property
     def arguments(self) -> list[str]:
@@ -316,3 +318,11 @@ class ChromiumOptions(Options):
         if headless == has_argument:
             return
         methods_map[headless]('--headless')
+
+    @property
+    def page_load_state(self) -> PageLoadState:
+        return self._page_load_state
+
+    @page_load_state.setter
+    def page_load_state(self, state: PageLoadState):
+        self._page_load_state = state

@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from pydoll.constants import PageLoadState
+
 
 class Options(ABC):
     @property
@@ -34,6 +36,16 @@ class Options(ABC):
     @headless.setter
     @abstractmethod
     def headless(self, headless: bool):
+        pass
+
+    @property
+    @abstractmethod
+    def page_load_state(self) -> PageLoadState:
+        pass
+
+    @page_load_state.setter
+    @abstractmethod
+    def page_load_state(self, state: PageLoadState):
         pass
 
 
