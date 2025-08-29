@@ -36,6 +36,16 @@ class Options(ABC):
     def headless(self, headless: bool):
         pass
 
+    @property
+    @abstractmethod
+    def max_parallel_tasks(self) -> int:
+        pass
+
+    @max_parallel_tasks.setter
+    @abstractmethod
+    def max_parallel_tasks(self, max_parallel_tasks: int):
+        pass
+
 
 class BrowserOptionsManager(ABC):
     @abstractmethod
