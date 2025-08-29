@@ -1,5 +1,7 @@
 import asyncio
 import base64
+import threading
+import time
 from unittest.mock import ANY, AsyncMock, MagicMock, patch
 
 import pytest
@@ -1206,3 +1208,322 @@ async def test_headless_parameter_deprecation_warning(mock_browser):
     
     assert mock_browser.options.headless is True
     assert '--headless' in mock_browser.options.arguments
+
+
+# Tests for run_in_parallel and _limited_coroutine methods
+@pytest.mark.asyncio
+async def test_run_in_parallel_no_semaphore(mock_browser):
+    """Test run_in_parallel without semaphore (by mocking the condition)."""
+    # Setup browser with initialized loop
+    mock_browser._loop = asyncio.get_event_loop()
+    mock_browser.options.max_parallel_tasks = 2
+    mock_browser._semaphore = None
+    
+    # Mock the condition to prevent semaphore creation
+    # Create test coroutines that return different values
+    async def coro1():
+        await asyncio.sleep(0.01)
+        return "result1"
+    
+    async def coro2():
+        await asyncio.sleep(0.01)
+        return "result2"
+    
+    async def coro3():
+        await asyncio.sleep(0.01)
+        return "result3"
+    
+    # Execute run_in_parallel
+    results = await mock_browser.run_in_parallel(coro1(), coro2(), coro3())
+    
+    # Verify results are returned in correct order
+    assert results == ["result1", "result2", "result3"]
+    assert mock_browser._semaphore is not None
+
+
+@pytest.mark.asyncio
+async def test_run_in_parallel_with_semaphore(mock_browser):
+    """Test run_in_parallel with semaphore (max_parallel_tasks set)."""
+    # Setup browser with initialized loop
+    mock_browser._loop = asyncio.get_event_loop()
+    mock_browser.options.max_parallel_tasks = 2  # Enable semaphore with limit 2
+    mock_browser._semaphore = None  # Will be created by run_in_parallel
+    
+    execution_order = []
+    
+    async def coro_with_tracking(name, delay=0.01):
+        execution_order.append(f"{name}_start")
+        await asyncio.sleep(delay)
+        execution_order.append(f"{name}_end")
+        return name
+    
+    # Execute run_in_parallel with more coroutines than semaphore limit
+    results = await mock_browser.run_in_parallel(
+        coro_with_tracking("coro1"),
+        coro_with_tracking("coro2"),
+        coro_with_tracking("coro3")
+    )
+    
+    # Verify results are correct
+    assert results == ["coro1", "coro2", "coro3"]
+    # Verify semaphore was created
+    assert mock_browser._semaphore is not None
+    assert mock_browser._semaphore._value == 2
+
+
+@pytest.mark.asyncio
+async def test_run_in_parallel_loop_not_initialized(mock_browser):
+    """Test run_in_parallel raises RuntimeError when loop not initialized."""
+    # Setup browser without initialized loop
+    mock_browser._loop = None
+    
+    async def dummy_coro():
+        return "test"
+    
+    # Should raise RuntimeError
+    with pytest.raises(RuntimeError, match="Browser loop not initialized. Call start\\(\\) first."):
+        await mock_browser.run_in_parallel(dummy_coro())
+
+
+@pytest.mark.asyncio
+async def test_run_in_parallel_from_different_thread(mock_browser):
+    """Test run_in_parallel when called from different thread."""
+    # Create a separate event loop for the browser
+    browser_loop = asyncio.new_event_loop()
+    mock_browser._loop = browser_loop
+    mock_browser.options.max_parallel_tasks = 1
+    mock_browser._semaphore = None
+    
+    results = []
+    exception_container = []
+    
+    async def coro1():
+        await asyncio.sleep(0.01)
+        return "thread_result1"
+    
+    async def coro2():
+        await asyncio.sleep(0.01)
+        return "thread_result2"
+    
+    def run_in_thread():
+        try:
+            # Start the browser loop in the thread
+            asyncio.set_event_loop(browser_loop)
+            
+            # Create a task to run the coroutines
+            async def run_coroutines():
+                return await mock_browser.run_in_parallel(coro1(), coro2())
+            
+            # Run the task
+            result = browser_loop.run_until_complete(run_coroutines())
+            results.append(result)
+        except Exception as e:
+            exception_container.append(e)
+        finally:
+            browser_loop.close()
+    
+    # Run in separate thread
+    thread = threading.Thread(target=run_in_thread)
+    thread.start()
+    thread.join()
+    
+    # Verify no exceptions and correct results
+    assert not exception_container
+    assert len(results) == 1
+    assert results[0] == ["thread_result1", "thread_result2"]
+
+
+@pytest.mark.asyncio
+async def test_run_in_parallel_from_same_thread(mock_browser):
+    """Test run_in_parallel when called from same thread as browser loop."""
+    # Setup browser with current event loop
+    current_loop = asyncio.get_running_loop()
+    mock_browser._loop = current_loop
+    mock_browser.options.max_parallel_tasks = 1
+    mock_browser._semaphore = None
+    
+    async def coro1():
+        await asyncio.sleep(0.01)
+        return "same_thread_result1"
+    
+    async def coro2():
+        await asyncio.sleep(0.01)
+        return "same_thread_result2"
+    
+    # Execute run_in_parallel (should use direct await path)
+    results = await mock_browser.run_in_parallel(coro1(), coro2())
+    
+    # Verify results
+    assert results == ["same_thread_result1", "same_thread_result2"]
+
+
+@pytest.mark.asyncio
+async def test_limited_coroutine_without_semaphore(mock_browser):
+    """Test _limited_coroutine without semaphore."""
+    mock_browser.options.max_parallel_tasks = 1
+    mock_browser._semaphore = None
+    
+    async def test_coro():
+        await asyncio.sleep(0.01)
+        return "no_semaphore_result"
+    
+    # Execute _limited_coroutine
+    result = await mock_browser._limited_coroutine(test_coro())
+    
+    # Verify result
+    assert result == "no_semaphore_result"
+
+
+@pytest.mark.asyncio
+async def test_limited_coroutine_with_semaphore(mock_browser):
+    """Test _limited_coroutine with semaphore."""
+    mock_browser.options.max_parallel_tasks = 1
+    mock_browser._semaphore = asyncio.Semaphore(1)
+    
+    execution_times = []
+    
+    async def timed_coro(name):
+        start_time = time.time()
+        execution_times.append(f"{name}_start_{start_time}")
+        await asyncio.sleep(0.02)  # Small delay to ensure ordering
+        end_time = time.time()
+        execution_times.append(f"{name}_end_{end_time}")
+        return f"semaphore_result_{name}"
+    
+    # Execute multiple _limited_coroutine calls concurrently
+    results = await asyncio.gather(
+        mock_browser._limited_coroutine(timed_coro("1")),
+        mock_browser._limited_coroutine(timed_coro("2"))
+    )
+    
+    # Verify results
+    assert results == ["semaphore_result_1", "semaphore_result_2"]
+    # Verify execution was serialized (one should complete before other starts)
+    assert len(execution_times) == 4
+
+
+@pytest.mark.asyncio
+async def test_run_in_parallel_semaphore_limiting(mock_browser):
+    """Test that semaphore properly limits concurrent execution."""
+    mock_browser._loop = asyncio.get_event_loop()
+    mock_browser.options.max_parallel_tasks = 2
+    mock_browser._semaphore = None  # Will be created
+    
+    concurrent_count = 0
+    max_concurrent = 0
+    execution_log = []
+    
+    async def monitored_coro(name):
+        nonlocal concurrent_count, max_concurrent
+        concurrent_count += 1
+        max_concurrent = max(max_concurrent, concurrent_count)
+        execution_log.append(f"{name}_start_concurrent_{concurrent_count}")
+        
+        await asyncio.sleep(0.02)  # Simulate work
+        
+        concurrent_count -= 1
+        execution_log.append(f"{name}_end_concurrent_{concurrent_count + 1}")
+        return f"limited_result_{name}"
+    
+    # Run 4 coroutines with limit of 2
+    results = await mock_browser.run_in_parallel(
+        monitored_coro("A"),
+        monitored_coro("B"),
+        monitored_coro("C"),
+        monitored_coro("D")
+    )
+    
+    # Verify results
+    assert results == ["limited_result_A", "limited_result_B", "limited_result_C", "limited_result_D"]
+    # Verify concurrency was limited to 2
+    assert max_concurrent <= 2
+    assert mock_browser._semaphore._value == 2
+
+
+@pytest.mark.asyncio
+async def test_run_in_parallel_empty_coroutines(mock_browser):
+    """Test run_in_parallel with no coroutines."""
+    mock_browser._loop = asyncio.get_event_loop()
+    mock_browser.options.max_parallel_tasks = 1
+    mock_browser._semaphore = None
+    
+    # Execute with no coroutines
+    results = await mock_browser.run_in_parallel()
+    
+    # Should return empty list
+    assert results == []
+
+
+@pytest.mark.asyncio
+async def test_run_in_parallel_single_coroutine(mock_browser):
+    """Test run_in_parallel with single coroutine."""
+    mock_browser._loop = asyncio.get_event_loop()
+    mock_browser.options.max_parallel_tasks = 1
+    mock_browser._semaphore = None
+    
+    async def single_coro():
+        await asyncio.sleep(0.01)
+        return "single_result"
+    
+    # Execute with single coroutine
+    results = await mock_browser.run_in_parallel(single_coro())
+    
+    # Should return list with single result
+    assert results == ["single_result"]
+
+
+@pytest.mark.asyncio
+async def test_run_in_parallel_coroutine_exception(mock_browser):
+    """Test run_in_parallel handles coroutine exceptions properly."""
+    mock_browser._loop = asyncio.get_event_loop()
+    mock_browser.options.max_parallel_tasks = 1
+    mock_browser._semaphore = None
+    
+    async def failing_coro():
+        await asyncio.sleep(0.01)
+        raise ValueError("Test exception")
+    
+    async def success_coro():
+        await asyncio.sleep(0.01)
+        return "success"
+    
+    # Should propagate the exception
+    with pytest.raises(ValueError, match="Test exception"):
+        await mock_browser.run_in_parallel(success_coro(), failing_coro())
+
+
+@pytest.mark.asyncio
+async def test_limited_coroutine_exception(mock_browser):
+    """Test _limited_coroutine handles exceptions properly."""
+    mock_browser.options.max_parallel_tasks = 1
+    mock_browser._semaphore = asyncio.Semaphore(1)
+    
+    async def failing_coro():
+        await asyncio.sleep(0.01)
+        raise RuntimeError("Limited coroutine exception")
+    
+    # Should propagate the exception
+    with pytest.raises(RuntimeError, match="Limited coroutine exception"):
+        await mock_browser._limited_coroutine(failing_coro())
+
+
+@pytest.mark.asyncio
+async def test_run_in_parallel_semaphore_creation_once(mock_browser):
+    """Test that semaphore is created only once when max_parallel_tasks is set."""
+    mock_browser._loop = asyncio.get_event_loop()
+    mock_browser.options.max_parallel_tasks = 3
+    mock_browser._semaphore = None
+    
+    async def dummy_coro(value):
+        await asyncio.sleep(0.01)
+        return value
+    
+    # First call should create semaphore
+    await mock_browser.run_in_parallel(dummy_coro(1))
+    first_semaphore = mock_browser._semaphore
+    assert first_semaphore is not None
+    assert first_semaphore._value == 3
+    
+    # Second call should reuse existing semaphore
+    await mock_browser.run_in_parallel(dummy_coro(2))
+    assert mock_browser._semaphore is first_semaphore

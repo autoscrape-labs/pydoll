@@ -225,6 +225,10 @@ def test_options_interface_enforcement():
         def headless(self):
             return False
 
+        @property
+        def max_parallel_tasks(self):
+            return 1
+
     CompleteOptions()
 
 def test_set_headless():
