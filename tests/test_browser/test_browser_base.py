@@ -1,5 +1,6 @@
 import asyncio
 import base64
+import concurrent.futures
 import threading
 import time
 from unittest.mock import ANY, AsyncMock, MagicMock, patch
@@ -1286,9 +1287,10 @@ async def test_run_in_parallel_loop_not_initialized(mock_browser):
 
 
 @pytest.mark.asyncio
-async def test_run_in_parallel_from_different_thread(mock_browser):
-    """Test run_in_parallel when called from different thread."""
-    # Create a separate event loop for the browser
+async def test_run_in_parallel_from_different_loop(mock_browser):
+    """Test run_in_parallel when called from different loop (same thread)."""
+    
+    # Create a separate event loop for the browser and run it in a thread
     browser_loop = asyncio.new_event_loop()
     mock_browser._loop = browser_loop
     mock_browser.options.max_parallel_tasks = 1
@@ -1297,35 +1299,51 @@ async def test_run_in_parallel_from_different_thread(mock_browser):
     results = []
     exception_container = []
     
-    async def coro1():
-        await asyncio.sleep(0.01)
-        return "thread_result1"
-    
-    async def coro2():
-        await asyncio.sleep(0.01)
-        return "thread_result2"
-    
-    def run_in_thread():
+    def browser_loop_thread():
+        """Run the browser loop in a separate thread."""
         try:
-            # Start the browser loop in the thread
             asyncio.set_event_loop(browser_loop)
-            
-            # Create a task to run the coroutines
-            async def run_coroutines():
-                return await mock_browser.run_in_parallel(coro1(), coro2())
-            
-            # Run the task
-            result = browser_loop.run_until_complete(run_coroutines())
-            results.append(result)
+            browser_loop.run_forever()
         except Exception as e:
             exception_container.append(e)
-        finally:
-            browser_loop.close()
     
-    # Run in separate thread
-    thread = threading.Thread(target=run_in_thread)
+    # Start browser loop in separate thread
+    thread = threading.Thread(target=browser_loop_thread, daemon=True)
     thread.start()
-    thread.join()
+    
+    # Wait a bit for the loop to start
+    await asyncio.sleep(0.01)
+    
+    try:        
+        # This should use run_coroutine_threadsafe since we're calling from main thread
+        # while browser loop runs in different thread
+        def run_sync():
+            # Create fresh coroutines for the browser loop
+            async def fresh_coro1():
+                await asyncio.sleep(0.01)
+                return "thread_result1"
+            
+            async def fresh_coro2():
+                await asyncio.sleep(0.01)
+                return "thread_result2"
+            
+            # Create the run_in_parallel coroutine
+            coro = mock_browser.run_in_parallel(fresh_coro1(), fresh_coro2())
+            
+            # Run it using run_coroutine_threadsafe directly
+            future = asyncio.run_coroutine_threadsafe(coro, browser_loop)
+            return future.result(timeout=30)
+        
+        result = await asyncio.get_running_loop().run_in_executor(None, run_sync)
+        
+        results.append(result)
+        
+    finally:
+        # Stop the browser loop
+        browser_loop.call_soon_threadsafe(browser_loop.stop)
+        thread.join(timeout=1.0)
+        if not browser_loop.is_closed():
+            browser_loop.close()
     
     # Verify no exceptions and correct results
     assert not exception_container

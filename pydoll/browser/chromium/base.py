@@ -1,4 +1,5 @@
 import asyncio
+import concurrent.futures
 import json
 import os
 import shutil
@@ -32,6 +33,7 @@ from pydoll.exceptions import (
     InvalidWebSocketAddress,
     MissingTargetOrWebSocket,
     NoValidTabFound,
+    RunInParallelError,
 )
 from pydoll.protocol.base import Command, Response, T_CommandParams, T_CommandResponse
 from pydoll.protocol.browser.methods import (
@@ -438,7 +440,7 @@ class Browser(ABC):  # noqa: PLR0904
             List of results from all coroutines in the same order as input.
 
         Raises:
-            RuntimeError: If browser loop is not initialized.
+            RuntimeError: If browser loop is not initialized or not running.
 
         Note:
             Respects max_parallel_tasks option for concurrency control.
@@ -446,18 +448,45 @@ class Browser(ABC):  # noqa: PLR0904
         if self._loop is None:
             raise RuntimeError("Browser loop not initialized. Call start() first.")
 
+        # Thread-safe semaphore initialization with double-checked locking pattern
         if self.options.max_parallel_tasks and self._semaphore is None:
-            self._semaphore = asyncio.Semaphore(self.options.max_parallel_tasks)
+            # Use a lock to prevent race conditions in semaphore creation
+            if not hasattr(self, '_semaphore_lock'):
+                self._semaphore_lock = asyncio.Lock()
+
+            async with self._semaphore_lock:
+                # Double-check pattern to avoid creating multiple semaphores
+                if self._semaphore is None:
+                    self._semaphore = asyncio.Semaphore(self.options.max_parallel_tasks)
 
         wrapped = [self._limited_coroutine(coro) for coro in coroutines]
-        gather_coroutine = asyncio.gather(*wrapped, return_exceptions=False)
 
+        async def run_gather():
+            return await asyncio.gather(*wrapped, return_exceptions=False)
+
+        # Check if we're in the same event loop
         with suppress(RuntimeError):
-            running = asyncio.get_running_loop()
-            if running is self._loop:
-                return await gather_coroutine
-        future = asyncio.run_coroutine_threadsafe(gather_coroutine, self._loop)
-        return future.result()
+            current_loop = asyncio.get_running_loop()
+            if current_loop is self._loop:
+                # Same loop - execute directly
+                return await run_gather()
+
+        # Different loop or no current loop - use threadsafe execution
+        if not self._loop.is_running():
+            raise RunInParallelError("Browser loop is not running. Cannot execute coroutines.")
+
+        future = asyncio.run_coroutine_threadsafe(run_gather(), self._loop)
+
+        try:
+            # Use timeout to prevent indefinite blocking
+            return future.result(timeout=60)
+        except concurrent.futures.TimeoutError:
+            future.cancel()
+            raise RunInParallelError("Coroutine execution timed out after 60 seconds")
+        except concurrent.futures.CancelledError:
+            raise RunInParallelError("Coroutine execution was cancelled")
+        except Exception as e:
+            raise RunInParallelError(f"Coroutine execution failed: {e}") from e
 
     async def _limited_coroutine(self, coroutine: Coroutine[Any, Any, T]) -> T:
         """
