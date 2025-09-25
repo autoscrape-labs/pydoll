@@ -1,4 +1,5 @@
 import asyncio
+import concurrent.futures
 import json
 import os
 import shutil
@@ -8,7 +9,7 @@ from contextlib import suppress
 from functools import partial
 from random import randint
 from tempfile import TemporaryDirectory
-from typing import Any, Awaitable, Callable, Optional, overload
+from typing import Any, Awaitable, Callable, Coroutine, Optional, TypeVar, overload
 
 from pydoll.browser.interfaces import BrowserOptionsManager
 from pydoll.browser.managers import (
@@ -32,6 +33,7 @@ from pydoll.exceptions import (
     InvalidWebSocketAddress,
     MissingTargetOrWebSocket,
     NoValidTabFound,
+    RunInParallelError,
 )
 from pydoll.protocol.base import Command, Response, T_CommandParams, T_CommandResponse
 from pydoll.protocol.browser.methods import (
@@ -57,6 +59,8 @@ from pydoll.protocol.target.methods import (
     GetTargetsResponse,
 )
 from pydoll.protocol.target.types import TargetInfo
+
+T = TypeVar("T")
 
 
 class Browser(ABC):  # noqa: PLR0904
@@ -93,6 +97,8 @@ class Browser(ABC):  # noqa: PLR0904
         self._connection_handler = ConnectionHandler(self._connection_port)
         self._backup_preferences_dir = ''
         self._tabs_opened: dict[str, Tab] = {}
+        self._loop: Optional[asyncio.AbstractEventLoop] = None
+        self._semaphore: Optional[asyncio.Semaphore] = None
 
     async def __aenter__(self) -> 'Browser':
         """Async context manager entry."""
@@ -144,6 +150,7 @@ class Browser(ABC):  # noqa: PLR0904
         Raises:
             FailedToStartBrowser: If the browser fails to start or connect.
         """
+        self._loop = asyncio.get_running_loop()
         if headless:
             warnings.warn(
                 "The 'headless' parameter is deprecated and will be removed in a future version. "
@@ -421,6 +428,80 @@ class Browser(ABC):  # noqa: PLR0904
     async def reset_permissions(self, browser_context_id: Optional[str] = None):
         """Reset all permissions to defaults and restore prompting behavior."""
         return await self._execute_command(BrowserCommands.reset_permissions(browser_context_id))
+
+    async def run_in_parallel(self, *coroutines: Coroutine[Any, Any, T]) -> list[T]:
+        """
+        Run coroutines in parallel with optional concurrency limiting.
+
+        Args:
+            *coroutines: Variable number of coroutines to execute in parallel.
+
+        Returns:
+            List of results from all coroutines in the same order as input.
+
+        Raises:
+            RuntimeError: If browser loop is not initialized or not running.
+
+        Note:
+            Respects max_parallel_tasks option for concurrency control.
+        """
+        if self._loop is None:
+            raise RuntimeError("Browser loop not initialized. Call start() first.")
+
+        # Thread-safe semaphore initialization with double-checked locking pattern
+        if self.options.max_parallel_tasks and self._semaphore is None:
+            # Use a lock to prevent race conditions in semaphore creation
+            if not hasattr(self, '_semaphore_lock'):
+                self._semaphore_lock = asyncio.Lock()
+
+            async with self._semaphore_lock:
+                # Double-check pattern to avoid creating multiple semaphores
+                if self._semaphore is None:
+                    self._semaphore = asyncio.Semaphore(self.options.max_parallel_tasks)
+
+        wrapped = [self._limited_coroutine(coro) for coro in coroutines]
+
+        async def run_gather():
+            return await asyncio.gather(*wrapped, return_exceptions=False)
+
+        # Check if we're in the same event loop
+        with suppress(RuntimeError):
+            current_loop = asyncio.get_running_loop()
+            if current_loop is self._loop:
+                # Same loop - execute directly
+                return await run_gather()
+
+        # Different loop or no current loop - use threadsafe execution
+        if not self._loop.is_running():
+            raise RunInParallelError("Browser loop is not running. Cannot execute coroutines.")
+
+        future = asyncio.run_coroutine_threadsafe(run_gather(), self._loop)
+
+        try:
+            # Use timeout to prevent indefinite blocking
+            return future.result(timeout=60)
+        except concurrent.futures.TimeoutError:
+            future.cancel()
+            raise RunInParallelError("Coroutine execution timed out after 60 seconds")
+        except concurrent.futures.CancelledError:
+            raise RunInParallelError("Coroutine execution was cancelled")
+        except Exception as e:
+            raise RunInParallelError(f"Coroutine execution failed: {e}") from e
+
+    async def _limited_coroutine(self, coroutine: Coroutine[Any, Any, T]) -> T:
+        """
+        Execute coroutine with semaphore limiting if configured.
+
+        Args:
+            coroutine: The coroutine to execute.
+
+        Returns:
+            The result of the coroutine execution.
+        """
+        if self.options.max_parallel_tasks and self._semaphore is not None:
+            async with self._semaphore:
+                return await coroutine
+        return await coroutine
 
     @overload
     async def on(
