@@ -22,7 +22,6 @@ from pydoll.exceptions import (
     InvalidFileExtension,
     WaitElementTimeout,
     NetworkEventsNotEnabled,
-    InvalidScriptWithElement,
 )
 
 @pytest_asyncio.fixture
@@ -568,74 +567,6 @@ class TestTabScriptExecution:
         }
         
         result = await tab.execute_script('return "Test Result"')
-        
-        assert_mock_called_at_least_once(tab._connection_handler)
-
-    @pytest.mark.asyncio
-    async def test_execute_script_with_element(self, tab):
-        """Test execute_script with element context."""
-        # Mock element
-        element = MagicMock()
-        element._object_id = 'test-object-id'
-        
-        tab._connection_handler.execute_command.return_value = {
-            'result': {'result': {'value': 'Element clicked'}}
-        }
-        
-        result = await tab.execute_script('argument.click()', element)
-        
-        assert_mock_called_at_least_once(tab._connection_handler)
-
-    @pytest.mark.asyncio
-    async def test_execute_script_argument_without_element_raises_exception(self, tab):
-        """Test execute_script raises exception when script contains 'argument' but no element provided."""
-        with pytest.raises(InvalidScriptWithElement) as exc_info:
-            await tab.execute_script('argument.click()')
-        
-        assert str(exc_info.value) == 'Script contains "argument" but no element was provided'
-        tab._connection_handler.execute_command.assert_not_called()
-
-    @pytest.mark.asyncio
-    async def test_execute_script_element_without_argument_raises_exception(self, tab):
-        """Test execute_script raises exception when element is provided but script doesn't contain 'argument'."""
-        element = MagicMock()
-        element._object_id = 'test-object-id'
-        
-        with pytest.raises(InvalidScriptWithElement) as exc_info:
-            await tab.execute_script('console.log("test")', element)
-        
-        assert str(exc_info.value) == 'Script does not contain "argument"'
-        tab._connection_handler.execute_command.assert_not_called()
-
-    @pytest.mark.asyncio
-    async def test_execute_script_with_element_already_function(self, tab):
-        """Test execute_script with element when script is already a function."""
-        element = MagicMock()
-        element._object_id = 'test-object-id'
-        
-        tab._connection_handler.execute_command.return_value = {
-            'result': {'result': {'value': 'Function executed'}}
-        }
-        
-        # Script already wrapped in function
-        script = 'function() { argument.click(); return "done"; }'
-        result = await tab.execute_script(script, element)
-        
-        assert_mock_called_at_least_once(tab._connection_handler)
-
-    @pytest.mark.asyncio
-    async def test_execute_script_with_element_arrow_function(self, tab):
-        """Test execute_script with element when script is already an arrow function."""
-        element = MagicMock()
-        element._object_id = 'test-object-id'
-        
-        tab._connection_handler.execute_command.return_value = {
-            'result': {'result': {'value': 'Arrow function executed'}}
-        }
-        
-        # Script already wrapped in arrow function
-        script = '() => { argument.click(); return "done"; }'
-        result = await tab.execute_script(script, element)
         
         assert_mock_called_at_least_once(tab._connection_handler)
 
@@ -1209,55 +1140,50 @@ class TestTabDownload:
     async def test_bypass_cloudflare_with_element_found(self, tab):
         """Test _bypass_cloudflare when element is found."""
         mock_element = AsyncMock()
+        mock_element.execute_script = AsyncMock()
         
         mock_find = AsyncMock(return_value=mock_element)
-        mock_execute_script = AsyncMock()
         
         with patch.object(tab, 'find_or_wait_element', mock_find):
-            with patch.object(tab, 'execute_script', mock_execute_script):
-                with patch('asyncio.sleep', AsyncMock()):
-                    await tab._bypass_cloudflare({})
+            with patch('asyncio.sleep', AsyncMock()):
+                await tab._bypass_cloudflare({})
         
         mock_find.assert_called_once()
-        mock_execute_script.assert_called_once()
+        mock_element.execute_script.assert_called_once_with('this.style="width: 300px"')
         mock_element.click.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_bypass_cloudflare_no_element_found(self, tab):
         """Test _bypass_cloudflare when no element is found."""
         mock_find = AsyncMock(return_value=None)
-        mock_execute_script = AsyncMock()
         
         with patch.object(tab, 'find_or_wait_element', mock_find):
-            with patch.object(tab, 'execute_script', mock_execute_script):
-                await tab._bypass_cloudflare({})
+            await tab._bypass_cloudflare({})
         
         mock_find.assert_called_once()
-        # execute_script and click should not be called
-        mock_execute_script.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_bypass_cloudflare_with_custom_selector(self, tab):
         """Test _bypass_cloudflare with custom selector."""
         mock_element = AsyncMock()
+        mock_element.execute_script = AsyncMock()
         custom_selector = (By.ID, 'custom-captcha')
         
         mock_find = AsyncMock(return_value=mock_element)
-        mock_execute_script = AsyncMock()
         
         with patch.object(tab, 'find_or_wait_element', mock_find):
-            with patch.object(tab, 'execute_script', mock_execute_script):
-                with patch('asyncio.sleep', AsyncMock()):
-                    await tab._bypass_cloudflare(
-                        {},
-                        custom_selector=custom_selector,
-                        time_before_click=3,
-                        time_to_wait_captcha=10
-                    )
+            with patch('asyncio.sleep', AsyncMock()):
+                await tab._bypass_cloudflare(
+                    {},
+                    custom_selector=custom_selector,
+                    time_before_click=3,
+                    time_to_wait_captcha=10
+                )
         
         mock_find.assert_called_with(
             By.ID, 'custom-captcha', timeout=10, raise_exc=False
         )
+        mock_element.execute_script.assert_called_once_with('this.style="width: 300px"')
 
 
 class TestTabFrameHandling:
@@ -1644,17 +1570,6 @@ class TestTabEdgeCases:
         result = await tab.print_to_pdf('document.txt', as_base64=True)
         
         assert result is not None
-        assert_mock_called_at_least_once(tab._connection_handler)
-
-    @pytest.mark.asyncio
-    async def test_execute_script_with_none_element(self, tab):
-        """Test execute_script with None element."""
-        tab._connection_handler.execute_command.return_value = {
-            'result': {'result': {'value': 'Test Result'}}
-        }
-        
-        result = await tab.execute_script('return "Test Result"', None)
-        
         assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
