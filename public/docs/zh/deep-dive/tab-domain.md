@@ -38,7 +38,8 @@ classDiagram
         -_cloudflare_captcha_callback_id: Optional[int]
         +go_to(url: str, timeout: int)
         +refresh()
-        +execute_script(script: str, element: WebElement)
+        +execute_script(script: str)
+        +execute_element_script(script: str, element: WebElement, **kwargs)
         +find(**kwargs) WebElement|List[WebElement]
         +query(expression: str) WebElement|List[WebElement]
         +take_screenshot(path: str)
@@ -255,7 +256,7 @@ print(f"Window dimensions: {dimensions}")
 heading = await tab.find(tag_name="h1")
 
 # Execute JavaScript with the element as context
-await tab.execute_script("""
+await tab.execute_element_script("""
     // 'argument' refers to the element
     argument.style.color = 'red';
     argument.style.fontSize = '32px';

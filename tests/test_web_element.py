@@ -844,8 +844,8 @@ class TestWebElementUtilityMethods:
         assert element._attributes == {'class_name': 'my-class', 'id': 'my-id'}
 
     @pytest.mark.asyncio
-    async def test_execute_script(self, web_element):
-        """Test _execute_script method."""
+    async def test_execute_script_basic(self, web_element):
+        """Test execute_script basic functionality with return value."""
         script = 'return this.tagName;'
         expected_response = {'result': {'result': {'value': 'DIV'}}}
         web_element._connection_handler.execute_command.return_value = expected_response
@@ -855,8 +855,172 @@ class TestWebElementUtilityMethods:
         assert result == expected_response
         expected_command = RuntimeCommands.call_function_on(
             object_id='test-object-id',
-            function_declaration=script,
+            function_declaration='function(){ return this.tagName; }',
             return_by_value=True,
+        )
+        web_element._connection_handler.execute_command.assert_called_once_with(
+            expected_command, timeout=60
+        )
+
+    @pytest.mark.asyncio
+    async def test_execute_script_with_this_syntax(self, web_element):
+        """Test execute_script method with 'this' syntax."""
+        script = 'this.style.border = "2px solid red"'
+        expected_response = {'result': {'result': {'value': None}}}
+        web_element._connection_handler.execute_command.return_value = expected_response
+
+        result = await web_element.execute_script(script)
+
+        assert result == expected_response
+        expected_command = RuntimeCommands.call_function_on(
+            object_id='test-object-id',
+            function_declaration='function(){ this.style.border = "2px solid red" }',
+        )
+        web_element._connection_handler.execute_command.assert_called_once_with(
+            expected_command, timeout=60
+        )
+
+    @pytest.mark.asyncio
+    async def test_execute_script_already_function(self, web_element):
+        """Test execute_script when script is already a function."""
+        script = 'function() { this.style.border = "2px solid red"; }'
+        expected_response = {'result': {'result': {'value': None}}}
+        web_element._connection_handler.execute_command.return_value = expected_response
+
+        result = await web_element.execute_script(script)
+
+        assert result == expected_response
+        expected_command = RuntimeCommands.call_function_on(
+            object_id='test-object-id',
+            function_declaration='function() { this.style.border = "2px solid red"; }',
+        )
+        web_element._connection_handler.execute_command.assert_called_once_with(
+            expected_command, timeout=60
+        )
+
+    @pytest.mark.asyncio
+    async def test_execute_script_with_parameters(self, web_element):
+        """Test execute_script with additional parameters."""
+        script = 'this.value = "test"'
+        expected_response = {'result': {'result': {'value': 'test'}}}
+        web_element._connection_handler.execute_command.return_value = expected_response
+
+        result = await web_element.execute_script(
+            script, 
+            return_by_value=True,
+            user_gesture=True
+        )
+
+        assert result == expected_response
+        expected_command = RuntimeCommands.call_function_on(
+            object_id='test-object-id',
+            function_declaration='function(){ this.value = "test" }',
+            return_by_value=True,
+            user_gesture=True,
+        )
+        web_element._connection_handler.execute_command.assert_called_once_with(
+            expected_command, timeout=60
+        )
+
+    @pytest.mark.asyncio
+    async def test_execute_script_arrow_function(self, web_element):
+        """Test execute_script with arrow function syntax."""
+        script = '() => { this.style.color = "red"; }'
+        expected_response = {'result': {'result': {'value': None}}}
+        web_element._connection_handler.execute_command.return_value = expected_response
+
+        result = await web_element.execute_script(script)
+
+        assert result == expected_response
+        expected_command = RuntimeCommands.call_function_on(
+            object_id='test-object-id',
+            function_declaration='() => { this.style.color = "red"; }',
+        )
+        web_element._connection_handler.execute_command.assert_called_once_with(
+            expected_command, timeout=60
+        )
+
+    @pytest.mark.asyncio
+    async def test_execute_script_multiline(self, web_element):
+        """Test execute_script with multiline script."""
+        script = '''
+            this.style.padding = "10px";
+            this.style.margin = "5px";
+            this.style.borderRadius = "8px";
+        '''
+        expected_response = {'result': {'result': {'value': None}}}
+        web_element._connection_handler.execute_command.return_value = expected_response
+
+        result = await web_element.execute_script(script)
+
+        assert result == expected_response
+        web_element._connection_handler.execute_command.assert_called_once()
+        call_args = web_element._connection_handler.execute_command.call_args[0][0]
+        
+        assert call_args['method'].value == 'Runtime.callFunctionOn'
+        assert call_args['params']['objectId'] == 'test-object-id'
+        
+        func_decl = call_args['params']['functionDeclaration']
+        assert 'function(){' in func_decl
+        assert 'this.style.padding = "10px"' in func_decl
+        assert 'this.style.margin = "5px"' in func_decl
+        assert 'this.style.borderRadius = "8px"' in func_decl
+
+    @pytest.mark.asyncio
+    async def test_execute_script_with_arguments(self, web_element):
+        """Test execute_script with custom arguments."""
+        from pydoll.protocol.runtime.types import CallArgument
+        
+        script = 'this.value = arguments[0];'
+        arguments = [CallArgument(value="test_value")]
+        expected_response = {'result': {'result': {'value': None}}}
+        web_element._connection_handler.execute_command.return_value = expected_response
+
+        result = await web_element.execute_script(script, arguments=arguments)
+
+        assert result == expected_response
+        expected_command = RuntimeCommands.call_function_on(
+            object_id='test-object-id',
+            function_declaration='function(){ this.value = arguments[0]; }',
+            arguments=arguments,
+        )
+        web_element._connection_handler.execute_command.assert_called_once_with(
+            expected_command, timeout=60
+        )
+
+    @pytest.mark.asyncio
+    async def test_execute_script_all_parameters(self, web_element):
+        """Test execute_script with all optional parameters."""
+        script = 'this.click()'
+        expected_response = {'result': {'result': {'value': None}}}
+        web_element._connection_handler.execute_command.return_value = expected_response
+
+        result = await web_element.execute_script(
+            script,
+            silent=True,
+            return_by_value=True,
+            generate_preview=True,
+            user_gesture=True,
+            await_promise=True,
+            execution_context_id=123,
+            object_group="test_group",
+            throw_on_side_effect=True,
+            unique_context_id="unique_123"
+        )
+
+        assert result == expected_response
+        expected_command = RuntimeCommands.call_function_on(
+            object_id='test-object-id',
+            function_declaration='function(){ this.click() }',
+            silent=True,
+            return_by_value=True,
+            generate_preview=True,
+            user_gesture=True,
+            await_promise=True,
+            execution_context_id=123,
+            object_group="test_group",
+            throw_on_side_effect=True,
+            unique_context_id="unique_123",
         )
         web_element._connection_handler.execute_command.assert_called_once_with(
             expected_command, timeout=60
