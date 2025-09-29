@@ -525,12 +525,8 @@ async def main():
     async with Chrome() as browser:
         # Start the browser once
         await browser.start()
-        
-        # Create partial function with browser parameter
-        scrape_with_browser = partial(scrape_page, browser)
-        
         # Process all URLs concurrently using the same browser
-        results = await asyncio.gather(*(scrape_with_browser(url) for url in urls))
+        results = await asyncio.gather(*(scrape_page(browser, url) for url in urls))
     
     # Print results
     for result in results:
