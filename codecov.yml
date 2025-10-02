@@ -1,4 +1,6 @@
 coverage:
+  ignore:
+    - "pydoll/browser/interfaces.py"
   status:
     project: 
       default:
