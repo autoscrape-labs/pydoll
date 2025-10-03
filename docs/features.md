@@ -57,6 +57,9 @@ Capture visual content from web pages:
 - **High-Quality PDF Export**: Generate PDF documents from web pages
 - **Custom Formatting**: Coming soon!
 
+!!! note "Screenshots in iFrames and top-level targets"
+    `tab.take_screenshot()` only works on top-level targets. When working inside an `iframe` (using `await tab.get_frame(iframe_element)`), Chrome's `Page.captureScreenshot` cannot capture the subtarget directly. In these scenarios, use `WebElement.take_screenshot()` instead—it captures via viewport and works inside iframes.
+
 ## Remote Connections and Hybrid Automation
 
 ### Connect to a running browser via WebSocket

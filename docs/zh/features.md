@@ -59,6 +59,9 @@ Pydoll支持操作任何Chromium核心的浏览器:
 - **高质量 PDF 导出**：从网页生成 PDF 文档
 - **自定义格式**：即将推出！
 
+!!! 信息 "关于 iframe 与顶层目标的截图"
+    `tab.take_screenshot()` 仅适用于顶层目标（top-level target）。在 `iframe` 内（通过 `await tab.get_frame(iframe_element)` 获取的子目标）时，Chrome 的 `Page.captureScreenshot` 无法直接对该子目标截图。这种情况下请改用 `WebElement.take_screenshot()`，它基于视口（viewport）进行捕获，适用于 iframe 内部。
+
 ## 远程连接与混合自动化
 
 ### 通过 WebSocket 连接已运行的浏览器
