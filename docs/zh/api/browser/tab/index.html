@@ -1342,6 +1342,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pydoll.browser.tab.Tab.continue_with_auth" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;continue_with_auth
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pydoll.browser.tab.Tab.expect_file_chooser" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;expect_file_chooser
@@ -2859,6 +2868,15 @@
   <a href="#pydoll.browser.tab.Tab.fulfill_request" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;fulfill_request
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.browser.tab.Tab.continue_with_auth" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;continue_with_auth
     </span>
   </a>
   
@@ -5261,6 +5279,32 @@ await page.execute_script('argument.value = "Hello"', element)</p>
     <div class="doc doc-contents ">
 
         <p>Fulfill request with response data.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="pydoll.browser.tab.Tab.continue_with_auth" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">continue_with_auth</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">continue_with_auth</span><span class="p">(</span><span class="n">request_id</span><span class="p">,</span> <span class="n">auth_challenge_response</span><span class="p">,</span> <span class="n">proxy_username</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">proxy_password</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Continue a paused request replying to an authentication challenge.</p>
+<p>Useful for proxy auth (407) or server auth (401) when Fetch is enabled
+with handle_auth=True.</p>
 
 
     </div>

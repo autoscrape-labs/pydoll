@@ -101,6 +101,9 @@ incognito_tab = await create_target(
 )
 ```
 
+!!! info "Headless 与 Headed：上下文如何呈现"
+    浏览器上下文是逻辑上的隔离环境。在 Headed 模式下，在新的上下文中创建的第一个页面通常会打开一个新的系统窗口。 在 Headless 模式下不会显示窗口——隔离依然存在于后台（cookies、storage、缓存与认证状态仍按上下文分离）。在 CI/Headless 环境中优先使用上下文以获得更高性能与更干净的隔离。
+
 ## 高级特性
 
 ### 目标事件

@@ -4428,6 +4428,10 @@ on remote devices or in different browser instances.</p>
 </span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="n">browser_context_id</span><span class="o">=</span><span class="n">incognito_context</span><span class="o">.</span><span class="n">browser_context_id</span>
 </span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="p">)</span>
 </span></code></pre></div>
+<div class="admonition info">
+<p class="admonition-title">Headless vs Headed: how contexts show up</p>
+<p>Browser contexts are isolated logical environments. In headed mode, the first page created inside a new context will usually open in a new OS window. In headless mode, no window is shown — the isolation remains purely logical (cookies, storage, cache and auth state are still separate per context). Prefer contexts in headless/CI pipelines for performance and clean isolation.</p>
+</div>
 <h2 id="advanced-features">Advanced Features</h2>
 <h3 id="target-events">Target Events</h3>
 <p>Target commands work with various target events:

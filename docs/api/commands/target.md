@@ -100,6 +100,9 @@ incognito_tab = await create_target(
 )
 ```
 
+!!! info "Headless vs Headed: how contexts show up"
+    Browser contexts are isolated logical environments. In headed mode, the first page created inside a new context will usually open in a new OS window. In headless mode, no window is shown — the isolation remains purely logical (cookies, storage, cache and auth state are still separate per context). Prefer contexts in headless/CI pipelines for performance and clean isolation.
+
 ## Advanced Features
 
 ### Target Events
