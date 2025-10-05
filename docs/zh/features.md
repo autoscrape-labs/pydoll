@@ -1180,6 +1180,26 @@ options.browser_preferences = {
 
 这种对 Chromium 首选项系统的直接访问让你拥有与企业管理员、扩展开发者同级别的控制力，使复杂的浏览器定制在自动化脚本中成为可能。
 
+## 页面加载状态控制
+
+通过设置 `page_load_state` 来控制 `tab.go_to()` 和内部等待何时认为页面“已加载”。
+
+- 默认：`complete`
+- 可选：`interactive`（当 DOM 可交互时更早结束等待）
+
+```python
+from pydoll.browser.chromium import Chrome
+from pydoll.browser.options import ChromiumOptions
+from pydoll.constants import PageLoadState
+
+options = ChromiumOptions()
+options.page_load_state = PageLoadState.INTERACTIVE  # 默认是 COMPLETE
+
+async with Chrome(options=options) as browser:
+    tab = await browser.start()
+    await tab.go_to('https://example.com')
+```
+
 ## 上传文件支持
 
 在您的自动化脚本中无缝上传文件:

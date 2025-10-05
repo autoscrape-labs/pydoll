@@ -1164,6 +1164,26 @@ options.browser_preferences = {
 
 This direct access to Chromium's preference system gives you the same level of control as enterprise administrators and extension developers, making sophisticated browser customization possible within your automation scripts.
 
+## Page Load State Control
+
+Control when navigations are considered loaded by selecting the page readiness checkpoint used by `tab.go_to()` and internal load waits.
+
+- Default: `complete`
+- Optional: `interactive` (ends earlier once the DOM is interactive)
+
+```python
+from pydoll.browser.chromium import Chrome
+from pydoll.browser.options import ChromiumOptions
+from pydoll.constants import PageLoadState
+
+options = ChromiumOptions()
+options.page_load_state = PageLoadState.INTERACTIVE  # default is COMPLETE
+
+async with Chrome(options=options) as browser:
+    tab = await browser.start()
+    await tab.go_to('https://example.com')
+```
+
 
 ## File Upload Support
 

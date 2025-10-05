@@ -34,3 +34,18 @@ options.browser_preferences = {
 ## References
 - See `pydoll/browser/options.py` for implementation details.
 - See tests in `tests/test_browser/test_browser_chrome.py` for usage examples.
+
+## Related: Page Load State
+
+In addition to low-level preferences, you can control when Pydoll considers a page "loaded" by setting `ChromiumOptions.page_load_state`:
+
+- Default: `PageLoadState.COMPLETE` (waits until `document.readyState == 'complete'`)
+- Optional: `PageLoadState.INTERACTIVE` (ends earlier when the DOM is interactive)
+
+```python
+from pydoll.browser.options import ChromiumOptions
+from pydoll.constants import PageLoadState
+
+options = ChromiumOptions()
+options.page_load_state = PageLoadState.INTERACTIVE
+```
