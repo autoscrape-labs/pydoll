@@ -21,7 +21,7 @@ Hey there! Thanks for checking out Pydoll, the next generation of browser automa
 
 Pydoll is revolutionizing browser automation by **eliminating the need for webdrivers** completely! Unlike other solutions that rely on external dependencies, Pydoll connects directly to browsers using their DevTools Protocol, providing a seamless and reliable automation experience with native asynchronous performance.
 
-Whether you're scraping data, testing web applications, or automating repetitive tasks, Pydoll makes it surprisingly easy with its intuitive API and powerful features.
+Whether you're scraping data, [testing web applications](https://www.lambdatest.com/web-testing), or automating repetitive tasks, Pydoll makes it surprisingly easy with its intuitive API and powerful features.
 
 ## Installation
 
