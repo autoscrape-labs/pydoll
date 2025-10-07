@@ -331,7 +331,7 @@ class ChromiumOptions(Options):
         if max_parallel_tasks < 1:
             raise ValueError('max_parallel_tasks must be greater than 0')
         self._max_parallel_tasks = max_parallel_tasks
-    
+
     @property
     def page_load_state(self) -> PageLoadState:
         return self._page_load_state

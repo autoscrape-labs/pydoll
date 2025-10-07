@@ -9,7 +9,7 @@ from contextlib import suppress
 from functools import partial
 from random import randint
 from tempfile import TemporaryDirectory
-from typing import Any, Awaitable, Callable, Optional, TypeVar, overload
+from typing import Any, Awaitable, Callable, Coroutine, Optional, TypeVar, overload
 from urllib.parse import urlsplit, urlunsplit
 
 from pydoll.browser.interfaces import BrowserOptionsManager
