@@ -59,7 +59,7 @@ class FindElementsMixin:
         timeout: int = ...,
         find_all: Literal[False] = False,
         raise_exc: Literal[True] = True,
-        **attributes: dict[str, str],
+        **attributes,
     ) -> 'WebElement': ...
 
     @overload
@@ -73,7 +73,7 @@ class FindElementsMixin:
         timeout: int = ...,
         find_all: Literal[True] = True,
         raise_exc: Literal[True] = True,
-        **attributes: dict[str, str],
+        **attributes,
     ) -> list['WebElement']: ...
 
     @overload
@@ -87,7 +87,7 @@ class FindElementsMixin:
         timeout: int = ...,
         find_all: Literal[True] = True,
         raise_exc: Literal[False] = False,
-        **attributes: dict[str, str],
+        **attributes,
     ) -> Optional[list['WebElement']]: ...
 
     @overload
@@ -101,7 +101,7 @@ class FindElementsMixin:
         timeout: int = ...,
         find_all: Literal[False] = False,
         raise_exc: Literal[False] = False,
-        **attributes: dict[str, str],
+        **attributes,
     ) -> Optional['WebElement']: ...
 
     @overload
@@ -115,7 +115,7 @@ class FindElementsMixin:
         timeout: int = ...,
         find_all: bool = ...,
         raise_exc: bool = ...,
-        **attributes: dict[str, str],
+        **attributes,
     ) -> Union['WebElement', list['WebElement'], None]: ...
 
     async def find(
@@ -478,7 +478,7 @@ class FindElementsMixin:
         - XPath: starts with ./, or /
         - Default: CSS_SELECTOR
         """
-        if expression.startswith('./') or expression.startswith('/'):
+        if expression.startswith(('./', '/', '(/')):
             return By.XPATH
 
         return By.CSS_SELECTOR

@@ -9,7 +9,8 @@ from contextlib import suppress
 from functools import partial
 from random import randint
 from tempfile import TemporaryDirectory
-from typing import Any, Awaitable, Callable, Coroutine, Optional, TypeVar, overload
+from typing import Any, Awaitable, Callable, Optional, TypeVar, overload
+from urllib.parse import urlsplit, urlunsplit
 
 from pydoll.browser.interfaces import BrowserOptionsManager
 from pydoll.browser.managers import (
@@ -99,6 +100,7 @@ class Browser(ABC):  # noqa: PLR0904
         self._tabs_opened: dict[str, Tab] = {}
         self._loop: Optional[asyncio.AbstractEventLoop] = None
         self._semaphore: Optional[asyncio.Semaphore] = None
+        self._context_proxy_auth: dict[str, tuple[str, str]] = {}
 
     async def __aenter__(self) -> 'Browser':
         """Async context manager entry."""
@@ -210,13 +212,22 @@ class Browser(ABC):  # noqa: PLR0904
         Returns:
             Browser context ID for use with other methods.
         """
+        # If proxy_server contains credentials, strip them and store per-context auth
+        sanitized_proxy = proxy_server
+        extracted_auth: Optional[tuple[str, str]] = None
+        if proxy_server:
+            sanitized_proxy, extracted_auth = self._sanitize_proxy_and_extract_auth(proxy_server)
+
         response: CreateBrowserContextResponse = await self._execute_command(
             TargetCommands.create_browser_context(
-                proxy_server=proxy_server,
+                proxy_server=sanitized_proxy,
                 proxy_bypass_list=proxy_bypass_list,
             )
         )
-        return response['result']['browserContextId']
+        context_id = response['result']['browserContextId']
+        if extracted_auth:
+            self._context_proxy_auth[context_id] = extracted_auth
+        return context_id
 
     async def delete_browser_context(self, browser_context_id: str):
         """
@@ -257,8 +268,9 @@ class Browser(ABC):  # noqa: PLR0904
         )
         target_id = response['result']['targetId']
         tab = Tab(self, **self._get_tab_kwargs(target_id, browser_context_id))
-        if url:
-            await tab.go_to(url)
+        self._tabs_opened[target_id] = tab
+        await self._setup_context_proxy_auth_for_tab(tab, browser_context_id)
+        if url: await tab.go_to(url)
         return tab
 
     async def get_targets(self) -> list[TargetInfo]:
@@ -657,6 +669,60 @@ class Browser(ABC):  # noqa: PLR0904
         await self.disable_fetch_events()
         return response
 
+    @staticmethod
+    async def _tab_continue_request_callback(event: RequestPausedEvent, tab: Tab):
+        """Internal callback to continue paused requests at Tab level."""
+        request_id = event['params']['requestId']
+        return await tab.continue_request(request_id)
+
+    @staticmethod
+    async def _tab_continue_request_with_auth_callback(
+        event: RequestPausedEvent,
+        tab: Tab,
+        proxy_username: Optional[str],
+        proxy_password: Optional[str],
+    ):
+        """Internal callback for proxy/server authentication at Tab level."""
+        request_id = event['params']['requestId']
+        response: Response = await tab.continue_with_auth(
+            request_id=request_id,
+            auth_challenge_response=AuthChallengeResponseType.PROVIDE_CREDENTIALS,
+            proxy_username=proxy_username,
+            proxy_password=proxy_password,
+        )
+        await tab.disable_fetch_events()
+        return response
+
+    async def _setup_context_proxy_auth_for_tab(
+        self, tab: Tab, browser_context_id: Optional[str]
+    ) -> None:
+        """Enable proxy auth handling for a Tab if its context has credentials stored."""
+        if not browser_context_id:
+            return
+        creds = self._context_proxy_auth.get(browser_context_id)
+        if not creds:
+            return
+        username, password = creds
+        await tab.enable_fetch_events(handle_auth=True)
+        await tab.on(
+            FetchEvent.REQUEST_PAUSED,
+            partial(
+                self._tab_continue_request_callback,
+                tab=tab,
+            ),
+            temporary=True,
+        )
+        await tab.on(
+            FetchEvent.AUTH_REQUIRED,
+            partial(
+                self._tab_continue_request_with_auth_callback,
+                tab=tab,
+                proxy_username=username,
+                proxy_password=password,
+            ),
+            temporary=True,
+        )
+
     async def _verify_browser_running(self):
         """
         Verify browser started successfully.
@@ -842,6 +908,49 @@ class Browser(ABC):  # noqa: PLR0904
 
         ws_domain = '/'.join(self._ws_address.split('/')[:3])
         return f'{ws_domain}/devtools/page/{tab_id}'
+
+    @staticmethod
+    def _sanitize_proxy_and_extract_auth(
+        proxy_server: str,
+    ) -> tuple[str, Optional[tuple[str, str]]]:
+        """Strip credentials from a proxy URL and return sanitized URL plus (user, pass).
+
+        Accepts inputs like:
+        - username:password@host:port
+        - http://username:password@host:port
+        - socks5://username:password@host:port
+        - host:port (no credentials)
+        Returns a (sanitized_proxy, (user, pass) | None).
+        Ensures scheme is present in the sanitized URL (defaults to http).
+        """
+        base = proxy_server if '://' in proxy_server else f'http://{proxy_server}'
+        parts = urlsplit(base)
+        netloc = parts.netloc
+        creds: Optional[tuple[str, str]] = None
+        if '@' in netloc:
+            cred_part, host_part = netloc.split('@', 1)
+            if ':' in cred_part:
+                user, pwd = cred_part.split(':', 1)
+            else:
+                user, pwd = cred_part, ''
+            creds = (user, pwd)
+            sanitized = urlunsplit((
+                parts.scheme,
+                host_part,
+                parts.path,
+                parts.query,
+                parts.fragment,
+            ))
+        else:
+            # No creds; ensure scheme
+            sanitized = urlunsplit((
+                parts.scheme,
+                parts.netloc,
+                parts.path,
+                parts.query,
+                parts.fragment,
+            ))
+        return sanitized, creds
 
     @abstractmethod
     def _get_default_binary_location(self) -> str:

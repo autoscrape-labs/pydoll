@@ -327,6 +327,85 @@ Browser contexts are essential for several automation scenarios:
 4. **Session Isolation**: Prevent cross-contamination between test scenarios
 5. **Parallel Scraping**: Scrape multiple sites with different configurations
 
+### Headless vs Headed: Windows and Best Practices
+
+Browser contexts are a logical isolation layer. What you actually see is the page created inside a context:
+
+- In headed mode (visible UI), creating the first page inside a new browser context will typically open a new OS window. The context is the isolated environment; the page is what renders in a tab or window.
+- In headless mode (no visible UI), no windows appear. The isolation still exists logically in the background, keeping cookies, storage, cache and auth state fully separate per context.
+
+Recommendations:
+
+- Prefer using multiple contexts in headless environments (e.g., CI/CD) for cleaner isolation, faster startup, and lower resource usage compared to launching multiple browser processes.
+- Use contexts to simulate multiple users or sessions in parallel without cross-contamination.
+
+Why contexts are efficient:
+
+- Creating a new browser context is significantly faster and lighter than starting a whole new browser instance. This makes test suites and scraping jobs more reliable and scalable.
+
+### CDP Hierarchy and Context Window Semantics (Advanced)
+
+To reason precisely about contexts, it's useful to map Pydoll concepts to CDP:
+
+- Browser (process): single Chromium process running the DevTools endpoint.
+- BrowserContext: isolated profile inside that process (cookies, storage, cache, permissions).
+- Target/Page: an individual top-level page, popup, or background target that you control.
+
+CDP and `browserContextId`:
+
+- When creating a page via `Target.createTarget`, passing `browserContextId` tells the browser which isolated profile the new page should belong to. Without this ID, the target is created in the default context.
+- The ID is essential for isolation — it binds the new target to the correct storage/auth/permission boundary.
+
+Why the first page in a context opens a window (headed):
+
+- In headed mode, a page needs a top-level native window to render. A freshly created context initially has no window associated with it — it exists only in memory.
+- The first page created in that context implicitly materializes a window for that context. Subsequent pages can open as tabs within that window.
+
+Implications for `new_window`/`newWindow` semantics:
+
+- If you attempt to create a page with "tab-like" behavior (no new top-level window) in a context that has no existing window (first page), the browser may error because there is no host window to attach the tab to.
+- Practically: treat the first page in a new context (headed) as requiring a top-level window. Afterwards, you can create additional pages as tabs.
+
+Headless mode makes this distinction moot:
+
+- With no visible UI, windows vs tabs are logical constructs only. Context isolation is enforced the same way, but nothing is rendered, so there is no requirement to bootstrap a native window for the first page.
+
+### Context-specific Proxy: sanitize + auth via Fetch events
+
+When creating a browser context with a private proxy (credentials embedded in the URL), Pydoll follows a two-step strategy to avoid leaking credentials and reliably authenticate:
+
+1) Sanitize the proxy server in the CDP command
+
+- If you pass `proxy_server='http://user:pass@host:port'`, only the credential-free URL is sent to CDP (`http://host:port`).
+- Internally, Pydoll extracts and stores the credentials keyed by `browserContextId`.
+
+2) Attach per-context auth handlers on first tab
+
+- When you open a `Tab` inside that context, Pydoll enables Fetch events for that tab and registers two temporary listeners:
+  - `Fetch.requestPaused`: continues normal requests.
+  - `Fetch.authRequired`: automatically responds with the stored `user`/`pass`, then disables Fetch to avoid intercepting further requests.
+
+Why this design?
+
+- Prevents credential exposure in command logs and CDP parameters.
+- Keeps the auth scope strictly limited to the context that requested the proxy.
+- Works in both headed and headless modes (the auth flow is network-level, not UI-dependent).
+
+Code flow highlights (simplified):
+
+```python
+# On context creation
+context_id = await browser.create_browser_context(proxy_server='user:pwd@host:port')
+# => sends Target.createBrowserContext with 'http://host:port'
+# => stores {'context_id': ('user', 'pwd')} internally
+
+# On first tab in that context
+tab = await browser.new_tab(browser_context_id=context_id)
+# => tab.enable_fetch_events(handle_auth=True)
+# => tab.on('Fetch.requestPaused', continue_request)
+# => tab.on('Fetch.authRequired', continue_with_auth(user, pwd))
+```
+
 ### Creating and Managing Contexts
 
 ```python

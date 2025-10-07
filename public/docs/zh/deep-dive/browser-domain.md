@@ -325,6 +325,85 @@ graph TB
 4. **会话隔离**：防止测试场景间的交叉污染
 5. **并行抓取**：使用不同配置同时抓取多个网站
 
+### Headless 与 Headed：窗口表现与最佳实践
+
+浏览器上下文是一个逻辑上的隔离环境。实际显示在屏幕上的，是在该上下文内创建的页面（page）：
+
+- 在 Headed 模式（可见 UI）下，在新的浏览器上下文内创建第一个页面通常会打开一个新的系统窗口。上下文是隔离的环境；页面才是会在标签页或窗口中渲染的对象。
+- 在 Headless 模式（无界面）下，不会出现可见窗口。上下文的隔离仍然存在于后台，确保 cookies、storage、缓存与认证状态在不同上下文之间完全分离。
+
+建议：
+
+- 在 CI/CD 等无界面环境中，优先使用多个上下文来实现隔离。相比启动多个浏览器进程，创建新上下文更快、资源占用更低。
+- 使用上下文来并行模拟多个用户或会话，避免相互污染。
+
+为什么上下文更高效：
+
+- 创建浏览器上下文远比启动一个新的浏览器实例更轻量、更迅速。这将使测试套件与抓取任务更稳定、更具可扩展性。
+
+### CDP 层级与上下文窗口语义（高级）
+
+将 Pydoll 概念映射到 CDP，有助于精确理解上下文：
+
+- 浏览器（进程）：运行 DevTools 端点的单个 Chromium 进程。
+- 浏览器上下文（BrowserContext）：该进程内的隔离“用户配置文件”（cookies、存储、缓存、权限相互独立）。
+- 目标/页面（Target/Page）：可控制的顶层页面、弹窗或后台目标。
+
+CDP 与 `browserContextId`：
+
+- 使用 `Target.createTarget` 创建页面时传入 `browserContextId`，告诉浏览器将新页面归属到指定的隔离配置文件。未传入时，目标将创建在默认上下文中。
+- 该 ID 是实现隔离的关键——它将新目标绑定到正确的存储/认证/权限边界。
+
+为何上下文中的“第一个页面”在 Headed 模式下会打开窗口：
+
+- 在 Headed 模式中，页面需要一个顶层的原生窗口来渲染。新创建的上下文起初只存在于内存中，并没有关联的窗口。
+- 在该上下文中创建的第一个页面会隐式“实体化”一个窗口。之后再创建的页面可以作为该窗口中的标签页加入。
+
+对 `new_window`/`newWindow` 语义的影响：
+
+- 如果你希望以“仅新标签”的方式创建页面（不新建顶层窗口），但目标上下文尚无窗口（即第一个页面），浏览器可能会报错，因为没有可附着的宿主窗口。
+- 实践上：在新的上下文（Headed）里，首个页面可视为需要一个顶层窗口；随后你就可以创建额外页面作为标签页。
+
+在 Headless 模式下，这个区分不再重要：
+
+- 没有可见 UI 时，“窗口 vs 标签”的区别只是逻辑概念。隔离照常生效，但无需为首个页面引导原生窗口。
+
+### 上下文专属代理：URL 净化 + 通过 Fetch 事件进行认证
+
+当你为某个浏览器上下文配置带凭证的私有代理（在 URL 中嵌入用户名/密码）时，Pydoll 采用“两步法”以避免凭证泄漏并实现可靠认证：
+
+1）在 CDP 命令中净化代理地址
+
+- 若传入 `proxy_server='http://user:pass@host:port'`，发送给 CDP 的仅为去除凭证的 URL（`http://host:port`）。
+- 在内部，Pydoll 会提取并按 `browserContextId` 存储凭证。
+
+2）在该上下文的首个 Tab 上附加认证处理器
+
+- 在该上下文内打开 Tab 时，Pydoll 会为该 Tab 启用 Fetch 事件，并注册两个临时监听器：
+  - `Fetch.requestPaused`：继续普通请求。
+  - `Fetch.authRequired`：自动使用存储的 `user`/`pass` 响应，然后关闭 Fetch 以免继续拦截。
+
+设计动机：
+
+- 防止凭证出现在命令日志和 CDP 参数中。
+- 将认证作用域限制在请求该代理的上下文中。
+- 在 Headed/Headless 场景下均可工作（认证流程在网络层，不依赖 UI）。
+
+流程（简化）：
+
+```python
+# 创建上下文
+context_id = await browser.create_browser_context(proxy_server='user:pwd@host:port')
+# => 发送 Target.createBrowserContext 时使用 'http://host:port'
+# => 内部存储 {'context_id': ('user', 'pwd')}
+
+# 在该上下文打开第一个 Tab
+tab = await browser.new_tab(browser_context_id=context_id)
+# => tab.enable_fetch_events(handle_auth=True)
+# => tab.on('Fetch.requestPaused', continue_request)
+# => tab.on('Fetch.authRequired', continue_with_auth(user, pwd))
+```
+
 ### 创建与管理上下文
 
 ```python

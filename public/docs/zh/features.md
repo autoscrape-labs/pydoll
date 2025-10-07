@@ -1,4 +1,4 @@
-__# 核心特性
+# 核心特性
 
 Pydoll为浏览器自动化带来了突破性的功能，比传统浏览器自动化工具更加强大更易于使用。
 
@@ -35,7 +35,7 @@ Pydoll 基于 Python 的 asyncio 全新构建，提供以下功能：
 
 实时响应浏览器事件：
 
-- **Network Monitoring**: Track requests, responses, and failed loads
+- **网络监控**：跟踪请求、响应和失败的加载
 - **DOM 结构观测**: 响应页面结构的变化
 - **页面生命周期事件**: 捕获导航、加载和渲染事件
 - **自定义事件处理程序**: 为感兴趣的特定事件注册回调
@@ -58,6 +58,9 @@ Pydoll支持操作任何Chromium核心的浏览器:
 - **元素截图**：截取特定元素
 - **高质量 PDF 导出**：从网页生成 PDF 文档
 - **自定义格式**：即将推出！
+
+!!! 信息 "关于 iframe 与顶层目标的截图"
+    `tab.take_screenshot()` 仅适用于顶层目标（top-level target）。在 `iframe` 内（通过 `await tab.get_frame(iframe_element)` 获取的子目标）时，Chrome 的 `Page.captureScreenshot` 无法直接对该子目标截图。这种情况下请改用 `WebElement.take_screenshot()`，它基于视口（viewport）进行捕获，适用于 iframe 内部。
 
 ## 远程连接与混合自动化
 
@@ -485,7 +488,6 @@ Pydoll 的异步架构允许您同时抓取多个页面或网站，以实现最�
 
 ```python
 import asyncio
-from functools import partial
 from pydoll.browser.chromium import Chrome
 
 async def scrape_page(browser, url):
@@ -529,11 +531,8 @@ async def main():
         # Start the browser once
         await browser.start()
         
-        # Create partial function with browser parameter
-        scrape_with_browser = partial(scrape_page, browser)
-        
         # Process all URLs concurrently using the same browser
-        results = await asyncio.gather(*(scrape_with_browser(url) for url in urls))
+        results = await asyncio.gather(*(scrape_page(browser, url) for url in urls))
     
     # Print results
     for result in results:
@@ -808,6 +807,399 @@ asyncio.run(comprehensive_network_monitoring())
 - **调试**：识别失败的请求和网络问题
 - **安全测试**：分析请求/响应模式
 
+## 浏览器上下文 HTTP 请求
+
+Pydoll 通过 `tab.request` 属性提供了类似 `requests` 的强大接口，使 HTTP 请求在浏览器的 JavaScript 上下文中执行。这种混合模式将 Python `requests` 的熟悉体验与浏览器上下文执行的优势结合起来。
+
+### 关键优势
+
+- **继承浏览器会话状态**：自动包含 Cookie、认证和会话数据
+- **符合 CORS**：请求源自浏览器上下文，避免跨域限制  
+- **非常适合 SPA**：适配大量使用 JavaScript 与动态认证的单页应用
+- **无需会话搬运**：不必在自动化与 API 客户端之间转移 Cookie 或 Token
+
+### 基本 HTTP 方法
+
+所有标准 HTTP 方法都以熟悉的接口提供：
+
+```python
+import asyncio
+from pydoll.browser.chromium import Chrome
+
+async def browser_requests_example():
+    async with Chrome() as browser:
+        tab = await browser.start()
+        
+        # 先建立会话上下文
+        await tab.go_to('https://api.example.com')
+        
+        # GET 请求
+        response = await tab.request.get('https://api.example.com/users')
+        print(f"Status: {response.status_code}")
+        print(f"Data: {response.json()}")
+        
+        # POST 请求（JSON）
+        user_data = {"name": "John Doe", "email": "john@example.com"}
+        response = await tab.request.post(
+            'https://api.example.com/users',
+            json=user_data
+        )
+        
+        # 带自定义头的 PUT 请求
+        response = await tab.request.put(
+            'https://api.example.com/users/123',
+            json=user_data,
+            headers={'X-Custom-Header': 'value'}
+        )
+        
+        # DELETE 请求
+        response = await tab.request.delete('https://api.example.com/users/123')
+
+asyncio.run(browser_requests_example())
+```
+
+### 响应对象接口
+
+响应对象与 Python `requests` 库接口一致：
+
+```python
+async def response_handling_example():
+    async with Chrome() as browser:
+        tab = await browser.start()
+        await tab.go_to('https://api.example.com')
+        
+        response = await tab.request.get('https://api.example.com/data')
+        
+        # 状态信息
+        print(f"Status Code: {response.status_code}")
+        print(f"OK: {response.ok}")  # 2xx/3xx 为 True
+        
+        # 响应内容
+        print(f"Raw content: {response.content}")     # bytes
+        print(f"Text content: {response.text}")       # str
+        print(f"JSON data: {response.json()}")        # dict/list
+        
+        # 响应头
+        print(f"Response headers: {response.headers}")
+        print(f"Content-Type: {response.headers.get('content-type')}")
+        
+        # 实际发送的请求头
+        print(f"Request headers: {response.request_headers}")
+        
+        # 响应设置的 Cookies
+        for cookie in response.cookies:
+            print(f"Cookie: {cookie.name}={cookie.value}")
+        
+        # 重定向后的最终 URL
+        print(f"Final URL: {response.url}")
+        
+        # 为 HTTP 错误抛出异常
+        response.raise_for_status()  # 4xx/5xx 抛出 HTTPError
+
+asyncio.run(response_handling_example())
+```
+
+### 高级请求配置
+
+使用完整的 HTTP 选项配置请求：
+
+```python
+async def advanced_requests_example():
+    async with Chrome() as browser:
+        tab = await browser.start()
+        await tab.go_to('https://api.example.com')
+        
+        # 复杂 POST，包含所有选项
+        response = await tab.request.post(
+            'https://api.example.com/submit',
+            json={
+                "user": "test",
+                "action": "create"
+            },
+            headers={
+                'Authorization': 'Bearer token-123',
+                'X-API-Version': '2.0',
+                'Content-Language': 'en-US'
+            },
+            params={
+                'format': 'json',
+                'version': '2'
+            }
+        )
+        
+        # 表单提交
+        form_response = await tab.request.post(
+            'https://api.example.com/form',
+            data={
+                'username': 'testuser',
+                'password': 'secret123'
+            },
+            headers={'Content-Type': 'application/x-www-form-urlencoded'}
+        )
+        
+        # 文件上传模拟
+        file_response = await tab.request.post(
+            'https://api.example.com/upload',
+            data={'file_content': 'base64-encoded-data'},
+            headers={'Content-Type': 'multipart/form-data'}
+        )
+
+asyncio.run(advanced_requests_example())
+```
+
+### 混合自动化工作流
+
+将 UI 自动化与直接 API 调用结合，以获得最大效率：
+
+```python
+async def hybrid_automation_example():
+    async with Chrome() as browser:
+        tab = await browser.start()
+        
+        # 第一步：基于 UI 的登录（处理复杂认证流程）
+        await tab.go_to('https://app.example.com/login')
+        
+        username_field = await tab.find(id='username')
+        password_field = await tab.find(id='password')
+        login_button = await tab.find(id='login-btn')
+        
+        await username_field.type_text('admin@example.com')
+        await password_field.type_text('secure_password')
+        await login_button.click()
+        
+        # 等待登录跳转
+        await asyncio.sleep(3)
+        
+        # 第二步：利用继承的认证调用 API（无需手动提取 Token）
+        dashboard_response = await tab.request.get('https://app.example.com/api/dashboard')
+        dashboard_data = dashboard_response.json()
+        
+        # 批量操作（比 UI 更快）
+        for item_id in dashboard_data.get('item_ids', []):
+            update_response = await tab.request.put(
+                f'https://app.example.com/api/items/{item_id}',
+                json={'status': 'processed', 'updated_by': 'automation'}
+            )
+            print(f"Updated item {item_id}: {update_response.status_code}")
+        
+        # 第三步：回到 UI 验证
+        await tab.go_to('https://app.example.com/dashboard')
+        
+        updated_items = await tab.find(class_name='item-status', find_all=True)
+        for item in updated_items:
+            status = await item.text
+            print(f"UI shows item status: {status}")
+
+asyncio.run(hybrid_automation_example())
+```
+
+这种浏览器上下文 HTTP 接口让 Pydoll 在现代 Web 自动化中更具优势，打破了传统的 UI 自动化与 API 交互之间的边界。
+
+## 自定义浏览器首选项
+
+Pydoll 通过 `ChromiumOptions.browser_preferences` 提供对 Chromium 内部首选项系统的直接访问。你可以根据 Chromium 源码中可用的设置配置浏览器，实现对浏览器行为的精细控制。
+
+### 工作原理
+
+Chromium 首选项使用点号分隔的键映射到嵌套的 Python 字典。每个 `.` 都表示一个新的字典层级。
+
+源码参考：[chromium 的 pref_names.cc](https://chromium.googlesource.com/chromium/src/+/4aaa9f29d8fe5eac55b8632fa8fcb05a68d9005b/chrome/common/pref_names.cc)
+
+### 从源码构建首选项
+
+```cpp
+// 来自 Chromium 源码（pref_names.cc）
+const char kDownloadDefaultDirectory[] = "download.default_directory";
+const char kPromptForDownload[] = "download.prompt_for_download";
+const char kSearchSuggestEnabled[] = "search.suggest_enabled";
+const char kSiteEngagementLastUpdateTime[] = "profile.last_engagement_time";
+const char kNewTabPageLocationOverride[] = "newtab_page_location_override";
+```
+
+转换为 Python 字典：
+
+```python
+from pydoll.browser.options import ChromiumOptions
+
+options = ChromiumOptions()
+options.browser_preferences = {
+    'download': {
+        'default_directory': '/tmp/downloads',
+        'prompt_for_download': False
+    },
+    'search': {
+        'suggest_enabled': False
+    },
+    'profile': {
+        'last_engagement_time': 1640995200  # timestamp
+    },
+    'newtab_page_location_override': 'https://www.google.com'
+}
+```
+
+### 重要配置示例
+
+#### 性能优化
+
+```python
+from pydoll.browser.chromium import Chrome
+from pydoll.browser.options import ChromiumOptions
+
+options = ChromiumOptions()
+options.browser_preferences = {
+    # 关闭网络预测和预取
+    'net': {
+        'network_prediction_options': 2  # Never predict
+    },
+    # 为速度关闭图片加载
+    'webkit': {
+        'webprefs': {
+            'loads_images_automatically': False,
+            'plugins_enabled': False
+        }
+    },
+    # 关闭错误页建议
+    'alternate_error_pages': {
+        'enabled': False
+    }
+}
+```
+
+#### 隐身自动化
+
+```python
+import time
+from pydoll.browser.options import ChromiumOptions
+
+options = ChromiumOptions()
+fake_timestamp = int(time.time()) - (90 * 24 * 60 * 60)  # 90 天前
+
+options.browser_preferences = {
+    # 模拟真实的浏览器使用历史
+    'profile': {
+        'last_engagement_time': fake_timestamp,
+        'exited_cleanly': True,
+        'exit_type': 'Normal'
+    },
+    # 覆盖新标签页
+    'newtab_page_location_override': 'https://www.google.com',
+    # 禁用遥测
+    'user_experience_metrics': {
+        'reporting_enabled': False
+    }
+}
+```
+
+#### 隐私与安全
+
+```python
+from pydoll.browser.options import ChromiumOptions
+
+options = ChromiumOptions()
+options.browser_preferences = {
+    # 隐私设置
+    'enable_do_not_track': True,
+    'enable_referrers': False,
+    'safebrowsing': {
+        'enabled': False
+    },
+    # 关闭数据收集
+    'profile': {
+        'password_manager_enabled': False
+    },
+    'autofill': {
+        'enabled': False
+    },
+    'search': {
+        'suggest_enabled': False
+    }
+}
+```
+
+#### 下载与界面
+
+```python
+from pydoll.browser.options import ChromiumOptions
+
+options = ChromiumOptions()
+options.browser_preferences = {
+    # 静默下载
+    'download': {
+        'default_directory': '/tmp/automation-downloads',
+        'prompt_for_download': False
+    },
+    # 会话行为
+    'session': {
+        'restore_on_startup': 5,  # Open New Tab Page
+        'startup_urls': ['about:blank']
+    },
+    # 首页
+    'homepage': 'https://www.google.com',
+    'homepage_is_newtabpage': False
+}
+```
+
+### 便捷方法
+
+对于常见场景，你可以结合便捷方法与直接首选项：
+
+```python
+from pydoll.browser.options import ChromiumOptions
+
+options = ChromiumOptions()
+
+# 下载管理
+options.set_default_download_directory('/tmp/downloads')
+options.prompt_for_download = False
+options.allow_automatic_downloads = True
+
+# 内容拦截与隐私
+options.block_notifications = True
+options.block_popups = True
+options.password_manager_enabled = False
+
+# 国际化
+options.set_accept_languages('pt-BR,en-US')
+# PDF 与文件处理
+options.open_pdf_externally = True
+
+# 直接首选项（高级设置）
+options.browser_preferences = {
+    'net': {'network_prediction_options': 2},
+    'enable_do_not_track': True
+}
+```
+
+### 影响与收益
+
+- **性能**：通过禁用图片、预测和不必要的功能，可实现 3–5 倍更快的页面加载
+- **隐身**：构造更真实的浏览器指纹，绕过自动化检测
+- **隐私**：全面控制数据收集、跟踪与遥测
+- **自动化**：消除打断自动化流程的弹窗与提示
+- **企业**：配置数百项过去只有组策略才能控制的设置
+
+这种对 Chromium 首选项系统的直接访问让你拥有与企业管理员、扩展开发者同级别的控制力，使复杂的浏览器定制在自动化脚本中成为可能。
+
+## 页面加载状态控制
+
+通过设置 `page_load_state` 来控制 `tab.go_to()` 和内部等待何时认为页面“已加载”。
+
+- 默认：`complete`
+- 可选：`interactive`（当 DOM 可交互时更早结束等待）
+
+```python
+from pydoll.browser.chromium import Chrome
+from pydoll.browser.options import ChromiumOptions
+from pydoll.constants import PageLoadState
+
+options = ChromiumOptions()
+options.page_load_state = PageLoadState.INTERACTIVE  # 默认是 COMPLETE
+
+async with Chrome(options=options) as browser:
+    tab = await browser.start()
+    await tab.go_to('https://example.com')
+```
+
 ## 上传文件支持
 
 在您的自动化脚本中无缝上传文件:
@@ -918,7 +1310,6 @@ asyncio.run(proxy_example())
 
 ## 使用iFrames
 
-Pydoll提供了
 Pydoll 通过 `get_frame()` 方法提供无缝的 iframe 交互：
 
 ```python

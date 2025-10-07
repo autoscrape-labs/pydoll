@@ -201,6 +201,16 @@ class TestGetExpressionType:
         # Empty string should default to CSS
         assert FindElementsMixin._get_expression_type('') == By.CSS_SELECTOR
 
+    def test_xpath_with_parentheses_and_predicate(self):
+        """Test XPath detection with parentheses, e.g. (//div)[last()]."""
+        expressions = [
+            '(//div)[last()]',
+            '(//span[@class="btn"])[1]',
+            '(/html/body/div)[position()=1]'
+        ]
+        for expr in expressions:
+            assert FindElementsMixin._get_expression_type(expr) == By.XPATH
+
 
 class TestEnsureRelativeXPath:
     """Test the _ensure_relative_xpath static method."""

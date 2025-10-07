@@ -363,6 +363,21 @@ await tab.print_to_pdf(
 - 调试自动化脚本
 - 存档页面内容
 
+!!! 警告 "顶层目标与 iframe 的截图差异"
+    `Tab.take_screenshot()` 依赖 CDP 的 `Page.captureScreenshot`，该能力仅适用于顶层目标（top-level target）。如果通过 `await tab.get_frame(iframe_element)` 获取了 iframe 对应的 `Tab`，在此 `Tab` 上调用 `take_screenshot()` 会抛出 `TopLevelTargetRequired`。
+    
+    在 iframe 内请使用 `WebElement.take_screenshot()`。它基于视口（viewport）进行捕获，适用于 iframe 场景。
+    
+    ```python
+    # 错误：在 iframe Tab 上截图（会抛出 TopLevelTargetRequired）
+    iframe_tab = await tab.get_frame(iframe_element)
+    await iframe_tab.take_screenshot(as_base64=True)  # 会抛出异常
+
+    # 正确：在 iframe 内对元素截图（基于视口）
+    element = await iframe_tab.find(id='captcha')
+    await element.take_screenshot('captcha.png')  # 会正常工作！
+    ```
+
 ## 事件系统概述
 
 Tab 域提供了一个全面的事件系统，用于监控和响应浏览器事件：

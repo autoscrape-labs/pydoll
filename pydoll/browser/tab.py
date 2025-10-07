@@ -46,6 +46,7 @@ from pydoll.exceptions import (
     NoDialogPresent,
     NotAnIFrame,
     PageLoadTimeout,
+    TopLevelTargetRequired,
     WaitElementTimeout,
 )
 from pydoll.protocol.base import EmptyResponse, Response
@@ -55,7 +56,7 @@ from pydoll.protocol.browser.events import (
     DownloadWillBeginEvent,
 )
 from pydoll.protocol.browser.types import DownloadBehavior, DownloadProgressState
-from pydoll.protocol.fetch.types import HeaderEntry, RequestStage
+from pydoll.protocol.fetch.types import AuthChallengeResponseType, HeaderEntry, RequestStage
 from pydoll.protocol.network.events import RequestWillBeSentEvent
 from pydoll.protocol.network.types import (
     Cookie,
@@ -252,7 +253,7 @@ class Tab(FindElementsMixin):
     async def enable_auto_solve_cloudflare_captcha(
         self,
         custom_selector: Optional[tuple[By, str]] = None,
-        time_before_click: int = 2,
+        time_before_click: int = 5,
         time_to_wait_captcha: int = 5,
     ):
         """
@@ -527,7 +528,15 @@ class Tab(FindElementsMixin):
                 capture_beyond_viewport=beyond_viewport,
             )
         )
-        screenshot_data = response['result']['data']
+
+        try:
+            screenshot_data = response['result']['data']
+        except KeyError:
+            raise TopLevelTargetRequired(
+                'Command can only be executed on top-level targets. Please use '
+                'take_screenshot method on the WebElement object instead.'
+            )
+
         if as_base64:
             return screenshot_data
 
@@ -697,6 +706,27 @@ class Tab(FindElementsMixin):
                 response_headers=response_headers,
                 body=body,
                 response_phrase=response_phrase,
+            )
+        )
+
+    async def continue_with_auth(
+        self,
+        request_id: str,
+        auth_challenge_response: AuthChallengeResponseType,
+        proxy_username: Optional[str] = None,
+        proxy_password: Optional[str] = None,
+    ):
+        """Continue a paused request replying to an authentication challenge.
+
+        Useful for proxy auth (407) or server auth (401) when Fetch is enabled
+        with handle_auth=True.
+        """
+        return await self._execute_command(
+            FetchCommands.continue_request_with_auth(
+                request_id=request_id,
+                auth_challenge_response=auth_challenge_response,
+                proxy_username=proxy_username,
+                proxy_password=proxy_password,
             )
         )
 
@@ -1014,7 +1044,10 @@ class Tab(FindElementsMixin):
             response: EvaluateResponse = await self._execute_command(
                 RuntimeCommands.evaluate(expression='document.readyState')
             )
-            if response['result']['result']['value'] == 'complete':
+            if (
+                response['result']['result']['value']
+                == self._browser.options.page_load_state.value
+            ):
                 break
             if asyncio.get_event_loop().time() - start_time > timeout:
                 raise WaitElementTimeout('Page load timed out')

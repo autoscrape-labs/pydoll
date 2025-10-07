@@ -2,6 +2,7 @@ import pytest
 
 from pydoll.browser.interfaces import Options as OptionsInterface
 from pydoll.browser.options import ChromiumOptions as Options
+from pydoll.constants import PageLoadState
 from pydoll.exceptions import (
     ArgumentAlreadyExistsInOptions,
     ArgumentNotFoundInOptions,
@@ -29,6 +30,17 @@ def test_set_start_timeout():
     options = Options()
     options.start_timeout = 30
     assert options.start_timeout == 30
+
+
+def test_initial_page_load_state():
+    options = Options()
+    assert options.page_load_state == PageLoadState.COMPLETE
+
+
+def test_set_page_load_state():
+    options = Options()
+    options.page_load_state = PageLoadState.INTERACTIVE
+    assert options.page_load_state == PageLoadState.INTERACTIVE
 
 
 def test_add_argument():
@@ -233,6 +245,14 @@ def test_options_interface_enforcement():
         @property
         def max_parallel_tasks(self):
             return 1
+        
+        @property
+        def page_load_state(self):
+            return PageLoadState.COMPLETE
+
+        @page_load_state.setter
+        def page_load_state(self, state):
+            pass
 
     CompleteOptions()
 

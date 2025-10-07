@@ -10,6 +10,11 @@ class By(str, Enum):
     NAME = 'name'
 
 
+class PageLoadState(str, Enum):
+    COMPLETE = 'complete'
+    INTERACTIVE = 'interactive'
+
+
 class Scripts:
     ELEMENT_VISIBLE = """
     function() {

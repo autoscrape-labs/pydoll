@@ -368,6 +368,21 @@ These visual capture capabilities are invaluable for:
 - Debugging automation scripts
 - Archiving page content
 
+!!! warning "Top-level targets vs iFrames for Tab screenshots"
+    `Tab.take_screenshot()` relies on CDP's `Page.captureScreenshot`, which only works for top-level targets. If you obtained a `Tab` for an iframe using `await tab.get_frame(iframe_element)`, calling `take_screenshot()` on that iframe tab will raise `TopLevelTargetRequired`.
+    
+    Use `WebElement.take_screenshot()` inside iframes. It captures via the viewport and works within the iframe context.
+    
+    ```python
+    # Wrong: iframe Tab screenshot (raises TopLevelTargetRequired)
+    iframe_tab = await tab.get_frame(iframe_element)
+    await iframe_tab.take_screenshot(as_base64=True)  # will raise an exception
+
+    # Correct: element screenshot inside iframe (uses viewport)
+    element = await iframe_tab.find(id='captcha')
+    await element.take_screenshot('captcha.png')  # will work!
+    ```
+
 ## Event System Overview
 
 The Tab domain provides a comprehensive event system for monitoring and reacting to browser events:

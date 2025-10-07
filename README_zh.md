@@ -251,7 +251,7 @@ options.browser_preferences = {
 
 这种控制级别以前只有 Chrome 扩展开发者才能使用 - 现在它在你的自动化工具包中！
 
-查看[文档](https://autoscrape-labs.github.io/pydoll/features/custom-browser-preferences/)了解更多详情。
+查看[文档](https://pydoll.tech/docs/zh/features/#custom-browser-preferences/)了解更多详情。
 
 ### 新的 `get_parent_element()` 方法
 检索任何 WebElement 的父元素，使导航 DOM 结构更加容易：

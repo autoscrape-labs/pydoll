@@ -1,6 +1,7 @@
 from contextlib import suppress
 
 from pydoll.browser.interfaces import Options
+from pydoll.constants import PageLoadState
 from pydoll.exceptions import (
     ArgumentAlreadyExistsInOptions,
     ArgumentNotFoundInOptions,
@@ -29,6 +30,7 @@ class ChromiumOptions(Options):
         self._browser_preferences = {}
         self._headless = False
         self._max_parallel_tasks = 2
+        self._page_load_state = PageLoadState.COMPLETE
 
     @property
     def arguments(self) -> list[str]:
@@ -329,3 +331,11 @@ class ChromiumOptions(Options):
         if max_parallel_tasks < 1:
             raise ValueError('max_parallel_tasks must be greater than 0')
         self._max_parallel_tasks = max_parallel_tasks
+    
+    @property
+    def page_load_state(self) -> PageLoadState:
+        return self._page_load_state
+
+    @page_load_state.setter
+    def page_load_state(self, state: PageLoadState):
+        self._page_load_state = state

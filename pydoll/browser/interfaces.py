@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from pydoll.constants import PageLoadState
+
 
 class Options(ABC):
     @property
@@ -44,6 +46,16 @@ class Options(ABC):
     @max_parallel_tasks.setter
     @abstractmethod
     def max_parallel_tasks(self, max_parallel_tasks: int):
+        pass
+
+    @property
+    @abstractmethod
+    def page_load_state(self) -> PageLoadState:
+        pass
+
+    @page_load_state.setter
+    @abstractmethod
+    def page_load_state(self, state: PageLoadState):
         pass
 
 

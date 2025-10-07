@@ -103,6 +103,12 @@ class ProtocolException(PydollException):
     message = 'A protocol error occurred'
 
 
+class TopLevelTargetRequired(ProtocolException):
+    """Raised when a command can only be executed on top-level targets."""
+
+    message = 'Command can only be executed on top-level targets.'
+
+
 class InvalidCommand(ProtocolException):
     """Raised when an invalid command is sent to the browser."""
 
