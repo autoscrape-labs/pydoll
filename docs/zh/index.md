@@ -249,6 +249,19 @@ bs4 = "^0.0.2"
 
 更少的依赖项带来了： 更高的运行可靠性以及更强的性能表现。
 
+## 赞助商
+
+赞助商的支持对于项目的持续发展至关重要。每一份合作都能帮助我们覆盖基础成本、推动新功能迭代，并保证项目长期维护与更新。非常感谢所有相信并支持 Pydoll 的伙伴！
+
+<a href="https://www.lambdatest.com/?utm_source=pydoll&utm_medium=sponsor" target="_blank" rel="noopener nofollow sponsored">
+  <img src="https://www.lambdatest.com/blue-logo.png" alt="LambdaTest" width="200" height="45" />
+  
+</a>
+
+<p>
+  <a href="https://github.com/sponsors/thalissonvs" target="_blank" rel="noopener" style="display:inline-block;padding:6px 10px;border:1px solid #94a3b8;border-radius:6px;text-decoration:none;color:#e2e8f0;background:#0f172a;">成为赞助商</a>
+</p>
+
 ## 许可证
 
 Pydoll 遵循 MIT 许可证（完整文本见 LICENSE 文件），主要授权条款包括：  

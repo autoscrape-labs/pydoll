@@ -248,6 +248,19 @@ That's it! This minimal dependency approach means:
 
 The small number of dependencies also contributes to Pydoll's reliability and performance, as there are fewer external factors that could impact its operation.
 
+## Sponsors
+
+The support from sponsors is essential to keep the project alive, evolving, and accessible to the entire community. Each partnership helps cover costs, drive new features, and ensure ongoing development. We are truly grateful to everyone who believes in and supports the project!
+
+<a href="https://www.lambdatest.com/?utm_source=pydoll&utm_medium=sponsor" target="_blank" rel="noopener nofollow sponsored">
+  <img src="https://www.lambdatest.com/blue-logo.png" alt="LambdaTest" width="200" height="45" />
+  
+</a>
+
+<p>
+  <a href="https://github.com/sponsors/thalissonvs" target="_blank" rel="noopener">Become a sponsor</a>
+</p>
+
 ## License
 
 Pydoll is released under the MIT License, which gives you the freedom to use, modify, and distribute the code with minimal restrictions. This permissive license makes Pydoll suitable for both personal and commercial projects.
