@@ -1346,6 +1346,40 @@ asyncio.run(iframe_interaction())
 
 在网络请求发送之前拦截并修改它们：
 
+!!! 信息 "私有代理 + 请求拦截（Fetch）"
+    当使用带认证的私有代理时，Pydoll 会在浏览器（Browser）级别启用 Fetch 以处理首次导航过程中的代理认证挑战，其状态变化可能会影响页面（Tab）级别的拦截。为避免域冲突，请在首次导航完成后再在 Tab 级别启用 Fetch 拦截。
+
+    推荐用法：
+
+    ```python
+    import asyncio
+    from pydoll.browser.chromium import Chrome
+    from pydoll.browser.options import ChromiumOptions
+
+    async def main():
+        options = ChromiumOptions()
+        options.add_argument('--proxy-server=username:password@host:port')
+
+        async with Chrome(options=options) as browser:
+            tab = await browser.start()
+
+            # 1) 先进行一次导航，触发浏览器级别的代理认证
+            await tab.go_to('https://example.com')
+
+            # 2) 然后在 Tab 级别安全地启用 Fetch 拦截
+            await tab.enable_fetch_events()
+
+            async def on_paused(event):
+                await tab.continue_request(event['params']['requestId'])
+
+            await tab.on('Fetch.requestPaused', on_paused)
+
+            # 3) 继续你的导航/拦截逻辑
+            await tab.go_to('https://example.com/next')
+
+    asyncio.run(main())
+    ```
+
 ### 简单请求修改例子
 
 ```python

@@ -1331,6 +1331,40 @@ asyncio.run(iframe_interaction())
 
 Intercept and modify network requests before they're sent:
 
+!!! note "Private proxy + request interception (Fetch)"
+    When using a private/authenticated proxy, Pydoll enables Fetch at the Browser level to handle the proxy authentication challenge during the first navigation and may change its state. To avoid domain conflicts with your Tab-level interception, enable Fetch at the Tab level only after the first navigation completes.
+
+    Recommended pattern:
+
+    ```python
+    import asyncio
+    from pydoll.browser.chromium import Chrome
+    from pydoll.browser.options import ChromiumOptions
+
+    async def main():
+        options = ChromiumOptions()
+        options.add_argument('--proxy-server=username:password@host:port')
+
+        async with Chrome(options=options) as browser:
+            tab = await browser.start()
+
+            # 1) Trigger proxy auth at Browser level first
+            await tab.go_to('https://example.com')
+
+            # 2) Then enable Tab-level Fetch interception safely
+            await tab.enable_fetch_events()
+
+            async def on_paused(event):
+                await tab.continue_request(event['params']['requestId'])
+
+            await tab.on('Fetch.requestPaused', on_paused)
+
+            # 3) Proceed with your navigations/interception
+            await tab.go_to('https://example.com/next')
+
+    asyncio.run(main())
+    ```
+
 ### Basic Request Modification
 
 ```python
