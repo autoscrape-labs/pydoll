@@ -499,7 +499,7 @@ def test__is_valid_tab_not_a_tab(mock_browser):
             ],
             r'C:\Program Files\Google\Chrome\Application\chrome.exe',
         ),
-        ('Linux', ['/usr/bin/google-chrome', '/usr/bin/google-chrome-stable'], '/usr/bin/google-chrome'),
+        ('Linux', ['/usr/bin/google-chrome', '/usr/bin/google-chrome-stable', '/usr/bin/chromium', '/usr/bin/chromium-browser'], '/usr/bin/google-chrome'),
         (
             'Darwin',
             ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'],

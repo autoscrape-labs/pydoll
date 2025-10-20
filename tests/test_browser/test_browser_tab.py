@@ -3,10 +3,13 @@ import asyncio
 import pytest
 import pytest_asyncio
 import uuid
-from unittest.mock import AsyncMock, MagicMock, patch, ANY
+from unittest.mock import AsyncMock, MagicMock, Mock, patch, ANY
 from pathlib import Path
 
+from pydoll.elements.web_element import WebElement
+from pydoll.protocol.runtime.types import CallArgument, SerializationOptions
 from pydoll.browser.options import ChromiumOptions
+
 from pydoll.protocol.network.types import ResourceType, RequestMethod
 from pydoll.protocol.fetch.types import RequestStage
 from pydoll.constants import By
@@ -23,7 +26,6 @@ from pydoll.exceptions import (
     InvalidFileExtension,
     WaitElementTimeout,
     NetworkEventsNotEnabled,
-    InvalidScriptWithElement,
     TopLevelTargetRequired,
 )
 
@@ -583,74 +585,6 @@ class TestTabScriptExecution:
         assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
-    async def test_execute_script_with_element(self, tab):
-        """Test execute_script with element context."""
-        # Mock element
-        element = MagicMock()
-        element._object_id = 'test-object-id'
-        
-        tab._connection_handler.execute_command.return_value = {
-            'result': {'result': {'value': 'Element clicked'}}
-        }
-        
-        result = await tab.execute_script('argument.click()', element)
-        
-        assert_mock_called_at_least_once(tab._connection_handler)
-
-    @pytest.mark.asyncio
-    async def test_execute_script_argument_without_element_raises_exception(self, tab):
-        """Test execute_script raises exception when script contains 'argument' but no element provided."""
-        with pytest.raises(InvalidScriptWithElement) as exc_info:
-            await tab.execute_script('argument.click()')
-        
-        assert str(exc_info.value) == 'Script contains "argument" but no element was provided'
-        tab._connection_handler.execute_command.assert_not_called()
-
-    @pytest.mark.asyncio
-    async def test_execute_script_element_without_argument_raises_exception(self, tab):
-        """Test execute_script raises exception when element is provided but script doesn't contain 'argument'."""
-        element = MagicMock()
-        element._object_id = 'test-object-id'
-        
-        with pytest.raises(InvalidScriptWithElement) as exc_info:
-            await tab.execute_script('console.log("test")', element)
-        
-        assert str(exc_info.value) == 'Script does not contain "argument"'
-        tab._connection_handler.execute_command.assert_not_called()
-
-    @pytest.mark.asyncio
-    async def test_execute_script_with_element_already_function(self, tab):
-        """Test execute_script with element when script is already a function."""
-        element = MagicMock()
-        element._object_id = 'test-object-id'
-        
-        tab._connection_handler.execute_command.return_value = {
-            'result': {'result': {'value': 'Function executed'}}
-        }
-        
-        # Script already wrapped in function
-        script = 'function() { argument.click(); return "done"; }'
-        result = await tab.execute_script(script, element)
-        
-        assert_mock_called_at_least_once(tab._connection_handler)
-
-    @pytest.mark.asyncio
-    async def test_execute_script_with_element_arrow_function(self, tab):
-        """Test execute_script with element when script is already an arrow function."""
-        element = MagicMock()
-        element._object_id = 'test-object-id'
-        
-        tab._connection_handler.execute_command.return_value = {
-            'result': {'result': {'value': 'Arrow function executed'}}
-        }
-        
-        # Script already wrapped in arrow function
-        script = '() => { argument.click(); return "done"; }'
-        result = await tab.execute_script(script, element)
-        
-        assert_mock_called_at_least_once(tab._connection_handler)
-
-    @pytest.mark.asyncio
     async def test_execute_script_return_outside_function(self, tab):
         """Test execute_script wraps return statement outside function."""
         tab._connection_handler.execute_command.return_value = {
@@ -722,6 +656,75 @@ class TestTabScriptExecution:
         result = await tab.execute_script(script)
         
         assert_mock_called_at_least_once(tab._connection_handler)
+
+    @pytest.mark.asyncio
+    async def test_execute_script_with_webelement_deprecation_warning(self, tab):
+        """Test execute_script with WebElement triggers deprecation warning."""
+        mock_element = Mock(spec=WebElement)
+        mock_element.execute_script.return_value = {'result': {'value': 'element result'}}
+        
+        with pytest.warns(DeprecationWarning, match="Passing a WebElement to Tab.execute_script\\(\\) is deprecated"):
+            result = await tab.execute_script('return this.tagName', element=mock_element)
+        
+        mock_element.execute_script.assert_called_once_with(
+            'return this.tagName',
+            arguments=None,
+            silent=None,
+            return_by_value=None,
+            generate_preview=None,
+            user_gesture=None,
+            await_promise=None,
+            execution_context_id=None,
+            object_group=None,
+            throw_on_side_effect=None,
+            unique_context_id=None,
+            serialization_options=None,
+        )
+        
+        assert result == {'result': {'value': 'element result'}}
+
+    @pytest.mark.asyncio
+    async def test_execute_script_with_webelement_all_parameters(self, tab):
+        """Test execute_script with WebElement passes all parameters correctly."""
+        mock_element = Mock(spec=WebElement)
+        mock_element.execute_script.return_value = {'result': {'value': 'element result'}}
+        
+        arguments = [CallArgument(value="test")]
+        serialization_options = SerializationOptions(serialization="deep")
+        
+        with pytest.warns(DeprecationWarning):
+            result = await tab.execute_script(
+                'return this.tagName',
+                element=mock_element,
+                arguments=arguments,
+                silent=True,
+                return_by_value=True,
+                generate_preview=True,
+                user_gesture=True,
+                await_promise=True,
+                execution_context_id=123,
+                object_group="test_group",
+                throw_on_side_effect=True,
+                unique_context_id="unique_123",
+                serialization_options=serialization_options,
+            )
+        
+        mock_element.execute_script.assert_called_once_with(
+            'return this.tagName',
+            arguments=arguments,
+            silent=True,
+            return_by_value=True,
+            generate_preview=True,
+            user_gesture=True,
+            await_promise=True,
+            execution_context_id=123,
+            object_group="test_group",
+            throw_on_side_effect=True,
+            unique_context_id="unique_123",
+            serialization_options=serialization_options,
+        )
+        
+        assert result == {'result': {'value': 'element result'}}
 
 
 class TestTabEventCallbacks:
@@ -1789,17 +1792,6 @@ class TestTabEdgeCases:
         result = await tab.print_to_pdf('document.txt', as_base64=True)
         
         assert result is not None
-        assert_mock_called_at_least_once(tab._connection_handler)
-
-    @pytest.mark.asyncio
-    async def test_execute_script_with_none_element(self, tab):
-        """Test execute_script with None element."""
-        tab._connection_handler.execute_command.return_value = {
-            'result': {'result': {'value': 'Test Result'}}
-        }
-        
-        result = await tab.execute_script('return "Test Result"', None)
-        
         assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio

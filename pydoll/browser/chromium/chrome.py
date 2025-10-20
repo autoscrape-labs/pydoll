@@ -52,6 +52,8 @@ class Chrome(Browser):
             'Linux': [
                 '/usr/bin/google-chrome',
                 '/usr/bin/google-chrome-stable',
+                '/usr/bin/chromium',
+                '/usr/bin/chromium-browser',
             ],
             'Darwin': [
                 '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
