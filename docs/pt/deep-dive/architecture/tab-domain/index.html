@@ -1,0 +1,4554 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://pydoll.tech/docs/pt/deep-dive/architecture/tab-domain/">
+      
+      
+        <link rel="prev" href="../browser-domain/">
+      
+      
+        <link rel="next" href="../webelement-domain/">
+      
+      
+      <link rel="icon" href="../../../../resources/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.22">
+    
+    
+      
+        <title>Domínio da Aba - Pydoll - Biblioteca de Automação Web Assíncrona</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.84d31ad4.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../resources/stylesheets/termynal.css">
+    
+      <link rel="stylesheet" href="../../../../resources/stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#arquitetura-do-dominio-da-aba-tab" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../../" title="Pydoll - Biblioteca de Automação Web Assíncrona" class="md-header__button md-logo" aria-label="Pydoll - Biblioteca de Automação Web Assíncrona" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11 15H6l7-14v8h5l-7 14z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Pydoll - Biblioteca de Automação Web Assíncrona
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Domínio da Aba
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Dark Mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dark Mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6m0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4M7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Light Mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Light Mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/docs/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/docs/pt/" hreflang="pt" class="md-select__link">
+              Português (BR)
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/docs/zh/" hreflang="zh" class="md-select__link">
+              中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/autoscrape-labs/pydoll" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    autoscrape-labs/pydoll
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Pydoll
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../features/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Recursos
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Análise Profunda
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../api/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Referência da API
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../" title="Pydoll - Biblioteca de Automação Web Assíncrona" class="md-nav__button md-logo" aria-label="Pydoll - Biblioteca de Automação Web Assíncrona" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11 15H6l7-14v8h5l-7 14z"/></svg>
+
+    </a>
+    Pydoll - Biblioteca de Automação Web Assíncrona
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/autoscrape-labs/pydoll" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    autoscrape-labs/pydoll
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Pydoll
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../features/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    Recursos
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Recursos
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/core-concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Conceitos Fundamentais
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/element-finding/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Pesquisa de Elementos
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Automação
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_4">
+            <span class="md-nav__icon md-icon"></span>
+            Automação
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/automation/human-interactions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Interações Humanas
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/automation/keyboard-control/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Controle de Teclado
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/automation/file-operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Operações com Arquivos
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/automation/iframes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    IFrames
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/automation/screenshots-and-pdfs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Capturas e PDF
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Rede
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_5">
+            <span class="md-nav__icon md-icon"></span>
+            Rede
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/network/monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Monitoramento de Rede
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/network/interception/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Interceptação de Requisições
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/network/http-requests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Requisições HTTP no Contexto do Navegador
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_6" id="__nav_2_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Gerenciamento do Navegador
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_6">
+            <span class="md-nav__icon md-icon"></span>
+            Gerenciamento do Navegador
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/browser-management/tabs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Gerenciamento de Abas
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/browser-management/contexts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Contextos do Navegador
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/browser-management/cookies-sessions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Cookies e Sessões
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_7" id="__nav_2_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Configuração
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_7">
+            <span class="md-nav__icon md-icon"></span>
+            Configuração
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/configuration/browser-options/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Opções do Navegador
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/configuration/browser-preferences/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Preferências do Navegador
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/configuration/proxy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Configuração de Proxy
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_8" id="__nav_2_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Avançado
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_8">
+            <span class="md-nav__icon md-icon"></span>
+            Avançado
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/advanced/behavioral-captcha-bypass/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Bypass de Captcha Comportamental
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/advanced/event-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Sistema de Eventos
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/advanced/remote-connections/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Conexões Remotas
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    Análise Profunda
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Análise Profunda
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../fundamentals/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    Fundamentos Centrais
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_2" id="__nav_3_2_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            Fundamentos Centrais
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fundamentals/cdp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Protocolo Chrome DevTools
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fundamentals/connection-layer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Camada de Conexão
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fundamentals/typing-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Sistema de Tipos Python
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    Arquitetura Interna
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_3" id="__nav_3_3_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3_3">
+            <span class="md-nav__icon md-icon"></span>
+            Arquitetura Interna
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../browser-domain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Domínio do Navegador
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Domínio da Aba
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Domínio da Aba
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#visao-geral-da-arquitetura" class="md-nav__link">
+    <span class="md-ellipsis">
+      Visão Geral da Arquitetura
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Visão Geral da Arquitetura">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#estrutura-de-componentes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Estrutura de Componentes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#integracao-de-dominio-cdp" class="md-nav__link">
+    <span class="md-ellipsis">
+      Integração de Domínio CDP
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#responsabilidades-principais" class="md-nav__link">
+    <span class="md-ellipsis">
+      Responsabilidades Principais
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#composicao-vs-heranca-o-findelementsmixin" class="md-nav__link">
+    <span class="md-ellipsis">
+      Composição vs. Herança: O FindElementsMixin
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#arquitetura-de-gerenciamento-de-estado" class="md-nav__link">
+    <span class="md-ellipsis">
+      Arquitetura de Gerenciamento de Estado
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Arquitetura de Gerenciamento de Estado">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-flags-de-habilitacao-de-dominio" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Flags de Habilitação de Domínio
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-identidade-do-alvo-target" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Identidade do Alvo (Target)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-estado-especifico-de-funcionalidades" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Estado Específico de Funcionalidades
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#execucao-javascript-arquitetura-de-contexto-duplo" class="md-nav__link">
+    <span class="md-ellipsis">
+      Execução JavaScript: Arquitetura de Contexto Duplo
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#integracao-com-o-sistema-de-eventos" class="md-nav__link">
+    <span class="md-ellipsis">
+      Integração com o Sistema de Eventos
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#estado-da-sessao-gerenciamento-de-cookies" class="md-nav__link">
+    <span class="md-ellipsis">
+      Estado da Sessão: Gerenciamento de Cookies
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#captura-de-conteudo-restricoes-de-alvo-target-cdp" class="md-nav__link">
+    <span class="md-ellipsis">
+      Captura de Conteúdo: Restrições de Alvo (Target) CDP
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#monitoramento-de-rede-design-com-estado-stateful" class="md-nav__link">
+    <span class="md-ellipsis">
+      Monitoramento de Rede: Design com Estado (Stateful)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gerenciamento-de-dialogos-padrao-de-captura-de-evento" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gerenciamento de Diálogos: Padrão de Captura de Evento
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#arquitetura-de-iframe-padrao-de-reutilizacao-de-aba" class="md-nav__link">
+    <span class="md-ellipsis">
+      Arquitetura de IFrame: Padrão de Reutilização de Aba
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gerenciadores-de-contexto-limpeza-automatica-de-recursos" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gerenciadores de Contexto: Limpeza Automática de Recursos
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Gerenciadores de Contexto: Limpeza Automática de Recursos">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#principais-gerenciadores-de-contexto" class="md-nav__link">
+    <span class="md-ellipsis">
+      Principais Gerenciadores de Contexto
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ciclo-de-vida-fechamento-e-invalidacao-da-aba" class="md-nav__link">
+    <span class="md-ellipsis">
+      Ciclo de Vida: Fechamento e Invalidação da Aba
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#principais-decisoes-arquiteturais" class="md-nav__link">
+    <span class="md-ellipsis">
+      Principais Decisões Arquiteturais
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Principais Decisões Arquiteturais">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#estrategia-de-websocket-por-aba" class="md-nav__link">
+    <span class="md-ellipsis">
+      Estratégia de WebSocket por Aba
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#necessidade-da-referencia-ao-navegador" class="md-nav__link">
+    <span class="md-ellipsis">
+      Necessidade da Referência ao Navegador
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#escolhas-de-design-da-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      Escolhas de Design da API
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#relacionamento-com-outros-dominios" class="md-nav__link">
+    <span class="md-ellipsis">
+      Relacionamento com Outros Domínios
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resumo-filosofia-de-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      Resumo: Filosofia de Design
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#leitura-adicional" class="md-nav__link">
+    <span class="md-ellipsis">
+      Leitura Adicional
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../webelement-domain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Domínio do WebElement
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../find-elements-mixin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Mixin FindElements
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../event-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Arquitetura de Eventos
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../browser-requests-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Arquitetura de Requisições do Navegador
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_4" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../network/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    Rede e Segurança
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_4" id="__nav_3_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_4">
+            <span class="md-nav__icon md-icon"></span>
+            Rede e Segurança
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/network-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Fundamentos de Rede
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/http-proxies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Proxies HTTP/HTTPS
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/socks-proxies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Proxies SOCKS
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/proxy-detection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Detecção de Proxy
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/build-proxy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Construindo Servidores Proxy
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/proxy-legal/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Legal & Ética
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../fingerprinting/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    Fingerprinting
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_5" id="__nav_3_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_5">
+            <span class="md-nav__icon md-icon"></span>
+            Fingerprinting
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fingerprinting/network-fingerprinting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Fingerprinting de Rede
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fingerprinting/browser-fingerprinting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Fingerprinting do Navegador
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fingerprinting/behavioral-fingerprinting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Fingerprinting Comportamental
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fingerprinting/evasion-techniques/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Técnicas de Evasão
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_6" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../guides/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    Guias Práticos
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_6" id="__nav_3_6_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_6">
+            <span class="md-nav__icon md-icon"></span>
+            Guias Práticos
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/selectors-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Seletores CSS vs XPath
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../api/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    Referência da API
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Referência da API
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Navegador
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_2">
+            <span class="md-nav__icon md-icon"></span>
+            Navegador
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/browser/chrome/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Chrome
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/browser/edge/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Edge
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/browser/options/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Opções
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/browser/tab/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Aba
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/browser/requests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Requisições
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/browser/managers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Gerenciadores
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Elementos
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_3">
+            <span class="md-nav__icon md-icon"></span>
+            Elementos
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/elements/web_element/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Elemento Web
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/elements/mixins/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Mixins
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Conexão
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_4">
+            <span class="md-nav__icon md-icon"></span>
+            Conexão
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/connection/connection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Manipulador de Conexão
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/connection/managers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Gerenciadores
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../api/commands/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    Comandos
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4_5" id="__nav_4_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_5">
+            <span class="md-nav__icon md-icon"></span>
+            Comandos
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/commands/browser/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Navegador
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/commands/dom/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    DOM
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/commands/input/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Entrada
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/commands/network/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Rede
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/commands/page/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Página
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/commands/runtime/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Tempo de Execução
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/commands/storage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Armazenamento
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/commands/target/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Alvo
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/commands/fetch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Fetch
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_6" id="__nav_4_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Protocolo
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_6">
+            <span class="md-nav__icon md-icon"></span>
+            Protocolo
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/base/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Tipos Base
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/browser/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Navegador
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/dom/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    DOM
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/fetch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Fetch
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/input/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Entrada
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/network/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Rede
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/page/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Página
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/runtime/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Tempo de Execução
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/storage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Armazenamento
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/target/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Alvo
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_7" id="__nav_4_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Núcleo
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_7">
+            <span class="md-nav__icon md-icon"></span>
+            Núcleo
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/core/constants/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Constantes
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/core/exceptions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Exceções
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/core/utils/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Utilitários
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#visao-geral-da-arquitetura" class="md-nav__link">
+    <span class="md-ellipsis">
+      Visão Geral da Arquitetura
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Visão Geral da Arquitetura">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#estrutura-de-componentes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Estrutura de Componentes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#integracao-de-dominio-cdp" class="md-nav__link">
+    <span class="md-ellipsis">
+      Integração de Domínio CDP
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#responsabilidades-principais" class="md-nav__link">
+    <span class="md-ellipsis">
+      Responsabilidades Principais
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#composicao-vs-heranca-o-findelementsmixin" class="md-nav__link">
+    <span class="md-ellipsis">
+      Composição vs. Herança: O FindElementsMixin
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#arquitetura-de-gerenciamento-de-estado" class="md-nav__link">
+    <span class="md-ellipsis">
+      Arquitetura de Gerenciamento de Estado
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Arquitetura de Gerenciamento de Estado">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-flags-de-habilitacao-de-dominio" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Flags de Habilitação de Domínio
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-identidade-do-alvo-target" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Identidade do Alvo (Target)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-estado-especifico-de-funcionalidades" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Estado Específico de Funcionalidades
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#execucao-javascript-arquitetura-de-contexto-duplo" class="md-nav__link">
+    <span class="md-ellipsis">
+      Execução JavaScript: Arquitetura de Contexto Duplo
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#integracao-com-o-sistema-de-eventos" class="md-nav__link">
+    <span class="md-ellipsis">
+      Integração com o Sistema de Eventos
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#estado-da-sessao-gerenciamento-de-cookies" class="md-nav__link">
+    <span class="md-ellipsis">
+      Estado da Sessão: Gerenciamento de Cookies
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#captura-de-conteudo-restricoes-de-alvo-target-cdp" class="md-nav__link">
+    <span class="md-ellipsis">
+      Captura de Conteúdo: Restrições de Alvo (Target) CDP
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#monitoramento-de-rede-design-com-estado-stateful" class="md-nav__link">
+    <span class="md-ellipsis">
+      Monitoramento de Rede: Design com Estado (Stateful)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gerenciamento-de-dialogos-padrao-de-captura-de-evento" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gerenciamento de Diálogos: Padrão de Captura de Evento
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#arquitetura-de-iframe-padrao-de-reutilizacao-de-aba" class="md-nav__link">
+    <span class="md-ellipsis">
+      Arquitetura de IFrame: Padrão de Reutilização de Aba
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gerenciadores-de-contexto-limpeza-automatica-de-recursos" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gerenciadores de Contexto: Limpeza Automática de Recursos
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Gerenciadores de Contexto: Limpeza Automática de Recursos">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#principais-gerenciadores-de-contexto" class="md-nav__link">
+    <span class="md-ellipsis">
+      Principais Gerenciadores de Contexto
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ciclo-de-vida-fechamento-e-invalidacao-da-aba" class="md-nav__link">
+    <span class="md-ellipsis">
+      Ciclo de Vida: Fechamento e Invalidação da Aba
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#principais-decisoes-arquiteturais" class="md-nav__link">
+    <span class="md-ellipsis">
+      Principais Decisões Arquiteturais
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Principais Decisões Arquiteturais">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#estrategia-de-websocket-por-aba" class="md-nav__link">
+    <span class="md-ellipsis">
+      Estratégia de WebSocket por Aba
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#necessidade-da-referencia-ao-navegador" class="md-nav__link">
+    <span class="md-ellipsis">
+      Necessidade da Referência ao Navegador
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#escolhas-de-design-da-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      Escolhas de Design da API
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#relacionamento-com-outros-dominios" class="md-nav__link">
+    <span class="md-ellipsis">
+      Relacionamento com Outros Domínios
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resumo-filosofia-de-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      Resumo: Filosofia de Design
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#leitura-adicional" class="md-nav__link">
+    <span class="md-ellipsis">
+      Leitura Adicional
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="arquitetura-do-dominio-da-aba-tab">Arquitetura do Domínio da Aba (Tab)</h1>
+<p>O domínio da Aba (Tab) é a interface principal do Pydoll para automação de navegador, atuando como uma camada de orquestração que integra múltiplos domínios CDP em uma API coesa. Este documento explora sua arquitetura interna, padrões de design e as decisões de engenharia que moldam seu comportamento.</p>
+<div class="admonition info">
+<p class="admonition-title">Uso Prático</p>
+<p>Para exemplos de uso e padrões práticos, consulte o <a href="../features/automation/tabs.md">Guia de Gerenciamento de Abas</a>.</p>
+</div>
+<h2 id="visao-geral-da-arquitetura">Visão Geral da Arquitetura</h2>
+<p>A classe <code>Tab</code> serve como uma <strong>façade (fachada)</strong> sobre o Chrome DevTools Protocol, abstraindo a complexidade da coordenação de múltiplos domínios em uma interface unificada.</p>
+<h3 id="estrutura-de-componentes">Estrutura de Componentes</h3>
+<table>
+<thead>
+<tr>
+<th>Componente</th>
+<th>Relacionamento</th>
+<th>Propósito</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Tab</strong></td>
+<td>Classe principal</td>
+<td>Interface de automação primária</td>
+</tr>
+<tr>
+<td>↳ <strong>ConnectionHandler</strong></td>
+<td>Composição (própria)</td>
+<td>Comunicação WebSocket com CDP</td>
+</tr>
+<tr>
+<td>↳ <strong>Browser</strong></td>
+<td>Referência (pai)</td>
+<td>Acesso ao estado e configuração em nível de navegador</td>
+</tr>
+<tr>
+<td>↳ <strong>FindElementsMixin</strong></td>
+<td>Herança</td>
+<td>Capacidades de localização de elementos</td>
+</tr>
+<tr>
+<td>↳ <strong>WebElement</strong></td>
+<td>Fábrica (cria)</td>
+<td>Representações individuais de elementos DOM</td>
+</tr>
+</tbody>
+</table>
+<h3 id="integracao-de-dominio-cdp">Integração de Domínio CDP</h3>
+<p>O <code>ConnectionHandler</code> roteia operações da Aba (Tab) para múltiplos domínios CDP:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Métodos da Aba            Domínio CDP          Propósito
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>go_to(), refresh()     →   Page            →  Navegação &amp; ciclo de vida
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>execute_script()       →   Runtime         →  Execução JavaScript
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>find(), query()        →   Runtime/DOM     →  Localização de elementos
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>get_cookies()          →   Storage         →  Estado da sessão
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>enable_network_events()→   Network         →  Monitoramento de tráfego
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>enable_fetch_events()  →   Fetch           →  Interceptação de requisição
+</span></code></pre></div>
+<h3 id="responsabilidades-principais">Responsabilidades Principais</h3>
+<ol>
+<li><strong>Roteamento de Comandos CDP</strong>: Traduz operações de alto nível em comandos CDP específicos do domínio</li>
+<li><strong>Gerenciamento de Estado</strong>: Rastreia domínios habilitados, callbacks ativos e estado da sessão</li>
+<li><strong>Coordenação de Eventos</strong>: Faz a ponte entre eventos CDP e callbacks definidos pelo usuário</li>
+<li><strong>Fábrica de Elementos</strong>: Cria instâncias de <code>WebElement</code> a partir de strings <code>objectId</code> do CDP</li>
+<li><strong>Gerenciamento do Ciclo de Vida</strong>: Lida com limpeza e desalocação de recursos</li>
+</ol>
+<h2 id="composicao-vs-heranca-o-findelementsmixin">Composição vs. Herança: O FindElementsMixin</h2>
+<p>Uma decisão arquitetural chave no domínio da Aba é <strong>herdar de <code>FindElementsMixin</code></strong> em vez de usar composição:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">Tab</span><span class="p">(</span><span class="n">FindElementsMixin</span><span class="p">):</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">...</span><span class="p">):</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_connection_handler</span> <span class="o">=</span> <span class="n">ConnectionHandler</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>        <span class="c1"># Métodos do Mixin agora estão disponíveis na Aba</span>
+</span></code></pre></div>
+<p><strong>Por que herança aqui?</strong></p>
+<table>
+<thead>
+<tr>
+<th>Abordagem</th>
+<th>Prós</th>
+<th>Contras</th>
+<th>Escolha do Pydoll</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Herança</strong></td>
+<td>API limpa (<code>tab.find()</code>), compatibilidade de tipo</td>
+<td>Acoplamento forte</td>
+<td>Usado</td>
+</tr>
+<tr>
+<td>Composição</td>
+<td>Baixo acoplamento, flexível</td>
+<td>Verboso (<code>tab.finder.find()</code>), sobrecarga de wrapper</td>
+<td>Não usado</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Justificativa:</strong> O padrão mixin se justifica porque:</p>
+<ul>
+<li>A localização de elementos é <strong>central para a identidade da Aba</strong> (toda aba pode encontrar elementos)</li>
+<li>O mixin é <strong>sem estado (stateless)</strong> - ele requer apenas <code>_connection_handler</code> (injeção de dependência via duck typing)</li>
+<li>A ergonomia da API importa - <code>tab.find()</code> é mais intuitivo do que <code>tab.elements.find()</code></li>
+</ul>
+<p>Veja a <a href="../find-elements-mixin/">Análise Profunda do FindElements Mixin</a> para detalhes arquiteturais.</p>
+<h2 id="arquitetura-de-gerenciamento-de-estado">Arquitetura de Gerenciamento de Estado</h2>
+<p>A classe Tab gerencia <strong>múltiplas camadas de estado</strong>:</p>
+<h3 id="1-flags-de-habilitacao-de-dominio">1. Flags de Habilitação de Domínio</h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">Tab</span><span class="p">:</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">...</span><span class="p">):</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_page_events_enabled</span> <span class="o">=</span> <span class="kc">False</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_network_events_enabled</span> <span class="o">=</span> <span class="kc">False</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_fetch_events_enabled</span> <span class="o">=</span> <span class="kc">False</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_dom_events_enabled</span> <span class="o">=</span> <span class="kc">False</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_runtime_events_enabled</span> <span class="o">=</span> <span class="kc">False</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_intercept_file_chooser_dialog_enabled</span> <span class="o">=</span> <span class="kc">False</span>
+</span></code></pre></div>
+<p><strong>Por que flags explícitas?</strong></p>
+<ul>
+<li><strong>Idempotência</strong>: Chamar <code>enable_page_events()</code> duas vezes não registra duplamente</li>
+<li><strong>Inspeção de estado</strong>: Propriedades como <code>tab.page_events_enabled</code> expõem o estado atual</li>
+<li><strong>Rastreamento de limpeza</strong>: Sabe quais domínios precisam ser desabilitados no fechamento da aba</li>
+</ul>
+<p><strong>Alternativa (não usada):</strong> Consultar o CDP sobre domínios habilitados a cada verificação → Muito lento, adiciona latência.</p>
+<h3 id="2-identidade-do-alvo-target">2. Identidade do Alvo (Target)</h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="bp">self</span><span class="o">.</span><span class="n">_target_id</span><span class="p">:</span> <span class="nb">str</span>              <span class="c1"># Identificador CDP único</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="bp">self</span><span class="o">.</span><span class="n">_browser_context_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>  <span class="c1"># Contexto de isolamento</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="bp">self</span><span class="o">.</span><span class="n">_connection_port</span><span class="p">:</span> <span class="nb">int</span>        <span class="c1"># Porta WebSocket</span>
+</span></code></pre></div>
+<p><strong>Decisão de design:</strong> <code>target_id</code> é o <strong>identificador primário</strong>, não a instância da Aba em si. Isso permite:</p>
+<ul>
+<li><strong>Registro de Abas em nível de Navegador</strong>: <code>Browser._tabs_opened[target_id] = tab</code></li>
+<li><strong>Padrão Singleton</strong>: O mesmo <code>target_id</code> sempre retorna a mesma instância de <code>Tab</code></li>
+<li><strong>Reutilização de conexão</strong>: Múltiplas operações na mesma aba compartilham o WebSocket</li>
+</ul>
+<h3 id="3-estado-especifico-de-funcionalidades">3. Estado Específico de Funcionalidades</h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="bp">self</span><span class="o">.</span><span class="n">_cloudflare_captcha_callback_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Para limpeza</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="bp">self</span><span class="o">.</span><span class="n">_request</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Request</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Inicialização preguiçosa (lazy)</span>
+</span></code></pre></div>
+<p><strong>Padrão de inicialização preguiçosa (lazy):</strong> <code>Request</code> é criado apenas quando <code>tab.request</code> é acessado:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nd">@property</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">request</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Request</span><span class="p">:</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_request</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_request</span> <span class="o">=</span> <span class="n">Request</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_request</span>
+</span></code></pre></div>
+<p><strong>Por que preguiçosa (lazy)?</strong> A maioria das automações não usa requisições HTTP no contexto do navegador. Economiza memória e tempo de inicialização.</p>
+<h2 id="execucao-javascript-arquitetura-de-contexto-duplo">Execução JavaScript: Arquitetura de Contexto Duplo</h2>
+<p>O método <code>execute_script()</code> implementa <strong>polimorfismo de contexto</strong> - mesma interface, diferentes comandos CDP:</p>
+<table>
+<thead>
+<tr>
+<th>Contexto</th>
+<th>Método CDP</th>
+<th>Caso de Uso</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Global (sem elemento)</td>
+<td><code>Runtime.evaluate</code></td>
+<td><code>document.title</code>, scripts globais</td>
+</tr>
+<tr>
+<td>Vinculado ao elemento</td>
+<td><code>Runtime.callFunctionOn</code></td>
+<td>Operações específicas do elemento</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Decisão arquitetural chave:</strong> Autodetectar o modo de execução com base na presença do parâmetro <code>element</code>, eliminando APIs separadas (<code>evaluate()</code> vs. <code>call_function_on()</code>).</p>
+<p><strong>Pipeline de transformação de script:</strong></p>
+<ol>
+<li>Substitui <code>argument</code> → <code>this</code> (compatibilidade com Selenium)</li>
+<li>Detecta se o script já está encapsulado em <code>function() { }</code></li>
+<li>Encapsula se necessário: <code>script</code> → <code>function() { script }</code></li>
+<li>Roteia para o comando CDP apropriado</li>
+</ol>
+<p><strong>Por que a palavra-chave <code>argument</code>?</strong> Caminho de migração para usuários do Selenium, familiaridade da API.</p>
+<div class="admonition info">
+<p class="admonition-title">Uso Prático</p>
+<p>Veja <a href="../features/automation/human-interactions.md">Interações Humanizadas</a> para padrões de execução de script do mundo real.</p>
+</div>
+<h2 id="integracao-com-o-sistema-de-eventos">Integração com o Sistema de Eventos</h2>
+<p>A Aba (Tab) atua como um <strong>wrapper (invólucro) fino</strong> sobre o sistema de eventos do ConnectionHandler, mas adiciona uma camada importante: <strong>execução de callback não-bloqueante</strong>.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">on</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">temporary</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="c1"># Encapsula callbacks assíncronos para executar em background</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">callback_wrapper</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>        <span class="n">asyncio</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="n">callback</span><span class="p">(</span><span class="n">event</span><span class="p">))</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="k">if</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">iscoroutinefunction</span><span class="p">(</span><span class="n">callback</span><span class="p">):</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>        <span class="n">function_to_register</span> <span class="o">=</span> <span class="n">callback_wrapper</span>  <span class="c1"># Wrapper não-bloqueante</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>    <span class="k">else</span><span class="p">:</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>        <span class="n">function_to_register</span> <span class="o">=</span> <span class="n">callback</span>  <span class="c1"># Callbacks síncronos executam diretamente</span>
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>
+</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>    <span class="c1"># Delega o registro ao ConnectionHandler</span>
+</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>    <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connection_handler</span><span class="o">.</span><span class="n">register_callback</span><span class="p">(</span>
+</span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>        <span class="n">event_name</span><span class="p">,</span> <span class="n">function_to_register</span><span class="p">,</span> <span class="n">temporary</span>
+</span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>    <span class="p">)</span>
+</span></code></pre></div>
+<p><strong>Papel arquitetural:</strong> A Aba fornece registro de eventos com escopo de aba e semântica de execução não-bloqueante, enquanto o ConnectionHandler lida com os mecanismos internos do WebSocket e a invocação sequencial de callbacks.</p>
+<p><strong>Principais características:</strong></p>
+<ul>
+<li><strong>Execução em background</strong> via <code>asyncio.create_task()</code> para callbacks assíncronos (disparar e esquecer)</li>
+<li><strong>Autodetecção de callback síncrono/assíncrono</strong></li>
+<li><strong>Callbacks temporários</strong> para manipuladores de uso único</li>
+<li><strong>ID de Callback</strong> para remoção explícita</li>
+</ul>
+<p><strong>Modelo de execução:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Camada</th>
+<th>Comportamento</th>
+<th>Propósito</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Callback do usuário</strong></td>
+<td>Executa em tarefa de background</td>
+<td>Nunca bloqueia outros callbacks ou comandos CDP</td>
+</tr>
+<tr>
+<td><strong>Wrapper da Aba</strong></td>
+<td><code>create_task(callback())</code></td>
+<td>Inicia tarefa de background, retorna imediatamente</td>
+</tr>
+<tr>
+<td><strong>EventsManager</strong></td>
+<td><code>await wrapper()</code></td>
+<td>Invoca wrappers sequencialmente para o mesmo evento</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Por que o wrapper?</strong> Sem ele, um callback assíncrono lento bloquearia outros callbacks para o mesmo evento. O wrapper <code>create_task</code> garante que todos os callbacks iniciem "simultaneamente" (em tarefas separadas), impedindo que um callback lento atrase os outros.</p>
+<div class="admonition info">
+<p class="admonition-title">Arquitetura Detalhada</p>
+<p>Veja a <a href="../event-architecture/">Análise Profunda da Arquitetura de Eventos</a> para mecanismos internos de roteamento de eventos e o padrão de invocação sequencial do EventsManager.</p>
+<p><strong>Uso prático:</strong> <a href="../features/advanced/event-system.md">Guia do Sistema de Eventos</a></p>
+</div>
+<h2 id="estado-da-sessao-gerenciamento-de-cookies">Estado da Sessão: Gerenciamento de Cookies</h2>
+<p><strong>Separação arquitetural:</strong> Cookies são roteados para o <strong>domínio Storage</strong> (manipulação), não para o domínio Network (observação).</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">set_cookies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cookies</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">CookieParam</span><span class="p">]):</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>    <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_command</span><span class="p">(</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>        <span class="n">StorageCommands</span><span class="o">.</span><span class="n">set_cookies</span><span class="p">(</span><span class="n">cookies</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_browser_context_id</span><span class="p">)</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span class="p">)</span>
+</span></code></pre></div>
+<p><strong>Design consciente de contexto:</strong> O parâmetro <code>browser_context_id</code> garante o isolamento de cookies, permitindo automação multi-conta.</p>
+<div class="admonition info">
+<p class="admonition-title">Gerenciamento Prático de Cookies</p>
+<p>Veja o <a href="../features/browser-management/cookies-sessions.md">Guia de Cookies &amp; Sessões</a> para padrões de uso e estratégias anti-detecção.</p>
+</div>
+<h2 id="captura-de-conteudo-restricoes-de-alvo-target-cdp">Captura de Conteúdo: Restrições de Alvo (Target) CDP</h2>
+<p><strong>Limitação crítica:</strong> <code>Page.captureScreenshot</code> só funciona em <strong>alvos (targets) de nível superior</strong>. Abas de Iframe falham silenciosamente (sem campo <code>data</code> na resposta).</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">try</span><span class="p">:</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span class="n">screenshot_data</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s1">&#39;result&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="k">raise</span> <span class="n">TopLevelTargetRequired</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>  <span class="c1"># Guia os usuários para WebElement.take_screenshot()</span>
+</span></code></pre></div>
+<p><strong>Implicação de design:</strong> Abas de Iframe (criadas via <code>get_frame()</code>) herdam todos os métodos da Aba (Tab), mas as capturas de tela falham por design. Alternativa: <code>WebElement.take_screenshot()</code> funciona para conteúdo de iframe.</p>
+<p><strong>Geração de PDF:</strong> <code>Page.printToPDF</code> retorna dados codificados em base64. O Pydoll abstrai a E/S (I/O) de arquivo, mas os dados subjacentes são sempre base64 (especificação CDP).</p>
+<div class="admonition info">
+<p class="admonition-title">Uso Prático</p>
+<p>Veja o <a href="../features/automation/screenshots-and-pdfs.md">Guia de Screenshots &amp; PDFs</a> para parâmetros, formatos e exemplos do mundo real.</p>
+</div>
+<h2 id="monitoramento-de-rede-design-com-estado-stateful">Monitoramento de Rede: Design com Estado (Stateful)</h2>
+<p><strong>Princípio arquitetural:</strong> Métodos de rede exigem <strong>estado habilitado</strong> - verificações em tempo de execução impedem o acesso a dados inexistentes.</p>
+<p><strong>Separação de armazenamento:</strong></p>
+<ul>
+<li><strong>Logs</strong>: Armazenados em buffer no <code>ConnectionHandler</code> (recebe todos os eventos CDP)</li>
+<li><strong>Aba (Tab)</strong>: Consulta o manipulador, sem armazenamento duplicado</li>
+<li><strong>Corpos de resposta (Response bodies)</strong>: Recuperados sob demanda via <code>Network.getResponseBody(requestId)</code></li>
+</ul>
+<p><strong>Restrição de tempo crítica:</strong> Corpos de resposta devem ser buscados <strong>dentro de ~30s</strong> após a resposta (coleta de lixo do navegador).</p>
+<div class="admonition info">
+<p class="admonition-title">Monitoramento de Rede na Prática</p>
+<p>Veja o <a href="../features/network/monitoring.md">Guia de Monitoramento de Rede</a> para rastreamento abrangente de eventos e padrões de análise.</p>
+<p><strong>Interceptação de requisições:</strong> <a href="../features/network/interception.md">Guia de Interceptação de Requisições</a></p>
+</div>
+<h2 id="gerenciamento-de-dialogos-padrao-de-captura-de-evento">Gerenciamento de Diálogos: Padrão de Captura de Evento</h2>
+<p><strong>Comportamento crítico do CDP:</strong> Diálogos JavaScript <strong>bloqueiam todos os comandos CDP</strong> até serem tratados.</p>
+<p><strong>Solução arquitetural:</strong> O <code>ConnectionHandler</code> captura eventos <code>Page.javascriptDialogOpening</code> imediatamente, evitando que a automação trave.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># O Manipulador (Handler) armazena o evento de diálogo antes que o código do usuário rode</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="bp">self</span><span class="o">.</span><span class="n">_connection_handler</span><span class="o">.</span><span class="n">dialog</span>  <span class="c1"># Capturado pelo manipulador</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="c1"># A Aba (Tab) consulta o evento armazenado</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">has_dialog</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>    <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_connection_handler</span><span class="o">.</span><span class="n">dialog</span><span class="p">)</span>
+</span></code></pre></div>
+<p><strong>Por que esse design?</strong> O evento dispara antes que os callbacks do usuário sejam executados. Sem captura imediata, a automação entraria em impasse (deadlock) aguardando respostas CDP bloqueadas.</p>
+<h2 id="arquitetura-de-iframe-padrao-de-reutilizacao-de-aba">Arquitetura de IFrame: Padrão de Reutilização de Aba</h2>
+<p><strong>Insight chave:</strong> IFrames são <strong>alvos (targets) CDP de primeira classe</strong> → Representados como instâncias de <code>Tab</code>.</p>
+<p><strong>Algoritmo de resolução de alvo:</strong></p>
+<ol>
+<li>Extrai o atributo <code>src</code> do elemento iframe</li>
+<li>Consulta todos os alvos CDP via <code>Target.getTargets()</code></li>
+<li>Corresponde a URL do iframe ao <code>targetId</code> do alvo</li>
+<li>Verifica o registro singleton (<code>Browser._tabs_opened</code>)</li>
+<li>Retorna a instância existente ou cria + registra uma nova Aba (Tab)</li>
+</ol>
+<p><strong>Tradeoff (compromisso) de design:</strong> Abas de Iframe herdam todos os métodos da Aba (Tab), mas alguns falham (ex: <code>take_screenshot()</code>). A alternativa (classe <code>IFrame</code> dedicada) duplicaria 90% da API para um benefício mínimo.</p>
+<div class="admonition info">
+<p class="admonition-title">Trabalhando com IFrames</p>
+<p>Veja o <a href="../features/automation/iframes.md">Guia de Interação com IFrame</a> para padrões práticos, frames aninhados e armadilhas comuns.</p>
+</div>
+<h2 id="gerenciadores-de-contexto-limpeza-automatica-de-recursos">Gerenciadores de Contexto: Limpeza Automática de Recursos</h2>
+<p><strong>Padrão arquitetural:</strong> Restauração de estado + aquisição otimista de recursos.</p>
+<h3 id="principais-gerenciadores-de-contexto">Principais Gerenciadores de Contexto</h3>
+<table>
+<thead>
+<tr>
+<th>Gerenciador</th>
+<th>Padrão</th>
+<th>Característica Chave</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>expect_file_chooser()</code></td>
+<td>Restauração de estado</td>
+<td>Restaura a habilitação do domínio ao sair</td>
+</tr>
+<tr>
+<td><code>expect_download()</code></td>
+<td>Recursos temporários</td>
+<td>Limpeza automática de diretórios temporários</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Design do Seletor de Arquivo (File Chooser):</strong></p>
+<ul>
+<li>Habilita domínios necessários (<code>Page</code>, interceptação de seletor de arquivo)</li>
+<li>Registra <strong>callback temporário</strong> (auto-remove após o primeiro disparo)</li>
+<li>Restaura o estado original ao sair (se os domínios estavam desabilitados antes, desabilita novamente)</li>
+</ul>
+<p><strong>Design do Manipulador de Download:</strong></p>
+<ul>
+<li>Cria diretório temporário (ou usa o caminho fornecido)</li>
+<li>Usa <code>asyncio.Future</code> para coordenação (<code>will_begin_future</code>, <code>done_future</code>)</li>
+<li>Configuração em nível de navegador (downloads são por contexto, não por aba)</li>
+<li>Limpeza garantida via bloco <code>finally</code></li>
+</ul>
+<div class="admonition info">
+<p class="admonition-title">Operações Práticas de Arquivo</p>
+<p>Veja o <a href="../features/automation/file-operations.md">Guia de Operações de Arquivo</a> para padrões de upload, uso do seletor de arquivos e manipulação de downloads.</p>
+</div>
+<h2 id="ciclo-de-vida-fechamento-e-invalidacao-da-aba">Ciclo de Vida: Fechamento e Invalidação da Aba</h2>
+<p><strong>Cascata de fechamento da aba:</strong></p>
+<ol>
+<li>CDP fecha a aba do navegador (<code>Page.close</code>)</li>
+<li>A Aba (Tab) desregistra-se de <code>Browser._tabs_opened</code></li>
+<li>O WebSocket fecha automaticamente (alvo CDP destruído)</li>
+<li>Callbacks de evento sofrem coleta de lixo (garbage-collected)</li>
+</ol>
+<p><strong>Comportamento pós-fechamento:</strong> A instância da Aba se torna <strong>inválida</strong> - operações futuras falharão (WebSocket fechado).</p>
+<p><strong>Decisão de design:</strong> Sem flag <code>_closed</code> explícita. Os usuários gerenciam o ciclo de vida. A alternativa (rastreamento de estado) adiciona sobrecarga (overhead) para um benefício marginal de segurança.</p>
+<h2 id="principais-decisoes-arquiteturais">Principais Decisões Arquiteturais</h2>
+<h3 id="estrategia-de-websocket-por-aba">Estratégia de WebSocket por Aba</h3>
+<p><strong>Design escolhido:</strong> Cada Aba (Tab) cria seu próprio ConnectionHandler com uma conexão WebSocket dedicada para <code>ws://localhost:port/devtools/page/{targetId}</code>.</p>
+<p><strong>Justificativa:</strong></p>
+<p>O CDP suporta <strong>dois modelos de conexão</strong>:</p>
+<ol>
+<li><strong>Nível de Navegador</strong>: Conexão única para <code>ws://localhost:port/devtools/browser/...</code> (usada pela instância do Navegador)</li>
+<li><strong>Nível de Aba</strong>: Conexões por aba para <code>ws://localhost:port/devtools/page/{targetId}</code> (usadas pelas instâncias de Aba)</li>
+</ol>
+<p>O Pydoll usa <strong>ambos</strong>:</p>
+<ul>
+<li>O <strong>Navegador (Browser)</strong> tem seu próprio ConnectionHandler para operações em todo o navegador (contextos, downloads, eventos em nível de navegador)</li>
+<li><strong>Cada Aba (Tab)</strong> tem seu próprio ConnectionHandler para operações específicas da aba (navegação, localização de elementos, eventos de aba)</li>
+</ul>
+<p><strong>Benefícios de WebSockets por aba:</strong></p>
+<ul>
+<li><strong>Paralelismo verdadeiro</strong>: Múltiplas abas podem executar comandos CDP simultaneamente sem esperar</li>
+<li><strong>Fluxos de eventos independentes</strong>: Cada aba recebe apenas seus próprios eventos (sem necessidade de filtragem)</li>
+<li><strong>Falhas isoladas</strong>: Problemas de conexão em uma aba não afetam outras</li>
+<li><strong>Roteamento simplificado</strong>: Sem necessidade de demultiplexar mensagens por targetId</li>
+</ul>
+<p><strong>Tradeoff (Compromisso):</strong> Mais conexões abertas (uma por aba), mas o CDP e os navegadores lidam com isso eficientemente. Para 10 abas, são 11 conexões no total (1 navegador + 10 abas), o que é insignificante comparado às conexões HTTP que as próprias abas criam.</p>
+<div class="admonition info">
+<p class="admonition-title">Comunicação Navegador vs. Aba</p>
+<p>Veja a <a href="../browser-domain/">Arquitetura do Domínio do Navegador</a> para detalhes sobre o ConnectionHandler em nível de navegador e como funciona a coordenação Navegador/Aba.</p>
+</div>
+<h3 id="necessidade-da-referencia-ao-navegador">Necessidade da Referência ao Navegador</h3>
+<p><strong>Por que a Aba armazena a referência <code>_browser</code>:</strong>
+- Consultas de contexto (<code>browser_context_id</code> para cookies)
+- Operações em nível de navegador (comportamento de download, registro de iframe)
+- Acesso à configuração (<code>browser.options.page_load_state</code>)</p>
+<h3 id="escolhas-de-design-da-api">Escolhas de Design da API</h3>
+<table>
+<thead>
+<tr>
+<th>Escolha</th>
+<th>Justificativa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Propriedades Assíncronas</strong> (<code>current_url</code>, <code>page_source</code>)</td>
+<td>Sinaliza dados ao vivo + custo CDP</td>
+</tr>
+<tr>
+<td><strong>Métodos <code>enable</code>/<code>disable</code> separados</strong></td>
+<td>Explícito sobre implícito, corresponde à nomenclatura CDP</td>
+</tr>
+<tr>
+<td><strong>Sem flag <code>_closed</code></strong></td>
+<td>Usuários gerenciam ciclo de vida, reduz sobrecarga</td>
+</tr>
+<tr>
+<td><strong>Palavra-chave <code>argument</code> em scripts</strong></td>
+<td>Compatibilidade com Selenium, caminho de migração</td>
+</tr>
+</tbody>
+</table>
+<h2 id="relacionamento-com-outros-dominios">Relacionamento com Outros Domínios</h2>
+<p>O domínio da Aba (Tab) fica no <strong>centro</strong> da arquitetura do Pydoll:</p>
+<pre class="mermaid"><code>graph TD
+    Browser[Domínio do Navegador&lt;br/&gt;Ciclo de Vida &amp; Processo] --&gt;|cria| Tab[Domínio da Aba&lt;br/&gt;Interface de Automação]
+    Tab --&gt;|usa| ConnectionHandler[ConnectionHandler&lt;br/&gt;Comunicação CDP]
+    Tab --&gt;|cria| WebElement[Domínio do WebElement&lt;br/&gt;Interação com Elemento]
+    Tab --&gt;|herda| FindMixin[FindElementsMixin&lt;br/&gt;Estratégias de Localização]
+    Tab --&gt;|usa| Commands[Comandos CDP&lt;br/&gt;Protocolo Tipado]
+
+    ConnectionHandler --&gt;|despacha| Events[Sistema de Eventos]
+    Tab -.-&gt;|referencia| Browser
+    WebElement -.-&gt;|referencia| ConnectionHandler</code></pre>
+<p><strong>Relacionamentos chave:</strong></p>
+<ol>
+<li><strong>Navegador → Aba</strong>: Pai-filho. O Navegador gerencia o ciclo de vida da Aba e o estado compartilhado.</li>
+<li><strong>Aba → ConnectionHandler</strong>: Composição. A Aba delega a comunicação CDP.</li>
+<li><strong>Aba → WebElement</strong>: Fábrica. A Aba cria elementos a partir de strings <code>objectId</code>.</li>
+<li><strong>Aba ← FindElementsMixin</strong>: Herança. A Aba ganha métodos de localização de elementos.</li>
+<li><strong>Aba ↔ Navegador</strong>: Referência bidirecional. A Aba consulta o navegador para informações de contexto.</li>
+</ol>
+<h2 id="resumo-filosofia-de-design">Resumo: Filosofia de Design</h2>
+<p>O domínio da Aba (Tab) prioriza a <strong>ergonomia da API</strong> e a <strong>correção (correctness)</strong> sobre micro-otimizações:</p>
+<ul>
+<li><strong>Padrão Façade</strong> abstrai a complexidade do CDP</li>
+<li><strong>Gerenciamento de estado</strong> via flags explícitas previne habilitação dupla</li>
+<li><strong>Gerenciamento de recursos</strong> através de gerenciadores de contexto</li>
+<li><strong>Coordenação de eventos</strong> com execução em background (não-bloqueante)</li>
+</ul>
+<p><strong>Principais tradeoffs (compromissos):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Decisão</th>
+<th>Benefício</th>
+<th>Custo</th>
+<th>Veredito</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>WebSocket por aba</td>
+<td>Paralelismo verdadeiro</td>
+<td>Mais conexões</td>
+<td>Justificado</td>
+</tr>
+<tr>
+<td>Herdar FindElementsMixin</td>
+<td>API limpa</td>
+<td>Acoplamento forte</td>
+<td>Justificado</td>
+</tr>
+<tr>
+<td>Inicialização preguiçosa (lazy) de Request</td>
+<td>Eficiência de memória</td>
+<td>Sobrecarga (overhead) de propriedade</td>
+<td>Justificado</td>
+</tr>
+</tbody>
+</table>
+<h2 id="leitura-adicional">Leitura Adicional</h2>
+<p><strong>Guias práticos:</strong></p>
+<ul>
+<li><a href="../features/automation/tabs.md">Gerenciamento de Abas</a> - Padrões multi-aba, ciclo de vida, concorrência</li>
+<li><a href="../features/element-finding.md">Localização de Elementos</a> - Seletores e travessia do DOM</li>
+<li><a href="../features/advanced/event-system.md">Sistema de Eventos</a> - Monitoramento de navegador em tempo real</li>
+</ul>
+<p><strong>Análises profundas de arquitetura:</strong></p>
+<ul>
+<li><a href="../event-architecture/">Arquitetura de Eventos</a> - Mecanismos internos de WebSocket e roteamento de eventos</li>
+<li><a href="../find-elements-mixin/">FindElements Mixin</a> - Algoritmos de resolução de seletores</li>
+<li><a href="../browser-domain/">Domínio do Navegador</a> - Gerenciamento de processos e contextos</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../../../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.indexes", "navigation.expand", "navigation.path", "navigation.top", "toc.follow", "content.code.copy", "content.code.select", "content.tooltips", "search.highlight", "search.suggest"], "search": "../../../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../../assets/javascripts/bundle.f55a23d4.min.js"></script>
+      
+        <script src="../../../../resources/scripts/termynal.js"></script>
+      
+        <script src="../../../../resources/scripts/extra.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@10.0.0/dist/mermaid.min.js"></script>
+      
+    
+  </body>
+</html>

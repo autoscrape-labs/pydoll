@@ -1,0 +1,5368 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://pydoll.tech/docs/pt/deep-dive/network/http-proxies/">
+      
+      
+        <link rel="prev" href="../network-fundamentals/">
+      
+      
+        <link rel="next" href="../socks-proxies/">
+      
+      
+      <link rel="icon" href="../../../../resources/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.22">
+    
+    
+      
+        <title>Proxies HTTP/HTTPS - Pydoll - Biblioteca de Automação Web Assíncrona</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.84d31ad4.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../resources/stylesheets/termynal.css">
+    
+      <link rel="stylesheet" href="../../../../resources/stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#arquitetura-de-proxy-httphttps" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../../" title="Pydoll - Biblioteca de Automação Web Assíncrona" class="md-header__button md-logo" aria-label="Pydoll - Biblioteca de Automação Web Assíncrona" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11 15H6l7-14v8h5l-7 14z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Pydoll - Biblioteca de Automação Web Assíncrona
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Proxies HTTP/HTTPS
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Dark Mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dark Mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6m0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4M7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Light Mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Light Mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/docs/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/docs/pt/" hreflang="pt" class="md-select__link">
+              Português (BR)
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/docs/zh/" hreflang="zh" class="md-select__link">
+              中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/autoscrape-labs/pydoll" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    autoscrape-labs/pydoll
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Pydoll
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../features/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Recursos
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Análise Profunda
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../api/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Referência da API
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../" title="Pydoll - Biblioteca de Automação Web Assíncrona" class="md-nav__button md-logo" aria-label="Pydoll - Biblioteca de Automação Web Assíncrona" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11 15H6l7-14v8h5l-7 14z"/></svg>
+
+    </a>
+    Pydoll - Biblioteca de Automação Web Assíncrona
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/autoscrape-labs/pydoll" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    autoscrape-labs/pydoll
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Pydoll
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../features/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    Recursos
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Recursos
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/core-concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Conceitos Fundamentais
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/element-finding/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Pesquisa de Elementos
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Automação
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_4">
+            <span class="md-nav__icon md-icon"></span>
+            Automação
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/automation/human-interactions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Interações Humanas
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/automation/keyboard-control/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Controle de Teclado
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/automation/file-operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Operações com Arquivos
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/automation/iframes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    IFrames
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/automation/screenshots-and-pdfs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Capturas e PDF
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Rede
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_5">
+            <span class="md-nav__icon md-icon"></span>
+            Rede
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/network/monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Monitoramento de Rede
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/network/interception/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Interceptação de Requisições
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/network/http-requests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Requisições HTTP no Contexto do Navegador
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_6" id="__nav_2_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Gerenciamento do Navegador
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_6">
+            <span class="md-nav__icon md-icon"></span>
+            Gerenciamento do Navegador
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/browser-management/tabs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Gerenciamento de Abas
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/browser-management/contexts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Contextos do Navegador
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/browser-management/cookies-sessions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Cookies e Sessões
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_7" id="__nav_2_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Configuração
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_7">
+            <span class="md-nav__icon md-icon"></span>
+            Configuração
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/configuration/browser-options/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Opções do Navegador
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/configuration/browser-preferences/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Preferências do Navegador
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/configuration/proxy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Configuração de Proxy
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_8" id="__nav_2_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Avançado
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_8">
+            <span class="md-nav__icon md-icon"></span>
+            Avançado
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/advanced/behavioral-captcha-bypass/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Bypass de Captcha Comportamental
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/advanced/event-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Sistema de Eventos
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/advanced/remote-connections/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Conexões Remotas
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    Análise Profunda
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Análise Profunda
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../fundamentals/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    Fundamentos Centrais
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_2" id="__nav_3_2_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            Fundamentos Centrais
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fundamentals/cdp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Protocolo Chrome DevTools
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fundamentals/connection-layer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Camada de Conexão
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fundamentals/typing-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Sistema de Tipos Python
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../architecture/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    Arquitetura Interna
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_3" id="__nav_3_3_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3">
+            <span class="md-nav__icon md-icon"></span>
+            Arquitetura Interna
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/browser-domain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Domínio do Navegador
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/tab-domain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Domínio da Aba
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/webelement-domain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Domínio do WebElement
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/find-elements-mixin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Mixin FindElements
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/event-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Arquitetura de Eventos
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/browser-requests-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Arquitetura de Requisições do Navegador
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    Rede e Segurança
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_4" id="__nav_3_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3_4">
+            <span class="md-nav__icon md-icon"></span>
+            Rede e Segurança
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../network-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Fundamentos de Rede
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Proxies HTTP/HTTPS
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Proxies HTTP/HTTPS
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#introducao-proxy-de-camada-7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Introdução: Proxy de Camada 7
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#operacao-do-proxy-http-encaminhamento-de-requisicao" class="md-nav__link">
+    <span class="md-ellipsis">
+      Operação do Proxy HTTP: Encaminhamento de Requisição
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Operação do Proxy HTTP: Encaminhamento de Requisição">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#o-fluxo-de-requisicao-do-proxy-http" class="md-nav__link">
+    <span class="md-ellipsis">
+      O Fluxo de Requisição do Proxy HTTP
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#capacidades-e-limitacoes-chave" class="md-nav__link">
+    <span class="md-ellipsis">
+      Capacidades e Limitações Chave
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#o-metodo-http-connect-tunelamento-https" class="md-nav__link">
+    <span class="md-ellipsis">
+      O Método HTTP CONNECT: Tunelamento HTTPS
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="O Método HTTP CONNECT: Tunelamento HTTPS">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#formato-da-requisicao-connect" class="md-nav__link">
+    <span class="md-ellipsis">
+      Formato da Requisição CONNECT
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#formato-da-resposta-connect" class="md-nav__link">
+    <span class="md-ellipsis">
+      Formato da Resposta CONNECT
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#o-que-acontece-apos-o-connect-ser-bem-sucedido" class="md-nav__link">
+    <span class="md-ellipsis">
+      O que Acontece Após o CONNECT ser Bem-sucedido
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#connect-vs-proxy-http-direto" class="md-nav__link">
+    <span class="md-ellipsis">
+      CONNECT vs Proxy HTTP Direto
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implicacoes-de-seguranca-do-connect" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implicações de Segurança do CONNECT
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#connect-para-protocolos-nao-https" class="md-nav__link">
+    <span class="md-ellipsis">
+      CONNECT para Protocolos Não-HTTPS
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#autenticacao-de-proxy-http-controle-de-acesso" class="md-nav__link">
+    <span class="md-ellipsis">
+      Autenticação de Proxy HTTP: Controle de Acesso
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Autenticação de Proxy HTTP: Controle de Acesso">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fluxo-de-autenticacao" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fluxo de Autenticação
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#esquemas-de-autenticacao-comparacao-detalhada" class="md-nav__link">
+    <span class="md-ellipsis">
+      Esquemas de Autenticação: Comparação Detalhada
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#autenticacao-basic-a-mais-simples-e-mais-fraca" class="md-nav__link">
+    <span class="md-ellipsis">
+      Autenticação Basic: A Mais Simples (e Mais Fraca)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#autenticacao-digest-desafio-resposta" class="md-nav__link">
+    <span class="md-ellipsis">
+      Autenticação Digest: Desafio-Resposta
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ntlm-autenticacao-integrada-do-windows" class="md-nav__link">
+    <span class="md-ellipsis">
+      NTLM: Autenticação Integrada do Windows
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#negotiate-kerberos-sso-corporativo" class="md-nav__link">
+    <span class="md-ellipsis">
+      Negotiate (Kerberos): SSO Corporativo
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuracao-pratica-no-pydoll" class="md-nav__link">
+    <span class="md-ellipsis">
+      Configuração Prática no Pydoll
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#protocolos-http-modernos-e-proxying" class="md-nav__link">
+    <span class="md-ellipsis">
+      Protocolos HTTP Modernos e Proxying
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Protocolos HTTP Modernos e Proxying">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#proxies-http2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Proxies HTTP/2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#proxies-http3-quic" class="md-nav__link">
+    <span class="md-ellipsis">
+      Proxies HTTP/3 (QUIC)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#negociacao-de-protocolo-e-ataques-de-downgrade" class="md-nav__link">
+    <span class="md-ellipsis">
+      Negociação de Protocolo e Ataques de Downgrade
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resumo-e-pontos-chave" class="md-nav__link">
+    <span class="md-ellipsis">
+      Resumo e Pontos Chave
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Resumo e Pontos Chave">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#conceitos-centrais-cobertos" class="md-nav__link">
+    <span class="md-ellipsis">
+      Conceitos Centrais Cobertos
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implicacoes-de-seguranca" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implicações de Segurança
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quando-usar-proxies-http" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quando Usar Proxies HTTP
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#proxy-http-vs-socks5-matriz-de-decisao-rapida" class="md-nav__link">
+    <span class="md-ellipsis">
+      Proxy HTTP vs SOCKS5: Matriz de Decisão Rápida
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#leitura-adicional-e-proximos-passos" class="md-nav__link">
+    <span class="md-ellipsis">
+      Leitura Adicional e Próximos Passos
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Leitura Adicional e Próximos Passos">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#documentacao-relacionada" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documentação Relacionada
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#referencias-externas" class="md-nav__link">
+    <span class="md-ellipsis">
+      Referências Externas
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ferramentas-de-teste-pratico" class="md-nav__link">
+    <span class="md-ellipsis">
+      Ferramentas de Teste Prático
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#topicos-avancados-alem-deste-documento" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tópicos Avançados (Além Deste Documento)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pensamentos-finais" class="md-nav__link">
+    <span class="md-ellipsis">
+      Pensamentos Finais
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../socks-proxies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Proxies SOCKS
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../proxy-detection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Detecção de Proxy
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../build-proxy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Construindo Servidores Proxy
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../proxy-legal/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Legal & Ética
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../fingerprinting/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    Fingerprinting
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_5" id="__nav_3_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_5">
+            <span class="md-nav__icon md-icon"></span>
+            Fingerprinting
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fingerprinting/network-fingerprinting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Fingerprinting de Rede
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fingerprinting/browser-fingerprinting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Fingerprinting do Navegador
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fingerprinting/behavioral-fingerprinting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Fingerprinting Comportamental
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fingerprinting/evasion-techniques/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Técnicas de Evasão
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_6" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../guides/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    Guias Práticos
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_6" id="__nav_3_6_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_6">
+            <span class="md-nav__icon md-icon"></span>
+            Guias Práticos
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/selectors-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Seletores CSS vs XPath
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../api/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    Referência da API
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Referência da API
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Navegador
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_2">
+            <span class="md-nav__icon md-icon"></span>
+            Navegador
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/browser/chrome/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Chrome
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/browser/edge/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Edge
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/browser/options/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Opções
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/browser/tab/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Aba
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/browser/requests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Requisições
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/browser/managers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Gerenciadores
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Elementos
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_3">
+            <span class="md-nav__icon md-icon"></span>
+            Elementos
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/elements/web_element/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Elemento Web
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/elements/mixins/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Mixins
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Conexão
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_4">
+            <span class="md-nav__icon md-icon"></span>
+            Conexão
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/connection/connection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Manipulador de Conexão
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/connection/managers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Gerenciadores
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../api/commands/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    Comandos
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4_5" id="__nav_4_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_5">
+            <span class="md-nav__icon md-icon"></span>
+            Comandos
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/commands/browser/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Navegador
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/commands/dom/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    DOM
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/commands/input/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Entrada
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/commands/network/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Rede
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/commands/page/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Página
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/commands/runtime/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Tempo de Execução
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/commands/storage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Armazenamento
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/commands/target/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Alvo
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/commands/fetch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Fetch
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_6" id="__nav_4_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Protocolo
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_6">
+            <span class="md-nav__icon md-icon"></span>
+            Protocolo
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/base/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Tipos Base
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/browser/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Navegador
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/dom/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    DOM
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/fetch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Fetch
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/input/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Entrada
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/network/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Rede
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/page/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Página
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/runtime/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Tempo de Execução
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/storage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Armazenamento
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/target/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Alvo
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_7" id="__nav_4_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Núcleo
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_7">
+            <span class="md-nav__icon md-icon"></span>
+            Núcleo
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/core/constants/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Constantes
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/core/exceptions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Exceções
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/core/utils/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Utilitários
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#introducao-proxy-de-camada-7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Introdução: Proxy de Camada 7
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#operacao-do-proxy-http-encaminhamento-de-requisicao" class="md-nav__link">
+    <span class="md-ellipsis">
+      Operação do Proxy HTTP: Encaminhamento de Requisição
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Operação do Proxy HTTP: Encaminhamento de Requisição">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#o-fluxo-de-requisicao-do-proxy-http" class="md-nav__link">
+    <span class="md-ellipsis">
+      O Fluxo de Requisição do Proxy HTTP
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#capacidades-e-limitacoes-chave" class="md-nav__link">
+    <span class="md-ellipsis">
+      Capacidades e Limitações Chave
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#o-metodo-http-connect-tunelamento-https" class="md-nav__link">
+    <span class="md-ellipsis">
+      O Método HTTP CONNECT: Tunelamento HTTPS
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="O Método HTTP CONNECT: Tunelamento HTTPS">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#formato-da-requisicao-connect" class="md-nav__link">
+    <span class="md-ellipsis">
+      Formato da Requisição CONNECT
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#formato-da-resposta-connect" class="md-nav__link">
+    <span class="md-ellipsis">
+      Formato da Resposta CONNECT
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#o-que-acontece-apos-o-connect-ser-bem-sucedido" class="md-nav__link">
+    <span class="md-ellipsis">
+      O que Acontece Após o CONNECT ser Bem-sucedido
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#connect-vs-proxy-http-direto" class="md-nav__link">
+    <span class="md-ellipsis">
+      CONNECT vs Proxy HTTP Direto
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implicacoes-de-seguranca-do-connect" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implicações de Segurança do CONNECT
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#connect-para-protocolos-nao-https" class="md-nav__link">
+    <span class="md-ellipsis">
+      CONNECT para Protocolos Não-HTTPS
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#autenticacao-de-proxy-http-controle-de-acesso" class="md-nav__link">
+    <span class="md-ellipsis">
+      Autenticação de Proxy HTTP: Controle de Acesso
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Autenticação de Proxy HTTP: Controle de Acesso">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fluxo-de-autenticacao" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fluxo de Autenticação
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#esquemas-de-autenticacao-comparacao-detalhada" class="md-nav__link">
+    <span class="md-ellipsis">
+      Esquemas de Autenticação: Comparação Detalhada
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#autenticacao-basic-a-mais-simples-e-mais-fraca" class="md-nav__link">
+    <span class="md-ellipsis">
+      Autenticação Basic: A Mais Simples (e Mais Fraca)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#autenticacao-digest-desafio-resposta" class="md-nav__link">
+    <span class="md-ellipsis">
+      Autenticação Digest: Desafio-Resposta
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ntlm-autenticacao-integrada-do-windows" class="md-nav__link">
+    <span class="md-ellipsis">
+      NTLM: Autenticação Integrada do Windows
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#negotiate-kerberos-sso-corporativo" class="md-nav__link">
+    <span class="md-ellipsis">
+      Negotiate (Kerberos): SSO Corporativo
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuracao-pratica-no-pydoll" class="md-nav__link">
+    <span class="md-ellipsis">
+      Configuração Prática no Pydoll
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#protocolos-http-modernos-e-proxying" class="md-nav__link">
+    <span class="md-ellipsis">
+      Protocolos HTTP Modernos e Proxying
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Protocolos HTTP Modernos e Proxying">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#proxies-http2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Proxies HTTP/2
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#proxies-http3-quic" class="md-nav__link">
+    <span class="md-ellipsis">
+      Proxies HTTP/3 (QUIC)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#negociacao-de-protocolo-e-ataques-de-downgrade" class="md-nav__link">
+    <span class="md-ellipsis">
+      Negociação de Protocolo e Ataques de Downgrade
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resumo-e-pontos-chave" class="md-nav__link">
+    <span class="md-ellipsis">
+      Resumo e Pontos Chave
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Resumo e Pontos Chave">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#conceitos-centrais-cobertos" class="md-nav__link">
+    <span class="md-ellipsis">
+      Conceitos Centrais Cobertos
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implicacoes-de-seguranca" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implicações de Segurança
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quando-usar-proxies-http" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quando Usar Proxies HTTP
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#proxy-http-vs-socks5-matriz-de-decisao-rapida" class="md-nav__link">
+    <span class="md-ellipsis">
+      Proxy HTTP vs SOCKS5: Matriz de Decisão Rápida
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#leitura-adicional-e-proximos-passos" class="md-nav__link">
+    <span class="md-ellipsis">
+      Leitura Adicional e Próximos Passos
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Leitura Adicional e Próximos Passos">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#documentacao-relacionada" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documentação Relacionada
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#referencias-externas" class="md-nav__link">
+    <span class="md-ellipsis">
+      Referências Externas
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ferramentas-de-teste-pratico" class="md-nav__link">
+    <span class="md-ellipsis">
+      Ferramentas de Teste Prático
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#topicos-avancados-alem-deste-documento" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tópicos Avançados (Além Deste Documento)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pensamentos-finais" class="md-nav__link">
+    <span class="md-ellipsis">
+      Pensamentos Finais
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="arquitetura-de-proxy-httphttps">Arquitetura de Proxy HTTP/HTTPS</h1>
+<p>Este documento explora em profundidade os proxies HTTP e HTTPS, o protocolo de proxy mais comum, mas também o mais <strong>limitado</strong>. Apesar de sua onipresença (quase toda rede corporativa os utiliza), os proxies HTTP têm limitações fundamentais de segurança e arquitetura que os tornam inadequados para muitos casos de uso críticos de privacidade.</p>
+<p>Entender como eles funcionam no nível do protocolo, suas implicações de segurança, manipulação de cabeçalhos, semântica de cache e variações modernas do protocolo (HTTP/2, HTTP/3) é crucial para a seleção informada de proxy e automação de navegador eficaz.</p>
+<div class="admonition info">
+<p class="admonition-title">Navegação do Módulo</p>
+<ul>
+<li><strong><a href="../network-fundamentals/">← Fundamentos de Rede</a></strong> - TCP/IP, UDP, modelo OSI</li>
+<li><strong><a href="../">← Visão Geral de Rede e Segurança</a></strong> - Introdução do módulo</li>
+<li><strong><a href="../socks-proxies/">→ Proxies SOCKS</a></strong> - Alternativa mais segura</li>
+<li><strong><a href="../proxy-detection/">→ Detecção de Proxy</a></strong> - Como evitar detecção</li>
+</ul>
+<p>Para configuração prática, veja <strong><a href="../../../features/configuration/proxy/">Configuração de Proxy</a></strong>.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Limitações de Segurança</p>
+<p>Proxies HTTP operam na <strong>Camada 7</strong> (Camada de Aplicação no modelo OSI). Este posicionamento lhes dá:</p>
+<p><strong>Visibilidade total</strong> do tráfego HTTP não criptografado (URLs, cabeçalhos, corpos)
+<strong>Capacidades de modificação</strong> (podem alterar requisições/respostas em trânsito)
+<strong>Cache inteligente</strong> (entende a semântica HTTP)</p>
+<p>Mas também significa que eles:</p>
+<p><strong>Podem ler, registrar e modificar</strong> todo o tráfego HTTP não criptografado
+<strong>Não podem proxyar protocolos não-HTTP</strong> (FTP, SSH, SMTP, protocolos customizados)
+<strong>Devem terminar o TLS</strong> para inspecionar HTTPS (quebrando a criptografia de ponta a ponta)</p>
+<p>Para privacidade verdadeira, use <strong>SOCKS5</strong> ou garanta que a criptografia TLS de ponta a ponta permaneça intacta.</p>
+</div>
+<h2 id="introducao-proxy-de-camada-7">Introdução: Proxy de Camada 7</h2>
+<p>Proxies HTTP são <strong>proxies da camada de aplicação</strong>, operando na <strong>Camada 7 do modelo OSI</strong>. Diferente dos proxies SOCKS (Camada 5) que cegamente encaminham bytes, os proxies HTTP <strong>entendem a semântica do protocolo HTTP</strong>. Eles analisam requisições, interpretam cabeçalhos, aplicam lógica de cache e podem modificar o tráfego com base em regras HTTP.</p>
+<p><strong>Contexto Histórico:</strong></p>
+<p>Proxies HTTP surgiram em meados dos anos 1990 conforme as redes corporativas cresciam e as organizações precisavam de:</p>
+<ol>
+<li><strong>Filtragem de conteúdo</strong> - Bloquear sites inapropriados</li>
+<li><strong>Otimização de banda</strong> - Cachear recursos frequentemente acessados</li>
+<li><strong>Controle de acesso</strong> - Aplicar políticas de uso</li>
+<li><strong>Segurança</strong> - Inspecionar tráfego em busca de malware</li>
+</ol>
+<p>A especificação HTTP/1.0 (RFC 1945, 1996) formalizou o comportamento do proxy, e o HTTP/1.1 (RFC 2616, 1999, atualizado por RFC 7230-7237) o refinou significativamente. Estes RFCs definem como proxies devem lidar com cache, conexões persistentes e semântica de encaminhamento.</p>
+<p><strong>Por que o Posicionamento na Camada de Aplicação Importa:</strong></p>
+<p>Operar na Camada 7 significa que os proxies HTTP:</p>
+<ul>
+<li><strong>Veem requisições HTTP completas</strong> - Método, URL, cabeçalhos, corpo (se não criptografado)</li>
+<li><strong>Podem tomar decisões inteligentes</strong> - Cachear baseado em <code>Cache-Control</code>, reescrever URLs, comprimir respostas</li>
+<li><strong>Deixam fingerprints (impressões digitais)</strong> - Adicionam cabeçalhos como <code>Via</code>, <code>X-Forwarded-For</code> revelando o uso de proxy</li>
+<li><strong>São específicos do protocolo</strong> - Podem proxyar apenas HTTP/HTTPS, não outros protocolos</li>
+</ul>
+<p>Essa integração profunda com o HTTP é tanto sua <strong>força</strong> (rica funcionalidade) quanto sua <strong>fraqueza</strong> (escopo limitado, preocupações com privacidade).</p>
+<h2 id="operacao-do-proxy-http-encaminhamento-de-requisicao">Operação do Proxy HTTP: Encaminhamento de Requisição</h2>
+<p>Um proxy HTTP intercepta requisições HTTP de clientes, processa-as e as encaminha para os servidores de destino. O proxy atua tanto como um <strong>servidor</strong> (para o cliente) quanto como um <strong>cliente</strong> (para o servidor de destino), mantendo duas conexões TCP separadas.</p>
+<h3 id="o-fluxo-de-requisicao-do-proxy-http">O Fluxo de Requisição do Proxy HTTP</h3>
+<pre class="mermaid"><code>sequenceDiagram
+    participant Client as Navegador Cliente
+    participant Proxy as Proxy HTTP
+    participant Server as Servidor de Destino
+
+    Note over Client: Cliente configurado para usar proxy&lt;br/&gt;(configuração explícita de proxy)
+
+    Client-&gt;&gt;Proxy: GET http://example.com/page HTTP/1.1&lt;br/&gt;Host: example.com&lt;br/&gt;User-Agent: Mozilla/5.0
+    Note over Client,Proxy: Conexão TCP #1:&lt;br/&gt;Cliente ⟷ Proxy
+
+    Note over Proxy: Proxy recebe requisição HTTP COMPLETA&lt;br/&gt;Analisa método, URL, cabeçalhos, corpo
+
+    Note over Proxy: Processamento do proxy:&lt;br/&gt;1. Validar autenticação&lt;br/&gt;2. Checar cache (se GET)&lt;br/&gt;3. Aplicar controle de acesso&lt;br/&gt;4. Modificar cabeçalhos
+
+    Proxy-&gt;&gt;Proxy: Adicionar cabeçalhos de proxy:&lt;br/&gt;Via: 1.1 proxy.example.com&lt;br/&gt;X-Forwarded-For: 192.168.1.100&lt;br/&gt;X-Real-IP: 192.168.1.100
+
+    Proxy-&gt;&gt;Server: GET /page HTTP/1.1&lt;br/&gt;Host: example.com&lt;br/&gt;Via: 1.1 proxy.example.com&lt;br/&gt;X-Forwarded-For: 192.168.1.100
+    Note over Proxy,Server: Conexão TCP #2:&lt;br/&gt;Proxy ⟷ Servidor
+
+    Server-&gt;&gt;Proxy: HTTP/1.1 200 OK&lt;br/&gt;Content-Type: text/html&lt;br/&gt;Cache-Control: max-age=3600&lt;br/&gt;[corpo da resposta]
+
+    Note over Proxy: Processamento do proxy:&lt;br/&gt;1. Cachear resposta (se cacheável)&lt;br/&gt;2. Filtrar conteúdo (malware, anúncios)&lt;br/&gt;3. Comprimir (se Accept-Encoding)&lt;br/&gt;4. Registrar transação
+
+    Proxy-&gt;&gt;Client: HTTP/1.1 200 OK&lt;br/&gt;Content-Type: text/html&lt;br/&gt;Via: 1.1 proxy.example.com&lt;br/&gt;X-Cache: HIT&lt;br/&gt;[corpo possivelmente modificado]
+
+    Note over Client: Cliente vê a resposta&lt;br/&gt;Pode incluir cabeçalhos de proxy</code></pre>
+<p><strong>Detalhamento:</strong></p>
+<p><strong>1. Iniciação da Requisição (Cliente → Proxy)</strong></p>
+<p>O cliente envia uma <strong>requisição HTTP completa</strong> para o proxy, incluindo a <strong>URI absoluta</strong> (não apenas o caminho):</p>
+<div class="language-http highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">GET</span> <span class="nn">http://example.com/page</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="na">Host</span><span class="o">:</span> <span class="l">example.com</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="na">User-Agent</span><span class="o">:</span> <span class="l">Mozilla/5.0 (Windows NT 10.0; Win64; x64)</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="na">Accept</span><span class="o">:</span> <span class="l">text/html,application/xhtml+xml</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="na">Accept-Encoding</span><span class="o">:</span> <span class="l">gzip, deflate</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="na">Connection</span><span class="o">:</span> <span class="l">keep-alive</span>
+</span></code></pre></div>
+<p><strong>Diferença chave de requisições diretas:</strong> A linha <code>GET</code> inclui a <strong>URL completa</strong> (<code>http://example.com/page</code>), não apenas o caminho (<code>/page</code>). Isso diz ao proxy para onde encaminhar a requisição.</p>
+<div class="admonition tip">
+<p class="admonition-title">URIs Absolutas vs Relativas</p>
+<p><strong>Direto ao servidor</strong>: <code>GET /page HTTP/1.1</code>
+<strong>Através de proxy</strong>: <code>GET http://example.com/page HTTP/1.1</code></p>
+<p>Essa diferença é como o proxy sabe o destino. O cabeçalho <code>Host</code> sozinho não é suficiente porque o proxy pode estar encaminhando para múltiplos domínios.</p>
+</div>
+<p><strong>2. Processamento do Proxy - Análise da Requisição</strong></p>
+<p>O proxy <strong>analisa toda a requisição HTTP</strong> e toma decisões:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Lógica simplificada de processamento do proxy</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">process_request</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="c1"># 1. Checagem de autenticação</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">authenticate_user</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Proxy-Authorization&#39;</span><span class="p">)):</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>        <span class="k">return</span> <span class="n">HTTP_407_PROXY_AUTH_REQUIRED</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="c1"># 2. Controle de acesso</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="k">if</span> <span class="n">is_blocked</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">url</span><span class="p">):</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>        <span class="k">return</span> <span class="n">HTTP_403_FORBIDDEN</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="c1"># 3. Checagem de cache (para requisições GET)</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;GET&#39;</span><span class="p">:</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>        <span class="n">cached</span> <span class="o">=</span> <span class="n">check_cache</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>        <span class="k">if</span> <span class="n">cached</span> <span class="ow">and</span> <span class="n">not_expired</span><span class="p">(</span><span class="n">cached</span><span class="p">):</span>
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>            <span class="k">return</span> <span class="n">cached</span>  <span class="c1"># Cache hit - não precisa de requisição ao servidor</span>
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>    <span class="c1"># 4. Modificação de cabeçalho</span>
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>    <span class="n">request</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;Via&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;1.1 proxy.example.com&#39;</span>
+</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>    <span class="n">request</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;X-Forwarded-For&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">client_ip</span>
+</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>    <span class="n">request</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;X-Real-IP&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">client_ip</span>
+</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>
+</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>    <span class="c1"># 5. Encaminhar ao servidor</span>
+</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>    <span class="k">return</span> <span class="n">forward_to_server</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+</span></code></pre></div>
+<p><strong>3. Encaminhamento da Requisição (Proxy → Servidor)</strong></p>
+<p>O proxy estabelece uma <strong>conexão TCP separada</strong> com o servidor de destino e encaminha a requisição. O proxy pode modificar cabeçalhos:</p>
+<p><strong>Cabeçalhos adicionados pelo proxy:</strong></p>
+<ul>
+<li><code>Via: 1.1 proxy.example.com</code> - Identifica o proxy na cadeia (RFC 7230)</li>
+<li><code>X-Forwarded-For: 192.168.1.100</code> - IP original do cliente (padrão de facto)</li>
+<li><code>X-Real-IP: 192.168.1.100</code> - IP original do cliente (cabeçalho alternativo)</li>
+<li><code>X-Forwarded-Proto: http</code> - Protocolo original (http vs https)</li>
+<li><code>X-Forwarded-Host: example.com</code> - Cabeçalho <code>Host</code> original</li>
+</ul>
+<div class="admonition danger">
+<p class="admonition-title">Vazamento de Privacidade via Cabeçalhos de Proxy</p>
+<p><strong>Esses cabeçalhos revelam que você está usando um proxy!</strong> Sistemas de detecção procuram por:
+- Cabeçalho <code>Via</code> presente → Proxy confirmado
+- <code>X-Forwarded-For</code> com múltiplos IPs → Cadeia de proxies
+- <code>X-Real-IP</code> não bate com o IP da conexão → Proxy confirmado</p>
+<p>Proxies sofisticados podem <strong>remover esses cabeçalhos</strong>, mas muitos não o fazem por padrão.</p>
+</div>
+<p><strong>4. Resposta do Servidor (Servidor → Proxy)</strong></p>
+<p>O servidor responde ao proxy:</p>
+<div class="language-http highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="na">Date</span><span class="o">:</span> <span class="l">Mon, 01 Jan 2024 12:00:00 GMT</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="na">Server</span><span class="o">:</span> <span class="l">nginx/1.18.0</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/html; charset=UTF-8</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="na">Content-Length</span><span class="o">:</span> <span class="l">1234</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="na">Cache-Control</span><span class="o">:</span> <span class="l">public, max-age=3600</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="na">ETag</span><span class="o">:</span> <span class="l">&quot;abc123&quot;</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="cp">&lt;!DOCTYPE html&gt;</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="p">&lt;</span><span class="nt">html</span><span class="p">&gt;</span>...
+</span></code></pre></div>
+<p><strong>5. Processamento do Proxy - Manipulação da Resposta</strong></p>
+<p>O proxy pode realizar várias operações na resposta:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">process_response</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="c1"># 1. Decisão de cache</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="k">if</span> <span class="n">should_cache</span><span class="p">(</span><span class="n">response</span><span class="p">):</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>        <span class="n">cache_entry</span> <span class="o">=</span> <span class="p">{</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>            <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="n">request</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>            <span class="s1">&#39;response&#39;</span><span class="p">:</span> <span class="n">response</span><span class="p">,</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>            <span class="s1">&#39;expires&#39;</span><span class="p">:</span> <span class="n">now</span><span class="p">()</span> <span class="o">+</span> <span class="n">parse_cache_control</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;Cache-Control&#39;</span><span class="p">])</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>        <span class="p">}</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>        <span class="n">save_to_cache</span><span class="p">(</span><span class="n">cache_entry</span><span class="p">)</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span class="c1"># 2. Filtragem de conteúdo</span>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>    <span class="k">if</span> <span class="n">contains_malware</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">body</span><span class="p">):</span>
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>        <span class="k">return</span> <span class="n">HTTP_403_FORBIDDEN</span>
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>    <span class="c1"># 3. Compressão (se o cliente suportar)</span>
+</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>    <span class="k">if</span> <span class="s1">&#39;gzip&#39;</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Accept-Encoding&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">):</span>
+</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>        <span class="n">response</span><span class="o">.</span><span class="n">body</span> <span class="o">=</span> <span class="n">gzip_compress</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">body</span><span class="p">)</span>
+</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>        <span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;Content-Encoding&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;gzip&#39;</span>
+</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>
+</span><span id="__span-3-20"><a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>    <span class="c1"># 4. Modificação de cabeçalho</span>
+</span><span id="__span-3-21"><a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>    <span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;Via&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;1.1 proxy.example.com&#39;</span>
+</span><span id="__span-3-22"><a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>    <span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;X-Cache&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;HIT&#39;</span> <span class="k">if</span> <span class="n">from_cache</span> <span class="k">else</span> <span class="s1">&#39;MISS&#39;</span>
+</span><span id="__span-3-23"><a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a>
+</span><span id="__span-3-24"><a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a>    <span class="c1"># 5. Logging</span>
+</span><span id="__span-3-25"><a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a>    <span class="n">log_transaction</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span>
+</span><span id="__span-3-26"><a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a>
+</span><span id="__span-3-27"><a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a>    <span class="k">return</span> <span class="n">response</span>
+</span></code></pre></div>
+<p><strong>6. Entrega da Resposta (Proxy → Cliente)</strong></p>
+<p>O proxy envia a resposta (possivelmente modificada) de volta ao cliente:</p>
+<div class="language-http highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="na">Date</span><span class="o">:</span> <span class="l">Mon, 01 Jan 2024 12:00:00 GMT</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/html; charset=UTF-8</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="na">Content-Encoding</span><span class="o">:</span> <span class="l">gzip</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="na">Via</span><span class="o">:</span> <span class="l">1.1 proxy.example.com</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="na">X-Cache</span><span class="o">:</span> <span class="l">HIT</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="na">Age</span><span class="o">:</span> <span class="l">120</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>[corpo da resposta comprimido]
+</span></code></pre></div>
+<h3 id="capacidades-e-limitacoes-chave">Capacidades e Limitações Chave</h3>
+<p><strong>O que Proxies HTTP PODEM Fazer:</strong></p>
+<ul>
+<li><strong>Ler requisições/respostas HTTP inteiras</strong> (se não criptografadas)</li>
+<li><strong>Modificar cabeçalhos</strong> (adicionar <code>Via</code>, <code>X-Forwarded-For</code>, remover cabeçalhos sensíveis)</li>
+<li><strong>Cachear respostas</strong> com base na semântica HTTP (<code>Cache-Control</code>, <code>ETag</code>)</li>
+<li><strong>Comprimir/descomprimir</strong> conteúdo (gzip, deflate, br)</li>
+<li><strong>Filtrar conteúdo</strong> (bloquear URLs, escanear malware, remover anúncios)</li>
+<li><strong>Autenticar usuários</strong> (via cabeçalho <code>Proxy-Authorization</code>)</li>
+<li><strong>Registrar todo o tráfego</strong> (URLs visitadas, dados transferidos, tempos)</li>
+<li><strong>Reescrever URLs</strong> (redirecionar, canonizar)</li>
+<li><strong>Injetar conteúdo</strong> (anúncios, scripts de rastreamento, avisos)</li>
+</ul>
+<p><strong>O que Proxies HTTP NÃO PODEM Fazer:</strong></p>
+<ul>
+<li><strong>Proxyar protocolos não-HTTP</strong> (FTP, SSH, SMTP, upgrade WebSocket, protocolos customizados)</li>
+<li><strong>Inspecionar conteúdo HTTPS</strong> sem terminação TLS (quebrando criptografia ponta-a-ponta)</li>
+<li><strong>Esconder que você está usando um proxy</strong> (a menos que cabeçalhos sejam cuidadosamente removidos)</li>
+<li><strong>Proxyar tráfego UDP</strong> (WebRTC, DNS, QUIC)</li>
+<li><strong>Preservar TLS ponta-a-ponta</strong> enquanto inspeciona conteúdo (incompatibilidade fundamental)</li>
+</ul>
+<div class="admonition warning">
+<p class="admonition-title">O Dilema Fundamental do HTTPS</p>
+<p>Proxies HTTP enfrentam uma escolha impossível com HTTPS:</p>
+<p><strong>Opção A: Túnel cego (método CONNECT)</strong></p>
+<ul>
+<li>Proxy não pode ler/cachear/filtrar conteúdo HTTPS</li>
+<li>Criptografia ponta-a-ponta preservada</li>
+<li>Proxy vê apenas IP:porta de destino, não URLs</li>
+</ul>
+<p><strong>Opção B: Terminação TLS (MITM - Man-in-the-Middle)</strong></p>
+<ul>
+<li>Proxy descriptografa HTTPS, inspeciona conteúdo, recriptografa</li>
+<li>Quebra a criptografia ponta-a-ponta</li>
+<li>Requer instalação do certificado CA do proxy no cliente</li>
+<li>Detectável por certificate pinning, logs de CT</li>
+</ul>
+<p>A maioria dos proxies corporativos escolhe a Opção B (terminação TLS) para filtragem de conteúdo. A maioria dos proxies focados em privacidade escolhe a Opção A (túnel cego).</p>
+</div>
+<h3 id="o-metodo-http-connect-tunelamento-https">O Método HTTP CONNECT: Tunelamento HTTPS</h3>
+<p>O método <code>CONNECT</code> (definido na RFC 7231 Seção 4.3.6) resolve o problema do HTTPS: como um proxy HTTP pode encaminhar tráfego criptografado que não pode ler? Resposta: <strong>tornando-se um túnel TCP cego</strong>.</p>
+<p>Quando um cliente quer acessar um site HTTPS através de um proxy, ele usa <code>CONNECT</code> para pedir ao proxy que estabeleça um <strong>túnel TCP bruto</strong> para o destino. Após o túnel ser estabelecido, o proxy simplesmente encaminha bytes em ambas as direções sem interpretá-los. Ele se torna Camada 4 (transporte) em vez de Camada 7 (aplicação).</p>
+<pre class="mermaid"><code>sequenceDiagram
+    participant Client
+    participant Proxy
+    participant Server
+
+    Note over Client: Cliente quer https://example.com
+
+    Client-&gt;&gt;Proxy: CONNECT example.com:443 HTTP/1.1&lt;br/&gt;Host: example.com:443&lt;br/&gt;Proxy-Authorization: Basic dXNlcjpwYXNz
+    Note over Client,Proxy: Requisição HTTP (não criptografada)
+
+    Note over Proxy: Proxy valida credenciais&lt;br/&gt;Checa controle de acesso para example.com:443
+
+    Proxy-&gt;&gt;Server: TCP SYN (three-way handshake)
+    Server-&gt;&gt;Proxy: TCP SYN-ACK
+    Proxy-&gt;&gt;Server: TCP ACK
+    Note over Proxy,Server: Conexão TCP estabelecida
+
+    Proxy-&gt;&gt;Client: HTTP/1.1 200 Connection Established&lt;br/&gt;&lt;br/&gt;(linha em branco = túnel pronto)
+
+    Note right of Proxy: A partir daqui, o proxy é um&lt;br/&gt;retransmissor TCP transparente (Camada 4)
+
+    Client-&gt;&gt;Server: TLS ClientHello (handshake criptografado)
+    Note over Client,Server: Handshake TLS 1.3
+    Server-&gt;&gt;Client: TLS ServerHello, Certificado, etc.
+
+    Note over Proxy: Proxy vê bytes criptografados,&lt;br/&gt;não pode descriptografar ou inspecionar
+
+    Client-&gt;&gt;Server: HTTP/2 GET /page&lt;br/&gt;(criptografado dentro do TLS)
+    Server-&gt;&gt;Client: HTTP/2 200 OK&lt;br/&gt;(criptografado dentro do TLS)
+
+    Note over Proxy: Proxy encaminha cegamente&lt;br/&gt;todos os dados criptografados</code></pre>
+<h4 id="formato-da-requisicao-connect">Formato da Requisição CONNECT</h4>
+<div class="language-http highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nf">CONNECT</span> <span class="nn">example.com:443</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="na">Host</span><span class="o">:</span> <span class="l">example.com:443</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="na">Proxy-Authorization</span><span class="o">:</span> <span class="l">Basic dXNlcjpwYXNz</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="na">User-Agent</span><span class="o">:</span> <span class="l">Mozilla/5.0 (Windows NT 10.0; Win64; x64)</span>
+</span></code></pre></div>
+<p><strong>Características chave:</strong></p>
+<ol>
+<li><strong>Método</strong>: <code>CONNECT</code> (não GET/POST)</li>
+<li><strong>Request-URI</strong>: <code>host:port</code> (não um caminho como <code>/page</code>)</li>
+<li><strong>Porta obrigatória</strong>: Geralmente <code>443</code> para HTTPS, mas qualquer porta é válida</li>
+<li><strong>Autenticação</strong>: <code>Proxy-Authorization</code> se o proxy exigir</li>
+<li><strong>Sem corpo de requisição</strong>: Requisições CONNECT não têm corpo</li>
+</ol>
+<h4 id="formato-da-resposta-connect">Formato da Resposta CONNECT</h4>
+<p><strong>Sucesso (túnel estabelecido):</strong></p>
+<div class="language-http highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">Connection Established</span>
+</span></code></pre></div>
+<p><strong>É isso!</strong> Apenas a linha de status e uma linha em branco. Após a linha em branco, a conversa HTTP termina e o proxy se torna um <strong>túnel TCP transparente</strong>.</p>
+<p><strong>Respostas de falha:</strong></p>
+<div class="language-http highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">407</span> <span class="ne">Proxy Authentication Required</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="na">Proxy-Authenticate</span><span class="o">:</span> <span class="l">Basic realm=&quot;proxy&quot;</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>HTTP/1.1 403 Forbidden
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>Content-Type: text/plain
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>Access to example.com:443 is blocked by policy.
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>HTTP/1.1 502 Bad Gateway
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>Content-Type: text/plain
+</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>Cannot establish connection to example.com:443
+</span></code></pre></div>
+<h4 id="o-que-acontece-apos-o-connect-ser-bem-sucedido">O que Acontece Após o CONNECT ser Bem-sucedido</h4>
+<p>Uma vez que o proxy envia <code>200 Connection Established</code>, ele <strong>deixa de ser um proxy HTTP</strong> e se torna um <strong>retransmissor TCP de Camada 4</strong>. O cliente e o servidor estabelecem TLS diretamente, com o proxy encaminhando bytes cegamente:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># Implementação simplificada de túnel de proxy</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">handle_connect</span><span class="p">(</span><span class="n">client_socket</span><span class="p">,</span> <span class="n">target_host</span><span class="p">,</span> <span class="n">target_port</span><span class="p">):</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    <span class="c1"># 1. Estabelecer conexão TCP com o alvo</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="n">server_socket</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">create_connection</span><span class="p">((</span><span class="n">target_host</span><span class="p">,</span> <span class="n">target_port</span><span class="p">))</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    <span class="c1"># 2. Enviar 200 para o cliente</span>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    <span class="n">client_socket</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;HTTP/1.1 200 Connection Established</span><span class="se">\r\n\r\n</span><span class="s1">&#39;</span><span class="p">)</span>
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>    <span class="c1"># 3. Tornar-se retransmissor transparente (encaminhamento bidirecional)</span>
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>        <span class="c1"># Esperar por dados de qualquer lado</span>
+</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>        <span class="n">readable</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">select</span><span class="o">.</span><span class="n">select</span><span class="p">([</span><span class="n">client_socket</span><span class="p">,</span> <span class="n">server_socket</span><span class="p">],</span> <span class="p">[],</span> <span class="p">[])</span>
+</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>
+</span><span id="__span-8-14"><a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>        <span class="k">for</span> <span class="n">sock</span> <span class="ow">in</span> <span class="n">readable</span><span class="p">:</span>
+</span><span id="__span-8-15"><a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>            <span class="n">data</span> <span class="o">=</span> <span class="n">sock</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">8192</span><span class="p">)</span>
+</span><span id="__span-8-16"><a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>            <span class="k">if</span> <span class="ow">not</span> <span class="n">data</span><span class="p">:</span>
+</span><span id="__span-8-17"><a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a>                <span class="c1"># Conexão fechada</span>
+</span><span id="__span-8-18"><a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a>                <span class="k">return</span>
+</span><span id="__span-8-19"><a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a>
+</span><span id="__span-8-20"><a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a>            <span class="c1"># Encaminhar dados para o outro lado</span>
+</span><span id="__span-8-21"><a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a>            <span class="k">if</span> <span class="n">sock</span> <span class="ow">is</span> <span class="n">client_socket</span><span class="p">:</span>
+</span><span id="__span-8-22"><a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a>                <span class="n">server_socket</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>  <span class="c1"># Cliente → Servidor</span>
+</span><span id="__span-8-23"><a id="__codelineno-8-23" name="__codelineno-8-23" href="#__codelineno-8-23"></a>            <span class="k">else</span><span class="p">:</span>
+</span><span id="__span-8-24"><a id="__codelineno-8-24" name="__codelineno-8-24" href="#__codelineno-8-24"></a>                <span class="n">client_socket</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>  <span class="c1"># Servidor → Cliente</span>
+</span></code></pre></div>
+<p><strong>O que o proxy pode ver:</strong></p>
+<ul>
+<li><strong>Hostname e porta de destino</strong> - Da requisição CONNECT</li>
+<li><strong>Tempo de conexão</strong> - Quando estabelecida, quanto tempo aberta</li>
+<li><strong>Volume de dados</strong> - Total de bytes transferidos em cada direção</li>
+<li><strong>Fechamento da conexão</strong> - Quando qualquer lado termina</li>
+</ul>
+<p><strong>O que o proxy NÃO PODE ver:</strong></p>
+<ul>
+<li><strong>Detalhes do handshake TLS</strong> - Criptografados, mas padrões observáveis existem</li>
+<li><strong>Método/URL HTTP</strong> - Criptografados dentro do TLS</li>
+<li><strong>Cabeçalhos de requisição/resposta</strong> - Criptografados dentro do TLS</li>
+<li><strong>Conteúdo da resposta</strong> - Criptografado dentro do TLS</li>
+<li><strong>Cookies, tokens de sessão</strong> - Criptografados dentro do TLS</li>
+</ul>
+<div class="admonition tip">
+<p class="admonition-title">Fingerprinting de Handshake TLS</p>
+<p>Embora o proxy não possa descriptografar o handshake TLS, ele pode <strong>observar sua estrutura</strong>. Os primeiros pacotes após o <code>CONNECT</code> revelam:
+- Versão do TLS (1.2 vs 1.3)
+- Tamanho e tempo do ClientHello
+- Ordem das suítes de cifras (via tamanhos de pacote)
+- Extensões usadas (via padrões de pacote)</p>
+<p>Isso habilita <strong>fingerprinting passivo de TLS</strong> (JA3) mesmo através de túneis CONNECT. Veja <a href="../../fingerprinting/network-fingerprinting/">Network Fingerprinting</a> para detalhes.</p>
+</div>
+<h4 id="connect-vs-proxy-http-direto">CONNECT vs Proxy HTTP Direto</h4>
+<table>
+<thead>
+<tr>
+<th>Aspecto</th>
+<th>HTTP (sem CONNECT)</th>
+<th>HTTPS (túnel CONNECT)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Visibilidade do proxy</strong></td>
+<td>Requisição/resposta HTTP completa</td>
+<td>Apenas host:porta de destino</td>
+</tr>
+<tr>
+<td><strong>Criptografia</strong></td>
+<td>Não (a menos que haja terminação TLS)</td>
+<td>TLS ponta-a-ponta (cliente ⟷ servidor)</td>
+</tr>
+<tr>
+<td><strong>Cache</strong></td>
+<td>Sim, baseado na semântica HTTP</td>
+<td>Não (conteúdo criptografado)</td>
+</tr>
+<tr>
+<td><strong>Filtragem de conteúdo</strong></td>
+<td>Sim (pode inspecionar/bloquear)</td>
+<td>Não (apenas bloqueio baseado em hostname)</td>
+</tr>
+<tr>
+<td><strong>Modificação de cabeçalho</strong></td>
+<td>Sim (pode adicionar/remover)</td>
+<td>Não (cabeçalhos criptografados)</td>
+</tr>
+<tr>
+<td><strong>Visibilidade da URL</strong></td>
+<td>URL completa visível</td>
+<td>Apenas hostname visível</td>
+</tr>
+<tr>
+<td><strong>Protocolo</strong></td>
+<td>Apenas HTTP</td>
+<td>Qualquer protocolo sobre TCP (HTTPS, SSH, FTP-over-TLS)</td>
+</tr>
+</tbody>
+</table>
+<h4 id="implicacoes-de-seguranca-do-connect">Implicações de Segurança do CONNECT</h4>
+<p><strong>Para Privacidade (Bom):</strong></p>
+<ul>
+<li><strong>TLS ponta-a-ponta preservado</strong> - Cliente verifica o certificado do servidor diretamente</li>
+<li><strong>Nenhum MITM possível</strong> (a menos que o cliente confie na CA do proxy)</li>
+<li><strong>Certificate pinning funciona</strong> - Cliente vê o certificado real do servidor</li>
+</ul>
+<p><strong>Para Privacidade (Ruim):</strong></p>
+<ul>
+<li><strong>Hostname vazado</strong> - Proxy sabe que você acessou <code>example.com:443</code></li>
+<li><strong>Análise de tempo possível</strong> - Padrões de tráfego observáveis</li>
+<li><strong>Fingerprinting TLS</strong> - Análise passiva do ClientHello</li>
+</ul>
+<p><strong>Para Segurança Corporativa (Ruim):</strong></p>
+<ul>
+<li><strong>Sem inspeção de conteúdo</strong> - Não pode escanear malware, perda de dados</li>
+<li><strong>Cego para ameaças</strong> - Tráfego C2 criptografado, exfiltração invisível</li>
+<li><strong>Bypass de política</strong> - Usuários podem tunelar protocolos arbitrários</li>
+</ul>
+<p><strong>É por isso que proxies corporativos frequentemente usam terminação TLS (MITM) em vez de túneis CONNECT.</strong></p>
+<h4 id="connect-para-protocolos-nao-https">CONNECT para Protocolos Não-HTTPS</h4>
+<p>Embora <code>CONNECT</code> seja primariamente usado para HTTPS, ele pode tunelar <strong>qualquer protocolo baseado em TCP</strong>:</p>
+<div class="language-http highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="nf">CONNECT</span> <span class="nn">mail.example.com:993</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="na">Host</span><span class="o">:</span> <span class="l">mail.example.com:993</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>[Túnel estabelecido, tráfego IMAPS flui]
+</span></code></pre></div>
+<div class="language-http highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nf">CONNECT</span> <span class="nn">ssh.example.com:22</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="na">Host</span><span class="o">:</span> <span class="l">ssh.example.com:22</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>[Túnel estabelecido, tráfego SSH flui]
+</span></code></pre></div>
+<p>Isso torna proxies HTTP com suporte a <code>CONNECT</code> <strong>surpreendentemente versáteis</strong>. Eles podem proxyar SSH, FTP-over-TLS, IMAPS, SMTPS e outros protocolos criptografados, não apenas HTTPS.</p>
+<div class="admonition danger">
+<p class="admonition-title">Abuso e Restrições do CONNECT</p>
+<p>Como <code>CONNECT</code> habilita o tunelamento de conexões TCP arbitrárias, muitos proxies:</p>
+<ul>
+<li><strong>Restringem portas permitidas</strong> (frequentemente apenas 443 para HTTPS)</li>
+<li><strong>Bloqueiam hosts suspeitos</strong> (C2 de malware conhecidos, nós Tor)</li>
+<li><strong>Registram todas as tentativas de CONNECT</strong> (para auditoria de segurança)</li>
+<li><strong>Exigem autenticação</strong> (para rastrear usuários)</li>
+</ul>
+<p>Se você tentar <code>CONNECT example.com:22</code> (SSH), muitos proxies corporativos retornarão <code>403 Forbidden</code>.</p>
+</div>
+<h3 id="autenticacao-de-proxy-http-controle-de-acesso">Autenticação de Proxy HTTP: Controle de Acesso</h3>
+<p>Diferente dos proxies SOCKS (que suportam autenticação como parte do handshake do protocolo), proxies HTTP usam <strong>cabeçalhos de autenticação HTTP</strong> para controlar o acesso. Isso significa que a autenticação acontece <strong>na camada de aplicação</strong> usando códigos de status e cabeçalhos HTTP padrão.</p>
+<p>O fluxo de autenticação segue a <strong>RFC 7235 (Autenticação HTTP)</strong>, usando o código de status <code>407 Proxy Authentication Required</code> (análogo ao <code>401 Unauthorized</code> para servidores) e o cabeçalho de requisição <code>Proxy-Authorization</code> (análogo ao <code>Authorization</code>).</p>
+<h4 id="fluxo-de-autenticacao">Fluxo de Autenticação</h4>
+<pre class="mermaid"><code>sequenceDiagram
+    participant Client
+    participant Proxy
+    participant Server
+
+    Note over Client: Cliente tenta requisição&lt;br/&gt;(ainda sem credenciais)
+
+    Client-&gt;&gt;Proxy: GET http://example.com/ HTTP/1.1&lt;br/&gt;Host: example.com
+
+    Note over Proxy: Proxy requer autenticação
+
+    Proxy-&gt;&gt;Client: HTTP/1.1 407 Proxy Authentication Required&lt;br/&gt;Proxy-Authenticate: Basic realm="Corporate Proxy"&lt;br/&gt;Proxy-Authenticate: Digest realm="proxy", nonce="abc123"
+
+    Note over Client: Cliente seleciona método de auth&lt;br/&gt;Codifica credenciais&lt;br/&gt;(navegador pode pedir ao usuário)
+
+    Client-&gt;&gt;Proxy: GET http://example.com/ HTTP/1.1&lt;br/&gt;Host: example.com&lt;br/&gt;Proxy-Authorization: Basic dXNlcjpwYXNz
+
+    Note over Proxy: Valida credenciais&lt;br/&gt;(checa usuário/senha)
+
+    alt Autenticação com Sucesso
+        Proxy-&gt;&gt;Server: GET / HTTP/1.1&lt;br/&gt;Host: example.com&lt;br/&gt;(requisição original encaminhada)
+        Server-&gt;&gt;Proxy: HTTP/1.1 200 OK&lt;br/&gt;[corpo da resposta]
+        Proxy-&gt;&gt;Client: HTTP/1.1 200 OK&lt;br/&gt;[corpo da resposta]
+    else Falha na Autenticação
+        Proxy-&gt;&gt;Client: HTTP/1.1 407 Proxy Authentication Required&lt;br/&gt;(ou 403 Forbidden se credenciais inválidas)
+    end</code></pre>
+<h4 id="esquemas-de-autenticacao-comparacao-detalhada">Esquemas de Autenticação: Comparação Detalhada</h4>
+<p>HTTP suporta múltiplos esquemas de autenticação, cada um com diferentes características de segurança:</p>
+<table>
+<thead>
+<tr>
+<th>Esquema</th>
+<th>RFC</th>
+<th>Nível de Segurança</th>
+<th>Mecanismo</th>
+<th>Pontos Fortes</th>
+<th>Pontos Fracos</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Basic</strong></td>
+<td>RFC 7617</td>
+<td>Baixo</td>
+<td><code>username:password</code> codificado em Base64</td>
+<td>Simples, suporte universal</td>
+<td><strong>Texto puro</strong> (trivial de decodificar), sem proteção contra replay</td>
+</tr>
+<tr>
+<td><strong>Digest</strong></td>
+<td>RFC 7616</td>
+<td>Médio</td>
+<td>Desafio-resposta com MD5/SHA-256</td>
+<td>Evita transmissão em texto puro, proteção contra replay</td>
+<td>Vulnerável a rainbow tables, raramente implementado</td>
+</tr>
+<tr>
+<td><strong>NTLM</strong></td>
+<td>Proprietário (Microsoft)</td>
+<td>Médio</td>
+<td>Desafio-resposta (hash NT)</td>
+<td>Integração Windows, SSO</td>
+<td>Proprietário, complexo, vulnerabilidades conhecidas</td>
+</tr>
+<tr>
+<td><strong>Negotiate</strong></td>
+<td>RFC 4559</td>
+<td>Alto</td>
+<td>Kerberos/SPNEGO</td>
+<td>Criptografia forte, SSO, auth mútua</td>
+<td>Configuração complexa, dependência do Active Directory</td>
+</tr>
+<tr>
+<td><strong>Bearer</strong></td>
+<td>RFC 6750</td>
+<td>Alto (se token seguro)</td>
+<td>Token OAuth 2.0</td>
+<td>Amigável para APIs, tokens revogáveis</td>
+<td>Roubo de token = acesso total, requer infra de token</td>
+</tr>
+</tbody>
+</table>
+<h4 id="autenticacao-basic-a-mais-simples-e-mais-fraca">Autenticação Basic: A Mais Simples (e Mais Fraca)</h4>
+<p><strong>Formato:</strong>
+<div class="language-http highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="err">Proxy-Authorization: Basic base64(username:password)</span>
+</span></code></pre></div></p>
+<p><strong>Exemplo:</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># Usuário: &quot;user&quot;, Senha: &quot;pass&quot;</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="n">credentials</span> <span class="o">=</span> <span class="s2">&quot;user:pass&quot;</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="n">encoded</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">credentials</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="c1"># Resultado: &quot;dXNlcjpwYXNz&quot;</span>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="c1"># No cabeçalho HTTP:</span>
+</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="n">Proxy</span><span class="o">-</span><span class="n">Authorization</span><span class="p">:</span> <span class="n">Basic</span> <span class="n">dXNlcjpwYXNz</span>
+</span></code></pre></div></p>
+<p><strong>Problemas de Segurança:</strong></p>
+<ol>
+<li>
+<p><strong>Base64 NÃO é criptografia</strong> - É trivial decodificar:
+    <div class="language-python highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="kn">import</span><span class="w"> </span><span class="nn">base64</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64decode</span><span class="p">(</span><span class="s1">&#39;dXNlcjpwYXNz&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="s1">&#39;user:pass&#39;</span>  <span class="c1"># Credenciais expostas!</span>
+</span></code></pre></div></p>
+</li>
+<li>
+<p><strong>Visível em logs</strong> - Logs de proxy frequentemente incluem cabeçalhos, vazando credenciais</p>
+</li>
+<li>
+<p><strong>Replicável (Replayable)</strong> - Qualquer um que interceptar o cabeçalho pode reusá-lo indefinidamente</p>
+</li>
+<li>
+<p><strong>Sem proteção de integridade</strong> - Pode ser modificado em trânsito</p>
+</li>
+</ol>
+<div class="admonition danger">
+<p class="admonition-title">Basic Auth Sobre Conexões Não Criptografadas</p>
+<p>Enviar <code>Proxy-Authorization: Basic</code> sobre HTTP (não HTTPS) é <strong>catastroficamente inseguro</strong>:</p>
+<ul>
+<li>Credenciais transmitidas em texto puro (base64 não é criptografia!)</li>
+<li>Visível para qualquer observador da rede (ISP, bisbilhoteiros de WiFi, atacantes MITM)</li>
+<li>Registrado por proxies intermediários e servidores</li>
+</ul>
+<p><strong>Sempre use Basic Auth sobre TLS/HTTPS</strong>, ou use um esquema mais seguro como Digest ou Negotiate.</p>
+</div>
+<p><strong>Quando usar Basic:</strong></p>
+<ul>
+<li>Conexão do proxy é sobre TLS (HTTPS para o proxy)</li>
+<li>Testes rápidos/desenvolvimento (nunca produção!)</li>
+<li>Sistemas legados sem alternativa</li>
+</ul>
+<h4 id="autenticacao-digest-desafio-resposta">Autenticação Digest: Desafio-Resposta</h4>
+<p><strong>Formato:</strong>
+<div class="language-http highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="err"># Desafio do servidor</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="err">Proxy-Authenticate: Digest realm=&quot;proxy&quot;,</span>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="err">                          qop=&quot;auth&quot;,</span>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="err">                          nonce=&quot;dcd98b7102dd2f0e8b11d0f600bfb0c093&quot;,</span>
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="err">                          opaque=&quot;5ccc069c403ebaf9f0171e9517f40e41&quot;</span>
+</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>
+</span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="err"># Resposta do cliente</span>
+</span><span id="__span-14-8"><a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a><span class="err">Proxy-Authorization: Digest username=&quot;user&quot;,</span>
+</span><span id="__span-14-9"><a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a><span class="err">                            realm=&quot;proxy&quot;,</span>
+</span><span id="__span-14-10"><a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a><span class="err">                            nonce=&quot;dcd98b7102dd2f0e8b11d0f600bfb0c093&quot;,</span>
+</span><span id="__span-14-11"><a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a><span class="err">                            uri=&quot;http://example.com/&quot;,</span>
+</span><span id="__span-14-12"><a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a><span class="err">                            qop=auth,</span>
+</span><span id="__span-14-13"><a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a><span class="err">                            nc=00000001,</span>
+</span><span id="__span-14-14"><a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a><span class="err">                            cnonce=&quot;0a4f113b&quot;,</span>
+</span><span id="__span-14-15"><a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a><span class="err">                            response=&quot;6629fae49393a05397450978507c4ef1&quot;,</span>
+</span><span id="__span-14-16"><a id="__codelineno-14-16" name="__codelineno-14-16" href="#__codelineno-14-16"></a><span class="err">                            opaque=&quot;5ccc069c403ebaf9f0171e9517f40e41&quot;</span>
+</span></code></pre></div></p>
+<p><strong>Como funciona:</strong></p>
+<ol>
+<li><strong>Proxy envia desafio</strong> com <code>nonce</code> aleatório (número usado uma vez)</li>
+<li><strong>Cliente computa hash</strong>:
+    <div class="language-python highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">HA1</span> <span class="o">=</span> <span class="n">MD5</span><span class="p">(</span><span class="n">username</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">realm</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">password</span><span class="p">)</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="n">HA2</span> <span class="o">=</span> <span class="n">MD5</span><span class="p">(</span><span class="n">method</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">uri</span><span class="p">)</span>
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="n">response</span> <span class="o">=</span> <span class="n">MD5</span><span class="p">(</span><span class="n">HA1</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">nonce</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">nc</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">cnonce</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">qop</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">HA2</span><span class="p">)</span>
+</span></code></pre></div></li>
+<li><strong>Proxy verifica</strong> computando o mesmo hash e comparando</li>
+</ol>
+<p><strong>Melhorias de Segurança sobre o Basic:</strong></p>
+<ul>
+<li>Senha nunca é transmitida (apenas hash)</li>
+<li>Proteção contra replay (nonce muda a cada desafio)</li>
+<li>Proteção de integridade (hash inclui método e URI)</li>
+</ul>
+<p><strong>Problemas Restantes:</strong></p>
+<ul>
+<li>MD5 é criptograficamente fraco (ataques de rainbow table)</li>
+<li>Sem criptografia (conteúdo ainda visível se não usar TLS)</li>
+<li>Complexo de implementar corretamente</li>
+</ul>
+<div class="admonition tip">
+<p class="admonition-title">Digest com SHA-256</p>
+<p>A RFC 7616 (2015) atualizou o Digest para suportar SHA-256 em vez de MD5, abordando a fraqueza criptográfica. No entanto, o suporte ainda é limitado. Muitos proxies implementam apenas MD5.</p>
+</div>
+<h4 id="ntlm-autenticacao-integrada-do-windows">NTLM: Autenticação Integrada do Windows</h4>
+<p>NTLM (NT LAN Manager) é o protocolo proprietário de desafio-resposta da Microsoft, comumente usado em ambientes corporativos Windows.</p>
+<p><strong>Fluxo de Autenticação:</strong></p>
+<ol>
+<li><strong>Tipo 1 (Negociação)</strong>: Cliente anuncia capacidades</li>
+<li><strong>Tipo 2 (Desafio)</strong>: Servidor envia desafio de 8 bytes</li>
+<li><strong>Tipo 3 (Autenticação)</strong>: Cliente envia resposta de hash NT</li>
+</ol>
+<p><strong>Exemplo (simplificado):</strong>
+<div class="language-http highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="err"># Passo 1: Negociação</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="err">Proxy-Authorization: NTLM TlRMTVNTUAABAAAAB4IIogAAAAAAAAAAAAAAAAAAAAAFASgKAAAADw==</span>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="err"># Passo 2: Desafio</span>
+</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="err">Proxy-Authenticate: NTLM TlRMTVNTUAACAAAADAAMADgAAAAFgooCBqqVKFrKPCMAAAAAAAAAAAAAAAAAAP8=</span>
+</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>
+</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="err"># Passo 3: Autenticação</span>
+</span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span class="err">Proxy-Authorization: NTLM TlRMTVNTUAADAAAAGAAYAEgAAAAYABgAYAAAAAwADAB4AAAACAAIAIQAAAAAAAAAAAAAABVCSUCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==</span>
+</span></code></pre></div></p>
+<p><strong>Vantagens:</strong></p>
+<ul>
+<li>Integração transparente com Windows (SSO com Active Directory)</li>
+<li>Senha não é transmitida</li>
+<li>Suporta autenticação de domínio</li>
+</ul>
+<p><strong>Desvantagens:</strong></p>
+<ul>
+<li>Proprietário (engenharia reversa, não padronizado)</li>
+<li>Fraquezas criptográficas conhecidas (NTLMv1 quebrado, NTLMv2 vulnerável)</li>
+<li>Protocolo complexo (múltiplas idas e vindas)</li>
+<li>Ligado à conexão (quebra com multiplexação HTTP/2)</li>
+</ul>
+<div class="admonition warning">
+<p class="admonition-title">Preocupações de Segurança NTLM</p>
+<p>NTLM tem vulnerabilidades conhecidas:
+- <strong>Ataques Pass-the-hash</strong>: Hash roubado pode autenticar sem saber a senha
+- <strong>Ataques de relay (retransmissão)</strong>: Atacante retransmite autenticação para outro servidor
+- <strong>Criptografia fraca</strong>: NTLMv1 usa DES (quebrado), NTLMv2 usa MD5 (fraco)</p>
+<p>A Microsoft recomenda <strong>Kerberos</strong> (via Negotiate) em vez de NTLM para novas implantações.</p>
+</div>
+<h4 id="negotiate-kerberos-sso-corporativo">Negotiate (Kerberos): SSO Corporativo</h4>
+<p><strong>Negotiate</strong> (RFC 4559) usa SPNEGO (Simple and Protected GSSAPI Negotiation) para selecionar entre Kerberos e NTLM, preferindo Kerberos.</p>
+<p><strong>Fluxo Kerberos:</strong></p>
+<ol>
+<li>Cliente solicita <strong>ticket-granting ticket (TGT)</strong> do Key Distribution Center (KDC)</li>
+<li>Cliente solicita <strong>service ticket</strong> para o serviço de proxy</li>
+<li>Cliente apresenta service ticket ao proxy</li>
+<li>Proxy valida ticket com o KDC</li>
+</ol>
+<p><strong>Exemplo:</strong>
+<div class="language-http highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="err">Proxy-Authorization: Negotiate YIIFyQYGKwYBBQUCoIIFvTCCBbmgMDAuBgkqhkiC9xIBAgIGCSqGSIb3EgECAgYKKwYBBAGCNwICHgYKKwYBBAGCNwICCqKCBYMEggV/...</span>
+</span></code></pre></div></p>
+<p><strong>Vantagens:</strong>
+- <strong>Segurança mais forte</strong>: Criptografia AES, autenticação mútua
+- <strong>SSO Verdadeiro</strong>: Sem prompts de senha para usuários do domínio
+- <strong>Expiração de ticket</strong>: Autenticação limitada por tempo
+- <strong>Auditoria</strong>: Log centralizado no KDC</p>
+<p><strong>Desvantagens:</strong>
+- <strong>Configuração complexa</strong>: Requer infraestrutura Active Directory
+- <strong>Multiplataforma limitado</strong>: Melhor no Windows, suporte limitado em macOS/Linux
+- <strong>Sincronização de tempo</strong>: Requer relógios precisos (tickets Kerberos são sensíveis ao tempo)</p>
+<div class="admonition info">
+<p class="admonition-title">Kerberos na Automação de Navegador</p>
+<p>O Pydoll (e a maioria dos navegadores headless) têm <strong>suporte limitado a Kerberos</strong> porque:</p>
+<ul>
+<li>Requer integração em nível de SO (cache de ticket, keytab)</li>
+<li>Precisa de máquina ingressada no domínio</li>
+<li>Complexo de configurar programaticamente</li>
+</ul>
+<p>Para testes automatizados em ambientes Kerberos, considere usar uma <strong>conta de serviço</strong> com autenticação Basic/Digest.</p>
+</div>
+<h4 id="configuracao-pratica-no-pydoll">Configuração Prática no Pydoll</h4>
+<p><strong>Autenticação Básica:</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span><span class="p">,</span> <span class="n">ChromiumOptions</span>
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--proxy-server=http://user:pass@ip:port&#39;</span><span class="p">)</span>
+</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>
+</span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">(</span><span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
+</span><span id="__span-18-7"><a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>    <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</span><span id="__span-18-8"><a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>    <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">&#39;http://example.com&#39;</span><span class="p">)</span>
+</span></code></pre></div></p>
+<p><strong>Autenticação via Domínio Fetch (Avançado):</strong></p>
+<p>O Pydoll usa o <strong>domínio Fetch</strong> do Chrome para lidar automaticamente com a autenticação de proxy para qualquer esquema que o navegador suporte (Basic, Digest, NTLM, Negotiate):</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="c1"># Implementação interna do Pydoll (simplificada)</span>
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">handle_auth_required</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>    <span class="c1"># Navegador detectou 407 Proxy Authentication Required</span>
+</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>    <span class="n">auth_challenge_id</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s1">&#39;requestId&#39;</span><span class="p">]</span>
+</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>
+</span><span id="__span-19-6"><a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>    <span class="c1"># Responder com credenciais</span>
+</span><span id="__span-19-7"><a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a>    <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_command</span><span class="p">(</span><span class="s1">&#39;Fetch.continueWithAuth&#39;</span><span class="p">,</span> <span class="p">{</span>
+</span><span id="__span-19-8"><a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a>        <span class="s1">&#39;requestId&#39;</span><span class="p">:</span> <span class="n">auth_challenge_id</span><span class="p">,</span>
+</span><span id="__span-19-9"><a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a>        <span class="s1">&#39;authChallengeResponse&#39;</span><span class="p">:</span> <span class="p">{</span>
+</span><span id="__span-19-10"><a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a>            <span class="s1">&#39;response&#39;</span><span class="p">:</span> <span class="s1">&#39;ProvideCredentials&#39;</span><span class="p">,</span>
+</span><span id="__span-19-11"><a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a>            <span class="s1">&#39;username&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy_username</span><span class="p">,</span>
+</span><span id="__span-19-12"><a id="__codelineno-19-12" name="__codelineno-19-12" href="#__codelineno-19-12"></a>            <span class="s1">&#39;password&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy_password</span>
+</span><span id="__span-19-13"><a id="__codelineno-19-13" name="__codelineno-19-13" href="#__codelineno-19-13"></a>        <span class="p">}</span>
+</span><span id="__span-19-14"><a id="__codelineno-19-14" name="__codelineno-19-14" href="#__codelineno-19-14"></a>    <span class="p">})</span>
+</span></code></pre></div>
+<p>Esta abordagem funciona para <strong>todos os esquemas de autenticação</strong> sem que o Pydoll precise implementar lógica específica do protocolo. O Chrome lida com Digest/NTLM/Negotiate internamente.</p>
+<div class="admonition tip">
+<p class="admonition-title">Melhores Práticas de Autenticação</p>
+<ul>
+<li><strong>Use conexões de proxy criptografadas com TLS</strong> (proxy HTTPS ou túnel SSH)</li>
+<li><strong>Prefira tokens Bearer</strong> para proxies de API (revogáveis, limitados por tempo)</li>
+<li><strong>Use Digest</strong> em vez de Basic se o TLS não estiver disponível</li>
+<li><strong>Rotacione credenciais</strong> regularmente</li>
+<li>
+<p><strong>Monitore falhas de autenticação</strong> (podem indicar roubo de credenciais)</p>
+</li>
+<li>
+<p><strong>Nunca use Basic auth sobre HTTP</strong> (conexão não criptografada)</p>
+</li>
+<li><strong>Não codifique credenciais no código</strong> (use variáveis de ambiente)</li>
+<li><strong>Não reutilize credenciais</strong> entre proxies</li>
+<li><strong>Não registre cabeçalhos Proxy-Authorization</strong> em logs</li>
+</ul>
+</div>
+<h2 id="protocolos-http-modernos-e-proxying">Protocolos HTTP Modernos e Proxying</h2>
+<p>Proxies HTTP/1.1 tradicionais são bem compreendidos, mas protocolos modernos introduzem novas considerações.</p>
+<h3 id="proxies-http2">Proxies HTTP/2</h3>
+<p>HTTP/2 introduziu a multiplexação, que muda fundamentalmente como proxies lidam com conexões:</p>
+<p><strong>Diferenças chave:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Característica</th>
+<th>HTTP/1.1</th>
+<th>HTTP/2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Conexões</strong></td>
+<td>Uma requisição por conexão (ou sequencial)</td>
+<td>Múltiplas requisições sobre conexão única</td>
+</tr>
+<tr>
+<td><strong>Multiplexação</strong></td>
+<td>Não (bloqueio head-of-line)</td>
+<td>Sim (streams concorrentes)</td>
+</tr>
+<tr>
+<td><strong>Compressão de Cabeçalho</strong></td>
+<td>Nenhuma</td>
+<td>Compressão HPACK</td>
+</tr>
+<tr>
+<td><strong>Server Push</strong></td>
+<td>Não suportado</td>
+<td>Servidor pode enviar recursos</td>
+</tr>
+<tr>
+<td><strong>Complexidade do Proxy</strong></td>
+<td>Encaminhamento simples de req/resp</td>
+<td>Deve gerenciar priorização de stream</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Implicações para proxying:</strong></p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="c1"># Proxy HTTP/1.1: Mapeamento simples um-para-um</span>
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="n">client_conn_1</span> <span class="err">→</span> <span class="n">proxy</span> <span class="err">→</span> <span class="n">server_conn_1</span>  <span class="c1"># Requisição A</span>
+</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="n">client_conn_2</span> <span class="err">→</span> <span class="n">proxy</span> <span class="err">→</span> <span class="n">server_conn_2</span>  <span class="c1"># Requisição B</span>
+</span><span id="__span-20-4"><a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>
+</span><span id="__span-20-5"><a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a><span class="c1"># Proxy HTTP/2: Gerenciamento complexo de stream</span>
+</span><span id="__span-20-6"><a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a><span class="n">client_conn</span> <span class="p">(</span><span class="n">streams</span> <span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">)</span> <span class="err">→</span> <span class="n">proxy</span> <span class="err">→</span> <span class="n">server_conn</span> <span class="p">(</span><span class="n">streams</span> <span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">6</span><span class="p">)</span>
+</span><span id="__span-20-7"><a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a><span class="c1">#     ↓ Deve manter IDs de stream e priorização</span>
+</span></code></pre></div>
+<p><strong>Impacto no desempenho:</strong></p>
+<ul>
+<li><strong>Positivo</strong>: Sobrecarga de conexão reduzida, melhor utilização de banda</li>
+<li><strong>Negativo</strong>: Proxy deve analisar enquadramento binário, gerenciar estados de stream</li>
+<li><strong>Risco de vazamento</strong>: IDs de stream e prioridades podem dar fingerprint do comportamento do cliente</li>
+</ul>
+<div class="admonition info">
+<p class="admonition-title">Detecção de Proxy HTTP/2</p>
+<p>A multiplexação HTTP/2 torna mais difícil correlacionar requisições com clientes quando múltiplos usuários compartilham um proxy, mas metadados de stream (tamanhos de janela, configurações de prioridade) ainda podem aplicar fingerprinting em clientes individuais.</p>
+</div>
+<h3 id="proxies-http3-quic">Proxies HTTP/3 (QUIC)</h3>
+<p>HTTP/3 roda sobre QUIC (baseado em UDP) em vez de TCP, introduzindo novos desafios:</p>
+<p><strong>Características do QUIC:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Aspecto</th>
+<th>TCP + TLS</th>
+<th>QUIC (UDP)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Transporte</strong></td>
+<td>TCP (orientado à conexão)</td>
+<td>UDP (sem conexão)</td>
+</tr>
+<tr>
+<td><strong>Handshake</strong></td>
+<td>TCP + TLS separados (2 RTTs)</td>
+<td>Combinados (0-1 RTT)</td>
+</tr>
+<tr>
+<td><strong>Bloqueio head-of-line</strong></td>
+<td>Sim (nível TCP)</td>
+<td>Não (apenas nível de stream)</td>
+</tr>
+<tr>
+<td><strong>Migração de conexão</strong></td>
+<td>Não suportado</td>
+<td>Suportado (sobrevive a mudanças de IP)</td>
+</tr>
+<tr>
+<td><strong>Compatibilidade de proxy</strong></td>
+<td>Excelente</td>
+<td>Limitada (requer suporte UDP)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Implicações para proxying:</strong></p>
+<ol>
+<li><strong>Requisito UDP</strong>: Proxies HTTP tradicionais (apenas TCP) não podem lidar com HTTP/3</li>
+<li><strong>Migração de conexão</strong>: Conexões QUIC podem sobreviver a mudanças de IP, complicando o gerenciamento de sessão do proxy</li>
+<li><strong>Transporte criptografado</strong>: QUIC criptografa quase tudo, incluindo metadados de conexão</li>
+<li><strong>CONNECT-UDP</strong>: Novo método necessário (RFC 9298) para proxyar QUIC</li>
+</ol>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="c1"># Cadeia de proxy tradicional</span>
+</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="n">Cliente</span> <span class="o">--</span><span class="n">TCP</span><span class="o">--&gt;</span> <span class="n">Proxy</span> <span class="n">HTTP</span> <span class="o">--</span><span class="n">TCP</span><span class="o">--&gt;</span> <span class="n">Servidor</span>
+</span><span id="__span-21-3"><a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a>
+</span><span id="__span-21-4"><a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="c1"># Cadeia de proxy HTTP/3 (requer CONNECT-UDP)</span>
+</span><span id="__span-21-5"><a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="n">Cliente</span> <span class="o">--</span><span class="n">UDP</span><span class="o">/</span><span class="n">QUIC</span><span class="o">--&gt;</span> <span class="n">Proxy</span> <span class="o">--</span><span class="n">UDP</span><span class="o">/</span><span class="n">QUIC</span><span class="o">--&gt;</span> <span class="n">Servidor</span>
+</span><span id="__span-21-6"><a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a>       <span class="p">(</span><span class="n">ou</span><span class="p">)</span>
+</span><span id="__span-21-7"><a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a><span class="n">Cliente</span> <span class="o">--</span><span class="n">TCP</span><span class="o">/</span><span class="n">CONNECT</span><span class="o">-</span><span class="n">UDP</span><span class="o">--&gt;</span> <span class="n">Proxy</span> <span class="o">--</span><span class="n">UDP</span><span class="o">/</span><span class="n">QUIC</span><span class="o">--&gt;</span> <span class="n">Servidor</span>
+</span></code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Suporte a Proxy HTTP/3</p>
+<p>A maioria dos proxies tradicionais (incluindo muitos serviços comerciais) não suporta HTTP/3. Navegadores tipicamente recorrem ao HTTP/2 ou HTTP/1.1 quando proxies não suportam QUIC.</p>
+<p>Esse fallback pode ser um <strong>problema de privacidade</strong>: Se você espera os metadados criptografados do HTTP/3 mas recorre ao HTTP/1.1, mais informação pode vazar através do proxy.</p>
+</div>
+<h3 id="negociacao-de-protocolo-e-ataques-de-downgrade">Negociação de Protocolo e Ataques de Downgrade</h3>
+<pre class="mermaid"><code>sequenceDiagram
+    participant Client
+    participant Proxy
+    participant Server
+
+    Client-&gt;&gt;Proxy: Requisição HTTP/3 sobre QUIC
+    Note over Proxy: Proxy não suporta UDP/QUIC
+    Proxy-&gt;&gt;Client: Conexão falhou
+
+    Client-&gt;&gt;Proxy: Fallback para HTTP/2 sobre TCP
+    Note over Proxy: Proxy suporta HTTP/2
+    Proxy-&gt;&gt;Server: Encaminha como HTTP/1.1
+    Note over Proxy: Metadados do servidor visíveis para o proxy
+
+    Server-&gt;&gt;Proxy: Resposta HTTP/1.1
+    Proxy-&gt;&gt;Client: Upgrade para resposta HTTP/2</code></pre>
+<p><strong>Considerações de segurança:</strong></p>
+<ul>
+<li><strong>Ataques de downgrade</strong>: Atacante força fallback para protocolo menos seguro</li>
+<li><strong>Vazamento de metadados</strong>: HTTP/1.1 expõe cabeçalhos que HTTP/3 criptografaria</li>
+<li><strong>Degradação de desempenho</strong>: Benefícios da multiplexação perdidos no downgrade</li>
+</ul>
+<div class="admonition tip">
+<p class="admonition-title">Melhores Práticas de Protocolos Modernos</p>
+<ul>
+<li>Teste seu proxy com HTTP/2 e HTTP/3 para entender comportamento de fallback</li>
+<li>Monitore downgrades inesperados de protocolo (podem indicar MITM)</li>
+<li>Considere proxies cientes de QUIC se trabalhar com web apps modernas</li>
+<li>Esteja ciente de que a adoção do HTTP/3 varia por região e CDN</li>
+</ul>
+</div>
+<h2 id="resumo-e-pontos-chave">Resumo e Pontos Chave</h2>
+<p>Proxies HTTP e HTTPS são o protocolo de proxy <strong>mais comum</strong>, mas também o mais <strong>limitado</strong>. Entender sua arquitetura, capacidades e limitações fundamentais de segurança é essencial para tomar decisões informadas na automação de navegadores.</p>
+<h3 id="conceitos-centrais-cobertos">Conceitos Centrais Cobertos</h3>
+<p><strong>1. Operação na Camada 7:</strong></p>
+<ul>
+<li>Proxies HTTP operam na <strong>Camada de Aplicação</strong>, dando-lhes visibilidade total do tráfego HTTP</li>
+<li>Podem ler/modificar URLs, cabeçalhos, cookies, corpos de requisição (para HTTP não criptografado)</li>
+<li>Específicos do protocolo: <strong>funcionam apenas com HTTP/HTTPS</strong>, não com FTP/SSH/SMTP/protocolos customizados</li>
+</ul>
+<p><strong>2. O Método CONNECT:</strong></p>
+<ul>
+<li><strong>Tunelamento HTTPS</strong> via CONNECT transforma o proxy em um <strong>retransmissor TCP cego</strong></li>
+<li>Após <code>200 Connection Established</code>, o proxy se torna Camada 4 (não pode inspecionar tráfego criptografado)</li>
+<li>Preserva <strong>TLS ponta-a-ponta</strong> entre cliente e servidor</li>
+<li>Vaza <strong>hostname e porta</strong> para o proxy, mas não URLs ou conteúdo</li>
+</ul>
+<p><strong>3. Proxying de Requisição/Resposta:</strong></p>
+<ul>
+<li>Proxies HTTP usam <strong>URIs absolutas</strong> em requisições (<code>GET http://example.com/page</code>)</li>
+<li>Mantêm <strong>duas conexões TCP</strong>: cliente↔proxy e proxy↔servidor</li>
+<li>Podem adicionar cabeçalhos (<code>Via</code>, <code>X-Forwarded-For</code>, <code>X-Real-IP</code>) revelando uso de proxy</li>
+<li>Suportam <strong>cache</strong> baseado em semântica HTTP (<code>Cache-Control</code>, <code>ETag</code>)</li>
+</ul>
+<p><strong>4. Autenticação:</strong></p>
+<ul>
+<li>Usa status HTTP <strong>407</strong> e cabeçalho <code>Proxy-Authorization</code></li>
+<li><strong>Basic</strong>: Simples mas inseguro (codificado em base64, não criptografado)</li>
+<li><strong>Digest</strong>: Desafio-resposta com hashing (melhor, mas MD5 é fraco)</li>
+<li><strong>NTLM</strong>: Integração Windows (complexo, proprietário)</li>
+<li><strong>Negotiate/Kerberos</strong>: Mais forte (SSO corporativo, Active Directory)</li>
+</ul>
+<p><strong>5. Protocolos Modernos:</strong></p>
+<ul>
+<li><strong>HTTP/2</strong>: Multiplexação, enquadramento binário, compressão HPACK</li>
+<li><strong>HTTP/3/QUIC</strong>: Baseado em UDP, 0-RTT, migração de conexão</li>
+<li>A maioria dos proxies <strong>não suporta HTTP/3</strong> (requer suporte a relay UDP)</li>
+<li>Navegadores <strong>fazem fallback</strong> para HTTP/2 ou HTTP/1.1 se o proxy não tiver suporte a QUIC</li>
+</ul>
+<h3 id="implicacoes-de-seguranca">Implicações de Segurança</h3>
+<p><strong>Pontos Fortes:</strong></p>
+<ul>
+<li><strong>Protocolo maduro</strong> com amplo suporte</li>
+<li><strong>Cache inteligente</strong> reduz banda e latência</li>
+<li><strong>Filtragem de conteúdo</strong> habilita escaneamento de malware, bloqueio de anúncios</li>
+<li><strong>Tunelamento CONNECT</strong> preserva TLS ponta-a-ponta para HTTPS</li>
+</ul>
+<p><strong>Pontos Fracos:</strong></p>
+<ul>
+<li><strong>Pode ler todo tráfego HTTP não criptografado</strong> (URLs, cabeçalhos, corpos)</li>
+<li><strong>Adiciona cabeçalhos identificadores</strong> (<code>Via</code>, <code>X-Forwarded-For</code>) revelando uso de proxy</li>
+<li><strong>Não pode proxyar protocolos não-HTTP</strong> (FTP, SSH, customizados)</li>
+<li><strong>Sem suporte UDP</strong> (WebRTC vaza IP real)</li>
+<li><strong>Terminação TLS para inspeção</strong> quebra criptografia ponta-a-ponta</li>
+</ul>
+<h3 id="quando-usar-proxies-http">Quando Usar Proxies HTTP</h3>
+<p><strong>Bons Casos de Uso:</strong></p>
+<ul>
+<li><strong>Redes corporativas</strong> exigindo filtragem e monitoramento de conteúdo</li>
+<li><strong>Proxies de cache</strong> para otimização de banda</li>
+<li><strong>Web scraping simples</strong> onde furtividade não é crítica</li>
+<li><strong>Sistemas legados</strong> que suportam apenas proxies HTTP</li>
+<li><strong>Controle de acesso baseado em URL</strong> (bloqueando domínios específicos)</li>
+</ul>
+<p><strong>Casos de Uso Ruins:</strong></p>
+<ul>
+<li><strong>Automação crítica de privacidade</strong> (use SOCKS5 em vez disso)</li>
+<li><strong>Protocolos não-HTTP</strong> (FTP, SSH, customizados → use SOCKS5)</li>
+<li><strong>Aplicações WebRTC</strong> (UDP não suportado → use SOCKS5 ou VPN)</li>
+<li><strong>Ambientes com Certificate pinning</strong> (CONNECT quebra MITM)</li>
+<li><strong>Automação furtiva</strong> (cabeçalhos vazam uso de proxy)</li>
+</ul>
+<h3 id="proxy-http-vs-socks5-matriz-de-decisao-rapida">Proxy HTTP vs SOCKS5: Matriz de Decisão Rápida</h3>
+<table>
+<thead>
+<tr>
+<th>Necessidade</th>
+<th>Proxy HTTP</th>
+<th>SOCKS5</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Filtragem de conteúdo</strong></td>
+<td><strong>Sim</strong></td>
+<td><strong>Não</strong></td>
+</tr>
+<tr>
+<td><strong>Bloqueio baseado em URL</strong></td>
+<td><strong>Sim</strong></td>
+<td><strong>Não</strong> (apenas IP:porta)</td>
+</tr>
+<tr>
+<td><strong>Cache</strong></td>
+<td><strong>Sim</strong></td>
+<td><strong>Não</strong></td>
+</tr>
+<tr>
+<td><strong>Suporte UDP</strong></td>
+<td><strong>Não</strong></td>
+<td><strong>Sim</strong> (SOCKS5)</td>
+</tr>
+<tr>
+<td><strong>Flexibilidade de protocolo</strong></td>
+<td><strong>Apenas HTTP</strong></td>
+<td><strong>Qualquer TCP/UDP</strong></td>
+</tr>
+<tr>
+<td><strong>Privacidade</strong></td>
+<td><strong>Baixa</strong> (vê HTTP)</td>
+<td><strong>Alta</strong> (encaminhamento cego)</td>
+</tr>
+<tr>
+<td><strong>Furtividade</strong></td>
+<td><strong>Baixa</strong> (vazamento de cabeçalhos)</td>
+<td><strong>Alta</strong> (transparente)</td>
+</tr>
+<tr>
+<td><strong>Privacidade de DNS</strong></td>
+<td><strong>Cliente resolve</strong></td>
+<td><strong>Resolução remota</strong></td>
+</tr>
+<tr>
+<td><strong>Complexidade</strong></td>
+<td><strong>Simples</strong></td>
+<td><strong>Moderada</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Recomendação Geral:</strong>
+- <strong>Corporativo/Empresarial</strong>: Proxy HTTP (controle de conteúdo, cache)
+- <strong>Privacidade/Automação</strong>: SOCKS5 (furtividade, flexibilidade de protocolo)
+- <strong>Segurança Máxima</strong>: SOCKS5 sobre túnel SSH ou VPN</p>
+<h2 id="leitura-adicional-e-proximos-passos">Leitura Adicional e Próximos Passos</h2>
+<h3 id="documentacao-relacionada">Documentação Relacionada</h3>
+<p><strong>Dentro Deste Módulo:</strong></p>
+<ul>
+<li><strong><a href="../socks-proxies/">Proxies SOCKS</a></strong> - Alternativa agnóstica a protocolo e mais segura aos proxies HTTP</li>
+<li><strong><a href="../network-fundamentals/">Fundamentos de Rede</a></strong> - Entendimento de TCP/IP, UDP, WebRTC</li>
+<li><strong><a href="../proxy-detection/">Detecção de Proxy</a></strong> - Como proxies são detectados e como evitar</li>
+<li><strong><a href="../build-proxy/">Construindo Servidores Proxy</a></strong> - Implementar proxies HTTP e SOCKS5 do zero</li>
+</ul>
+<p><strong>Uso Prático:</strong></p>
+<ul>
+<li><strong><a href="../../../features/configuration/proxy/">Configuração de Proxy (Recursos)</a></strong> - Como configurar proxies no Pydoll</li>
+<li><strong><a href="../../../features/configuration/browser-options/">Opções do Navegador</a></strong> - Flags de navegador relevantes para uso de proxy</li>
+</ul>
+<p><strong>Análises Profundas:</strong></p>
+<ul>
+<li><strong><a href="../../fingerprinting/network-fingerprinting/">Network Fingerprinting</a></strong> - Como características TCP/IP vazam através de proxies</li>
+<li><strong><a href="../../fingerprinting/browser-fingerprinting/">Browser Fingerprinting</a></strong> - Detecção em nível de aplicação apesar dos proxies</li>
+</ul>
+<h3 id="referencias-externas">Referências Externas</h3>
+<p><strong>RFCs (Especificações Oficiais):</strong></p>
+<ul>
+<li><strong>RFC 7230-7237</strong> - Suíte de especificações HTTP/1.1 (2014)</li>
+<li>RFC 7230: Sintaxe de Mensagem e Roteamento (define comportamento de proxy)</li>
+<li>RFC 7231: Semântica e Conteúdo (define método CONNECT)</li>
+<li>RFC 7235: Autenticação (define 407 e Proxy-Authorization)</li>
+<li><strong>RFC 7617</strong> - Autenticação Basic (2015)</li>
+<li><strong>RFC 7616</strong> - Autenticação Digest (2015)</li>
+<li><strong>RFC 4559</strong> - Autenticação Negotiate (2006)</li>
+<li><strong>RFC 7540</strong> - HTTP/2 (2015)</li>
+<li><strong>RFC 9000</strong> - Protocolo de Transporte QUIC (2021)</li>
+<li><strong>RFC 9114</strong> - HTTP/3 (2022)</li>
+<li><strong>RFC 9298</strong> - Proxying UDP in HTTP (CONNECT-UDP, 2022)</li>
+</ul>
+<p><strong>Órgãos de Padronização:</strong></p>
+<ul>
+<li><strong>IETF (Internet Engineering Task Force)</strong>: https://www.ietf.org/</li>
+<li><strong>W3C (World Wide Web Consortium)</strong>: https://www.w3.org/</li>
+</ul>
+<p><strong>Recursos Técnicos:</strong></p>
+<ul>
+<li><strong>MDN Web Docs - Servidores proxy e tunelamento</strong>: https://developer.mozilla.org/en-US/docs/Web/HTTP/Proxy_servers_and_tunneling</li>
+<li><strong>Chrome DevTools Protocol - Domínio Network</strong>: https://chromedevtools.github.io/devtools-protocol/tot/Network/</li>
+<li><strong>Chrome DevTools Protocol - Domínio Fetch</strong>: https://chromedevtools.github.io/devtools-protocol/tot/Fetch/</li>
+</ul>
+<p><strong>Pesquisa em Segurança:</strong></p>
+<ul>
+<li><strong>Ataque HTTP/2 Rapid Reset (CVE-2023-44487)</strong>: Exemplo de vulnerabilidade de multiplexação HTTP/2</li>
+<li><strong>Ataques NTLM Relay</strong>: Alerta de segurança da Microsoft sobre vulnerabilidades NTLM</li>
+<li><strong>Pesquisa em Interceptação TLS</strong>: Estudos sobre práticas MITM de proxies corporativos</li>
+</ul>
+<h3 id="ferramentas-de-teste-pratico">Ferramentas de Teste Prático</h3>
+<p><strong>Testes de Proxy:</strong></p>
+<ul>
+<li><strong>curl</strong>: Cliente HTTP de linha de comando com suporte a proxy
+  <div class="language-bash highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>curl<span class="w"> </span>-x<span class="w"> </span>http://proxy:8080<span class="w"> </span>-U<span class="w"> </span>user:pass<span class="w"> </span>http://example.com
+</span></code></pre></div></li>
+<li><strong>Burp Suite</strong>: Proxy HTTP interceptador para testes de segurança</li>
+<li><strong>mitmproxy</strong>: Proxy HTTP/HTTPS interativo para análise</li>
+</ul>
+<p><strong>Análise de Rede:</strong></p>
+<ul>
+<li><strong>Wireshark</strong>: Analisador de pacotes para observar tráfego de proxy HTTP</li>
+<li><strong>tcpdump</strong>: Captura de pacotes via linha de comando</li>
+<li><strong>Chrome DevTools</strong>: Aba Network mostra cabeçalhos de proxy (Via, X-Forwarded-For)</li>
+</ul>
+<p><strong>Testes de Detecção de Proxy:</strong></p>
+<ul>
+<li><strong>https://browserleaks.com/ip</strong>: Mostra seu IP e cabeçalhos de proxy</li>
+<li><strong>https://whoer.net/</strong>: Teste compreensivo de detecção de proxy</li>
+<li><strong>https://ipleak.net/</strong>: Testa vazamentos de DNS, WebRTC</li>
+</ul>
+<h3 id="topicos-avancados-alem-deste-documento">Tópicos Avançados (Além Deste Documento)</h3>
+<p><strong>Encadeamento de Proxy:</strong></p>
+<ul>
+<li>Usar múltiplos proxies em sequência para anonimato adicional</li>
+<li>Implicações de desempenho e latência</li>
+<li>Rede Tor como exemplo extremo</li>
+</ul>
+<p><strong>Proxies Transparentes:</strong></p>
+<ul>
+<li>Configuração de proxy em nível de SO (sem consciência da aplicação)</li>
+<li>WPAD (Web Proxy Auto-Discovery Protocol)</li>
+<li>Arquivos PAC (Proxy Auto-Configuration)</li>
+</ul>
+<p><strong>Proxies Reversos:</strong></p>
+<ul>
+<li>Proxies atuando em nome de servidores (não clientes)</li>
+<li>Balanceamento de carga, CDNs, cache</li>
+<li>Nginx, HAProxy, Cloudflare como exemplos</li>
+</ul>
+<p><strong>Interceptação TLS:</strong></p>
+<ul>
+<li>MITM de proxy corporativo com certificados CA customizados</li>
+<li>Logs de Certificate Transparency detectando interceptação</li>
+<li>Certificate pinning como contramedida</li>
+</ul>
+<hr />
+<h2 id="pensamentos-finais">Pensamentos Finais</h2>
+<p>Proxies HTTP são uma <strong>faca de dois gumes</strong>: poderosos para controle de conteúdo e cache, mas fundamentalmente <strong>incompatíveis com privacidade forte</strong> devido ao seu posicionamento na camada de aplicação.</p>
+<p>Para <strong>automação de navegador</strong> que requer furtividade e flexibilidade, <strong>SOCKS5 é quase sempre a escolha melhor</strong>. Proxies HTTP devem ser usados quando:</p>
+<ul>
+<li>Você controla o proxy (ambiente corporativo)</li>
+<li>Você precisa de recursos específicos do HTTP (cache, filtragem de URL)</li>
+<li>SOCKS5 não está disponível</li>
+</ul>
+<p>Entender a arquitetura de proxy HTTP (suas capacidades, limitações e modelo de segurança) permite que você <strong>tome decisões informadas</strong> em vez de copiar cegamente configurações de proxy.</p>
+<p><strong>Próximos passos:</strong></p>
+<ol>
+<li>Leia <strong><a href="../socks-proxies/">Proxies SOCKS</a></strong> para entender a alternativa superior</li>
+<li>Aprenda técnicas de <strong><a href="../proxy-detection/">Detecção de Proxy</a></strong> para evitar vazar o uso de proxy</li>
+<li>Configure proxies no Pydoll usando <strong><a href="../../../features/configuration/proxy/">Configuração de Proxy</a></strong></li>
+</ol>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../../../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.indexes", "navigation.expand", "navigation.path", "navigation.top", "toc.follow", "content.code.copy", "content.code.select", "content.tooltips", "search.highlight", "search.suggest"], "search": "../../../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../../assets/javascripts/bundle.f55a23d4.min.js"></script>
+      
+        <script src="../../../../resources/scripts/termynal.js"></script>
+      
+        <script src="../../../../resources/scripts/extra.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@10.0.0/dist/mermaid.min.js"></script>
+      
+    
+  </body>
+</html>
