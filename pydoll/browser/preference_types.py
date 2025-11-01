@@ -1,15 +1,21 @@
 from typing import NotRequired, TypedDict
 
 
-class DownloadPreferences(TypedDict, total=False):
+class DownloadPreferences(TypedDict):
     default_directory: str
-    prompt_for_download: bool
+    prompt_for_download: NotRequired[bool]
+    directory_upgrade: NotRequired[bool]
 
 
-class ProfilePreferences(TypedDict, total=False):
+class ContentSettingValues(TypedDict, total=False):
+    popups: int
+    notifications: int
+    automatic_downloads: int
+
+
+class ProfilePreferences(TypedDict):
     password_manager_enabled: bool
-    # maps content setting name -> int (e.g. popups: 0 or 1)
-    default_content_setting_values: NotRequired[dict[str, int]]
+    default_content_setting_values: ContentSettingValues
 
 
 class BrowserPreferences(TypedDict, total=False):
