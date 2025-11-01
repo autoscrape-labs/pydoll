@@ -319,6 +319,18 @@ class WrongPrefsDict(PydollException):
     message = 'The dict can not contain "prefs" key, provide only the prefs options'
 
 
+class InvalidPreferencePath(PydollException):
+    """Raised when a provided preference path is invalid (segment doesn't exist)."""
+
+    message = 'Invalid preference path'
+
+
+class InvalidPreferenceValue(PydollException):
+    """Invalid value for a preference (incompatible type)"""
+
+    message = 'Invalid preference value'
+
+
 class ElementPreconditionError(ElementException):
     """Raised when invalid or missing preconditions are provided for element operations."""
 
