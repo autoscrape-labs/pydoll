@@ -8,6 +8,24 @@ from pydoll.exceptions import (
     WrongPrefsDict,
 )
 
+from typing import TypedDict, NotRequired
+
+
+class DownloadPreferences(TypedDict, total=False):
+    default_directory: str
+    prompt_for_download: bool
+
+class ProfilePreferences(TypedDict, total=False):
+    password_manager_enable:bool
+    default_content_setting_values: NotRequired[dict[str, int]]
+
+class BrowserPreferences(TypedDict, total=False):
+    download: DownloadPreferences
+    profile: ProfilePreferences
+    intl: NotRequired[dict[str, str]]
+    plugins: NotRequired[dict[str, bool]]
+    credentials_enable_service: bool
+
 
 class ChromiumOptions(Options):
     """
@@ -27,7 +45,7 @@ class ChromiumOptions(Options):
         self._arguments = []
         self._binary_location = ''
         self._start_timeout = 10
-        self._browser_preferences = {}
+        self._browser_preferences: BrowserPreferences = {}
         self._headless = False
         self._page_load_state = PageLoadState.COMPLETE
 
@@ -125,7 +143,7 @@ class ChromiumOptions(Options):
         return self._browser_preferences
 
     @browser_preferences.setter
-    def browser_preferences(self, preferences: dict):
+    def browser_preferences(self, preferences: BrowserPreferences):
         if not isinstance(preferences, dict):
             raise ValueError('The experimental options value must be a dict.')
 
@@ -145,7 +163,9 @@ class ChromiumOptions(Options):
         """
         d = self._browser_preferences
         for key in path[:-1]:
-            d = d.setdefault(key, {})
+            if key not in d or not isinstance(d[key], dict):
+                d[key] = {}
+            d = d[key]
         d[path[-1]] = value
 
     def _get_pref_path(self, path: list):
