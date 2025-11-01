@@ -6,9 +6,11 @@ from pydoll.exceptions import (
     ArgumentAlreadyExistsInOptions,
     ArgumentNotFoundInOptions,
     WrongPrefsDict,
+    InvalidPreferencePath,
 )
 
-from typing import TypedDict, NotRequired
+from typing import TypedDict, NotRequired, Any, List, Optional, cast
+
 
 
 class DownloadPreferences(TypedDict, total=False):
@@ -16,7 +18,7 @@ class DownloadPreferences(TypedDict, total=False):
     prompt_for_download: bool
 
 class ProfilePreferences(TypedDict, total=False):
-    password_manager_enable:bool
+    password_manager_enabled: bool
     default_content_setting_values: NotRequired[dict[str, int]]
 
 class BrowserPreferences(TypedDict, total=False):
@@ -24,7 +26,7 @@ class BrowserPreferences(TypedDict, total=False):
     profile: ProfilePreferences
     intl: NotRequired[dict[str, str]]
     plugins: NotRequired[dict[str, bool]]
-    credentials_enable_service: bool
+    credentials_enable_service: NotRequired[bool]
 
 
 class ChromiumOptions(Options):
@@ -140,7 +142,8 @@ class ChromiumOptions(Options):
 
     @property
     def browser_preferences(self) -> dict:
-        return self._browser_preferences
+        # return a plain dict to satisfy the interface contract
+        return dict(self._browser_preferences)
 
     @browser_preferences.setter
     def browser_preferences(self, preferences: BrowserPreferences):
@@ -161,12 +164,41 @@ class ChromiumOptions(Options):
                     path (e.g., ['plugins', 'always_open_pdf_externally'])
             value -- The value to set at the given path
         """
+        # lightweight validation to fail early on clearly invalid paths/values
+        try:
+            self._validate_pref_path(path, value)
+        except AttributeError:
+            # if validation is not available for some reason, continue (backwards compatible)
+            pass
+
         d = self._browser_preferences
         for key in path[:-1]:
             if key not in d or not isinstance(d[key], dict):
                 d[key] = {}
             d = d[key]
         d[path[-1]] = value
+
+    def _validate_pref_path(self, path: List[str], value: Any) -> None:
+        """Basic validation for preference paths and types.
+
+        This is intentionally conservative: it checks that the path is a list of strings
+        and that top-level keys are known. It raises InvalidPreferencePath on errors.
+        """
+        if not path or not isinstance(path, list) or not all(isinstance(p, str) for p in path):
+            raise InvalidPreferencePath('preference path must be a non-empty list of strings')
+
+        top = path[0]
+        allowed_tops = {'download', 'profile', 'intl', 'plugins', 'credentials_enable_service'}
+        if top not in allowed_tops:
+            raise InvalidPreferencePath(f'unknown preference top-level key: {top}')
+
+        # simple type expectations for common keys
+        if top == 'download' and len(path) == 2 and path[1] == 'default_directory' and not isinstance(value, str):
+            raise InvalidPreferencePath('download.default_directory must be a string')
+        if top == 'download' and len(path) == 2 and path[1] == 'prompt_for_download' and not isinstance(value, bool):
+            raise InvalidPreferencePath('download.prompt_for_download must be a boolean')
+        if top == 'profile' and len(path) >= 2 and path[1] == 'password_manager_enabled' and not isinstance(value, bool):
+            raise InvalidPreferencePath('profile.password_manager_enabled must be a boolean')
 
     def _get_pref_path(self, path: list):
         """
@@ -209,8 +241,8 @@ class ChromiumOptions(Options):
         self._set_pref_path(['intl', 'accept_languages'], languages)
 
     @property
-    def prompt_for_download(self) -> bool:
-        return self._get_pref_path(['download', 'prompt_for_download'])
+    def prompt_for_download(self) -> Optional[bool]:
+        return cast(Optional[bool], self._get_pref_path(['download', 'prompt_for_download']))
 
     @prompt_for_download.setter
     def prompt_for_download(self, enabled: bool):
@@ -243,8 +275,8 @@ class ChromiumOptions(Options):
         )
 
     @property
-    def password_manager_enabled(self) -> bool:
-        return self._get_pref_path(['profile', 'password_manager_enabled'])
+    def password_manager_enabled(self) -> Optional[bool]:
+        return cast(Optional[bool], self._get_pref_path(['profile', 'password_manager_enabled']))
 
     @password_manager_enabled.setter
     def password_manager_enabled(self, enabled: bool):
@@ -311,8 +343,8 @@ class ChromiumOptions(Options):
         )
 
     @property
-    def open_pdf_externally(self) -> bool:
-        return self._get_pref_path(['plugins', 'always_open_pdf_externally'])
+    def open_pdf_externally(self) -> Optional[bool]:
+        return cast(Optional[bool], self._get_pref_path(['plugins', 'always_open_pdf_externally']))
 
     @open_pdf_externally.setter
     def open_pdf_externally(self, enabled: bool):
