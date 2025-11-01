@@ -1,15 +1,15 @@
 from contextlib import suppress
+from typing import Any, List, Optional, TypedDict, cast
+from typing_extensions import NotRequired
 
 from pydoll.browser.interfaces import Options
 from pydoll.constants import PageLoadState
 from pydoll.exceptions import (
     ArgumentAlreadyExistsInOptions,
     ArgumentNotFoundInOptions,
-    WrongPrefsDict,
     InvalidPreferencePath,
+    WrongPrefsDict,
 )
-
-from typing import TypedDict, NotRequired, Any, List, Optional, cast
 
 
 
