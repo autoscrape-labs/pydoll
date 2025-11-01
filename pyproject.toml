@@ -58,8 +58,8 @@ pythonpath = "."
 addopts = '-p no:warnings'
 
 [tool.taskipy.tasks]
-lint = 'ruff check .; ruff check . --diff'
-format = 'ruff check . --fix; ruff format .'
+lint = 'ruff check . && ruff check . --diff'
+format = 'ruff check . --fix && ruff format .'
 test = 'pytest -s -x --cov=pydoll -vv'
 post_test = 'coverage html'
 
