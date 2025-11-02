@@ -2777,6 +2777,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pydoll.elements.web_element.WebElement.is_editable" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;is_editable
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pydoll.elements.web_element.WebElement.is_visible" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;is_visible
@@ -3989,6 +3998,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pydoll.elements.web_element.WebElement.is_editable" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;is_editable
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pydoll.elements.web_element.WebElement.is_visible" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;is_visible
@@ -5180,12 +5198,67 @@ Element is automatically scrolled into view.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Insert text in single operation (faster but less realistic than typing).</p>
+        <p>Insert text into element using JavaScript.</p>
+<p>Supports standard inputs, textareas, contenteditable elements, and rich text editors.
+Inserts text at cursor position or replaces selected text.</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>text</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Text to insert.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="str">str</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RAISES</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+              <span class="doc-raises-annotation">
+                  <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;ElementNotInteractable&lt;/span&gt; (&lt;code&gt;pydoll.exceptions.ElementNotInteractable&lt;/code&gt;)" href="../../../../api/core/exceptions/#pydoll.exceptions.ElementNotInteractable">ElementNotInteractable</a></code>
+              </span>
+            </td>
+            <td class="doc-raises-details">
+              <div class="doc-md-description">
+                <p>If element does not accept text input.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
 <details class="note" open>
   <summary>Note</summary>
-  <p>Element should already be focused for text to be inserted correctly.</p>
+  <p>Uses JavaScript for maximum compatibility with all input types.
+Automatically handles input/textarea and contenteditable elements.</p>
 </details>
 
     </div>
@@ -5311,6 +5384,8 @@ Element is automatically scrolled into view.</p>
     <div class="doc doc-contents ">
 
         <p>Send key down event.</p>
+<p>.. deprecated::
+    This method is deprecated. Use <code>tab.keyboard.down()</code> instead.</p>
 
 
 <details class="note" open>
@@ -5340,6 +5415,8 @@ Element is automatically scrolled into view.</p>
     <div class="doc doc-contents ">
 
         <p>Send key up event (should follow corresponding key_down()).</p>
+<p>.. deprecated::
+    This method is deprecated. Use <code>tab.keyboard.up()</code> instead.</p>
 
 
     </div>
@@ -5364,7 +5441,57 @@ Element is automatically scrolled into view.</p>
     <div class="doc doc-contents ">
 
         <p>Press and release keyboard key with configurable timing.</p>
+<p>.. deprecated::
+    This method is deprecated. Use <code>tab.keyboard.press()</code> instead.</p>
 <p>Better for special keys (Enter, Tab, etc.) than type_text().</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="pydoll.elements.web_element.WebElement.is_editable" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">is_editable</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">is_editable</span><span class="p">()</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Check if element can accept text input.</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <span class="doc-returns-annotation">
+                    <code><span title="bool">bool</span></code>
+                </span>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>True if element is editable (input, textarea, or contenteditable).</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     </div>
@@ -5455,14 +5582,87 @@ Element is automatically scrolled into view.</p>
   </span>
 
 </h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">execute_script</span><span class="p">(</span><span class="n">script</span><span class="p">,</span> <span class="n">return_by_value</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">execute_script</span><span class="p">(</span><span class="n">script</span><span class="p">,</span> <span class="n">return_by_value</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">arguments</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
 
         <p>Execute JavaScript in element context.</p>
-<p>Element is available as 'this' within the script.</p>
 
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>script</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>JavaScript function to execute.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="str">str</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>return_by_value</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Whether to return result by value.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="bool">bool</span></code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>False</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>arguments</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Optional list of arguments to pass to the function.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="typing.Optional">Optional</span>[<span title="list">list</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;CallArgument&lt;/span&gt; (&lt;code&gt;pydoll.protocol.runtime.types.CallArgument&lt;/code&gt;)" href="../../../../api/protocol/runtime/#pydoll.protocol.runtime.types.CallArgument">CallArgument</a>]]</code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>None</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Note</summary>
+  <p>Element is available as 'this' within the script.
+Arguments are accessible via 'arguments' array in JavaScript.</p>
+</details>
 
     </div>
 
