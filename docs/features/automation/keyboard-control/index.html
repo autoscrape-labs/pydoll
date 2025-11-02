@@ -4221,17 +4221,21 @@
 <div class="admonition warning">
 <p class="admonition-title">Important CDP Limitation: Browser UI Shortcuts Don't Work</p>
 <p><strong>Known Issue</strong>: Events injected via Chrome DevTools Protocol are marked as "untrusted" and do <strong>not</strong> trigger browser UI actions or create user gestures.</p>
-<p><strong>What DOESN'T work:</strong>
-- Browser shortcuts (Ctrl+T, Ctrl+W, Ctrl+N)
-- DevTools shortcuts (F12, Ctrl+Shift+I)
-- Browser navigation (Ctrl+Shift+T to reopen tabs)
-- Any shortcut that modifies browser UI or windows</p>
-<p><strong>What WORKS perfectly:</strong>
-- Page-level shortcuts (Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+F)
-- Text selection and manipulation
-- Form navigation (Tab, Enter, Arrow keys)
-- Input field interactions
-- Custom application shortcuts (in web apps)</p>
+<p><strong>What DOESN'T work:</strong></p>
+<ul>
+<li>Browser shortcuts (Ctrl+T, Ctrl+W, Ctrl+N)</li>
+<li>DevTools shortcuts (F12, Ctrl+Shift+I)</li>
+<li>Browser navigation (Ctrl+Shift+T to reopen tabs)</li>
+<li>Any shortcut that modifies browser UI or windows</li>
+</ul>
+<p><strong>What WORKS perfectly:</strong></p>
+<ul>
+<li>Page-level shortcuts (Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+F)</li>
+<li>Text selection and manipulation</li>
+<li>Form navigation (Tab, Enter, Arrow keys)</li>
+<li>Input field interactions</li>
+<li>Custom application shortcuts (in web apps)</li>
+</ul>
 <p><strong>Technical reason</strong>: CDP events don't create "user gestures" required by browser security. See <a href="https://bugs.chromium.org/p/chromium/issues/detail?id=615341">chromium issue #615341</a> and <a href="https://chromedevtools.github.io/devtools-protocol/tot/Input/#method-dispatchKeyEvent">CDP documentation</a>.</p>
 <p>For browser-level automation, use CDP browser commands directly (like <code>tab.close()</code>, <code>browser.new_tab()</code>) instead of keyboard shortcuts.</p>
 </div>
@@ -4271,10 +4275,12 @@
 </span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="c1"># Custom hold duration</span>
 </span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">keyboard</span><span class="o">.</span><span class="n">press</span><span class="p">(</span><span class="n">Key</span><span class="o">.</span><span class="n">SPACE</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>  <span class="c1"># Hold for 500ms</span>
 </span></code></pre></div>
-<p><strong>Parameters:</strong>
-- <code>key</code>: Key to press (from <code>Key</code> enum)
-- <code>modifiers</code> (optional): Modifier flags (Alt=1, Ctrl=2, Meta=4, Shift=8)
-- <code>interval</code> (optional): Duration to hold key in seconds (default: 0.1)</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>key</code>: Key to press (from <code>Key</code> enum)</li>
+<li><code>modifiers</code> (optional): Modifier flags (Alt=1, Ctrl=2, Meta=4, Shift=8)</li>
+<li><code>interval</code> (optional): Duration to hold key in seconds (default: 0.1)</li>
+</ul>
 <h3 id="down-press-key-without-releasing">Down: Press Key Without Releasing</h3>
 <p>The <code>down()</code> method presses a key without releasing it, useful for holding modifiers or creating key sequences:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">Key</span>
@@ -4288,9 +4294,11 @@
 </span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="c1"># Press with modifier flags</span>
 </span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">keyboard</span><span class="o">.</span><span class="n">down</span><span class="p">(</span><span class="n">Key</span><span class="o">.</span><span class="n">A</span><span class="p">,</span> <span class="n">modifiers</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># Ctrl+A (select all)</span>
 </span></code></pre></div>
-<p><strong>Parameters:</strong>
-- <code>key</code>: Key to press down
-- <code>modifiers</code> (optional): Modifier flags to apply</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>key</code>: Key to press down</li>
+<li><code>modifiers</code> (optional): Modifier flags to apply</li>
+</ul>
 <h3 id="up-release-a-key">Up: Release a Key</h3>
 <p>The <code>up()</code> method releases a previously pressed key:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">Key</span>
@@ -4302,8 +4310,10 @@
 </span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">keyboard</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="n">Key</span><span class="o">.</span><span class="n">SHIFT</span><span class="p">)</span>
 </span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">keyboard</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="n">Key</span><span class="o">.</span><span class="n">CONTROL</span><span class="p">)</span>
 </span></code></pre></div>
-<p><strong>Parameters:</strong>
-- <code>key</code>: Key to release</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>key</code>: Key to release</li>
+</ul>
 <div class="admonition tip">
 <p class="admonition-title">When to Use Each Method</p>
 <ul>
@@ -4367,11 +4377,13 @@
 </span></code></pre></div>
 <div class="admonition tip">
 <p class="admonition-title">Modifier Values</p>
-<p>When using <code>modifiers</code> parameter manually:
-- Alt = 1
-- Ctrl = 2
-- Meta/Command = 4
-- Shift = 8</p>
+<p>When using <code>modifiers</code> parameter manually:</p>
+<ul>
+<li>Alt = 1</li>
+<li>Ctrl = 2</li>
+<li>Meta/Command = 4</li>
+<li>Shift = 8</li>
+</ul>
 <p>Combine them: Ctrl+Shift = 2 + 8 = 10</p>
 </div>
 <h2 id="available-keys">Available Keys</h2>
@@ -4798,10 +4810,12 @@
 </span></code></pre></div>
 <div class="admonition warning">
 <p class="admonition-title">Deprecation Notice</p>
-<p>The following <code>WebElement</code> methods are deprecated:
-- <code>key_down()</code> → Use <code>tab.keyboard.down()</code>
-- <code>key_up()</code> → Use <code>tab.keyboard.up()</code>
-- <code>press_keyboard_key()</code> → Use <code>tab.keyboard.press()</code></p>
+<p>The following <code>WebElement</code> methods are deprecated:</p>
+<ul>
+<li><code>key_down()</code> → Use <code>tab.keyboard.down()</code></li>
+<li><code>key_up()</code> → Use <code>tab.keyboard.up()</code></li>
+<li><code>press_keyboard_key()</code> → Use <code>tab.keyboard.press()</code></li>
+</ul>
 <p>These methods still work for backward compatibility but will show deprecation warnings.</p>
 </div>
 <h3 id="why-migrate">Why Migrate?</h3>

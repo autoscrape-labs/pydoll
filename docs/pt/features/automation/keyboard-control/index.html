@@ -4225,17 +4225,21 @@
 <div class="admonition warning">
 <p class="admonition-title">Limitação Importante do CDP: Atalhos de UI do Navegador Não Funcionam</p>
 <p><strong>Problema Conhecido</strong>: Eventos injetados via Chrome DevTools Protocol são marcados como "não confiáveis" e <strong>não</strong> acionam ações da UI do navegador ou criam gestos de usuário.</p>
-<p><strong>O que NÃO funciona:</strong>
-- Atalhos do navegador (Ctrl+T, Ctrl+W, Ctrl+N)
-- Atalhos de DevTools (F12, Ctrl+Shift+I)
-- Navegação do navegador (Ctrl+Shift+T para reabrir abas)
-- Qualquer atalho que modifica a UI ou janelas do navegador</p>
-<p><strong>O que funciona perfeitamente:</strong>
-- Atalhos em nível de página (Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+F)
-- Seleção e manipulação de texto
-- Navegação em formulários (Tab, Enter, teclas de seta)
-- Interações com campos de entrada
-- Atalhos personalizados de aplicações (em web apps)</p>
+<p><strong>O que NÃO funciona:</strong></p>
+<ul>
+<li>Atalhos do navegador (Ctrl+T, Ctrl+W, Ctrl+N)</li>
+<li>Atalhos de DevTools (F12, Ctrl+Shift+I)</li>
+<li>Navegação do navegador (Ctrl+Shift+T para reabrir abas)</li>
+<li>Qualquer atalho que modifica a UI ou janelas do navegador</li>
+</ul>
+<p><strong>O que funciona perfeitamente:</strong></p>
+<ul>
+<li>Atalhos em nível de página (Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+F)</li>
+<li>Seleção e manipulação de texto</li>
+<li>Navegação em formulários (Tab, Enter, teclas de seta)</li>
+<li>Interações com campos de entrada</li>
+<li>Atalhos personalizados de aplicações (em web apps)</li>
+</ul>
 <p><strong>Razão técnica</strong>: Eventos CDP não criam "gestos de usuário" necessários pela segurança do navegador. Veja <a href="https://bugs.chromium.org/p/chromium/issues/detail?id=615341">chromium issue #615341</a> e <a href="https://chromedevtools.github.io/devtools-protocol/tot/Input/#method-dispatchKeyEvent">documentação CDP</a>.</p>
 <p>Para automação em nível de navegador, use comandos CDP do navegador diretamente (como <code>tab.close()</code>, <code>browser.new_tab()</code>) ao invés de atalhos de teclado.</p>
 </div>
@@ -4275,10 +4279,12 @@
 </span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="c1"># Duração personalizada de manutenção</span>
 </span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">keyboard</span><span class="o">.</span><span class="n">press</span><span class="p">(</span><span class="n">Key</span><span class="o">.</span><span class="n">SPACE</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>  <span class="c1"># Manter por 500ms</span>
 </span></code></pre></div>
-<p><strong>Parâmetros:</strong>
-- <code>key</code>: Tecla a ser pressionada (do enum <code>Key</code>)
-- <code>modifiers</code> (opcional): Flags de modificadores (Alt=1, Ctrl=2, Meta=4, Shift=8)
-- <code>interval</code> (opcional): Duração para manter a tecla em segundos (padrão: 0.1)</p>
+<p><strong>Parâmetros:</strong></p>
+<ul>
+<li><code>key</code>: Tecla a ser pressionada (do enum <code>Key</code>)</li>
+<li><code>modifiers</code> (opcional): Flags de modificadores (Alt=1, Ctrl=2, Meta=4, Shift=8)</li>
+<li><code>interval</code> (opcional): Duração para manter a tecla em segundos (padrão: 0.1)</li>
+</ul>
 <h3 id="down-pressionar-tecla-sem-soltar">Down: Pressionar Tecla Sem Soltar</h3>
 <p>O método <code>down()</code> pressiona uma tecla sem soltá-la, útil para manter modificadores ou criar sequências de teclas:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">Key</span>
@@ -4371,11 +4377,13 @@
 </span></code></pre></div>
 <div class="admonition tip">
 <p class="admonition-title">Valores de Modificador</p>
-<p>Ao usar o parâmetro <code>modifiers</code> manualmente:
-- Alt = 1
-- Ctrl = 2
-- Meta/Command = 4
-- Shift = 8</p>
+<p>Ao usar o parâmetro <code>modifiers</code> manualmente:</p>
+<ul>
+<li>Alt = 1</li>
+<li>Ctrl = 2</li>
+<li>Meta/Command = 4</li>
+<li>Shift = 8</li>
+</ul>
 <p>Combine-os: Ctrl+Shift = 2 + 8 = 10</p>
 </div>
 <h2 id="teclas-disponiveis">Teclas Disponíveis</h2>
@@ -4802,10 +4810,12 @@
 </span></code></pre></div>
 <div class="admonition warning">
 <p class="admonition-title">Aviso de Depreciação</p>
-<p>Os seguintes métodos de <code>WebElement</code> estão depreciados:
-- <code>key_down()</code> → Use <code>tab.keyboard.down()</code>
-- <code>key_up()</code> → Use <code>tab.keyboard.up()</code>
-- <code>press_keyboard_key()</code> → Use <code>tab.keyboard.press()</code></p>
+<p>Os seguintes métodos de <code>WebElement</code> estão depreciados:</p>
+<ul>
+<li><code>key_down()</code> → Use <code>tab.keyboard.down()</code></li>
+<li><code>key_up()</code> → Use <code>tab.keyboard.up()</code></li>
+<li><code>press_keyboard_key()</code> → Use <code>tab.keyboard.press()</code></li>
+</ul>
 <p>Esses métodos ainda funcionam para compatibilidade retroativa, mas mostrarão avisos de depreciação.</p>
 </div>
 <h3 id="por-que-migrar">Por Que Migrar?</h3>

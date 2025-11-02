@@ -4223,17 +4223,21 @@
 <div class="admonition warning">
 <p class="admonition-title">重要的 CDP 限制：浏览器 UI 快捷键无法使用</p>
 <p><strong>已知问题</strong>：通过 Chrome DevTools Protocol 注入的事件被标记为"不可信"，<strong>不会</strong>触发浏览器 UI 操作或创建用户手势。</p>
-<p><strong>不起作用的功能：</strong>
-- 浏览器快捷键（Ctrl+T、Ctrl+W、Ctrl+N）
-- 开发者工具快捷键（F12、Ctrl+Shift+I）
-- 浏览器导航（Ctrl+Shift+T 重新打开标签）
-- 任何修改浏览器 UI 或窗口的快捷键</p>
-<p><strong>完美工作的功能：</strong>
-- 页面级快捷键（Ctrl+A、Ctrl+C、Ctrl+V、Ctrl+F）
-- 文本选择和操作
-- 表单导航（Tab、Enter、方向键）
-- 输入字段交互
-- 自定义应用快捷键（在 Web 应用中）</p>
+<p><strong>不起作用的功能：</strong></p>
+<ul>
+<li>浏览器快捷键（Ctrl+T、Ctrl+W、Ctrl+N）</li>
+<li>开发者工具快捷键（F12、Ctrl+Shift+I）</li>
+<li>浏览器导航（Ctrl+Shift+T 重新打开标签）</li>
+<li>任何修改浏览器 UI 或窗口的快捷键</li>
+</ul>
+<p><strong>完美工作的功能：</strong></p>
+<ul>
+<li>页面级快捷键（Ctrl+A、Ctrl+C、Ctrl+V、Ctrl+F）</li>
+<li>文本选择和操作</li>
+<li>表单导航（Tab、Enter、方向键）</li>
+<li>输入字段交互</li>
+<li>自定义应用快捷键（在 Web 应用中）</li>
+</ul>
 <p><strong>技术原因</strong>：CDP 事件不会创建浏览器安全所需的"用户手势"。参见 <a href="https://bugs.chromium.org/p/chromium/issues/detail?id=615341">chromium issue #615341</a> 和 <a href="https://chromedevtools.github.io/devtools-protocol/tot/Input/#method-dispatchKeyEvent">CDP 文档</a>。</p>
 <p>对于浏览器级自动化，请直接使用 CDP 浏览器命令（如 <code>tab.close()</code>、<code>browser.new_tab()</code>），而不是键盘快捷键。</p>
 </div>
@@ -4273,10 +4277,12 @@
 </span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="c1"># 自定义按住时长</span>
 </span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">keyboard</span><span class="o">.</span><span class="n">press</span><span class="p">(</span><span class="n">Key</span><span class="o">.</span><span class="n">SPACE</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>  <span class="c1"># 按住 500 毫秒</span>
 </span></code></pre></div>
-<p><strong>参数:</strong>
-- <code>key</code>: 要按下的键（来自 <code>Key</code> 枚举）
-- <code>modifiers</code> (可选): 修饰符标志（Alt=1, Ctrl=2, Meta=4, Shift=8）
-- <code>interval</code> (可选): 按住键的时长（秒）（默认: 0.1）</p>
+<p><strong>参数:</strong></p>
+<ul>
+<li><code>key</code>: 要按下的键（来自 <code>Key</code> 枚举）</li>
+<li><code>modifiers</code> (可选): 修饰符标志（Alt=1, Ctrl=2, Meta=4, Shift=8）</li>
+<li><code>interval</code> (可选): 按住键的时长（秒）（默认: 0.1）</li>
+</ul>
 <h3 id="down">Down: 按下键而不释放</h3>
 <p><code>down()</code> 方法按下键但不释放它，对于按住修饰键或创建按键序列很有用:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">Key</span>
@@ -4290,9 +4296,11 @@
 </span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="c1"># 使用修饰符标志按下</span>
 </span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">keyboard</span><span class="o">.</span><span class="n">down</span><span class="p">(</span><span class="n">Key</span><span class="o">.</span><span class="n">A</span><span class="p">,</span> <span class="n">modifiers</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># Ctrl+A（全选）</span>
 </span></code></pre></div>
-<p><strong>参数:</strong>
-- <code>key</code>: 要按下的键
-- <code>modifiers</code> (可选): 要应用的修饰符标志</p>
+<p><strong>参数:</strong></p>
+<ul>
+<li><code>key</code>: 要按下的键</li>
+<li><code>modifiers</code> (可选): 要应用的修饰符标志</li>
+</ul>
 <h3 id="up">Up: 释放按键</h3>
 <p><code>up()</code> 方法释放先前按下的键:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">Key</span>
@@ -4304,8 +4312,10 @@
 </span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">keyboard</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="n">Key</span><span class="o">.</span><span class="n">SHIFT</span><span class="p">)</span>
 </span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">keyboard</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="n">Key</span><span class="o">.</span><span class="n">CONTROL</span><span class="p">)</span>
 </span></code></pre></div>
-<p><strong>参数:</strong>
-- <code>key</code>: 要释放的键</p>
+<p><strong>参数:</strong></p>
+<ul>
+<li><code>key</code>: 要释放的键</li>
+</ul>
 <div class="admonition tip">
 <p class="admonition-title">何时使用每种方法</p>
 <ul>
@@ -4369,11 +4379,13 @@
 </span></code></pre></div>
 <div class="admonition tip">
 <p class="admonition-title">修饰符值</p>
-<p>手动使用 <code>modifiers</code> 参数时:
-- Alt = 1
-- Ctrl = 2
-- Meta/Command = 4
-- Shift = 8</p>
+<p>手动使用 <code>modifiers</code> 参数时:</p>
+<ul>
+<li>Alt = 1</li>
+<li>Ctrl = 2</li>
+<li>Meta/Command = 4</li>
+<li>Shift = 8</li>
+</ul>
 <p>组合它们: Ctrl+Shift = 2 + 8 = 10</p>
 </div>
 <h2 id="_9">可用按键</h2>
@@ -4800,10 +4812,12 @@
 </span></code></pre></div>
 <div class="admonition warning">
 <p class="admonition-title">弃用通知</p>
-<p>以下 <code>WebElement</code> 方法已弃用:
-- <code>key_down()</code> → 使用 <code>tab.keyboard.down()</code>
-- <code>key_up()</code> → 使用 <code>tab.keyboard.up()</code>
-- <code>press_keyboard_key()</code> → 使用 <code>tab.keyboard.press()</code></p>
+<p>以下 <code>WebElement</code> 方法已弃用:</p>
+<ul>
+<li><code>key_down()</code> → 使用 <code>tab.keyboard.down()</code></li>
+<li><code>key_up()</code> → 使用 <code>tab.keyboard.up()</code></li>
+<li><code>press_keyboard_key()</code> → 使用 <code>tab.keyboard.press()</code></li>
+</ul>
 <p>这些方法仍然可以工作以保持向后兼容性，但会显示弃用警告。</p>
 </div>
 <h3 id="_25">为什么要迁移？</h3>
