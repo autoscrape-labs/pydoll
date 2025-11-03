@@ -154,3 +154,24 @@ def test_set_pref_path_creates_structure():
     })
     options._set_pref_path(['profile', 'default_content_setting_values', 'popups'], 0)
     assert cast(Any, options.browser_preferences)['profile']['default_content_setting_values']['popups'] == 0
+
+
+def test_validate_pref_value_dict_invalid_type():
+    """Test that passing non-dict value for dict expected raises InvalidPreferenceValue."""
+    options = ChromiumOptions()
+    with pytest.raises(InvalidPreferenceValue):
+        options._validate_pref_value(['profile', 'default_content_setting_values'], 'not_a_dict')
+
+
+def test_validate_pref_value_dict_invalid_key():
+    """Test that passing dict with invalid key raises InvalidPreferencePath."""
+    options = ChromiumOptions()
+    with pytest.raises(InvalidPreferencePath):
+        options._validate_pref_value(['profile', 'default_content_setting_values'], {'invalid_key': 1})
+
+
+def test_validate_pref_value_dict_valid():
+    """Test that passing valid dict for dict expected works."""
+    options = ChromiumOptions()
+    # Should not raise
+    options._validate_pref_value(['profile', 'default_content_setting_values'], {'popups': 1, 'notifications': 2})
