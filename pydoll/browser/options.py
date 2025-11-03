@@ -28,12 +28,12 @@ class ChromiumOptions(Options):
         Sets up an empty list for command-line arguments and a string
         for the binary location of the browser.
         """
-        self._arguments = []
-        self._binary_location = ''
-        self._start_timeout = 10
+        self._arguments: list[str] = []
+        self._binary_location: str = ''
+        self._start_timeout: int = 10
         self._browser_preferences: BrowserPreferences = {}
-        self._headless = False
-        self._page_load_state = PageLoadState.COMPLETE
+        self._headless: bool = False
+        self._page_load_state: PageLoadState = PageLoadState.COMPLETE
 
     @property
     def arguments(self) -> list[str]:
@@ -154,7 +154,7 @@ class ChromiumOptions(Options):
         self._validate_pref_path(path)
         self._validate_pref_value(path, value)
 
-        d =  cast(dict[str, Any], self._browser_preferences)
+        d = cast(dict[str, Any], self._browser_preferences)
         for key in path[:-1]:
             d = d.setdefault(key, {})
         d[path[-1]] = value
@@ -176,29 +176,35 @@ class ChromiumOptions(Options):
     def _validate_pref_value(path: list[str], value: Any) -> None:
         """
         Validate the value type for the final segment in path against PREFERENCE_SCHEMA.
-        Raises InvalidPreferenceValue when the value does not match expected type.
+        Supports recursive validation for nested dictionaries.
+        Raises InvalidPreferenceValue or InvalidPreferencePath on validation failure.
         """
         node = PREFERENCE_SCHEMA
-        # walk to the parent node
+        # Walk to the parent node (assumes path is valid from _validate_pref_path)
         for key in path[:-1]:
             node = node[key]
 
         final_key = path[-1]
-        expected = node.get(final_key) if isinstance(node, dict) else None
+        expected = node[final_key]
 
-        if expected is None:
-            # no explicit restriction
-            return
-
-        if expected is dict:
+        if isinstance(expected, dict):
+            # Expected is a subschema dict; value must be a dict and match the schema
             if not isinstance(value, dict):
-                msg = f'Invalid value type for {".".join(path)}: '
-                msg += f'expected dict, got {type(value).__name__}'
-                raise InvalidPreferenceValue(msg)
-        elif not isinstance(value, expected):
-            msg = f'Invalid value type for {".".join(path)}: '
-            msg += f'expected {expected.__name__}, got {type(value).__name__}'
-            raise InvalidPreferenceValue(msg)
+                raise InvalidPreferenceValue(
+                    f'Invalid value type for {".".join(path)}: expected dict, got {type(value).__name__}'
+                )
+            # Recursively validate each key-value in the value dict
+            for k, v in value.items():
+                if k not in expected:
+                    raise InvalidPreferencePath(f'Invalid key "{k}" in preference path {".".join(path)}')
+                sub_expected = expected[k]
+                ChromiumOptions._validate_pref_value(path + [k], v)
+        else:
+            # Expected is a primitive type; check isinstance
+            if not isinstance(value, expected):
+                raise InvalidPreferenceValue(
+                    f'Invalid value type for {".".join(path)}: expected {expected.__name__}, got {type(value).__name__}'
+                )
 
     def _get_pref_path(self, path: list):
         """
@@ -297,7 +303,7 @@ class ChromiumOptions(Options):
             enabled: If True, the password manager is active.
         """
         self._set_pref_path(['profile', 'password_manager_enabled'], enabled)
-        self._set_pref_path(['credentials_enable_service'], enabled)
+        self._browser_preferences['credentials_enable_service'] = enabled
 
     @property
     def block_notifications(self) -> bool:
@@ -376,9 +382,8 @@ class ChromiumOptions(Options):
         self._headless = headless
         has_argument = '--headless' in self.arguments
         methods_map = {True: self.add_argument, False: self.remove_argument}
-        if headless == has_argument:
-            return
-        methods_map[headless]('--headless')
+        if headless != has_argument:
+            methods_map[headless]('--headless')
 
     @property
     def page_load_state(self) -> PageLoadState:
