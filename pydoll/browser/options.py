@@ -1,5 +1,5 @@
 from contextlib import suppress
-from typing import Any, Optional
+from typing import Any, Optional, cast
 
 from pydoll.browser.interfaces import Options
 from pydoll.browser.preference_types import PREFERENCE_SCHEMA, BrowserPreferences
@@ -154,7 +154,7 @@ class ChromiumOptions(Options):
         self._validate_pref_path(path)
         self._validate_pref_value(path, value)
 
-        d = self._browser_preferences
+        d =  cast(dict[str, Any], self._browser_preferences)
         for key in path[:-1]:
             d = d.setdefault(key, {})
         d[path[-1]] = value

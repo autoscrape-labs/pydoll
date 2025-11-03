@@ -1,4 +1,5 @@
-from typing import NotRequired, TypedDict
+from typing import TypedDict, Any
+from typing_extensions import NotRequired
 
 
 class DownloadPreferences(TypedDict):
