@@ -1,8 +1,7 @@
 from abc import ABC, abstractmethod
 
-from pydoll.constants import PageLoadState
-
 from pydoll.browser.preference_types import BrowserPreferences
+from pydoll.constants import PageLoadState
 
 
 class Options(ABC):

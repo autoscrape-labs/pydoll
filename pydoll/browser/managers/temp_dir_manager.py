@@ -79,11 +79,11 @@ class TempDirectoryManager:
         Note:
             Handles Chromium-specific locked files like CrashpadMetrics.
         """
-        matches = ['CrashpadMetrics-active.pma']
+        matches = ['CrashpadMetrics-active.pma', 'Cookies', 'Network']
         exc_type, exc_value, _ = exc_info
 
         if exc_type is PermissionError:
-            if Path(path).name in matches:
+            if Path(path).name in matches or 'Network' in str(Path(path)):
                 try:
                     self.retry_process_file(func, path)
                     return

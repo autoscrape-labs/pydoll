@@ -31,7 +31,7 @@ class ChromiumOptions(Options):
         self._arguments: list[str] = []
         self._binary_location: str = ''
         self._start_timeout: int = 10
-        self._browser_preferences: BrowserPreferences = {}
+        self._browser_preferences: dict[str, Any] = {}
         self._headless: bool = False
         self._page_load_state: PageLoadState = PageLoadState.COMPLETE
 
@@ -126,7 +126,7 @@ class ChromiumOptions(Options):
 
     @property
     def browser_preferences(self) -> BrowserPreferences:
-        return self._browser_preferences
+        return cast(BrowserPreferences, self._browser_preferences)
 
     @browser_preferences.setter
     def browser_preferences(self, preferences: BrowserPreferences):
@@ -191,20 +191,22 @@ class ChromiumOptions(Options):
             # Expected is a subschema dict; value must be a dict and match the schema
             if not isinstance(value, dict):
                 raise InvalidPreferenceValue(
-                    f'Invalid value type for {".".join(path)}: expected dict, got {type(value).__name__}'
+                    f'Invalid value type for {".".join(path)}: '
+                    f'expected dict, got {type(value).__name__}'
                 )
             # Recursively validate each key-value in the value dict
             for k, v in value.items():
                 if k not in expected:
-                    raise InvalidPreferencePath(f'Invalid key "{k}" in preference path {".".join(path)}')
-                sub_expected = expected[k]
+                    raise InvalidPreferencePath(
+                        f'Invalid key "{k}" in preference path {".".join(path)}'
+                    )
                 ChromiumOptions._validate_pref_value(path + [k], v)
-        else:
+        elif not isinstance(value, expected):
             # Expected is a primitive type; check isinstance
-            if not isinstance(value, expected):
-                raise InvalidPreferenceValue(
-                    f'Invalid value type for {".".join(path)}: expected {expected.__name__}, got {type(value).__name__}'
-                )
+            raise InvalidPreferenceValue(
+                f'Invalid value type for {".".join(path)}: '
+                f'expected {expected.__name__}, got {type(value).__name__}'
+            )
 
     def _get_pref_path(self, path: list):
         """
