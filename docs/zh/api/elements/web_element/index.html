@@ -2842,6 +2842,48 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label=" execute_script">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.elements.web_element.WebElement.execute_script--click-the-element" class="md-nav__link">
+    <span class="md-ellipsis">
+      Click the element
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.elements.web_element.WebElement.execute_script--modify-element-style" class="md-nav__link">
+    <span class="md-ellipsis">
+      Modify element style
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.elements.web_element.WebElement.execute_script--get-element-text" class="md-nav__link">
+    <span class="md-ellipsis">
+      Get element text
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.elements.web_element.WebElement.execute_script--set-element-content" class="md-nav__link">
+    <span class="md-ellipsis">
+      Set element content
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -4062,6 +4104,48 @@
       <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;execute_script
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label=" execute_script">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.elements.web_element.WebElement.execute_script--click-the-element" class="md-nav__link">
+    <span class="md-ellipsis">
+      Click the element
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.elements.web_element.WebElement.execute_script--modify-element-style" class="md-nav__link">
+    <span class="md-ellipsis">
+      Modify element style
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.elements.web_element.WebElement.execute_script--get-element-text" class="md-nav__link">
+    <span class="md-ellipsis">
+      Get element text
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.elements.web_element.WebElement.execute_script--set-element-content" class="md-nav__link">
+    <span class="md-ellipsis">
+      Set element content
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -5605,7 +5689,7 @@ Automatically handles input/textarea and contenteditable elements.</p>
   </span>
 
 </h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">execute_script</span><span class="p">(</span><span class="n">script</span><span class="p">,</span> <span class="n">return_by_value</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">arguments</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">execute_script</span><span class="p">(</span><span class="n">script</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">arguments</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_by_value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">generate_preview</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">user_gesture</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">await_promise</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">execution_context_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">object_group</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">throw_on_side_effect</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">unique_context_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">serialization_options</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5627,7 +5711,7 @@ Automatically handles input/textarea and contenteditable elements.</p>
             </td>
             <td class="doc-param-details">
               <div class="doc-md-description">
-                <p>JavaScript function to execute.</p>
+                <p>JavaScript code to execute. Use 'this' to reference this element.</p>
               </div>
               <p>
                   <span class="doc-param-annotation">
@@ -5639,31 +5723,12 @@ Automatically handles input/textarea and contenteditable elements.</p>
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>return_by_value</code>
-            </td>
-            <td class="doc-param-details">
-              <div class="doc-md-description">
-                <p>Whether to return result by value.</p>
-              </div>
-              <p>
-                  <span class="doc-param-annotation">
-                    <b>TYPE:</b>
-                      <code><span title="bool">bool</span></code>
-                  </span>
-                  <span class="doc-param-default">
-                    <b>DEFAULT:</b>
-                      <code>False</code>
-                  </span>
-              </p>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
                 <code>arguments</code>
             </td>
             <td class="doc-param-details">
               <div class="doc-md-description">
-                <p>Optional list of arguments to pass to the function.</p>
+                <p>Arguments to pass to the function
+(Runtime.callFunctionOn).</p>
               </div>
               <p>
                   <span class="doc-param-annotation">
@@ -5677,15 +5742,262 @@ Automatically handles input/textarea and contenteditable elements.</p>
               </p>
             </td>
           </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>silent</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Whether to silence exceptions (Runtime.callFunctionOn).</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="typing.Optional">Optional</span>[<span title="bool">bool</span>]</code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>None</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>return_by_value</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Whether to return the result by value instead of
+reference (Runtime.callFunctionOn).</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="typing.Optional">Optional</span>[<span title="bool">bool</span>]</code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>None</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>generate_preview</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Whether to generate a preview for the result
+(Runtime.callFunctionOn).</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="typing.Optional">Optional</span>[<span title="bool">bool</span>]</code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>None</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>user_gesture</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Whether to treat the call as initiated by user
+gesture (Runtime.callFunctionOn).</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="typing.Optional">Optional</span>[<span title="bool">bool</span>]</code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>None</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>await_promise</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Whether to await promise result
+(Runtime.callFunctionOn).</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="typing.Optional">Optional</span>[<span title="bool">bool</span>]</code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>None</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>execution_context_id</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>ID of the execution context to call the
+function in (Runtime.callFunctionOn).</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="typing.Optional">Optional</span>[<span title="int">int</span>]</code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>None</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>object_group</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Symbolic group name for the result
+(Runtime.callFunctionOn).</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="typing.Optional">Optional</span>[<span title="str">str</span>]</code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>None</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>throw_on_side_effect</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Whether to throw if side effect cannot be
+ruled out (Runtime.callFunctionOn).</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="typing.Optional">Optional</span>[<span title="bool">bool</span>]</code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>None</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>unique_context_id</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Unique context ID for the function call
+(Runtime.callFunctionOn).</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="typing.Optional">Optional</span>[<span title="str">str</span>]</code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>None</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>serialization_options</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Serialization options for
+the result (Runtime.callFunctionOn).</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;SerializationOptions&lt;/span&gt; (&lt;code&gt;pydoll.protocol.runtime.methods.SerializationOptions&lt;/code&gt;)" href="../../protocol/runtime/#pydoll.protocol.runtime.types.SerializationOptions">SerializationOptions</a>]</code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>None</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
       </tbody>
     </table>
 
 
-<details class="note" open>
-  <summary>Note</summary>
-  <p>Element is available as 'this' within the script.
-Arguments are accessible via 'arguments' array in JavaScript.</p>
-</details>
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>CallFunctionOnResponse</code>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>The result of the script execution.</p>
+              </div>
+                <p>
+                  <span class="doc-returns-annotation">
+                    <b>TYPE:</b>
+                      <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;CallFunctionOnResponse&lt;/span&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-module-attribute&quot;&gt;&lt;code&gt;module-attribute&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt; (&lt;code&gt;pydoll.protocol.runtime.methods.CallFunctionOnResponse&lt;/code&gt;)" href="../../../../api/protocol/runtime/#pydoll.protocol.runtime.methods.CallFunctionOnResponse">CallFunctionOnResponse</a></code>
+                  </span>
+                </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <h4 id="pydoll.elements.web_element.WebElement.execute_script--click-the-element">Click the element</h4>
+<p>await element.execute_script('this.click()')</p>
+<h4 id="pydoll.elements.web_element.WebElement.execute_script--modify-element-style">Modify element style</h4>
+<p>await element.execute_script('this.style.border = "2px solid red"')</p>
+<h4 id="pydoll.elements.web_element.WebElement.execute_script--get-element-text">Get element text</h4>
+<p>result = await element.execute_script('return this.textContent', return_by_value=True)</p>
+<h4 id="pydoll.elements.web_element.WebElement.execute_script--set-element-content">Set element content</h4>
+<p>await element.execute_script('this.textContent = "Hello World"')</p>
+
 
     </div>
 
