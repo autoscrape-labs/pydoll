@@ -1526,6 +1526,8 @@
       
         
       
+        
+      
     
     
     
@@ -1653,6 +1655,34 @@
     
   
     Python类型系统
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../deep-dive/fundamentals/iframes-and-contexts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Iframes & Contexts
   
 
     
@@ -4160,6 +4190,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#pydoll.utils.normalize_synthetic_xpath" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;normalize_synthetic_xpath
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -4381,6 +4422,17 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;has_return_outside_function
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.utils.normalize_synthetic_xpath" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;normalize_synthetic_xpath
       
     </span>
   </a>
@@ -5511,6 +5563,85 @@ These should be absolute paths appropriate for the current OS.</p>
                   <span class="doc-returns-annotation">
                     <b>TYPE:</b>
                       <code><span title="bool">bool</span></code>
+                  </span>
+                </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="pydoll.utils.normalize_synthetic_xpath" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">normalize_synthetic_xpath</span>
+
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">normalize_synthetic_xpath</span><span class="p">(</span><span class="n">selector</span><span class="p">)</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Normalize synthetic XPath selector produced by the builder.</p>
+<p>Converts selectors of the form //*[@xpath="..."] back into the original
+XPath string between the quotes. Returns the input unchanged if the
+pattern is not present or cannot be parsed safely.</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>selector</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>The selector string that may contain the synthetic XPath format.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="str">str</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>str</code>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>The normalized original XPath or the input selector if no normalization applies.</p>
+              </div>
+                <p>
+                  <span class="doc-returns-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="str">str</span></code>
                   </span>
                 </p>
             </td>

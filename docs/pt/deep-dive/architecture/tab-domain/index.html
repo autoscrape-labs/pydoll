@@ -1533,6 +1533,8 @@
       
         
       
+        
+      
     
     
     
@@ -1663,6 +1665,34 @@
     
   
     Sistema de Tipos Python
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fundamentals/iframes-and-contexts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Iframes & Contexts
   
 
     
@@ -5003,7 +5033,7 @@
 </span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
 </span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="k">raise</span> <span class="n">TopLevelTargetRequired</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>  <span class="c1"># Guia os usuários para WebElement.take_screenshot()</span>
 </span></code></pre></div>
-<p><strong>Implicação de design:</strong> Abas de Iframe (criadas via <code>get_frame()</code>) herdam todos os métodos da Aba (Tab), mas as capturas de tela falham por design. Alternativa: <code>WebElement.take_screenshot()</code> funciona para conteúdo de iframe.</p>
+<p><strong>Implicação de design:</strong> Antes, o Pydoll criava instâncias de Tab dedicadas para iframes. Com o novo modelo, toda interação acontece no próprio <code>WebElement</code>, então capturas e outros utilitários devem ser executados nos elementos internos (por exemplo, <code>await iframe_element.find(...).take_screenshot()</code>).</p>
 <p><strong>Geração de PDF:</strong> <code>Page.printToPDF</code> retorna dados codificados em base64. O Pydoll abstrai a E/S (I/O) de arquivo, mas os dados subjacentes são sempre base64 (especificação CDP).</p>
 <div class="admonition info">
 <p class="admonition-title">Uso Prático</p>

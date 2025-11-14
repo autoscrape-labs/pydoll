@@ -1,0 +1,5809 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://pydoll.tech/docs/zh/deep-dive/fundamentals/iframes-and-contexts/">
+      
+      
+        <link rel="prev" href="../typing-system/">
+      
+      
+        <link rel="next" href="../../architecture/">
+      
+      
+        
+          <link rel="alternate" href="/docs/" hreflang="en">
+        
+          <link rel="alternate" href="/docs/pt/" hreflang="pt">
+        
+          <link rel="alternate" href="/docs/zh/" hreflang="zh">
+        
+      
+      
+      <link rel="icon" href="../../../../resources/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
+    
+    
+      
+        <title>Iframes & Contexts - Pydoll - 异步网页自动化库</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.618322db.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../resources/stylesheets/termynal.css">
+    
+      <link rel="stylesheet" href="../../../../resources/stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#iframesoopif" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../../" title="Pydoll - 异步网页自动化库" class="md-header__button md-logo" aria-label="Pydoll - 异步网页自动化库" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11 15H6l7-14v8h5l-7 14z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Pydoll - 异步网页自动化库
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Iframes & Contexts
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Dark Mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dark Mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6m0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4M7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Light Mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Light Mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/docs/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/docs/pt/" hreflang="pt" class="md-select__link">
+              Português (BR)
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/docs/zh/" hreflang="zh" class="md-select__link">
+              中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/autoscrape-labs/pydoll" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    autoscrape-labs/pydoll
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Pydoll
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../features/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  特性
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  深入了解
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../api/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  API 参考
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../" title="Pydoll - 异步网页自动化库" class="md-nav__button md-logo" aria-label="Pydoll - 异步网页自动化库" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11 15H6l7-14v8h5l-7 14z"/></svg>
+
+    </a>
+    Pydoll - 异步网页自动化库
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/autoscrape-labs/pydoll" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    autoscrape-labs/pydoll
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pydoll
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../features/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    特性
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    特性
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/core-concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    核心概念
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/element-finding/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    元素查找
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    自动化
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    自动化
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/automation/human-interactions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    类人交互
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/automation/keyboard-control/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    键盘控制
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/automation/file-operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    文件操作
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/automation/iframes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IFrame交互
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/automation/screenshots-and-pdfs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    截图与PDF
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    网络
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    网络
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/network/monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    网络监控
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/network/interception/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    请求拦截
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/network/http-requests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    浏览器上下文HTTP请求
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_6" id="__nav_2_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    浏览器管理
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    浏览器管理
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/browser-management/tabs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    多标签页管理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/browser-management/contexts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    浏览器上下文
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/browser-management/cookies-sessions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cookie与会话
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_7" id="__nav_2_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    配置
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    配置
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/configuration/browser-options/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    浏览器选项
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/configuration/browser-preferences/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    浏览器偏好设置
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/configuration/proxy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    代理配置
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_8" id="__nav_2_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    高级功能
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    高级功能
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/advanced/behavioral-captcha-bypass/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    行为验证码绕过
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/advanced/event-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    事件系统
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/advanced/remote-connections/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    远程连接
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/advanced/decorators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Retry 装饰器
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    深入了解
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    深入了解
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    核心基础
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_2" id="__nav_3_2_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    核心基础
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cdp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Chrome DevTools 协议
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../connection-layer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    连接层
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../typing-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python类型系统
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Iframes & Contexts
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Iframes & Contexts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        目录
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dom" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        基础：文档对象模型 (DOM)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="基础：文档对象模型 (DOM)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dom_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        什么是 DOM？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dom_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DOM 树属性
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#iframes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        为什么这对 Iframes 很重要
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#iframes_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        什么是 Iframes 及其重要性
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="什么是 Iframes 及其重要性">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        定义
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        常见用例
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#same-origin-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        安全模型：同源策略 (Same-Origin Policy)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#iframes-oopifs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        挑战：跨进程 Iframes (OOPIFs)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="挑战：跨进程 Iframes (OOPIFs)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#oopifs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        什么是 OOPIFs？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oopifs_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        为什么 OOPIFs 使自动化复杂化
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        传统方法（手动切换上下文）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../architecture/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    内部架构
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_3" id="__nav_3_3_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    内部架构
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/browser-domain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    浏览器域
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/tab-domain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    标签页域
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/webelement-domain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Web元素域
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/find-elements-mixin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    查找元素混合器
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/event-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    事件架构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/browser-requests-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    浏览器请求架构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_4" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../network/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    网络与安全
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_4" id="__nav_3_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    网络与安全
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/network-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    网络基础
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/http-proxies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP/HTTPS 代理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/socks-proxies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SOCKS 代理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/proxy-detection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    代理检测
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/build-proxy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    构建代理服务器
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/proxy-legal/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    法律与道德
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../fingerprinting/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    指纹识别
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_5" id="__nav_3_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    指纹识别
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fingerprinting/network-fingerprinting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    网络指纹识别
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fingerprinting/browser-fingerprinting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    浏览器指纹识别
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fingerprinting/behavioral-fingerprinting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    行为指纹识别
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fingerprinting/evasion-techniques/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    规避技术
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_6" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../guides/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    实用指南
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_6" id="__nav_3_6_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    实用指南
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/selectors-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CSS选择器 vs XPath
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../api/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API 参考
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API 参考
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    浏览器
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    浏览器
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/browser/chrome/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Chrome
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/browser/edge/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Edge
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/browser/options/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    选项
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/browser/tab/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    标签页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/browser/requests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    请求
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/browser/managers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    管理器
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    元素
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    元素
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/elements/web_element/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Web元素
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/elements/mixins/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    混合器
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    连接
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    连接
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/connection/connection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    连接处理器
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/connection/managers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    管理器
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../api/commands/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    命令
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4_5" id="__nav_4_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    命令
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/commands/browser/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    浏览器
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/commands/dom/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DOM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/commands/input/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    输入
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/commands/network/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    网络
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/commands/page/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    页面
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/commands/runtime/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    运行时
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/commands/storage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    存储
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/commands/target/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    目标
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/commands/fetch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    获取
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_6" id="__nav_4_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    协议
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    协议
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/base/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    基础类型
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/browser/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    浏览器
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/dom/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DOM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/fetch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    获取
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/input/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    输入
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/network/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    网络
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/page/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    页面
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/runtime/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    运行时
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/storage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    存储
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/target/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    目标
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_7" id="__nav_4_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    核心
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    核心
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/core/constants/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    常量
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/core/exceptions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    异常
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/core/utils/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    工具
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        目录
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dom" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        基础：文档对象模型 (DOM)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="基础：文档对象模型 (DOM)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dom_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        什么是 DOM？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dom_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DOM 树属性
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#iframes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        为什么这对 Iframes 很重要
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#iframes_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        什么是 Iframes 及其重要性
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="什么是 Iframes 及其重要性">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        定义
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        常见用例
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#same-origin-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        安全模型：同源策略 (Same-Origin Policy)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#iframes-oopifs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        挑战：跨进程 Iframes (OOPIFs)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="挑战：跨进程 Iframes (OOPIFs)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#oopifs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        什么是 OOPIFs？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oopifs_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        为什么 OOPIFs 使自动化复杂化
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        传统方法（手动切换上下文）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+  <nav class="md-path" aria-label="Navigation" >
+    <ol class="md-path__list">
+      
+        
+  
+  
+    <li class="md-path__item">
+      <a href="../../../" class="md-path__link">
+        
+  <span class="md-ellipsis">
+    Pydoll
+  </span>
+
+      </a>
+    </li>
+  
+
+      
+      
+        
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="../../" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    深入了解
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="../" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    核心基础
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ol>
+  </nav>
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="iframesoopif">Iframes、OOPIF 和执行上下文（深度解析）</h1>
+<p>理解浏览器自动化如何处理 iframe 对于构建健壮的自动化工具至关重要。本综合指南探讨了 Pydoll 中 iframe 处理的技术基础，涵盖了文档对象模型 (DOM)、Chrome DevTools 协议 (CDP) 机制、执行上下文、隔离世界 (isolated worlds) 以及使 iframe 交互变得无缝的复杂解析管道。</p>
+<div class="admonition info">
+<p class="admonition-title">实用用法优先</p>
+<p>如果您只需要在自动化脚本中使用 iframe，请从功能指南开始：<strong>功能 → 自动化 → IFrames</strong>。
+本深度解析解释了架构决策、协议的细微差别以及内部实现细节。</p>
+</div>
+<hr />
+<h2 id="_1">目录</h2>
+<ol>
+<li><a href="#基础文档对象模型-dom">基础：文档对象模型 (DOM)</a></li>
+<li><a href="#什么是-iframes-及其重要性">什么是 Iframes 及其重要性</a></li>
+<li><a href="#挑战跨进程-iframes-oopifs">挑战：跨进程 Iframes (OOPIFs)</a></li>
+<li><a href="#chrome-devtools-协议和-frame-管理">Chrome DevTools 协议和 Frame 管理</a></li>
+<li><a href="#执行上下文和隔离世界">执行上下文和隔离世界</a></li>
+<li><a href="#cdp-标识符参考">CDP 标识符参考</a></li>
+<li><a href="#pydoll-的解析管道">Pydoll 的解析管道</a></li>
+<li><a href="#会话路由和扁平化模式">会话路由和扁平化模式</a></li>
+<li><a href="#实现深度解析">实现深度解析</a></li>
+<li><a href="#性能考量">性能考量</a></li>
+<li><a href="#失败模式和调试">失败模式和调试</a></li>
+</ol>
+<hr />
+<h2 id="dom">基础：文档对象模型 (DOM)</h2>
+<p>在深入研究 iframe 之前，我们必须了解 DOM——在内存中表示 HTML 文档的树形结构。</p>
+<h3 id="dom_1">什么是 DOM？</h3>
+<p><strong>文档对象模型</strong> (Document Object Model) 是 HTML 和 XML 文档的编程接口。它将页面结构表示为一个节点树，其中每个节点对应文档的一部分：</p>
+<ul>
+<li><strong>元素节点</strong>：HTML 标签，如 <code>&lt;div&gt;</code>、<code>&lt;iframe&gt;</code>、<code>&lt;button&gt;</code></li>
+<li><strong>文本节点</strong>：实际的文本内容</li>
+<li><strong>属性节点</strong>：元素属性，如 <code>id</code>、<code>class</code>、<code>src</code></li>
+<li><strong>文档节点</strong>：树的根节点</li>
+</ul>
+<p>'''mermaid
+graph TD
+    Document[文档] --&gt; HTML[html 元素]
+    HTML --&gt; Head[head 元素]
+    HTML --&gt; Body[body 元素]
+    Body --&gt; Div1[div 元素]
+    Body --&gt; Div2[div 元素]
+    Div1 --&gt; Text1[文本节点: 'Hello']
+    Div2 --&gt; Iframe[iframe 元素]
+    Iframe --&gt; IframeDoc[iframe 的文档]
+    IframeDoc --&gt; IframeBody[iframe body]
+    IframeBody --&gt; IframeContent[iframe 内容...]
+'''</p>
+<h3 id="dom_2">DOM 树属性</h3>
+<ol>
+<li><strong>层级结构</strong>：每个节点都有一个父节点（Document 除外），并且可以有子节点</li>
+<li><strong>节点标识</strong>：节点可以通过以下方式标识：</li>
+<li><code>nodeId</code>：文档上下文（DOM 域）内的内部标识符</li>
+<li><code>backendNodeId</code>：可以跨不同文档引用节点的稳定标识符</li>
+<li><strong>实时表示</strong>：对 DOM 的更改会立即反映在树中</li>
+</ol>
+<h3 id="iframes">为什么这对 Iframes 很重要</h3>
+<p>每个 <code>&lt;iframe&gt;</code> 元素都会创建一个<strong>新的、独立的 DOM 树</strong>。 iframe 元素本身存在于父级的 DOM 中，但加载到 iframe 中的内容拥有自己完整的 Document 节点和树结构。这种分离是所有 iframe 复杂性的基础。</p>
+<hr />
+<h2 id="iframes_1">什么是 Iframes 及其重要性</h2>
+<h3 id="_2">定义</h3>
+<p><strong>iframe</strong>（内联框架）是一个 HTML 元素（<code>&lt;iframe&gt;</code>），它在当前页面中嵌入另一个 HTML 文档。被嵌入的文档保持其自己的上下文，包括：</p>
+<ul>
+<li>独立的 HTML 结构和 DOM 树</li>
+<li>独立的 JavaScript 执行环境</li>
+<li>自己的 CSS 样式（除非明确共享）</li>
+<li>不同的导航历史</li>
+</ul>
+<p>'''html</p>
+<body>
+  <h1>父页面</h1>
+  <iframe src="https://example.com/embedded.html" id="content-frame"></iframe>
+  <p>更多父页面内容</p>
+</body>
+<p>'''</p>
+<h3 id="_3">常见用例</h3>
+<table>
+<thead>
+<tr>
+<th>用例</th>
+<th>描述</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>第三方小部件</strong></td>
+<td>安全地嵌入外部内容</td>
+<td>支付表单、社交媒体 feeds、聊天窗口</td>
+</tr>
+<tr>
+<td><strong>内容隔离</strong></td>
+<td>沙盒化不受信任的内容</td>
+<td>用户生成的 HTML、广告</td>
+</tr>
+<tr>
+<td><strong>模块化架构</strong></td>
+<td>可重用组件</td>
+<td>仪表盘小部件、插件系统</td>
+</tr>
+<tr>
+<td><strong>跨域内容</strong></td>
+<td>从不同域加载资源</td>
+<td>地图、视频播放器、分析仪表盘</td>
+</tr>
+</tbody>
+</table>
+<h3 id="same-origin-policy">安全模型：同源策略 (Same-Origin Policy)</h3>
+<p>浏览器对 iframes 强制执行<strong>同源策略</strong>：</p>
+<ul>
+<li><strong>同源 iframes</strong>：父级可以通过 JavaScript 访问 iframe 的 DOM (<code>iframe.contentDocument</code>)</li>
+<li><strong>跨域 iframes</strong>：父级不能直接访问 iframe 的 DOM（安全限制）</li>
+</ul>
+<p>这个安全边界就是为什么自动化工具需要特殊机制（如 CDP）来与 iframe 内容交互。</p>
+<div class="admonition warning">
+<p class="admonition-title">对自动化很重要</p>
+<p>由于浏览器安全限制，传统的基于 JavaScript 的自动化（如 Selenium 的早期方法）无法直接访问跨域 iframe 的内容。CDP 在更底层运行，出于调试目的绕过了这个限制。</p>
+</div>
+<hr />
+<h2 id="iframes-oopifs">挑战：跨进程 Iframes (OOPIFs)</h2>
+<h3 id="oopifs">什么是 OOPIFs？</h3>
+<p>现代 Chromium 使用<strong>站点隔离 (site isolation)</strong> 来提高安全性和稳定性。这意味着不同的源 (origin) 可能会在单独的操作系统进程中渲染。来自不同源的 iframe 会成为<strong>跨进程 Iframe (OOPIF)</strong>。</p>
+<p>'''mermaid
+graph LR
+    subgraph "进程 1: example.com"
+        MainPage[主页面 DOM]
+    end</p>
+<div class="language-text highlight"><pre><span></span><code>subgraph &quot;进程 2: widget.com&quot;
+    IframeDOM[Iframe DOM]
+end
+
+MainPage -.进程边界.-&gt; IframeDOM
+</code></pre></div>
+<p>'''</p>
+<h3 id="oopifs_1">为什么 OOPIFs 使自动化复杂化</h3>
+<table>
+<thead>
+<tr>
+<th>方面</th>
+<th>进程内 Iframe</th>
+<th>跨进程 Iframe (OOPIF)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>DOM 访问</strong></td>
+<td>内存中共享的文档树</td>
+<td>拥有自己文档的独立目标 (target)</td>
+</tr>
+<tr>
+<td><strong>命令路由</strong></td>
+<td>单个连接</td>
+<td>需要目标附加 (target attachment) 和会话路由 (session routing)</td>
+</tr>
+<tr>
+<td><strong>Frame 树</strong></td>
+<td>所有 frames 在一棵树中</td>
+<td>根 frame + OOPIFs 的独立目标</td>
+</tr>
+<tr>
+<td><strong>JavaScript 上下文</strong></td>
+<td>相同的执行上下文</td>
+<td>每个进程有不同的执行上下文</td>
+</tr>
+<tr>
+<td><strong>CDP 通信</strong></td>
+<td>直接命令</td>
+<td>命令必须包含 <code>sessionId</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="_4">传统方法（手动切换上下文）</h3>
+<p>没有复杂的处理，自动化 OOPIFs 需要：</p>
+<p>'''python</p>
+<h1 id="_5">其他工具的传统（手动）方法</h1>
+<p>main_page = browser.get_page()
+iframe_element = main_page.find_element_by_id("iframe-id")</p>
+<h1 id="_6">必须手动切换上下文</h1>
+<p>driver.switch_to.frame(iframe_element)</p>
+<h1 id="iframe">现在命令指向 iframe</h1>
+<p>button = driver.find_element_by_id("button-in-iframe")
+button.click()</p>
+<h1 id="_7">必须手动切换回来</h1>
+<p>driver.switch_to.default_content()
+'''</p>
+<p><strong>这种方法的问题：</strong></p>
+<ol>
+<li><strong>开发者负担</strong>：每个 iframe 都需要显式的上下文管理</li>
+<li><strong>嵌套 iframes</strong>：每一层都需要再次切换</li>
+<li><strong>OOPIF 检测</strong>：很难知道何时需要手动附加</li>
+<li><strong>容易出错</strong>：忘记切换回来 → 后续命令失败</li>
+<li><strong>不可组合</strong>：辅助函数必须知道它们所处的 iframe 上下文</li>
+</ol>
+<h3 id="pydoll">Pydoll 的解决方案：透明的上下文解析</h3>
+<p>Pydoll 通过自动解析 iframe 上下文来消除手动上下文切换：</p>
+<p>'''python</p>
+<h1 id="pydoll_1">Pydoll 方法（无手动切换）</h1>
+<p>iframe = await tab.find(id="iframe-id")
+button = await iframe.find(id="button-in-iframe")
+await button.click()</p>
+<h1 id="iframes_2">嵌套 iframes？同样的模式</h1>
+<p>outer = await tab.find(id="outer-iframe")
+inner = await outer.find(tag_name="iframe")
+button = await inner.find(text="Submit")
+await button.click()
+'''</p>
+<p>复杂性在内部处理。让我们来探究一下是如何做到的。</p>
+<hr />
+<h2 id="chrome-devtools-frame">Chrome DevTools 协议和 Frame 管理</h2>
+<p>正如在 <a href="../cdp/">深度解析 → 基础 → Chrome DevTools 协议</a> 中讨论的，CDP 通过 WebSocket 通信提供全面的浏览器控制。Frame 管理分散在多个 CDP 域中。</p>
+<h3 id="cdp">相关的 CDP 域</h3>
+<h4 id="1-page">1. <strong>Page 域</strong></h4>
+<p>管理页面生命周期、frames 和导航。</p>
+<p><strong>关键方法：</strong></p>
+<ul>
+<li>
+<p><code>Page.getFrameTree()</code>：返回页面中所有 frames 的层级结构
+  '''json
+  {
+    "frameTree": {
+      "frame": {
+        "id": "main-frame-id",
+        "url": "https://example.com",
+        "securityOrigin": "https://example.com",
+        "mimeType": "text/html"
+      },
+      "childFrames": [
+        {
+          "frame": {
+            "id": "child-frame-id",
+            "parentId": "main-frame-id",
+            "url": "https://widget.com/embed"
+          }
+        }
+      ]
+    }
+  }
+  '''</p>
+</li>
+<li>
+<p><code>Page.createIsolatedWorld(frameId, worldName)</code>：在特定 frame 中创建一个新的 JavaScript 执行上下文
+  '''json
+  {
+    "executionContextId": 42
+  }
+  '''</p>
+</li>
+</ul>
+<p><strong>Pydoll 用法：</strong></p>
+<p>'''python</p>
+<h1 id="pydollelementsweb_elementpy">源自 pydoll/elements/web_element.py</h1>
+<p>@staticmethod
+async def _get_frame_tree_for(
+    handler: ConnectionHandler, session_id: Optional[str]
+) -&gt; FrameTree:
+    """获取给定连接/目标的 Page frame 树。"""
+    command = PageCommands.get_frame_tree()
+    if session_id:
+        command['sessionId'] = session_id
+    response: GetFrameTreeResponse = await handler.execute_command(command)
+    return response['result']['frameTree']
+'''</p>
+<h4 id="2-dom">2. <strong>DOM 域</strong></h4>
+<p>提供对 DOM 结构的访问。</p>
+<p><strong>关键方法：</strong></p>
+<ul>
+<li>
+<p><code>DOM.describeNode(objectId)</code>：返回有关 DOM 节点的详细信息
+  '''json
+  {
+    "node": {
+      "nodeId": 123,
+      "backendNodeId": 456,
+      "nodeName": "IFRAME",
+      "frameId": "parent-frame-id",
+      "contentDocument": {
+        "frameId": "iframe-frame-id",
+        "documentURL": "https://embedded.com/page.html"
+      }
+    }
+  }
+  '''</p>
+</li>
+<li>
+<p><code>DOM.getFrameOwner(frameId)</code>：返回拥有某个 frame 的 <code>&lt;iframe&gt;</code> 元素的 <code>backendNodeId</code>
+  '''json
+  {
+    "backendNodeId": 456
+  }
+  '''</p>
+</li>
+</ul>
+<p><strong>Pydoll 用法：</strong></p>
+<p>'''python</p>
+<h1 id="pydollelementsweb_elementpy_1">源自 pydoll/elements/web_element.py</h1>
+<p>@staticmethod
+async def _owner_backend_for(
+    handler: ConnectionHandler, session_id: Optional[str], frame_id: str
+) -&gt; Optional[int]:
+    """获取拥有给定 frame 的 DOM 元素的 backendNodeId。"""
+    command = DomCommands.get_frame_owner(frame_id=frame_id)
+    if session_id:
+        command['sessionId'] = session_id
+    response: GetFrameOwnerResponse = await handler.execute_command(command)
+    return response.get('result', {}).get('backendNodeId')
+'''</p>
+<h4 id="3-target">3. <strong>Target 域</strong></h4>
+<p>管理浏览器目标（页面、iframes、workers 等）。</p>
+<p><strong>关键方法：</strong></p>
+<ul>
+<li>
+<p><code>Target.getTargets()</code>：列出所有可用的目标
+  '''json
+  {
+    "targetInfos": [
+      {
+        "targetId": "page-target-id",
+        "type": "page",
+        "title": "Main Page",
+        "url": "https://example.com"
+      },
+      {
+        "targetId": "iframe-target-id",
+        "type": "iframe",
+        "title": "",
+        "url": "https://widget.com/embed",
+        "parentFrameId": "main-frame-id"
+      }
+    ]
+  }
+  '''</p>
+</li>
+<li>
+<p><code>Target.attachToTarget(targetId, flatten)</code>：附加到一个目标以进行调试</p>
+</li>
+<li>当 <code>flatten=true</code> 时：返回一个 <code>sessionId</code> 用于在扁平化模式下路由命令</li>
+<li>所有通信都通过同一个 WebSocket 进行，通过 <code>sessionId</code> 区分</li>
+</ul>
+<p><strong>Pydoll 用法：</strong></p>
+<p>'''python</p>
+<h1 id="pydollelementsweb_elementpy_2">源自 pydoll/elements/web_element.py (简化版)</h1>
+<p>async def _resolve_oopif_by_parent(self, parent_frame_id: str, ...):
+    """使用父 frame id 解析 OOPIF。"""
+    browser_handler = ConnectionHandler(...)
+    targets_response: GetTargetsResponse = await browser_handler.execute_command(
+        TargetCommands.get_targets()
+    )
+    target_infos = targets_response.get('result', {}).get('targetInfos', [])</p>
+<div class="language-text highlight"><pre><span></span><code># 查找 parentFrameId 匹配的目标
+direct_children = [
+    target_info for target_info in target_infos
+    if target_info.get(&#39;parentFrameId&#39;) == parent_frame_id
+]
+
+if direct_children:
+    attach_response: AttachToTargetResponse = await browser_handler.execute_command(
+        TargetCommands.attach_to_target(
+            target_id=direct_children[0][&#39;targetId&#39;], 
+            flatten=True
+        )
+    )
+    attached_session_id = attach_response.get(&#39;result&#39;, {}).get(&#39;sessionId&#39;)
+    # ... 对后续命令使用 session_id
+</code></pre></div>
+<p>'''</p>
+<h4 id="4-runtime">4. <strong>Runtime 域</strong></h4>
+<p>执行 JavaScript 并管理执行上下文。</p>
+<p><strong>关键方法：</strong></p>
+<ul>
+<li><code>Runtime.evaluate(expression, contextId)</code>：在特定的执行上下文中评估 JavaScript</li>
+<li><code>Runtime.callFunctionOn(functionDeclaration, objectId)</code>：在一个特定对象上调用函数（作为 <code>this</code>）</li>
+</ul>
+<p><strong>Pydoll 用于 iframe 文档访问的用法：</strong></p>
+<p>'''python</p>
+<h1 id="pydollelementsweb_elementpy_3">源自 pydoll/elements/web_element.py</h1>
+<p>async def _set_iframe_document_object_id(self, execution_context_id: int):
+    """在 iframe 上下文中评估 document.documentElement 并缓存其 object id。"""
+    evaluate_command = RuntimeCommands.evaluate(
+        expression='document.documentElement',
+        context_id=execution_context_id,
+    )
+    if self._iframe_context and self._iframe_context.session_id:
+        evaluate_command['sessionId'] = self._iframe_context.session_id</p>
+<div class="language-text highlight"><pre><span></span><code>evaluate_response: EvaluateResponse = await (
+    (self._iframe_context.session_handler if self._iframe_context else None)
+    or self._connection_handler
+).execute_command(evaluate_command)
+
+document_object_id = evaluate_response.get(&#39;result&#39;, {}).get(&#39;result&#39;, {}).get(&#39;objectId&#39;)
+if self._iframe_context:
+    self._iframe_context.document_object_id = document_object_id
+</code></pre></div>
+<p>'''</p>
+<hr />
+<h2 id="_8">执行上下文和隔离世界</h2>
+<h3 id="_9">什么是执行上下文？</h3>
+<p><strong>执行上下文</strong> (execution context) 是执行 JavaScript 代码的环境。浏览器中的每个 frame 至少有一个执行上下文。该上下文包括：</p>
+<ul>
+<li><strong>全局对象</strong>（在浏览器中是 <code>window</code>）</li>
+<li><strong>作用域链</strong>：如何解析变量</li>
+<li><strong>This 绑定</strong>：<code>this</code> 指向什么</li>
+<li><strong>变量环境</strong>：所有声明的变量和函数</li>
+</ul>
+<h3 id="frame">每个 Frame 的多个上下文</h3>
+<p>单个 frame 可以有多个执行上下文：</p>
+<ol>
+<li><strong>主世界 (main world)（默认上下文）</strong>：页面自己的 JavaScript 运行的地方</li>
+<li><strong>隔离世界 (isolated worlds)</strong>：共享相同 DOM 但具有不同 JavaScript 全局作用域的独立上下文</li>
+</ol>
+<p>'''mermaid
+graph TB
+    Frame[Frame: example.com/page]
+    Frame --&gt; MainWorld[主世界<br/>页面的 JavaScript]
+    Frame --&gt; IsolatedWorld1[隔离世界 1<br/>扩展的内容脚本]
+    Frame --&gt; IsolatedWorld2[隔离世界 2<br/>Pydoll 自动化]</p>
+<div class="language-text highlight"><pre><span></span><code>DOM[共享的 DOM 树]
+MainWorld -.可以访问.-&gt; DOM
+IsolatedWorld1 -.可以访问.-&gt; DOM
+IsolatedWorld2 -.可以访问.-&gt; DOM
+
+MainWorld -.无法访问.-&gt; IsolatedWorld1
+MainWorld -.无法访问.-&gt; IsolatedWorld2
+</code></pre></div>
+<p>'''</p>
+<h3 id="_10">什么是隔离世界？</h3>
+<p><strong>隔离世界</strong> (isolated world) 是一个独立的 JavaScript 执行上下文，它：</p>
+<ul>
+<li><strong>共享相同的 DOM</strong>：可以读取/修改 DOM 元素</li>
+<li><strong>拥有独立的全局对象</strong>：变量/函数不会在世界之间泄漏</li>
+<li><strong>防止干扰</strong>：页面脚本无法检测或干扰隔离世界中的脚本</li>
+</ul>
+<p><strong>起源</strong>：隔离世界是为浏览器扩展创建的。内容脚本 (Content scripts) 运行在隔离世界中，因此它们可以与页面 DOM 交互，而不会：</p>
+<ul>
+<li>被页面脚本覆盖其变量</li>
+<li>被防篡改代码检测到</li>
+<li>与页面的 JavaScript 冲突</li>
+</ul>
+<h3 id="pydoll-iframes">为什么 Pydoll 对 Iframes 使用隔离世界</h3>
+<p>当 Pydoll 与 iframe 内容交互时，它会在该 iframe 的上下文中创建一个隔离世界。这提供了：</p>
+<ol>
+<li><strong>干净的 JavaScript 环境</strong>：与 iframe 自己的脚本没有冲突</li>
+<li><strong>一致的行为</strong>：无论 iframe 运行什么 JavaScript，自动化脚本都能工作</li>
+<li><strong>反检测</strong>：iframe 的 JavaScript 无法轻易检测到 Pydoll 的存在</li>
+<li><strong>安全的评估</strong>：自动化代码不会意外触发页面逻辑</li>
+</ol>
+<p><strong>实现：</strong></p>
+<p>'''python</p>
+<h1 id="pydollelementsweb_elementpy_4">源自 pydoll/elements/web_element.py</h1>
+<p>@staticmethod
+async def _create_isolated_world_for_frame(
+    frame_id: str,
+    handler: ConnectionHandler,
+    session_id: Optional[str],
+) -&gt; int:
+    """为给定的 frame 创建一个隔离世界 (Page.createIsolatedWorld)。"""
+    create_command = PageCommands.create_isolated_world(
+        frame_id=frame_id,
+        world_name=f'pydoll::iframe::{frame_id}',
+        grant_universal_access=True,
+    )
+    if session_id:
+        create_command['sessionId'] = session_id</p>
+<div class="language-text highlight"><pre><span></span><code>create_response: CreateIsolatedWorldResponse = await handler.execute_command(
+    create_command
+)
+execution_context_id = create_response.get(&#39;result&#39;, {}).get(&#39;executionContextId&#39;)
+if not execution_context_id:
+    raise InvalidIFrame(&#39;无法为 iframe 创建隔离世界&#39;)
+return execution_context_id
+</code></pre></div>
+<p>'''</p>
+<p><code>grant_universal_access=True</code> 参数允许隔离世界：</p>
+<ul>
+<li>访问跨域 frames（通常被同源策略阻止）</li>
+<li>执行自动化所需的特权操作</li>
+</ul>
+<div class="admonition tip">
+<p class="admonition-title">实践中的隔离世界</p>
+<p>每当您使用 <code>await iframe.find(...)</code> 时，Pydoll 都会在专门为该 iframe 创建的隔离世界中评估选择器查询。这确保您的自动化逻辑永远不会与 iframe 自己的 JavaScript 冲突，并且 iframe 无法检测或阻止您的自动化。</p>
+</div>
+<hr />
+<h2 id="cdp_1">CDP 标识符参考</h2>
+<p>理解 CDP 标识符对于处理 iframe 至关重要。这是一个全面的参考：</p>
+<table>
+<thead>
+<tr>
+<th>标识符</th>
+<th>域</th>
+<th>范围</th>
+<th>目的</th>
+<th>在 Pydoll 中的用例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong><code>nodeId</code></strong></td>
+<td>DOM</td>
+<td>文档局部</td>
+<td>在特定文档上下文中标识一个 DOM 节点</td>
+<td>内部 CDP 操作；在导航中不稳定</td>
+</tr>
+<tr>
+<td><strong><code>backendNodeId</code></strong></td>
+<td>DOM</td>
+<td>跨文档稳定</td>
+<td>DOM 节点的稳定标识符；可以将 frames 映射到所有者元素</td>
+<td>用于通过 <code>DOM.getFrameOwner</code> 将 iframe 元素与 frame IDs 匹配</td>
+</tr>
+<tr>
+<td><strong><code>frameId</code></strong></td>
+<td>Page</td>
+<td>Frame</td>
+<td>标识页面 frame 树中的一个 frame</td>
+<td>用于为 <code>Page.createIsolatedWorld</code> 和 frame 树遍历指定哪个 frame</td>
+</tr>
+<tr>
+<td><strong><code>targetId</code></strong></td>
+<td>Target</td>
+<td>全局</td>
+<td>标识一个调试目标（页面、iframe、worker 等）</td>
+<td>用于 <code>Target.attachToTarget</code> 以连接到 OOPIFs</td>
+</tr>
+<tr>
+<td><strong><code>sessionId</code></strong></td>
+<td>Target</td>
+<td>目标特定</td>
+<td>在扁平化模式下将命令路由到特定目标</td>
+<td>注入到命令中，将它们路由到正确的 OOPIF</td>
+</tr>
+<tr>
+<td><strong><code>executionContextId</code></strong></td>
+<td>Runtime</td>
+<td>Frame + 世界</td>
+<td>标识一个 JavaScript 执行上下文（包括隔离世界）</td>
+<td>由 <code>Page.createIsolatedWorld</code> 返回；用于 <code>Runtime.evaluate</code></td>
+</tr>
+<tr>
+<td><strong><code>objectId</code></strong></td>
+<td>Runtime</td>
+<td>执行上下文</td>
+<td>远程对象引用（例如 DOM 元素、函数、对象）</td>
+<td>对 iframe 的 <code>document.documentElement</code> 的引用，用于相对查询</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_11">标识符关系</h3>
+<p>以下是 iframe 解析期间标识符之间的关系：</p>
+<p>'''
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         解析流程                                        │
+└─────────────────────────────────────────────────────────────────────────┘</p>
+<ol>
+<li>
+<p>开始: <iframe> 元素
+   └─ backendNodeId: 789</p>
+</li>
+<li>
+<p>查找 Frame ──────────────[DOM.getFrameOwner]──────────────┐
+   └─ frameId: abc-123                                       │
+                                                             │</p>
+</li>
+<li>OOPIF? 检查源 ─────[检测到不同源]──────┤
+   └─ targetId: xyz-456                                      │
+                                                             │</li>
+<li>附加到目标 ────────[Target.attachToTarget]──────────┤
+   └─ sessionId: session-789                                 │
+                                                             │</li>
+<li>创建隔离世界 ───[Page.createIsolatedWorld]───────┤
+   └─ executionContextId: 42                                 │
+                                                             │</li>
+<li>获取文档 ────────────[Runtime.evaluate]───────────────┘
+   └─ objectId: obj-999
+'''</li>
+</ol>
+<p><strong>关键转换点：</strong></p>
+<table>
+<thead>
+<tr>
+<th>从</th>
+<th>方法</th>
+<th>到</th>
+<th>目的</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>backendNodeId</code></td>
+<td><code>DOM.getFrameOwner</code></td>
+<td><code>frameId</code></td>
+<td>查找哪个 frame 拥有该 iframe 元素</td>
+</tr>
+<tr>
+<td><code>targetId</code></td>
+<td><code>Target.attachToTarget(flatten=true)</code></td>
+<td><code>sessionId</code></td>
+<td>连接到 OOPIF 以进行命令路由</td>
+</tr>
+<tr>
+<td><code>frameId</code></td>
+<td><code>Page.createIsolatedWorld</code></td>
+<td><code>executionContextId</code></td>
+<td>创建安全的 JavaScript 环境</td>
+</tr>
+<tr>
+<td><code>executionContextId</code></td>
+<td><code>Runtime.evaluate('document.documentElement')</code></td>
+<td><code>objectId</code></td>
+<td>获取对 iframe 文档的引用</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pydoll_2">Pydoll 中的代码表示</h3>
+<p>'''python</p>
+<h1 id="pydollelementsweb_elementpy_5">源自 pydoll/elements/web_element.py</h1>
+<p>@dataclass
+class _IFrameContext:
+    """封装 iframe 的所有标识符和路由信息。"""
+    frame_id: str                                   # frameId: 标识 frame
+    document_url: Optional[str] = None              # frame 加载的 URL
+    execution_context_id: Optional[int] = None      # executionContextId: 隔离世界
+    document_object_id: Optional[str] = None        # objectId: document.documentElement
+    session_handler: Optional[ConnectionHandler] = None  # 用于 OOPIF 目标
+    session_id: Optional[str] = None                # sessionId: 将命令路由到 OOPIF
+'''</p>
+<p>这个 dataclass 被缓存在代表 iframe 的每个 <code>WebElement</code> 上，实现了所有后续操作的自动路由。</p>
+<hr />
+<h2 id="pydoll_3">Pydoll 的解析管道</h2>
+<p>当您在 Pydoll 中访问 iframe（例如，<code>await iframe.find(...)</code>）时，一个精密的解析管道会在幕后执行。本节分解了每一步。</p>
+<h3 id="_12">高级流程</h3>
+<p>'''mermaid
+sequenceDiagram
+    participant User as 用户
+    participant WebElement
+    participant Pipeline as 解析管道
+    participant CDP</p>
+<div class="language-text highlight"><pre><span></span><code>用户-&gt;&gt;WebElement: iframe.find(id=&#39;button&#39;)
+WebElement-&gt;&gt;WebElement: 检查 iframe 上下文是否已缓存
+alt 上下文未缓存
+    WebElement-&gt;&gt;Pipeline: _ensure_iframe_context()
+    Pipeline-&gt;&gt;CDP: DOM.describeNode(iframe)
+    CDP--&gt;&gt;Pipeline: 节点信息 (frameId?, backendNodeId, 等)
+
+    alt 节点信息中没有 frameId
+        Pipeline-&gt;&gt;Pipeline: _resolve_frame_by_owner()
+        Pipeline-&gt;&gt;CDP: Page.getFrameTree()
+        CDP--&gt;&gt;Pipeline: Frame 树
+        Pipeline-&gt;&gt;CDP: DOM.getFrameOwner(每个 frame)
+        CDP--&gt;&gt;Pipeline: backendNodeId
+        Pipeline-&gt;&gt;Pipeline: 匹配 backendNodeId 以查找 frameId
+    end
+
+    alt frameId 仍然缺失 (OOPIF)
+        Pipeline-&gt;&gt;Pipeline: _resolve_oopif_by_parent()
+        Pipeline-&gt;&gt;CDP: Target.getTargets()
+        CDP--&gt;&gt;Pipeline: 目标列表
+        Pipeline-&gt;&gt;CDP: Target.attachToTarget(targetId, flatten=true)
+        CDP--&gt;&gt;Pipeline: sessionId
+        Pipeline-&gt;&gt;CDP: Page.getFrameTree(sessionId)
+        CDP--&gt;&gt;Pipeline: OOPIF frame 树
+    end
+
+    Pipeline-&gt;&gt;CDP: Page.createIsolatedWorld(frameId)
+    CDP--&gt;&gt;Pipeline: executionContextId
+
+    Pipeline-&gt;&gt;CDP: Runtime.evaluate(&#39;document.documentElement&#39;, contextId)
+    CDP--&gt;&gt;Pipeline: objectId (文档引用)
+
+    Pipeline-&gt;&gt;WebElement: 缓存 _IFrameContext
+end
+
+WebElement-&gt;&gt;WebElement: 使用缓存的上下文进行 find()
+WebElement--&gt;&gt;用户: 按钮元素 (带上下文)
+</code></pre></div>
+<p>'''</p>
+<h3 id="_13">步骤深度解析</h3>
+<h4 id="1-iframe"><strong>步骤 1：描述 Iframe 元素</strong></h4>
+<p><strong>目标</strong>：从 <code>&lt;iframe&gt;</code> DOM 元素中提取元数据。</p>
+<p><strong>方法</strong>：<code>DOM.describeNode(objectId=iframe_object_id)</code></p>
+<p><strong>我们得到什么</strong>：</p>
+<ul>
+<li><code>backendNodeId</code>：iframe 元素的稳定标识符</li>
+<li><code>frameId</code>（来自 <code>contentDocument</code>）：如果 iframe 的内容已加载并在进程内</li>
+<li><code>documentURL</code>：iframe 中加载的 URL</li>
+<li><code>parentFrameId</code>（来自节点上的 <code>frameId</code> 字段）：包含此 iframe 元素的 frame</li>
+</ul>
+<p><strong>代码</strong>：</p>
+<p>'''python</p>
+<h1 id="pydollelementsweb_elementpy_6">源自 pydoll/elements/web_element.py</h1>
+<p>async def _ensure_iframe_context(self) -&gt; None:
+    """初始化并缓存 iframe 元素的上下文信息。"""
+    node_info = await self._describe_node(object_id=self._object_id)
+    base_handler, base_session_id = self._get_base_session()
+    frame_id, document_url, parent_frame_id, backend_node_id = self._extract_frame_metadata(
+        node_info
+    )
+    # ... 继续解析
+'''</p>
+<p><strong>辅助方法</strong>：</p>
+<p>'''python
+@staticmethod
+def _extract_frame_metadata(
+    node_info: Node,
+) -&gt; tuple[Optional[str], Optional[str], Optional[str], Optional[int]]:
+    """从 DOM.describeNode 节点中提取 iframe 相关的元数据。"""
+    content_document = node_info.get('contentDocument') or {}
+    parent_frame_id = node_info.get('frameId')
+    backend_node_id = node_info.get('backendNodeId')
+    frame_id = content_document.get('frameId')
+    document_url = (
+        content_document.get('documentURL')
+        or content_document.get('baseURL')
+        or node_info.get('documentURL')
+        or node_info.get('baseURL')
+    )
+    return frame_id, document_url, parent_frame_id, backend_node_id
+'''</p>
+<p><strong>结果</strong>：</p>
+<ul>
+<li><strong>如果 <code>frame_id</code> 存在</strong>：很好！iframe 在进程内；进入步骤 4。</li>
+<li><strong>如果 <code>frame_id</code> 缺失</strong>：iframe 可能是 OOPIF 或未完全加载；进入步骤 2。</li>
+</ul>
+<hr />
+<h4 id="2-framebackendnodeid"><strong>步骤 2：通过所有者解析 Frame（backendNodeId 匹配）</strong></h4>
+<p><strong>目标</strong>：通过将 iframe 元素的 <code>backendNodeId</code> 与 frame 树中的 frame 所有者匹配，来找到 <code>frameId</code>。</p>
+<p><strong>策略</strong>：</p>
+<ol>
+<li>获取页面的 frame 树 (<code>Page.getFrameTree</code>)</li>
+<li>对树中的每个 frame，调用 <code>DOM.getFrameOwner(frameId)</code> 来获取所属 iframe 元素的 <code>backendNodeId</code></li>
+<li>与我们的 iframe 的 <code>backendNodeId</code> 进行比较</li>
+<li>当它们匹配时，我们就找到了正确的 <code>frameId</code></li>
+</ol>
+<p><strong>代码</strong>：</p>
+<p>'''python</p>
+<h1 id="pydollelementsweb_elementpy_7">源自 pydoll/elements/web_element.py</h1>
+<p>async def _resolve_frame_by_owner(
+    self,
+    base_handler: ConnectionHandler,
+    base_session_id: Optional[str],
+    backend_node_id: int,
+    current_document_url: Optional[str],
+) -&gt; tuple[Optional[str], Optional[str]]:
+    """通过匹配所有者的 backend_node_id 来解析 frame id 和 URL。"""
+    owner_frame_id, owner_url = await self._find_frame_by_owner(
+        base_handler, base_session_id, backend_node_id
+    )
+    if not owner_frame_id:
+        return None, current_document_url
+    return owner_frame_id, owner_url or current_document_url</p>
+<p>async def _find_frame_by_owner(
+    self, handler: ConnectionHandler, session_id: Optional[str], backend_node_id: int
+) -&gt; tuple[Optional[str], Optional[str]]:
+    """通过匹配 <iframe> 元素的所有者 backend_node_id 来查找 frame。"""
+    frame_tree = await self._get_frame_tree_for(handler, session_id)
+    for frame_node in WebElement._walk_frames(frame_tree):
+        candidate_frame_id = frame_node.get('id', '')
+        if not candidate_frame_id:
+            continue
+        owner_backend_id = await self._owner_backend_for(
+            handler, session_id, candidate_frame_id
+        )
+        if owner_backend_id == backend_node_id:
+            return candidate_frame_id, frame_node.get('url')
+    return None, None
+'''</p>
+<p><strong>为什么这是必要的</strong>：</p>
+<ul>
+<li>对于跨域或延迟加载的 iframes，<code>DOM.describeNode</code> 有时不包含 <code>contentDocument.frameId</code></li>
+<li>frame 树总是包含所有 frames（甚至是 OOPIFs），所以我们可以间接找到它</li>
+</ul>
+<p><strong>结果</strong>：</p>
+<ul>
+<li><strong>如果找到 <code>frameId</code></strong>：进入步骤 4。</li>
+<li><strong>如果仍然找不到</strong>：iframe 很可能是一个在独立目标中的 OOPIF；进入步骤 3。</li>
+</ul>
+<hr />
+<h4 id="3-frame-oopif"><strong>步骤 3：通过父 Frame 解析 OOPIF</strong></h4>
+<p><strong>目标</strong>：对于跨进程 Iframes，找到目标，附加到它，并从该目标的 frame 树中获取 <code>frameId</code>。</p>
+<p><strong>策略</strong>：</p>
+<p><strong>3a. 直接子目标查找</strong>：</p>
+<ol>
+<li>调用 <code>Target.getTargets()</code> 列出所有调试目标</li>
+<li>筛选 <code>type</code> 为 <code>"iframe"</code> 或 <code>"page"</code> 且 <code>parentFrameId</code> 与我们的父 frame 匹配的目标</li>
+<li>如果找到，使用 <code>Target.attachToTarget(targetId, flatten=true)</code> 附加到该目标</li>
+<li>响应包含一个 <code>sessionId</code></li>
+<li>为该目标获取 <code>Page.getFrameTree(sessionId)</code></li>
+<li>此树的根 frame 就是我们 iframe 的 frame</li>
+</ol>
+<p><strong>3b. 备用方案：扫描所有目标</strong>：</p>
+<ol>
+<li>遍历所有 iframe/page 目标</li>
+<li>附加到每个目标并获取其 frame 树</li>
+<li>查找 <code>parentId</code> 与我们父 frame 匹配的子 frame</li>
+<li><strong>或者</strong> 检查根 frame 的所有者（通过 <code>DOM.getFrameOwner</code>）是否与我们 iframe 的 <code>backendNodeId</code> 匹配</li>
+</ol>
+<p><strong>代码</strong>：</p>
+<p>'''python</p>
+<h1 id="pydollelementsweb_elementpy_8">源自 pydoll/elements/web_element.py</h1>
+<p>async def _resolve_oopif_by_parent(
+    self,
+    parent_frame_id: str,
+    backend_node_id: Optional[int],
+) -&gt; tuple[Optional[ConnectionHandler], Optional[str], Optional[str], Optional[str]]:
+    """使用父 frame id 解析 OOPIF。"""
+    browser_handler = ConnectionHandler(
+        connection_port=self._connection_handler._connection_port
+    )
+    targets_response: GetTargetsResponse = await browser_handler.execute_command(
+        TargetCommands.get_targets()
+    )
+    target_infos = targets_response.get('result', {}).get('targetInfos', [])</p>
+<div class="language-text highlight"><pre><span></span><code># 策略 3a: 直接子节点
+direct_children = [
+    target_info
+    for target_info in target_infos
+    if target_info.get(&#39;type&#39;) in {&#39;iframe&#39;, &#39;page&#39;}
+    and target_info.get(&#39;parentFrameId&#39;) == parent_frame_id
+]
+if direct_children:
+    attach_response: AttachToTargetResponse = await browser_handler.execute_command(
+        TargetCommands.attach_to_target(
+            target_id=direct_children[0][&#39;targetId&#39;], flatten=True
+        )
+    )
+    attached_session_id = attach_response.get(&#39;result&#39;, {}).get(&#39;sessionId&#39;)
+    if attached_session_id:
+        frame_tree = await self._get_frame_tree_for(browser_handler, attached_session_id)
+        root_frame = (frame_tree or {}).get(&#39;frame&#39;, {})
+        return (
+            browser_handler,
+            attached_session_id,
+            root_frame.get(&#39;id&#39;),
+            root_frame.get(&#39;url&#39;),
+        )
+
+# 策略 3b: 扫描所有目标
+for target_info in target_infos:
+    if target_info.get(&#39;type&#39;) not in {&#39;iframe&#39;, &#39;page&#39;}:
+        continue
+    attach_response = await browser_handler.execute_command(
+        TargetCommands.attach_to_target(
+            target_id=target_info.get(&#39;targetId&#39;, &#39;&#39;), flatten=True
+        )
+    )
+    attached_session_id = attach_response.get(&#39;result&#39;, {}).get(&#39;sessionId&#39;)
+    if not attached_session_id:
+        continue
+
+    frame_tree = await self._get_frame_tree_for(browser_handler, attached_session_id)
+
+    # 检查是否有匹配 parentId 的子节点
+    child_frame_id = WebElement._find_child_by_parent(frame_tree, parent_frame_id)
+    if child_frame_id:
+        return browser_handler, attached_session_id, child_frame_id, None
+
+    # 检查根 frame 的所有者是否匹配我们的 backendNodeId
+    root_frame_id = (frame_tree or {}).get(&#39;frame&#39;, {}).get(&#39;id&#39;, &#39;&#39;)
+    if not root_frame_id or backend_node_id is None:
+        continue
+    owner_backend_id = await self._owner_backend_for(
+        self._connection_handler, None, root_frame_id
+    )
+    if owner_backend_id == backend_node_id:
+        return browser_handler, attached_session_id, root_frame_id, None
+
+return None, None, None, None
+</code></pre></div>
+<p>'''</p>
+<p><strong>结果</strong>：</p>
+<ul>
+<li><strong>如果 OOPIF 已解析</strong>：我们现在有了 <code>sessionId</code>、<code>session_handler</code> 和 <code>frameId</code>；进入步骤 4。</li>
+<li><strong>如果解析失败</strong>：抛出 <code>InvalidIFrame</code> 异常（在 <code>_ensure_iframe_context</code> 中处理）。</li>
+</ul>
+<hr />
+<h4 id="4"><strong>步骤 4：创建隔离世界</strong></h4>
+<p><strong>目标</strong>：在已解析的 frame 中创建一个独立的 JavaScript 执行上下文。</p>
+<p><strong>方法</strong>：<code>Page.createIsolatedWorld(frameId, worldName='pydoll::iframe::&lt;frameId&gt;', grantUniversalAccess=true)</code></p>
+<p><strong>参数</strong>：
+- <code>frameId</code>：在其中创建隔离世界的 frame
+- <code>worldName</code>：世界的标识符（用于调试）
+- <code>grantUniversalAccess</code>：允许跨域访问（自动化需要）</p>
+<p><strong>响应</strong>：<code>{ executionContextId: 42 }</code></p>
+<p><strong>代码</strong>：</p>
+<p>'''python</p>
+<h1 id="pydollelementsweb_elementpy_9">源自 pydoll/elements/web_element.py</h1>
+<p>@staticmethod
+async def _create_isolated_world_for_frame(
+    frame_id: str,
+    handler: ConnectionHandler,
+    session_id: Optional[str],
+) -&gt; int:
+    """为给定的 frame 创建一个隔离世界。"""
+    create_command = PageCommands.create_isolated_world(
+        frame_id=frame_id,
+        world_name=f'pydoll::iframe::{frame_id}',
+        grant_universal_access=True,
+    )
+    if session_id:
+        create_command['sessionId'] = session_id
+    create_response: CreateIsolatedWorldResponse = await handler.execute_command(create_command)
+    execution_context_id = create_response.get('result', {}).get('executionContextId')
+    if not execution_context_id:
+        raise InvalidIFrame('无法为 iframe 创建隔离世界')
+    return execution_context_id
+'''</p>
+<p><strong>为什么需要隔离世界</strong>：</p>
+<ul>
+<li><strong>隔离</strong>：我们的自动化 JavaScript 不会干扰 iframe 的 JavaScript</li>
+<li><strong>反检测</strong>：iframe 无法轻易检测到我们的存在</li>
+<li><strong>一致性</strong>：无论 iframe 的脚本环境如何，行为都是可预测的</li>
+</ul>
+<p><strong>结果</strong>：我们有了一个 <code>executionContextId</code> 用于在 iframe 中运行 JavaScript。</p>
+<hr />
+<h4 id="5-iframe"><strong>步骤 5：将 Iframe 文档固定为运行时对象</strong></h4>
+<p><strong>目标</strong>：获取对 iframe 的 <code>document.documentElement</code>（iframe 的 <code>&lt;html&gt;</code> 元素）的 <code>objectId</code> 引用。</p>
+<p><strong>方法</strong>：<code>Runtime.evaluate(expression='document.documentElement', contextId=executionContextId)</code></p>
+<p><strong>为什么我们需要这个</strong>：</p>
+<ul>
+<li>以便在 iframe 内部执行<strong>相对查询</strong>（如 <code>element.querySelector()</code>）</li>
+<li><code>objectId</code> 允许使用 <code>Runtime.callFunctionOn(objectId, ...)</code>，并将 <code>this</code> 绑定到 iframe 的文档</li>
+</ul>
+<p><strong>代码</strong>：</p>
+<p>'''python</p>
+<h1 id="pydollelementsweb_elementpy_10">源自 pydoll/elements/web_element.py</h1>
+<p>async def _set_iframe_document_object_id(self, execution_context_id: int) -&gt; None:
+    """在 iframe 上下文中评估 document.documentElement 并缓存其 object id。"""
+    evaluate_command = RuntimeCommands.evaluate(
+        expression='document.documentElement',
+        context_id=execution_context_id,
+    )
+    if self._iframe_context and self._iframe_context.session_id:
+        evaluate_command['sessionId'] = self._iframe_context.session_id
+    evaluate_response: EvaluateResponse = await (
+        (self._iframe_context.session_handler if self._iframe_context else None)
+        or self._connection_handler
+    ).execute_command(evaluate_command)
+    result_object = evaluate_response.get('result', {}).get('result', {})
+    document_object_id = result_object.get('objectId')
+    if not document_object_id:
+        raise InvalidIFrame('无法获取 iframe 的文档引用')
+    if self._iframe_context:
+        self._iframe_context.document_object_id = document_object_id
+'''</p>
+<p><strong>结果</strong>：<code>_IFrameContext</code> 现在已完全填充并缓存在 <code>WebElement</code> 上。</p>
+<hr />
+<h4 id="6"><strong>步骤 6：缓存和传播上下文</strong></h4>
+<p><strong>目标</strong>：将解析的上下文存储在 iframe 元素上，并将其传播到在 iframe 中找到的所有子元素。</p>
+<p><strong>缓存</strong>：</p>
+<p>'''python</p>
+<h1 id="pydollelementsweb_elementpy_11">源自 pydoll/elements/web_element.py</h1>
+<p>def _init_iframe_context(
+    self,
+    frame_id: str,
+    document_url: Optional[str],
+    session_handler: Optional[ConnectionHandler],
+    session_id: Optional[str],
+) -&gt; None:
+    """在此元素上初始化并缓存 iframe 上下文。"""
+    self._iframe_context = _IFrameContext(frame_id=frame_id, document_url=document_url)
+    # 清理路由属性（这些是用于嵌套 iframe 的）
+    if hasattr(self, '_routing_session_handler'):
+        delattr(self, '_routing_session_handler')
+    if hasattr(self, '_routing_session_id'):
+        delattr(self, '_routing_session_id')
+    # 如果需要，存储 OOPIF 路由
+    if session_handler and session_id:
+        self._iframe_context.session_handler = session_handler
+        self._iframe_context.session_id = session_id
+'''</p>
+<p><strong>传播</strong>（在 iframe 内部查找元素时）：</p>
+<p>'''python</p>
+<h1 id="pydollelementsmixinsfind_elements_mixinpy">源自 pydoll/elements/mixins/find_elements_mixin.py</h1>
+<p>def _apply_iframe_context_to_element(
+    self, element: WebElement, iframe_context: _IFrameContext | None
+) -&gt; None:
+    """将 iframe 上下文传播到新创建的元素。"""
+    if not iframe_context:
+        return</p>
+<div class="language-text highlight"><pre><span></span><code># 如果子元素也是一个 iframe，设置路由
+if getattr(element, &#39;is_iframe&#39;, False):
+    element._routing_session_handler = (
+        iframe_context.session_handler or self._connection_handler
+    )
+    element._routing_session_id = iframe_context.session_id
+    element._routing_parent_frame_id = iframe_context.frame_id
+    return
+
+# 否则，注入父 iframe 的上下文
+element._iframe_context = iframe_context
+</code></pre></div>
+<p>'''</p>
+<p><strong>为什么传播很重要</strong>：</p>
+<ul>
+<li>在 iframe 内部找到的元素会继承 iframe 的上下文</li>
+<li>这确保了后续操作（点击、键入、查找嵌套元素）自动使用正确的路由</li>
+<li>嵌套的 iframes 接收路由信息，以便它们可以相对于父 iframe 解析自己的上下文</li>
+</ul>
+<hr />
+<h2 id="_14">会话路由和扁平化模式</h2>
+<h3 id="_15">扁平化会话模型</h3>
+<p>正如在 <a href="../cdp/">深度解析 → 基础 → CDP</a> 中讨论的，传统的 CDP 对每个目标使用单独的 WebSocket 连接。<strong>扁平化模式 (Flattened mode)</strong> 是一种优化，所有目标共享一个 WebSocket 连接，命令使用 <code>sessionId</code> 进行路由。</p>
+<p>'''mermaid
+graph TB
+    subgraph "传统模式"
+        WS1[WebSocket 1] --&gt; MainPage[主页面目标]
+        WS2[WebSocket 2] --&gt; Iframe1[OOPIF 目标 1]
+        WS3[WebSocket 3] --&gt; Iframe2[OOPIF 目标 2]
+    end</p>
+<div class="language-text highlight"><pre><span></span><code>subgraph &quot;扁平化模式&quot;
+    WS[单个 WebSocket] --&gt; Router{CDP 路由器}
+    Router --&gt;|sessionId: null| MainPage2[主页面目标]
+    Router --&gt;|sessionId: session-1| Iframe3[OOPIF 目标 1]
+    Router --&gt;|sessionId: session-2| Iframe4[OOPIF 目标 2]
+end
+</code></pre></div>
+<p>'''</p>
+<h3 id="_16">会话路由如何工作</h3>
+<p><strong>附加到 OOPIF 时</strong>：</p>
+<p>'''python
+response = await handler.execute_command(
+    TargetCommands.attach_to_target(targetId="iframe-target-id", flatten=True)
+)
+session_id = response['result']['sessionId']  # 例如 "8E6C...-1234"
+'''</p>
+<p><strong>向该 OOPIF 发送命令时</strong>：</p>
+<p>'''python
+command = PageCommands.get_frame_tree()
+command['sessionId'] = 'session-1'  # 路由到 OOPIF
+response = await handler.execute_command(command)
+'''</p>
+<p>浏览器的 CDP 实现会根据 <code>sessionId</code> 将命令路由到正确的目标。</p>
+<h3 id="pydoll_4">Pydoll 的命令路由</h3>
+<p>Pydoll 元素发送的每个命令都会自动路由到正确的目标：</p>
+<p>'''python</p>
+<h1 id="pydollelementsmixinsfind_elements_mixinpy_1">源自 pydoll/elements/mixins/find_elements_mixin.py</h1>
+<p>def _resolve_routing(self) -&gt; tuple[ConnectionHandler, Optional[str]]:
+    """为当前上下文解析 handler 和 sessionId。"""
+    # 检查元素是否具有带 OOPIF 路由的 iframe 上下文
+    iframe_context = getattr(self, '_iframe_context', None)
+    if iframe_context and getattr(iframe_context, 'session_handler', None):
+        return iframe_context.session_handler, getattr(iframe_context, 'session_id', None)</p>
+<div class="language-text highlight"><pre><span></span><code># 检查元素是否从父 iframe 继承了路由
+routing_handler = getattr(self, &#39;_routing_session_handler&#39;, None)
+if routing_handler is not None:
+    return routing_handler, getattr(self, &#39;_routing_session_id&#39;, None)
+
+# 默认：使用标签页的主连接
+return self._connection_handler, None
+</code></pre></div>
+<p>async def _execute_command(
+    self, command: Command[T_CommandParams, T_CommandResponse]
+) -&gt; T_CommandResponse:
+    """通过解析的 handler 执行 CDP 命令（60 秒超时）。"""
+    handler, session_id = self._resolve_routing()
+    if session_id:
+        command['sessionId'] = session_id
+    return await handler.execute_command(command, timeout=60)
+'''</p>
+<p><strong>路由逻辑</strong>：</p>
+<ol>
+<li><strong>OOPIF iframe 内的元素</strong>：使用 <code>iframe_context.session_id</code> 和 <code>iframe_context.session_handler</code></li>
+<li><strong>嵌套 iframe（OOPIF 的子节点）</strong>：使用继承的 <code>_routing_session_id</code> 和 <code>_routing_session_handler</code></li>
+<li><strong>常规元素或进程内 iframe</strong>：使用主连接 (<code>_connection_handler</code>)，无 <code>sessionId</code></li>
+</ol>
+<h3 id="_17">扩展的命令类型</h3>
+<p>为了使 <code>sessionId</code> 类型安全，Pydoll 扩展了 <code>Command</code> TypedDict：</p>
+<p>'''python</p>
+<h1 id="pydollprotocolbasepy">源自 pydoll/protocol/base.py</h1>
+<p>class Command(TypedDict, Generic[T_CommandParams, T_CommandResponse]):
+    """所有命令的基础结构。"""
+    id: NotRequired[int]
+    method: str
+    params: NotRequired[T_CommandParams]
+    sessionId: NotRequired[str]  # 为扁平化会话路由添加
+'''</p>
+<p>这允许类型检查器将 <code>command['sessionId'] = '...'</code> 识别为有效，而无需抑制类型警告。</p>
+<hr />
+<h2 id="_18">性能考量</h2>
+<h3 id="_19">缓存策略</h3>
+<p><strong>首次访问是昂贵的</strong>：</p>
+<ul>
+<li><code>DOM.describeNode</code>：1 次往返</li>
+<li>Frame 树检索：1+ 次往返（主目标 + OOPIF 目标）</li>
+<li>每个 frame 的 <code>DOM.getFrameOwner</code>：N 次往返（最坏情况下）</li>
+<li><code>Target.getTargets</code> + 附加：1 + M 次往返（M = OOPIF 目标数量）</li>
+<li><code>Page.createIsolatedWorld</code>：1 次往返</li>
+<li><code>Runtime.evaluate</code> (文档)：1 次往返</li>
+</ul>
+<p><strong>总计</strong>：根据页面结构，可能需要 5-20+ 次往返。</p>
+<p><strong>后续访问是 O(1)</strong>：</p>
+<ul>
+<li><code>iframe_context</code> 缓存在 <code>WebElement</code> 实例上</li>
+<li>多次访问 <code>await iframe.iframe_context</code> 会立即返回缓存的值</li>
+<li>在 iframe 中找到的所有元素都会继承上下文（无需重新解析）</li>
+</ul>
+<h3 id="_20">优化：直接子目标查找</h3>
+<p>在 <code>_resolve_oopif_by_parent</code> 中，Pydoll 首先按 <code>parentFrameId</code> 检查直接子节点：</p>
+<p>'''python
+direct_children = [
+    target_info
+    for target_info in target_infos
+    if target_info.get('type') in {'iframe', 'page'}
+    and target_info.get('parentFrameId') == parent_frame_id
+]
+if direct_children:
+    # 立即附加，跳过扫描所有目标
+'''</p>
+<p><strong>为什么这有帮助</strong>：</p>
+<ul>
+<li>大多数 OOPIFs 都正确设置了 <code>parentFrameId</code></li>
+<li>避免了推测性地附加到每个目标</li>
+<li>在常见情况下，将往返次数从 O(目标数量) 减少到 O(1)</li>
+</ul>
+<h3 id="_21">异步并行解析（未来增强）</h3>
+<p>目前，frame 所有者匹配是顺序的（逐个检查每个 frame）。未来的优化可以并行化：</p>
+<p>'''python</p>
+<h1 id="_22">当前（顺序）</h1>
+<p>for frame_node in frames:
+    owner = await self._owner_backend_for(...)
+    if owner == backend_node_id:
+        return frame_node['id']</p>
+<h1 id="_23">潜在（并行）</h1>
+<p>results = await asyncio.gather(*(
+    self._owner_backend_for(..., frame['id'])
+    for frame in frames
+))
+for i, owner in enumerate(results):
+    if owner == backend_node_id:
+        return frames[i]['id']
+'''</p>
+<p>这将把延迟从 <code>N * RTT</code> 减少到 <code>RTT</code>（其中 RTT = 往返时间）。</p>
+<hr />
+<h2 id="_24">失败模式和调试</h2>
+<h3 id="_25">常见失败场景</h3>
+<h4 id="1-invalidiframe-frameid">1. <strong>InvalidIFrame: 无法解析 frameId</strong></h4>
+<p><strong>原因</strong>：</p>
+<ul>
+<li>iframe 是动态创建的，尚未完全初始化</li>
+<li>iframe 被具有限制性策略的沙盒化</li>
+<li>网络问题延迟了 iframe 加载</li>
+</ul>
+<p><strong>解决方案</strong>：</p>
+<ul>
+<li><strong>等待 iframe</strong>：使用带超时的 <code>await tab.find(id='iframe', timeout=10)</code></li>
+<li><strong>检查 sandbox 属性</strong>：限制性沙盒 (<code>&lt;iframe sandbox&gt;</code>) 可能会阻止某些 CDP 操作</li>
+<li><strong>重试策略</strong>：实现带指数退避的重试逻辑</li>
+</ul>
+<p><strong>调试</strong>：</p>
+<p>'''python
+try:
+    iframe = await tab.find(id='problem-iframe')
+    context = await iframe.iframe_context
+except InvalidIFrame as e:
+    # 检查我们拥有的信息
+    node_info = await iframe._describe_node(object_id=iframe._object_id)
+    print(f"节点信息: {node_info}")</p>
+<div class="language-text highlight"><pre><span></span><code># 手动检查 frame 树
+frame_tree = await WebElement._get_frame_tree_for(tab._connection_handler, None)
+print(f&quot;Frame 树: {frame_tree}&quot;)
+</code></pre></div>
+<p>'''</p>
+<h4 id="2-invalidiframe">2. <strong>InvalidIFrame: 无法创建隔离世界</strong></h4>
+<p><strong>原因</strong>：</p>
+<ul>
+<li>在解析步骤之间，Frame 已被销毁/导航离开</li>
+<li>Chrome 错误（罕见）</li>
+</ul>
+<p><strong>解决方案</strong>：</p>
+<ul>
+<li><strong>重新解析上下文</strong>：清除缓存的上下文并重新访问</li>
+<li><strong>检查导航</strong>：确保 iframe 在解析期间没有导航</li>
+</ul>
+<p><strong>调试</strong>：</p>
+<p>'''python</p>
+<h1 id="_26">清除缓存并重试</h1>
+<p>iframe._iframe_context = None
+context = await iframe.iframe_context
+'''</p>
+<h4 id="3-invalidiframe">3. <strong>InvalidIFrame: 无法获取文档引用</strong></h4>
+<p><strong>原因</strong>：</p>
+<ul>
+<li>隔离世界已创建，但文档尚未准备好</li>
+<li>Frame 即将导航</li>
+</ul>
+<p><strong>解决方案</strong>：</p>
+<ul>
+<li>等待 frame 加载：使用 Page 事件检测 <code>Page.frameNavigated</code> 或 <code>Page.loadEventFired</code></li>
+<li>稍作延迟后重试</li>
+</ul>
+<h4 id="4_1">4. <strong>会话路由失败（命令超时或返回错误）</strong></h4>
+<p><strong>原因</strong>：</p>
+<ul>
+<li>OOPIF 目标已分离（页面导航，iframe 被移除）</li>
+<li><code>sessionId</code> 已过时</li>
+</ul>
+<p><strong>解决方案</strong>：</p>
+<ul>
+<li><strong>重新附加到目标</strong>：创建一个新的 <code>ConnectionHandler</code> 并重新解析 OOPIF</li>
+<li><strong>验证目标</strong>：调用 <code>Target.getTargets()</code> 检查目标是否仍然存在</li>
+</ul>
+<p><strong>调试</strong>：</p>
+<p>'''python</p>
+<h1 id="_27">检查会话是否仍然有效</h1>
+<p>targets = await handler.execute_command(TargetCommands.get_targets())
+active_sessions = [t['targetId'] for t in targets['result']['targetInfos']]
+print(f"活动目标: {active_sessions}")</p>
+<p>if iframe._iframe_context and iframe._iframe_context.session_id:
+    print(f"我们的会话: {iframe._iframe_context.session_id}")
+'''</p>
+<h3 id="_28">诊断工具</h3>
+<h4 id="cdp_2">启用 CDP 日志记录</h4>
+<p>'''python
+import logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger('pydoll')
+logger.setLevel(logging.DEBUG)
+'''</p>
+<p>这将记录所有 CDP 命令和响应，有助于追踪 iframe 解析步骤。</p>
+<h4 id="iframe_1">检查 iframe 上下文</h4>
+<p>'''python
+iframe = await tab.find(id='my-iframe')
+ctx = await iframe.iframe_context</p>
+<p>print(f"Frame ID: {ctx.frame_id}")
+print(f"文档 URL: {ctx.document_url}")
+print(f"执行上下文 ID: {ctx.execution_context_id}")
+print(f"文档对象 ID: {ctx.document_object_id}")
+print(f"会话 ID (OOPIF): {ctx.session_id}")
+print(f"会话 Handler: {ctx.session_handler}")
+'''</p>
+<hr />
+<h2 id="_29">结论</h2>
+<p>Pydoll 的 iframe 处理代表了对 CDP frame 管理能力的复杂实现。通过理解：</p>
+<ul>
+<li><strong>DOM</strong>：树结构和节点标识</li>
+<li><strong>Iframes</strong>：独立的文档上下文和安全边界</li>
+<li><strong>OOPIFs</strong>：站点隔离和基于目标的架构</li>
+<li><strong>CDP 域</strong>：Page、DOM、Target、Runtime 的协调</li>
+<li><strong>执行上下文</strong>：用于纯净自动化的隔离世界</li>
+<li><strong>标识符</strong>：backendNodeId、frameId、targetId、sessionId、executionContextId、objectId 之间的关系</li>
+<li><strong>解析管道</strong>：用于查找 frames 的多阶段回退策略</li>
+<li><strong>会话路由</strong>：扁平化模式和自动命令路由</li>
+</ul>
+<p>您就能理解为什么 Pydoll 消除了手动上下文切换。这种复杂性是真实存在的，但 Pydoll 将其抽象在一个简单、直观的 API 背后：</p>
+<p>'''python
+iframe = await tab.find(id='login-frame')
+username = await iframe.find(name='username')
+await username.type_text('user@example.com')
+'''</p>
+<p>三行代码。没有上下文切换。没有目标附加。没有会话管理。它就是能用。</p>
+<hr />
+<h2 id="_30">进一步阅读</h2>
+<ul>
+<li><strong>CDP 规范</strong>：<a href="https://chromedevtools.github.io/devtools-protocol/tot/Page/">Chrome DevTools 协议 - Page 域</a></li>
+<li><strong>CDP 规范</strong>：<a href="https://chromedevtools.github.io/devtools-protocol/tot/DOM/">Chrome DevTools 协议 - DOM 域</a></li>
+<li><strong>CDP 规范</strong>：<a href="https://chromedevtools.github.io/devtools-protocol/tot/Target/">Chrome DevTools 协议 - Target 域</a></li>
+<li><strong>CDP 规范</strong>：<a href="https://chromedevtools.github.io/devtools-protocol/tot/Runtime/">Chrome DevTools 协议 - Runtime 域</a></li>
+<li><strong>Chromium 站点隔离</strong>：<a href="https://www.chromium.org/Home/chromium-security/site-isolation/">站点隔离 - Chromium 项目</a></li>
+<li><strong>内容脚本和隔离世界</strong>：<a href="https://developer.chrome.com/docs/extensions/mv3/content_scripts/">Chrome 扩展 - 内容脚本</a></li>
+<li><strong>Pydoll 文档</strong>：<a href="../cdp/">深度解析 → 基础 → Chrome DevTools 协议</a></li>
+<li><strong>Pydoll 文档</strong>：<a href="../../../features/automation/iframes/">功能 → 自动化 → IFrames</a></li>
+</ul>
+<hr />
+<div class="admonition tip">
+<p class="admonition-title">设计理念</p>
+<p>Pydoll iframe 处理的目标是<strong>符合人体工程学的自动化</strong>：编写代码时就好像 iframes 不存在一样，让库来处理复杂性。这次深度解析展示了幕后发生的事情——但在您的自动化脚本中，您永远不必考虑它。</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.indexes", "navigation.expand", "navigation.path", "navigation.top", "toc.follow", "content.code.copy", "content.code.select", "content.tooltips", "search.highlight", "search.suggest"], "search": "../../../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      
+        <script src="../../../../resources/scripts/termynal.js"></script>
+      
+        <script src="../../../../resources/scripts/extra.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@10.0.0/dist/mermaid.min.js"></script>
+      
+    
+  </body>
+</html>

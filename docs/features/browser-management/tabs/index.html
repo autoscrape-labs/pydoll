@@ -1958,6 +1958,8 @@
       
         
       
+        
+      
     
     
     
@@ -2085,6 +2087,34 @@
     
   
     Python Type System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../deep-dive/fundamentals/iframes-and-contexts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Iframes & Contexts
   
 
     
@@ -4971,7 +5001,7 @@
 </span></code></pre></div>
 <div class="admonition info">
 <p class="admonition-title">Browser-Managed Registry</p>
-<p>The Browser class manages a <code>_tabs_opened</code> dictionary keyed by <code>target_id</code>. When you request a tab (via <code>new_tab()</code>, <code>get_opened_tabs()</code>, or <code>get_frame()</code>), the Browser checks this registry first. If a Tab instance already exists for that <code>target_id</code>, it returns the existing instance; otherwise, it creates a new one and stores it in the registry.</p>
+<p>The Browser class manages a <code>_tabs_opened</code> dictionary keyed by <code>target_id</code>. When you request a tab (via <code>new_tab()</code> or <code>get_opened_tabs()</code>), the Browser checks this registry first. If a Tab instance already exists for that <code>target_id</code>, it returns the existing instance; otherwise, it creates a new one and stores it in the registry. (IFrames no longer create Tab entries—interact with them as regular elements.)</p>
 </div>
 <h2 id="creating-and-managing-tabs">Creating and Managing Tabs</h2>
 <h3 id="starting-the-browser">Starting the Browser</h3>

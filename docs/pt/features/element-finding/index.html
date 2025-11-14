@@ -876,23 +876,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Trabalhando com iFrames">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#isolamento-de-contexto-do-iframe" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Isolamento de Contexto do iFrame
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -2017,6 +2000,8 @@
       
         
       
+        
+      
     
     
     
@@ -2144,6 +2129,34 @@
     
   
     Sistema de Tipos Python
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deep-dive/fundamentals/iframes-and-contexts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Iframes & Contexts
   
 
     
@@ -4731,23 +4744,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Trabalhando com iFrames">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#isolamento-de-contexto-do-iframe" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Isolamento de Contexto do iFrame
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -5553,54 +5549,40 @@
 <p>Esta seção cobre a interação básica com iframe para localização de elementos. Para um guia completo incluindo iframes aninhados, manejo de CAPTCHA, análise técnica profunda e solução de problemas, veja <strong><a href="../automation/iframes/">Trabalhando com IFrames</a></strong>.</p>
 </div>
 <p>iFrames apresentam um desafio especial na automação de navegador porque eles têm contextos DOM separados. O Pydoll torna a interação com iframe transparente:</p>
-<h3 id="isolamento-de-contexto-do-iframe">Isolamento de Contexto do iFrame</h3>
-<pre class="mermaid"><code>flowchart TB
-    subgraph MainPage[Contexto da Pagina Principal]
-        MainDOM[DOM da Pagina Principal]
-        IFrameTag[Elemento iFrame]
-        MainDOM --&gt; IFrameTag
-    end
+<p><pre class="mermaid"><code>flowchart TB
+    Principal[tab]
+    IFrame["WebElement do iframe"]
+    Conteudo["elementos dentro do iframe"]
 
-    subgraph IFrameContext[iFrame - DOM Separado]
-        IFrameDOM[DOM do iFrame]
-        IFrameElements[Elementos dentro do iFrame]
-        IFrameDOM --&gt; IFrameElements
-    end
-
-    IFrameTag -.-&gt;|Método get_frame| IFrameContext
-
-    MainPage --&gt; MainSearch[tab.find - DOM Principal]
-    IFrameContext --&gt; IFrameSearch[frame.find - DOM do iFrame]</code></pre>
+    Principal --&gt;|"find('iframe')"| IFrame
+    IFrame --&gt;|"find('button#submit')"| Conteudo</code></pre>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 </span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.chromium</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
 </span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>
-</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">iframe_interaction</span><span class="p">():</span>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">iframe_interacao</span><span class="p">():</span>
 </span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>    <span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">()</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
 </span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>        <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-</span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">&#39;https://example.com/page-with-iframe&#39;</span><span class="p">)</span>
+</span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">&#39;https://example.com/pagina-com-iframe&#39;</span><span class="p">)</span>
 </span><span id="__span-14-8"><a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a>
-</span><span id="__span-14-9"><a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a>        <span class="c1"># Encontrar o elemento iframe</span>
-</span><span id="__span-14-10"><a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a>        <span class="n">iframe_element</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;iframe.embedded-content&quot;</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-</span><span id="__span-14-11"><a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a>
-</span><span id="__span-14-12"><a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a>        <span class="c1"># Obter uma instância de Tab para o conteúdo do iframe</span>
-</span><span id="__span-14-13"><a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a>        <span class="n">frame</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">get_frame</span><span class="p">(</span><span class="n">iframe_element</span><span class="p">)</span>
+</span><span id="__span-14-9"><a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a>        <span class="n">iframe</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;iframe.conteudo&quot;</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</span><span id="__span-14-10"><a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a>
+</span><span id="__span-14-11"><a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a>        <span class="c1"># Os utilitários de WebElement já executam dentro do iframe</span>
+</span><span id="__span-14-12"><a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a>        <span class="n">iframe_button</span> <span class="o">=</span> <span class="k">await</span> <span class="n">iframe</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">tag_name</span><span class="o">=</span><span class="s2">&quot;button&quot;</span><span class="p">,</span> <span class="n">class_name</span><span class="o">=</span><span class="s2">&quot;submit&quot;</span><span class="p">)</span>
+</span><span id="__span-14-13"><a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a>        <span class="k">await</span> <span class="n">iframe_button</span><span class="o">.</span><span class="n">click</span><span class="p">()</span>
 </span><span id="__span-14-14"><a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a>
-</span><span id="__span-14-15"><a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a>        <span class="c1"># Agora use todos os métodos de Tab dentro do contexto do iframe</span>
-</span><span id="__span-14-16"><a id="__codelineno-14-16" name="__codelineno-14-16" href="#__codelineno-14-16"></a>        <span class="n">iframe_button</span> <span class="o">=</span> <span class="k">await</span> <span class="n">frame</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">tag_name</span><span class="o">=</span><span class="s2">&quot;button&quot;</span><span class="p">,</span> <span class="n">class_name</span><span class="o">=</span><span class="s2">&quot;submit&quot;</span><span class="p">)</span>
-</span><span id="__span-14-17"><a id="__codelineno-14-17" name="__codelineno-14-17" href="#__codelineno-14-17"></a>        <span class="k">await</span> <span class="n">iframe_button</span><span class="o">.</span><span class="n">click</span><span class="p">()</span>
-</span><span id="__span-14-18"><a id="__codelineno-14-18" name="__codelineno-14-18" href="#__codelineno-14-18"></a>
-</span><span id="__span-14-19"><a id="__codelineno-14-19" name="__codelineno-14-19" href="#__codelineno-14-19"></a>        <span class="n">iframe_input</span> <span class="o">=</span> <span class="k">await</span> <span class="n">frame</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s2">&quot;captcha-input&quot;</span><span class="p">)</span>
-</span><span id="__span-14-20"><a id="__codelineno-14-20" name="__codelineno-14-20" href="#__codelineno-14-20"></a>        <span class="k">await</span> <span class="n">iframe_input</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s2">&quot;verification-code&quot;</span><span class="p">)</span>
-</span><span id="__span-14-21"><a id="__codelineno-14-21" name="__codelineno-14-21" href="#__codelineno-14-21"></a>
-</span><span id="__span-14-22"><a id="__codelineno-14-22" name="__codelineno-14-22" href="#__codelineno-14-22"></a>        <span class="c1"># Fazer query dentro do iframe</span>
-</span><span id="__span-14-23"><a id="__codelineno-14-23" name="__codelineno-14-23" href="#__codelineno-14-23"></a>        <span class="n">iframe_links</span> <span class="o">=</span> <span class="k">await</span> <span class="n">frame</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="n">find_all</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span id="__span-14-24"><a id="__codelineno-14-24" name="__codelineno-14-24" href="#__codelineno-14-24"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Encontrados </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">iframe_links</span><span class="p">)</span><span class="si">}</span><span class="s2"> links no iframe&quot;</span><span class="p">)</span>
-</span><span id="__span-14-25"><a id="__codelineno-14-25" name="__codelineno-14-25" href="#__codelineno-14-25"></a>
-</span><span id="__span-14-26"><a id="__codelineno-14-26" name="__codelineno-14-26" href="#__codelineno-14-26"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">iframe_interaction</span><span class="p">())</span>
-</span></code></pre></div>
+</span><span id="__span-14-15"><a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a>        <span class="n">iframe_input</span> <span class="o">=</span> <span class="k">await</span> <span class="n">iframe</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s2">&quot;captcha-input&quot;</span><span class="p">)</span>
+</span><span id="__span-14-16"><a id="__codelineno-14-16" name="__codelineno-14-16" href="#__codelineno-14-16"></a>        <span class="k">await</span> <span class="n">iframe_input</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s2">&quot;codigo-de-verificacao&quot;</span><span class="p">)</span>
+</span><span id="__span-14-17"><a id="__codelineno-14-17" name="__codelineno-14-17" href="#__codelineno-14-17"></a>
+</span><span id="__span-14-18"><a id="__codelineno-14-18" name="__codelineno-14-18" href="#__codelineno-14-18"></a>        <span class="c1"># Iframe aninhado? Continue encadeando</span>
+</span><span id="__span-14-19"><a id="__codelineno-14-19" name="__codelineno-14-19" href="#__codelineno-14-19"></a>        <span class="n">inner_iframe</span> <span class="o">=</span> <span class="k">await</span> <span class="n">iframe</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">tag_name</span><span class="o">=</span><span class="s2">&quot;iframe&quot;</span><span class="p">)</span>
+</span><span id="__span-14-20"><a id="__codelineno-14-20" name="__codelineno-14-20" href="#__codelineno-14-20"></a>        <span class="n">download_link</span> <span class="o">=</span> <span class="k">await</span> <span class="n">inner_iframe</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;Baixar PDF&quot;</span><span class="p">)</span>
+</span><span id="__span-14-21"><a id="__codelineno-14-21" name="__codelineno-14-21" href="#__codelineno-14-21"></a>        <span class="k">await</span> <span class="n">download_link</span><span class="o">.</span><span class="n">click</span><span class="p">()</span>
+</span><span id="__span-14-22"><a id="__codelineno-14-22" name="__codelineno-14-22" href="#__codelineno-14-22"></a>
+</span><span id="__span-14-23"><a id="__codelineno-14-23" name="__codelineno-14-23" href="#__codelineno-14-23"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">iframe_interacao</span><span class="p">())</span>
+</span></code></pre></div></p>
 <div class="admonition note">
-<p class="admonition-title">iFrames, Alvos e Capturas de Tela</p>
-<p>Ao trabalhar dentro de um iframe, alguns métodos como <code>tab.take_screenshot()</code> não funcionarão porque o CDP do Chrome não pode capturar screenshots de sub-alvos diretamente. Use <code>element.take_screenshot()</code> em vez disso, que funciona dentro de iframes.</p>
+<p class="admonition-title">Screenshots em iframes</p>
+<p><code>tab.take_screenshot()</code> funciona apenas no alvo principal. Para capturar o conteúdo de um iframe, selecione um elemento dentro dele e chame <code>element.take_screenshot()</code>.</p>
 </div>
 <h2 id="estrategias-de-tratamento-de-erros">Estratégias de Tratamento de Erros</h2>
 <p>Automação robusta requer o tratamento de casos onde elementos não existem ou demoram mais para aparecer do que o esperado.</p>

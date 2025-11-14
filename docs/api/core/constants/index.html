@@ -1526,6 +1526,8 @@
       
         
       
+        
+      
     
     
     
@@ -1653,6 +1655,34 @@
     
   
     Python Type System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../deep-dive/fundamentals/iframes-and-contexts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Iframes & Contexts
   
 
     
@@ -4294,6 +4324,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pydoll.constants.Scripts.GET_TEXT_BY_XPATH" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;GET_TEXT_BY_XPATH
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.constants.Scripts.GET_TEXT_BY_CSS" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;GET_TEXT_BY_CSS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pydoll.constants.Scripts.GET_PARENT_NODE" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4386,6 +4438,17 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;IS_EDITABLE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.constants.Scripts.IS_OPTION_TAG" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;IS_OPTION_TAG
       
     </span>
   </a>
@@ -6026,6 +6089,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pydoll.constants.Scripts.GET_TEXT_BY_XPATH" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;GET_TEXT_BY_XPATH
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.constants.Scripts.GET_TEXT_BY_CSS" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;GET_TEXT_BY_CSS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pydoll.constants.Scripts.GET_PARENT_NODE" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -6118,6 +6203,17 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;IS_EDITABLE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.constants.Scripts.IS_OPTION_TAG" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;IS_OPTION_TAG
       
     </span>
   </a>
@@ -7964,7 +8060,7 @@
   </span>
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">CLICK_OPTION_TAG</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">    function() {</span><span class="se">\n</span><span class="s2">    this.selected = true;</span><span class="se">\n</span><span class="s2">    var select = this.parentElement.closest(&#39;select&#39;);</span><span class="se">\n</span><span class="s2">    var event = new Event(&#39;change&#39;, { bubbles: true });</span><span class="se">\n</span><span class="s2">    select.dispatchEvent(event);</span><span class="se">\n</span><span class="s2">    }</span><span class="se">\n</span><span class="s2">    &quot;</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">CLICK_OPTION_TAG</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">    function() {</span><span class="se">\n</span><span class="s2">        var select = this &amp;&amp; this.parentElement ? this.parentElement.closest(&#39;select&#39;) : null;</span><span class="se">\n</span><span class="s2">        if (!select) { return false; }</span><span class="se">\n</span><span class="s2">        for (var i = 0; i &lt; select.options.length; i++) {</span><span class="se">\n</span><span class="s2">            select.options[i].selected = false;</span><span class="se">\n</span><span class="s2">        }</span><span class="se">\n</span><span class="s2">        this.selected = true;</span><span class="se">\n</span><span class="s2">        select.value = this.value;</span><span class="se">\n</span><span class="s2">        select.dispatchEvent(new Event(&#39;input&#39;, { bubbles: true }));</span><span class="se">\n</span><span class="s2">        select.dispatchEvent(new Event(&#39;change&#39;, { bubbles: true }));</span><span class="se">\n</span><span class="s2">        return true;</span><span class="se">\n</span><span class="s2">    }</span><span class="se">\n</span><span class="s2">    &quot;</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -8184,6 +8280,52 @@
 
 
 
+<h4 id="pydoll.constants.Scripts.GET_TEXT_BY_XPATH" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">GET_TEXT_BY_XPATH</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">GET_TEXT_BY_XPATH</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">        (() =&gt; {</span><span class="se">\n</span><span class="s1">            const node = document.evaluate(</span><span class="se">\n</span><span class="s1">                &quot;</span><span class="si">{escaped_value}</span><span class="s1">&quot;,</span><span class="se">\n</span><span class="s1">                document,</span><span class="se">\n</span><span class="s1">                null,</span><span class="se">\n</span><span class="s1">                XPathResult.FIRST_ORDERED_NODE_TYPE,</span><span class="se">\n</span><span class="s1">                null</span><span class="se">\n</span><span class="s1">            ).singleNodeValue;</span><span class="se">\n</span><span class="s1">            return node ? (node.textContent || &quot;&quot;) : &quot;&quot;;</span><span class="se">\n</span><span class="s1">        })()</span><span class="se">\n</span><span class="s1">    &#39;</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="pydoll.constants.Scripts.GET_TEXT_BY_CSS" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">GET_TEXT_BY_CSS</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">GET_TEXT_BY_CSS</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">        (() =&gt; {</span><span class="se">\n</span><span class="s1">            const el = document.querySelector(&quot;</span><span class="si">{selector}</span><span class="s1">&quot;);</span><span class="se">\n</span><span class="s1">            return el ? (el.textContent || &quot;&quot;) : &quot;&quot;;</span><span class="se">\n</span><span class="s1">        })()</span><span class="se">\n</span><span class="s1">    &#39;</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
 <h4 id="pydoll.constants.Scripts.GET_PARENT_NODE" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">GET_PARENT_NODE</span>
 
@@ -8379,6 +8521,29 @@
 
 </h4>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">IS_EDITABLE</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">    function() {</span><span class="se">\n</span><span class="s2">        const el = this;</span><span class="se">\n\n</span><span class="s2">        // Check standard input elements</span><span class="se">\n</span><span class="s2">        if (el.tagName === &#39;INPUT&#39; || el.tagName === &#39;TEXTAREA&#39;) {</span><span class="se">\n</span><span class="s2">            return !el.disabled &amp;&amp; !el.readOnly;</span><span class="se">\n</span><span class="s2">        }</span><span class="se">\n\n</span><span class="s2">        // Check contenteditable (including inherited)</span><span class="se">\n</span><span class="s2">        let current = el;</span><span class="se">\n</span><span class="s2">        while (current) {</span><span class="se">\n</span><span class="s2">            if (current.isContentEditable) {</span><span class="se">\n</span><span class="s2">                return true;</span><span class="se">\n</span><span class="s2">            }</span><span class="se">\n</span><span class="s2">            current = current.parentElement;</span><span class="se">\n</span><span class="s2">        }</span><span class="se">\n\n</span><span class="s2">        return false;</span><span class="se">\n</span><span class="s2">    }</span><span class="se">\n</span><span class="s2">    &quot;</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="pydoll.constants.Scripts.IS_OPTION_TAG" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">IS_OPTION_TAG</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">IS_OPTION_TAG</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">    function() {</span><span class="se">\n</span><span class="s2">        return !!(this &amp;&amp; this.tagName &amp;&amp; this.tagName.toLowerCase() === &#39;option&#39;);</span><span class="se">\n</span><span class="s2">    }</span><span class="se">\n</span><span class="s2">    &quot;</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">

@@ -1783,6 +1783,8 @@
       
         
       
+        
+      
     
     
     
@@ -1910,6 +1912,34 @@
     
   
     Sistema de Tipos Python
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../deep-dive/fundamentals/iframes-and-contexts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Iframes & Contexts
   
 
     
@@ -4866,17 +4896,13 @@
 </span><span id="__span-9-23"><a id="__codelineno-9-23" name="__codelineno-9-23" href="#__codelineno-9-23"></a>
 </span><span id="__span-9-24"><a id="__codelineno-9-24" name="__codelineno-9-24" href="#__codelineno-9-24"></a>        <span class="c1"># Limitação de screenshot de IFrame</span>
 </span><span id="__span-9-25"><a id="__codelineno-9-25" name="__codelineno-9-25" href="#__codelineno-9-25"></a>        <span class="n">iframe_element</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">tag_name</span><span class="o">=</span><span class="s1">&#39;iframe&#39;</span><span class="p">)</span>
-</span><span id="__span-9-26"><a id="__codelineno-9-26" name="__codelineno-9-26" href="#__codelineno-9-26"></a>        <span class="n">frame</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">get_frame</span><span class="p">(</span><span class="n">iframe_element</span><span class="p">)</span>
-</span><span id="__span-9-27"><a id="__codelineno-9-27" name="__codelineno-9-27" href="#__codelineno-9-27"></a>
-</span><span id="__span-9-28"><a id="__codelineno-9-28" name="__codelineno-9-28" href="#__codelineno-9-28"></a>        <span class="k">try</span><span class="p">:</span>
-</span><span id="__span-9-29"><a id="__codelineno-9-29" name="__codelineno-9-29" href="#__codelineno-9-29"></a>            <span class="c1"># Não funcionará para iframes</span>
-</span><span id="__span-9-30"><a id="__codelineno-9-30" name="__codelineno-9-30" href="#__codelineno-9-30"></a>            <span class="k">await</span> <span class="n">frame</span><span class="o">.</span><span class="n">take_screenshot</span><span class="p">(</span><span class="s1">&#39;iframe.png&#39;</span><span class="p">)</span>
-</span><span id="__span-9-31"><a id="__codelineno-9-31" name="__codelineno-9-31" href="#__codelineno-9-31"></a>        <span class="k">except</span> <span class="n">TopLevelTargetRequired</span><span class="p">:</span>
-</span><span id="__span-9-32"><a id="__codelineno-9-32" name="__codelineno-9-32" href="#__codelineno-9-32"></a>            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Use element.take_screenshot() para conteúdo de iframe&quot;</span><span class="p">)</span>
-</span><span id="__span-9-33"><a id="__codelineno-9-33" name="__codelineno-9-33" href="#__codelineno-9-33"></a>
-</span><span id="__span-9-34"><a id="__codelineno-9-34" name="__codelineno-9-34" href="#__codelineno-9-34"></a>            <span class="c1"># Abordagem correta</span>
-</span><span id="__span-9-35"><a id="__codelineno-9-35" name="__codelineno-9-35" href="#__codelineno-9-35"></a>            <span class="n">content</span> <span class="o">=</span> <span class="k">await</span> <span class="n">frame</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s1">&#39;content&#39;</span><span class="p">)</span>
-</span><span id="__span-9-36"><a id="__codelineno-9-36" name="__codelineno-9-36" href="#__codelineno-9-36"></a>            <span class="k">await</span> <span class="n">content</span><span class="o">.</span><span class="n">take_screenshot</span><span class="p">(</span><span class="s1">&#39;iframe-content.jpeg&#39;</span><span class="p">)</span>
+</span><span id="__span-9-26"><a id="__codelineno-9-26" name="__codelineno-9-26" href="#__codelineno-9-26"></a>
+</span><span id="__span-9-27"><a id="__codelineno-9-27" name="__codelineno-9-27" href="#__codelineno-9-27"></a>        <span class="c1"># Isso ainda não funciona: screenshots de nível superior ignoram iframes</span>
+</span><span id="__span-9-28"><a id="__codelineno-9-28" name="__codelineno-9-28" href="#__codelineno-9-28"></a>        <span class="c1"># await tab.take_screenshot(&#39;frame.png&#39;)</span>
+</span><span id="__span-9-29"><a id="__codelineno-9-29" name="__codelineno-9-29" href="#__codelineno-9-29"></a>
+</span><span id="__span-9-30"><a id="__codelineno-9-30" name="__codelineno-9-30" href="#__codelineno-9-30"></a>        <span class="c1"># Capture um elemento dentro do próprio iframe</span>
+</span><span id="__span-9-31"><a id="__codelineno-9-31" name="__codelineno-9-31" href="#__codelineno-9-31"></a>        <span class="n">content</span> <span class="o">=</span> <span class="k">await</span> <span class="n">iframe_element</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s1">&#39;content&#39;</span><span class="p">)</span>
+</span><span id="__span-9-32"><a id="__codelineno-9-32" name="__codelineno-9-32" href="#__codelineno-9-32"></a>        <span class="k">await</span> <span class="n">content</span><span class="o">.</span><span class="n">take_screenshot</span><span class="p">(</span><span class="s1">&#39;iframe-content.png&#39;</span><span class="p">)</span>
 </span></code></pre></div>
 <h2 id="aprenda-mais">Aprenda Mais</h2>
 <p>Para contexto adicional sobre como screenshots e PDFs se integram com a arquitetura do Pydoll:</p>

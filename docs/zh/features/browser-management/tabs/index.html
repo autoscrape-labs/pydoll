@@ -1960,6 +1960,8 @@
       
         
       
+        
+      
     
     
     
@@ -2087,6 +2089,34 @@
     
   
     Python类型系统
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../deep-dive/fundamentals/iframes-and-contexts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Iframes & Contexts
   
 
     
@@ -4972,8 +5002,8 @@
 </span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">tab_registry_demonstration</span><span class="p">())</span>
 </span></code></pre></div>
 <div class="admonition info">
-<p class="admonition-title">浏览器管理的注册表</p>
-<p>Browser 类管理一个以 <code>target_id</code> 为键的 <code>_tabs_opened</code> 字典。当你请求一个标签页（通过 <code>new_tab()</code>、<code>get_opened_tabs()</code> 或 <code>get_frame()</code>）时，Browser 首先检查此注册表。如果该 <code>target_id</code> 已存在 Tab 实例，则返回现有实例；否则，创建新实例并存储在注册表中。</p>
+<p class="admonition-title">Browser 管理的注册表</p>
+<p>Browser 类管理一个以 <code>target_id</code> 为键的 <code>_tabs_opened</code> 字典。当你请求一个标签页（通过 <code>new_tab()</code> 或 <code>get_opened_tabs()</code>）时，Browser 会先检查该注册表。如果已经存在对应的 Tab，就复用该实例；否则创建新的并缓存。（IFrame 现在作为普通元素处理，不再注册为独立的 Tab。）</p>
 </div>
 <h2 id="_4">创建和管理标签页</h2>
 <h3 id="_5">启动浏览器</h3>

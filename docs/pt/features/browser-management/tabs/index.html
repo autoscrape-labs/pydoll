@@ -1962,6 +1962,8 @@
       
         
       
+        
+      
     
     
     
@@ -2089,6 +2091,34 @@
     
   
     Sistema de Tipos Python
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../deep-dive/fundamentals/iframes-and-contexts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Iframes & Contexts
   
 
     
@@ -4974,8 +5004,8 @@
 </span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">tab_registry_demonstration</span><span class="p">())</span>
 </span></code></pre></div>
 <div class="admonition info">
-<p class="admonition-title">Registro Gerenciado pelo Navegador</p>
-<p>A classe Browser gerencia um dicionário <code>_tabs_opened</code> indexado por <code>target_id</code>. Quando você solicita uma aba (via <code>new_tab()</code>, <code>get_opened_tabs()</code>, ou <code>get_frame()</code>), o Browser verifica este registro primeiro. Se uma instância de Tab já existe para aquele <code>target_id</code>, ele retorna a instância existente; caso contrário, cria uma nova e a armazena no registro.</p>
+<p class="admonition-title">Registro controlado pelo Browser</p>
+<p>A classe Browser gerencia um dicionário <code>_tabs_opened</code> indexado por <code>target_id</code>. Quando você solicita uma aba (via <code>new_tab()</code> ou <code>get_opened_tabs()</code>), o Browser verifica este registro primeiro. Se uma instância de Tab já existe para aquele <code>target_id</code>, ele retorna a instância existente; caso contrário, cria uma nova e a armazena no registro. (Iframes não geram mais abas separadas — interaja com eles como elementos normais.)</p>
 </div>
 <h2 id="criando-e-gerenciando-abas">Criando e Gerenciando Abas</h2>
 <h3 id="iniciando-o-navegador">Iniciando o Navegador</h3>

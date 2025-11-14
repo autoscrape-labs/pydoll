@@ -1526,6 +1526,8 @@
       
         
       
+        
+      
     
     
     
@@ -1653,6 +1655,34 @@
     
   
     Python Type System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../deep-dive/fundamentals/iframes-and-contexts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Iframes & Contexts
   
 
     
@@ -3016,6 +3046,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pydoll.elements.web_element.WebElement.is_iframe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;is_iframe
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pydoll.elements.web_element.WebElement.is_enabled" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3053,6 +3094,17 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;inner_html
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.elements.web_element.WebElement.iframe_context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;iframe_context
       
     </span>
   </a>
@@ -4514,6 +4566,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pydoll.elements.web_element.WebElement.is_iframe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;is_iframe
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pydoll.elements.web_element.WebElement.is_enabled" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4551,6 +4614,17 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;inner_html
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.elements.web_element.WebElement.iframe_context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;iframe_context
       
     </span>
   </a>
@@ -5211,6 +5285,30 @@ and manipulation using Chrome DevTools Protocol commands.</p>
 
 
 
+<h3 id="pydoll.elements.web_element.WebElement.is_iframe" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">is_iframe</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">is_iframe</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Whether the element represents an iframe.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
 <h3 id="pydoll.elements.web_element.WebElement.is_enabled" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">is_enabled</span>
 
@@ -5301,7 +5399,58 @@ and manipulation using Chrome DevTools Protocol commands.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Element's HTML content (actually returns outerHTML).</p>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="pydoll.elements.web_element.WebElement.iframe_context" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">iframe_context</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">iframe_context</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Return the resolved iframe context for this element when it is an <iframe>.</p>
+<p>The context includes: frame_id, document_url, execution_context_id,
+document_object_id and, for OOPIF targets, the session_id and
+session_handler used for routing commands. The first call resolves and
+caches the context. Non-iframe elements return None.</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <span class="doc-returns-annotation">
+                    <code><span title="typing.Optional">Optional</span>[<span title="pydoll.elements.web_element._IFrameContext">_IFrameContext</span>]</code>
+                </span>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>_IFrameContext | None: Cached iframe context or None for non-iframes.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
     </div>
 

@@ -1529,6 +1529,8 @@
       
         
       
+        
+      
     
     
     
@@ -1659,6 +1661,34 @@
     
   
     Python Type System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fundamentals/iframes-and-contexts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Iframes & Contexts
   
 
     
@@ -4999,7 +5029,7 @@
 </span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
 </span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="k">raise</span> <span class="n">TopLevelTargetRequired</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>  <span class="c1"># Guide users to WebElement.take_screenshot()</span>
 </span></code></pre></div>
-<p><strong>Design implication:</strong> IFrame tabs (created via <code>get_frame()</code>) inherit all Tab methods but screenshots fail by design. Alternative: <code>WebElement.take_screenshot()</code> works for iframe content.</p>
+<p><strong>Design implication:</strong> Historically, Pydoll created dedicated Tab instances for iframes. The new model keeps iframe interaction inside <code>WebElement</code>, so screenshots and other helpers should target elements within the frame (for example, <code>await iframe_element.find(...).take_screenshot()</code>).</p>
 <p><strong>PDF Generation:</strong> <code>Page.printToPDF</code> returns base64-encoded data. Pydoll abstracts file I/O, but underlying data is always base64 (CDP spec).</p>
 <div class="admonition info">
 <p class="admonition-title">Practical Usage</p>

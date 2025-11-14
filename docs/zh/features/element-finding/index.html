@@ -2015,6 +2015,8 @@
       
         
       
+        
+      
     
     
     
@@ -2142,6 +2144,34 @@
     
   
     Python类型系统
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deep-dive/fundamentals/iframes-and-contexts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Iframes & Contexts
   
 
     
@@ -5552,23 +5582,13 @@
 </div>
 <p>iFrame 在浏览器自动化中提出了特殊的挑战，因为它们具有单独的 DOM 上下文。Pydoll 使 iframe 交互无缝：</p>
 <h3 id="iframe_1">iFrame 上下文隔离</h3>
-<pre class="mermaid"><code>flowchart TB
-    subgraph MainPage[主页面上下文]
-        MainDOM[主页面 DOM]
-        IFrameTag[iframe 元素]
-        MainDOM --&gt; IFrameTag
-    end
+<p><pre class="mermaid"><code>flowchart TB
+    Main[tab]
+    Frame["iframe WebElement"]
+    Content["iframe 内部元素"]
 
-    subgraph IFrameContext[iFrame - 单独的 DOM]
-        IFrameDOM[iFrame DOM]
-        IFrameElements[iFrame 内的元素]
-        IFrameDOM --&gt; IFrameElements
-    end
-
-    IFrameTag -.-&gt;|get_frame 方法| IFrameContext
-
-    MainPage --&gt; MainSearch[tab.find - 主 DOM]
-    IFrameContext --&gt; IFrameSearch[frame.find - iFrame DOM]</code></pre>
+    Main --&gt;|"find('iframe')"| Frame
+    Frame --&gt;|"find('button#submit')"| Content</code></pre>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 </span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.chromium</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
 </span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>
@@ -5577,28 +5597,25 @@
 </span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>        <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 </span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">&#39;https://example.com/page-with-iframe&#39;</span><span class="p">)</span>
 </span><span id="__span-14-8"><a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a>
-</span><span id="__span-14-9"><a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a>        <span class="c1"># 查找 iframe 元素</span>
-</span><span id="__span-14-10"><a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a>        <span class="n">iframe_element</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;iframe.embedded-content&quot;</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-</span><span id="__span-14-11"><a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a>
-</span><span id="__span-14-12"><a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a>        <span class="c1"># 获取 iframe 内容的 Tab 实例</span>
-</span><span id="__span-14-13"><a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a>        <span class="n">frame</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">get_frame</span><span class="p">(</span><span class="n">iframe_element</span><span class="p">)</span>
+</span><span id="__span-14-9"><a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a>        <span class="n">iframe</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;iframe.embedded-content&quot;</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</span><span id="__span-14-10"><a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a>
+</span><span id="__span-14-11"><a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a>        <span class="c1"># WebElement 辅助方法会自动在 iframe 内执行</span>
+</span><span id="__span-14-12"><a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a>        <span class="n">iframe_button</span> <span class="o">=</span> <span class="k">await</span> <span class="n">iframe</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">tag_name</span><span class="o">=</span><span class="s2">&quot;button&quot;</span><span class="p">,</span> <span class="n">class_name</span><span class="o">=</span><span class="s2">&quot;submit&quot;</span><span class="p">)</span>
+</span><span id="__span-14-13"><a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a>        <span class="k">await</span> <span class="n">iframe_button</span><span class="o">.</span><span class="n">click</span><span class="p">()</span>
 </span><span id="__span-14-14"><a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a>
-</span><span id="__span-14-15"><a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a>        <span class="c1"># 现在在 iframe 上下文中使用所有 Tab 方法</span>
-</span><span id="__span-14-16"><a id="__codelineno-14-16" name="__codelineno-14-16" href="#__codelineno-14-16"></a>        <span class="n">iframe_button</span> <span class="o">=</span> <span class="k">await</span> <span class="n">frame</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">tag_name</span><span class="o">=</span><span class="s2">&quot;button&quot;</span><span class="p">,</span> <span class="n">class_name</span><span class="o">=</span><span class="s2">&quot;submit&quot;</span><span class="p">)</span>
-</span><span id="__span-14-17"><a id="__codelineno-14-17" name="__codelineno-14-17" href="#__codelineno-14-17"></a>        <span class="k">await</span> <span class="n">iframe_button</span><span class="o">.</span><span class="n">click</span><span class="p">()</span>
-</span><span id="__span-14-18"><a id="__codelineno-14-18" name="__codelineno-14-18" href="#__codelineno-14-18"></a>
-</span><span id="__span-14-19"><a id="__codelineno-14-19" name="__codelineno-14-19" href="#__codelineno-14-19"></a>        <span class="n">iframe_input</span> <span class="o">=</span> <span class="k">await</span> <span class="n">frame</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s2">&quot;captcha-input&quot;</span><span class="p">)</span>
-</span><span id="__span-14-20"><a id="__codelineno-14-20" name="__codelineno-14-20" href="#__codelineno-14-20"></a>        <span class="k">await</span> <span class="n">iframe_input</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s2">&quot;verification-code&quot;</span><span class="p">)</span>
-</span><span id="__span-14-21"><a id="__codelineno-14-21" name="__codelineno-14-21" href="#__codelineno-14-21"></a>
-</span><span id="__span-14-22"><a id="__codelineno-14-22" name="__codelineno-14-22" href="#__codelineno-14-22"></a>        <span class="c1"># 在 iframe 内查询</span>
-</span><span id="__span-14-23"><a id="__codelineno-14-23" name="__codelineno-14-23" href="#__codelineno-14-23"></a>        <span class="n">iframe_links</span> <span class="o">=</span> <span class="k">await</span> <span class="n">frame</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="n">find_all</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span id="__span-14-24"><a id="__codelineno-14-24" name="__codelineno-14-24" href="#__codelineno-14-24"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;在 iframe 中找到 </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">iframe_links</span><span class="p">)</span><span class="si">}</span><span class="s2"> 个链接&quot;</span><span class="p">)</span>
-</span><span id="__span-14-25"><a id="__codelineno-14-25" name="__codelineno-14-25" href="#__codelineno-14-25"></a>
-</span><span id="__span-14-26"><a id="__codelineno-14-26" name="__codelineno-14-26" href="#__codelineno-14-26"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">iframe_interaction</span><span class="p">())</span>
-</span></code></pre></div>
+</span><span id="__span-14-15"><a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a>        <span class="n">iframe_input</span> <span class="o">=</span> <span class="k">await</span> <span class="n">iframe</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s2">&quot;captcha-input&quot;</span><span class="p">)</span>
+</span><span id="__span-14-16"><a id="__codelineno-14-16" name="__codelineno-14-16" href="#__codelineno-14-16"></a>        <span class="k">await</span> <span class="n">iframe_input</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s2">&quot;verification-code&quot;</span><span class="p">)</span>
+</span><span id="__span-14-17"><a id="__codelineno-14-17" name="__codelineno-14-17" href="#__codelineno-14-17"></a>
+</span><span id="__span-14-18"><a id="__codelineno-14-18" name="__codelineno-14-18" href="#__codelineno-14-18"></a>        <span class="c1"># 如果还有内层 iframe，继续链式查找</span>
+</span><span id="__span-14-19"><a id="__codelineno-14-19" name="__codelineno-14-19" href="#__codelineno-14-19"></a>        <span class="n">inner_iframe</span> <span class="o">=</span> <span class="k">await</span> <span class="n">iframe</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">tag_name</span><span class="o">=</span><span class="s2">&quot;iframe&quot;</span><span class="p">)</span>
+</span><span id="__span-14-20"><a id="__codelineno-14-20" name="__codelineno-14-20" href="#__codelineno-14-20"></a>        <span class="n">download_link</span> <span class="o">=</span> <span class="k">await</span> <span class="n">inner_iframe</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;下载 PDF&quot;</span><span class="p">)</span>
+</span><span id="__span-14-21"><a id="__codelineno-14-21" name="__codelineno-14-21" href="#__codelineno-14-21"></a>        <span class="k">await</span> <span class="n">download_link</span><span class="o">.</span><span class="n">click</span><span class="p">()</span>
+</span><span id="__span-14-22"><a id="__codelineno-14-22" name="__codelineno-14-22" href="#__codelineno-14-22"></a>
+</span><span id="__span-14-23"><a id="__codelineno-14-23" name="__codelineno-14-23" href="#__codelineno-14-23"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">iframe_interaction</span><span class="p">())</span>
+</span></code></pre></div></p>
 <div class="admonition note">
-<p class="admonition-title">iFrame 目标和截图</p>
-<p>在 iframe 内工作时，某些方法如 <code>tab.take_screenshot()</code> 将不起作用，因为 Chrome 的 CDP 无法直接捕获子目标的截图。请改用 <code>element.take_screenshot()</code>，它在 iframe 内工作。</p>
+<p class="admonition-title">iframe 中的截图</p>
+<p><code>tab.take_screenshot()</code> 只能作用于顶层 target。想要截取 iframe 内容，请锁定 iframe 内部的某个元素，使用 <code>element.take_screenshot()</code>。</p>
 </div>
 <h2 id="_14">错误处理策略</h2>
 <p>健壮的自动化需要处理元素不存在或出现时间超过预期的情况。</p>

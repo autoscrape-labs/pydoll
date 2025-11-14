@@ -1,0 +1,5811 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://pydoll.tech/docs/pt/deep-dive/fundamentals/iframes-and-contexts/">
+      
+      
+        <link rel="prev" href="../typing-system/">
+      
+      
+        <link rel="next" href="../../architecture/">
+      
+      
+        
+          <link rel="alternate" href="/docs/" hreflang="en">
+        
+          <link rel="alternate" href="/docs/pt/" hreflang="pt">
+        
+          <link rel="alternate" href="/docs/zh/" hreflang="zh">
+        
+      
+      
+      <link rel="icon" href="../../../../resources/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
+    
+    
+      
+        <title>Iframes & Contexts - Pydoll - Biblioteca de Automação Web Assíncrona</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.618322db.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../resources/stylesheets/termynal.css">
+    
+      <link rel="stylesheet" href="../../../../resources/stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#iframes-oopifs-e-contextos-de-execucao-analise-aprofundada" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../../" title="Pydoll - Biblioteca de Automação Web Assíncrona" class="md-header__button md-logo" aria-label="Pydoll - Biblioteca de Automação Web Assíncrona" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11 15H6l7-14v8h5l-7 14z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Pydoll - Biblioteca de Automação Web Assíncrona
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Iframes & Contexts
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Dark Mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dark Mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6m0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4M7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Light Mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Light Mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/docs/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/docs/pt/" hreflang="pt" class="md-select__link">
+              Português (BR)
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/docs/zh/" hreflang="zh" class="md-select__link">
+              中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/autoscrape-labs/pydoll" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    autoscrape-labs/pydoll
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Pydoll
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../features/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Recursos
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Análise Profunda
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../api/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Referência da API
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../" title="Pydoll - Biblioteca de Automação Web Assíncrona" class="md-nav__button md-logo" aria-label="Pydoll - Biblioteca de Automação Web Assíncrona" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11 15H6l7-14v8h5l-7 14z"/></svg>
+
+    </a>
+    Pydoll - Biblioteca de Automação Web Assíncrona
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/autoscrape-labs/pydoll" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    autoscrape-labs/pydoll
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pydoll
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../features/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Recursos
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Recursos
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/core-concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conceitos Fundamentais
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/element-finding/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pesquisa de Elementos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Automação
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Automação
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/automation/human-interactions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interações Humanas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/automation/keyboard-control/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Controle de Teclado
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/automation/file-operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operações com Arquivos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/automation/iframes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IFrames
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/automation/screenshots-and-pdfs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Capturas e PDF
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rede
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Rede
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/network/monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monitoramento de Rede
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/network/interception/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interceptação de Requisições
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/network/http-requests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Requisições HTTP no Contexto do Navegador
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_6" id="__nav_2_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerenciamento do Navegador
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Gerenciamento do Navegador
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/browser-management/tabs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerenciamento de Abas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/browser-management/contexts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contextos do Navegador
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/browser-management/cookies-sessions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cookies e Sessões
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_7" id="__nav_2_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuração
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Configuração
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/configuration/browser-options/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Opções do Navegador
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/configuration/browser-preferences/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preferências do Navegador
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/configuration/proxy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuração de Proxy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_8" id="__nav_2_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Avançado
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Avançado
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/advanced/behavioral-captcha-bypass/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bypass de Captcha Comportamental
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/advanced/event-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sistema de Eventos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/advanced/remote-connections/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conexões Remotas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/advanced/decorators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Decorator Retry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Análise Profunda
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Análise Profunda
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fundamentos Centrais
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_2" id="__nav_3_2_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Fundamentos Centrais
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cdp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protocolo Chrome DevTools
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../connection-layer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Camada de Conexão
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../typing-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sistema de Tipos Python
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Iframes & Contexts
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Iframes & Contexts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#tabela-de-conteudos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tabela de Conteúdos
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fundacao-o-modelo-de-objeto-de-documento-dom" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fundação: O Modelo de Objeto de Documento (DOM)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Fundação: O Modelo de Objeto de Documento (DOM)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#o-que-e-o-dom" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        O que é o DOM?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#propriedades-da-arvore-dom" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Propriedades da Árvore DOM
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#por-que-isso-importa-para-iframes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Por que Isso Importa para Iframes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#o-que-sao-iframes-e-por-que-eles-importam" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        O que são Iframes e Por que Eles Importam
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="O que são Iframes e Por que Eles Importam">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#definicao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Definição
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#casos-de-uso-comuns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Casos de Uso Comuns
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#modelo-de-seguranca-politica-de-mesma-origem-same-origin-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modelo de Segurança: Política de Mesma Origem (Same-Origin Policy)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#o-desafio-iframes-fora-de-processo-oopifs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        O Desafio: Iframes Fora de Processo (OOPIFs)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="O Desafio: Iframes Fora de Processo (OOPIFs)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#o-que-sao-oopifs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        O que são OOPIFs?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#por-que-oopifs-complicam-a-automacao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Por que OOPIFs Complicam a Automação
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-abordagem-tradicional-troca-manual-de-contexto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A Abordagem Tradicional (Troca Manual de Contexto)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../architecture/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arquitetura Interna
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_3" id="__nav_3_3_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Arquitetura Interna
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/browser-domain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Domínio do Navegador
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/tab-domain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Domínio da Aba
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/webelement-domain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Domínio do WebElement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/find-elements-mixin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mixin FindElements
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/event-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arquitetura de Eventos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/browser-requests-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arquitetura de Requisições do Navegador
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_4" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../network/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rede e Segurança
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_4" id="__nav_3_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Rede e Segurança
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/network-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fundamentos de Rede
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/http-proxies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Proxies HTTP/HTTPS
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/socks-proxies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Proxies SOCKS
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/proxy-detection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Detecção de Proxy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/build-proxy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Construindo Servidores Proxy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/proxy-legal/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Legal & Ética
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../fingerprinting/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fingerprinting
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_5" id="__nav_3_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Fingerprinting
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fingerprinting/network-fingerprinting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fingerprinting de Rede
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fingerprinting/browser-fingerprinting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fingerprinting do Navegador
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fingerprinting/behavioral-fingerprinting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fingerprinting Comportamental
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fingerprinting/evasion-techniques/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Técnicas de Evasão
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_6" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../guides/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guias Práticos
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_6" id="__nav_3_6_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guias Práticos
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/selectors-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Seletores CSS vs XPath
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../api/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Referência da API
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Referência da API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Navegador
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Navegador
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/browser/chrome/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Chrome
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/browser/edge/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Edge
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/browser/options/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Opções
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/browser/tab/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Aba
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/browser/requests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Requisições
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/browser/managers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerenciadores
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Elementos
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Elementos
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/elements/web_element/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Elemento Web
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/elements/mixins/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mixins
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conexão
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Conexão
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/connection/connection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manipulador de Conexão
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/connection/managers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerenciadores
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../api/commands/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Comandos
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4_5" id="__nav_4_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Comandos
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/commands/browser/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Navegador
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/commands/dom/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DOM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/commands/input/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Entrada
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/commands/network/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rede
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/commands/page/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Página
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/commands/runtime/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tempo de Execução
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/commands/storage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Armazenamento
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/commands/target/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Alvo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/commands/fetch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fetch
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_6" id="__nav_4_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protocolo
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Protocolo
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/base/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tipos Base
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/browser/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Navegador
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/dom/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DOM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/fetch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fetch
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/input/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Entrada
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/network/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rede
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/page/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Página
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/runtime/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tempo de Execução
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/storage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Armazenamento
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/protocol/target/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Alvo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_7" id="__nav_4_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Núcleo
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Núcleo
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/core/constants/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Constantes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/core/exceptions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exceções
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/core/utils/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Utilitários
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#tabela-de-conteudos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tabela de Conteúdos
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fundacao-o-modelo-de-objeto-de-documento-dom" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fundação: O Modelo de Objeto de Documento (DOM)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Fundação: O Modelo de Objeto de Documento (DOM)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#o-que-e-o-dom" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        O que é o DOM?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#propriedades-da-arvore-dom" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Propriedades da Árvore DOM
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#por-que-isso-importa-para-iframes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Por que Isso Importa para Iframes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#o-que-sao-iframes-e-por-que-eles-importam" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        O que são Iframes e Por que Eles Importam
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="O que são Iframes e Por que Eles Importam">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#definicao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Definição
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#casos-de-uso-comuns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Casos de Uso Comuns
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#modelo-de-seguranca-politica-de-mesma-origem-same-origin-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modelo de Segurança: Política de Mesma Origem (Same-Origin Policy)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#o-desafio-iframes-fora-de-processo-oopifs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        O Desafio: Iframes Fora de Processo (OOPIFs)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="O Desafio: Iframes Fora de Processo (OOPIFs)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#o-que-sao-oopifs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        O que são OOPIFs?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#por-que-oopifs-complicam-a-automacao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Por que OOPIFs Complicam a Automação
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-abordagem-tradicional-troca-manual-de-contexto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A Abordagem Tradicional (Troca Manual de Contexto)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+  <nav class="md-path" aria-label="Navigation" >
+    <ol class="md-path__list">
+      
+        
+  
+  
+    <li class="md-path__item">
+      <a href="../../../" class="md-path__link">
+        
+  <span class="md-ellipsis">
+    Pydoll
+  </span>
+
+      </a>
+    </li>
+  
+
+      
+      
+        
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="../../" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    Análise Profunda
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="../" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    Fundamentos Centrais
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ol>
+  </nav>
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="iframes-oopifs-e-contextos-de-execucao-analise-aprofundada">Iframes, OOPIFs e Contextos de Execução (Análise Aprofundada)</h1>
+<p>Entender como a automação de navegador lida com iframes é crucial para construir ferramentas de automação robustas. Este guia abrangente explora os fundamentos técnicos do manuseio de iframes no Pydoll, cobrindo o Document Object Model (DOM), mecânicas do Chrome DevTools Protocol (CDP), contextos de execução, mundos isolados e o sofisticado pipeline de resolução que torna a interação com iframes fluida.</p>
+<div class="admonition info">
+<p class="admonition-title">Primeiro o uso prático</p>
+<p>Se você só precisa usar iframes em seus scripts de automação, comece com o guia de funcionalidades: <strong>Funcionalidades → Automação → IFrames</strong>.
+Esta análise aprofundada explica as decisões de arquitetura, nuances do protocolo e detalhes de implementação interna.</p>
+</div>
+<hr />
+<h2 id="tabela-de-conteudos">Tabela de Conteúdos</h2>
+<ol>
+<li><a href="#fundação-o-modelo-de-objeto-de-documento-dom">Fundação: O Modelo de Objeto de Documento (DOM)</a></li>
+<li><a href="#o-que-são-iframes-e-por-que-eles-importam">O que são Iframes e Por que Eles Importam</a></li>
+<li><a href="#o-desafio-iframes-fora-de-processo-oopifs">O Desafio: Iframes Fora de Processo (OOPIFs)</a></li>
+<li><a href="#protocolo-chrome-devtools-e-gerenciamento-de-frames">Protocolo Chrome DevTools e Gerenciamento de Frames</a></li>
+<li><a href="#contextos-de-execução-e-mundos-isolados">Contextos de Execução e Mundos Isolados</a></li>
+<li><a href="#referência-de-identificadores-cdp">Referência de Identificadores CDP</a></li>
+<li><a href="#pipeline-de-resolução-do-pydoll">Pipeline de Resolução do Pydoll</a></li>
+<li><a href="#roteamento-de-sessão-e-modo-flattened">Roteamento de Sessão e Modo "Flattened"</a></li>
+<li><a href="#análise-aprofundada-da-implementação">Análise Aprofundada da Implementação</a></li>
+<li><a href="#considerações-de-performance">Considerações de Performance</a></li>
+<li><a href="#modos-de-falha-e-depuração">Modos de Falha e Depuração</a></li>
+</ol>
+<hr />
+<h2 id="fundacao-o-modelo-de-objeto-de-documento-dom">Fundação: O Modelo de Objeto de Documento (DOM)</h2>
+<p>Antes de mergulhar nos iframes, precisamos entender o DOM — a estrutura em árvore que representa um documento HTML na memória.</p>
+<h3 id="o-que-e-o-dom">O que é o DOM?</h3>
+<p>O <strong>Modelo de Objeto de Documento</strong> (Document Object Model) é uma interface de programação para documentos HTML e XML. Ele representa a estrutura da página como uma árvore de nós, onde cada nó corresponde a uma parte do documento:</p>
+<ul>
+<li><strong>Nós de elemento</strong>: Tags HTML como <code>&lt;div&gt;</code>, <code>&lt;iframe&gt;</code>, <code>&lt;button&gt;</code></li>
+<li><strong>Nós de texto</strong>: O conteúdo de texto real</li>
+<li><strong>Nós de atributo</strong>: Atributos de elemento como <code>id</code>, <code>class</code>, <code>src</code></li>
+<li><strong>Nó do documento</strong>: A raiz da árvore</li>
+</ul>
+<p>'''mermaid
+graph TD
+    Document[Documento] --&gt; HTML[elemento html]
+    HTML --&gt; Head[elemento head]
+    HTML --&gt; Body[elemento body]
+    Body --&gt; Div1[elemento div]
+    Body --&gt; Div2[elemento div]
+    Div1 --&gt; Text1[nó de texto: 'Olá']
+    Div2 --&gt; Iframe[elemento iframe]
+    Iframe --&gt; IframeDoc[documento do iframe]
+    IframeDoc --&gt; IframeBody[body do iframe]
+    IframeBody --&gt; IframeContent[conteúdo do iframe...]
+'''</p>
+<h3 id="propriedades-da-arvore-dom">Propriedades da Árvore DOM</h3>
+<ol>
+<li><strong>Estrutura hierárquica</strong>: Todo nó tem um pai (exceto o Documento) e pode ter filhos</li>
+<li><strong>Identificação de nós</strong>: Nós podem ser identificados por:</li>
+<li><code>nodeId</code>: Identificador interno dentro de um contexto de documento (domínio DOM)</li>
+<li><code>backendNodeId</code>: Identificador estável que pode referenciar nós através de diferentes documentos</li>
+<li><strong>Representação viva</strong>: Mudanças no DOM são refletidas imediatamente na árvore</li>
+</ol>
+<h3 id="por-que-isso-importa-para-iframes">Por que Isso Importa para Iframes</h3>
+<p>Cada elemento <code>&lt;iframe&gt;</code> cria uma <strong>árvore DOM nova e independente</strong>. O próprio elemento iframe existe no DOM do pai, mas o conteúdo carregado no iframe tem seu próprio nó Documento completo e estrutura de árvore. Essa separação é a base de toda a complexidade dos iframes.</p>
+<hr />
+<h2 id="o-que-sao-iframes-e-por-que-eles-importam">O que são Iframes e Por que Eles Importam</h2>
+<h3 id="definicao">Definição</h3>
+<p>Um <strong>iframe</strong> (quadro em linha) é um elemento HTML (<code>&lt;iframe&gt;</code>) que incorpora outro documento HTML dentro da página atual. O documento incorporado mantém seu próprio contexto, incluindo:</p>
+<ul>
+<li>Estrutura HTML e árvore DOM independentes</li>
+<li>Ambiente de execução JavaScript separado</li>
+<li>Estilização CSS própria (a menos que explicitamente compartilhada)</li>
+<li>Histórico de navegação distinto</li>
+</ul>
+<p>'''html</p>
+<body>
+  <h1>Página Pai</h1>
+  <iframe src="https://example.com/embedded.html" id="content-frame"></iframe>
+  <p>Mais conteúdo do pai</p>
+</body>
+<p>'''</p>
+<h3 id="casos-de-uso-comuns">Casos de Uso Comuns</h3>
+<table>
+<thead>
+<tr>
+<th>Caso de Uso</th>
+<th>Descrição</th>
+<th>Exemplo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Widgets de terceiros</strong></td>
+<td>Incorpora conteúdo externo com segurança</td>
+<td>Formulários de pagamento, feeds de mídia social, widgets de chat</td>
+</tr>
+<tr>
+<td><strong>Isolamento de conteúdo</strong></td>
+<td>Coloca conteúdo não confiável em sandbox</td>
+<td>HTML gerado por usuário, anúncios</td>
+</tr>
+<tr>
+<td><strong>Arquitetura modular</strong></td>
+<td>Componentes reutilizáveis</td>
+<td>Widgets de dashboard, sistemas de plugins</td>
+</tr>
+<tr>
+<td><strong>Conteúdo de origem cruzada</strong></td>
+<td>Carrega recursos de domínios diferentes</td>
+<td>Mapas, players de vídeo, dashboards de analytics</td>
+</tr>
+</tbody>
+</table>
+<h3 id="modelo-de-seguranca-politica-de-mesma-origem-same-origin-policy">Modelo de Segurança: Política de Mesma Origem (Same-Origin Policy)</h3>
+<p>O navegador impõe uma <strong>Política de Mesma Origem</strong> para iframes:</p>
+<ul>
+<li><strong>Iframes de mesma origem</strong>: O pai pode acessar o DOM do iframe via JavaScript (<code>iframe.contentDocument</code>)</li>
+<li><strong>Iframes de origem cruzada</strong>: O pai não pode acessar o DOM do iframe diretamente (restrição de segurança)</li>
+</ul>
+<p>Essa barreira de segurança é o motivo pelo qual ferramentas de automação precisam de mecanismos especiais (como o CDP) para interagir com o conteúdo do iframe.</p>
+<div class="admonition warning">
+<p class="admonition-title">Importante para automação</p>
+<p>Automação tradicional baseada em JavaScript (como as primeiras abordagens do Selenium) não pode acessar diretamente o conteúdo de iframes de origem cruzada devido à segurança do navegador. O CDP opera em um nível mais baixo, contornando essa limitação para fins de depuração.</p>
+</div>
+<hr />
+<h2 id="o-desafio-iframes-fora-de-processo-oopifs">O Desafio: Iframes Fora de Processo (OOPIFs)</h2>
+<h3 id="o-que-sao-oopifs">O que são OOPIFs?</h3>
+<p>O Chromium moderno usa <strong>isolamento de site</strong> (site isolation) para segurança e estabilidade. Isso significa que origens diferentes podem ser renderizadas em processos separados do SO. Um iframe de uma origem diferente torna-se um <strong>Iframe Fora de Processo (OOPIF)</strong>.</p>
+<p>'''mermaid
+graph LR
+    subgraph "Processo 1: example.com"
+        MainPage[DOM da Página Principal]
+    end</p>
+<div class="language-text highlight"><pre><span></span><code>subgraph &quot;Processo 2: widget.com&quot;
+    IframeDOM[DOM do Iframe]
+end
+
+MainPage -.Fronteira do Processo.-&gt; IframeDOM
+</code></pre></div>
+<p>'''</p>
+<h3 id="por-que-oopifs-complicam-a-automacao">Por que OOPIFs Complicam a Automação</h3>
+<table>
+<thead>
+<tr>
+<th>Aspecto</th>
+<th>Iframe no Mesmo Processo</th>
+<th>Iframe Fora de Processo (OOPIF)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Acesso ao DOM</strong></td>
+<td>Árvore de documento compartilhada na memória</td>
+<td>Alvo (target) separado com seu próprio documento</td>
+</tr>
+<tr>
+<td><strong>Roteamento de comandos</strong></td>
+<td>Conexão única</td>
+<td>Requer anexação ao alvo e roteamento de sessão</td>
+</tr>
+<tr>
+<td><strong>Árvore de frames</strong></td>
+<td>Todos os frames em uma árvore</td>
+<td>Frame raiz + alvos separados para OOPIFs</td>
+</tr>
+<tr>
+<td><strong>Contexto JavaScript</strong></td>
+<td>Mesmo contexto de execution</td>
+<td>Contexto de execução diferente por processo</td>
+</tr>
+<tr>
+<td><strong>Comunicação CDP</strong></td>
+<td>Comandos diretos</td>
+<td>Comandos devem incluir <code>sessionId</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="a-abordagem-tradicional-troca-manual-de-contexto">A Abordagem Tradicional (Troca Manual de Contexto)</h3>
+<p>Sem um manuseio sofisticado, automatizar OOPIFs requer:</p>
+<p>'''python</p>
+<h1 id="abordagem-tradicional-manual-com-outras-ferramentas">Abordagem tradicional (manual) com outras ferramentas</h1>
+<p>main_page = browser.get_page()
+iframe_element = main_page.find_element_by_id("iframe-id")</p>
+<h1 id="deve-trocar-manualmente-o-contexto">Deve trocar manualmente o contexto</h1>
+<p>driver.switch_to.frame(iframe_element)</p>
+<h1 id="agora-os-comandos-miram-o-iframe">Agora os comandos miram o iframe</h1>
+<p>button = driver.find_element_by_id("button-in-iframe")
+button.click()</p>
+<h1 id="deve-trocar-manualmente-de-volta">Deve trocar manualmente de volta</h1>
+<p>driver.switch_to.default_content()
+'''</p>
+<p><strong>Problemas com esta abordagem:</strong></p>
+<ol>
+<li><strong>Carga para o desenvolvedor</strong>: Todo iframe requer gerenciamento explícito de contexto</li>
+<li><strong>Iframes aninhados</strong>: Cada nível precisa de outra troca</li>
+<li><strong>Detecção de OOPIF</strong>: Difícil saber quando a anexação manual é necessária</li>
+<li><strong>Propenso a erros</strong>: Esquecer de trocar de volta → comandos subsequentes falham</li>
+<li><strong>Não componentizável</strong>: Funções auxiliares precisam saber seu contexto de iframe</li>
+</ol>
+<h3 id="a-solucao-do-pydoll-resolucao-transparente-de-contexto">A Solução do Pydoll: Resolução Transparente de Contexto</h3>
+<p>O Pydoll elimina a troca manual de contexto resolvendo os contextos de iframe automaticamente:</p>
+<p>'''python</p>
+<h1 id="abordagem-pydoll-sem-troca-manual">Abordagem Pydoll (sem troca manual)</h1>
+<p>iframe = await tab.find(id="iframe-id")
+button = await iframe.find(id="button-in-iframe")
+await button.click()</p>
+<h1 id="iframes-aninhados-mesmo-padrao">Iframes aninhados? Mesmo padrão</h1>
+<p>outer = await tab.find(id="outer-iframe")
+inner = await outer.find(tag_name="iframe")
+button = await inner.find(text="Submit")
+await button.click()
+'''</p>
+<p>A complexidade é tratada internamente. Vamos explorar como.</p>
+<hr />
+<h2 id="protocolo-chrome-devtools-e-gerenciamento-de-frames">Protocolo Chrome DevTools e Gerenciamento de Frames</h2>
+<p>Como discutido em <a href="../cdp/">Análise Aprofundada → Fundamentos → Protocolo Chrome DevTools</a>, o CDP fornece controle abrangente do navegador via comunicação WebSocket. O gerenciamento de frames é distribuído por múltiplos domínios do CDP.</p>
+<h3 id="dominios-cdp-relevantes">Domínios CDP Relevantes</h3>
+<h4 id="1-dominio-page">1. <strong>Domínio Page</strong></h4>
+<p>Gerencia o ciclo de vida da página, frames e navegação.</p>
+<p><strong>Métodos principais:</strong></p>
+<ul>
+<li>
+<p><code>Page.getFrameTree()</code>: Retorna a estrutura hierárquica de todos os frames em uma página
+  '''json
+  {
+    "frameTree": {
+      "frame": {
+        "id": "main-frame-id",
+        "url": "https://example.com",
+        "securityOrigin": "https://example.com",
+        "mimeType": "text/html"
+      },
+      "childFrames": [
+        {
+          "frame": {
+            "id": "child-frame-id",
+            "parentId": "main-frame-id",
+            "url": "https://widget.com/embed"
+          }
+        }
+      ]
+    }
+  }
+  '''</p>
+</li>
+<li>
+<p><code>Page.createIsolatedWorld(frameId, worldName)</code>: Cria um novo contexto de execução JavaScript em um frame específico
+  '''json
+  {
+    "executionContextId": 42
+  }
+  '''</p>
+</li>
+</ul>
+<p><strong>Uso no Pydoll:</strong></p>
+<p>'''python</p>
+<h1 id="de-pydollelementsweb_elementpy">De pydoll/elements/web_element.py</h1>
+<p>@staticmethod
+async def _get_frame_tree_for(
+    handler: ConnectionHandler, session_id: Optional[str]
+) -&gt; FrameTree:
+    """Pega a árvore de frames da Página para a conexão/alvo dados."""
+    command = PageCommands.get_frame_tree()
+    if session_id:
+        command['sessionId'] = session_id
+    response: GetFrameTreeResponse = await handler.execute_command(command)
+    return response['result']['frameTree']
+'''</p>
+<h4 id="2-dominio-dom">2. <strong>Domínio DOM</strong></h4>
+<p>Fornece acesso à estrutura do DOM.</p>
+<p><strong>Métodos principais:</strong></p>
+<ul>
+<li>
+<p><code>DOM.describeNode(objectId)</code>: Retorna informação detalhada sobre um nó DOM
+  '''json
+  {
+    "node": {
+      "nodeId": 123,
+      "backendNodeId": 456,
+      "nodeName": "IFRAME",
+      "frameId": "parent-frame-id",
+      "contentDocument": {
+        "frameId": "iframe-frame-id",
+        "documentURL": "https://embedded.com/page.html"
+      }
+    }
+  }
+  '''</p>
+</li>
+<li>
+<p><code>DOM.getFrameOwner(frameId)</code>: Retorna o <code>backendNodeId</code> do elemento <code>&lt;iframe&gt;</code> que possui um frame
+  '''json
+  {
+    "backendNodeId": 456
+  }
+  '''</p>
+</li>
+</ul>
+<p><strong>Uso no Pydoll:</strong></p>
+<p>'''python</p>
+<h1 id="de-pydollelementsweb_elementpy_1">De pydoll/elements/web_element.py</h1>
+<p>@staticmethod
+async def _owner_backend_for(
+    handler: ConnectionHandler, session_id: Optional[str], frame_id: str
+) -&gt; Optional[int]:
+    """Pega o backendNodeId do elemento DOM que possui o frame dado."""
+    command = DomCommands.get_frame_owner(frame_id=frame_id)
+    if session_id:
+        command['sessionId'] = session_id
+    response: GetFrameOwnerResponse = await handler.execute_command(command)
+    return response.get('result', {}).get('backendNodeId')
+'''</p>
+<h4 id="3-dominio-target">3. <strong>Domínio Target</strong></h4>
+<p>Gerencia alvos (targets) do navegador (páginas, iframes, workers, etc.).</p>
+<p><strong>Métodos principais:</strong></p>
+<ul>
+<li>
+<p><code>Target.getTargets()</code>: Lista todos os alvos disponíveis
+  '''json
+  {
+    "targetInfos": [
+      {
+        "targetId": "page-target-id",
+        "type": "page",
+        "title": "Main Page",
+        "url": "https://example.com"
+      },
+      {
+        "targetId": "iframe-target-id",
+        "type": "iframe",
+        "title": "",
+        "url": "https://widget.com/embed",
+        "parentFrameId": "main-frame-id"
+      }
+    ]
+  }
+  '''</p>
+</li>
+<li>
+<p><code>Target.attachToTarget(targetId, flatten)</code>: Anexa a um alvo para depuração</p>
+</li>
+<li>Quando <code>flatten=true</code>: Retorna um <code>sessionId</code> para rotear comandos no modo "flattened"</li>
+<li>Toda comunicação acontece sobre o mesmo WebSocket, diferenciada por <code>sessionId</code></li>
+</ul>
+<p><strong>Uso no Pydoll:</strong></p>
+<p>'''python</p>
+<h1 id="de-pydollelementsweb_elementpy-simplificado">De pydoll/elements/web_element.py (simplificado)</h1>
+<p>async def _resolve_oopif_by_parent(self, parent_frame_id: str, ...):
+    """Resolve um OOPIF usando o ID do frame pai."""
+    browser_handler = ConnectionHandler(...)
+    targets_response: GetTargetsResponse = await browser_handler.execute_command(
+        TargetCommands.get_targets()
+    )
+    target_infos = targets_response.get('result', {}).get('targetInfos', [])</p>
+<div class="language-text highlight"><pre><span></span><code># Encontra alvos cujo parentFrameId bate
+direct_children = [
+    target_info for target_info in target_infos
+    if target_info.get(&#39;parentFrameId&#39;) == parent_frame_id
+]
+
+if direct_children:
+    attach_response: AttachToTargetResponse = await browser_handler.execute_command(
+        TargetCommands.attach_to_target(
+            target_id=direct_children[0][&#39;targetId&#39;], 
+            flatten=True
+        )
+    )
+    attached_session_id = attach_response.get(&#39;result&#39;, {}).get(&#39;sessionId&#39;)
+    # ... usa session_id para comandos subsequentes
+</code></pre></div>
+<p>'''</p>
+<h4 id="4-dominio-runtime">4. <strong>Domínio Runtime</strong></h4>
+<p>Executa JavaScript e gerencia contextos de execução.</p>
+<p><strong>Métodos principais:</strong></p>
+<ul>
+<li><code>Runtime.evaluate(expression, contextId)</code>: Avalia JavaScript em um contexto de execução específico</li>
+<li><code>Runtime.callFunctionOn(functionDeclaration, objectId)</code>: Chama uma função com um objeto específico como <code>this</code></li>
+</ul>
+<p><strong>Uso no Pydoll para acesso ao documento do iframe:</strong></p>
+<p>'''python</p>
+<h1 id="de-pydollelementsweb_elementpy_2">De pydoll/elements/web_element.py</h1>
+<p>async def _set_iframe_document_object_id(self, execution_context_id: int):
+    """Avalia document.documentElement no contexto do iframe e cacheia seu object id."""
+    evaluate_command = RuntimeCommands.evaluate(
+        expression='document.documentElement',
+        context_id=execution_context_id,
+    )
+    if self._iframe_context and self._iframe_context.session_id:
+        evaluate_command['sessionId'] = self._iframe_context.session_id</p>
+<div class="language-text highlight"><pre><span></span><code>evaluate_response: EvaluateResponse = await (
+    (self._iframe_context.session_handler if self._iframe_context else None)
+    or self._connection_handler
+).execute_command(evaluate_command)
+
+document_object_id = evaluate_response.get(&#39;result&#39;, {}).get(&#39;result&#39;, {}).get(&#39;objectId&#39;)
+if self._iframe_context:
+    self._iframe_context.document_object_id = document_object_id
+</code></pre></div>
+<p>'''</p>
+<hr />
+<h2 id="contextos-de-execucao-e-mundos-isolados">Contextos de Execução e Mundos Isolados</h2>
+<h3 id="o-que-e-um-contexto-de-execucao">O que é um Contexto de Execução?</h3>
+<p>Um <strong>contexto de execução</strong> é um ambiente onde o código JavaScript é executado. Todo frame em um navegador tem pelo menos um contexto de execution. O contexto inclui:</p>
+<ul>
+<li><strong>Objeto global</strong> (<code>window</code> em navegadores)</li>
+<li><strong>Cadeia de escopo</strong>: Como variáveis são resolvidas</li>
+<li><strong>Vínculo 'this'</strong>: A o que <code>this</code> se refere</li>
+<li><strong>Ambiente de variáveis</strong>: Todas as variáveis e funções declaradas</li>
+</ul>
+<h3 id="multiplos-contextos-por-frame">Múltiplos Contextos por Frame</h3>
+<p>Um único frame pode ter múltiplos contextos de execução:</p>
+<ol>
+<li><strong>Mundo principal (contexto padrão)</strong>: Onde o JavaScript da própria página roda</li>
+<li><strong>Mundos isolados</strong>: Contextos separados que share o mesmo DOM mas têm escopos globais JavaScript diferentes</li>
+</ol>
+<p>'''mermaid
+graph TB
+    Frame[Frame: example.com/page]
+    Frame --&gt; MainWorld[Mundo Principal<br/>JavaScript da Página]
+    Frame --&gt; IsolatedWorld1[Mundo Isolado 1<br/>Script de conteúdo de extensão]
+    Frame --&gt; IsolatedWorld2[Mundo Isolado 2<br/>Automação Pydoll]</p>
+<div class="language-text highlight"><pre><span></span><code>DOM[Árvore DOM Compartilhada]
+MainWorld -.pode acessar.-&gt; DOM
+IsolatedWorld1 -.pode acessar.-&gt; DOM
+IsolatedWorld2 -.pode acessar.-&gt; DOM
+
+MainWorld -.não pode acessar.-&gt; IsolatedWorld1
+MainWorld -.não pode acessar.-&gt; IsolatedWorld2
+</code></pre></div>
+<p>'''</p>
+<h3 id="o-que-e-um-mundo-isolado">O que é um Mundo Isolado?</h3>
+<p>Um <strong>mundo isolado</strong> é um contexto de execução JavaScript separado que:</p>
+<ul>
+<li><strong>Compartilha o mesmo DOM</strong>: Pode ler/modificar elementos DOM</li>
+<li><strong>Tem um objeto global separado</strong>: Variáveis/funções não vazam entre mundos</li>
+<li><strong>Previne interferência</strong>: Scripts da página não podem detectar ou interferir com scripts do mundo isolado</li>
+</ul>
+<p><strong>Origem</strong>: Mundos isolados foram criados para extensões de navegador. Scripts de conteúdo (content scripts) rodam em mundos isolados para que possam interagir com o DOM da página sem:</p>
+<ul>
+<li>Scripts da página sobrescrevendo suas variáveis</li>
+<li>Serem detectados por código anti-tamper (anti-adulteração)</li>
+<li>Conflitar com o JavaScript da página</li>
+</ul>
+<h3 id="por-que-o-pydoll-usa-mundos-isolados-para-iframes">Por que o Pydoll Usa Mundos Isolados para Iframes</h3>
+<p>Quando o Pydoll interage com o conteúdo de um iframe, ele cria um mundo isolado no contexto desse iframe. Isso fornece:</p>
+<ol>
+<li><strong>Ambiente JavaScript limpo</strong>: Sem conflitos com os scripts do próprio iframe</li>
+<li><strong>Comportamento consistente</strong>: Scripts de automação funcionam independentemente de qual JavaScript o iframe roda</li>
+<li><strong>Anti-detecção</strong>: O JavaScript do iframe não pode detectar facilmente a presença do Pydoll</li>
+<li><strong>Avaliação segura</strong>: Código de automação não pode acidentalmente disparar lógica da página</li>
+</ol>
+<p><strong>Implementação:</strong></p>
+<p>'''python</p>
+<h1 id="de-pydollelementsweb_elementpy_3">De pydoll/elements/web_element.py</h1>
+<p>@staticmethod
+async def _create_isolated_world_for_frame(
+    frame_id: str,
+    handler: ConnectionHandler,
+    session_id: Optional[str],
+) -&gt; int:
+    """Cria um mundo isolado (Page.createIsolatedWorld) para o frame dado."""
+    create_command = PageCommands.create_isolated_world(
+        frame_id=frame_id,
+        world_name=f'pydoll::iframe::{frame_id}',
+        grant_universal_access=True,
+    )
+    if session_id:
+        create_command['sessionId'] = session_id</p>
+<div class="language-text highlight"><pre><span></span><code>create_response: CreateIsolatedWorldResponse = await handler.execute_command(
+    create_command
+)
+execution_context_id = create_response.get(&#39;result&#39;, {}).get(&#39;executionContextId&#39;)
+if not execution_context_id:
+    raise InvalidIFrame(&#39;Incapaz de criar mundo isolado para o iframe&#39;)
+return execution_context_id
+</code></pre></div>
+<p>'''</p>
+<p>O parâmetro <code>grant_universal_access=True</code> permite ao mundo isolado:</p>
+<ul>
+<li>Acessar frames de origem cruzada (normalmente bloqueado pela política de mesma origem)</li>
+<li>Realizar operações privilegiadas necessárias para automação</li>
+</ul>
+<div class="admonition tip">
+<p class="admonition-title">Mundos isolados na prática</p>
+<p>Toda vez que você usa <code>await iframe.find(...)</code>, o Pydoll avalia a consulta do seletor em um mundo isolado criado especificamente para aquele iframe. Isso garante que sua lógica de automação nunca conflite com o JavaScript do próprio iframe, e o iframe não possa detectar ou bloquear sua automação.</p>
+</div>
+<hr />
+<h2 id="referencia-de-identificadores-cdp">Referência de Identificadores CDP</h2>
+<p>Entender os identificadores do CDP é crucial para o manuseio de iframes. Aqui está uma referência abrangente:</p>
+<table>
+<thead>
+<tr>
+<th>Identificador</th>
+<th>Domínio</th>
+<th>Escopo</th>
+<th>Propósito</th>
+<th>Exemplo de Uso no Pydoll</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong><code>nodeId</code></strong></td>
+<td>DOM</td>
+<td>Local do Documento</td>
+<td>Identifica um nó DOM dentro de um contexto de documento específico</td>
+<td>Operações internas do CDP; não é estável entre navegações</td>
+</tr>
+<tr>
+<td><strong><code>backendNodeId</code></strong></td>
+<td>DOM</td>
+<td>Estável entre documentos</td>
+<td>Identificador estável para um nó DOM; pode mapear frames para elementos donos</td>
+<td>Usado para parear elementos iframe com IDs de frame via <code>DOM.getFrameOwner</code></td>
+</tr>
+<tr>
+<td><strong><code>frameId</code></strong></td>
+<td>Page</td>
+<td>Frame</td>
+<td>Identifica um frame na árvore de frames da página</td>
+<td>Usado para especificar qual frame para <code>Page.createIsolatedWorld</code> e travessia da árvore de frames</td>
+</tr>
+<tr>
+<td><strong><code>targetId</code></strong></td>
+<td>Target</td>
+<td>Global</td>
+<td>Identifica um alvo (target) de depuração (página, iframe, worker, etc.)</td>
+<td>Usado para <code>Target.attachToTarget</code> para conectar a OOPIFs</td>
+</tr>
+<tr>
+<td><strong><code>sessionId</code></strong></td>
+<td>Target</td>
+<td>Específico do Alvo</td>
+<td>Roteia comandos para um alvo específico no modo "flattened"</td>
+<td>Injetado em comandos para roteá-los ao OOPIF correto</td>
+</tr>
+<tr>
+<td><strong><code>executionContextId</code></strong></td>
+<td>Runtime</td>
+<td>Frame + Mundo</td>
+<td>Identifica um contexto de execução JavaScript (incluindo mundos isolados)</td>
+<td>Retornado por <code>Page.createIsolatedWorld</code>; usado em <code>Runtime.evaluate</code></td>
+</tr>
+<tr>
+<td><strong><code>objectId</code></strong></td>
+<td>Runtime</td>
+<td>Contexto de Execução</td>
+<td>Referência de objeto remoto (ex: elemento DOM, função, objeto)</td>
+<td>Referência ao <code>document.documentElement</code> do iframe para consultas relativas</td>
+</tr>
+</tbody>
+</table>
+<h3 id="relacionamentos-dos-identificadores">Relacionamentos dos Identificadores</h3>
+<p>Veja como os identificadores se relacionam durante a resolução do iframe:</p>
+<p>'''
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         Fluxo de Resolução                              │
+└─────────────────────────────────────────────────────────────────────────┘</p>
+<ol>
+<li>
+<p>Início: Elemento <iframe>
+   └─ backendNodeId: 789</p>
+</li>
+<li>
+<p>Encontrar Frame ─────────[DOM.getFrameOwner]──────────────┐
+   └─ frameId: abc-123                                       │
+                                                             │</p>
+</li>
+<li>OOPIF? Checar Origem ────[Origem diferente detectada]─────┤
+   └─ targetId: xyz-456                                      │
+                                                             │</li>
+<li>Anexar ao Alvo ──────────[Target.attachToTarget]──────────┤
+   └─ sessionId: session-789                                 │
+                                                             │</li>
+<li>Criar Mundo Isolado ─────[Page.createIsolatedWorld]───────┤
+   └─ executionContextId: 42                                 │
+                                                             │</li>
+<li>Obter Documento ─────────[Runtime.evaluate]───────────────┘
+   └─ objectId: obj-999
+'''</li>
+</ol>
+<p><strong>Pontos chave de transformação:</strong></p>
+<table>
+<thead>
+<tr>
+<th>De</th>
+<th>Método</th>
+<th>Para</th>
+<th>Propósito</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>backendNodeId</code></td>
+<td><code>DOM.getFrameOwner</code></td>
+<td><code>frameId</code></td>
+<td>Encontrar qual frame é dono do elemento iframe</td>
+</tr>
+<tr>
+<td><code>targetId</code></td>
+<td><code>Target.attachToTarget(flatten=true)</code></td>
+<td><code>sessionId</code></td>
+<td>Conectar ao OOPIF para roteamento de comandos</td>
+</tr>
+<tr>
+<td><code>frameId</code></td>
+<td><code>Page.createIsolatedWorld</code></td>
+<td><code>executionContextId</code></td>
+<td>Criar ambiente JavaScript seguro</td>
+</tr>
+<tr>
+<td><code>executionContextId</code></td>
+<td><code>Runtime.evaluate('document.documentElement')</code></td>
+<td><code>objectId</code></td>
+<td>Obter referência ao documento do iframe</td>
+</tr>
+</tbody>
+</table>
+<h3 id="representacao-no-codigo-do-pydoll">Representação no Código do Pydoll</h3>
+<p>'''python</p>
+<h1 id="de-pydollelementsweb_elementpy_4">De pydoll/elements/web_element.py</h1>
+<p>@dataclass
+class _IFrameContext:
+    """Encapsula todos os identificadores e informação de roteamento para um iframe."""
+    frame_id: str                                   # frameId: identifica o frame
+    document_url: Optional[str] = None              # URL carregada do frame
+    execution_context_id: Optional[int] = None      # executionContextId: mundo isolado
+    document_object_id: Optional[str] = None        # objectId: document.documentElement
+    session_handler: Optional[ConnectionHandler] = None  # para alvos OOPIF
+    session_id: Optional[str] = None                # sessionId: roteia comandos para OOPIF
+'''</p>
+<p>Este dataclass é cacheado em cada <code>WebElement</code> representando um iframe, permitindo o roteamento automático de todas as operações subsequentes.</p>
+<hr />
+<h2 id="pipeline-de-resolucao-do-pydoll">Pipeline de Resolução do Pydoll</h2>
+<p>Quando você acessa um iframe no Pydoll (ex: <code>await iframe.find(...)</code>), um elaborado pipeline de resolução é executado nos bastidores. Esta seção detalha cada passo.</p>
+<h3 id="fluxo-de-alto-nivel">Fluxo de Alto Nível</h3>
+<p>'''mermaid
+sequenceDiagram
+    participant User as Usuário
+    participant WebElement
+    participant Pipeline as Pipeline de Resolução
+    participant CDP</p>
+<div class="language-text highlight"><pre><span></span><code>Usuário-&gt;&gt;WebElement: iframe.find(id=&#39;button&#39;)
+WebElement-&gt;&gt;WebElement: Verifica se contexto do iframe está em cache
+alt Contexto não cacheado
+    WebElement-&gt;&gt;Pipeline: _ensure_iframe_context()
+    Pipeline-&gt;&gt;CDP: DOM.describeNode(iframe)
+    CDP--&gt;&gt;Pipeline: Info do Nó (frameId?, backendNodeId, etc.)
+
+    alt frameId não está na info do nó
+        Pipeline-&gt;&gt;Pipeline: _resolve_frame_by_owner()
+        Pipeline-&gt;&gt;CDP: Page.getFrameTree()
+        CDP--&gt;&gt;Pipeline: Árvore de frames
+        Pipeline-&gt;&gt;CDP: DOM.getFrameOwner(cada frame)
+        CDP--&gt;&gt;Pipeline: backendNodeId
+        Pipeline-&gt;&gt;Pipeline: Compara backendNodeId para achar frameId
+    end
+
+    alt frameId ainda faltando (OOPIF)
+        Pipeline-&gt;&gt;Pipeline: _resolve_oopif_by_parent()
+        Pipeline-&gt;&gt;CDP: Target.getTargets()
+        CDP--&gt;&gt;Pipeline: Lista de alvos
+        Pipeline-&gt;&gt;CDP: Target.attachToTarget(targetId, flatten=true)
+        CDP--&gt;&gt;Pipeline: sessionId
+        Pipeline-&gt;&gt;CDP: Page.getFrameTree(sessionId)
+        CDP--&gt;&gt;Pipeline: Árvore de frames do OOPIF
+    end
+
+    Pipeline-&gt;&gt;CDP: Page.createIsolatedWorld(frameId)
+    CDP--&gt;&gt;Pipeline: executionContextId
+
+    Pipeline-&gt;&gt;CDP: Runtime.evaluate(&#39;document.documentElement&#39;, contextId)
+    CDP--&gt;&gt;Pipeline: objectId (referência do documento)
+
+    Pipeline-&gt;&gt;WebElement: Cacheia _IFrameContext
+end
+
+WebElement-&gt;&gt;WebElement: Usa contexto cacheado para find()
+WebElement--&gt;&gt;Usuário: Elemento Button (com contexto)
+</code></pre></div>
+<p>'''</p>
+<h3 id="analise-aprofundada-passo-a-passo">Análise Aprofundada Passo a Passo</h3>
+<h4 id="passo-1-descrever-o-elemento-iframe"><strong>Passo 1: Descrever o Elemento Iframe</strong></h4>
+<p><strong>Objetivo</strong>: Extrair metadados do elemento DOM <code>&lt;iframe&gt;</code>.</p>
+<p><strong>Método</strong>: <code>DOM.describeNode(objectId=iframe_object_id)</code></p>
+<p><strong>O que obtemos</strong>:</p>
+<ul>
+<li><code>backendNodeId</code>: Identificador estável para o elemento iframe</li>
+<li><code>frameId</code> (de <code>contentDocument</code>): Se o conteúdo do iframe já está carregado e no mesmo processo</li>
+<li><code>documentURL</code>: A URL carregada no iframe</li>
+<li><code>parentFrameId</code> (do campo <code>frameId</code> no nó): O frame contendo este elemento iframe</li>
+</ul>
+<p><strong>Código</strong>:</p>
+<p>'''python</p>
+<h1 id="de-pydollelementsweb_elementpy_5">De pydoll/elements/web_element.py</h1>
+<p>async def _ensure_iframe_context(self) -&gt; None:
+    """Inicializa e cacheia informação de contexto para elementos iframe."""
+    node_info = await self._describe_node(object_id=self._object_id)
+    base_handler, base_session_id = self._get_base_session()
+    frame_id, document_url, parent_frame_id, backend_node_id = self._extract_frame_metadata(
+        node_info
+    )
+    # ... continua resolução
+'''</p>
+<p><strong>Auxiliar</strong>:</p>
+<p>'''python
+@staticmethod
+def _extract_frame_metadata(
+    node_info: Node,
+) -&gt; tuple[Optional[str], Optional[str], Optional[str], Optional[int]]:
+    """Extrai metadados relacionados a iframe de um Nó DOM.describeNode."""
+    content_document = node_info.get('contentDocument') or {}
+    parent_frame_id = node_info.get('frameId')
+    backend_node_id = node_info.get('backendNodeId')
+    frame_id = content_document.get('frameId')
+    document_url = (
+        content_document.get('documentURL')
+        or content_document.get('baseURL')
+        or node_info.get('documentURL')
+        or node_info.get('baseURL')
+    )
+    return frame_id, document_url, parent_frame_id, backend_node_id
+'''</p>
+<p><strong>Resultado</strong>:</p>
+<ul>
+<li><strong>Se <code>frame_id</code> está presente</strong>: Ótimo! O iframe está no mesmo processo; prossiga para o Passo 4.</li>
+<li><strong>Se <code>frame_id</code> está faltando</strong>: O iframe pode ser um OOPIF ou não totalmente carregado; prossiga para o Passo 2.</li>
+</ul>
+<hr />
+<h4 id="passo-2-resolver-frame-pelo-dono-comparacao-de-backendnodeid"><strong>Passo 2: Resolver Frame pelo Dono (comparação de backendNodeId)</strong></h4>
+<p><strong>Objetivo</strong>: Encontrar o <code>frameId</code> comparando o <code>backendNodeId</code> do elemento iframe com os donos de frames na árvore de frames.</p>
+<p><strong>Estratégia</strong>:</p>
+<ol>
+<li>Buscar a árvore de frames da página (<code>Page.getFrameTree</code>)</li>
+<li>Para cada frame na árvore, chamar <code>DOM.getFrameOwner(frameId)</code> para obter o <code>backendNodeId</code> do elemento iframe dono</li>
+<li>Comparar com o <code>backendNodeId</code> do nosso iframe</li>
+<li>Quando eles baterem, encontramos o <code>frameId</code> correto</li>
+</ol>
+<p><strong>Código</strong>:</p>
+<p>'''python</p>
+<h1 id="de-pydollelementsweb_elementpy_6">De pydoll/elements/web_element.py</h1>
+<p>async def _resolve_frame_by_owner(
+    self,
+    base_handler: ConnectionHandler,
+    base_session_id: Optional[str],
+    backend_node_id: int,
+    current_document_url: Optional[str],
+) -&gt; tuple[Optional[str], Optional[str]]:
+    """Resolve um ID de frame e URL comparando o backend_node_id do dono."""
+    owner_frame_id, owner_url = await self._find_frame_by_owner(
+        base_handler, base_session_id, backend_node_id
+    )
+    if not owner_frame_id:
+        return None, current_document_url
+    return owner_frame_id, owner_url or current_document_url</p>
+<p>async def _find_frame_by_owner(
+    self, handler: ConnectionHandler, session_id: Optional[str], backend_node_id: int
+) -&gt; tuple[Optional[str], Optional[str]]:
+    """Encontra um frame comparando o backend_node_id do dono do elemento <iframe>."""
+    frame_tree = await self._get_frame_tree_for(handler, session_id)
+    for frame_node in WebElement._walk_frames(frame_tree):
+        candidate_frame_id = frame_node.get('id', '')
+        if not candidate_frame_id:
+            continue
+        owner_backend_id = await self._owner_backend_for(
+            handler, session_id, candidate_frame_id
+        )
+        if owner_backend_id == backend_node_id:
+            return candidate_frame_id, frame_node.get('url')
+    return None, None
+'''</p>
+<p><strong>Por que isso é necessário</strong>:</p>
+<ul>
+<li><code>DOM.describeNode</code> às vezes não inclui o <code>contentDocument.frameId</code> para iframes de origem cruzada ou carregados tardiamente</li>
+<li>A árvore de frames sempre contém todos os frames (mesmo OOPIFs), então podemos achá-lo indiretamente</li>
+</ul>
+<p><strong>Resultado</strong>:</p>
+<ul>
+<li><strong>Se <code>frameId</code> encontrado</strong>: Prossiga para o Passo 4.</li>
+<li><strong>Se ainda não encontrado</strong>: O iframe é provavelmente um OOPIF em um alvo separado; prossiga para o Passo 3.</li>
+</ul>
+<hr />
+<h4 id="passo-3-resolver-oopif-pelo-frame-pai"><strong>Passo 3: Resolver OOPIF pelo Frame Pai</strong></h4>
+<p><strong>Objetivo</strong>: Para Iframes Fora de Processo, encontrar o alvo (target), anexar a ele, e obter o <code>frameId</code> da árvore de frames do alvo.</p>
+<p><strong>Estratégia</strong>:</p>
+<p><strong>3a. Busca por alvo filho direto</strong>:</p>
+<ol>
+<li>Chamar <code>Target.getTargets()</code> para listar todos os alvos de depuração</li>
+<li>Filtrar alvos onde <code>type</code> é <code>"iframe"</code> ou <code>"page"</code> e <code>parentFrameId</code> bate com nosso frame pai</li>
+<li>Se encontrado, anexar àquele alvo com <code>Target.attachToTarget(targetId, flatten=true)</code></li>
+<li>A resposta inclui um <code>sessionId</code></li>
+<li>Buscar <code>Page.getFrameTree(sessionId)</code> para aquele alvo</li>
+<li>O frame raiz desta árvore é o frame do nosso iframe</li>
+</ol>
+<p><strong>3b. Fallback: Escanear todos os alvos</strong>:</p>
+<ol>
+<li>Iterar todos os alvos iframe/page</li>
+<li>Anexar a cada um e buscar sua árvore de frames</li>
+<li>Procurar por um frame filho cujo <code>parentId</code> bate com nosso frame pai</li>
+<li><strong>OU</strong> checar se o dono do frame raiz (via <code>DOM.getFrameOwner</code>) bate com o <code>backendNodeId</code> do nosso iframe</li>
+</ol>
+<p><strong>Código</strong>:</p>
+<p>'''python</p>
+<h1 id="de-pydollelementsweb_elementpy_7">De pydoll/elements/web_element.py</h1>
+<p>async def _resolve_oopif_by_parent(
+    self,
+    parent_frame_id: str,
+    backend_node_id: Optional[int],
+) -&gt; tuple[Optional[ConnectionHandler], Optional[str], Optional[str], Optional[str]]:
+    """Resolve um OOPIF usando o ID do frame pai."""
+    browser_handler = ConnectionHandler(
+        connection_port=self._connection_handler._connection_port
+    )
+    targets_response: GetTargetsResponse = await browser_handler.execute_command(
+        TargetCommands.get_targets()
+    )
+    target_infos = targets_response.get('result', {}).get('targetInfos', [])</p>
+<div class="language-text highlight"><pre><span></span><code># Estratégia 3a: Filhos diretos
+direct_children = [
+    target_info
+    for target_info in target_infos
+    if target_info.get(&#39;type&#39;) in {&#39;iframe&#39;, &#39;page&#39;}
+    and target_info.get(&#39;parentFrameId&#39;) == parent_frame_id
+]
+if direct_children:
+    attach_response: AttachToTargetResponse = await browser_handler.execute_command(
+        TargetCommands.attach_to_target(
+            target_id=direct_children[0][&#39;targetId&#39;], flatten=True
+        )
+    )
+    attached_session_id = attach_response.get(&#39;result&#39;, {}).get(&#39;sessionId&#39;)
+    if attached_session_id:
+        frame_tree = await self._get_frame_tree_for(browser_handler, attached_session_id)
+        root_frame = (frame_tree or {}).get(&#39;frame&#39;, {})
+        return (
+            browser_handler,
+            attached_session_id,
+            root_frame.get(&#39;id&#39;),
+            root_frame.get(&#39;url&#39;),
+        )
+
+# Estratégia 3b: Escanear todos os alvos
+for target_info in target_infos:
+    if target_info.get(&#39;type&#39;) not in {&#39;iframe&#39;, &#39;page&#39;}:
+        continue
+    attach_response = await browser_handler.execute_command(
+        TargetCommands.attach_to_target(
+            target_id=target_info.get(&#39;targetId&#39;, &#39;&#39;), flatten=True
+        )
+    )
+    attached_session_id = attach_response.get(&#39;result&#39;, {}).get(&#39;sessionId&#39;)
+    if not attached_session_id:
+        continue
+
+    frame_tree = await self._get_frame_tree_for(browser_handler, attached_session_id)
+
+    # Checa por filho com parentId correspondente
+    child_frame_id = WebElement._find_child_by_parent(frame_tree, parent_frame_id)
+    if child_frame_id:
+        return browser_handler, attached_session_id, child_frame_id, None
+
+    # Checa se o dono do frame raiz bate com nosso backendNodeId
+    root_frame_id = (frame_tree or {}).get(&#39;frame&#39;, {}).get(&#39;id&#39;, &#39;&#39;)
+    if not root_frame_id or backend_node_id is None:
+        continue
+    owner_backend_id = await self._owner_backend_for(
+        self._connection_handler, None, root_frame_id
+    )
+    if owner_backend_id == backend_node_id:
+        return browser_handler, attached_session_id, root_frame_id, None
+
+return None, None, None, None
+</code></pre></div>
+<p>'''</p>
+<p><strong>Resultado</strong>:</p>
+<ul>
+<li><strong>Se OOPIF resolvido</strong>: Agora temos <code>sessionId</code>, <code>session_handler</code>, e <code>frameId</code>; prossiga para o Passo 4.</li>
+<li><strong>Se resolução falhar</strong>: Lança exceção <code>InvalidIFrame</code> (tratada em <code>_ensure_iframe_context</code>).</li>
+</ul>
+<hr />
+<h4 id="passo-4-criar-mundo-isolado"><strong>Passo 4: Criar Mundo Isolado</strong></h4>
+<p><strong>Objetivo</strong>: Criar um contexto de execução JavaScript separado no frame resolvido.</p>
+<p><strong>Método</strong>: <code>Page.createIsolatedWorld(frameId, worldName='pydoll::iframe::&lt;frameId&gt;', grantUniversalAccess=true)</code></p>
+<p><strong>Parâmetros</strong>:
+- <code>frameId</code>: O frame onde o mundo isolado é criado
+- <code>worldName</code>: Identificador para o mundo (útil para depuração)
+- <code>grantUniversalAccess</code>: Permite acesso de origem cruzada (necessário para automação)</p>
+<p><strong>Resposta</strong>: <code>{ executionContextId: 42 }</code></p>
+<p><strong>Código</strong>:</p>
+<p>'''python</p>
+<h1 id="de-pydollelementsweb_elementpy_8">De pydoll/elements/web_element.py</h1>
+<p>@staticmethod
+async def _create_isolated_world_for_frame(
+    frame_id: str,
+    handler: ConnectionHandler,
+    session_id: Optional[str],
+) -&gt; int:
+    """Cria um mundo isolado para o frame dado."""
+    create_command = PageCommands.create_isolated_world(
+        frame_id=frame_id,
+        world_name=f'pydoll::iframe::{frame_id}',
+        grant_universal_access=True,
+    )
+    if session_id:
+        create_command['sessionId'] = session_id
+    create_response: CreateIsolatedWorldResponse = await handler.execute_command(create_command)
+    execution_context_id = create_response.get('result', {}).get('executionContextId')
+    if not execution_context_id:
+        raise InvalidIFrame('Incapaz de criar mundo isolado para o iframe')
+    return execution_context_id
+'''</p>
+<p><strong>Por que mundo isolado</strong>:</p>
+<ul>
+<li><strong>Isolamento</strong>: Nosso JavaScript de automação não interfere com o JavaScript do iframe</li>
+<li><strong>Anti-detecção</strong>: O iframe não pode detectar nossa presença facilmente</li>
+<li><strong>Consistência</strong>: Comportamento é previsível independentemente do ambiente de script do iframe</li>
+</ul>
+<p><strong>Resultado</strong>: Temos um <code>executionContextId</code> para rodar JavaScript no iframe.</p>
+<hr />
+<h4 id="passo-5-fixar-o-documento-do-iframe-como-um-objeto-runtime"><strong>Passo 5: Fixar o Documento do Iframe como um Objeto Runtime</strong></h4>
+<p><strong>Objetivo</strong>: Obter uma referência <code>objectId</code> ao <code>document.documentElement</code> do iframe (o elemento <code>&lt;html&gt;</code> do iframe).</p>
+<p><strong>Método</strong>: <code>Runtime.evaluate(expression='document.documentElement', contextId=executionContextId)</code></p>
+<p><strong>Por que precisamos disso</strong>:</p>
+<ul>
+<li>Para executar <strong>consultas relativas</strong> (como <code>element.querySelector()</code>) dentro do iframe</li>
+<li>O <code>objectId</code> permite usar <code>Runtime.callFunctionOn(objectId, ...)</code> com <code>this</code> vinculado ao documento do iframe</li>
+</ul>
+<p><strong>Código</strong>:</p>
+<p>'''python</p>
+<h1 id="de-pydollelementsweb_elementpy_9">De pydoll/elements/web_element.py</h1>
+<p>async def _set_iframe_document_object_id(self, execution_context_id: int) -&gt; None:
+    """Avalia document.documentElement no contexto do iframe e cacheia seu object id."""
+    evaluate_command = RuntimeCommands.evaluate(
+        expression='document.documentElement',
+        context_id=execution_context_id,
+    )
+    if self._iframe_context and self._iframe_context.session_id:
+        evaluate_command['sessionId'] = self._iframe_context.session_id
+    evaluate_response: EvaluateResponse = await (
+        (self._iframe_context.session_handler if self._iframe_context else None)
+        or self._connection_handler
+    ).execute_command(evaluate_command)
+    result_object = evaluate_response.get('result', {}).get('result', {})
+    document_object_id = result_object.get('objectId')
+    if not document_object_id:
+        raise InvalidIFrame('Incapaz de obter referência do documento para o iframe')
+    if self._iframe_context:
+        self._iframe_context.document_object_id = document_object_id
+'''</p>
+<p><strong>Resultado</strong>: O <code>_IFrameContext</code> está agora totalmente populado e cacheado no <code>WebElement</code>.</p>
+<hr />
+<h4 id="passo-6-cachear-e-propagar-contexto"><strong>Passo 6: Cachear e Propagar Contexto</strong></h4>
+<p><strong>Objetivo</strong>: Armazenar o contexto resolvido no elemento iframe e propagá-lo para todos os elementos filhos encontrados dentro do iframe.</p>
+<p><strong>Cacheando</strong>:</p>
+<p>'''python</p>
+<h1 id="de-pydollelementsweb_elementpy_10">De pydoll/elements/web_element.py</h1>
+<p>def _init_iframe_context(
+    self,
+    frame_id: str,
+    document_url: Optional[str],
+    session_handler: Optional[ConnectionHandler],
+    session_id: Optional[str],
+) -&gt; None:
+    """Inicializa e cacheia contexto de iframe neste elemento."""
+    self._iframe_context = _IFrameContext(frame_id=frame_id, document_url=document_url)
+    # Limpa atributos de roteamento (estes eram para iframes aninhados)
+    if hasattr(self, '_routing_session_handler'):
+        delattr(self, '_routing_session_handler')
+    if hasattr(self, '_routing_session_id'):
+        delattr(self, '_routing_session_id')
+    # Armazena roteamento OOPIF se necessário
+    if session_handler and session_id:
+        self._iframe_context.session_handler = session_handler
+        self._iframe_context.session_id = session_id
+'''</p>
+<p><strong>Propagação</strong> (ao encontrar elementos dentro do iframe):</p>
+<p>'''python</p>
+<h1 id="de-pydollelementsmixinsfind_elements_mixinpy">De pydoll/elements/mixins/find_elements_mixin.py</h1>
+<p>def _apply_iframe_context_to_element(
+    self, element: WebElement, iframe_context: _IFrameContext | None
+) -&gt; None:
+    """Propaga contexto de iframe para o elemento recém-criado."""
+    if not iframe_context:
+        return</p>
+<div class="language-text highlight"><pre><span></span><code># Se o elemento filho também é um iframe, configura roteamento
+if getattr(element, &#39;is_iframe&#39;, False):
+    element._routing_session_handler = (
+        iframe_context.session_handler or self._connection_handler
+    )
+    element._routing_session_id = iframe_context.session_id
+    element._routing_parent_frame_id = iframe_context.frame_id
+    return
+
+# Caso contrário, injeta o contexto do iframe pai
+element._iframe_context = iframe_context
+</code></pre></div>
+<p>'''</p>
+<p><strong>Por que propagação importa</strong>:</p>
+<ul>
+<li>Elementos encontrados dentro de um iframe herdam o contexto do iframe</li>
+<li>Isso garante que operações subsequentes (clicar, digitar, encontrar elementos aninhados) automaticamente usem o roteamento correto</li>
+<li>Iframes aninhados recebem informação de roteamento para que possam resolver seu próprio contexto relativo ao iframe pai</li>
+</ul>
+<hr />
+<h2 id="roteamento-de-sessao-e-modo-flattened">Roteamento de Sessão e Modo "Flattened"</h2>
+<h3 id="o-modelo-de-sessao-flattened">O Modelo de Sessão "Flattened"</h3>
+<p>Como discutido em <a href="../cdp/">Análise Aprofundada → Fundamentos → CDP</a>, o CDP tradicional usa conexões WebSocket separadas para cada alvo. O <strong>Modo "Flattened"</strong> (unificado) é uma otimização onde todos os alvos compartilham uma única conexão WebSocket, com comandos roteados usando um <code>sessionId</code>.</p>
+<p>'''mermaid
+graph TB
+    subgraph "Modo Tradicional"
+        WS1[WebSocket 1] --&gt; MainPage[Alvo Página Principal]
+        WS2[WebSocket 2] --&gt; Iframe1[Alvo OOPIF 1]
+        WS3[WebSocket 3] --&gt; Iframe2[Alvo OOPIF 2]
+    end</p>
+<div class="language-text highlight"><pre><span></span><code>subgraph &quot;Modo Flattened&quot;
+    WS[WebSocket Único] --&gt; Router{Roteador CDP}
+    Router --&gt;|sessionId: null| MainPage2[Alvo Página Principal]
+    Router --&gt;|sessionId: session-1| Iframe3[Alvo OOPIF 1]
+    Router --&gt;|sessionId: session-2| Iframe4[Alvo OOPIF 2]
+end
+</code></pre></div>
+<p>'''</p>
+<h3 id="como-funciona-o-roteamento-de-sessao">Como Funciona o Roteamento de Sessão</h3>
+<p><strong>Ao anexar a um OOPIF</strong>:</p>
+<p>'''python
+response = await handler.execute_command(
+    TargetCommands.attach_to_target(targetId="iframe-target-id", flatten=True)
+)
+session_id = response['result']['sessionId']  # ex: "8E6C...-1234"
+'''</p>
+<p><strong>Ao enviar um comando para aquele OOPIF</strong>:</p>
+<p>'''python
+command = PageCommands.get_frame_tree()
+command['sessionId'] = 'session-1'  # Roteia para o OOPIF
+response = await handler.execute_command(command)
+'''</p>
+<p>A implementação CDP do navegador roteia o comando para o alvo correto baseado no <code>sessionId</code>.</p>
+<h3 id="roteamento-de-comandos-do-pydoll">Roteamento de Comandos do Pydoll</h3>
+<p>Todo comando enviado por elementos Pydoll é automaticamente roteado para o alvo correto:</p>
+<p>'''python</p>
+<h1 id="de-pydollelementsmixinsfind_elements_mixinpy_1">De pydoll/elements/mixins/find_elements_mixin.py</h1>
+<p>def _resolve_routing(self) -&gt; tuple[ConnectionHandler, Optional[str]]:
+    """Resolve handler e sessionId para o contexto atual."""
+    # Verifica se elemento tem um contexto iframe com roteamento OOPIF
+    iframe_context = getattr(self, '_iframe_context', None)
+    if iframe_context and getattr(iframe_context, 'session_handler', None):
+        return iframe_context.session_handler, getattr(iframe_context, 'session_id', None)</p>
+<div class="language-text highlight"><pre><span></span><code># Verifica se elemento herdou roteamento de um iframe pai
+routing_handler = getattr(self, &#39;_routing_session_handler&#39;, None)
+if routing_handler is not None:
+    return routing_handler, getattr(self, &#39;_routing_session_id&#39;, None)
+
+# Padrão: usa a conexão principal da aba
+return self._connection_handler, None
+</code></pre></div>
+<p>async def _execute_command(
+    self, command: Command[T_CommandParams, T_CommandResponse]
+) -&gt; T_CommandResponse:
+    """Executa comando CDP via handler resolvido (timeout 60s)."""
+    handler, session_id = self._resolve_routing()
+    if session_id:
+        command['sessionId'] = session_id
+    return await handler.execute_command(command, timeout=60)
+'''</p>
+<p><strong>Lógica de roteamento</strong>:</p>
+<ol>
+<li><strong>Elemento dentro de iframe OOPIF</strong>: Usa <code>iframe_context.session_id</code> e <code>iframe_context.session_handler</code></li>
+<li><strong>Iframe aninhado (filho de OOPIF)</strong>: Usa <code>_routing_session_id</code> e <code>_routing_session_handler</code> herdados</li>
+<li><strong>Elemento regular ou iframe no mesmo processo</strong>: Usa conexão principal (<code>_connection_handler</code>), sem <code>sessionId</code></li>
+</ol>
+<h3 id="tipagem-de-comando-estendida">Tipagem de Comando Estendida</h3>
+<p>Para tornar <code>sessionId</code> seguro em termos de tipo (type-safe), o Pydoll estendeu o <code>Command</code> TypedDict:</p>
+<p>'''python</p>
+<h1 id="de-pydollprotocolbasepy">De pydoll/protocol/base.py</h1>
+<p>class Command(TypedDict, Generic[T_CommandParams, T_CommandResponse]):
+    """Estrutura base para todos os comandos."""
+    id: NotRequired[int]
+    method: str
+    params: NotRequired[T_CommandParams]
+    sessionId: NotRequired[str]  # Adicionado para roteamento de sessão flattened
+'''</p>
+<p>Isso permite que checadores de tipo (type-checkers) reconheçam <code>command['sessionId'] = '...'</code> como válido sem suprimir avisos de tipo.</p>
+<hr />
+<h2 id="consideracoes-de-performance">Considerações de Performance</h2>
+<h3 id="estrategia-de-cache">Estratégia de Cache</h3>
+<p><strong>O primeiro acesso é caro</strong>:</p>
+<ul>
+<li><code>DOM.describeNode</code>: 1 ida e volta (round-trip)</li>
+<li>Recuperação da árvore de frames: 1+ idas e voltas (principal + alvos OOPIF)</li>
+<li><code>DOM.getFrameOwner</code> por frame: N idas e voltas (no pior caso)</li>
+<li><code>Target.getTargets</code> + anexações: 1 + M idas e voltas (M = número de alvos OOPIF)</li>
+<li><code>Page.createIsolatedWorld</code>: 1 ida e volta</li>
+<li><code>Runtime.evaluate</code> (documento): 1 ida e volta</li>
+</ul>
+<p><strong>Total</strong>: Potencialmente 5-20+ idas e voltas dependendo da estrutura da página.</p>
+<p><strong>Acessos subsequentes são O(1)</strong>:</p>
+<ul>
+<li><code>iframe_context</code> é cacheado na instância <code>WebElement</code></li>
+<li>Acessar <code>await iframe.iframe_context</code> múltiplas vezes retorna o valor cacheado imediatamente</li>
+<li>Todos os elementos encontrados dentro do iframe herdam o contexto (sem re-resolução)</li>
+</ul>
+<h3 id="otimizacao-busca-de-alvo-filho-direto">Otimização: Busca de Alvo "Filho Direto"</h3>
+<p>Em <code>_resolve_oopif_by_parent</code>, o Pydoll primeiro checa por filhos diretos por <code>parentFrameId</code>:</p>
+<p>'''python
+direct_children = [
+    target_info
+    for target_info in target_infos
+    if target_info.get('type') in {'iframe', 'page'}
+    and target_info.get('parentFrameId') == parent_frame_id
+]
+if direct_children:
+    # Anexa hatchery, pula o escaneamento de todos os alvos
+'''</p>
+<p><strong>Por que isso ajuda</strong>:</p>
+<ul>
+<li>A maioria dos OOPIFs tem <code>parentFrameId</code> definido corretamente</li>
+<li>Evita anexar a cada alvo especulativamente</li>
+<li>Reduz idas e voltas de O(alvos) para O(1) no caso comum</li>
+</ul>
+<h3 id="resolucao-paralela-assincrona-melhoria-futura">Resolução Paralela Assíncrona (Melhoria Futura)</h3>
+<p>Atualmente, a correspondência de dono de frame é sequencial (checa cada frame um por um). Uma otimização futura poderia paralelizar:</p>
+<p>'''python</p>
+<h1 id="atual-sequencial">Atual (sequencial)</h1>
+<p>for frame_node in frames:
+    owner = await self._owner_backend_for(...)
+    if owner == backend_node_id:
+        return frame_node['id']</p>
+<h1 id="potencial-paralelo">Potencial (paralelo)</h1>
+<p>results = await asyncio.gather(*(
+    self._owner_backend_for(..., frame['id'])
+    for frame in frames
+))
+for i, owner in enumerate(results):
+    if owner == backend_node_id:
+        return frames[i]['id']
+'''</p>
+<p>Isso reduziria a latência de <code>N * RTT</code> para <code>RTT</code> (onde RTT = tempo de ida e volta).</p>
+<hr />
+<h2 id="modos-de-falha-e-depuracao">Modos de Falha e Depuração</h2>
+<h3 id="cenarios-comuns-de-falha">Cenários Comuns de Falha</h3>
+<h4 id="1-invalidiframe-incapaz-de-resolver-frameid">1. <strong>InvalidIFrame: Incapaz de resolver frameId</strong></h4>
+<p><strong>Causa</strong>:</p>
+<ul>
+<li>O iframe é criado dinamicamente e não inicializou completamente</li>
+<li>O iframe está em sandbox com políticas restritivas</li>
+<li>Problemas de rede atrasaram o carregamento do iframe</li>
+</ul>
+<p><strong>Soluções</strong>:</p>
+<ul>
+<li><strong>Esperar pelo iframe</strong>: Use <code>await tab.find(id='iframe', timeout=10)</code> com um timeout</li>
+<li><strong>Verificar atributo sandbox</strong>: Sandbox restritivo (<code>&lt;iframe sandbox&gt;</code>) pode bloquear algumas operações CDP</li>
+<li><strong>Estratégia de retentativa</strong>: Implementar lógica de retentativa com backoff exponencial</li>
+</ul>
+<p><strong>Depuração</strong>:</p>
+<p>'''python
+try:
+    iframe = await tab.find(id='problem-iframe')
+    context = await iframe.iframe_context
+except InvalidIFrame as e:
+    # Inspeciona o que temos
+    node_info = await iframe._describe_node(object_id=iframe._object_id)
+    print(f"Info do nó: {node_info}")</p>
+<div class="language-text highlight"><pre><span></span><code># Checa árvore de frames manualmente
+frame_tree = await WebElement._get_frame_tree_for(tab._connection_handler, None)
+print(f&quot;Árvore de frames: {frame_tree}&quot;)
+</code></pre></div>
+<p>'''</p>
+<h4 id="2-invalidiframe-incapaz-de-criar-mundo-isolado">2. <strong>InvalidIFrame: Incapaz de criar mundo isolado</strong></h4>
+<p><strong>Causa</strong>:</p>
+<ul>
+<li>Frame foi destruído/navegou para longe entre os passos de resolução</li>
+<li>Bug do Chrome (raro)</li>
+</ul>
+<p><strong>Soluções</strong>:</p>
+<ul>
+<li><strong>Re-resolver contexto</strong>: Limpar contexto cacheado e re-acessar</li>
+<li><strong>Verificar navegação</strong>: Garantir que o iframe não esteja navegando durante a resolução</li>
+</ul>
+<p><strong>Depuração</strong>:</p>
+<p>'''python</p>
+<h1 id="limpa-cache-e-retenta">Limpa cache e retenta</h1>
+<p>iframe._iframe_context = None
+context = await iframe.iframe_context
+'''</p>
+<h4 id="3-invalidiframe-incapaz-de-obter-referencia-do-documento">3. <strong>InvalidIFrame: Incapaz de obter referência do documento</strong></h4>
+<p><strong>Causa</strong>:</p>
+<ul>
+<li>O mundo isolado foi criado mas o documento não está pronto</li>
+<li>O frame está prestes a navegar</li>
+</ul>
+<p><strong>Soluções</strong>:</p>
+<ul>
+<li>Esperar pelo carregamento do frame: Usar eventos Page para detectar <code>Page.frameNavigated</code> ou <code>Page.loadEventFired</code></li>
+<li>Retentar com um pequeno atraso</li>
+</ul>
+<h4 id="4-falhas-de-roteamento-de-sessao-comando-expira-ou-retorna-erro">4. <strong>Falhas de roteamento de sessão (comando expira ou retorna erro)</strong></h4>
+<p><strong>Causa</strong>:</p>
+<ul>
+<li>Alvo OOPIF foi destacado (página navegou, iframe removido)</li>
+<li><code>sessionId</code> está obsoleto</li>
+</ul>
+<p><strong>Soluções</strong>:</p>
+<ul>
+<li><strong>Re-anexar ao alvo</strong>: Criar um novo <code>ConnectionHandler</code> e re-resolver OOPIF</li>
+<li><strong>Validar alvo</strong>: Chamar <code>Target.getTargets()</code> para checar se o alvo ainda existe</li>
+</ul>
+<p><strong>Depuração</strong>:</p>
+<p>'''python</p>
+<h1 id="checa-se-sessao-ainda-e-valida">Checa se sessão ainda é válida</h1>
+<p>targets = await handler.execute_command(TargetCommands.get_targets())
+active_sessions = [t['targetId'] for t in targets['result']['targetInfos']]
+print(f"Alvos ativos: {active_sessions}")</p>
+<p>if iframe._iframe_context and iframe._iframe_context.session_id:
+    print(f"Nossa sessão: {iframe._iframe_context.session_id}")
+'''</p>
+<h3 id="ferramentas-de-diagnostico">Ferramentas de Diagnóstico</h3>
+<h4 id="habilitar-logs-do-cdp">Habilitar logs do CDP</h4>
+<p>'''python
+import logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger('pydoll')
+logger.setLevel(logging.DEBUG)
+'''</p>
+<p>Isso registra todos os comandos e respostas CDP, útil para rastrear os passos de resolução do iframe.</p>
+<h4 id="inspecionar-contexto-do-iframe">Inspecionar contexto do iframe</h4>
+<p>'''python
+iframe = await tab.find(id='my-iframe')
+ctx = await iframe.iframe_context</p>
+<p>print(f"Frame ID: {ctx.frame_id}")
+print(f"Document URL: {ctx.document_url}")
+print(f"Execution Context ID: {ctx.execution_context_id}")
+print(f"Document Object ID: {ctx.document_object_id}")
+print(f"Session ID (OOPIF): {ctx.session_id}")
+print(f"Session Handler: {ctx.session_handler}")
+'''</p>
+<hr />
+<h2 id="conclusao">Conclusão</h2>
+<p>O manuseio de iframes do Pydoll representa uma implementação sofisticada das capacidades de gerenciamento de frames do CDP. Ao entender:</p>
+<ul>
+<li><strong>O DOM</strong>: Estrutura em árvore e identificação de nós</li>
+<li><strong>Iframes</strong>: Contextos de documento independentes e barreiras de segurança</li>
+<li><strong>OOPIFs</strong>: Isolamento de site e arquitetura baseada em alvos</li>
+<li><strong>Domínios CDP</strong>: Coordenação de Page, DOM, Target, Runtime</li>
+<li><strong>Contextos de Execução</strong>: Mundos isolados para automação limpa</li>
+<li><strong>Identificadores</strong>: Relacionamentos entre backendNodeId, frameId, targetId, sessionId, executionContextId, objectId</li>
+<li><strong>Pipeline de resolução</strong>: Estratégia de fallback em múltiplos estágios para encontrar frames</li>
+<li><strong>Roteamento de sessão</strong>: Modo "flattened" e roteamento automático de comandos</li>
+</ul>
+<p>você pode apreciar por que a troca manual de contexto é eliminada. A complexidade é real, mas o Pydoll a abstrai por trás de uma API simples e intuitiva:</p>
+<p>'''python
+iframe = await tab.find(id='login-frame')
+username = await iframe.find(name='username')
+await username.type_text('user@example.com')
+'''</p>
+<p>Três linhas. Sem troca de contexto. Sem anexar alvos. Sem gerenciamento de sessão. Apenas funciona.</p>
+<hr />
+<h2 id="leitura-adicional">Leitura Adicional</h2>
+<ul>
+<li><strong>Especificação do CDP</strong>: <a href="https://chromedevtools.github.io/devtools-protocol/tot/Page/">Chrome DevTools Protocol - Domínio Page</a></li>
+<li><strong>Especificação do CDP</strong>: <a href="https://chromedevtools.github.io/devtools-protocol/tot/DOM/">Chrome DevTools Protocol - Domínio DOM</a></li>
+<li><strong>Especificação do CDP</strong>: <a href="https://chromedevtools.github.io/devtools-protocol/tot/Target/">Chrome DevTools Protocol - Domínio Target</a></li>
+<li><strong>Especificação do CDP</strong>: <a href="https://chromedevtools.github.io/devtools-protocol/tot/Runtime/">Chrome DevTools Protocol - Domínio Runtime</a></li>
+<li><strong>Isolamento de Site do Chromium</strong>: <a href="https://www.chromium.org/Home/chromium-security/site-isolation/">Site Isolation - The Chromium Projects</a></li>
+<li><strong>Scripts de Conteúdo e Mundos Isolados</strong>: <a href="https://developer.chrome.com/docs/extensions/mv3/content_scripts/">Chrome Extensions - Content Scripts</a></li>
+<li><strong>Documentação do Pydoll</strong>: <a href="../cdp/">Análise Aprofundada → Fundamentos → Protocolo Chrome DevTools</a></li>
+<li><strong>Documentação do Pydoll</strong>: <a href="../../../features/automation/iframes/">Funcionalidades → Automação → IFrames</a></li>
+</ul>
+<hr />
+<div class="admonition tip">
+<p class="admonition-title">Filosofia de Design</p>
+<p>O objetivo do manuseio de iframes do Pydoll é a <strong>automação ergonômica</strong>: escreva código como se iframes não existissem, e deixe a biblioteca lidar com a complexidade. Esta análise aprofundada mostrou o que acontece nos bastidores—mas você nunca precisa pensar sobre isso em seus scripts de automação.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.indexes", "navigation.expand", "navigation.path", "navigation.top", "toc.follow", "content.code.copy", "content.code.select", "content.tooltips", "search.highlight", "search.suggest"], "search": "../../../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      
+        <script src="../../../../resources/scripts/termynal.js"></script>
+      
+        <script src="../../../../resources/scripts/extra.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@10.0.0/dist/mermaid.min.js"></script>
+      
+    
+  </body>
+</html>

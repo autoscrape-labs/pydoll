@@ -1531,6 +1531,8 @@
       
         
       
+        
+      
     
     
     
@@ -1661,6 +1663,34 @@
     
   
     Python类型系统
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fundamentals/iframes-and-contexts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Iframes & Contexts
   
 
     
@@ -5001,7 +5031,7 @@
 </span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
 </span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="k">raise</span> <span class="n">TopLevelTargetRequired</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>  <span class="c1"># 引导用户使用 WebElement.take_screenshot()</span>
 </span></code></pre></div>
-<p><strong>设计影响：</strong> IFrame 标签页（通过 <code>get_frame()</code> 创建）继承所有 Tab 方法，但屏幕截图按设计失败。替代方案：<code>WebElement.take_screenshot()</code> 适用于 iframe 内容。</p>
+<p><strong>设计影响：</strong> 旧版本会为 iframe 创建独立的 Tab。现在 iframe 直接作为 <code>WebElement</code> 处理，因此需要在框内元素上执行操作，例如 <code>await iframe_element.find(...).take_screenshot()</code>。</p>
 <p><strong>PDF 生成：</strong> <code>Page.printToPDF</code> 返回 base64 编码的数据。Pydoll 抽象文件 I/O，但底层数据始终是 base64（CDP 规范）。</p>
 <div class="admonition info">
 <p class="admonition-title">实际用法</p>
