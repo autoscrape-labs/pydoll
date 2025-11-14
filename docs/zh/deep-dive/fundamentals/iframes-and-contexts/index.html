@@ -1898,8 +1898,558 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#pydoll" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pydoll 的解决方案：透明的上下文解析
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chrome-devtools-frame" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chrome DevTools 协议和 Frame 管理
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Chrome DevTools 协议和 Frame 管理">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cdp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        相关的 CDP 域
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="相关的 CDP 域">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-page" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Page 域
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-dom" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. DOM 域
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-target" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Target 域
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-runtime" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Runtime 域
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        执行上下文和隔离世界
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="执行上下文和隔离世界">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        什么是执行上下文？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#frame" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        每个 Frame 的多个上下文
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        什么是隔离世界？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll-iframes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        为什么 Pydoll 对 Iframes 使用隔离世界
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cdp_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CDP 标识符参考
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CDP 标识符参考">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        标识符关系
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pydoll 中的代码表示
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pydoll_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pydoll 的解析管道
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Pydoll 的解析管道">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        高级流程
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        步骤深度解析
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="步骤深度解析">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-iframe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        步骤 1：描述 Iframe 元素
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-framebackendnodeid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        步骤 2：通过所有者解析 Frame（backendNodeId 匹配）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-frame-oopif" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        步骤 3：通过父 Frame 解析 OOPIF
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        步骤 4：创建隔离世界
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-iframe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        步骤 5：将 Iframe 文档固定为运行时对象
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        步骤 6：缓存和传播上下文
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        会话路由和扁平化模式
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="会话路由和扁平化模式">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        扁平化会话模型
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        会话路由如何工作
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pydoll 的命令路由
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        扩展的命令类型
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        性能考量
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="性能考量">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        缓存策略
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        优化：直接子目标查找
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        异步并行解析（未来增强）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        失败模式和调试
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="失败模式和调试">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_20" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        常见失败场景
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="常见失败场景">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-invalidiframe-frameid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. InvalidIFrame: 无法解析 frameId
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-invalidiframe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. InvalidIFrame: 无法创建隔离世界
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-invalidiframe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. InvalidIFrame: 无法获取文档引用
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 会话路由失败（命令超时或返回错误）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        诊断工具
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="诊断工具">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cdp_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        启用 CDP 日志记录
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#iframe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        检查 iframe 上下文
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        结论
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        进一步阅读
+      
+    </span>
+  </a>
   
 </li>
       
@@ -4384,8 +4934,558 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#pydoll" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pydoll 的解决方案：透明的上下文解析
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chrome-devtools-frame" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chrome DevTools 协议和 Frame 管理
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Chrome DevTools 协议和 Frame 管理">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cdp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        相关的 CDP 域
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="相关的 CDP 域">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-page" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Page 域
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-dom" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. DOM 域
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-target" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Target 域
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-runtime" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Runtime 域
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        执行上下文和隔离世界
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="执行上下文和隔离世界">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        什么是执行上下文？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#frame" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        每个 Frame 的多个上下文
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        什么是隔离世界？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll-iframes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        为什么 Pydoll 对 Iframes 使用隔离世界
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cdp_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CDP 标识符参考
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CDP 标识符参考">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        标识符关系
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pydoll 中的代码表示
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pydoll_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pydoll 的解析管道
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Pydoll 的解析管道">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        高级流程
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        步骤深度解析
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="步骤深度解析">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-iframe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        步骤 1：描述 Iframe 元素
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-framebackendnodeid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        步骤 2：通过所有者解析 Frame（backendNodeId 匹配）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-frame-oopif" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        步骤 3：通过父 Frame 解析 OOPIF
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        步骤 4：创建隔离世界
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-iframe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        步骤 5：将 Iframe 文档固定为运行时对象
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        步骤 6：缓存和传播上下文
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        会话路由和扁平化模式
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="会话路由和扁平化模式">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        扁平化会话模型
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        会话路由如何工作
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pydoll 的命令路由
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        扩展的命令类型
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        性能考量
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="性能考量">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        缓存策略
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        优化：直接子目标查找
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        异步并行解析（未来增强）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        失败模式和调试
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="失败模式和调试">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_20" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        常见失败场景
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="常见失败场景">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-invalidiframe-frameid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. InvalidIFrame: 无法解析 frameId
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-invalidiframe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. InvalidIFrame: 无法创建隔离世界
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-invalidiframe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. InvalidIFrame: 无法获取文档引用
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 会话路由失败（命令超时或返回错误）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        诊断工具
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="诊断工具">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cdp_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        启用 CDP 日志记录
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#iframe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        检查 iframe 上下文
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        结论
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        进一步阅读
+      
+    </span>
+  </a>
   
 </li>
       
@@ -4508,8 +5608,7 @@
 <li><strong>属性节点</strong>：元素属性，如 <code>id</code>、<code>class</code>、<code>src</code></li>
 <li><strong>文档节点</strong>：树的根节点</li>
 </ul>
-<p>'''mermaid
-graph TD
+<pre class="mermaid"><code>graph TD
     Document[文档] --&gt; HTML[html 元素]
     HTML --&gt; Head[head 元素]
     HTML --&gt; Body[body 元素]
@@ -4519,8 +5618,7 @@ graph TD
     Div2 --&gt; Iframe[iframe 元素]
     Iframe --&gt; IframeDoc[iframe 的文档]
     IframeDoc --&gt; IframeBody[iframe body]
-    IframeBody --&gt; IframeContent[iframe 内容...]
-'''</p>
+    IframeBody --&gt; IframeContent[iframe 内容...]</code></pre>
 <h3 id="dom_2">DOM 树属性</h3>
 <ol>
 <li><strong>层级结构</strong>：每个节点都有一个父节点（Document 除外），并且可以有子节点</li>
@@ -4541,13 +5639,12 @@ graph TD
 <li>自己的 CSS 样式（除非明确共享）</li>
 <li>不同的导航历史</li>
 </ul>
-<p>'''html</p>
-<body>
-  <h1>父页面</h1>
-  <iframe src="https://example.com/embedded.html" id="content-frame"></iframe>
-  <p>更多父页面内容</p>
-</body>
-<p>'''</p>
+<div class="language-html highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">&lt;</span><span class="nt">body</span><span class="p">&gt;</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>  <span class="p">&lt;</span><span class="nt">h1</span><span class="p">&gt;</span>父页面<span class="p">&lt;/</span><span class="nt">h1</span><span class="p">&gt;</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>  <span class="p">&lt;</span><span class="nt">iframe</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;https://example.com/embedded.html&quot;</span> <span class="na">id</span><span class="o">=</span><span class="s">&quot;content-frame&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">iframe</span><span class="p">&gt;</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>  <span class="p">&lt;</span><span class="nt">p</span><span class="p">&gt;</span>更多父页面内容<span class="p">&lt;/</span><span class="nt">p</span><span class="p">&gt;</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="p">&lt;/</span><span class="nt">body</span><span class="p">&gt;</span>
+</span></code></pre></div>
 <h3 id="_3">常见用例</h3>
 <table>
 <thead>
@@ -4595,18 +5692,16 @@ graph TD
 <h2 id="iframes-oopifs">挑战：跨进程 Iframes (OOPIFs)</h2>
 <h3 id="oopifs">什么是 OOPIFs？</h3>
 <p>现代 Chromium 使用<strong>站点隔离 (site isolation)</strong> 来提高安全性和稳定性。这意味着不同的源 (origin) 可能会在单独的操作系统进程中渲染。来自不同源的 iframe 会成为<strong>跨进程 Iframe (OOPIF)</strong>。</p>
-<p>'''mermaid
-graph LR
+<pre class="mermaid"><code>graph LR
     subgraph "进程 1: example.com"
         MainPage[主页面 DOM]
-    end</p>
-<div class="language-text highlight"><pre><span></span><code>subgraph &quot;进程 2: widget.com&quot;
-    IframeDOM[Iframe DOM]
-end
+    end
 
-MainPage -.进程边界.-&gt; IframeDOM
-</code></pre></div>
-<p>'''</p>
+    subgraph "进程 2: widget.com"
+        IframeDOM[Iframe DOM]
+    end
+
+    MainPage -.进程边界.-&gt; IframeDOM</code></pre>
 <h3 id="oopifs_1">为什么 OOPIFs 使自动化复杂化</h3>
 <table>
 <thead>
@@ -4646,18 +5741,20 @@ MainPage -.进程边界.-&gt; IframeDOM
 </table>
 <h3 id="_4">传统方法（手动切换上下文）</h3>
 <p>没有复杂的处理，自动化 OOPIFs 需要：</p>
-<p>'''python</p>
-<h1 id="_5">其他工具的传统（手动）方法</h1>
-<p>main_page = browser.get_page()
-iframe_element = main_page.find_element_by_id("iframe-id")</p>
-<h1 id="_6">必须手动切换上下文</h1>
-<p>driver.switch_to.frame(iframe_element)</p>
-<h1 id="iframe">现在命令指向 iframe</h1>
-<p>button = driver.find_element_by_id("button-in-iframe")
-button.click()</p>
-<h1 id="_7">必须手动切换回来</h1>
-<p>driver.switch_to.default_content()
-'''</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># 其他工具的传统（手动）方法</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">main_page</span> <span class="o">=</span> <span class="n">browser</span><span class="o">.</span><span class="n">get_page</span><span class="p">()</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">iframe_element</span> <span class="o">=</span> <span class="n">main_page</span><span class="o">.</span><span class="n">find_element_by_id</span><span class="p">(</span><span class="s2">&quot;iframe-id&quot;</span><span class="p">)</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="c1"># 必须手动切换上下文</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="n">driver</span><span class="o">.</span><span class="n">switch_to</span><span class="o">.</span><span class="n">frame</span><span class="p">(</span><span class="n">iframe_element</span><span class="p">)</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="c1"># 现在命令指向 iframe</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="n">button</span> <span class="o">=</span> <span class="n">driver</span><span class="o">.</span><span class="n">find_element_by_id</span><span class="p">(</span><span class="s2">&quot;button-in-iframe&quot;</span><span class="p">)</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="n">button</span><span class="o">.</span><span class="n">click</span><span class="p">()</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="c1"># 必须手动切换回来</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="n">driver</span><span class="o">.</span><span class="n">switch_to</span><span class="o">.</span><span class="n">default_content</span><span class="p">()</span>
+</span></code></pre></div>
 <p><strong>这种方法的问题：</strong></p>
 <ol>
 <li><strong>开发者负担</strong>：每个 iframe 都需要显式的上下文管理</li>
@@ -4668,17 +5765,17 @@ button.click()</p>
 </ol>
 <h3 id="pydoll">Pydoll 的解决方案：透明的上下文解析</h3>
 <p>Pydoll 通过自动解析 iframe 上下文来消除手动上下文切换：</p>
-<p>'''python</p>
-<h1 id="pydoll_1">Pydoll 方法（无手动切换）</h1>
-<p>iframe = await tab.find(id="iframe-id")
-button = await iframe.find(id="button-in-iframe")
-await button.click()</p>
-<h1 id="iframes_2">嵌套 iframes？同样的模式</h1>
-<p>outer = await tab.find(id="outer-iframe")
-inner = await outer.find(tag_name="iframe")
-button = await inner.find(text="Submit")
-await button.click()
-'''</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Pydoll 方法（无手动切换）</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">iframe</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s2">&quot;iframe-id&quot;</span><span class="p">)</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">button</span> <span class="o">=</span> <span class="k">await</span> <span class="n">iframe</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s2">&quot;button-in-iframe&quot;</span><span class="p">)</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="k">await</span> <span class="n">button</span><span class="o">.</span><span class="n">click</span><span class="p">()</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="c1"># 嵌套 iframes？同样的模式</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="n">outer</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s2">&quot;outer-iframe&quot;</span><span class="p">)</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="n">inner</span> <span class="o">=</span> <span class="k">await</span> <span class="n">outer</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">tag_name</span><span class="o">=</span><span class="s2">&quot;iframe&quot;</span><span class="p">)</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="n">button</span> <span class="o">=</span> <span class="k">await</span> <span class="n">inner</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;Submit&quot;</span><span class="p">)</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="k">await</span> <span class="n">button</span><span class="o">.</span><span class="n">click</span><span class="p">()</span>
+</span></code></pre></div>
 <p>复杂性在内部处理。让我们来探究一下是如何做到的。</p>
 <hr />
 <h2 id="chrome-devtools-frame">Chrome DevTools 协议和 Frame 管理</h2>
@@ -4690,120 +5787,113 @@ await button.click()
 <ul>
 <li>
 <p><code>Page.getFrameTree()</code>：返回页面中所有 frames 的层级结构
-  '''json
-  {
-    "frameTree": {
-      "frame": {
-        "id": "main-frame-id",
-        "url": "https://example.com",
-        "securityOrigin": "https://example.com",
-        "mimeType": "text/html"
-      },
-      "childFrames": [
-        {
-          "frame": {
-            "id": "child-frame-id",
-            "parentId": "main-frame-id",
-            "url": "https://widget.com/embed"
-          }
-        }
-      ]
-    }
-  }
-  '''</p>
+  <div class="language-json highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="p">{</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">&quot;frameTree&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="nt">&quot;frame&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;main-frame-id&quot;</span><span class="p">,</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">      </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://example.com&quot;</span><span class="p">,</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">      </span><span class="nt">&quot;securityOrigin&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://example.com&quot;</span><span class="p">,</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">      </span><span class="nt">&quot;mimeType&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;text/html&quot;</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">    </span><span class="p">},</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">    </span><span class="nt">&quot;childFrames&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">      </span><span class="p">{</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">        </span><span class="nt">&quot;frame&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">          </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;child-frame-id&quot;</span><span class="p">,</span>
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="w">          </span><span class="nt">&quot;parentId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;main-frame-id&quot;</span><span class="p">,</span>
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="w">          </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://widget.com/embed&quot;</span>
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="w">        </span><span class="p">}</span>
+</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="w">      </span><span class="p">}</span>
+</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="w">    </span><span class="p">]</span>
+</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span class="p">}</span>
+</span></code></pre></div></p>
 </li>
 <li>
 <p><code>Page.createIsolatedWorld(frameId, worldName)</code>：在特定 frame 中创建一个新的 JavaScript 执行上下文
-  '''json
-  {
-    "executionContextId": 42
-  }
-  '''</p>
+  <div class="language-json highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="p">{</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">&quot;executionContextId&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">42</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="p">}</span>
+</span></code></pre></div></p>
 </li>
 </ul>
 <p><strong>Pydoll 用法：</strong></p>
-<p>'''python</p>
-<h1 id="pydollelementsweb_elementpy">源自 pydoll/elements/web_element.py</h1>
-<p>@staticmethod
-async def _get_frame_tree_for(
-    handler: ConnectionHandler, session_id: Optional[str]
-) -&gt; FrameTree:
-    """获取给定连接/目标的 Page frame 树。"""
-    command = PageCommands.get_frame_tree()
-    if session_id:
-        command['sessionId'] = session_id
-    response: GetFrameTreeResponse = await handler.execute_command(command)
-    return response['result']['frameTree']
-'''</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># 源自 pydoll/elements/web_element.py</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="nd">@staticmethod</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_get_frame_tree_for</span><span class="p">(</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="n">handler</span><span class="p">:</span> <span class="n">ConnectionHandler</span><span class="p">,</span> <span class="n">session_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FrameTree</span><span class="p">:</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;获取给定连接/目标的 Page frame 树。&quot;&quot;&quot;</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span class="n">command</span> <span class="o">=</span> <span class="n">PageCommands</span><span class="o">.</span><span class="n">get_frame_tree</span><span class="p">()</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>    <span class="k">if</span> <span class="n">session_id</span><span class="p">:</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>        <span class="n">command</span><span class="p">[</span><span class="s1">&#39;sessionId&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">session_id</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>    <span class="n">response</span><span class="p">:</span> <span class="n">GetFrameTreeResponse</span> <span class="o">=</span> <span class="k">await</span> <span class="n">handler</span><span class="o">.</span><span class="n">execute_command</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>    <span class="k">return</span> <span class="n">response</span><span class="p">[</span><span class="s1">&#39;result&#39;</span><span class="p">][</span><span class="s1">&#39;frameTree&#39;</span><span class="p">]</span>
+</span></code></pre></div>
 <h4 id="2-dom">2. <strong>DOM 域</strong></h4>
 <p>提供对 DOM 结构的访问。</p>
 <p><strong>关键方法：</strong></p>
 <ul>
 <li>
 <p><code>DOM.describeNode(objectId)</code>：返回有关 DOM 节点的详细信息
-  '''json
-  {
-    "node": {
-      "nodeId": 123,
-      "backendNodeId": 456,
-      "nodeName": "IFRAME",
-      "frameId": "parent-frame-id",
-      "contentDocument": {
-        "frameId": "iframe-frame-id",
-        "documentURL": "https://embedded.com/page.html"
-      }
-    }
-  }
-  '''</p>
+  <div class="language-json highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="p">{</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">&quot;node&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="nt">&quot;nodeId&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">123</span><span class="p">,</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">    </span><span class="nt">&quot;backendNodeId&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">456</span><span class="p">,</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">    </span><span class="nt">&quot;nodeName&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;IFRAME&quot;</span><span class="p">,</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">    </span><span class="nt">&quot;frameId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;parent-frame-id&quot;</span><span class="p">,</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">    </span><span class="nt">&quot;contentDocument&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">      </span><span class="nt">&quot;frameId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;iframe-frame-id&quot;</span><span class="p">,</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">      </span><span class="nt">&quot;documentURL&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://embedded.com/page.html&quot;</span>
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="p">}</span>
+</span></code></pre></div></p>
 </li>
 <li>
 <p><code>DOM.getFrameOwner(frameId)</code>：返回拥有某个 frame 的 <code>&lt;iframe&gt;</code> 元素的 <code>backendNodeId</code>
-  '''json
-  {
-    "backendNodeId": 456
-  }
-  '''</p>
+  <div class="language-json highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="p">{</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span><span class="nt">&quot;backendNodeId&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">456</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="p">}</span>
+</span></code></pre></div></p>
 </li>
 </ul>
 <p><strong>Pydoll 用法：</strong></p>
-<p>'''python</p>
-<h1 id="pydollelementsweb_elementpy_1">源自 pydoll/elements/web_element.py</h1>
-<p>@staticmethod
-async def _owner_backend_for(
-    handler: ConnectionHandler, session_id: Optional[str], frame_id: str
-) -&gt; Optional[int]:
-    """获取拥有给定 frame 的 DOM 元素的 backendNodeId。"""
-    command = DomCommands.get_frame_owner(frame_id=frame_id)
-    if session_id:
-        command['sessionId'] = session_id
-    response: GetFrameOwnerResponse = await handler.execute_command(command)
-    return response.get('result', {}).get('backendNodeId')
-'''</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># 源自 pydoll/elements/web_element.py</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="nd">@staticmethod</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_owner_backend_for</span><span class="p">(</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="n">handler</span><span class="p">:</span> <span class="n">ConnectionHandler</span><span class="p">,</span> <span class="n">session_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">frame_id</span><span class="p">:</span> <span class="nb">str</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;获取拥有给定 frame 的 DOM 元素的 backendNodeId。&quot;&quot;&quot;</span>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    <span class="n">command</span> <span class="o">=</span> <span class="n">DomCommands</span><span class="o">.</span><span class="n">get_frame_owner</span><span class="p">(</span><span class="n">frame_id</span><span class="o">=</span><span class="n">frame_id</span><span class="p">)</span>
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    <span class="k">if</span> <span class="n">session_id</span><span class="p">:</span>
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>        <span class="n">command</span><span class="p">[</span><span class="s1">&#39;sessionId&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">session_id</span>
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>    <span class="n">response</span><span class="p">:</span> <span class="n">GetFrameOwnerResponse</span> <span class="o">=</span> <span class="k">await</span> <span class="n">handler</span><span class="o">.</span><span class="n">execute_command</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>    <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;result&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;backendNodeId&#39;</span><span class="p">)</span>
+</span></code></pre></div>
 <h4 id="3-target">3. <strong>Target 域</strong></h4>
 <p>管理浏览器目标（页面、iframes、workers 等）。</p>
 <p><strong>关键方法：</strong></p>
 <ul>
 <li>
 <p><code>Target.getTargets()</code>：列出所有可用的目标
-  '''json
-  {
-    "targetInfos": [
-      {
-        "targetId": "page-target-id",
-        "type": "page",
-        "title": "Main Page",
-        "url": "https://example.com"
-      },
-      {
-        "targetId": "iframe-target-id",
-        "type": "iframe",
-        "title": "",
-        "url": "https://widget.com/embed",
-        "parentFrameId": "main-frame-id"
-      }
-    ]
-  }
-  '''</p>
+  <div class="language-json highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="p">{</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span><span class="nt">&quot;targetInfos&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">      </span><span class="nt">&quot;targetId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;page-target-id&quot;</span><span class="p">,</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;page&quot;</span><span class="p">,</span>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Main Page&quot;</span><span class="p">,</span>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">      </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://example.com&quot;</span>
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="w">    </span><span class="p">},</span>
+</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="w">      </span><span class="nt">&quot;targetId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;iframe-target-id&quot;</span><span class="p">,</span>
+</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;iframe&quot;</span><span class="p">,</span>
+</span><span id="__span-9-12"><a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+</span><span id="__span-9-13"><a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="w">      </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://widget.com/embed&quot;</span><span class="p">,</span>
+</span><span id="__span-9-14"><a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a><span class="w">      </span><span class="nt">&quot;parentFrameId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;main-frame-id&quot;</span>
+</span><span id="__span-9-15"><a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-9-16"><a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a><span class="w">  </span><span class="p">]</span>
+</span><span id="__span-9-17"><a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a><span class="p">}</span>
+</span></code></pre></div></p>
 </li>
 <li>
 <p><code>Target.attachToTarget(targetId, flatten)</code>：附加到一个目标以进行调试</p>
@@ -4812,32 +5902,31 @@ async def _owner_backend_for(
 <li>所有通信都通过同一个 WebSocket 进行，通过 <code>sessionId</code> 区分</li>
 </ul>
 <p><strong>Pydoll 用法：</strong></p>
-<p>'''python</p>
-<h1 id="pydollelementsweb_elementpy_2">源自 pydoll/elements/web_element.py (简化版)</h1>
-<p>async def _resolve_oopif_by_parent(self, parent_frame_id: str, ...):
-    """使用父 frame id 解析 OOPIF。"""
-    browser_handler = ConnectionHandler(...)
-    targets_response: GetTargetsResponse = await browser_handler.execute_command(
-        TargetCommands.get_targets()
-    )
-    target_infos = targets_response.get('result', {}).get('targetInfos', [])</p>
-<div class="language-text highlight"><pre><span></span><code># 查找 parentFrameId 匹配的目标
-direct_children = [
-    target_info for target_info in target_infos
-    if target_info.get(&#39;parentFrameId&#39;) == parent_frame_id
-]
-
-if direct_children:
-    attach_response: AttachToTargetResponse = await browser_handler.execute_command(
-        TargetCommands.attach_to_target(
-            target_id=direct_children[0][&#39;targetId&#39;], 
-            flatten=True
-        )
-    )
-    attached_session_id = attach_response.get(&#39;result&#39;, {}).get(&#39;sessionId&#39;)
-    # ... 对后续命令使用 session_id
-</code></pre></div>
-<p>'''</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># 源自 pydoll/elements/web_element.py (简化版)</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_oopif_by_parent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_frame_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">):</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;使用父 frame id 解析 OOPIF。&quot;&quot;&quot;</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>    <span class="n">browser_handler</span> <span class="o">=</span> <span class="n">ConnectionHandler</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>    <span class="n">targets_response</span><span class="p">:</span> <span class="n">GetTargetsResponse</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser_handler</span><span class="o">.</span><span class="n">execute_command</span><span class="p">(</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>        <span class="n">TargetCommands</span><span class="o">.</span><span class="n">get_targets</span><span class="p">()</span>
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>    <span class="p">)</span>
+</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>    <span class="n">target_infos</span> <span class="o">=</span> <span class="n">targets_response</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;result&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;targetInfos&#39;</span><span class="p">,</span> <span class="p">[])</span>
+</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>
+</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>    <span class="c1"># 查找 parentFrameId 匹配的目标</span>
+</span><span id="__span-10-11"><a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>    <span class="n">direct_children</span> <span class="o">=</span> <span class="p">[</span>
+</span><span id="__span-10-12"><a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a>        <span class="n">target_info</span> <span class="k">for</span> <span class="n">target_info</span> <span class="ow">in</span> <span class="n">target_infos</span>
+</span><span id="__span-10-13"><a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a>        <span class="k">if</span> <span class="n">target_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;parentFrameId&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="n">parent_frame_id</span>
+</span><span id="__span-10-14"><a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a>    <span class="p">]</span>
+</span><span id="__span-10-15"><a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a>
+</span><span id="__span-10-16"><a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a>    <span class="k">if</span> <span class="n">direct_children</span><span class="p">:</span>
+</span><span id="__span-10-17"><a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a>        <span class="n">attach_response</span><span class="p">:</span> <span class="n">AttachToTargetResponse</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser_handler</span><span class="o">.</span><span class="n">execute_command</span><span class="p">(</span>
+</span><span id="__span-10-18"><a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a>            <span class="n">TargetCommands</span><span class="o">.</span><span class="n">attach_to_target</span><span class="p">(</span>
+</span><span id="__span-10-19"><a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a>                <span class="n">target_id</span><span class="o">=</span><span class="n">direct_children</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;targetId&#39;</span><span class="p">],</span> 
+</span><span id="__span-10-20"><a id="__codelineno-10-20" name="__codelineno-10-20" href="#__codelineno-10-20"></a>                <span class="n">flatten</span><span class="o">=</span><span class="kc">True</span>
+</span><span id="__span-10-21"><a id="__codelineno-10-21" name="__codelineno-10-21" href="#__codelineno-10-21"></a>            <span class="p">)</span>
+</span><span id="__span-10-22"><a id="__codelineno-10-22" name="__codelineno-10-22" href="#__codelineno-10-22"></a>        <span class="p">)</span>
+</span><span id="__span-10-23"><a id="__codelineno-10-23" name="__codelineno-10-23" href="#__codelineno-10-23"></a>        <span class="n">attached_session_id</span> <span class="o">=</span> <span class="n">attach_response</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;result&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sessionId&#39;</span><span class="p">)</span>
+</span><span id="__span-10-24"><a id="__codelineno-10-24" name="__codelineno-10-24" href="#__codelineno-10-24"></a>        <span class="c1"># ... 对后续命令使用 session_id</span>
+</span></code></pre></div>
 <h4 id="4-runtime">4. <strong>Runtime 域</strong></h4>
 <p>执行 JavaScript 并管理执行上下文。</p>
 <p><strong>关键方法：</strong></p>
@@ -4846,29 +5935,28 @@ if direct_children:
 <li><code>Runtime.callFunctionOn(functionDeclaration, objectId)</code>：在一个特定对象上调用函数（作为 <code>this</code>）</li>
 </ul>
 <p><strong>Pydoll 用于 iframe 文档访问的用法：</strong></p>
-<p>'''python</p>
-<h1 id="pydollelementsweb_elementpy_3">源自 pydoll/elements/web_element.py</h1>
-<p>async def _set_iframe_document_object_id(self, execution_context_id: int):
-    """在 iframe 上下文中评估 document.documentElement 并缓存其 object id。"""
-    evaluate_command = RuntimeCommands.evaluate(
-        expression='document.documentElement',
-        context_id=execution_context_id,
-    )
-    if self._iframe_context and self._iframe_context.session_id:
-        evaluate_command['sessionId'] = self._iframe_context.session_id</p>
-<div class="language-text highlight"><pre><span></span><code>evaluate_response: EvaluateResponse = await (
-    (self._iframe_context.session_handler if self._iframe_context else None)
-    or self._connection_handler
-).execute_command(evaluate_command)
-
-document_object_id = evaluate_response.get(&#39;result&#39;, {}).get(&#39;result&#39;, {}).get(&#39;objectId&#39;)
-if self._iframe_context:
-    self._iframe_context.document_object_id = document_object_id
-</code></pre></div>
-<p>'''</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># 源自 pydoll/elements/web_element.py</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_set_iframe_document_object_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">execution_context_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;在 iframe 上下文中评估 document.documentElement 并缓存其 object id。&quot;&quot;&quot;</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>    <span class="n">evaluate_command</span> <span class="o">=</span> <span class="n">RuntimeCommands</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>        <span class="n">expression</span><span class="o">=</span><span class="s1">&#39;document.documentElement&#39;</span><span class="p">,</span>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>        <span class="n">context_id</span><span class="o">=</span><span class="n">execution_context_id</span><span class="p">,</span>
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>    <span class="p">)</span>
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iframe_context</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iframe_context</span><span class="o">.</span><span class="n">session_id</span><span class="p">:</span>
+</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>        <span class="n">evaluate_command</span><span class="p">[</span><span class="s1">&#39;sessionId&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iframe_context</span><span class="o">.</span><span class="n">session_id</span>
+</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>
+</span><span id="__span-11-11"><a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>    <span class="n">evaluate_response</span><span class="p">:</span> <span class="n">EvaluateResponse</span> <span class="o">=</span> <span class="k">await</span> <span class="p">(</span>
+</span><span id="__span-11-12"><a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a>        <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_iframe_context</span><span class="o">.</span><span class="n">session_handler</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iframe_context</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+</span><span id="__span-11-13"><a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a>        <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connection_handler</span>
+</span><span id="__span-11-14"><a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a>    <span class="p">)</span><span class="o">.</span><span class="n">execute_command</span><span class="p">(</span><span class="n">evaluate_command</span><span class="p">)</span>
+</span><span id="__span-11-15"><a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a>
+</span><span id="__span-11-16"><a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a>    <span class="n">document_object_id</span> <span class="o">=</span> <span class="n">evaluate_response</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;result&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;result&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;objectId&#39;</span><span class="p">)</span>
+</span><span id="__span-11-17"><a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a>    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iframe_context</span><span class="p">:</span>
+</span><span id="__span-11-18"><a id="__codelineno-11-18" name="__codelineno-11-18" href="#__codelineno-11-18"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_iframe_context</span><span class="o">.</span><span class="n">document_object_id</span> <span class="o">=</span> <span class="n">document_object_id</span>
+</span></code></pre></div>
 <hr />
-<h2 id="_8">执行上下文和隔离世界</h2>
-<h3 id="_9">什么是执行上下文？</h3>
+<h2 id="_5">执行上下文和隔离世界</h2>
+<h3 id="_6">什么是执行上下文？</h3>
 <p><strong>执行上下文</strong> (execution context) 是执行 JavaScript 代码的环境。浏览器中的每个 frame 至少有一个执行上下文。该上下文包括：</p>
 <ul>
 <li><strong>全局对象</strong>（在浏览器中是 <code>window</code>）</li>
@@ -4882,22 +5970,20 @@ if self._iframe_context:
 <li><strong>主世界 (main world)（默认上下文）</strong>：页面自己的 JavaScript 运行的地方</li>
 <li><strong>隔离世界 (isolated worlds)</strong>：共享相同 DOM 但具有不同 JavaScript 全局作用域的独立上下文</li>
 </ol>
-<p>'''mermaid
-graph TB
+<pre class="mermaid"><code>graph TB
     Frame[Frame: example.com/page]
-    Frame --&gt; MainWorld[主世界<br/>页面的 JavaScript]
-    Frame --&gt; IsolatedWorld1[隔离世界 1<br/>扩展的内容脚本]
-    Frame --&gt; IsolatedWorld2[隔离世界 2<br/>Pydoll 自动化]</p>
-<div class="language-text highlight"><pre><span></span><code>DOM[共享的 DOM 树]
-MainWorld -.可以访问.-&gt; DOM
-IsolatedWorld1 -.可以访问.-&gt; DOM
-IsolatedWorld2 -.可以访问.-&gt; DOM
+    Frame --&gt; MainWorld[主世界&lt;br/&gt;页面的 JavaScript]
+    Frame --&gt; IsolatedWorld1[隔离世界 1&lt;br/&gt;扩展的内容脚本]
+    Frame --&gt; IsolatedWorld2[隔离世界 2&lt;br/&gt;Pydoll 自动化]
 
-MainWorld -.无法访问.-&gt; IsolatedWorld1
-MainWorld -.无法访问.-&gt; IsolatedWorld2
-</code></pre></div>
-<p>'''</p>
-<h3 id="_10">什么是隔离世界？</h3>
+    DOM[共享的 DOM 树]
+    MainWorld -.可以访问.-&gt; DOM
+    IsolatedWorld1 -.可以访问.-&gt; DOM
+    IsolatedWorld2 -.可以访问.-&gt; DOM
+
+    MainWorld -.无法访问.-&gt; IsolatedWorld1
+    MainWorld -.无法访问.-&gt; IsolatedWorld2</code></pre>
+<h3 id="_7">什么是隔离世界？</h3>
 <p><strong>隔离世界</strong> (isolated world) 是一个独立的 JavaScript 执行上下文，它：</p>
 <ul>
 <li><strong>共享相同的 DOM</strong>：可以读取/修改 DOM 元素</li>
@@ -4919,31 +6005,30 @@ MainWorld -.无法访问.-&gt; IsolatedWorld2
 <li><strong>安全的评估</strong>：自动化代码不会意外触发页面逻辑</li>
 </ol>
 <p><strong>实现：</strong></p>
-<p>'''python</p>
-<h1 id="pydollelementsweb_elementpy_4">源自 pydoll/elements/web_element.py</h1>
-<p>@staticmethod
-async def _create_isolated_world_for_frame(
-    frame_id: str,
-    handler: ConnectionHandler,
-    session_id: Optional[str],
-) -&gt; int:
-    """为给定的 frame 创建一个隔离世界 (Page.createIsolatedWorld)。"""
-    create_command = PageCommands.create_isolated_world(
-        frame_id=frame_id,
-        world_name=f'pydoll::iframe::{frame_id}',
-        grant_universal_access=True,
-    )
-    if session_id:
-        create_command['sessionId'] = session_id</p>
-<div class="language-text highlight"><pre><span></span><code>create_response: CreateIsolatedWorldResponse = await handler.execute_command(
-    create_command
-)
-execution_context_id = create_response.get(&#39;result&#39;, {}).get(&#39;executionContextId&#39;)
-if not execution_context_id:
-    raise InvalidIFrame(&#39;无法为 iframe 创建隔离世界&#39;)
-return execution_context_id
-</code></pre></div>
-<p>'''</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># 源自 pydoll/elements/web_element.py</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="nd">@staticmethod</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_create_isolated_world_for_frame</span><span class="p">(</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>    <span class="n">frame_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>    <span class="n">handler</span><span class="p">:</span> <span class="n">ConnectionHandler</span><span class="p">,</span>
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>    <span class="n">session_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;为给定的 frame 创建一个隔离世界 (Page.createIsolatedWorld)。&quot;&quot;&quot;</span>
+</span><span id="__span-12-9"><a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>    <span class="n">create_command</span> <span class="o">=</span> <span class="n">PageCommands</span><span class="o">.</span><span class="n">create_isolated_world</span><span class="p">(</span>
+</span><span id="__span-12-10"><a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>        <span class="n">frame_id</span><span class="o">=</span><span class="n">frame_id</span><span class="p">,</span>
+</span><span id="__span-12-11"><a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>        <span class="n">world_name</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;pydoll::iframe::</span><span class="si">{</span><span class="n">frame_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+</span><span id="__span-12-12"><a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a>        <span class="n">grant_universal_access</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-12-13"><a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>    <span class="p">)</span>
+</span><span id="__span-12-14"><a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a>    <span class="k">if</span> <span class="n">session_id</span><span class="p">:</span>
+</span><span id="__span-12-15"><a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a>        <span class="n">create_command</span><span class="p">[</span><span class="s1">&#39;sessionId&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">session_id</span>
+</span><span id="__span-12-16"><a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a>
+</span><span id="__span-12-17"><a id="__codelineno-12-17" name="__codelineno-12-17" href="#__codelineno-12-17"></a>    <span class="n">create_response</span><span class="p">:</span> <span class="n">CreateIsolatedWorldResponse</span> <span class="o">=</span> <span class="k">await</span> <span class="n">handler</span><span class="o">.</span><span class="n">execute_command</span><span class="p">(</span>
+</span><span id="__span-12-18"><a id="__codelineno-12-18" name="__codelineno-12-18" href="#__codelineno-12-18"></a>        <span class="n">create_command</span>
+</span><span id="__span-12-19"><a id="__codelineno-12-19" name="__codelineno-12-19" href="#__codelineno-12-19"></a>    <span class="p">)</span>
+</span><span id="__span-12-20"><a id="__codelineno-12-20" name="__codelineno-12-20" href="#__codelineno-12-20"></a>    <span class="n">execution_context_id</span> <span class="o">=</span> <span class="n">create_response</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;result&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;executionContextId&#39;</span><span class="p">)</span>
+</span><span id="__span-12-21"><a id="__codelineno-12-21" name="__codelineno-12-21" href="#__codelineno-12-21"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">execution_context_id</span><span class="p">:</span>
+</span><span id="__span-12-22"><a id="__codelineno-12-22" name="__codelineno-12-22" href="#__codelineno-12-22"></a>        <span class="k">raise</span> <span class="n">InvalidIFrame</span><span class="p">(</span><span class="s1">&#39;无法为 iframe 创建隔离世界&#39;</span><span class="p">)</span>
+</span><span id="__span-12-23"><a id="__codelineno-12-23" name="__codelineno-12-23" href="#__codelineno-12-23"></a>    <span class="k">return</span> <span class="n">execution_context_id</span>
+</span></code></pre></div>
 <p><code>grant_universal_access=True</code> 参数允许隔离世界：</p>
 <ul>
 <li>访问跨域 frames（通常被同源策略阻止）</li>
@@ -5018,35 +6103,30 @@ return execution_context_id
 </tr>
 </tbody>
 </table>
-<h3 id="_11">标识符关系</h3>
+<h3 id="_8">标识符关系</h3>
 <p>以下是 iframe 解析期间标识符之间的关系：</p>
-<p>'''
-┌─────────────────────────────────────────────────────────────────────────┐
-│                         解析流程                                        │
-└─────────────────────────────────────────────────────────────────────────┘</p>
-<ol>
-<li>
-<p>开始: <iframe> 元素
-   └─ backendNodeId: 789</p>
-</li>
-<li>
-<p>查找 Frame ──────────────[DOM.getFrameOwner]──────────────┐
-   └─ frameId: abc-123                                       │
-                                                             │</p>
-</li>
-<li>OOPIF? 检查源 ─────[检测到不同源]──────┤
-   └─ targetId: xyz-456                                      │
-                                                             │</li>
-<li>附加到目标 ────────[Target.attachToTarget]──────────┤
-   └─ sessionId: session-789                                 │
-                                                             │</li>
-<li>创建隔离世界 ───[Page.createIsolatedWorld]───────┤
-   └─ executionContextId: 42                                 │
-                                                             │</li>
-<li>获取文档 ────────────[Runtime.evaluate]───────────────┘
-   └─ objectId: obj-999
-'''</li>
-</ol>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>┌─────────────────────────────────────────────────────────────────────────┐
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>│                         解析流程                                        │
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>└─────────────────────────────────────────────────────────────────────────┘
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>1. 开始: &lt;iframe&gt; 元素
+</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>   └─ backendNodeId: 789
+</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>
+</span><span id="__span-13-8"><a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>2. 查找 Frame ──────────────[DOM.getFrameOwner]──────────────┐
+</span><span id="__span-13-9"><a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a>   └─ frameId: abc-123                                       │
+</span><span id="__span-13-10"><a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a>                                                             │
+</span><span id="__span-13-11"><a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a>3. OOPIF? 检查源 ─────[检测到不同源]──────┤
+</span><span id="__span-13-12"><a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a>   └─ targetId: xyz-456                                      │
+</span><span id="__span-13-13"><a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a>                                                             │
+</span><span id="__span-13-14"><a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a>4. 附加到目标 ────────[Target.attachToTarget]──────────┤
+</span><span id="__span-13-15"><a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a>   └─ sessionId: session-789                                 │
+</span><span id="__span-13-16"><a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a>                                                             │
+</span><span id="__span-13-17"><a id="__codelineno-13-17" name="__codelineno-13-17" href="#__codelineno-13-17"></a>5. 创建隔离世界 ───[Page.createIsolatedWorld]───────┤
+</span><span id="__span-13-18"><a id="__codelineno-13-18" name="__codelineno-13-18" href="#__codelineno-13-18"></a>   └─ executionContextId: 42                                 │
+</span><span id="__span-13-19"><a id="__codelineno-13-19" name="__codelineno-13-19" href="#__codelineno-13-19"></a>                                                             │
+</span><span id="__span-13-20"><a id="__codelineno-13-20" name="__codelineno-13-20" href="#__codelineno-13-20"></a>6. 获取文档 ────────────[Runtime.evaluate]───────────────┘
+</span><span id="__span-13-21"><a id="__codelineno-13-21" name="__codelineno-13-21" href="#__codelineno-13-21"></a>   └─ objectId: obj-999
+</span></code></pre></div>
 <p><strong>关键转换点：</strong></p>
 <table>
 <thead>
@@ -5084,70 +6164,67 @@ return execution_context_id
 </tr>
 </tbody>
 </table>
-<h3 id="pydoll_2">Pydoll 中的代码表示</h3>
-<p>'''python</p>
-<h1 id="pydollelementsweb_elementpy_5">源自 pydoll/elements/web_element.py</h1>
-<p>@dataclass
-class _IFrameContext:
-    """封装 iframe 的所有标识符和路由信息。"""
-    frame_id: str                                   # frameId: 标识 frame
-    document_url: Optional[str] = None              # frame 加载的 URL
-    execution_context_id: Optional[int] = None      # executionContextId: 隔离世界
-    document_object_id: Optional[str] = None        # objectId: document.documentElement
-    session_handler: Optional[ConnectionHandler] = None  # 用于 OOPIF 目标
-    session_id: Optional[str] = None                # sessionId: 将命令路由到 OOPIF
-'''</p>
+<h3 id="pydoll_1">Pydoll 中的代码表示</h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1"># 源自 pydoll/elements/web_element.py</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="nd">@dataclass</span>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="k">class</span><span class="w"> </span><span class="nc">_IFrameContext</span><span class="p">:</span>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;封装 iframe 的所有标识符和路由信息。&quot;&quot;&quot;</span>
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>    <span class="n">frame_id</span><span class="p">:</span> <span class="nb">str</span>                                   <span class="c1"># frameId: 标识 frame</span>
+</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>    <span class="n">document_url</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>              <span class="c1"># frame 加载的 URL</span>
+</span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>    <span class="n">execution_context_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>      <span class="c1"># executionContextId: 隔离世界</span>
+</span><span id="__span-14-8"><a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a>    <span class="n">document_object_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>        <span class="c1"># objectId: document.documentElement</span>
+</span><span id="__span-14-9"><a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a>    <span class="n">session_handler</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ConnectionHandler</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># 用于 OOPIF 目标</span>
+</span><span id="__span-14-10"><a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a>    <span class="n">session_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>                <span class="c1"># sessionId: 将命令路由到 OOPIF</span>
+</span></code></pre></div>
 <p>这个 dataclass 被缓存在代表 iframe 的每个 <code>WebElement</code> 上，实现了所有后续操作的自动路由。</p>
 <hr />
-<h2 id="pydoll_3">Pydoll 的解析管道</h2>
+<h2 id="pydoll_2">Pydoll 的解析管道</h2>
 <p>当您在 Pydoll 中访问 iframe（例如，<code>await iframe.find(...)</code>）时，一个精密的解析管道会在幕后执行。本节分解了每一步。</p>
-<h3 id="_12">高级流程</h3>
-<p>'''mermaid
-sequenceDiagram
+<h3 id="_9">高级流程</h3>
+<pre class="mermaid"><code>sequenceDiagram
     participant User as 用户
     participant WebElement
     participant Pipeline as 解析管道
-    participant CDP</p>
-<div class="language-text highlight"><pre><span></span><code>用户-&gt;&gt;WebElement: iframe.find(id=&#39;button&#39;)
-WebElement-&gt;&gt;WebElement: 检查 iframe 上下文是否已缓存
-alt 上下文未缓存
-    WebElement-&gt;&gt;Pipeline: _ensure_iframe_context()
-    Pipeline-&gt;&gt;CDP: DOM.describeNode(iframe)
-    CDP--&gt;&gt;Pipeline: 节点信息 (frameId?, backendNodeId, 等)
+    participant CDP
 
-    alt 节点信息中没有 frameId
-        Pipeline-&gt;&gt;Pipeline: _resolve_frame_by_owner()
-        Pipeline-&gt;&gt;CDP: Page.getFrameTree()
-        CDP--&gt;&gt;Pipeline: Frame 树
-        Pipeline-&gt;&gt;CDP: DOM.getFrameOwner(每个 frame)
-        CDP--&gt;&gt;Pipeline: backendNodeId
-        Pipeline-&gt;&gt;Pipeline: 匹配 backendNodeId 以查找 frameId
+    用户-&gt;&gt;WebElement: iframe.find(id='button')
+    WebElement-&gt;&gt;WebElement: 检查 iframe 上下文是否已缓存
+    alt 上下文未缓存
+        WebElement-&gt;&gt;Pipeline: _ensure_iframe_context()
+        Pipeline-&gt;&gt;CDP: DOM.describeNode(iframe)
+        CDP--&gt;&gt;Pipeline: 节点信息 (frameId?, backendNodeId, 等)
+
+        alt 节点信息中没有 frameId
+            Pipeline-&gt;&gt;Pipeline: _resolve_frame_by_owner()
+            Pipeline-&gt;&gt;CDP: Page.getFrameTree()
+            CDP--&gt;&gt;Pipeline: Frame 树
+            Pipeline-&gt;&gt;CDP: DOM.getFrameOwner(每个 frame)
+            CDP--&gt;&gt;Pipeline: backendNodeId
+            Pipeline-&gt;&gt;Pipeline: 匹配 backendNodeId 以查找 frameId
+        end
+
+        alt frameId 仍然缺失 (OOPIF)
+            Pipeline-&gt;&gt;Pipeline: _resolve_oopif_by_parent()
+            Pipeline-&gt;&gt;CDP: Target.getTargets()
+            CDP--&gt;&gt;Pipeline: 目标列表
+            Pipeline-&gt;&gt;CDP: Target.attachToTarget(targetId, flatten=true)
+            CDP--&gt;&gt;Pipeline: sessionId
+            Pipeline-&gt;&gt;CDP: Page.getFrameTree(sessionId)
+            CDP--&gt;&gt;Pipeline: OOPIF frame 树
+        end
+
+        Pipeline-&gt;&gt;CDP: Page.createIsolatedWorld(frameId)
+        CDP--&gt;&gt;Pipeline: executionContextId
+
+        Pipeline-&gt;&gt;CDP: Runtime.evaluate('document.documentElement', contextId)
+        CDP--&gt;&gt;Pipeline: objectId (文档引用)
+
+        Pipeline-&gt;&gt;WebElement: 缓存 _IFrameContext
     end
 
-    alt frameId 仍然缺失 (OOPIF)
-        Pipeline-&gt;&gt;Pipeline: _resolve_oopif_by_parent()
-        Pipeline-&gt;&gt;CDP: Target.getTargets()
-        CDP--&gt;&gt;Pipeline: 目标列表
-        Pipeline-&gt;&gt;CDP: Target.attachToTarget(targetId, flatten=true)
-        CDP--&gt;&gt;Pipeline: sessionId
-        Pipeline-&gt;&gt;CDP: Page.getFrameTree(sessionId)
-        CDP--&gt;&gt;Pipeline: OOPIF frame 树
-    end
-
-    Pipeline-&gt;&gt;CDP: Page.createIsolatedWorld(frameId)
-    CDP--&gt;&gt;Pipeline: executionContextId
-
-    Pipeline-&gt;&gt;CDP: Runtime.evaluate(&#39;document.documentElement&#39;, contextId)
-    CDP--&gt;&gt;Pipeline: objectId (文档引用)
-
-    Pipeline-&gt;&gt;WebElement: 缓存 _IFrameContext
-end
-
-WebElement-&gt;&gt;WebElement: 使用缓存的上下文进行 find()
-WebElement--&gt;&gt;用户: 按钮元素 (带上下文)
-</code></pre></div>
-<p>'''</p>
-<h3 id="_13">步骤深度解析</h3>
+    WebElement-&gt;&gt;WebElement: 使用缓存的上下文进行 find()
+    WebElement--&gt;&gt;用户: 按钮元素 (带上下文)</code></pre>
+<h3 id="_10">步骤深度解析</h3>
 <h4 id="1-iframe"><strong>步骤 1：描述 Iframe 元素</strong></h4>
 <p><strong>目标</strong>：从 <code>&lt;iframe&gt;</code> DOM 元素中提取元数据。</p>
 <p><strong>方法</strong>：<code>DOM.describeNode(objectId=iframe_object_id)</code></p>
@@ -5159,36 +6236,34 @@ WebElement--&gt;&gt;用户: 按钮元素 (带上下文)
 <li><code>parentFrameId</code>（来自节点上的 <code>frameId</code> 字段）：包含此 iframe 元素的 frame</li>
 </ul>
 <p><strong>代码</strong>：</p>
-<p>'''python</p>
-<h1 id="pydollelementsweb_elementpy_6">源自 pydoll/elements/web_element.py</h1>
-<p>async def _ensure_iframe_context(self) -&gt; None:
-    """初始化并缓存 iframe 元素的上下文信息。"""
-    node_info = await self._describe_node(object_id=self._object_id)
-    base_handler, base_session_id = self._get_base_session()
-    frame_id, document_url, parent_frame_id, backend_node_id = self._extract_frame_metadata(
-        node_info
-    )
-    # ... 继续解析
-'''</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="c1"># 源自 pydoll/elements/web_element.py</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_ensure_iframe_context</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;初始化并缓存 iframe 元素的上下文信息。&quot;&quot;&quot;</span>
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>    <span class="n">node_info</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_describe_node</span><span class="p">(</span><span class="n">object_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_object_id</span><span class="p">)</span>
+</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>    <span class="n">base_handler</span><span class="p">,</span> <span class="n">base_session_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_base_session</span><span class="p">()</span>
+</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>    <span class="n">frame_id</span><span class="p">,</span> <span class="n">document_url</span><span class="p">,</span> <span class="n">parent_frame_id</span><span class="p">,</span> <span class="n">backend_node_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_frame_metadata</span><span class="p">(</span>
+</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>        <span class="n">node_info</span>
+</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>    <span class="p">)</span>
+</span><span id="__span-15-9"><a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>    <span class="c1"># ... 继续解析</span>
+</span></code></pre></div>
 <p><strong>辅助方法</strong>：</p>
-<p>'''python
-@staticmethod
-def _extract_frame_metadata(
-    node_info: Node,
-) -&gt; tuple[Optional[str], Optional[str], Optional[str], Optional[int]]:
-    """从 DOM.describeNode 节点中提取 iframe 相关的元数据。"""
-    content_document = node_info.get('contentDocument') or {}
-    parent_frame_id = node_info.get('frameId')
-    backend_node_id = node_info.get('backendNodeId')
-    frame_id = content_document.get('frameId')
-    document_url = (
-        content_document.get('documentURL')
-        or content_document.get('baseURL')
-        or node_info.get('documentURL')
-        or node_info.get('baseURL')
-    )
-    return frame_id, document_url, parent_frame_id, backend_node_id
-'''</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="nd">@staticmethod</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">_extract_frame_metadata</span><span class="p">(</span>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>    <span class="n">node_info</span><span class="p">:</span> <span class="n">Node</span><span class="p">,</span>
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
+</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;从 DOM.describeNode 节点中提取 iframe 相关的元数据。&quot;&quot;&quot;</span>
+</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>    <span class="n">content_document</span> <span class="o">=</span> <span class="n">node_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;contentDocument&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>    <span class="n">parent_frame_id</span> <span class="o">=</span> <span class="n">node_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;frameId&#39;</span><span class="p">)</span>
+</span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>    <span class="n">backend_node_id</span> <span class="o">=</span> <span class="n">node_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;backendNodeId&#39;</span><span class="p">)</span>
+</span><span id="__span-16-9"><a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a>    <span class="n">frame_id</span> <span class="o">=</span> <span class="n">content_document</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;frameId&#39;</span><span class="p">)</span>
+</span><span id="__span-16-10"><a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a>    <span class="n">document_url</span> <span class="o">=</span> <span class="p">(</span>
+</span><span id="__span-16-11"><a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a>        <span class="n">content_document</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;documentURL&#39;</span><span class="p">)</span>
+</span><span id="__span-16-12"><a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a>        <span class="ow">or</span> <span class="n">content_document</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;baseURL&#39;</span><span class="p">)</span>
+</span><span id="__span-16-13"><a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a>        <span class="ow">or</span> <span class="n">node_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;documentURL&#39;</span><span class="p">)</span>
+</span><span id="__span-16-14"><a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a>        <span class="ow">or</span> <span class="n">node_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;baseURL&#39;</span><span class="p">)</span>
+</span><span id="__span-16-15"><a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a>    <span class="p">)</span>
+</span><span id="__span-16-16"><a id="__codelineno-16-16" name="__codelineno-16-16" href="#__codelineno-16-16"></a>    <span class="k">return</span> <span class="n">frame_id</span><span class="p">,</span> <span class="n">document_url</span><span class="p">,</span> <span class="n">parent_frame_id</span><span class="p">,</span> <span class="n">backend_node_id</span>
+</span></code></pre></div>
 <p><strong>结果</strong>：</p>
 <ul>
 <li><strong>如果 <code>frame_id</code> 存在</strong>：很好！iframe 在进程内；进入步骤 4。</li>
@@ -5205,38 +6280,38 @@ def _extract_frame_metadata(
 <li>当它们匹配时，我们就找到了正确的 <code>frameId</code></li>
 </ol>
 <p><strong>代码</strong>：</p>
-<p>'''python</p>
-<h1 id="pydollelementsweb_elementpy_7">源自 pydoll/elements/web_element.py</h1>
-<p>async def _resolve_frame_by_owner(
-    self,
-    base_handler: ConnectionHandler,
-    base_session_id: Optional[str],
-    backend_node_id: int,
-    current_document_url: Optional[str],
-) -&gt; tuple[Optional[str], Optional[str]]:
-    """通过匹配所有者的 backend_node_id 来解析 frame id 和 URL。"""
-    owner_frame_id, owner_url = await self._find_frame_by_owner(
-        base_handler, base_session_id, backend_node_id
-    )
-    if not owner_frame_id:
-        return None, current_document_url
-    return owner_frame_id, owner_url or current_document_url</p>
-<p>async def _find_frame_by_owner(
-    self, handler: ConnectionHandler, session_id: Optional[str], backend_node_id: int
-) -&gt; tuple[Optional[str], Optional[str]]:
-    """通过匹配 <iframe> 元素的所有者 backend_node_id 来查找 frame。"""
-    frame_tree = await self._get_frame_tree_for(handler, session_id)
-    for frame_node in WebElement._walk_frames(frame_tree):
-        candidate_frame_id = frame_node.get('id', '')
-        if not candidate_frame_id:
-            continue
-        owner_backend_id = await self._owner_backend_for(
-            handler, session_id, candidate_frame_id
-        )
-        if owner_backend_id == backend_node_id:
-            return candidate_frame_id, frame_node.get('url')
-    return None, None
-'''</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="c1"># 源自 pydoll/elements/web_element.py</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_frame_by_owner</span><span class="p">(</span>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>    <span class="bp">self</span><span class="p">,</span>
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>    <span class="n">base_handler</span><span class="p">:</span> <span class="n">ConnectionHandler</span><span class="p">,</span>
+</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>    <span class="n">base_session_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>    <span class="n">backend_node_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+</span><span id="__span-17-7"><a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a>    <span class="n">current_document_url</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+</span><span id="__span-17-8"><a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+</span><span id="__span-17-9"><a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;通过匹配所有者的 backend_node_id 来解析 frame id 和 URL。&quot;&quot;&quot;</span>
+</span><span id="__span-17-10"><a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a>    <span class="n">owner_frame_id</span><span class="p">,</span> <span class="n">owner_url</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_frame_by_owner</span><span class="p">(</span>
+</span><span id="__span-17-11"><a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a>        <span class="n">base_handler</span><span class="p">,</span> <span class="n">base_session_id</span><span class="p">,</span> <span class="n">backend_node_id</span>
+</span><span id="__span-17-12"><a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a>    <span class="p">)</span>
+</span><span id="__span-17-13"><a id="__codelineno-17-13" name="__codelineno-17-13" href="#__codelineno-17-13"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">owner_frame_id</span><span class="p">:</span>
+</span><span id="__span-17-14"><a id="__codelineno-17-14" name="__codelineno-17-14" href="#__codelineno-17-14"></a>        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="n">current_document_url</span>
+</span><span id="__span-17-15"><a id="__codelineno-17-15" name="__codelineno-17-15" href="#__codelineno-17-15"></a>    <span class="k">return</span> <span class="n">owner_frame_id</span><span class="p">,</span> <span class="n">owner_url</span> <span class="ow">or</span> <span class="n">current_document_url</span>
+</span><span id="__span-17-16"><a id="__codelineno-17-16" name="__codelineno-17-16" href="#__codelineno-17-16"></a>
+</span><span id="__span-17-17"><a id="__codelineno-17-17" name="__codelineno-17-17" href="#__codelineno-17-17"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_find_frame_by_owner</span><span class="p">(</span>
+</span><span id="__span-17-18"><a id="__codelineno-17-18" name="__codelineno-17-18" href="#__codelineno-17-18"></a>    <span class="bp">self</span><span class="p">,</span> <span class="n">handler</span><span class="p">:</span> <span class="n">ConnectionHandler</span><span class="p">,</span> <span class="n">session_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">backend_node_id</span><span class="p">:</span> <span class="nb">int</span>
+</span><span id="__span-17-19"><a id="__codelineno-17-19" name="__codelineno-17-19" href="#__codelineno-17-19"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+</span><span id="__span-17-20"><a id="__codelineno-17-20" name="__codelineno-17-20" href="#__codelineno-17-20"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;通过匹配 &lt;iframe&gt; 元素的所有者 backend_node_id 来查找 frame。&quot;&quot;&quot;</span>
+</span><span id="__span-17-21"><a id="__codelineno-17-21" name="__codelineno-17-21" href="#__codelineno-17-21"></a>    <span class="n">frame_tree</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_frame_tree_for</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">session_id</span><span class="p">)</span>
+</span><span id="__span-17-22"><a id="__codelineno-17-22" name="__codelineno-17-22" href="#__codelineno-17-22"></a>    <span class="k">for</span> <span class="n">frame_node</span> <span class="ow">in</span> <span class="n">WebElement</span><span class="o">.</span><span class="n">_walk_frames</span><span class="p">(</span><span class="n">frame_tree</span><span class="p">):</span>
+</span><span id="__span-17-23"><a id="__codelineno-17-23" name="__codelineno-17-23" href="#__codelineno-17-23"></a>        <span class="n">candidate_frame_id</span> <span class="o">=</span> <span class="n">frame_node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+</span><span id="__span-17-24"><a id="__codelineno-17-24" name="__codelineno-17-24" href="#__codelineno-17-24"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">candidate_frame_id</span><span class="p">:</span>
+</span><span id="__span-17-25"><a id="__codelineno-17-25" name="__codelineno-17-25" href="#__codelineno-17-25"></a>            <span class="k">continue</span>
+</span><span id="__span-17-26"><a id="__codelineno-17-26" name="__codelineno-17-26" href="#__codelineno-17-26"></a>        <span class="n">owner_backend_id</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owner_backend_for</span><span class="p">(</span>
+</span><span id="__span-17-27"><a id="__codelineno-17-27" name="__codelineno-17-27" href="#__codelineno-17-27"></a>            <span class="n">handler</span><span class="p">,</span> <span class="n">session_id</span><span class="p">,</span> <span class="n">candidate_frame_id</span>
+</span><span id="__span-17-28"><a id="__codelineno-17-28" name="__codelineno-17-28" href="#__codelineno-17-28"></a>        <span class="p">)</span>
+</span><span id="__span-17-29"><a id="__codelineno-17-29" name="__codelineno-17-29" href="#__codelineno-17-29"></a>        <span class="k">if</span> <span class="n">owner_backend_id</span> <span class="o">==</span> <span class="n">backend_node_id</span><span class="p">:</span>
+</span><span id="__span-17-30"><a id="__codelineno-17-30" name="__codelineno-17-30" href="#__codelineno-17-30"></a>            <span class="k">return</span> <span class="n">candidate_frame_id</span><span class="p">,</span> <span class="n">frame_node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;url&#39;</span><span class="p">)</span>
+</span><span id="__span-17-31"><a id="__codelineno-17-31" name="__codelineno-17-31" href="#__codelineno-17-31"></a>    <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+</span></code></pre></div>
 <p><strong>为什么这是必要的</strong>：</p>
 <ul>
 <li>对于跨域或延迟加载的 iframes，<code>DOM.describeNode</code> 有时不包含 <code>contentDocument.frameId</code></li>
@@ -5268,78 +6343,77 @@ def _extract_frame_metadata(
 <li><strong>或者</strong> 检查根 frame 的所有者（通过 <code>DOM.getFrameOwner</code>）是否与我们 iframe 的 <code>backendNodeId</code> 匹配</li>
 </ol>
 <p><strong>代码</strong>：</p>
-<p>'''python</p>
-<h1 id="pydollelementsweb_elementpy_8">源自 pydoll/elements/web_element.py</h1>
-<p>async def _resolve_oopif_by_parent(
-    self,
-    parent_frame_id: str,
-    backend_node_id: Optional[int],
-) -&gt; tuple[Optional[ConnectionHandler], Optional[str], Optional[str], Optional[str]]:
-    """使用父 frame id 解析 OOPIF。"""
-    browser_handler = ConnectionHandler(
-        connection_port=self._connection_handler._connection_port
-    )
-    targets_response: GetTargetsResponse = await browser_handler.execute_command(
-        TargetCommands.get_targets()
-    )
-    target_infos = targets_response.get('result', {}).get('targetInfos', [])</p>
-<div class="language-text highlight"><pre><span></span><code># 策略 3a: 直接子节点
-direct_children = [
-    target_info
-    for target_info in target_infos
-    if target_info.get(&#39;type&#39;) in {&#39;iframe&#39;, &#39;page&#39;}
-    and target_info.get(&#39;parentFrameId&#39;) == parent_frame_id
-]
-if direct_children:
-    attach_response: AttachToTargetResponse = await browser_handler.execute_command(
-        TargetCommands.attach_to_target(
-            target_id=direct_children[0][&#39;targetId&#39;], flatten=True
-        )
-    )
-    attached_session_id = attach_response.get(&#39;result&#39;, {}).get(&#39;sessionId&#39;)
-    if attached_session_id:
-        frame_tree = await self._get_frame_tree_for(browser_handler, attached_session_id)
-        root_frame = (frame_tree or {}).get(&#39;frame&#39;, {})
-        return (
-            browser_handler,
-            attached_session_id,
-            root_frame.get(&#39;id&#39;),
-            root_frame.get(&#39;url&#39;),
-        )
-
-# 策略 3b: 扫描所有目标
-for target_info in target_infos:
-    if target_info.get(&#39;type&#39;) not in {&#39;iframe&#39;, &#39;page&#39;}:
-        continue
-    attach_response = await browser_handler.execute_command(
-        TargetCommands.attach_to_target(
-            target_id=target_info.get(&#39;targetId&#39;, &#39;&#39;), flatten=True
-        )
-    )
-    attached_session_id = attach_response.get(&#39;result&#39;, {}).get(&#39;sessionId&#39;)
-    if not attached_session_id:
-        continue
-
-    frame_tree = await self._get_frame_tree_for(browser_handler, attached_session_id)
-
-    # 检查是否有匹配 parentId 的子节点
-    child_frame_id = WebElement._find_child_by_parent(frame_tree, parent_frame_id)
-    if child_frame_id:
-        return browser_handler, attached_session_id, child_frame_id, None
-
-    # 检查根 frame 的所有者是否匹配我们的 backendNodeId
-    root_frame_id = (frame_tree or {}).get(&#39;frame&#39;, {}).get(&#39;id&#39;, &#39;&#39;)
-    if not root_frame_id or backend_node_id is None:
-        continue
-    owner_backend_id = await self._owner_backend_for(
-        self._connection_handler, None, root_frame_id
-    )
-    if owner_backend_id == backend_node_id:
-        return browser_handler, attached_session_id, root_frame_id, None
-
-return None, None, None, None
-</code></pre></div>
-<p>'''</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="c1"># 源自 pydoll/elements/web_element.py</span>
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_oopif_by_parent</span><span class="p">(</span>
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>    <span class="bp">self</span><span class="p">,</span>
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>    <span class="n">parent_frame_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>    <span class="n">backend_node_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+</span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">ConnectionHandler</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+</span><span id="__span-18-7"><a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;使用父 frame id 解析 OOPIF。&quot;&quot;&quot;</span>
+</span><span id="__span-18-8"><a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>    <span class="n">browser_handler</span> <span class="o">=</span> <span class="n">ConnectionHandler</span><span class="p">(</span>
+</span><span id="__span-18-9"><a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a>        <span class="n">connection_port</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_connection_handler</span><span class="o">.</span><span class="n">_connection_port</span>
+</span><span id="__span-18-10"><a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a>    <span class="p">)</span>
+</span><span id="__span-18-11"><a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a>    <span class="n">targets_response</span><span class="p">:</span> <span class="n">GetTargetsResponse</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser_handler</span><span class="o">.</span><span class="n">execute_command</span><span class="p">(</span>
+</span><span id="__span-18-12"><a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a>        <span class="n">TargetCommands</span><span class="o">.</span><span class="n">get_targets</span><span class="p">()</span>
+</span><span id="__span-18-13"><a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a>    <span class="p">)</span>
+</span><span id="__span-18-14"><a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a>    <span class="n">target_infos</span> <span class="o">=</span> <span class="n">targets_response</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;result&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;targetInfos&#39;</span><span class="p">,</span> <span class="p">[])</span>
+</span><span id="__span-18-15"><a id="__codelineno-18-15" name="__codelineno-18-15" href="#__codelineno-18-15"></a>
+</span><span id="__span-18-16"><a id="__codelineno-18-16" name="__codelineno-18-16" href="#__codelineno-18-16"></a>    <span class="c1"># 策略 3a: 直接子节点</span>
+</span><span id="__span-18-17"><a id="__codelineno-18-17" name="__codelineno-18-17" href="#__codelineno-18-17"></a>    <span class="n">direct_children</span> <span class="o">=</span> <span class="p">[</span>
+</span><span id="__span-18-18"><a id="__codelineno-18-18" name="__codelineno-18-18" href="#__codelineno-18-18"></a>        <span class="n">target_info</span>
+</span><span id="__span-18-19"><a id="__codelineno-18-19" name="__codelineno-18-19" href="#__codelineno-18-19"></a>        <span class="k">for</span> <span class="n">target_info</span> <span class="ow">in</span> <span class="n">target_infos</span>
+</span><span id="__span-18-20"><a id="__codelineno-18-20" name="__codelineno-18-20" href="#__codelineno-18-20"></a>        <span class="k">if</span> <span class="n">target_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;iframe&#39;</span><span class="p">,</span> <span class="s1">&#39;page&#39;</span><span class="p">}</span>
+</span><span id="__span-18-21"><a id="__codelineno-18-21" name="__codelineno-18-21" href="#__codelineno-18-21"></a>        <span class="ow">and</span> <span class="n">target_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;parentFrameId&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="n">parent_frame_id</span>
+</span><span id="__span-18-22"><a id="__codelineno-18-22" name="__codelineno-18-22" href="#__codelineno-18-22"></a>    <span class="p">]</span>
+</span><span id="__span-18-23"><a id="__codelineno-18-23" name="__codelineno-18-23" href="#__codelineno-18-23"></a>    <span class="k">if</span> <span class="n">direct_children</span><span class="p">:</span>
+</span><span id="__span-18-24"><a id="__codelineno-18-24" name="__codelineno-18-24" href="#__codelineno-18-24"></a>        <span class="n">attach_response</span><span class="p">:</span> <span class="n">AttachToTargetResponse</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser_handler</span><span class="o">.</span><span class="n">execute_command</span><span class="p">(</span>
+</span><span id="__span-18-25"><a id="__codelineno-18-25" name="__codelineno-18-25" href="#__codelineno-18-25"></a>            <span class="n">TargetCommands</span><span class="o">.</span><span class="n">attach_to_target</span><span class="p">(</span>
+</span><span id="__span-18-26"><a id="__codelineno-18-26" name="__codelineno-18-26" href="#__codelineno-18-26"></a>                <span class="n">target_id</span><span class="o">=</span><span class="n">direct_children</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;targetId&#39;</span><span class="p">],</span> <span class="n">flatten</span><span class="o">=</span><span class="kc">True</span>
+</span><span id="__span-18-27"><a id="__codelineno-18-27" name="__codelineno-18-27" href="#__codelineno-18-27"></a>            <span class="p">)</span>
+</span><span id="__span-18-28"><a id="__codelineno-18-28" name="__codelineno-18-28" href="#__codelineno-18-28"></a>        <span class="p">)</span>
+</span><span id="__span-18-29"><a id="__codelineno-18-29" name="__codelineno-18-29" href="#__codelineno-18-29"></a>        <span class="n">attached_session_id</span> <span class="o">=</span> <span class="n">attach_response</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;result&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sessionId&#39;</span><span class="p">)</span>
+</span><span id="__span-18-30"><a id="__codelineno-18-30" name="__codelineno-18-30" href="#__codelineno-18-30"></a>        <span class="k">if</span> <span class="n">attached_session_id</span><span class="p">:</span>
+</span><span id="__span-18-31"><a id="__codelineno-18-31" name="__codelineno-18-31" href="#__codelineno-18-31"></a>            <span class="n">frame_tree</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_frame_tree_for</span><span class="p">(</span><span class="n">browser_handler</span><span class="p">,</span> <span class="n">attached_session_id</span><span class="p">)</span>
+</span><span id="__span-18-32"><a id="__codelineno-18-32" name="__codelineno-18-32" href="#__codelineno-18-32"></a>            <span class="n">root_frame</span> <span class="o">=</span> <span class="p">(</span><span class="n">frame_tree</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;frame&#39;</span><span class="p">,</span> <span class="p">{})</span>
+</span><span id="__span-18-33"><a id="__codelineno-18-33" name="__codelineno-18-33" href="#__codelineno-18-33"></a>            <span class="k">return</span> <span class="p">(</span>
+</span><span id="__span-18-34"><a id="__codelineno-18-34" name="__codelineno-18-34" href="#__codelineno-18-34"></a>                <span class="n">browser_handler</span><span class="p">,</span>
+</span><span id="__span-18-35"><a id="__codelineno-18-35" name="__codelineno-18-35" href="#__codelineno-18-35"></a>                <span class="n">attached_session_id</span><span class="p">,</span>
+</span><span id="__span-18-36"><a id="__codelineno-18-36" name="__codelineno-18-36" href="#__codelineno-18-36"></a>                <span class="n">root_frame</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">),</span>
+</span><span id="__span-18-37"><a id="__codelineno-18-37" name="__codelineno-18-37" href="#__codelineno-18-37"></a>                <span class="n">root_frame</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;url&#39;</span><span class="p">),</span>
+</span><span id="__span-18-38"><a id="__codelineno-18-38" name="__codelineno-18-38" href="#__codelineno-18-38"></a>            <span class="p">)</span>
+</span><span id="__span-18-39"><a id="__codelineno-18-39" name="__codelineno-18-39" href="#__codelineno-18-39"></a>
+</span><span id="__span-18-40"><a id="__codelineno-18-40" name="__codelineno-18-40" href="#__codelineno-18-40"></a>    <span class="c1"># 策略 3b: 扫描所有目标</span>
+</span><span id="__span-18-41"><a id="__codelineno-18-41" name="__codelineno-18-41" href="#__codelineno-18-41"></a>    <span class="k">for</span> <span class="n">target_info</span> <span class="ow">in</span> <span class="n">target_infos</span><span class="p">:</span>
+</span><span id="__span-18-42"><a id="__codelineno-18-42" name="__codelineno-18-42" href="#__codelineno-18-42"></a>        <span class="k">if</span> <span class="n">target_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;iframe&#39;</span><span class="p">,</span> <span class="s1">&#39;page&#39;</span><span class="p">}:</span>
+</span><span id="__span-18-43"><a id="__codelineno-18-43" name="__codelineno-18-43" href="#__codelineno-18-43"></a>            <span class="k">continue</span>
+</span><span id="__span-18-44"><a id="__codelineno-18-44" name="__codelineno-18-44" href="#__codelineno-18-44"></a>        <span class="n">attach_response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser_handler</span><span class="o">.</span><span class="n">execute_command</span><span class="p">(</span>
+</span><span id="__span-18-45"><a id="__codelineno-18-45" name="__codelineno-18-45" href="#__codelineno-18-45"></a>            <span class="n">TargetCommands</span><span class="o">.</span><span class="n">attach_to_target</span><span class="p">(</span>
+</span><span id="__span-18-46"><a id="__codelineno-18-46" name="__codelineno-18-46" href="#__codelineno-18-46"></a>                <span class="n">target_id</span><span class="o">=</span><span class="n">target_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;targetId&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span> <span class="n">flatten</span><span class="o">=</span><span class="kc">True</span>
+</span><span id="__span-18-47"><a id="__codelineno-18-47" name="__codelineno-18-47" href="#__codelineno-18-47"></a>            <span class="p">)</span>
+</span><span id="__span-18-48"><a id="__codelineno-18-48" name="__codelineno-18-48" href="#__codelineno-18-48"></a>        <span class="p">)</span>
+</span><span id="__span-18-49"><a id="__codelineno-18-49" name="__codelineno-18-49" href="#__codelineno-18-49"></a>        <span class="n">attached_session_id</span> <span class="o">=</span> <span class="n">attach_response</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;result&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sessionId&#39;</span><span class="p">)</span>
+</span><span id="__span-18-50"><a id="__codelineno-18-50" name="__codelineno-18-50" href="#__codelineno-18-50"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">attached_session_id</span><span class="p">:</span>
+</span><span id="__span-18-51"><a id="__codelineno-18-51" name="__codelineno-18-51" href="#__codelineno-18-51"></a>            <span class="k">continue</span>
+</span><span id="__span-18-52"><a id="__codelineno-18-52" name="__codelineno-18-52" href="#__codelineno-18-52"></a>
+</span><span id="__span-18-53"><a id="__codelineno-18-53" name="__codelineno-18-53" href="#__codelineno-18-53"></a>        <span class="n">frame_tree</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_frame_tree_for</span><span class="p">(</span><span class="n">browser_handler</span><span class="p">,</span> <span class="n">attached_session_id</span><span class="p">)</span>
+</span><span id="__span-18-54"><a id="__codelineno-18-54" name="__codelineno-18-54" href="#__codelineno-18-54"></a>
+</span><span id="__span-18-55"><a id="__codelineno-18-55" name="__codelineno-18-55" href="#__codelineno-18-55"></a>        <span class="c1"># 检查是否有匹配 parentId 的子节点</span>
+</span><span id="__span-18-56"><a id="__codelineno-18-56" name="__codelineno-18-56" href="#__codelineno-18-56"></a>        <span class="n">child_frame_id</span> <span class="o">=</span> <span class="n">WebElement</span><span class="o">.</span><span class="n">_find_child_by_parent</span><span class="p">(</span><span class="n">frame_tree</span><span class="p">,</span> <span class="n">parent_frame_id</span><span class="p">)</span>
+</span><span id="__span-18-57"><a id="__codelineno-18-57" name="__codelineno-18-57" href="#__codelineno-18-57"></a>        <span class="k">if</span> <span class="n">child_frame_id</span><span class="p">:</span>
+</span><span id="__span-18-58"><a id="__codelineno-18-58" name="__codelineno-18-58" href="#__codelineno-18-58"></a>            <span class="k">return</span> <span class="n">browser_handler</span><span class="p">,</span> <span class="n">attached_session_id</span><span class="p">,</span> <span class="n">child_frame_id</span><span class="p">,</span> <span class="kc">None</span>
+</span><span id="__span-18-59"><a id="__codelineno-18-59" name="__codelineno-18-59" href="#__codelineno-18-59"></a>
+</span><span id="__span-18-60"><a id="__codelineno-18-60" name="__codelineno-18-60" href="#__codelineno-18-60"></a>        <span class="c1"># 检查根 frame 的所有者是否匹配我们的 backendNodeId</span>
+</span><span id="__span-18-61"><a id="__codelineno-18-61" name="__codelineno-18-61" href="#__codelineno-18-61"></a>        <span class="n">root_frame_id</span> <span class="o">=</span> <span class="p">(</span><span class="n">frame_tree</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;frame&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+</span><span id="__span-18-62"><a id="__codelineno-18-62" name="__codelineno-18-62" href="#__codelineno-18-62"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">root_frame_id</span> <span class="ow">or</span> <span class="n">backend_node_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-18-63"><a id="__codelineno-18-63" name="__codelineno-18-63" href="#__codelineno-18-63"></a>            <span class="k">continue</span>
+</span><span id="__span-18-64"><a id="__codelineno-18-64" name="__codelineno-18-64" href="#__codelineno-18-64"></a>        <span class="n">owner_backend_id</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owner_backend_for</span><span class="p">(</span>
+</span><span id="__span-18-65"><a id="__codelineno-18-65" name="__codelineno-18-65" href="#__codelineno-18-65"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">_connection_handler</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">root_frame_id</span>
+</span><span id="__span-18-66"><a id="__codelineno-18-66" name="__codelineno-18-66" href="#__codelineno-18-66"></a>        <span class="p">)</span>
+</span><span id="__span-18-67"><a id="__codelineno-18-67" name="__codelineno-18-67" href="#__codelineno-18-67"></a>        <span class="k">if</span> <span class="n">owner_backend_id</span> <span class="o">==</span> <span class="n">backend_node_id</span><span class="p">:</span>
+</span><span id="__span-18-68"><a id="__codelineno-18-68" name="__codelineno-18-68" href="#__codelineno-18-68"></a>            <span class="k">return</span> <span class="n">browser_handler</span><span class="p">,</span> <span class="n">attached_session_id</span><span class="p">,</span> <span class="n">root_frame_id</span><span class="p">,</span> <span class="kc">None</span>
+</span><span id="__span-18-69"><a id="__codelineno-18-69" name="__codelineno-18-69" href="#__codelineno-18-69"></a>
+</span><span id="__span-18-70"><a id="__codelineno-18-70" name="__codelineno-18-70" href="#__codelineno-18-70"></a>    <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+</span></code></pre></div>
 <p><strong>结果</strong>：</p>
 <ul>
 <li><strong>如果 OOPIF 已解析</strong>：我们现在有了 <code>sessionId</code>、<code>session_handler</code> 和 <code>frameId</code>；进入步骤 4。</li>
@@ -5355,28 +6429,27 @@ return None, None, None, None
 - <code>grantUniversalAccess</code>：允许跨域访问（自动化需要）</p>
 <p><strong>响应</strong>：<code>{ executionContextId: 42 }</code></p>
 <p><strong>代码</strong>：</p>
-<p>'''python</p>
-<h1 id="pydollelementsweb_elementpy_9">源自 pydoll/elements/web_element.py</h1>
-<p>@staticmethod
-async def _create_isolated_world_for_frame(
-    frame_id: str,
-    handler: ConnectionHandler,
-    session_id: Optional[str],
-) -&gt; int:
-    """为给定的 frame 创建一个隔离世界。"""
-    create_command = PageCommands.create_isolated_world(
-        frame_id=frame_id,
-        world_name=f'pydoll::iframe::{frame_id}',
-        grant_universal_access=True,
-    )
-    if session_id:
-        create_command['sessionId'] = session_id
-    create_response: CreateIsolatedWorldResponse = await handler.execute_command(create_command)
-    execution_context_id = create_response.get('result', {}).get('executionContextId')
-    if not execution_context_id:
-        raise InvalidIFrame('无法为 iframe 创建隔离世界')
-    return execution_context_id
-'''</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="c1"># 源自 pydoll/elements/web_element.py</span>
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="nd">@staticmethod</span>
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_create_isolated_world_for_frame</span><span class="p">(</span>
+</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>    <span class="n">frame_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>    <span class="n">handler</span><span class="p">:</span> <span class="n">ConnectionHandler</span><span class="p">,</span>
+</span><span id="__span-19-6"><a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>    <span class="n">session_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+</span><span id="__span-19-7"><a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+</span><span id="__span-19-8"><a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;为给定的 frame 创建一个隔离世界。&quot;&quot;&quot;</span>
+</span><span id="__span-19-9"><a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a>    <span class="n">create_command</span> <span class="o">=</span> <span class="n">PageCommands</span><span class="o">.</span><span class="n">create_isolated_world</span><span class="p">(</span>
+</span><span id="__span-19-10"><a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a>        <span class="n">frame_id</span><span class="o">=</span><span class="n">frame_id</span><span class="p">,</span>
+</span><span id="__span-19-11"><a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a>        <span class="n">world_name</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;pydoll::iframe::</span><span class="si">{</span><span class="n">frame_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+</span><span id="__span-19-12"><a id="__codelineno-19-12" name="__codelineno-19-12" href="#__codelineno-19-12"></a>        <span class="n">grant_universal_access</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-19-13"><a id="__codelineno-19-13" name="__codelineno-19-13" href="#__codelineno-19-13"></a>    <span class="p">)</span>
+</span><span id="__span-19-14"><a id="__codelineno-19-14" name="__codelineno-19-14" href="#__codelineno-19-14"></a>    <span class="k">if</span> <span class="n">session_id</span><span class="p">:</span>
+</span><span id="__span-19-15"><a id="__codelineno-19-15" name="__codelineno-19-15" href="#__codelineno-19-15"></a>        <span class="n">create_command</span><span class="p">[</span><span class="s1">&#39;sessionId&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">session_id</span>
+</span><span id="__span-19-16"><a id="__codelineno-19-16" name="__codelineno-19-16" href="#__codelineno-19-16"></a>    <span class="n">create_response</span><span class="p">:</span> <span class="n">CreateIsolatedWorldResponse</span> <span class="o">=</span> <span class="k">await</span> <span class="n">handler</span><span class="o">.</span><span class="n">execute_command</span><span class="p">(</span><span class="n">create_command</span><span class="p">)</span>
+</span><span id="__span-19-17"><a id="__codelineno-19-17" name="__codelineno-19-17" href="#__codelineno-19-17"></a>    <span class="n">execution_context_id</span> <span class="o">=</span> <span class="n">create_response</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;result&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;executionContextId&#39;</span><span class="p">)</span>
+</span><span id="__span-19-18"><a id="__codelineno-19-18" name="__codelineno-19-18" href="#__codelineno-19-18"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">execution_context_id</span><span class="p">:</span>
+</span><span id="__span-19-19"><a id="__codelineno-19-19" name="__codelineno-19-19" href="#__codelineno-19-19"></a>        <span class="k">raise</span> <span class="n">InvalidIFrame</span><span class="p">(</span><span class="s1">&#39;无法为 iframe 创建隔离世界&#39;</span><span class="p">)</span>
+</span><span id="__span-19-20"><a id="__codelineno-19-20" name="__codelineno-19-20" href="#__codelineno-19-20"></a>    <span class="k">return</span> <span class="n">execution_context_id</span>
+</span></code></pre></div>
 <p><strong>为什么需要隔离世界</strong>：</p>
 <ul>
 <li><strong>隔离</strong>：我们的自动化 JavaScript 不会干扰 iframe 的 JavaScript</li>
@@ -5394,75 +6467,72 @@ async def _create_isolated_world_for_frame(
 <li><code>objectId</code> 允许使用 <code>Runtime.callFunctionOn(objectId, ...)</code>，并将 <code>this</code> 绑定到 iframe 的文档</li>
 </ul>
 <p><strong>代码</strong>：</p>
-<p>'''python</p>
-<h1 id="pydollelementsweb_elementpy_10">源自 pydoll/elements/web_element.py</h1>
-<p>async def _set_iframe_document_object_id(self, execution_context_id: int) -&gt; None:
-    """在 iframe 上下文中评估 document.documentElement 并缓存其 object id。"""
-    evaluate_command = RuntimeCommands.evaluate(
-        expression='document.documentElement',
-        context_id=execution_context_id,
-    )
-    if self._iframe_context and self._iframe_context.session_id:
-        evaluate_command['sessionId'] = self._iframe_context.session_id
-    evaluate_response: EvaluateResponse = await (
-        (self._iframe_context.session_handler if self._iframe_context else None)
-        or self._connection_handler
-    ).execute_command(evaluate_command)
-    result_object = evaluate_response.get('result', {}).get('result', {})
-    document_object_id = result_object.get('objectId')
-    if not document_object_id:
-        raise InvalidIFrame('无法获取 iframe 的文档引用')
-    if self._iframe_context:
-        self._iframe_context.document_object_id = document_object_id
-'''</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="c1"># 源自 pydoll/elements/web_element.py</span>
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_set_iframe_document_object_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">execution_context_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;在 iframe 上下文中评估 document.documentElement 并缓存其 object id。&quot;&quot;&quot;</span>
+</span><span id="__span-20-4"><a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>    <span class="n">evaluate_command</span> <span class="o">=</span> <span class="n">RuntimeCommands</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span>
+</span><span id="__span-20-5"><a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a>        <span class="n">expression</span><span class="o">=</span><span class="s1">&#39;document.documentElement&#39;</span><span class="p">,</span>
+</span><span id="__span-20-6"><a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a>        <span class="n">context_id</span><span class="o">=</span><span class="n">execution_context_id</span><span class="p">,</span>
+</span><span id="__span-20-7"><a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a>    <span class="p">)</span>
+</span><span id="__span-20-8"><a id="__codelineno-20-8" name="__codelineno-20-8" href="#__codelineno-20-8"></a>    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iframe_context</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iframe_context</span><span class="o">.</span><span class="n">session_id</span><span class="p">:</span>
+</span><span id="__span-20-9"><a id="__codelineno-20-9" name="__codelineno-20-9" href="#__codelineno-20-9"></a>        <span class="n">evaluate_command</span><span class="p">[</span><span class="s1">&#39;sessionId&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iframe_context</span><span class="o">.</span><span class="n">session_id</span>
+</span><span id="__span-20-10"><a id="__codelineno-20-10" name="__codelineno-20-10" href="#__codelineno-20-10"></a>    <span class="n">evaluate_response</span><span class="p">:</span> <span class="n">EvaluateResponse</span> <span class="o">=</span> <span class="k">await</span> <span class="p">(</span>
+</span><span id="__span-20-11"><a id="__codelineno-20-11" name="__codelineno-20-11" href="#__codelineno-20-11"></a>        <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_iframe_context</span><span class="o">.</span><span class="n">session_handler</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iframe_context</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+</span><span id="__span-20-12"><a id="__codelineno-20-12" name="__codelineno-20-12" href="#__codelineno-20-12"></a>        <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connection_handler</span>
+</span><span id="__span-20-13"><a id="__codelineno-20-13" name="__codelineno-20-13" href="#__codelineno-20-13"></a>    <span class="p">)</span><span class="o">.</span><span class="n">execute_command</span><span class="p">(</span><span class="n">evaluate_command</span><span class="p">)</span>
+</span><span id="__span-20-14"><a id="__codelineno-20-14" name="__codelineno-20-14" href="#__codelineno-20-14"></a>    <span class="n">result_object</span> <span class="o">=</span> <span class="n">evaluate_response</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;result&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;result&#39;</span><span class="p">,</span> <span class="p">{})</span>
+</span><span id="__span-20-15"><a id="__codelineno-20-15" name="__codelineno-20-15" href="#__codelineno-20-15"></a>    <span class="n">document_object_id</span> <span class="o">=</span> <span class="n">result_object</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;objectId&#39;</span><span class="p">)</span>
+</span><span id="__span-20-16"><a id="__codelineno-20-16" name="__codelineno-20-16" href="#__codelineno-20-16"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">document_object_id</span><span class="p">:</span>
+</span><span id="__span-20-17"><a id="__codelineno-20-17" name="__codelineno-20-17" href="#__codelineno-20-17"></a>        <span class="k">raise</span> <span class="n">InvalidIFrame</span><span class="p">(</span><span class="s1">&#39;无法获取 iframe 的文档引用&#39;</span><span class="p">)</span>
+</span><span id="__span-20-18"><a id="__codelineno-20-18" name="__codelineno-20-18" href="#__codelineno-20-18"></a>    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iframe_context</span><span class="p">:</span>
+</span><span id="__span-20-19"><a id="__codelineno-20-19" name="__codelineno-20-19" href="#__codelineno-20-19"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_iframe_context</span><span class="o">.</span><span class="n">document_object_id</span> <span class="o">=</span> <span class="n">document_object_id</span>
+</span></code></pre></div>
 <p><strong>结果</strong>：<code>_IFrameContext</code> 现在已完全填充并缓存在 <code>WebElement</code> 上。</p>
 <hr />
 <h4 id="6"><strong>步骤 6：缓存和传播上下文</strong></h4>
 <p><strong>目标</strong>：将解析的上下文存储在 iframe 元素上，并将其传播到在 iframe 中找到的所有子元素。</p>
 <p><strong>缓存</strong>：</p>
-<p>'''python</p>
-<h1 id="pydollelementsweb_elementpy_11">源自 pydoll/elements/web_element.py</h1>
-<p>def _init_iframe_context(
-    self,
-    frame_id: str,
-    document_url: Optional[str],
-    session_handler: Optional[ConnectionHandler],
-    session_id: Optional[str],
-) -&gt; None:
-    """在此元素上初始化并缓存 iframe 上下文。"""
-    self._iframe_context = _IFrameContext(frame_id=frame_id, document_url=document_url)
-    # 清理路由属性（这些是用于嵌套 iframe 的）
-    if hasattr(self, '_routing_session_handler'):
-        delattr(self, '_routing_session_handler')
-    if hasattr(self, '_routing_session_id'):
-        delattr(self, '_routing_session_id')
-    # 如果需要，存储 OOPIF 路由
-    if session_handler and session_id:
-        self._iframe_context.session_handler = session_handler
-        self._iframe_context.session_id = session_id
-'''</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="c1"># 源自 pydoll/elements/web_element.py</span>
+</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">_init_iframe_context</span><span class="p">(</span>
+</span><span id="__span-21-3"><a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a>    <span class="bp">self</span><span class="p">,</span>
+</span><span id="__span-21-4"><a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a>    <span class="n">frame_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span id="__span-21-5"><a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a>    <span class="n">document_url</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+</span><span id="__span-21-6"><a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a>    <span class="n">session_handler</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ConnectionHandler</span><span class="p">],</span>
+</span><span id="__span-21-7"><a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a>    <span class="n">session_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+</span><span id="__span-21-8"><a id="__codelineno-21-8" name="__codelineno-21-8" href="#__codelineno-21-8"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-21-9"><a id="__codelineno-21-9" name="__codelineno-21-9" href="#__codelineno-21-9"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;在此元素上初始化并缓存 iframe 上下文。&quot;&quot;&quot;</span>
+</span><span id="__span-21-10"><a id="__codelineno-21-10" name="__codelineno-21-10" href="#__codelineno-21-10"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">_iframe_context</span> <span class="o">=</span> <span class="n">_IFrameContext</span><span class="p">(</span><span class="n">frame_id</span><span class="o">=</span><span class="n">frame_id</span><span class="p">,</span> <span class="n">document_url</span><span class="o">=</span><span class="n">document_url</span><span class="p">)</span>
+</span><span id="__span-21-11"><a id="__codelineno-21-11" name="__codelineno-21-11" href="#__codelineno-21-11"></a>    <span class="c1"># 清理路由属性（这些是用于嵌套 iframe 的）</span>
+</span><span id="__span-21-12"><a id="__codelineno-21-12" name="__codelineno-21-12" href="#__codelineno-21-12"></a>    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_routing_session_handler&#39;</span><span class="p">):</span>
+</span><span id="__span-21-13"><a id="__codelineno-21-13" name="__codelineno-21-13" href="#__codelineno-21-13"></a>        <span class="nb">delattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_routing_session_handler&#39;</span><span class="p">)</span>
+</span><span id="__span-21-14"><a id="__codelineno-21-14" name="__codelineno-21-14" href="#__codelineno-21-14"></a>    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_routing_session_id&#39;</span><span class="p">):</span>
+</span><span id="__span-21-15"><a id="__codelineno-21-15" name="__codelineno-21-15" href="#__codelineno-21-15"></a>        <span class="nb">delattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_routing_session_id&#39;</span><span class="p">)</span>
+</span><span id="__span-21-16"><a id="__codelineno-21-16" name="__codelineno-21-16" href="#__codelineno-21-16"></a>    <span class="c1"># 如果需要，存储 OOPIF 路由</span>
+</span><span id="__span-21-17"><a id="__codelineno-21-17" name="__codelineno-21-17" href="#__codelineno-21-17"></a>    <span class="k">if</span> <span class="n">session_handler</span> <span class="ow">and</span> <span class="n">session_id</span><span class="p">:</span>
+</span><span id="__span-21-18"><a id="__codelineno-21-18" name="__codelineno-21-18" href="#__codelineno-21-18"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_iframe_context</span><span class="o">.</span><span class="n">session_handler</span> <span class="o">=</span> <span class="n">session_handler</span>
+</span><span id="__span-21-19"><a id="__codelineno-21-19" name="__codelineno-21-19" href="#__codelineno-21-19"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_iframe_context</span><span class="o">.</span><span class="n">session_id</span> <span class="o">=</span> <span class="n">session_id</span>
+</span></code></pre></div>
 <p><strong>传播</strong>（在 iframe 内部查找元素时）：</p>
-<p>'''python</p>
-<h1 id="pydollelementsmixinsfind_elements_mixinpy">源自 pydoll/elements/mixins/find_elements_mixin.py</h1>
-<p>def _apply_iframe_context_to_element(
-    self, element: WebElement, iframe_context: _IFrameContext | None
-) -&gt; None:
-    """将 iframe 上下文传播到新创建的元素。"""
-    if not iframe_context:
-        return</p>
-<div class="language-text highlight"><pre><span></span><code># 如果子元素也是一个 iframe，设置路由
-if getattr(element, &#39;is_iframe&#39;, False):
-    element._routing_session_handler = (
-        iframe_context.session_handler or self._connection_handler
-    )
-    element._routing_session_id = iframe_context.session_id
-    element._routing_parent_frame_id = iframe_context.frame_id
-    return
-
-# 否则，注入父 iframe 的上下文
-element._iframe_context = iframe_context
-</code></pre></div>
-<p>'''</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="c1"># 源自 pydoll/elements/mixins/find_elements_mixin.py</span>
+</span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">_apply_iframe_context_to_element</span><span class="p">(</span>
+</span><span id="__span-22-3"><a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>    <span class="bp">self</span><span class="p">,</span> <span class="n">element</span><span class="p">:</span> <span class="n">WebElement</span><span class="p">,</span> <span class="n">iframe_context</span><span class="p">:</span> <span class="n">_IFrameContext</span> <span class="o">|</span> <span class="kc">None</span>
+</span><span id="__span-22-4"><a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-22-5"><a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;将 iframe 上下文传播到新创建的元素。&quot;&quot;&quot;</span>
+</span><span id="__span-22-6"><a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">iframe_context</span><span class="p">:</span>
+</span><span id="__span-22-7"><a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a>        <span class="k">return</span>
+</span><span id="__span-22-8"><a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a>
+</span><span id="__span-22-9"><a id="__codelineno-22-9" name="__codelineno-22-9" href="#__codelineno-22-9"></a>    <span class="c1"># 如果子元素也是一个 iframe，设置路由</span>
+</span><span id="__span-22-10"><a id="__codelineno-22-10" name="__codelineno-22-10" href="#__codelineno-22-10"></a>    <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="s1">&#39;is_iframe&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+</span><span id="__span-22-11"><a id="__codelineno-22-11" name="__codelineno-22-11" href="#__codelineno-22-11"></a>        <span class="n">element</span><span class="o">.</span><span class="n">_routing_session_handler</span> <span class="o">=</span> <span class="p">(</span>
+</span><span id="__span-22-12"><a id="__codelineno-22-12" name="__codelineno-22-12" href="#__codelineno-22-12"></a>            <span class="n">iframe_context</span><span class="o">.</span><span class="n">session_handler</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connection_handler</span>
+</span><span id="__span-22-13"><a id="__codelineno-22-13" name="__codelineno-22-13" href="#__codelineno-22-13"></a>        <span class="p">)</span>
+</span><span id="__span-22-14"><a id="__codelineno-22-14" name="__codelineno-22-14" href="#__codelineno-22-14"></a>        <span class="n">element</span><span class="o">.</span><span class="n">_routing_session_id</span> <span class="o">=</span> <span class="n">iframe_context</span><span class="o">.</span><span class="n">session_id</span>
+</span><span id="__span-22-15"><a id="__codelineno-22-15" name="__codelineno-22-15" href="#__codelineno-22-15"></a>        <span class="n">element</span><span class="o">.</span><span class="n">_routing_parent_frame_id</span> <span class="o">=</span> <span class="n">iframe_context</span><span class="o">.</span><span class="n">frame_id</span>
+</span><span id="__span-22-16"><a id="__codelineno-22-16" name="__codelineno-22-16" href="#__codelineno-22-16"></a>        <span class="k">return</span>
+</span><span id="__span-22-17"><a id="__codelineno-22-17" name="__codelineno-22-17" href="#__codelineno-22-17"></a>
+</span><span id="__span-22-18"><a id="__codelineno-22-18" name="__codelineno-22-18" href="#__codelineno-22-18"></a>    <span class="c1"># 否则，注入父 iframe 的上下文</span>
+</span><span id="__span-22-19"><a id="__codelineno-22-19" name="__codelineno-22-19" href="#__codelineno-22-19"></a>    <span class="n">element</span><span class="o">.</span><span class="n">_iframe_context</span> <span class="o">=</span> <span class="n">iframe_context</span>
+</span></code></pre></div>
 <p><strong>为什么传播很重要</strong>：</p>
 <ul>
 <li>在 iframe 内部找到的元素会继承 iframe 的上下文</li>
@@ -5470,87 +6540,82 @@ element._iframe_context = iframe_context
 <li>嵌套的 iframes 接收路由信息，以便它们可以相对于父 iframe 解析自己的上下文</li>
 </ul>
 <hr />
-<h2 id="_14">会话路由和扁平化模式</h2>
-<h3 id="_15">扁平化会话模型</h3>
+<h2 id="_11">会话路由和扁平化模式</h2>
+<h3 id="_12">扁平化会话模型</h3>
 <p>正如在 <a href="../cdp/">深度解析 → 基础 → CDP</a> 中讨论的，传统的 CDP 对每个目标使用单独的 WebSocket 连接。<strong>扁平化模式 (Flattened mode)</strong> 是一种优化，所有目标共享一个 WebSocket 连接，命令使用 <code>sessionId</code> 进行路由。</p>
-<p>'''mermaid
-graph TB
+<pre class="mermaid"><code>graph TB
     subgraph "传统模式"
         WS1[WebSocket 1] --&gt; MainPage[主页面目标]
         WS2[WebSocket 2] --&gt; Iframe1[OOPIF 目标 1]
         WS3[WebSocket 3] --&gt; Iframe2[OOPIF 目标 2]
-    end</p>
-<div class="language-text highlight"><pre><span></span><code>subgraph &quot;扁平化模式&quot;
-    WS[单个 WebSocket] --&gt; Router{CDP 路由器}
-    Router --&gt;|sessionId: null| MainPage2[主页面目标]
-    Router --&gt;|sessionId: session-1| Iframe3[OOPIF 目标 1]
-    Router --&gt;|sessionId: session-2| Iframe4[OOPIF 目标 2]
-end
-</code></pre></div>
-<p>'''</p>
-<h3 id="_16">会话路由如何工作</h3>
-<p><strong>附加到 OOPIF 时</strong>：</p>
-<p>'''python
-response = await handler.execute_command(
-    TargetCommands.attach_to_target(targetId="iframe-target-id", flatten=True)
-)
-session_id = response['result']['sessionId']  # 例如 "8E6C...-1234"
-'''</p>
-<p><strong>向该 OOPIF 发送命令时</strong>：</p>
-<p>'''python
-command = PageCommands.get_frame_tree()
-command['sessionId'] = 'session-1'  # 路由到 OOPIF
-response = await handler.execute_command(command)
-'''</p>
-<p>浏览器的 CDP 实现会根据 <code>sessionId</code> 将命令路由到正确的目标。</p>
-<h3 id="pydoll_4">Pydoll 的命令路由</h3>
-<p>Pydoll 元素发送的每个命令都会自动路由到正确的目标：</p>
-<p>'''python</p>
-<h1 id="pydollelementsmixinsfind_elements_mixinpy_1">源自 pydoll/elements/mixins/find_elements_mixin.py</h1>
-<p>def _resolve_routing(self) -&gt; tuple[ConnectionHandler, Optional[str]]:
-    """为当前上下文解析 handler 和 sessionId。"""
-    # 检查元素是否具有带 OOPIF 路由的 iframe 上下文
-    iframe_context = getattr(self, '_iframe_context', None)
-    if iframe_context and getattr(iframe_context, 'session_handler', None):
-        return iframe_context.session_handler, getattr(iframe_context, 'session_id', None)</p>
-<div class="language-text highlight"><pre><span></span><code># 检查元素是否从父 iframe 继承了路由
-routing_handler = getattr(self, &#39;_routing_session_handler&#39;, None)
-if routing_handler is not None:
-    return routing_handler, getattr(self, &#39;_routing_session_id&#39;, None)
+    end
 
-# 默认：使用标签页的主连接
-return self._connection_handler, None
-</code></pre></div>
-<p>async def _execute_command(
-    self, command: Command[T_CommandParams, T_CommandResponse]
-) -&gt; T_CommandResponse:
-    """通过解析的 handler 执行 CDP 命令（60 秒超时）。"""
-    handler, session_id = self._resolve_routing()
-    if session_id:
-        command['sessionId'] = session_id
-    return await handler.execute_command(command, timeout=60)
-'''</p>
+    subgraph "扁平化模式"
+        WS[单个 WebSocket] --&gt; Router{CDP 路由器}
+        Router --&gt;|sessionId: null| MainPage2[主页面目标]
+        Router --&gt;|sessionId: session-1| Iframe3[OOPIF 目标 1]
+        Router --&gt;|sessionId: session-2| Iframe4[OOPIF 目标 2]
+    end</code></pre>
+<h3 id="_13">会话路由如何工作</h3>
+<p><strong>附加到 OOPIF 时</strong>：</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">handler</span><span class="o">.</span><span class="n">execute_command</span><span class="p">(</span>
+</span><span id="__span-23-2"><a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>    <span class="n">TargetCommands</span><span class="o">.</span><span class="n">attach_to_target</span><span class="p">(</span><span class="n">targetId</span><span class="o">=</span><span class="s2">&quot;iframe-target-id&quot;</span><span class="p">,</span> <span class="n">flatten</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-23-3"><a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="p">)</span>
+</span><span id="__span-23-4"><a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="n">session_id</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s1">&#39;result&#39;</span><span class="p">][</span><span class="s1">&#39;sessionId&#39;</span><span class="p">]</span>  <span class="c1"># 例如 &quot;8E6C...-1234&quot;</span>
+</span></code></pre></div>
+<p><strong>向该 OOPIF 发送命令时</strong>：</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="n">command</span> <span class="o">=</span> <span class="n">PageCommands</span><span class="o">.</span><span class="n">get_frame_tree</span><span class="p">()</span>
+</span><span id="__span-24-2"><a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="n">command</span><span class="p">[</span><span class="s1">&#39;sessionId&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;session-1&#39;</span>  <span class="c1"># 路由到 OOPIF</span>
+</span><span id="__span-24-3"><a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a><span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">handler</span><span class="o">.</span><span class="n">execute_command</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+</span></code></pre></div>
+<p>浏览器的 CDP 实现会根据 <code>sessionId</code> 将命令路由到正确的目标。</p>
+<h3 id="pydoll_3">Pydoll 的命令路由</h3>
+<p>Pydoll 元素发送的每个命令都会自动路由到正确的目标：</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="c1"># 源自 pydoll/elements/mixins/find_elements_mixin.py</span>
+</span><span id="__span-25-2"><a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">_resolve_routing</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">ConnectionHandler</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+</span><span id="__span-25-3"><a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;为当前上下文解析 handler 和 sessionId。&quot;&quot;&quot;</span>
+</span><span id="__span-25-4"><a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a>    <span class="c1"># 检查元素是否具有带 OOPIF 路由的 iframe 上下文</span>
+</span><span id="__span-25-5"><a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a>    <span class="n">iframe_context</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_iframe_context&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+</span><span id="__span-25-6"><a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a>    <span class="k">if</span> <span class="n">iframe_context</span> <span class="ow">and</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">iframe_context</span><span class="p">,</span> <span class="s1">&#39;session_handler&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+</span><span id="__span-25-7"><a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a>        <span class="k">return</span> <span class="n">iframe_context</span><span class="o">.</span><span class="n">session_handler</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">iframe_context</span><span class="p">,</span> <span class="s1">&#39;session_id&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+</span><span id="__span-25-8"><a id="__codelineno-25-8" name="__codelineno-25-8" href="#__codelineno-25-8"></a>
+</span><span id="__span-25-9"><a id="__codelineno-25-9" name="__codelineno-25-9" href="#__codelineno-25-9"></a>    <span class="c1"># 检查元素是否从父 iframe 继承了路由</span>
+</span><span id="__span-25-10"><a id="__codelineno-25-10" name="__codelineno-25-10" href="#__codelineno-25-10"></a>    <span class="n">routing_handler</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_routing_session_handler&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+</span><span id="__span-25-11"><a id="__codelineno-25-11" name="__codelineno-25-11" href="#__codelineno-25-11"></a>    <span class="k">if</span> <span class="n">routing_handler</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-25-12"><a id="__codelineno-25-12" name="__codelineno-25-12" href="#__codelineno-25-12"></a>        <span class="k">return</span> <span class="n">routing_handler</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_routing_session_id&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+</span><span id="__span-25-13"><a id="__codelineno-25-13" name="__codelineno-25-13" href="#__codelineno-25-13"></a>
+</span><span id="__span-25-14"><a id="__codelineno-25-14" name="__codelineno-25-14" href="#__codelineno-25-14"></a>    <span class="c1"># 默认：使用标签页的主连接</span>
+</span><span id="__span-25-15"><a id="__codelineno-25-15" name="__codelineno-25-15" href="#__codelineno-25-15"></a>    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connection_handler</span><span class="p">,</span> <span class="kc">None</span>
+</span><span id="__span-25-16"><a id="__codelineno-25-16" name="__codelineno-25-16" href="#__codelineno-25-16"></a>
+</span><span id="__span-25-17"><a id="__codelineno-25-17" name="__codelineno-25-17" href="#__codelineno-25-17"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_execute_command</span><span class="p">(</span>
+</span><span id="__span-25-18"><a id="__codelineno-25-18" name="__codelineno-25-18" href="#__codelineno-25-18"></a>    <span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="p">:</span> <span class="n">Command</span><span class="p">[</span><span class="n">T_CommandParams</span><span class="p">,</span> <span class="n">T_CommandResponse</span><span class="p">]</span>
+</span><span id="__span-25-19"><a id="__codelineno-25-19" name="__codelineno-25-19" href="#__codelineno-25-19"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T_CommandResponse</span><span class="p">:</span>
+</span><span id="__span-25-20"><a id="__codelineno-25-20" name="__codelineno-25-20" href="#__codelineno-25-20"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;通过解析的 handler 执行 CDP 命令（60 秒超时）。&quot;&quot;&quot;</span>
+</span><span id="__span-25-21"><a id="__codelineno-25-21" name="__codelineno-25-21" href="#__codelineno-25-21"></a>    <span class="n">handler</span><span class="p">,</span> <span class="n">session_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_routing</span><span class="p">()</span>
+</span><span id="__span-25-22"><a id="__codelineno-25-22" name="__codelineno-25-22" href="#__codelineno-25-22"></a>    <span class="k">if</span> <span class="n">session_id</span><span class="p">:</span>
+</span><span id="__span-25-23"><a id="__codelineno-25-23" name="__codelineno-25-23" href="#__codelineno-25-23"></a>        <span class="n">command</span><span class="p">[</span><span class="s1">&#39;sessionId&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">session_id</span>
+</span><span id="__span-25-24"><a id="__codelineno-25-24" name="__codelineno-25-24" href="#__codelineno-25-24"></a>    <span class="k">return</span> <span class="k">await</span> <span class="n">handler</span><span class="o">.</span><span class="n">execute_command</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">60</span><span class="p">)</span>
+</span></code></pre></div>
 <p><strong>路由逻辑</strong>：</p>
 <ol>
 <li><strong>OOPIF iframe 内的元素</strong>：使用 <code>iframe_context.session_id</code> 和 <code>iframe_context.session_handler</code></li>
 <li><strong>嵌套 iframe（OOPIF 的子节点）</strong>：使用继承的 <code>_routing_session_id</code> 和 <code>_routing_session_handler</code></li>
 <li><strong>常规元素或进程内 iframe</strong>：使用主连接 (<code>_connection_handler</code>)，无 <code>sessionId</code></li>
 </ol>
-<h3 id="_17">扩展的命令类型</h3>
+<h3 id="_14">扩展的命令类型</h3>
 <p>为了使 <code>sessionId</code> 类型安全，Pydoll 扩展了 <code>Command</code> TypedDict：</p>
-<p>'''python</p>
-<h1 id="pydollprotocolbasepy">源自 pydoll/protocol/base.py</h1>
-<p>class Command(TypedDict, Generic[T_CommandParams, T_CommandResponse]):
-    """所有命令的基础结构。"""
-    id: NotRequired[int]
-    method: str
-    params: NotRequired[T_CommandParams]
-    sessionId: NotRequired[str]  # 为扁平化会话路由添加
-'''</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="c1"># 源自 pydoll/protocol/base.py</span>
+</span><span id="__span-26-2"><a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">Command</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_CommandParams</span><span class="p">,</span> <span class="n">T_CommandResponse</span><span class="p">]):</span>
+</span><span id="__span-26-3"><a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;所有命令的基础结构。&quot;&quot;&quot;</span>
+</span><span id="__span-26-4"><a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a>    <span class="nb">id</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
+</span><span id="__span-26-5"><a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a>    <span class="n">method</span><span class="p">:</span> <span class="nb">str</span>
+</span><span id="__span-26-6"><a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a>    <span class="n">params</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="n">T_CommandParams</span><span class="p">]</span>
+</span><span id="__span-26-7"><a id="__codelineno-26-7" name="__codelineno-26-7" href="#__codelineno-26-7"></a>    <span class="n">sessionId</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>  <span class="c1"># 为扁平化会话路由添加</span>
+</span></code></pre></div>
 <p>这允许类型检查器将 <code>command['sessionId'] = '...'</code> 识别为有效，而无需抑制类型警告。</p>
 <hr />
-<h2 id="_18">性能考量</h2>
-<h3 id="_19">缓存策略</h3>
+<h2 id="_15">性能考量</h2>
+<h3 id="_16">缓存策略</h3>
 <p><strong>首次访问是昂贵的</strong>：</p>
 <ul>
 <li><code>DOM.describeNode</code>：1 次往返</li>
@@ -5567,45 +6632,44 @@ return self._connection_handler, None
 <li>多次访问 <code>await iframe.iframe_context</code> 会立即返回缓存的值</li>
 <li>在 iframe 中找到的所有元素都会继承上下文（无需重新解析）</li>
 </ul>
-<h3 id="_20">优化：直接子目标查找</h3>
+<h3 id="_17">优化：直接子目标查找</h3>
 <p>在 <code>_resolve_oopif_by_parent</code> 中，Pydoll 首先按 <code>parentFrameId</code> 检查直接子节点：</p>
-<p>'''python
-direct_children = [
-    target_info
-    for target_info in target_infos
-    if target_info.get('type') in {'iframe', 'page'}
-    and target_info.get('parentFrameId') == parent_frame_id
-]
-if direct_children:
-    # 立即附加，跳过扫描所有目标
-'''</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="n">direct_children</span> <span class="o">=</span> <span class="p">[</span>
+</span><span id="__span-27-2"><a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a>    <span class="n">target_info</span>
+</span><span id="__span-27-3"><a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a>    <span class="k">for</span> <span class="n">target_info</span> <span class="ow">in</span> <span class="n">target_infos</span>
+</span><span id="__span-27-4"><a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a>    <span class="k">if</span> <span class="n">target_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;iframe&#39;</span><span class="p">,</span> <span class="s1">&#39;page&#39;</span><span class="p">}</span>
+</span><span id="__span-27-5"><a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a>    <span class="ow">and</span> <span class="n">target_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;parentFrameId&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="n">parent_frame_id</span>
+</span><span id="__span-27-6"><a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a><span class="p">]</span>
+</span><span id="__span-27-7"><a id="__codelineno-27-7" name="__codelineno-27-7" href="#__codelineno-27-7"></a><span class="k">if</span> <span class="n">direct_children</span><span class="p">:</span>
+</span><span id="__span-27-8"><a id="__codelineno-27-8" name="__codelineno-27-8" href="#__codelineno-27-8"></a>    <span class="c1"># 立即附加，跳过扫描所有目标</span>
+</span></code></pre></div>
 <p><strong>为什么这有帮助</strong>：</p>
 <ul>
 <li>大多数 OOPIFs 都正确设置了 <code>parentFrameId</code></li>
 <li>避免了推测性地附加到每个目标</li>
 <li>在常见情况下，将往返次数从 O(目标数量) 减少到 O(1)</li>
 </ul>
-<h3 id="_21">异步并行解析（未来增强）</h3>
+<h3 id="_18">异步并行解析（未来增强）</h3>
 <p>目前，frame 所有者匹配是顺序的（逐个检查每个 frame）。未来的优化可以并行化：</p>
-<p>'''python</p>
-<h1 id="_22">当前（顺序）</h1>
-<p>for frame_node in frames:
-    owner = await self._owner_backend_for(...)
-    if owner == backend_node_id:
-        return frame_node['id']</p>
-<h1 id="_23">潜在（并行）</h1>
-<p>results = await asyncio.gather(*(
-    self._owner_backend_for(..., frame['id'])
-    for frame in frames
-))
-for i, owner in enumerate(results):
-    if owner == backend_node_id:
-        return frames[i]['id']
-'''</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="c1"># 当前（顺序）</span>
+</span><span id="__span-28-2"><a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="k">for</span> <span class="n">frame_node</span> <span class="ow">in</span> <span class="n">frames</span><span class="p">:</span>
+</span><span id="__span-28-3"><a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a>    <span class="n">owner</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owner_backend_for</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</span><span id="__span-28-4"><a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a>    <span class="k">if</span> <span class="n">owner</span> <span class="o">==</span> <span class="n">backend_node_id</span><span class="p">:</span>
+</span><span id="__span-28-5"><a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a>        <span class="k">return</span> <span class="n">frame_node</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+</span><span id="__span-28-6"><a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a>
+</span><span id="__span-28-7"><a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a><span class="c1"># 潜在（并行）</span>
+</span><span id="__span-28-8"><a id="__codelineno-28-8" name="__codelineno-28-8" href="#__codelineno-28-8"></a><span class="n">results</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="p">(</span>
+</span><span id="__span-28-9"><a id="__codelineno-28-9" name="__codelineno-28-9" href="#__codelineno-28-9"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">_owner_backend_for</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">frame</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">])</span>
+</span><span id="__span-28-10"><a id="__codelineno-28-10" name="__codelineno-28-10" href="#__codelineno-28-10"></a>    <span class="k">for</span> <span class="n">frame</span> <span class="ow">in</span> <span class="n">frames</span>
+</span><span id="__span-28-11"><a id="__codelineno-28-11" name="__codelineno-28-11" href="#__codelineno-28-11"></a><span class="p">))</span>
+</span><span id="__span-28-12"><a id="__codelineno-28-12" name="__codelineno-28-12" href="#__codelineno-28-12"></a><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">owner</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">results</span><span class="p">):</span>
+</span><span id="__span-28-13"><a id="__codelineno-28-13" name="__codelineno-28-13" href="#__codelineno-28-13"></a>    <span class="k">if</span> <span class="n">owner</span> <span class="o">==</span> <span class="n">backend_node_id</span><span class="p">:</span>
+</span><span id="__span-28-14"><a id="__codelineno-28-14" name="__codelineno-28-14" href="#__codelineno-28-14"></a>        <span class="k">return</span> <span class="n">frames</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+</span></code></pre></div>
 <p>这将把延迟从 <code>N * RTT</code> 减少到 <code>RTT</code>（其中 RTT = 往返时间）。</p>
 <hr />
-<h2 id="_24">失败模式和调试</h2>
-<h3 id="_25">常见失败场景</h3>
+<h2 id="_19">失败模式和调试</h2>
+<h3 id="_20">常见失败场景</h3>
 <h4 id="1-invalidiframe-frameid">1. <strong>InvalidIFrame: 无法解析 frameId</strong></h4>
 <p><strong>原因</strong>：</p>
 <ul>
@@ -5620,19 +6684,18 @@ for i, owner in enumerate(results):
 <li><strong>重试策略</strong>：实现带指数退避的重试逻辑</li>
 </ul>
 <p><strong>调试</strong>：</p>
-<p>'''python
-try:
-    iframe = await tab.find(id='problem-iframe')
-    context = await iframe.iframe_context
-except InvalidIFrame as e:
-    # 检查我们拥有的信息
-    node_info = await iframe._describe_node(object_id=iframe._object_id)
-    print(f"节点信息: {node_info}")</p>
-<div class="language-text highlight"><pre><span></span><code># 手动检查 frame 树
-frame_tree = await WebElement._get_frame_tree_for(tab._connection_handler, None)
-print(f&quot;Frame 树: {frame_tree}&quot;)
-</code></pre></div>
-<p>'''</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-29-1"><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="k">try</span><span class="p">:</span>
+</span><span id="__span-29-2"><a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a>    <span class="n">iframe</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s1">&#39;problem-iframe&#39;</span><span class="p">)</span>
+</span><span id="__span-29-3"><a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a>    <span class="n">context</span> <span class="o">=</span> <span class="k">await</span> <span class="n">iframe</span><span class="o">.</span><span class="n">iframe_context</span>
+</span><span id="__span-29-4"><a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a><span class="k">except</span> <span class="n">InvalidIFrame</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+</span><span id="__span-29-5"><a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a>    <span class="c1"># 检查我们拥有的信息</span>
+</span><span id="__span-29-6"><a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a>    <span class="n">node_info</span> <span class="o">=</span> <span class="k">await</span> <span class="n">iframe</span><span class="o">.</span><span class="n">_describe_node</span><span class="p">(</span><span class="n">object_id</span><span class="o">=</span><span class="n">iframe</span><span class="o">.</span><span class="n">_object_id</span><span class="p">)</span>
+</span><span id="__span-29-7"><a id="__codelineno-29-7" name="__codelineno-29-7" href="#__codelineno-29-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;节点信息: </span><span class="si">{</span><span class="n">node_info</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-29-8"><a id="__codelineno-29-8" name="__codelineno-29-8" href="#__codelineno-29-8"></a>
+</span><span id="__span-29-9"><a id="__codelineno-29-9" name="__codelineno-29-9" href="#__codelineno-29-9"></a>    <span class="c1"># 手动检查 frame 树</span>
+</span><span id="__span-29-10"><a id="__codelineno-29-10" name="__codelineno-29-10" href="#__codelineno-29-10"></a>    <span class="n">frame_tree</span> <span class="o">=</span> <span class="k">await</span> <span class="n">WebElement</span><span class="o">.</span><span class="n">_get_frame_tree_for</span><span class="p">(</span><span class="n">tab</span><span class="o">.</span><span class="n">_connection_handler</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+</span><span id="__span-29-11"><a id="__codelineno-29-11" name="__codelineno-29-11" href="#__codelineno-29-11"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Frame 树: </span><span class="si">{</span><span class="n">frame_tree</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span></code></pre></div>
 <h4 id="2-invalidiframe">2. <strong>InvalidIFrame: 无法创建隔离世界</strong></h4>
 <p><strong>原因</strong>：</p>
 <ul>
@@ -5645,11 +6708,10 @@ print(f&quot;Frame 树: {frame_tree}&quot;)
 <li><strong>检查导航</strong>：确保 iframe 在解析期间没有导航</li>
 </ul>
 <p><strong>调试</strong>：</p>
-<p>'''python</p>
-<h1 id="_26">清除缓存并重试</h1>
-<p>iframe._iframe_context = None
-context = await iframe.iframe_context
-'''</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-30-1"><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="c1"># 清除缓存并重试</span>
+</span><span id="__span-30-2"><a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a><span class="n">iframe</span><span class="o">.</span><span class="n">_iframe_context</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span id="__span-30-3"><a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a><span class="n">context</span> <span class="o">=</span> <span class="k">await</span> <span class="n">iframe</span><span class="o">.</span><span class="n">iframe_context</span>
+</span></code></pre></div>
 <h4 id="3-invalidiframe">3. <strong>InvalidIFrame: 无法获取文档引用</strong></h4>
 <p><strong>原因</strong>：</p>
 <ul>
@@ -5673,36 +6735,35 @@ context = await iframe.iframe_context
 <li><strong>验证目标</strong>：调用 <code>Target.getTargets()</code> 检查目标是否仍然存在</li>
 </ul>
 <p><strong>调试</strong>：</p>
-<p>'''python</p>
-<h1 id="_27">检查会话是否仍然有效</h1>
-<p>targets = await handler.execute_command(TargetCommands.get_targets())
-active_sessions = [t['targetId'] for t in targets['result']['targetInfos']]
-print(f"活动目标: {active_sessions}")</p>
-<p>if iframe._iframe_context and iframe._iframe_context.session_id:
-    print(f"我们的会话: {iframe._iframe_context.session_id}")
-'''</p>
-<h3 id="_28">诊断工具</h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="c1"># 检查会话是否仍然有效</span>
+</span><span id="__span-31-2"><a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a><span class="n">targets</span> <span class="o">=</span> <span class="k">await</span> <span class="n">handler</span><span class="o">.</span><span class="n">execute_command</span><span class="p">(</span><span class="n">TargetCommands</span><span class="o">.</span><span class="n">get_targets</span><span class="p">())</span>
+</span><span id="__span-31-3"><a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a><span class="n">active_sessions</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="p">[</span><span class="s1">&#39;targetId&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">targets</span><span class="p">[</span><span class="s1">&#39;result&#39;</span><span class="p">][</span><span class="s1">&#39;targetInfos&#39;</span><span class="p">]]</span>
+</span><span id="__span-31-4"><a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;活动目标: </span><span class="si">{</span><span class="n">active_sessions</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-31-5"><a id="__codelineno-31-5" name="__codelineno-31-5" href="#__codelineno-31-5"></a>
+</span><span id="__span-31-6"><a id="__codelineno-31-6" name="__codelineno-31-6" href="#__codelineno-31-6"></a><span class="k">if</span> <span class="n">iframe</span><span class="o">.</span><span class="n">_iframe_context</span> <span class="ow">and</span> <span class="n">iframe</span><span class="o">.</span><span class="n">_iframe_context</span><span class="o">.</span><span class="n">session_id</span><span class="p">:</span>
+</span><span id="__span-31-7"><a id="__codelineno-31-7" name="__codelineno-31-7" href="#__codelineno-31-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;我们的会话: </span><span class="si">{</span><span class="n">iframe</span><span class="o">.</span><span class="n">_iframe_context</span><span class="o">.</span><span class="n">session_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span></code></pre></div>
+<h3 id="_21">诊断工具</h3>
 <h4 id="cdp_2">启用 CDP 日志记录</h4>
-<p>'''python
-import logging
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger('pydoll')
-logger.setLevel(logging.DEBUG)
-'''</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+</span><span id="__span-32-2"><a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a><span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+</span><span id="__span-32-3"><a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;pydoll&#39;</span><span class="p">)</span>
+</span><span id="__span-32-4"><a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a><span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+</span></code></pre></div>
 <p>这将记录所有 CDP 命令和响应，有助于追踪 iframe 解析步骤。</p>
-<h4 id="iframe_1">检查 iframe 上下文</h4>
-<p>'''python
-iframe = await tab.find(id='my-iframe')
-ctx = await iframe.iframe_context</p>
-<p>print(f"Frame ID: {ctx.frame_id}")
-print(f"文档 URL: {ctx.document_url}")
-print(f"执行上下文 ID: {ctx.execution_context_id}")
-print(f"文档对象 ID: {ctx.document_object_id}")
-print(f"会话 ID (OOPIF): {ctx.session_id}")
-print(f"会话 Handler: {ctx.session_handler}")
-'''</p>
+<h4 id="iframe">检查 iframe 上下文</h4>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-33-1"><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a><span class="n">iframe</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s1">&#39;my-iframe&#39;</span><span class="p">)</span>
+</span><span id="__span-33-2"><a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a><span class="n">ctx</span> <span class="o">=</span> <span class="k">await</span> <span class="n">iframe</span><span class="o">.</span><span class="n">iframe_context</span>
+</span><span id="__span-33-3"><a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a>
+</span><span id="__span-33-4"><a id="__codelineno-33-4" name="__codelineno-33-4" href="#__codelineno-33-4"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Frame ID: </span><span class="si">{</span><span class="n">ctx</span><span class="o">.</span><span class="n">frame_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-33-5"><a id="__codelineno-33-5" name="__codelineno-33-5" href="#__codelineno-33-5"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;文档 URL: </span><span class="si">{</span><span class="n">ctx</span><span class="o">.</span><span class="n">document_url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-33-6"><a id="__codelineno-33-6" name="__codelineno-33-6" href="#__codelineno-33-6"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;执行上下文 ID: </span><span class="si">{</span><span class="n">ctx</span><span class="o">.</span><span class="n">execution_context_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-33-7"><a id="__codelineno-33-7" name="__codelineno-33-7" href="#__codelineno-33-7"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;文档对象 ID: </span><span class="si">{</span><span class="n">ctx</span><span class="o">.</span><span class="n">document_object_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-33-8"><a id="__codelineno-33-8" name="__codelineno-33-8" href="#__codelineno-33-8"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;会话 ID (OOPIF): </span><span class="si">{</span><span class="n">ctx</span><span class="o">.</span><span class="n">session_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-33-9"><a id="__codelineno-33-9" name="__codelineno-33-9" href="#__codelineno-33-9"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;会话 Handler: </span><span class="si">{</span><span class="n">ctx</span><span class="o">.</span><span class="n">session_handler</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span></code></pre></div>
 <hr />
-<h2 id="_29">结论</h2>
+<h2 id="_22">结论</h2>
 <p>Pydoll 的 iframe 处理代表了对 CDP frame 管理能力的复杂实现。通过理解：</p>
 <ul>
 <li><strong>DOM</strong>：树结构和节点标识</li>
@@ -5715,14 +6776,13 @@ print(f"会话 Handler: {ctx.session_handler}")
 <li><strong>会话路由</strong>：扁平化模式和自动命令路由</li>
 </ul>
 <p>您就能理解为什么 Pydoll 消除了手动上下文切换。这种复杂性是真实存在的，但 Pydoll 将其抽象在一个简单、直观的 API 背后：</p>
-<p>'''python
-iframe = await tab.find(id='login-frame')
-username = await iframe.find(name='username')
-await username.type_text('user@example.com')
-'''</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="n">iframe</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s1">&#39;login-frame&#39;</span><span class="p">)</span>
+</span><span id="__span-34-2"><a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a><span class="n">username</span> <span class="o">=</span> <span class="k">await</span> <span class="n">iframe</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;username&#39;</span><span class="p">)</span>
+</span><span id="__span-34-3"><a id="__codelineno-34-3" name="__codelineno-34-3" href="#__codelineno-34-3"></a><span class="k">await</span> <span class="n">username</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s1">&#39;user@example.com&#39;</span><span class="p">)</span>
+</span></code></pre></div>
 <p>三行代码。没有上下文切换。没有目标附加。没有会话管理。它就是能用。</p>
 <hr />
-<h2 id="_30">进一步阅读</h2>
+<h2 id="_23">进一步阅读</h2>
 <ul>
 <li><strong>CDP 规范</strong>：<a href="https://chromedevtools.github.io/devtools-protocol/tot/Page/">Chrome DevTools 协议 - Page 域</a></li>
 <li><strong>CDP 规范</strong>：<a href="https://chromedevtools.github.io/devtools-protocol/tot/DOM/">Chrome DevTools 协议 - DOM 域</a></li>
