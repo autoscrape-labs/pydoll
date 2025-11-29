@@ -123,6 +123,7 @@ class Browser(ABC):  # noqa: PLR0904
         self._tabs_opened: dict[str, Tab] = {}
         self._loop: Optional[asyncio.AbstractEventLoop] = None
         self._semaphore: Optional[asyncio.Semaphore] = None
+        self._semaphore_lock: Optional[asyncio.Lock] = None
         self._context_proxy_auth: dict[str, tuple[str, str]] = {}
         logger.debug(
             f'Browser initialized: port={self._connection_port}, '
@@ -541,12 +542,11 @@ class Browser(ABC):  # noqa: PLR0904
             Respects max_parallel_tasks option for concurrency control.
         """
         if self._loop is None:
-            raise RuntimeError("Browser loop not initialized. Call start() first.")
+            raise RuntimeError('Browser loop not initialized. Call start() first.')
 
         # Thread-safe semaphore initialization with double-checked locking pattern
         if self.options.max_parallel_tasks and self._semaphore is None:
-            # Use a lock to prevent race conditions in semaphore creation
-            if not hasattr(self, '_semaphore_lock'):
+            if self._semaphore_lock is None:
                 self._semaphore_lock = asyncio.Lock()
 
             async with self._semaphore_lock:
@@ -560,28 +560,30 @@ class Browser(ABC):  # noqa: PLR0904
             return await asyncio.gather(*wrapped, return_exceptions=False)
 
         # Check if we're in the same event loop
-        with suppress(RuntimeError):
+        try:
             current_loop = asyncio.get_running_loop()
-            if current_loop is self._loop:
-                # Same loop - execute directly
-                return await run_gather()
+        except RuntimeError:
+            # No running loop - this shouldn't happen in an async function
+            # but if it does, use threadsafe execution
+            current_loop = None
 
-        # Different loop or no current loop - use threadsafe execution
+        if current_loop is self._loop:
+            # Same loop - execute directly
+            return await run_gather()
+
+        # Different loop - use threadsafe execution
         if not self._loop.is_running():
-            raise RunInParallelError("Browser loop is not running. Cannot execute coroutines.")
+            raise RunInParallelError('Browser loop is not running. Cannot execute coroutines.')
 
         future = asyncio.run_coroutine_threadsafe(run_gather(), self._loop)
 
         try:
-            # Use timeout to prevent indefinite blocking
-            return future.result(timeout=60)
-        except concurrent.futures.TimeoutError:
-            future.cancel()
-            raise RunInParallelError("Coroutine execution timed out after 60 seconds")
+            # Wait for result - no timeout to allow long-running operations
+            return future.result()
         except concurrent.futures.CancelledError:
-            raise RunInParallelError("Coroutine execution was cancelled")
+            raise RunInParallelError('Coroutine execution was cancelled')
         except Exception as e:
-            raise RunInParallelError(f"Coroutine execution failed: {e}") from e
+            raise RunInParallelError(f'Coroutine execution failed: {e}') from e
 
     async def _limited_coroutine(self, coroutine: Coroutine[Any, Any, Any]) -> Any:
         """

@@ -267,13 +267,11 @@ class ChromiumOptions(Options):
     @property
     def allow_automatic_downloads(self) -> bool:
         return (
-            self._get_pref_path(
-                [
-                    'profile',
-                    'default_content_setting_values',
-                    'automatic_downloads',
-                ]
-            )
+            self._get_pref_path([
+                'profile',
+                'default_content_setting_values',
+                'automatic_downloads',
+            ])
             == 1
         )
 
