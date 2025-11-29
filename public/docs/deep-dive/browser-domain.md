@@ -812,8 +812,189 @@ await tab.go_to("https://example.com")
     
     This makes working with authenticated proxies much simpler compared to traditional browser automation.
 
+## Parallel Execution
+
+Pydoll provides built-in support for running multiple coroutines in parallel through the `run_in_parallel()` method. This feature is essential for maximizing performance in browser automation scenarios where multiple independent operations can be executed concurrently.
+
+### Basic Usage
+
+```python
+from pydoll.browser.chromium import Chrome
+
+async def main():
+    browser = Chrome()
+    tab = await browser.start()
+    tab2 = await browser.new_tab()
+
+    # Define multiple coroutines
+    async def task1():
+        await tab.go_to("https://example1.com")
+        return await tab.execute_script("return document.title")
+    
+    async def task2():
+        await tab2.go_to("https://example2.com")
+        return await tab2.execute_script("return document.title")
+    
+    # Execute all tasks in parallel
+    results = await browser.run_in_parallel(task1(), task2())
+    print(results)  # ['Title 1', 'Title 2']
+    
+    await browser.stop()
+```
+
+### Concurrency Control with max_parallel_tasks
+
+By default, Pydoll limits parallel execution to 2 concurrent tasks. You can configure this limit using the `max_parallel_tasks` option:
+
+```python
+from pydoll.browser.chromium import Chrome
+from pydoll.browser.options import ChromiumOptions
+
+# Configure concurrency limit
+options = ChromiumOptions()
+options.max_parallel_tasks = 5  # Allow up to 5 concurrent tasks
+
+browser = Chrome(options=options)
+tab = await browser.start()
+
+# Now up to 5 tasks will run concurrently
+tasks = [fetch_data(i) for i in range(10)]
+results = await browser.run_in_parallel(*tasks)
+```
+
+!!! warning "Concurrency Limit"
+    The `max_parallel_tasks` must be greater than 0. Setting it too high may cause resource exhaustion or browser instability. A value between 2-10 is recommended for most use cases.
+
+### Thread-Safe Execution
+
+The `run_in_parallel()` method is designed to be thread-safe and handles different event loop scenarios:
+
+1. **Same Event Loop**: If called from the same event loop where the browser was started, coroutines execute directly
+2. **Different Event Loop**: Uses `asyncio.run_coroutine_threadsafe()` to safely execute across loops
+3. **Semaphore Initialization**: Thread-safe double-checked locking pattern prevents race conditions
+
+```python
+import threading
+import asyncio
+from pydoll.browser.chromium import Chrome
+
+def run_in_thread(browser):
+    # This can be called from a different thread
+    async def worker():
+        async def task():
+            # Your async work here
+            return "result"
+        
+        result = await browser.run_in_parallel(task())
+        print(result)
+    
+    asyncio.run(worker())
+
+async def main():
+    browser = Chrome()
+    await browser.start()
+    
+    # Execute from different thread
+    thread = threading.Thread(target=run_in_thread, args=(browser,))
+    thread.start()
+    thread.join()
+    
+    await browser.stop()
+```
+
+### Error Handling
+
+The method includes comprehensive error handling:
+
+```python
+from pydoll.exceptions import RunInParallelError
+
+try:
+    results = await browser.run_in_parallel(task1(), task2())
+except RunInParallelError as e:
+    # Handles execution failures:
+    # - Timeout after 60 seconds
+    # - Cancelled execution
+    # - Browser loop not running
+    print(f"Parallel execution failed: {e}")
+except RuntimeError as e:
+    # Browser loop not initialized (start() not called)
+    print(f"Browser not ready: {e}")
+```
+
+!!! info "Timeout Behavior"
+    By default, `run_in_parallel()` has a 60-second timeout. If any coroutine takes longer, a `RunInParallelError` is raised. Design your tasks to complete within this timeframe or break them into smaller chunks.
+
+### Practical Example: Multi-Tab Data Scraping
+
+```python
+from pydoll.browser.chromium import Chrome
+from pydoll.browser.options import ChromiumOptions
+
+async def scrape_multiple_pages():
+    options = ChromiumOptions()
+    options.max_parallel_tasks = 4  # 4 concurrent operations
+    
+    browser = Chrome(options=options)
+    await browser.start()
+    
+    # Create multiple tabs
+    tabs = [await browser.new_tab() for _ in range(4)]
+    
+    # Define scraping tasks
+    async def scrape_page(tab, url):
+        await tab.go_to(url)
+        title = await tab.execute_script("return document.title")
+        content = await tab.execute_script("return document.body.innerText")
+        return {"url": url, "title": title, "content": content}
+    
+    urls = [
+        "https://example1.com",
+        "https://example2.com", 
+        "https://example3.com",
+        "https://example4.com"
+    ]
+    
+    # Scrape all pages in parallel
+    tasks = [scrape_page(tab, url) for tab, url in zip(tabs, urls)]
+    results = await browser.run_in_parallel(*tasks)
+    
+    for result in results:
+        print(f"Scraped {result['url']}: {result['title']}")
+    
+    await browser.stop()
+```
+
+### How It Works Internally
+
+The `run_in_parallel()` method uses `asyncio.gather()` with semaphore-based concurrency control:
+
+1. **Semaphore Creation**: A semaphore is lazily initialized based on `max_parallel_tasks`
+2. **Coroutine Wrapping**: Each coroutine is wrapped with `_limited_coroutine()` to respect the semaphore
+3. **Gather Execution**: `asyncio.gather()` runs all wrapped coroutines concurrently
+4. **Result Collection**: Results are returned in the same order as input coroutines
+
+```python
+# Simplified internal implementation
+async def _limited_coroutine(self, coroutine):
+    if self.options.max_parallel_tasks and self._semaphore:
+        async with self._semaphore:
+            return await coroutine
+    return await coroutine
+
+async def run_in_parallel(self, *coroutines):
+    wrapped = [self._limited_coroutine(coro) for coro in coroutines]
+    return await asyncio.gather(*wrapped, return_exceptions=False)
+```
+
+!!! tip "Best Practices"
+    - Use `run_in_parallel()` for I/O-bound operations like network requests or page navigation
+    - Set `max_parallel_tasks` based on your system resources and target website's rate limits
+    - Handle exceptions in individual tasks or use `return_exceptions=True` for fault tolerance
+    - Ensure the browser is started before calling this method (check `_loop` is initialized)
+
 ## Conclusion
 
 The Browser domain serves as the foundation of Pydoll's architecture, providing a powerful interface to browser instances through the Chrome DevTools Protocol. By understanding its capabilities and patterns, you can create sophisticated browser automation that's more reliable and efficient than traditional webdriver-based approaches.
 
-The combination of a clean abstraction layer, comprehensive event system, tab-based architecture, and direct control over the browser process enables advanced automation scenarios while maintaining a simple and intuitive API.
+The combination of a clean abstraction layer, comprehensive event system, tab-based architecture, parallel execution capabilities, and direct control over the browser process enables advanced automation scenarios while maintaining a simple and intuitive API.
