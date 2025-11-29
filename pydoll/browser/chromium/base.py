@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import concurrent.futures
 import json
 import logging
 import os
@@ -50,7 +49,7 @@ from pydoll.protocol.browser.types import DownloadBehavior
 from pydoll.protocol.fetch.events import FetchEvent
 from pydoll.protocol.fetch.types import AuthChallengeResponseType
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from tempfile import TemporaryDirectory
 
     from pydoll.browser.interfaces import BrowserOptionsManager
@@ -580,8 +579,6 @@ class Browser(ABC):  # noqa: PLR0904
         try:
             # Wait for result - no timeout to allow long-running operations
             return future.result()
-        except concurrent.futures.CancelledError:
-            raise RunInParallelError('Coroutine execution was cancelled')
         except Exception as e:
             raise RunInParallelError(f'Coroutine execution failed: {e}') from e
 

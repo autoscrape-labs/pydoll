@@ -31,6 +31,7 @@ from pydoll.connection.connection_handler import ConnectionHandler
 from pydoll.exceptions import (
     MissingTargetOrWebSocket,
     InvalidWebSocketAddress,
+    RunInParallelError,
 )
 
 from pydoll.protocol.network.types import RequestMethod, ErrorReason
@@ -1695,3 +1696,80 @@ async def test_run_in_parallel_semaphore_creation_once(mock_browser):
     # Second call should reuse existing semaphore
     await mock_browser.run_in_parallel(dummy_coro(2))
     assert mock_browser._semaphore is first_semaphore
+
+
+@pytest.mark.asyncio
+async def test_run_in_parallel_loop_not_running(mock_browser):
+    """Test run_in_parallel raises RunInParallelError when browser loop is not running."""
+    # Create a stopped loop - different from current running loop
+    browser_loop = asyncio.new_event_loop()
+    mock_browser._loop = browser_loop
+    mock_browser.options.max_parallel_tasks = 1  # Disable semaphore
+    mock_browser._semaphore = None
+    
+    # Loop is created but NOT running
+    assert not browser_loop.is_running()
+    
+    async def dummy_coro():
+        return "result"
+    
+    # Should raise RunInParallelError when trying to execute from different loop
+    # The current running loop is different from browser_loop, and browser_loop is not running
+    with pytest.raises(RunInParallelError, match="Browser loop is not running"):
+        await mock_browser.run_in_parallel(dummy_coro())
+    
+    browser_loop.close()
+
+
+@pytest.mark.asyncio
+async def test_run_in_parallel_no_running_loop_fallback(mock_browser):
+    """Test run_in_parallel handles RuntimeError from get_running_loop() and falls back to threadsafe."""
+    # Setup browser with a loop
+    browser_loop = asyncio.new_event_loop()
+    mock_browser._loop = browser_loop
+    mock_browser.options.max_parallel_tasks = 1
+    mock_browser._semaphore = None
+    
+    async def dummy_coro():
+        return "test_result"
+    
+    # Mock get_running_loop to raise RuntimeError (simulating no running loop)
+    # This triggers the except RuntimeError block and sets current_loop = None
+    with patch('asyncio.get_running_loop', side_effect=RuntimeError("No running loop")):
+        # Mock is_running to return True so we can proceed past the check
+        with patch.object(browser_loop, 'is_running', return_value=True):
+            # Mock run_coroutine_threadsafe to return a successful future
+            mock_future = MagicMock()
+            mock_future.result.return_value = ["test_result"]
+            
+            with patch('asyncio.run_coroutine_threadsafe', return_value=mock_future):
+                # Should successfully use threadsafe execution path
+                results = await mock_browser.run_in_parallel(dummy_coro())
+                assert results == ["test_result"]
+    
+    browser_loop.close()
+
+
+@pytest.mark.asyncio
+async def test_run_in_parallel_threadsafe_future_exception(mock_browser):
+    """Test run_in_parallel wraps exceptions from future.result() in RunInParallelError."""
+    # Setup browser with a different loop to trigger threadsafe path
+    browser_loop = asyncio.new_event_loop()
+    mock_browser._loop = browser_loop
+    mock_browser.options.max_parallel_tasks = 1
+    mock_browser._semaphore = None
+    
+    # Mock run_coroutine_threadsafe to return a future that raises an exception
+    mock_future = MagicMock()
+    mock_future.result.side_effect = RuntimeError("Future execution error")
+    async def dummy_coro():
+        return "result"
+    
+    with patch('asyncio.run_coroutine_threadsafe', return_value=mock_future):
+        # Ensure we're in a different loop
+        with patch.object(browser_loop, 'is_running', return_value=True):
+            # Should wrap the exception in RunInParallelError
+            with pytest.raises(RunInParallelError, match="Coroutine execution failed: Future execution error"):
+                await mock_browser.run_in_parallel(dummy_coro())
+    
+    browser_loop.close()
