@@ -1,13 +1,17 @@
+from __future__ import annotations
+
 import asyncio
 import logging
-from typing import Any, Callable, cast
+from typing import TYPE_CHECKING, cast
 
-from pydoll.protocol.base import CDPEvent
-from pydoll.protocol.network.events import RequestWillBeSentEvent
-from pydoll.protocol.page.events import (
-    JavascriptDialogOpeningEvent,
-    JavascriptDialogOpeningEventParams,
-)
+from pydoll.protocol.page.events import JavascriptDialogOpeningEvent
+
+if TYPE_CHECKING:
+    from typing import Any, Callable
+
+    from pydoll.protocol.base import CDPEvent
+    from pydoll.protocol.network.events import RequestWillBeSentEvent
+    from pydoll.protocol.page.events import JavascriptDialogOpeningEventParams
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +31,7 @@ class EventsManager:
         self.network_logs: list[RequestWillBeSentEvent] = []
         self.dialog = JavascriptDialogOpeningEvent(method='')
         logger.info('EventsManager initialized')
+        logger.debug('Initial state: callbacks=0, logs=0, dialog=empty')
 
     def register_callback(
         self, event_name: str, callback: Callable[[dict], Any], temporary: bool = False
@@ -49,6 +54,9 @@ class EventsManager:
             'temporary': temporary,
         }
         logger.info(f"Registered callback '{event_name}' with ID {self._callback_id}")
+        logger.debug(
+            f'Callback details: temporary={temporary}, total_callbacks={len(self._event_callbacks)}'
+        )
         return self._callback_id
 
     def remove_callback(self, callback_id: int) -> bool:
@@ -59,12 +67,14 @@ class EventsManager:
 
         del self._event_callbacks[callback_id]
         logger.info(f'Removed callback ID {callback_id}')
+        logger.debug(f'Remaining callbacks: {len(self._event_callbacks)}')
         return True
 
     def clear_callbacks(self):
         """Remove all registered callbacks."""
         self._event_callbacks.clear()
         logger.info('All callbacks cleared')
+        logger.debug('Callbacks store is now empty')
 
     async def process_event(self, event_data: CDPEvent):
         """
@@ -114,3 +124,6 @@ class EventsManager:
 
         for cb_id in callbacks_to_remove:
             self.remove_callback(cb_id)
+        logger.debug(
+            f"Triggered callbacks for '{event_name}'. Removed temporaries: {callbacks_to_remove}"
+        )

@@ -1,56 +1,64 @@
-from typing import Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Optional
 
 from pydoll.protocol.base import Command
 from pydoll.protocol.browser.methods import (
-    AddPrivacySandboxCoordinatorKeyConfigCommand,
     AddPrivacySandboxCoordinatorKeyConfigParams,
-    AddPrivacySandboxEnrollmentOverrideCommand,
     AddPrivacySandboxEnrollmentOverrideParams,
     BrowserMethod,
-    CancelDownloadCommand,
     CancelDownloadParams,
-    CloseCommand,
-    CrashCommand,
-    CrashGpuProcessCommand,
-    DownloadBehavior,
-    ExecuteBrowserCommandCommand,
     ExecuteBrowserCommandParams,
-    GetBrowserCommandLineCommand,
-    GetHistogramCommand,
     GetHistogramParams,
-    GetHistogramsCommand,
     GetHistogramsParams,
-    GetVersionCommand,
-    GetWindowBoundsCommand,
     GetWindowBoundsParams,
-    GetWindowForTargetCommand,
     GetWindowForTargetParams,
-    GrantPermissionsCommand,
     GrantPermissionsParams,
-    ResetPermissionsCommand,
     ResetPermissionsParams,
-    SetContentsSizeCommand,
     SetContentsSizeParams,
-    SetDockTileCommand,
     SetDockTileParams,
-    SetDownloadBehaviorCommand,
     SetDownloadBehaviorParams,
-    SetPermissionCommand,
     SetPermissionParams,
-    SetWindowBoundsCommand,
     SetWindowBoundsParams,
 )
 from pydoll.protocol.browser.types import (
     Bounds,
-    BrowserCommandId,
-    BrowserContextID,
-    PermissionDescriptor,
-    PermissionSetting,
-    PermissionType,
-    PrivacySandboxAPI,
-    WindowID,
     WindowState,
 )
+
+if TYPE_CHECKING:
+    from pydoll.protocol.browser.methods import (
+        AddPrivacySandboxCoordinatorKeyConfigCommand,
+        AddPrivacySandboxEnrollmentOverrideCommand,
+        CancelDownloadCommand,
+        CloseCommand,
+        CrashCommand,
+        CrashGpuProcessCommand,
+        DownloadBehavior,
+        ExecuteBrowserCommandCommand,
+        GetBrowserCommandLineCommand,
+        GetHistogramCommand,
+        GetHistogramsCommand,
+        GetVersionCommand,
+        GetWindowBoundsCommand,
+        GetWindowForTargetCommand,
+        GrantPermissionsCommand,
+        ResetPermissionsCommand,
+        SetContentsSizeCommand,
+        SetDockTileCommand,
+        SetDownloadBehaviorCommand,
+        SetPermissionCommand,
+        SetWindowBoundsCommand,
+    )
+    from pydoll.protocol.browser.types import (
+        BrowserCommandId,
+        BrowserContextID,
+        PermissionDescriptor,
+        PermissionSetting,
+        PermissionType,
+        PrivacySandboxAPI,
+        WindowID,
+    )
 
 
 class BrowserCommands:
@@ -327,9 +335,9 @@ class BrowserCommands:
 
     @staticmethod
     def grant_permissions(
-        permissions: list[PermissionType],
+        permissions: list['PermissionType'],
         origin: Optional[str] = None,
-        browser_context_id: Optional[BrowserContextID] = None,
+        browser_context_id: Optional['BrowserContextID'] = None,
     ) -> GrantPermissionsCommand:
         """
         Grant specific permissions to the given origin and reject all others.
@@ -352,7 +360,7 @@ class BrowserCommands:
 
     @staticmethod
     def reset_permissions(
-        browser_context_id: Optional[BrowserContextID] = None,
+        browser_context_id: Optional['BrowserContextID'] = None,
     ) -> ResetPermissionsCommand:
         """
         Reset all permission management for all origins.
@@ -372,7 +380,7 @@ class BrowserCommands:
     @staticmethod
     def set_download_behavior(
         behavior: DownloadBehavior,
-        browser_context_id: Optional[BrowserContextID] = None,
+        browser_context_id: Optional['BrowserContextID'] = None,
         download_path: Optional[str] = None,
         events_enabled: bool = False,
     ) -> SetDownloadBehaviorCommand:
@@ -404,7 +412,7 @@ class BrowserCommands:
     @staticmethod
     def cancel_download(
         guid: str,
-        browser_context_id: Optional[BrowserContextID] = None,
+        browser_context_id: Optional['BrowserContextID'] = None,
     ) -> CancelDownloadCommand:
         """
         Cancel a download if in progress.

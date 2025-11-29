@@ -1,47 +1,53 @@
-from typing import Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Optional
 
 from pydoll.protocol.base import Command
 from pydoll.protocol.input.methods import (
-    CancelDraggingCommand,
-    DispatchDragEventCommand,
     DispatchDragEventParams,
-    DispatchKeyEventCommand,
     DispatchKeyEventParams,
-    DispatchMouseEventCommand,
     DispatchMouseEventParams,
-    DispatchTouchEventCommand,
     DispatchTouchEventParams,
-    DragData,
-    EmulateTouchFromMouseEventCommand,
     EmulateTouchFromMouseEventParams,
-    ImeSetCompositionCommand,
     ImeSetCompositionParams,
     InputMethod,
-    InsertTextCommand,
     InsertTextParams,
-    SetIgnoreInputEventsCommand,
     SetIgnoreInputEventsParams,
-    SetInterceptDragsCommand,
     SetInterceptDragsParams,
-    SynthesizePinchGestureCommand,
     SynthesizePinchGestureParams,
-    SynthesizeScrollGestureCommand,
     SynthesizeScrollGestureParams,
-    SynthesizeTapGestureCommand,
     SynthesizeTapGestureParams,
-    TouchPoint,
 )
-from pydoll.protocol.input.types import (
-    DragEventType,
-    GestureSourceType,
-    KeyEventType,
-    KeyLocation,
-    KeyModifier,
-    MouseButton,
-    MouseEventType,
-    PointerType,
-    TouchEventType,
-)
+
+if TYPE_CHECKING:
+    from pydoll.protocol.input.methods import (
+        CancelDraggingCommand,
+        DispatchDragEventCommand,
+        DispatchKeyEventCommand,
+        DispatchMouseEventCommand,
+        DispatchTouchEventCommand,
+        DragData,
+        EmulateTouchFromMouseEventCommand,
+        ImeSetCompositionCommand,
+        InsertTextCommand,
+        SetIgnoreInputEventsCommand,
+        SetInterceptDragsCommand,
+        SynthesizePinchGestureCommand,
+        SynthesizeScrollGestureCommand,
+        SynthesizeTapGestureCommand,
+        TouchPoint,
+    )
+    from pydoll.protocol.input.types import (
+        DragEventType,
+        GestureSourceType,
+        KeyEventType,
+        KeyLocation,
+        KeyModifier,
+        MouseButton,
+        MouseEventType,
+        PointerType,
+        TouchEventType,
+    )
 
 
 class InputCommands:

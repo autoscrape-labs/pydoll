@@ -289,6 +289,18 @@ class NetworkEventsNotEnabled(PydollException):
     message = 'Network events not enabled'
 
 
+class RequestException(PydollException):
+    """Base class for exceptions related to HTTP requests."""
+
+    message = 'An HTTP request error occurred'
+
+
+class HTTPError(RequestException):
+    """Exception raised for HTTP error responses (4xx and 5xx status codes)."""
+
+    message = 'An HTTP error occurred'
+
+
 class ScriptException(PydollException):
     """Base class for exceptions related to JavaScript execution."""
 

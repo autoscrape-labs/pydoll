@@ -1,21 +1,13 @@
+from __future__ import annotations
+
 import asyncio
 import json
 import logging
 from contextlib import suppress
-from typing import (
-    Any,
-    AsyncGenerator,
-    Awaitable,
-    Callable,
-    Coroutine,
-    Optional,
-    Union,
-    cast,
-)
+from typing import TYPE_CHECKING, cast
 
 import websockets
 from websockets.asyncio.client import ClientConnection
-from websockets.asyncio.client import connect as Connect
 from websockets.protocol import State
 
 from pydoll.connection.managers import CommandsManager, EventsManager
@@ -23,11 +15,17 @@ from pydoll.exceptions import (
     CommandExecutionTimeout,
     WebSocketConnectionClosed,
 )
-from pydoll.protocol.base import CDPEvent, Command, Response, T_CommandParams, T_CommandResponse
+from pydoll.protocol.base import CDPEvent, Response
 from pydoll.utils import get_browser_ws_address
 
+if TYPE_CHECKING:
+    from typing import Any, AsyncGenerator, Awaitable, Callable, Coroutine, Optional, Union
+
+    from websockets.asyncio.client import connect as Connect
+
+    from pydoll.protocol.base import Command, T_CommandParams, T_CommandResponse
+
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 
 class ConnectionHandler:
@@ -66,6 +64,10 @@ class ConnectionHandler:
         self._events_handler = EventsManager()
         self._receive_task: Optional[asyncio.Task] = None
         logger.info('ConnectionHandler initialized.')
+        logger.debug(
+            f'Init params: port={self._connection_port}, page_id={self._page_id}, '
+            f'ws_address_set={bool(self._ws_address)}'
+        )
 
     @property
     def network_logs(self):
@@ -80,8 +82,10 @@ class ConnectionHandler:
     async def ping(self) -> bool:
         """Test if WebSocket connection is active and responsive."""
         with suppress(Exception):
+            logger.debug('Pinging WebSocket connection')
             await self._ensure_active_connection()
             await cast(ClientConnection, self._ws_connection).ping()
+            logger.debug('Ping OK')
             return True
         return False
 
@@ -108,14 +112,26 @@ class ConnectionHandler:
 
         try:
             ws = cast(ClientConnection, self._ws_connection)
+            logger.debug(
+                f'Sending command: id={command.get("id")}, method={command.get("method")}, '
+                f'timeout={timeout}s'
+            )
+            start = asyncio.get_event_loop().time()
             await ws.send(command_str)
             response: str = await asyncio.wait_for(future, timeout)
+            elapsed = asyncio.get_event_loop().time() - start
+            logger.debug(f'Command completed: id={command.get("id")} in {elapsed:.3f}s')
             return json.loads(response)
         except asyncio.TimeoutError:
             self._command_manager.remove_pending_command(command['id'])
+            logger.error(
+                f'Command timeout: id={command.get("id")}, method={command.get("method")}, '
+                f'timeout={timeout}s'
+            )
             raise CommandExecutionTimeout()
         except websockets.ConnectionClosed:
             await self._handle_connection_loss()
+            logger.warning(f'WebSocket connection closed during command: id={command.get("id")}')
             raise WebSocketConnectionClosed()
 
     async def register_callback(
@@ -138,20 +154,28 @@ class ConnectionHandler:
         Note:
             Corresponding CDP domain must be enabled before events fire.
         """
-        return self._events_handler.register_callback(event_name, callback, temporary)
+        callback_id = self._events_handler.register_callback(event_name, callback, temporary)
+        logger.debug(
+            f'Registered callback: id={callback_id}, event={event_name}, temporary={temporary}'
+        )
+        return callback_id
 
     async def remove_callback(self, callback_id: int) -> bool:
         """Remove registered event callback by ID."""
-        return self._events_handler.remove_callback(callback_id)
+        removed = self._events_handler.remove_callback(callback_id)
+        logger.debug(f'Removed callback: id={callback_id}, removed={removed}')
+        return removed
 
     async def clear_callbacks(self):
         """Remove all registered event callbacks."""
+        logger.debug('Clearing all callbacks')
         self._events_handler.clear_callbacks()
 
     async def close(self):
         """Close WebSocket connection and release resources."""
         await self.clear_callbacks()
         if self._ws_connection is None:
+            logger.debug('Close called but no active WebSocket connection')
             return
 
         with suppress(websockets.ConnectionClosed):
@@ -161,6 +185,7 @@ class ConnectionHandler:
     async def _ensure_active_connection(self):
         """Ensure active connection exists, establishing new one if needed."""
         if self._ws_connection is None or self._ws_connection.state is State.CLOSED:
+            logger.debug('No active WebSocket connection; establishing new one')
             await self._establish_new_connection()
 
     async def _establish_new_connection(self):
@@ -177,10 +202,15 @@ class ConnectionHandler:
     async def _resolve_ws_address(self):
         """Determine correct WebSocket address based on page ID."""
         if self._ws_address:
+            logger.debug('Using provided WebSocket address')
             return self._ws_address
         if not self._page_id:
-            return await self._ws_address_resolver(self._connection_port)
-        return f'ws://localhost:{self._connection_port}/devtools/page/{self._page_id}'  # noqa: E501
+            resolved = await self._ws_address_resolver(self._connection_port)
+            logger.debug(f'Resolved browser-level WebSocket address: {resolved}')
+            return resolved
+        address = f'ws://localhost:{self._connection_port}/devtools/page/{self._page_id}'
+        logger.debug(f'Resolved page-level WebSocket address: {address}')
+        return address
 
     async def _handle_connection_loss(self):
         """Clean up resources after connection loss."""

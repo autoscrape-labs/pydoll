@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parent Iframe Level</title>
+    <style>
+        body {
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="parent-iframe-heading">Parent Iframe Content</h2>
+    
+    <div id="parent-iframe-content">
+        <p id="parent-paragraph">This is the parent iframe level.</p>
+        <input id="parent-input" type="text" placeholder="Parent input">
+        <button id="parent-button">Parent Button</button>
+    </div>
+    
+    <div id="nested-iframe-container">
+        <h3>Nested Iframe Below:</h3>
+        <iframe id="nested-iframe" src="test_iframe_nested_level.html" style="width: 100%; height: 400px;"></iframe>
+    </div>
+    
+    <div id="parent-footer">
+        <p>Parent iframe footer</p>
+    </div>
+</body>
+</html>
+

@@ -3,16 +3,22 @@ This module provides a Request class that mimics the behavior of requests.
 It allows making HTTP requests using the browser's fetch API.
 """
 
+from __future__ import annotations
+
 import json as jsonlib
+import logging
 from typing import TYPE_CHECKING, Any, Callable, Optional, Union, cast
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
-from pydoll.browser.requests.response import HTTPError, Response
+from pydoll.browser.requests.response import Response
 from pydoll.commands.runtime_commands import RuntimeCommands
 from pydoll.constants import Scripts
+from pydoll.exceptions import HTTPError
 from pydoll.protocol.fetch.types import HeaderEntry
-from pydoll.protocol.network.events import NetworkEvent
+from pydoll.protocol.network.events import NetworkEvent, ResponseReceivedExtraInfoEventParams
 from pydoll.protocol.network.types import CookieParam
+
+logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from pydoll.browser.tab import Tab
@@ -24,7 +30,6 @@ if TYPE_CHECKING:
         ResponseReceivedEvent,
         ResponseReceivedEventParams,
         ResponseReceivedExtraInfoEvent,
-        ResponseReceivedExtraInfoEventParams,
     )
     from pydoll.protocol.runtime.methods import EvaluateResponse
 
@@ -68,7 +73,7 @@ class Request:
     - Cookies are managed automatically by the browser
     """
 
-    def __init__(self, tab: 'Tab'):
+    def __init__(self, tab: Tab):
         """Initialize a new Request instance bound to a browser tab.
 
         Args:
@@ -78,8 +83,9 @@ class Request:
         """
         self.tab = tab
         self._network_events_enabled = False
-        self._requests_sent: list['RequestSentEvent'] = []
-        self._requests_received: list['RequestReceivedEvent'] = []
+        self._requests_sent: list[RequestSentEvent] = []
+        self._requests_received: list[RequestReceivedEvent] = []
+        logger.debug('Request helper initialized for tab')
 
     async def request(
         self,
@@ -127,6 +133,11 @@ class Request:
         """
         final_url = self._build_url_with_params(url, params)
         options = self._build_request_options(method, headers, json, data, **kwargs)
+        logger.info(f'Executing request: method={method.upper()}, url={final_url}')
+        logger.debug(
+            f'Executing request: method={method.upper()}, url={final_url}, '
+            f'headers={bool(headers)}, json={json is not None}, data={data is not None}'
+        )
         try:
             result = await self._execute_fetch_request(final_url, options)
             received_headers = self._extract_received_headers()
@@ -135,6 +146,7 @@ class Request:
             return self._build_response(result, received_headers, sent_headers, cookies)
 
         except Exception as exc:
+            logger.error(f'Request failed: {exc}')
             raise HTTPError(f'Request failed: {str(exc)}') from exc
 
         finally:
@@ -262,6 +274,7 @@ class Request:
     @staticmethod
     def _build_url_with_params(url: str, params: Optional[dict[str, str]]) -> str:
         """Build final URL with query parameters."""
+        logger.debug(f'Building URL with params: url={url}, params={params}')
         if not params:
             return url
 
@@ -287,7 +300,7 @@ class Request:
             'headers': headers_dict,
             **kwargs,
         }
-
+        logger.debug(f'Building request options: options={options}')
         self._add_request_body(options, json, data)
         return options
 
@@ -298,7 +311,6 @@ class Request:
         data: Optional[Union[dict, list, tuple, str, bytes]],
     ) -> None:
         """Add request body and appropriate Content-Type header."""
-
         if json is not None:
             self._handle_json_options(options, json)
         elif data is not None:
@@ -309,6 +321,7 @@ class Request:
         """Handle JSON options."""
         options['body'] = jsonlib.dumps(json)
         options['headers'].setdefault('Content-Type', 'application/json')
+        logger.debug('Request JSON body set and content-type applied')
 
     @staticmethod
     def _handle_data_options(
@@ -318,13 +331,16 @@ class Request:
         if isinstance(data, (dict, list, tuple)):
             options['body'] = urlencode(data, doseq=True)
             options['headers'].setdefault('Content-Type', 'application/x-www-form-urlencoded')
+            logger.debug('Request data encoded as form-urlencoded')
         else:
             options['body'] = data
+            logger.debug('Request data set as raw payload')
 
-    async def _execute_fetch_request(self, url: str, options: dict[str, Any]) -> 'EvaluateResponse':
+    async def _execute_fetch_request(self, url: str, options: dict[str, Any]) -> EvaluateResponse:
         """Execute the fetch request using browser's runtime."""
         script = Scripts.MAKE_REQUEST.format(url=jsonlib.dumps(url), options=jsonlib.dumps(options))
         await self._register_callbacks()
+        logger.debug('Registered network callbacks and executing fetch via Runtime.evaluate')
 
         return await self.tab._execute_command(
             RuntimeCommands.evaluate(
@@ -336,13 +352,14 @@ class Request:
 
     @staticmethod
     def _build_response(
-        result: 'EvaluateResponse',
+        result: EvaluateResponse,
         response_headers: list[HeaderEntry],
         request_headers: list[HeaderEntry],
         cookies: list[CookieParam],
     ) -> Response:
         """Build Response object from fetch result."""
         result_value = result['result']['result']['value']
+        logger.debug(f'Building response: result_value={result_value}')
         return Response(
             status_code=result_value['status'],
             content=bytes(result_value.get('content', b'')),
@@ -367,12 +384,15 @@ class Request:
         if not self.tab.network_events_enabled:
             await self.tab.enable_network_events()
             self._network_events_enabled = True
+            logger.debug('Network events enabled on tab for request capture')
 
         def append_received_request(event: dict) -> None:
-            self._requests_received.append(cast('RequestReceivedEvent', event))
+            self._requests_received.append(cast(RequestReceivedEvent, event))
+            logger.debug(f'Appended received request: event={event}')
 
         def append_sent_request(event: dict) -> None:
-            self._requests_sent.append(cast('RequestSentEvent', event))
+            self._requests_sent.append(cast(RequestSentEvent, event))
+            logger.debug(f'Appended sent request: event={event}')
 
         await self.tab.on(
             NetworkEvent.REQUEST_WILL_BE_SENT,
@@ -400,7 +420,9 @@ class Request:
         if self._network_events_enabled:
             await self.tab.disable_network_events()
             self._network_events_enabled = False
+            logger.debug('Network events disabled on tab after request')
         await self.tab.clear_callbacks()
+        logger.debug('Cleared network callbacks on tab')
 
     def _extract_received_headers(self) -> list[HeaderEntry]:
         """Extract headers from response network events.
@@ -430,7 +452,7 @@ class Request:
 
     @staticmethod
     def _extract_headers_from_events(
-        events: Union[list['RequestSentEvent'], list['RequestReceivedEvent']],
+        events: Union[list[RequestSentEvent], list[RequestReceivedEvent]],
         event_extractors: dict[str, Callable[[Any], list[HeaderEntry]]],
     ) -> list[HeaderEntry]:
         """Extract headers from network events using appropriate extractors.
@@ -448,23 +470,27 @@ class Request:
         """
         headers: list[HeaderEntry] = []
         seen = set()
-
+        logger.debug(f'Extracting headers from events: events={events}')
         for event in events:
             params = event['params']
             for key, extractor in event_extractors.items():
                 if key in params:
                     extracted_headers = extractor(params)
+                    logger.debug(f'Extracted headers: extracted_headers={extracted_headers}')
                     for header in extracted_headers:
                         identity = (header['name'], header['value'])
+                        logger.debug(f'Identity: identity={identity}')
                         if identity not in seen:
                             headers.append(header)
                             seen.add(identity)
+                            logger.debug(f'Added header: header={header}')
                     break
 
+        logger.debug(f'Headers extracted: headers={headers}')
         return headers
 
     def _extract_request_sent_headers(
-        self, params: 'RequestWillBeSentEventParams'
+        self, params: RequestWillBeSentEventParams
     ) -> list[HeaderEntry]:
         """Extract headers from main request event.
 
@@ -475,10 +501,11 @@ class Request:
             List of headers that were sent with the request.
         """
         request = params['request']
+        logger.debug(f'Extracting request sent headers: request={request}')
         return self._convert_dict_to_header_entries(request.get('headers', {}))
 
     def _extract_request_sent_extra_info_headers(
-        self, params: 'RequestWillBeSentExtraInfoEventParams'
+        self, params: RequestWillBeSentExtraInfoEventParams
     ) -> list[HeaderEntry]:
         """Extract headers from extra request info event.
 
@@ -491,10 +518,11 @@ class Request:
         Returns:
             List of additional headers sent with the request.
         """
+        logger.debug(f'Extracting request sent extra info headers: params={params}')
         return self._convert_dict_to_header_entries(params.get('headers', {}))
 
     def _extract_response_received_headers(
-        self, params: 'ResponseReceivedEventParams'
+        self, params: ResponseReceivedEventParams
     ) -> list[HeaderEntry]:
         """Extract headers from main response event.
 
@@ -505,10 +533,11 @@ class Request:
             List of headers received from the server.
         """
         response = params['response']
+        logger.debug(f'Extracting response received headers: response={response}')
         return self._convert_dict_to_header_entries(response.get('headers', {}))
 
     def _extract_response_received_extra_info_headers(
-        self, params: 'ResponseReceivedExtraInfoEventParams'
+        self, params: ResponseReceivedExtraInfoEventParams
     ) -> list[HeaderEntry]:
         """Extract headers from extra response info event.
 
@@ -522,6 +551,7 @@ class Request:
         Returns:
             List of additional headers received from the server.
         """
+        logger.debug(f'Extracting response received extra info headers: params={params}')
         return self._convert_dict_to_header_entries(params.get('headers', {}))
 
     @staticmethod
@@ -534,6 +564,7 @@ class Request:
         Returns:
             List of HeaderEntry objects with 'name' and 'value' keys.
         """
+        logger.debug(f'Converting dictionary to header entries: headers_dict={headers_dict}')
         return [HeaderEntry(name=name, value=value) for name, value in headers_dict.items()]
 
     def _extract_set_cookies(self) -> list[CookieParam]:
@@ -547,30 +578,37 @@ class Request:
             List of unique cookies extracted from Set-Cookie headers.
         """
         cookies: list[CookieParam] = []
-
+        logger.debug(f'Extracting set cookies: cookies={cookies}')
         response_extra_info_events = self._filter_response_extra_info_events()
-
+        logger.debug(
+            f'Filtering response extra info events: '
+            f'response_extra_info_events={response_extra_info_events}'
+        )
         for event in response_extra_info_events:
-            params = cast('ResponseReceivedExtraInfoEventParams', event['params'])
+            params = cast(ResponseReceivedExtraInfoEventParams, event['params'])
             headers = self._convert_dict_to_header_entries(params['headers'])
+            logger.debug(f'Converting dictionary to header entries: headers={headers}')
             set_cookie_headers = [
                 header['value'] for header in headers if header['name'] == 'Set-Cookie'
             ]
-
+            logger.debug(f'Set cookie headers: set_cookie_headers={set_cookie_headers}')
             if set_cookie_headers:
                 for set_cookie_header in set_cookie_headers:
                     self._add_unique_cookies(
                         cookies, self._parse_set_cookie_header(set_cookie_header)
                     )
-
+        logger.debug(f'Set cookies extracted: cookies={cookies}')
         return cookies
 
-    def _filter_response_extra_info_events(self) -> list['RequestReceivedEvent']:
+    def _filter_response_extra_info_events(self) -> list[RequestReceivedEvent]:
         """Filter network events to find those containing Set-Cookie information.
 
         Returns:
             List of events that contain extra response information including cookies.
         """
+        logger.debug(
+            f'Filtering response extra info events: requests_received={self._requests_received}'
+        )
         return [
             event
             for event in self._requests_received
@@ -591,12 +629,13 @@ class Request:
         """
         cookies = []
         lines = set_cookie_header.split('\n')
-
+        logger.debug(f'Parsing set cookie header: set_cookie_header={set_cookie_header}')
         for line in lines:
             cookie = self._parse_cookie_line(line)
             if cookie:
+                logger.debug(f'Parsed cookie: cookie={cookie}')
                 cookies.append(cookie)
-
+        logger.debug(f'Parsed cookies: cookies={cookies}')
         return cookies
 
     @staticmethod
@@ -632,9 +671,12 @@ class Request:
             cookies: Existing list of cookies to add to.
             new_cookies: New cookies to add if not already present.
         """
+        logger.debug(f'Adding unique cookies: cookies={cookies}, new_cookies={new_cookies}')
         for cookie in new_cookies:
             if cookie not in cookies:
                 cookies.append(cookie)
+                logger.debug(f'Added unique cookie: cookie={cookie}')
+        logger.debug(f'Unique cookies added: cookies={cookies}')
 
     @staticmethod
     def _convert_header_entries_to_dict(headers: list[HeaderEntry]) -> dict[str, str]:
@@ -649,4 +691,5 @@ class Request:
         Returns:
             Dictionary mapping header names to values.
         """
+        logger.debug(f'Converting header entries to dictionary: headers={headers}')
         return {header['name']: header['value'] for header in headers}

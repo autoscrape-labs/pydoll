@@ -336,3 +336,50 @@
 })()
 
 
+// You can add more sponsors by pushing new objects to this array
+const SPONSORS = [
+  {
+    name: 'LambdaTest',
+    url: 'https://www.lambdatest.com/?utm_source=pydoll&utm_medium=sponsor',
+    logo: 'https://www.lambdatest.com/blue-logo.png',
+    width: 200,
+    height: 45
+  }
+]
+
+function renderSponsors(gridId = 'sponsorsGrid') {
+  const grid = document.getElementById(gridId)
+  if (!grid || !Array.isArray(SPONSORS)) return
+
+  const frag = document.createDocumentFragment()
+  for (const s of SPONSORS) {
+    const li = document.createElement('li')
+    li.className = 'flex items-center justify-center'
+
+    const a = document.createElement('a')
+    a.href = s.url
+    a.target = '_blank'
+    a.rel = 'noopener nofollow sponsored'
+    a.className = 'group block w-full rounded-lg bg-slate-900/40 px-4 py-3 hover:bg-white/5 transition-colors'
+
+    const img = document.createElement('img')
+    img.src = s.logo
+    img.alt = s.name
+    img.loading = 'lazy'
+    img.decoding = 'async'
+    img.width = s.width || 200
+    img.height = s.height || 40
+    img.className = 'mx-auto max-h-10'
+
+    a.appendChild(img)
+    li.appendChild(a)
+    frag.appendChild(li)
+  }
+  grid.innerHTML = ''
+  grid.appendChild(frag)
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderSponsors()
+})
+

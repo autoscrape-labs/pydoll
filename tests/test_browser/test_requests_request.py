@@ -9,7 +9,8 @@ from unittest.mock import AsyncMock, Mock, patch
 from urllib.parse import urlencode
 
 from pydoll.browser.requests.request import Request
-from pydoll.browser.requests.response import HTTPError, Response
+from pydoll.browser.requests.response import Response
+from pydoll.exceptions import HTTPError
 from pydoll.protocol.fetch.types import HeaderEntry
 from pydoll.protocol.network.events import NetworkEvent
 from pydoll.protocol.network.types import CookieParam

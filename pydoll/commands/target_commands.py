@@ -1,38 +1,44 @@
-from typing import Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Optional
 
 from pydoll.protocol.base import Command
-from pydoll.protocol.browser.types import WindowState
 from pydoll.protocol.target.methods import (
-    ActivateTargetCommand,
     ActivateTargetParams,
-    AttachToBrowserTargetCommand,
     AttachToBrowserTargetParams,
-    AttachToTargetCommand,
     AttachToTargetParams,
-    CloseTargetCommand,
     CloseTargetParams,
-    CreateBrowserContextCommand,
     CreateBrowserContextParams,
-    CreateTargetCommand,
     CreateTargetParams,
-    DetachFromTargetCommand,
     DetachFromTargetParams,
-    DisposeBrowserContextCommand,
     DisposeBrowserContextParams,
-    GetBrowserContextsCommand,
-    GetTargetInfoCommand,
     GetTargetInfoParams,
-    GetTargetsCommand,
     GetTargetsParams,
-    SetAutoAttachCommand,
     SetAutoAttachParams,
-    SetDiscoverTargetsCommand,
     SetDiscoverTargetsParams,
-    SetRemoteLocationsCommand,
     SetRemoteLocationsParams,
     TargetMethod,
 )
-from pydoll.protocol.target.types import RemoteLocation
+
+if TYPE_CHECKING:
+    from pydoll.protocol.browser.types import WindowState
+    from pydoll.protocol.target.methods import (
+        ActivateTargetCommand,
+        AttachToBrowserTargetCommand,
+        AttachToTargetCommand,
+        CloseTargetCommand,
+        CreateBrowserContextCommand,
+        CreateTargetCommand,
+        DetachFromTargetCommand,
+        DisposeBrowserContextCommand,
+        GetBrowserContextsCommand,
+        GetTargetInfoCommand,
+        GetTargetsCommand,
+        SetAutoAttachCommand,
+        SetDiscoverTargetsCommand,
+        SetRemoteLocationsCommand,
+    )
+    from pydoll.protocol.target.types import RemoteLocation
 
 
 class TargetCommands:

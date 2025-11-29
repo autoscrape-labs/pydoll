@@ -1,43 +1,49 @@
-from typing import Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Optional
 
 from pydoll.protocol.base import Command
 from pydoll.protocol.runtime.methods import (
-    AddBindingCommand,
     AddBindingParams,
-    AwaitPromiseCommand,
     AwaitPromiseParams,
-    CallArgument,
-    CallFunctionOnCommand,
     CallFunctionOnParams,
-    CompileScriptCommand,
     CompileScriptParams,
-    DisableCommand,
-    EnableCommand,
-    EvaluateCommand,
     EvaluateParams,
-    GetPropertiesCommand,
     GetPropertiesParams,
-    GlobalLexicalScopeNamesCommand,
     GlobalLexicalScopeNamesParams,
-    QueryObjectsCommand,
     QueryObjectsParams,
-    ReleaseObjectCommand,
-    ReleaseObjectGroupCommand,
     ReleaseObjectGroupParams,
     ReleaseObjectParams,
-    RemoveBindingCommand,
     RemoveBindingParams,
-    RunScriptCommand,
     RunScriptParams,
     RuntimeMethod,
-    SerializationOptions,
-    SetAsyncCallStackDepthCommand,
     SetAsyncCallStackDepthParams,
-    SetCustomObjectFormatterEnabledCommand,
     SetCustomObjectFormatterEnabledParams,
-    SetMaxCallStackSizeToCaptureCommand,
     SetMaxCallStackSizeToCaptureParams,
 )
+
+if TYPE_CHECKING:
+    from pydoll.protocol.runtime.methods import (
+        AddBindingCommand,
+        AwaitPromiseCommand,
+        CallArgument,
+        CallFunctionOnCommand,
+        CompileScriptCommand,
+        DisableCommand,
+        EnableCommand,
+        EvaluateCommand,
+        GetPropertiesCommand,
+        GlobalLexicalScopeNamesCommand,
+        QueryObjectsCommand,
+        ReleaseObjectCommand,
+        ReleaseObjectGroupCommand,
+        RemoveBindingCommand,
+        RunScriptCommand,
+        SerializationOptions,
+        SetAsyncCallStackDepthCommand,
+        SetCustomObjectFormatterEnabledCommand,
+        SetMaxCallStackSizeToCaptureCommand,
+    )
 
 
 class RuntimeCommands:

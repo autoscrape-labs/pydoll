@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiple Iframes Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .iframe-container {
+            margin: 20px 0;
+            border: 2px solid #333;
+            padding: 10px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        iframe {
+            border: 1px solid #999;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="main-heading">Multiple Iframes Test Page</h1>
+    <p id="main-paragraph">This page contains multiple iframes to test iframe selection.</p>
+    
+    <div class="iframe-container">
+        <h2>First Iframe (Cookie Tracker - should be ignored)</h2>
+        <iframe 
+            id="cookie-iframe" 
+            src="test_iframe_content.html" 
+            width="300" 
+            height="100"
+            data-purpose="cookie-tracking">
+        </iframe>
+    </div>
+    
+    <div class="iframe-container">
+        <h2>Second Iframe (Login Form - target iframe)</h2>
+        <iframe 
+            id="login-iframe" 
+            src="test_iframe_content.html" 
+            width="400" 
+            height="300"
+            data-purpose="login">
+        </iframe>
+    </div>
+    
+    <div class="iframe-container">
+        <h2>Third Iframe (Analytics - should be ignored)</h2>
+        <iframe 
+            id="analytics-iframe" 
+            src="test_iframe_content.html" 
+            width="300" 
+            height="100"
+            data-purpose="analytics">
+        </iframe>
+    </div>
+</body>
+</html>
+

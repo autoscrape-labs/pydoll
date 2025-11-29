@@ -273,6 +273,8 @@ class PageEvent(str, Enum):
     Args:
         visible (bool): True if the page is visible.
     """
+    DOWNLOAD_WILL_BEGIN = 'Page.downloadWillBegin'
+    DOWNLOAD_PROGRESS = 'Page.downloadProgress'
 
 
 class DomContentEventFiredEventParams(TypedDict):

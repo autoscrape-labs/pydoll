@@ -1,3 +1,113 @@
+## 2.12.4 (2025-11-29)
+
+### Fix
+
+- optimize iframe resolution logic by adjusting backend node ID checks and enhancing child frame handling
+- refine OOPIF resolution and frame attachment logic for improved handling of backend node IDs
+- enhance OOPIF target attachment logic for improved session handling
+
+## 2.12.3 (2025-11-27)
+
+### Fix
+
+- improve frame retrieval logic for better session handling
+
+## 2.12.2 (2025-11-19)
+
+### Fix
+
+- adjust find_elements_mixin.py to refine return types and defaults
+
+## 2.12.1 (2025-11-14)
+
+### Fix
+
+- continue cleanup process if temporary directory still exists
+- adjust sleep duration for Windows and enhance temp dir cleanup
+- enhance error handling for locked files on Windows systems
+- remove unnecessary retry_times parameter in file processing
+- ensure temp directory cleanup handles Chromium locked files
+- enhance element selection and text extraction for better stability
+- handle oopif targets
+- change way to interact with iframes
+
+### Refactor
+
+- refactor iframe context handling in FindElementsMixin class
+
+### Perf
+
+- update Chrome options for better memory management and stability
+
+## 2.12.0 (2025-11-04)
+
+### Feat
+
+- **execute_script**: validate element argument usage
+- **tab,element,chrome**: revert arguments and add Chromium paths
+- add a retry decorator for handling function execution failures
+
+### Fix
+
+- import TopLevelTargetRequired in test_browser_tab.py
+- allow one additional retry attempt in the retry decorator
+
+### Refactor
+
+- **tab,element**: simplify execute_script parameters
+- **element**: move and enhance execute_script from tab
+- **tab**: separate execute_script concerns and enhance with comprehensive options
+
+## 2.11.0 (2025-11-02)
+
+### Feat
+
+- add input handling functions and key constants for editing
+- add KeyboardAPI for simulating keyboard input actions
+- add KeyboardAPI integration for enhanced keyboard control
+
+### Fix
+
+- enhance text insertion and deprecate legacy key methods
+
+## 2.10.0 (2025-11-01)
+
+### Feat
+
+- add ScrollAPI for enhanced page scrolling capabilities
+
+## 2.9.3 (2025-10-30)
+
+### Refactor
+
+- keep take_screenshot consistent
+- refactor type hints for better clarity and future compatibility
+
+## 2.9.2 (2025-10-19)
+
+### Fix
+
+- update process creation to capture output and clean proxy format
+- preserve query and fragment in WebSocket URL for tabs
+
+### Refactor
+
+- remove debug logging for request status and network events
+- refactor logger messages to use consistent single quotes
+- fix merge conflicts
+- add logging for browser lifecycle and context management events
+- refactor proxy parsing logic for improved clarity and efficiency
+
+## 2.9.1 (2025-10-15)
+
+### Fix
+
+- change download event handling to use PageEvent instead of BrowserEvent
+
+### Refactor
+
+- use early return in setup proxy method
+
 ## 2.9.0 (2025-10-05)
 
 ### Feat

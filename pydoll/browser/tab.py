@@ -1,7 +1,10 @@
+from __future__ import annotations
+
 import asyncio
 import base64 as _b64
 import logging
 import shutil
+import warnings
 from contextlib import asynccontextmanager
 from functools import partial
 from pathlib import Path
@@ -33,7 +36,6 @@ from pydoll.commands import (
 from pydoll.connection import ConnectionHandler
 from pydoll.constants import By
 from pydoll.elements.mixins import FindElementsMixin
-from pydoll.elements.web_element import WebElement
 from pydoll.exceptions import (
     DownloadTimeout,
     IFrameNotFound,
@@ -49,36 +51,44 @@ from pydoll.exceptions import (
     TopLevelTargetRequired,
     WaitElementTimeout,
 )
-from pydoll.protocol.base import EmptyResponse, Response
-from pydoll.protocol.browser.events import (
-    BrowserEvent,
-    DownloadProgressEvent,
-    DownloadWillBeginEvent,
-)
+from pydoll.interactions import KeyboardAPI, ScrollAPI
 from pydoll.protocol.browser.types import DownloadBehavior, DownloadProgressState
-from pydoll.protocol.fetch.types import AuthChallengeResponseType, HeaderEntry, RequestStage
-from pydoll.protocol.network.events import RequestWillBeSentEvent
-from pydoll.protocol.network.types import (
-    Cookie,
-    CookieParam,
-    ErrorReason,
-    RequestMethod,
-    ResourceType,
-)
-from pydoll.protocol.page.events import FileChooserOpenedEvent, PageEvent
-from pydoll.protocol.page.methods import CaptureScreenshotResponse, PrintToPDFResponse
+from pydoll.protocol.page.events import PageEvent
 from pydoll.protocol.page.types import ScreenshotFormat
-from pydoll.protocol.runtime.methods import CallFunctionOnResponse, EvaluateResponse
+from pydoll.protocol.runtime.methods import (
+    CallFunctionOnResponse,
+    EvaluateResponse,
+    SerializationOptions,
+)
+from pydoll.protocol.runtime.types import CallArgument
 from pydoll.protocol.storage.methods import GetCookiesResponse
 from pydoll.utils import (
     decode_base64_to_bytes,
     has_return_outside_function,
-    is_script_already_function,
 )
 
 if TYPE_CHECKING:
     from pydoll.browser.chromium.base import Browser
+    from pydoll.elements.web_element import WebElement
+    from pydoll.protocol.base import EmptyResponse, Response
+    from pydoll.protocol.browser.events import (
+        DownloadProgressEvent,
+        DownloadWillBeginEvent,
+    )
+    from pydoll.protocol.fetch.types import AuthChallengeResponseType, HeaderEntry, RequestStage
+    from pydoll.protocol.network.events import RequestWillBeSentEvent
     from pydoll.protocol.network.methods import GetResponseBodyResponse
+    from pydoll.protocol.network.types import (
+        Cookie,
+        CookieParam,
+        ErrorReason,
+        RequestMethod,
+        ResourceType,
+    )
+    from pydoll.protocol.page.events import FileChooserOpenedEvent
+    from pydoll.protocol.page.methods import CaptureScreenshotResponse, PrintToPDFResponse
+    from pydoll.protocol.runtime.methods import CallFunctionOnResponse, EvaluateResponse
+    from pydoll.protocol.storage.methods import GetCookiesResponse
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +106,7 @@ class Tab(FindElementsMixin):
 
     def __init__(
         self,
-        browser: 'Browser',
+        browser: Browser,
         connection_port: Optional[int] = None,
         target_id: Optional[str] = None,
         browser_context_id: Optional[str] = None,
@@ -129,6 +139,15 @@ class Tab(FindElementsMixin):
         self._intercept_file_chooser_dialog_enabled = False
         self._cloudflare_captcha_callback_id: Optional[int] = None
         self._request: Optional[Request] = None
+        self._scroll: Optional[ScrollAPI] = None
+        self._keyboard: Optional[KeyboardAPI] = None
+        logger.debug(
+            (
+                f'Tab initialized: target_id={self._target_id}, '
+                f'ws_address_set={bool(self._ws_address)}, '
+                f'context_id={self._browser_context_id}, port={self._connection_port}'
+            )
+        )
 
     @property
     def page_events_enabled(self) -> bool:
@@ -168,6 +187,30 @@ class Tab(FindElementsMixin):
         return self._request
 
     @property
+    def scroll(self) -> ScrollAPI:
+        """
+        Get the scroll API for controlling page scroll behavior.
+
+        Returns:
+            ScrollAPI: An instance of the ScrollAPI class for scroll operations.
+        """
+        if self._scroll is None:
+            self._scroll = ScrollAPI(self)
+        return self._scroll
+
+    @property
+    def keyboard(self) -> KeyboardAPI:
+        """
+        Get the keyboard API for controlling keyboard input at page level.
+
+        Returns:
+            KeyboardAPI: An instance of the KeyboardAPI class for keyboard operations.
+        """
+        if self._keyboard is None:
+            self._keyboard = KeyboardAPI(self)
+        return self._keyboard
+
+    @property
     def intercept_file_chooser_dialog_enabled(self) -> bool:
         """Whether file chooser dialog interception is active."""
         return self._intercept_file_chooser_dialog_enabled
@@ -190,14 +233,18 @@ class Tab(FindElementsMixin):
 
     async def enable_page_events(self):
         """Enable CDP Page domain events (load, navigation, dialogs, etc.)."""
+        logger.debug('Enabling Page events')
         response = await self._execute_command(PageCommands.enable())
         self._page_events_enabled = True
+        logger.debug('Page events enabled')
         return response
 
     async def enable_network_events(self):
         """Enable CDP Network domain events (requests, responses, etc.)."""
+        logger.debug('Enabling Network events')
         response = await self._execute_command(NetworkCommands.enable())
         self._network_events_enabled = True
+        logger.debug('Network events enabled')
         return response
 
     async def enable_fetch_events(
@@ -217,6 +264,10 @@ class Tab(FindElementsMixin):
         Note:
             Intercepted requests must be explicitly continued or timeout.
         """
+        logger.debug(
+            f'Enabling Fetch events: handle_auth={handle_auth}, resource_type={resource_type}, '
+            f'stage={request_stage}'
+        )
         response: Response[EmptyResponse] = await self._execute_command(
             FetchCommands.enable(
                 handle_auth_requests=handle_auth,
@@ -225,18 +276,23 @@ class Tab(FindElementsMixin):
             )
         )
         self._fetch_events_enabled = True
+        logger.debug('Fetch events enabled')
         return response
 
     async def enable_dom_events(self):
         """Enable CDP DOM domain events (document structure changes)."""
+        logger.debug('Enabling DOM events')
         response = await self._execute_command(DomCommands.enable())
         self._dom_events_enabled = True
+        logger.debug('DOM events enabled')
         return response
 
     async def enable_runtime_events(self):
         """Enable CDP Runtime domain events."""
+        logger.debug('Enabling Runtime events')
         response = await self._execute_command(RuntimeCommands.enable())
         self._runtime_events_enabled = True
+        logger.debug('Runtime events enabled')
         return response
 
     async def enable_intercept_file_chooser_dialog(self):
@@ -246,8 +302,10 @@ class Tab(FindElementsMixin):
         Note:
             Use expect_file_chooser context manager for convenience.
         """
+        logger.info('Enabling file chooser interception')
         response = await self._execute_command(PageCommands.set_intercept_file_chooser_dialog(True))
         self._intercept_file_chooser_dialog_enabled = True
+        logger.debug('File chooser interception enabled')
         return response
 
     async def enable_auto_solve_cloudflare_captcha(
@@ -264,6 +322,7 @@ class Tab(FindElementsMixin):
             time_before_click: Delay before clicking captcha (default 2s).
             time_to_wait_captcha: Timeout for captcha detection (default 5s).
         """
+        logger.info('Enabling Cloudflare captcha auto-solve')
         if not self.page_events_enabled:
             await self.enable_page_events()
 
@@ -275,47 +334,63 @@ class Tab(FindElementsMixin):
         )
 
         self._cloudflare_captcha_callback_id = await self.on(PageEvent.LOAD_EVENT_FIRED, callback)
+        logger.debug(
+            f'Cloudflare auto-solve callback registered: id={self._cloudflare_captcha_callback_id}'
+        )
 
     async def disable_fetch_events(self):
         """Disable CDP Fetch domain and release paused requests."""
+        logger.debug('Disabling Fetch events')
         response = await self._execute_command(FetchCommands.disable())
         self._fetch_events_enabled = False
+        logger.debug('Fetch events disabled')
         return response
 
     async def disable_page_events(self):
         """Disable CDP Page domain events."""
+        logger.debug('Disabling Page events')
         response = await self._execute_command(PageCommands.disable())
         self._page_events_enabled = False
+        logger.debug('Page events disabled')
         return response
 
     async def disable_network_events(self):
         """Disable CDP Network domain events."""
+        logger.debug('Disabling Network events')
         response = await self._execute_command(NetworkCommands.disable())
         self._network_events_enabled = False
+        logger.debug('Network events disabled')
         return response
 
     async def disable_dom_events(self):
         """Disable CDP DOM domain events."""
+        logger.debug('Disabling DOM events')
         response = await self._execute_command(DomCommands.disable())
         self._dom_events_enabled = False
+        logger.debug('DOM events disabled')
         return response
 
     async def disable_runtime_events(self):
         """Disable CDP Runtime domain events."""
+        logger.debug('Disabling Runtime events')
         response = await self._execute_command(RuntimeCommands.disable())
         self._runtime_events_enabled = False
+        logger.debug('Runtime events disabled')
         return response
 
     async def disable_intercept_file_chooser_dialog(self):
         """Disable file chooser dialog interception."""
+        logger.info('Disabling file chooser interception')
         response = await self._execute_command(
             PageCommands.set_intercept_file_chooser_dialog(False)
         )
         self._intercept_file_chooser_dialog_enabled = False
+        logger.debug('File chooser interception disabled')
         return response
 
     async def disable_auto_solve_cloudflare_captcha(self):
         """Disable automatic Cloudflare Turnstile captcha bypass."""
+        logger.info('Disabling Cloudflare captcha auto-solve')
         await self._connection_handler.remove_callback(self._cloudflare_captcha_callback_id)
         self._cloudflare_captcha_callback_id = None
 
@@ -326,12 +401,18 @@ class Tab(FindElementsMixin):
         Note:
             Tab instance becomes invalid after calling this method.
         """
+        logger.info(f'Closing tab: target_id={self._target_id}')
         result = await self._execute_command(PageCommands.close())
         self._browser._tabs_opened.pop(self._target_id)
+        logger.debug('Tab closed and removed from browser registry')
         return result
 
-    async def get_frame(self, frame: WebElement) -> IFrame:
+    async def get_frame(self, frame: 'WebElement') -> IFrame:
         """
+        .. deprecated:: ?.?.?
+            Use iframe `WebElement` instances directly; this method will be removed in
+            a future version.
+
         Get Tab object for interacting with iframe content.
 
         Args:
@@ -345,10 +426,18 @@ class Tab(FindElementsMixin):
             InvalidIFrame: If iframe lacks valid src attribute.
             IFrameNotFound: If iframe target not found in browser.
         """
+        warnings.warn(
+            'Tab.get_frame() is deprecated and will be removed in a future version. '
+            'Interact with iframe WebElements directly.',
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        logger.debug(f'Resolving iframe: tag={frame.tag_name}')
         if not frame.tag_name == 'iframe':
             raise NotAnIFrame
 
         frame_url = frame.get_attribute('src')
+        logger.debug(f'Iframe src resolved: {frame_url}')
         if not frame_url:
             raise InvalidIFrame('The iframe does not have a valid src attribute')
 
@@ -359,6 +448,7 @@ class Tab(FindElementsMixin):
 
         target_id = iframe_target['targetId']
         if target_id in self._browser._tabs_opened:
+            logger.debug(f'Iframe tab already tracked: {target_id}')
             return self._browser._tabs_opened[target_id]
 
         tab = Tab(
@@ -367,18 +457,23 @@ class Tab(FindElementsMixin):
             connection_port=self._connection_port,
         )
         self._browser._tabs_opened[target_id] = tab
+        logger.debug(f'Iframe tab created and registered: {target_id}')
         return tab
 
     async def bring_to_front(self):
         """Brings the page to front."""
+        logger.info('Bringing page to front')
         return await self._execute_command(PageCommands.bring_to_front())
 
     async def get_cookies(self) -> list[Cookie]:
         """Get all cookies accessible from current page."""
+        logger.debug('Fetching cookies for current page')
         response: GetCookiesResponse = await self._execute_command(
             StorageCommands.get_cookies(self._browser_context_id)
         )
-        return response['result']['cookies']
+        cookies = response['result']['cookies']
+        logger.debug(f'Fetched {len(cookies)} cookies')
+        return cookies
 
     async def get_network_response_body(self, request_id: str) -> str:
         """
@@ -396,9 +491,10 @@ class Tab(FindElementsMixin):
         if not self.network_events_enabled:
             raise NetworkEventsNotEnabled('Network events must be enabled to get response body')
 
-        response: 'GetResponseBodyResponse' = await self._execute_command(
+        response: GetResponseBodyResponse = await self._execute_command(
             NetworkCommands.get_response_body(request_id)
         )
+        logger.debug(f'Retrieved network response body for request_id={request_id}')
         return response['result']['body']
 
     async def get_network_logs(self, filter: Optional[str] = None) -> list[RequestWillBeSentEvent]:
@@ -422,6 +518,7 @@ class Tab(FindElementsMixin):
             logs = [
                 log for log in logs if filter in log['params'].get('request', {}).get('url', '')
             ]
+        logger.debug(f'Returning {len(logs)} network logs (filtered={bool(filter)})')
         return logs
 
     async def set_cookies(self, cookies: list[CookieParam]):
@@ -434,12 +531,14 @@ class Tab(FindElementsMixin):
         Note:
             Defaults to current page's domain if not specified.
         """
+        logger.info(f'Setting {len(cookies)} cookies on current page')
         return await self._execute_command(
             StorageCommands.set_cookies(cookies, self._browser_context_id)
         )
 
     async def delete_all_cookies(self):
         """Delete all cookies from current browser context."""
+        logger.info('Clearing all cookies from current browser context')
         return await self._execute_command(StorageCommands.clear_cookies(self._browser_context_id))
 
     async def go_to(self, url: str, timeout: int = 300):
@@ -455,14 +554,18 @@ class Tab(FindElementsMixin):
         Raises:
             PageLoadTimeout: If page doesn't finish loading within timeout.
         """
+        logger.info(f'Navigating to URL: {url} (timeout={timeout}s)')
         if await self._refresh_if_url_not_changed(url):
+            logger.debug('URL matches current page; refreshing instead')
             return
 
         await self._execute_command(PageCommands.navigate(url))
 
         try:
             await self._wait_page_load(timeout=timeout)
+            logger.info(f'Navigation complete: {url}')
         except WaitElementTimeout:
+            logger.error(f'Page load timeout after {timeout}s for URL: {url}')
             raise PageLoadTimeout()
 
     async def refresh(
@@ -480,6 +583,10 @@ class Tab(FindElementsMixin):
         Raises:
             PageLoadTimeout: If page doesn't finish loading within timeout.
         """
+        logger.info(
+            f'Reloading page (ignore_cache={ignore_cache}, '
+            f'script_on_load={bool(script_to_evaluate_on_load)})'
+        )
         await self._execute_command(
             PageCommands.reload(
                 ignore_cache=ignore_cache, script_to_evaluate_on_load=script_to_evaluate_on_load
@@ -487,12 +594,14 @@ class Tab(FindElementsMixin):
         )
         try:
             await self._wait_page_load()
+            logger.info('Page reloaded successfully')
         except WaitElementTimeout:
+            logger.error('Page reload timed out')
             raise PageLoadTimeout()
 
     async def take_screenshot(
         self,
-        path: Optional[str] = None,
+        path: Optional[str | Path] = None,
         quality: int = 100,
         beyond_viewport: bool = False,
         as_base64: bool = False,
@@ -517,13 +626,32 @@ class Tab(FindElementsMixin):
         if not path and not as_base64:
             raise MissingScreenshotPath()
 
-        output_extension = path.split('.')[-1] if path else ScreenshotFormat.PNG
+        if path and isinstance(path, str):
+            output_extension = path.split('.')[-1]
+        elif path and isinstance(path, Path):
+            output_extension = path.suffix.lstrip('.')
+        else:
+            output_extension = ScreenshotFormat.JPEG
+
+        # Normalize jpg to jpeg (CDP only accepts jpeg)
+        output_extension = (
+            output_extension.replace('jpg', 'jpeg')
+            if output_extension == 'jpg'
+            else output_extension
+        )
+
         if not ScreenshotFormat.has_value(output_extension):
             raise InvalidFileExtension(f'{output_extension} extension is not supported.')
 
+        output_format = ScreenshotFormat.get_value(output_extension)
+
+        logger.info(
+            f'Taking screenshot: path={path}, quality={quality}, '
+            f'beyond_viewport={beyond_viewport}, as_base64={as_base64}'
+        )
         response: CaptureScreenshotResponse = await self._execute_command(
             PageCommands.capture_screenshot(
-                format=ScreenshotFormat.get_value(output_extension),
+                format=output_format,
                 quality=quality,
                 capture_beyond_viewport=beyond_viewport,
             )
@@ -538,18 +666,20 @@ class Tab(FindElementsMixin):
             )
 
         if as_base64:
+            logger.info('Screenshot captured and returned as base64')
             return screenshot_data
 
         if path:
             screenshot_bytes = decode_base64_to_bytes(screenshot_data)
-            async with aiofiles.open(path, 'wb') as file:
+            async with aiofiles.open(str(path), 'wb') as file:
                 await file.write(screenshot_bytes)
+            logger.info(f'Screenshot saved to: {path}')
 
         return None
 
     async def print_to_pdf(
         self,
-        path: str,
+        path: Optional[str | Path] = None,
         landscape: bool = False,
         display_header_footer: bool = False,
         print_background: bool = True,
@@ -560,7 +690,7 @@ class Tab(FindElementsMixin):
         Generate PDF of current page.
 
         Args:
-            path: File path for PDF output.
+            path: File path for PDF output. Required if as_base64=False.
             landscape: Use landscape orientation.
             display_header_footer: Include header/footer.
             print_background: Include background graphics.
@@ -569,7 +699,15 @@ class Tab(FindElementsMixin):
 
         Returns:
             Base64 PDF data if as_base64=True, None otherwise.
+
+        Raises:
+            ValueError: If path is not provided when as_base64=False.
         """
+        logger.info(
+            f'Generating PDF: path={path}, landscape={landscape}, '
+            f'header_footer={display_header_footer}, print_bg={print_background}, '
+            f'scale={scale}, as_base64={as_base64}'
+        )
         response: PrintToPDFResponse = await self._execute_command(
             PageCommands.print_to_pdf(
                 landscape=landscape,
@@ -580,11 +718,16 @@ class Tab(FindElementsMixin):
         )
         pdf_data = response['result']['data']
         if as_base64:
+            logger.info('PDF generated and returned as base64')
             return pdf_data
+
+        if path is None:
+            raise ValueError('path is required when as_base64=False')
 
         pdf_bytes = decode_base64_to_bytes(pdf_data)
         async with aiofiles.open(path, 'wb') as file:
             await file.write(pdf_bytes)
+        logger.info(f'PDF saved to: {path}')
 
         return None
 
@@ -596,6 +739,7 @@ class Tab(FindElementsMixin):
             Page events must be enabled to detect dialogs.
         """
         if self._connection_handler.dialog:
+            logger.debug('Dialog present')
             return True
 
         return False
@@ -609,7 +753,9 @@ class Tab(FindElementsMixin):
         """
         if not await self.has_dialog():
             raise NoDialogPresent()
-        return self._connection_handler.dialog['params']['message']
+        message = self._connection_handler.dialog['params']['message']
+        logger.debug(f'Dialog message retrieved: {message}')
+        return message
 
     async def handle_dialog(self, accept: bool, prompt_text: Optional[str] = None):
         """
@@ -627,40 +773,180 @@ class Tab(FindElementsMixin):
         """
         if not await self.has_dialog():
             raise NoDialogPresent()
+        logger.info(f'Handling dialog: accept={accept}, has_prompt_text={bool(prompt_text)}')
         return await self._execute_command(
             PageCommands.handle_javascript_dialog(accept=accept, prompt_text=prompt_text)
         )
 
     @overload
-    async def execute_script(self, script: str) -> EvaluateResponse: ...
+    async def execute_script(
+        self,
+        script: str,
+        *,
+        object_group: Optional[str] = None,
+        include_command_line_api: Optional[bool] = None,
+        silent: Optional[bool] = None,
+        context_id: Optional[int] = None,
+        return_by_value: Optional[bool] = None,
+        generate_preview: Optional[bool] = None,
+        user_gesture: Optional[bool] = None,
+        await_promise: Optional[bool] = None,
+        throw_on_side_effect: Optional[bool] = None,
+        timeout: Optional[float] = None,
+        disable_breaks: Optional[bool] = None,
+        repl_mode: Optional[bool] = None,
+        allow_unsafe_eval_blocked_by_csp: Optional[bool] = None,
+        unique_context_id: Optional[str] = None,
+        serialization_options: Optional[SerializationOptions] = None,
+    ) -> EvaluateResponse: ...
 
     @overload
-    async def execute_script(self, script: str, element: WebElement) -> CallFunctionOnResponse: ...
+    async def execute_script(
+        self,
+        script: str,
+        element: WebElement,
+        *,
+        arguments: Optional[list[CallArgument]] = None,
+        silent: Optional[bool] = None,
+        return_by_value: Optional[bool] = None,
+        generate_preview: Optional[bool] = None,
+        user_gesture: Optional[bool] = None,
+        await_promise: Optional[bool] = None,
+        execution_context_id: Optional[int] = None,
+        object_group: Optional[str] = None,
+        throw_on_side_effect: Optional[bool] = None,
+        unique_context_id: Optional[str] = None,
+        serialization_options: Optional[SerializationOptions] = None,
+    ) -> CallFunctionOnResponse: ...
 
     async def execute_script(
-        self, script: str, element: Optional[WebElement] = None
+        self,
+        script: str,
+        element: Optional[WebElement] = None,
+        *,
+        arguments: Optional[list[CallArgument]] = None,
+        object_group: Optional[str] = None,
+        include_command_line_api: Optional[bool] = None,
+        silent: Optional[bool] = None,
+        context_id: Optional[int] = None,
+        return_by_value: Optional[bool] = None,
+        generate_preview: Optional[bool] = None,
+        user_gesture: Optional[bool] = None,
+        await_promise: Optional[bool] = None,
+        execution_context_id: Optional[int] = None,
+        throw_on_side_effect: Optional[bool] = None,
+        timeout: Optional[float] = None,
+        disable_breaks: Optional[bool] = None,
+        repl_mode: Optional[bool] = None,
+        allow_unsafe_eval_blocked_by_csp: Optional[bool] = None,
+        unique_context_id: Optional[str] = None,
+        serialization_options: Optional[SerializationOptions] = None,
     ) -> Union[EvaluateResponse, CallFunctionOnResponse]:
         """
         Execute JavaScript in page context.
 
         Args:
-            script: JavaScript code to execute.
-            element: Element context (use 'argument' in script to reference).
+            script (str): JavaScript code to execute.
+            element (Optional[WebElement]): Optional WebElement to execute script on.
+            arguments (Optional[list[CallArgument]]): Arguments to pass to the function.
+            object_group (Optional[str]): Symbolic group name for the result (Runtime.evaluate).
+            include_command_line_api (Optional[bool]): Whether to include command line API
+                (Runtime.evaluate).
+            silent (Optional[bool]): Whether to silence exceptions (Runtime.evaluate).
+            context_id (Optional[int]): ID of the execution context to evaluate in
+                (Runtime.evaluate).
+            return_by_value (Optional[bool]): Whether to return the result by value instead of
+                reference (Runtime.evaluate).
+            generate_preview (Optional[bool]): Whether to generate a preview for the result
+                (Runtime.evaluate).
+            user_gesture (Optional[bool]): Whether to treat evaluation as initiated by user
+                gesture (Runtime.evaluate).
+            await_promise (Optional[bool]): Whether to await promise result (Runtime.evaluate).
+            execution_context_id (Optional[int]): ID of the execution context to call the
+                function in.
+            throw_on_side_effect (Optional[bool]): Whether to throw if side effect cannot be
+                ruled out (Runtime.evaluate).
+            timeout (Optional[float]): Timeout in milliseconds (Runtime.evaluate).
+            disable_breaks (Optional[bool]): Whether to disable breakpoints during evaluation
+                (Runtime.evaluate).
+            repl_mode (Optional[bool]): Whether to execute in REPL mode (Runtime.evaluate).
+            allow_unsafe_eval_blocked_by_csp (Optional[bool]): Allow unsafe evaluation
+                (Runtime.evaluate).
+            unique_context_id (Optional[str]): Unique context ID for evaluation
+                (Runtime.evaluate).
+            serialization_options (Optional[SerializationOptions]): Serialization options for
+                the result (Runtime.evaluate).
 
-        Examples:
-            await page.execute_script('argument.click()', element)
-            await page.execute_script('argument.value = "Hello"', element)
+        Returns:
+            Union[EvaluateResponse, CallFunctionOnResponse]: The result of the script execution.
 
         Raises:
-            InvalidScriptWithElement: If script contains 'argument' but no element is provided.
+            InvalidScriptWithElement: If script uses 'argument' keyword but no element is provided.
+
+        Examples:
+            # Execute a simple script to log a message
+            await page.execute_script('console.log("Hello World")')
+
+            # Execute a script that returns the page title
+            await page.execute_script('return document.title')
+
+            # Execute a script on an element to click it
+            await page.execute_script('argument.click()', element)
+
+            # Execute a script on an element to set its value
+            await page.execute_script('argument.value = "Hello"', element)
         """
-        if 'argument' in script and element is None:
-            raise InvalidScriptWithElement('Script contains "argument" but no element was provided')
+        logger.debug(f'Executing script: with_element={bool(element)}, length={len(script)}')
+        if element is not None:
+            warnings.warn(
+                'Passing a WebElement to Tab.execute_script() is deprecated. '
+                'Use WebElement.execute_script() instead.',
+                DeprecationWarning,
+                stacklevel=2,
+            )
 
-        if element:
-            return await self._execute_script_with_element(script, element)
+            return await element.execute_script(
+                script,
+                arguments=arguments,
+                silent=silent,
+                return_by_value=return_by_value,
+                generate_preview=generate_preview,
+                user_gesture=user_gesture,
+                await_promise=await_promise,
+                execution_context_id=execution_context_id,
+                object_group=object_group,
+                throw_on_side_effect=throw_on_side_effect,
+                unique_context_id=unique_context_id,
+                serialization_options=serialization_options,
+            )
 
-        return await self._execute_script_without_element(script)
+        if has_return_outside_function(script):
+            script = f'(function(){{ {script} }})()'
+
+        command = self._get_evaluate_command(
+            script,
+            object_group=object_group,
+            include_command_line_api=include_command_line_api,
+            silent=silent,
+            context_id=context_id,
+            return_by_value=return_by_value,
+            generate_preview=generate_preview,
+            user_gesture=user_gesture,
+            await_promise=await_promise,
+            throw_on_side_effect=throw_on_side_effect,
+            timeout=timeout,
+            disable_breaks=disable_breaks,
+            repl_mode=repl_mode,
+            allow_unsafe_eval_blocked_by_csp=allow_unsafe_eval_blocked_by_csp,
+            unique_context_id=unique_context_id,
+            serialization_options=serialization_options,
+        )
+        logger.debug(f'Executing script without element: length={len(script)}')
+        result: Union[EvaluateResponse, CallFunctionOnResponse] = await self._execute_command(
+            command
+        )
+        self._validate_argument_error(result)
+        return result
 
     # TODO: think about how to remove these duplications with the base class
     async def continue_request(
@@ -675,6 +961,7 @@ class Tab(FindElementsMixin):
         """
         Continue paused request without modifications.
         """
+        logger.debug(f'Continue request on tab: id={request_id}')
         return await self._execute_command(
             FetchCommands.continue_request(
                 request_id=request_id,
@@ -688,6 +975,7 @@ class Tab(FindElementsMixin):
 
     async def fail_request(self, request_id: str, error_reason: ErrorReason):
         """Fail request with error code."""
+        logger.debug(f'Fail request on tab: id={request_id}, reason={error_reason}')
         return await self._execute_command(FetchCommands.fail_request(request_id, error_reason))
 
     async def fulfill_request(
@@ -699,6 +987,10 @@ class Tab(FindElementsMixin):
         response_phrase: Optional[str] = None,
     ):
         """Fulfill request with response data."""
+        logger.debug(
+            f'Fulfill request on tab: id={request_id}, code={response_code}, '
+            f'headers_set={bool(response_headers)}, body_set={bool(body)}'
+        )
         return await self._execute_command(
             FetchCommands.fulfill_request(
                 request_id=request_id,
@@ -721,6 +1013,10 @@ class Tab(FindElementsMixin):
         Useful for proxy auth (407) or server auth (401) when Fetch is enabled
         with handle_auth=True.
         """
+        logger.debug(
+            f'Continue with auth on tab: id={request_id}, response={auth_challenge_response}, '
+            f'user_set={bool(proxy_username)}'
+        )
         return await self._execute_command(
             FetchCommands.continue_request_with_auth(
                 request_id=request_id,
@@ -732,7 +1028,7 @@ class Tab(FindElementsMixin):
 
     @asynccontextmanager
     async def expect_file_chooser(
-        self, files: Union[str, Path, list[Union[str, Path]]]
+        self, files: str | Path | list[str | Path]
     ) -> AsyncGenerator[None, None]:
         """
         Context manager for automatic file upload handling.
@@ -742,6 +1038,7 @@ class Tab(FindElementsMixin):
         """
 
         async def event_handler(event: FileChooserOpenedEvent):
+            logger.info('File chooser opened; setting files')
             file_list = [str(file) for file in files] if isinstance(files, list) else [str(files)]
             await self._execute_command(
                 DomCommands.set_file_input_files(
@@ -749,6 +1046,7 @@ class Tab(FindElementsMixin):
                     backend_node_id=event['params']['backendNodeId'],
                 )
             )
+            logger.debug(f'Files set on input: {file_list}')
 
         if self.page_events_enabled is False:
             _before_page_events_enabled = False
@@ -759,6 +1057,7 @@ class Tab(FindElementsMixin):
         if self.intercept_file_chooser_dialog_enabled is False:
             await self.enable_intercept_file_chooser_dialog()
 
+        logger.info('Waiting for file chooser to open')
         await self.on(
             PageEvent.FILE_CHOOSER_OPENED,
             cast(Callable[[dict], Any], event_handler),
@@ -806,6 +1105,7 @@ class Tab(FindElementsMixin):
         if not _before_page_events_enabled:
             await self.enable_page_events()
 
+        logger.info('Expecting and bypassing Cloudflare captcha if present')
         callback_id = await self.on(PageEvent.LOAD_EVENT_FIRED, bypass_cloudflare)
 
         try:
@@ -821,7 +1121,7 @@ class Tab(FindElementsMixin):
         self,
         keep_file_at: Optional[Union[str, Path]] = None,
         timeout: Optional[float] = None,
-    ) -> AsyncGenerator['_DownloadHandle', None]:
+    ) -> AsyncGenerator[_DownloadHandle, None]:
         """
         Context manager for handling a file download triggered inside the block.
 
@@ -847,12 +1147,17 @@ class Tab(FindElementsMixin):
             download_dir = str(Path(keep_file_at))
             Path(download_dir).mkdir(parents=True, exist_ok=True)
 
+        logger.info(f'Expecting download (dir={download_dir}, timeout={download_timeout}s)')
         await self._browser.set_download_behavior(
             behavior=DownloadBehavior.ALLOW,
             download_path=download_dir,
             browser_context_id=self._browser_context_id,
-            events_enabled=True,
         )
+
+        _page_events_was_enabled = True
+        if not self._page_events_enabled:
+            _page_events_was_enabled = False
+            await self.enable_page_events()
 
         loop = asyncio.get_event_loop()
         will_begin: asyncio.Future[bool] = loop.create_future()
@@ -872,6 +1177,9 @@ class Tab(FindElementsMixin):
             state['suggestedFilename'] = params['suggestedFilename']
             if not will_begin.done():
                 will_begin.set_result(True)
+            logger.info(
+                f'Download will begin: url={state["url"]}, filename={state["suggestedFilename"]}'
+            )
 
         async def on_progress(event: DownloadProgressEvent):
             params = event['params']
@@ -888,14 +1196,15 @@ class Tab(FindElementsMixin):
             state['filePath'] = file_path
             if not done.done():
                 done.set_result(True)
+            logger.info(f'Download completed: {file_path}')
 
-        cb_id_will_begin = await self.on(
-            BrowserEvent.DOWNLOAD_WILL_BEGIN,
+        await self.on(
+            PageEvent.DOWNLOAD_WILL_BEGIN,
             cast(Callable[[dict], Awaitable[Any]], on_will_begin),
             True,
         )
         cb_id_progress = await self.on(
-            BrowserEvent.DOWNLOAD_PROGRESS,
+            PageEvent.DOWNLOAD_PROGRESS,
             cast(Callable[[dict], Awaitable[Any]], on_progress),
             False,
         )
@@ -914,19 +1223,37 @@ class Tab(FindElementsMixin):
             except asyncio.TimeoutError as exc:
                 raise DownloadTimeout() from exc
         finally:
-            await self.remove_callback(cb_id_progress)
-            await self.remove_callback(cb_id_will_begin)
-            await self._browser.set_download_behavior(
-                behavior=DownloadBehavior.DEFAULT,
-                browser_context_id=self._browser_context_id,
+            await self._cleanup_download_context(
+                cb_id_progress,
+                _page_events_was_enabled,
+                cleanup_dir,
+                state,
+                download_dir,
             )
 
-            if cleanup_dir:
-                file_path = state['filePath']
-                if not file_path:
-                    return
-                Path(file_path).unlink(missing_ok=True)
-                shutil.rmtree(download_dir, ignore_errors=True)
+    async def _cleanup_download_context(
+        self,
+        cb_id_progress: int,
+        page_events_was_enabled: bool,
+        cleanup_dir: bool,
+        state: dict[str, Any],
+        download_dir: str,
+    ) -> None:
+        await self.remove_callback(cb_id_progress)
+        await self._browser.set_download_behavior(
+            behavior=DownloadBehavior.DEFAULT,
+            browser_context_id=self._browser_context_id,
+        )
+
+        if cleanup_dir:
+            file_path = state['filePath']
+            if not file_path:
+                return
+            Path(file_path).unlink(missing_ok=True)
+            shutil.rmtree(download_dir, ignore_errors=True)
+
+        if not page_events_was_enabled:
+            await self.disable_page_events()
 
     @overload
     async def on(
@@ -967,62 +1294,73 @@ class Tab(FindElementsMixin):
         else:
             function_to_register = callback
 
+        logger.debug(
+            f'Registering callback on tab: event={event_name}, temporary={temporary}, '
+            f'async={asyncio.iscoroutinefunction(callback)}'
+        )
         return await self._connection_handler.register_callback(
             event_name, function_to_register, temporary
         )
 
     async def remove_callback(self, callback_id: int):
         """Remove callback from tab."""
+        logger.debug(f'Removing callback from tab: id={callback_id}')
         return await self._connection_handler.remove_callback(callback_id)
 
     async def clear_callbacks(self):
         """Clear all registered event callbacks."""
+        logger.debug('Clearing all callbacks from tab')
         await self._connection_handler.clear_callbacks()
 
     def _get_connection_handler(self) -> ConnectionHandler:
         if self._ws_address:
+            logger.debug('Using WebSocket address for connection handler')
             return ConnectionHandler(ws_address=self._ws_address)
+        logger.debug(
+            'Using port/target for connection handler: '
+            f'port={self._connection_port}, target_id={self._target_id}'
+        )
         return ConnectionHandler(self._connection_port, self._target_id)
 
-    async def _execute_script_with_element(self, script: str, element: WebElement):
-        """
-        Execute script with element context.
-
-        Args:
-            script: JavaScript code to execute.
-            element: Element context (use 'argument' in script to reference).
-
-        Returns:
-            The result of the script execution.
-        """
-        if 'argument' not in script:
-            raise InvalidScriptWithElement('Script does not contain "argument"')
-
-        script = script.replace('argument', 'this')
-
-        if not is_script_already_function(script):
-            script = f'function(){{ {script} }}'
-
-        command = RuntimeCommands.call_function_on(
-            object_id=element._object_id, function_declaration=script, return_by_value=True
+    @staticmethod
+    def _get_evaluate_command(
+        script: str,
+        *,
+        object_group: Optional[str] = None,
+        include_command_line_api: Optional[bool] = None,
+        silent: Optional[bool] = None,
+        context_id: Optional[int] = None,
+        return_by_value: Optional[bool] = None,
+        generate_preview: Optional[bool] = None,
+        user_gesture: Optional[bool] = None,
+        await_promise: Optional[bool] = None,
+        throw_on_side_effect: Optional[bool] = None,
+        timeout: Optional[float] = None,
+        disable_breaks: Optional[bool] = None,
+        repl_mode: Optional[bool] = None,
+        allow_unsafe_eval_blocked_by_csp: Optional[bool] = None,
+        unique_context_id: Optional[str] = None,
+        serialization_options: Optional[SerializationOptions] = None,
+    ):
+        """Create an evaluate command with the given parameters."""
+        return RuntimeCommands.evaluate(
+            expression=script,
+            object_group=object_group,
+            include_command_line_api=include_command_line_api,
+            silent=silent,
+            context_id=context_id,
+            return_by_value=return_by_value,
+            generate_preview=generate_preview,
+            user_gesture=user_gesture,
+            await_promise=await_promise,
+            throw_on_side_effect=throw_on_side_effect,
+            timeout=timeout,
+            disable_breaks=disable_breaks,
+            repl_mode=repl_mode,
+            allow_unsafe_eval_blocked_by_csp=allow_unsafe_eval_blocked_by_csp,
+            unique_context_id=unique_context_id,
+            serialization_options=serialization_options,
         )
-        return await self._execute_command(command)
-
-    async def _execute_script_without_element(self, script: str):
-        """
-        Execute script without element context.
-
-        Args:
-            script: JavaScript code to execute.
-
-        Returns:
-            The result of the script execution.
-        """
-        if has_return_outside_function(script):
-            script = f'(function(){{ {script} }})()'
-
-        command = RuntimeCommands.evaluate(expression=script)
-        return await self._execute_command(command)
 
     async def _refresh_if_url_not_changed(self, url: str) -> bool:
         """Refresh page if URL hasn't changed."""
@@ -1032,6 +1370,33 @@ class Tab(FindElementsMixin):
             return True
         return False
 
+    @staticmethod
+    def _validate_argument_error(response: EvaluateResponse) -> None:
+        """
+        Validate that script didn't fail with ReferenceError about 'argument' being undefined.
+
+        Raises:
+            InvalidScriptWithElement: If script uses 'argument' keyword but no element was provided.
+        """
+        evaluate_result = response.get('result')
+        if not isinstance(evaluate_result, dict):
+            return
+
+        remote_object = evaluate_result.get('result')
+        if not isinstance(remote_object, dict):
+            return
+
+        if not (
+            remote_object.get('type') == 'object'
+            and remote_object.get('subtype') == 'error'
+            and remote_object.get('className') == 'ReferenceError'
+        ):
+            return
+
+        description = remote_object.get('description', '')
+        if 'argument is not defined' in description:
+            raise InvalidScriptWithElement('Script contains "argument" but no element was provided')
+
     async def _wait_page_load(self, timeout: int = 300):
         """
         Wait for page to finish loading.
@@ -1040,14 +1405,13 @@ class Tab(FindElementsMixin):
             asyncio.TimeoutError: If page doesn't load within timeout.
         """
         start_time = asyncio.get_event_loop().time()
+        logger.debug(f'Waiting for page load (timeout={timeout}s)')
         while True:
             response: EvaluateResponse = await self._execute_command(
                 RuntimeCommands.evaluate(expression='document.readyState')
             )
-            if (
-                response['result']['result']['value']
-                == self._browser.options.page_load_state.value
-            ):
+            if response['result']['result']['value'] == self._browser.options.page_load_state.value:
+                logger.debug(f'Page load state reached: {self._browser.options.page_load_state}')
                 break
             if asyncio.get_event_loop().time() - start_time > timeout:
                 raise WaitElementTimeout('Page load timed out')
@@ -1066,10 +1430,10 @@ class Tab(FindElementsMixin):
             element = await self.find_or_wait_element(
                 *selector, timeout=time_to_wait_captcha, raise_exc=False
             )
-            element = cast(WebElement, element)
+            element = cast('WebElement', element)
             if element:
                 # adjust the external div size to shadow root width (usually 300px)
-                await self.execute_script('argument.style="width: 300px"', element)
+                await element.execute_script('this.style="width: 300px"')
                 await asyncio.sleep(time_before_click)
                 await element.click()
         except Exception as exc:

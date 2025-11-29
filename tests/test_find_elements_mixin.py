@@ -48,7 +48,7 @@ class TestBuildXPath:
     def test_build_xpath_single_custom_attribute(self):
         """Test XPath building with single custom attribute."""
         xpath = FindElementsMixin._build_xpath(data_testid='submit-btn')
-        assert xpath == '//*[@data_testid="submit-btn"]'
+        assert xpath == '//*[@data-testid="submit-btn"]'
 
     def test_build_xpath_id_and_class(self):
         """Test XPath building with ID and class name."""
@@ -82,8 +82,8 @@ class TestBuildXPath:
                    'contains(concat(" ", normalize-space(@class), " "), " form-control ") and '
                    '@name="user_input" and '
                    'contains(text(), "placeholder text") and '
-                   '@data_role="textbox" and '
-                   '@aria_label="User input field"]')
+                   '@data-role="textbox" and '
+                   '@aria-label="User input field"]')
         assert xpath == expected
 
     def test_build_xpath_text_with_quotes(self):
@@ -118,7 +118,7 @@ class TestBuildXPath:
             data_value='test@example.com',
             aria_describedby='field-help-123'
         )
-        expected = '//*[@data_value="test@example.com" and @aria_describedby="field-help-123"]'
+        expected = '//*[@data-value="test@example.com" and @aria-describedby="field-help-123"]'
         assert xpath == expected
 
     def test_build_xpath_numeric_attribute_values(self):
@@ -301,7 +301,7 @@ class TestGetByAndValue:
         """Test single custom attribute builds XPath."""
         by, value = self.mixin._get_by_and_value(self.by_map, data_testid='submit-btn')
         assert by == By.XPATH
-        assert value == '//*[@data_testid="submit-btn"]'
+        assert value == '//*[@data-testid="submit-btn"]'
 
     def test_multiple_attributes_build_xpath(self):
         """Test multiple attributes build XPath."""
@@ -351,7 +351,7 @@ class TestGetByAndValue:
             data_role='button'
         )
         assert by == By.XPATH
-        assert value == '//*[@data_role="button"]'
+        assert value == '//*[@data-role="button"]'
 
 
 class TestFindElementsMixinEdgeCases:
@@ -391,7 +391,7 @@ class TestFindElementsMixinEdgeCases:
         self.mixin._find_element.assert_called_once()
         call_args = self.mixin._find_element.call_args[0]
         assert call_args[0] == By.XPATH
-        assert '@data_testid="submit-button"' in call_args[1]
+        assert '@data-testid="submit-button"' in call_args[1]
 
     @pytest.mark.asyncio
     async def test_query_empty_expression(self):
@@ -530,7 +530,7 @@ class TestFindElementsMixinEdgeCases:
             assert '@id="test"' in xpath
             assert 'contains(concat(" ", normalize-space(@class), " "), " btn ")' in xpath
             assert '@name="submit"' in xpath
-            assert '@data_role="button"' in xpath
+            assert '@data-role="button"' in xpath
 
     def test_xpath_building_with_unicode_characters(self):
         """Test XPath building with Unicode characters."""
@@ -552,3 +552,179 @@ class TestFindElementsMixinEdgeCases:
         assert '" test-class "' in xpath
         # Should use concat to add spaces
         assert 'concat(" "' in xpath
+
+
+class TestUnderscoreToHyphenConversion:
+    """Test automatic conversion of underscores to hyphens in attribute names."""
+
+    def test_single_underscore_to_hyphen(self):
+        """Test single underscore conversion in attribute name."""
+        xpath = FindElementsMixin._build_xpath(data_test='submit-button')
+        assert xpath == '//*[@data-test="submit-button"]'
+
+    def test_multiple_underscores_to_hyphens(self):
+        """Test multiple underscores conversion in same attribute."""
+        xpath = FindElementsMixin._build_xpath(data_test_id='submit-button')
+        assert xpath == '//*[@data-test-id="submit-button"]'
+
+    def test_aria_attributes_conversion(self):
+        """Test aria attributes underscore conversion."""
+        xpath = FindElementsMixin._build_xpath(
+            aria_label='Submit form',
+            aria_describedby='helper-text'
+        )
+        assert '@aria-label="Submit form"' in xpath
+        assert '@aria-describedby="helper-text"' in xpath
+
+    def test_data_attributes_conversion(self):
+        """Test data attributes underscore conversion."""
+        xpath = FindElementsMixin._build_xpath(
+            data_testid='main-button',
+            data_value='123',
+            data_action='submit'
+        )
+        assert '@data-testid="main-button"' in xpath
+        assert '@data-value="123"' in xpath
+        assert '@data-action="submit"' in xpath
+
+    def test_mixed_underscore_and_hyphen_attributes(self):
+        """Test that attributes already with hyphens are not affected."""
+        # Using dict unpacking for attributes with hyphens
+        xpath = FindElementsMixin._build_xpath(
+            data_test='value1',
+            **{'already-hyphenated': 'value2'}
+        )
+        assert '@data-test="value1"' in xpath
+        assert '@already-hyphenated="value2"' in xpath
+
+    def test_combined_standard_and_custom_attributes(self):
+        """Test conversion works with combined standard and custom attributes."""
+        xpath = FindElementsMixin._build_xpath(
+            id='main-element',
+            class_name='btn',
+            data_testid='submit-btn',
+            aria_label='Submit button'
+        )
+        assert '@id="main-element"' in xpath
+        assert 'contains(concat(" ", normalize-space(@class), " "), " btn ")' in xpath
+        assert '@data-testid="submit-btn"' in xpath
+        assert '@aria-label="Submit button"' in xpath
+
+    def test_underscore_in_attribute_value_unchanged(self):
+        """Test that underscores in values are not converted."""
+        xpath = FindElementsMixin._build_xpath(data_test='some_value_with_underscores')
+        assert xpath == '//*[@data-test="some_value_with_underscores"]'
+        assert 'some_value_with_underscores' in xpath  # Value unchanged
+
+    def test_complex_attribute_names_conversion(self):
+        """Test conversion of complex attribute names."""
+        xpath = FindElementsMixin._build_xpath(
+            ng_repeat='item in items',
+            v_model='username',
+            x_bind_value='someValue'
+        )
+        assert '@ng-repeat="item in items"' in xpath
+        assert '@v-model="username"' in xpath
+        assert '@x-bind-value="someValue"' in xpath
+
+    def test_single_character_segments(self):
+        """Test attributes with single character segments."""
+        xpath = FindElementsMixin._build_xpath(
+            a_b_c='value1',
+            x_y='value2'
+        )
+        assert '@a-b-c="value1"' in xpath
+        assert '@x-y="value2"' in xpath
+
+    def test_no_underscores_unchanged(self):
+        """Test attributes without underscores remain unchanged."""
+        xpath = FindElementsMixin._build_xpath(
+            role='button',
+            type='submit',
+            disabled='true'
+        )
+        assert '@role="button"' in xpath
+        assert '@type="submit"' in xpath
+        assert '@disabled="true"' in xpath
+
+    def test_trailing_and_leading_underscores(self):
+        """Test handling of trailing and leading underscores."""
+        xpath = FindElementsMixin._build_xpath(
+            _private='value1',
+            public_='value2',
+            _both_='value3'
+        )
+        # Leading/trailing underscores should also be converted to hyphens
+        assert '@-private="value1"' in xpath
+        assert '@public-="value2"' in xpath
+        assert '@-both-="value3"' in xpath
+
+    def test_conversion_with_text_parameter(self):
+        """Test conversion works correctly with text parameter."""
+        xpath = FindElementsMixin._build_xpath(
+            text='Button text',
+            data_testid='submit-btn'
+        )
+        assert 'contains(text(), "Button text")' in xpath
+        assert '@data-testid="submit-btn"' in xpath
+
+    def test_conversion_with_tag_name(self):
+        """Test conversion works correctly with tag_name parameter."""
+        xpath = FindElementsMixin._build_xpath(
+            tag_name='button',
+            data_test='submit',
+            aria_label='Submit form'
+        )
+        assert xpath.startswith('//button')
+        assert '@data-test="submit"' in xpath
+        assert '@aria-label="Submit form"' in xpath
+
+
+class TestUnderscoreConversionWithGetByAndValue:
+    """Test underscore to hyphen conversion in _get_by_and_value method."""
+
+    def setup_method(self):
+        """Set up test fixtures."""
+        self.mixin = MockFindElementsMixin()
+        self.by_map = {
+            'id': By.ID,
+            'class_name': By.CLASS_NAME,
+            'name': By.NAME,
+            'tag_name': By.TAG_NAME,
+            'xpath': By.XPATH,
+        }
+
+    def test_custom_attribute_with_underscore(self):
+        """Test custom attribute with underscore converts properly."""
+        by, value = self.mixin._get_by_and_value(
+            self.by_map,
+            data_testid='submit-button'
+        )
+        assert by == By.XPATH
+        assert '@data-testid="submit-button"' in value
+
+    def test_multiple_custom_attributes_with_underscores(self):
+        """Test multiple custom attributes with underscores."""
+        by, value = self.mixin._get_by_and_value(
+            self.by_map,
+            data_test='value1',
+            aria_label='value2',
+            ng_model='value3'
+        )
+        assert by == By.XPATH
+        assert '@data-test="value1"' in value
+        assert '@aria-label="value2"' in value
+        assert '@ng-model="value3"' in value
+
+    def test_standard_and_custom_attributes_mixed(self):
+        """Test standard attributes with custom underscore attributes."""
+        by, value = self.mixin._get_by_and_value(
+            self.by_map,
+            id='main-btn',
+            data_testid='submit',
+            aria_label='Submit'
+        )
+        assert by == By.XPATH
+        assert '@id="main-btn"' in value
+        assert '@data-testid="submit"' in value
+        assert '@aria-label="Submit"' in value

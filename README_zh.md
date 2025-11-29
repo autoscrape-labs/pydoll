@@ -49,6 +49,108 @@ Pydoll 采用全新设计理念，从零构建，直接对接 Chrome DevTools Pr
 
 ## 最新功能
 
+### 类人页面滚动 —— 像真实用户一样滚动！
+
+现在你可以控制页面滚动，支持平滑动画并自动等待完成：
+
+```python
+from pydoll.constants import ScrollPosition
+
+# 带平滑动画向下滚动（等待完成）
+await tab.scroll.by(ScrollPosition.DOWN, 500, smooth=True)
+
+# 导航至特定位置
+await tab.scroll.to_bottom(smooth=True)
+await tab.scroll.to_top(smooth=True)
+
+# 需要速度时的即时滚动
+await tab.scroll.by(ScrollPosition.UP, 300, smooth=False)
+```
+
+不同于立即返回的 `execute_script("window.scrollBy(...)")`，滚动API使用CDP的`awaitPromise`等待浏览器的`scrollend`事件，确保后续操作仅在滚动完全完成后执行。非常适合截取屏幕截图、加载延迟内容或创建真实的阅读模式。
+
+### 键盘 API —— 完全控制键盘输入
+
+全新的 `KeyboardAPI` 为页面级别的所有键盘交互提供了简洁、集中的接口：
+
+```python
+from pydoll.constants import Key
+
+# 按单个键
+await tab.keyboard.press(Key.ENTER)
+await tab.keyboard.press(Key.TAB)
+
+# 使用快捷键/组合键（最多3个键）
+await tab.keyboard.hotkey(Key.CONTROL, Key.A)  # 全选（有效！）
+await tab.keyboard.hotkey(Key.CONTROL, Key.C)  # 复制（有效！）
+await tab.keyboard.hotkey(Key.CONTROL, Key.SHIFT, Key.ARROWRIGHT)  # 向右选择单词
+
+# 复杂序列的手动控制
+await tab.keyboard.down(Key.SHIFT)
+await tab.keyboard.press(Key.ARROWRIGHT)  # 按住 Shift 选择文本
+await tab.keyboard.up(Key.SHIFT)
+```
+
+**主要改进：**
+- **集中化**：所有键盘操作通过 `tab.keyboard` 访问
+- **智能修饰键检测**：快捷键自动检测并应用修饰键（Ctrl、Shift、Alt、Meta）
+- **完整按键支持**：26个字母（A-Z）、10个数字（0-9）、所有功能键、数字键盘和特殊键
+- **页面级快捷键**：适用于 Ctrl+C、Ctrl+V、Ctrl+A 等（由于 CDP 限制，浏览器 UI 快捷键不起作用）
+
+> **⚠️ CDP 限制：** 浏览器 UI 快捷键（如 Ctrl+T 打开新标签，F12 打开开发者工具）通过 CDP 无法使用。请改用 Pydoll 的方法：`await browser.new_tab()`、`await tab.close()`。
+
+### Retry 装饰器：生产级错误恢复
+
+使用 `@retry` 装饰器将脆弱的脚本转变为强大的生产级爬虫。通过指数退避和自定义恢复策略，自动从网络故障、超时和临时错误中恢复：
+
+```python
+import asyncio
+from pydoll.browser.chromium import Chrome
+from pydoll.decorators import retry
+from pydoll.exceptions import ElementNotFound, NetworkError
+
+class ProductScraper:
+    def __init__(self):
+        self.tab = None
+        self.retry_count = 0
+    
+    # 在每次重试前执行的恢复回调
+    async def recover_from_failure(self):
+        self.retry_count += 1
+        print(f"尝试 {self.retry_count} 失败。恢复中...")
+        
+        # 刷新页面并恢复状态
+        if self.tab:
+            await self.tab.refresh()
+            await asyncio.sleep(2)
+    
+    @retry(
+        max_retries=3,
+        exceptions=[ElementNotFound, NetworkError],
+        on_retry=recover_from_failure,  # 执行恢复逻辑
+        delay=2.0,
+        exponential_backoff=True
+    )
+    async def scrape_product(self, url: str):
+        if not self.tab:
+            browser = Chrome()
+            self.tab = await browser.start()
+        
+        await self.tab.go_to(url)
+        title = await self.tab.find(class_name='product-title', timeout=5)
+        return await title.text
+```
+
+**强大功能：**
+- **智能重试逻辑**：仅对您定义的特定异常重试
+- **指数退避**：逐步增加等待时间（1秒 → 2秒 → 4秒 → 8秒）
+- **恢复回调**：在重试之间执行自定义逻辑（刷新页面、切换代理、重启浏览器）
+- **生产验证**：自信地处理真实世界爬虫的混乱情况
+
+非常适合处理速率限制、网络不稳定、动态内容加载和验证码检测。将不可靠的爬虫转变为防弹自动化。
+
+[**📖 完整文档**](https://pydoll.tech/docs/zh/features/advanced/decorators/)
+
 ### 通过 WebSocket 进行远程连接 —— 随时随地控制浏览器！
 
 现在你可以使用浏览器的 WebSocket 地址直接连接到已运行的实例，并立即使用完整的 Pydoll API：

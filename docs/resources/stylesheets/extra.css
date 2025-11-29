@@ -1,0 +1,249 @@
+.termynal-comment {
+  color: #4a968f;
+  font-style: italic;
+  display: block;
+}
+
+.termy {
+  /* For right to left languages */
+  direction: ltr;
+}
+
+.termy [data-termynal] {
+  white-space: pre-wrap;
+}
+
+.termy .linenos {
+  display: none;
+}
+
+.label-class {
+  background-color: #1e88e5;
+  color: white;
+  padding: 2px 6px;
+  font-size: 0.75em;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+.label-attr {
+  background-color: #fb8c00;
+  color: white;
+  padding: 2px 6px;
+  font-size: 0.75em;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+.label-meth {
+  background-color: #43a047;
+  color: white;
+  padding: 2px 6px;
+  font-size: 0.75em;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+
+[data-md-color-scheme="default"] {
+  --md-primary-fg-color:        #0D141C;
+  --md-primary-fg-color--light: #3a7e9d;
+  --md-primary-fg-color--dark:  #004059;
+  
+  --md-accent-fg-color: #0091d0;
+  --md-accent-bg-color: rgba(0, 145, 208, 0.1);
+  
+  /* Background color personalizado */
+  --md-default-bg-color: #E2ECED;
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color:        #2b1d43;
+  --md-primary-fg-color--light: #b4b7bc;
+  --md-primary-fg-color--dark:  #2b1d43;
+
+  --md-accent-fg-color: #8caabf;
+  --md-accent-bg-color: rgba(140, 170, 191, 0.1);
+  
+  --md-default-bg-color: #0D141C;
+  --md-default-fg-color: #ffffff;
+}
+
+
+[data-md-color-scheme="slate"] .md-content h3 a,
+[data-md-color-scheme="slate"] .md-content h2 a,
+[data-md-color-scheme="slate"] .md-content h1 a {
+  color: inherit !important;
+  text-decoration: none;
+}
+
+[data-md-color-scheme="slate"] .md-content h3 a:hover,
+[data-md-color-scheme="slate"] .md-content h2 a:hover,
+[data-md-color-scheme="slate"] .md-content h1 a:hover {
+  text-decoration: underline;
+  opacity: 0.8;
+}
+
+/* Corrigir links dentro de cabeçalhos no modo claro */
+[data-md-color-scheme="default"] .md-content h3 a,
+[data-md-color-scheme="default"] .md-content h2 a,
+[data-md-color-scheme="default"] .md-content h1 a {
+  color: inherit !important; /* Herdar a cor do cabeçalho pai */
+  text-decoration: none;
+}
+
+[data-md-color-scheme="default"] .md-content h3 a:hover,
+[data-md-color-scheme="default"] .md-content h2 a:hover,
+[data-md-color-scheme="default"] .md-content h1 a:hover {
+  text-decoration: underline;
+  opacity: 0.8;
+}
+
+/* Estilo básico para links ativos - modo claro */
+.md-nav__link--active {
+  font-weight: bold;
+  color: var(--md-accent-fg-color);
+}
+
+/* Sobrescrever cor apenas para o modo escuro */
+[data-md-color-scheme="slate"] .md-nav__link--active {
+  color: #b4c0dd; /* Cor clara para contraste no modo escuro */
+}
+
+/* Logo personalizado */
+.md-header__button.md-logo img,
+.md-header__button.md-logo svg {
+  display: none;
+}
+
+.md-header__button.md-logo {
+  background-image: url('../images/logo.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  width: 100px;
+  height: 50px;
+}
+
+.md-header__button.md-logo:before {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Ocultar o nome do site no cabeçalho */
+.md-header__topic {
+  display: none;
+}
+
+/* Logo automático baseado no tema para a página index */
+/* Ocultar todas as imagens de logo por padrão */
+.md-content img[alt="Pydoll Logo"] {
+  display: none;
+}
+
+/* Modo claro - mostrar logo roxo */
+[data-md-color-scheme="default"] .md-content img[alt="Pydoll Logo"] {
+  display: block;
+  content: url('../images/logo-black.png');
+}
+
+/* Modo escuro - mostrar logo cinza */
+[data-md-color-scheme="slate"] .md-content img[alt="Pydoll Logo"] {
+  display: block;
+  content: url('../images/logo.png');
+}
+
+/* ===== MELHORIAS DE LINKS PARA MODO ESCURO ===== */
+
+/* Links gerais no conteúdo - modo escuro */
+[data-md-color-scheme="slate"] .md-content a {
+  color: #64b5f6 !important; /* Azul claro para boa visibilidade */
+  text-decoration: none;
+}
+
+[data-md-color-scheme="slate"] .md-content a:hover {
+  color: #90caf9 !important; /* Azul mais claro no hover */
+  text-decoration: underline;
+}
+
+/* Links na navegação lateral - modo escuro */
+[data-md-color-scheme="slate"] .md-nav__link {
+  color: #e0e0e0 !important; /* Cinza claro para links normais */
+}
+
+[data-md-color-scheme="slate"] .md-nav__link:hover {
+  color: #ffffff !important; /* Branco no hover */
+}
+
+[data-md-color-scheme="slate"] .md-nav__link--active {
+  color: #90caf9 !important; /* Verde claro para link ativo */
+  font-weight: bold;
+}
+
+/* Links em tabelas - modo escuro */
+[data-md-color-scheme="slate"] .md-typeset table a {
+  color: #64b5f6 !important;
+}
+
+[data-md-color-scheme="slate"] .md-typeset table a:hover {
+  color: #90caf9 !important;
+}
+
+/* Links em listas - modo escuro */
+[data-md-color-scheme="slate"] .md-typeset ul a,
+[data-md-color-scheme="slate"] .md-typeset ol a {
+  color: #64b5f6 !important;
+}
+
+[data-md-color-scheme="slate"] .md-typeset ul a:hover,
+[data-md-color-scheme="slate"] .md-typeset ol a:hover {
+  color: #90caf9 !important;
+}
+
+/* Links em admonitions (caixas de aviso) - modo escuro */
+[data-md-color-scheme="slate"] .md-typeset .admonition a {
+  color: #64b5f6 !important;
+}
+
+[data-md-color-scheme="slate"] .md-typeset .admonition a:hover {
+  color: #90caf9 !important;
+}
+
+/* ===== MELHORIAS DE LINKS PARA MODO CLARO ===== */
+
+/* Links gerais no conteúdo - modo claro */
+[data-md-color-scheme="default"] .md-content a {
+  color: #1976d2 !important; /* Azul escuro para boa visibilidade */
+  text-decoration: none;
+}
+
+[data-md-color-scheme="default"] .md-content a:hover {
+  color: #1565c0 !important; /* Azul mais escuro no hover */
+  text-decoration: underline;
+}
+
+/* Links na navegação lateral - modo claro */
+[data-md-color-scheme="default"] .md-nav__link {
+  color: #424242 !important; /* Cinza escuro para links normais */
+}
+
+[data-md-color-scheme="default"] .md-nav__link:hover {
+  color: #1976d2 !important; /* Azul no hover */
+}
+
+[data-md-color-scheme="default"] .md-nav__link--active {
+  color: #2e7d32 !important; /* Verde escuro para link ativo */
+  font-weight: bold;
+}
+
+/* Links em tabelas - modo claro */
+[data-md-color-scheme="default"] .md-typeset table a {
+  color: #1976d2 !important;
+}
+
+[data-md-color-scheme="default"] .md-typeset table a:hover {
+  color: #1565c0 !important;
+}
+

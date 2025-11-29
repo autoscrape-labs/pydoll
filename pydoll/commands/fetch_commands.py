@@ -1,35 +1,41 @@
-from typing import Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Optional
 
 from pydoll.protocol.base import Command
 from pydoll.protocol.fetch.methods import (
     AuthChallengeResponse,
-    ContinueRequestCommand,
     ContinueRequestParams,
-    ContinueResponseCommand,
     ContinueResponseParams,
-    ContinueWithAuthCommand,
     ContinueWithAuthParams,
-    DisableCommand,
-    EnableCommand,
     EnableParams,
-    FailRequestCommand,
     FailRequestParams,
     FetchMethod,
-    FulfillRequestCommand,
     FulfillRequestParams,
-    GetResponseBodyCommand,
     GetResponseBodyParams,
-    TakeResponseBodyAsStreamCommand,
     TakeResponseBodyAsStreamParams,
 )
-from pydoll.protocol.fetch.types import (
-    AuthChallengeResponseType,
-    HeaderEntry,
-    RequestPattern,
-    RequestStage,
-    ResourceType,
-)
-from pydoll.protocol.network.types import ErrorReason, RequestMethod
+from pydoll.protocol.fetch.types import RequestPattern
+
+if TYPE_CHECKING:
+    from pydoll.protocol.fetch.methods import (
+        ContinueRequestCommand,
+        ContinueResponseCommand,
+        ContinueWithAuthCommand,
+        DisableCommand,
+        EnableCommand,
+        FailRequestCommand,
+        FulfillRequestCommand,
+        GetResponseBodyCommand,
+        TakeResponseBodyAsStreamCommand,
+    )
+    from pydoll.protocol.fetch.types import (
+        AuthChallengeResponseType,
+        HeaderEntry,
+        RequestStage,
+        ResourceType,
+    )
+    from pydoll.protocol.network.types import ErrorReason, RequestMethod
 
 
 class FetchCommands:
@@ -53,9 +59,9 @@ class FetchCommands:
     def continue_request(
         request_id: str,
         url: Optional[str] = None,
-        method: Optional[RequestMethod] = None,
+        method: Optional['RequestMethod'] = None,
         post_data: Optional[str] = None,
-        headers: Optional[list[HeaderEntry]] = None,
+        headers: Optional[list['HeaderEntry']] = None,
         intercept_response: Optional[bool] = None,
     ) -> ContinueRequestCommand:
         """
@@ -148,8 +154,8 @@ class FetchCommands:
     def enable(
         handle_auth_requests: bool,
         url_pattern: str = '*',
-        resource_type: Optional[ResourceType] = None,
-        request_stage: Optional[RequestStage] = None,
+        resource_type: Optional['ResourceType'] = None,
+        request_stage: Optional['RequestStage'] = None,
     ) -> EnableCommand:
         """
         Creates a command to enable fetch interception.
@@ -201,7 +207,7 @@ class FetchCommands:
     def fulfill_request(
         request_id: str,
         response_code: int,
-        response_headers: Optional[list[HeaderEntry]] = None,
+        response_headers: Optional[list['HeaderEntry']] = None,
         body: Optional[str] = None,
         response_phrase: Optional[str] = None,
     ) -> FulfillRequestCommand:
@@ -257,7 +263,7 @@ class FetchCommands:
     def continue_response(
         request_id: str,
         response_code: Optional[int] = None,
-        response_headers: Optional[list[HeaderEntry]] = None,
+        response_headers: Optional[list['HeaderEntry']] = None,
         response_phrase: Optional[str] = None,
     ) -> ContinueResponseCommand:
         """

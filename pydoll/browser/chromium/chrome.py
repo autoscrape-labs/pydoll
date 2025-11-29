@@ -1,11 +1,18 @@
+from __future__ import annotations
+
+import logging
 import platform
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from pydoll.browser.chromium.base import Browser
 from pydoll.browser.managers import ChromiumOptionsManager
-from pydoll.browser.options import ChromiumOptions
 from pydoll.exceptions import UnsupportedOS
 from pydoll.utils import validate_browser_paths
+
+if TYPE_CHECKING:
+    from pydoll.browser.options import ChromiumOptions
+
+logger = logging.getLogger(__name__)
 
 
 class Chrome(Browser):
@@ -39,6 +46,7 @@ class Chrome(Browser):
             ValueError: If executable not found at default location.
         """
         os_name = platform.system()
+        logger.debug(f'Resolving default Chrome binary for OS: {os_name}')
 
         browser_paths = {
             'Windows': [
@@ -57,6 +65,9 @@ class Chrome(Browser):
         browser_path = browser_paths.get(os_name)
 
         if not browser_path:
+            logger.error(f'Unsupported OS: {os_name}')
             raise UnsupportedOS(f'Unsupported OS: {os_name}')
 
-        return validate_browser_paths(browser_path)
+        path = validate_browser_paths(browser_path)
+        logger.debug(f'Using Chrome binary: {path}')
+        return path

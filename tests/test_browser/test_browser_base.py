@@ -223,6 +223,24 @@ async def test_connect_with_ws_address_returns_tab_and_sets_handler_ws(mock_brow
 
 
 @pytest.mark.asyncio
+async def test_connect_with_ws_address_preserves_token_in_tab_ws(mock_browser):
+    ws_browser = 'ws://localhost:9222/devtools/browser/abcdef?token=secrettoken'
+    mock_browser.get_targets = AsyncMock(return_value=[{'type': 'page', 'url': 'https://example', 'targetId': 'p1'}])
+    mock_browser._get_valid_tab_id = AsyncMock(return_value='p1')
+    mock_browser._connection_handler._ensure_active_connection = AsyncMock()
+
+    tab = await mock_browser.connect(ws_browser)
+
+    assert mock_browser._ws_address == ws_browser
+    assert mock_browser._connection_handler._ws_address == ws_browser
+    mock_browser._connection_handler._ensure_active_connection.assert_awaited_once()
+
+    # Token should be preserved in page-level ws URL
+    assert isinstance(tab, Tab)
+    assert tab._ws_address == 'ws://localhost:9222/devtools/page/p1?token=secrettoken'
+
+
+@pytest.mark.asyncio
 async def test_new_tab_uses_ws_base_when_ws_address_present(mock_browser):
     # Simulate browser connected via ws
     mock_browser._ws_address = 'ws://127.0.0.1:9222/devtools/browser/xyz'
@@ -366,6 +384,12 @@ def test__get_tab_ws_address_raises_when_ws_not_set(mock_browser):
     mock_browser._ws_address = None
     with pytest.raises(InvalidWebSocketAddress):
         mock_browser._get_tab_ws_address('some-tab')
+
+
+def test__get_tab_ws_address_preserves_query_and_fragment(mock_browser):
+    mock_browser._ws_address = 'ws://host:9222/devtools/browser/abc?token=XYZ#frag'
+    result = mock_browser._get_tab_ws_address('tab1')
+    assert result == 'ws://host:9222/devtools/page/tab1?token=XYZ#frag'
 
 
 @pytest.mark.asyncio

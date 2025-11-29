@@ -1,7 +1,7 @@
 <p align="center">
-    <img src="https://github.com/user-attachments/assets/219f2dbc-37ed-4aea-a289-ba39cdbb335d" alt="Pydoll Logo" /> <br>
+    <img src="https://github.com/user-attachments/assets/2c380638-b04a-4b04-b1c8-2958e4237a94" alt="Pydoll Logo" /> <br>
 </p>
-<h1 align="center">Pydoll: scraping, the easier way</h1>
+</p> <h1 align="center">Pydoll: The Evasion-First Web Automation Framework</h1> <p align="center"> A 100% Typed, <b><code>async</code>-native</b> automation library built for modern bot evasion and high-performance scraping. </p>
 
 <p align="center">
     <a href="https://github.com/autoscrape-labs/pydoll/stargazers"><img src="https://img.shields.io/github/stars/autoscrape-labs/pydoll?style=social"></a>
@@ -16,500 +16,261 @@
 </p>
 
 
-<p align="center">
-  📖 <a href="https://pydoll.tech/">Documentation</a> •
-  🚀 <a href="#-getting-started">Getting Started</a> •
-  ⚡ <a href="#-advanced-features">Advanced Features</a> •
-  🤝 <a href="#-contributing">Contributing</a> •
-  💖 <a href="#-support-my-work">Support My Work</a>
-</p>
+<p align="center">   📖 <a href="https://pydoll.tech/">Full Documentation</a> •   🚀 <a href="#-getting-started-in-60-seconds">Getting Started</a> •   ⚡ <a href="#-the-pydoll-feature-ecosystem">Advanced Features</a> •   🧠 <a href="#-more-than-an-api-a-knowledge-base">Deep Dives</a> •   💖 <a href="#-support-this-project">Support This Project</a> </p>
 
-Imagine the following scenario: you need to automate tasks in your browser. Maybe it's testing a web application, collecting data from a site, or even automating repetitive processes. Normally this involves using external drivers, complex configurations, and many compatibility issues.
+Pydoll is built on a simple philosophy: powerful automation shouldn't require you to fight the browser.
 
-**Pydoll was born to solve these problems.**
+Forget broken `webdrivers`, compatibility issues, or being blocked by `navigator.webdriver=true`. Pydoll connects directly to the Chrome DevTools Protocol (CDP), providing a natively asynchronous, robust, and **fully typed** architecture.
 
-Built from scratch with a different philosophy, Pydoll connects directly to the Chrome DevTools Protocol (CDP), eliminating the need for external drivers. This clean implementation along with realistic ways of clicking, navigating and interacting with elements makes it practically indistinguishable from a real user.
+It's designed for modern scraping, combining an **intuitive high-level API** (for productivity) with **deep-level control** over the network and browser behavior (for evasion), allowing you to bypass complex anti-bot defenses.
 
-We believe that powerful automation shouldn't require you to become an expert in configuration or constantly fight with bot protection systems. With Pydoll, you can focus on what really matters: your automation logic, not the underlying complexity or protection systems.
+### The Pydoll Philosophy
 
-<div>
-  <h4>Be a good human. Give it a star ⭐</h4> 
-    No stars, no bugs fixed. Just kidding (maybe)
-</div>
-
-## 🌟 What makes Pydoll special?
-
-- **Zero Webdrivers**: Say goodbye to webdriver compatibility issues
-- **Human-like Interaction Engine**: Capable of passing behavioral CAPTCHAs like reCAPTCHA v3 or Turnstile, depending on IP reputation and interaction patterns
-- **Asynchronous Performance**: For high-speed automation and multiple simultaneous tasks
-- **Humanized Interactions**: Mimic real user behavior
-- **Simplicity**: With Pydoll, you install and you're ready to automate.
+* **Stealth-by-Design:** Pydoll is built for evasion. Our [human-like interactions](https://pydoll.tech/docs/features/automation/human-interactions/) simulate real user clicks, typing, and scrolling to pass behavioral analysis, while granular [Browser Preferences](https://pydoll.tech/docs/features/configuration/browser-preferences/) control lets you patch your browser fingerprint.
+* **Async & Typed Architecture:** Built from the ground up on `asyncio` and **100% type-checked** with `mypy`. This means top-tier I/O performance for concurrent tasks and a fantastic Developer Experience (DX) with autocompletion and error-checking in your IDE.
+* **Total Network Control:** Go beyond basic HTTP proxies. Pydoll gives you tools to [intercept](https://pydoll.tech/docs/features/network/interception/) (to block ads/trackers) and [monitor](https://pydoll.tech/docs/features/network/monitoring/) traffic, plus [deep documentation](https://pydoll.tech/docs/deep-dive/network/socks-proxies/) on why SOCKS5 is essential to prevent DNS leaks.
+* **Hybrid Automation (The Game-Changer):** Use the UI automation to log in, then use `tab.request` to make blazing-fast API calls that [inherit the entire browser session](https://pydoll.tech/docs/features/network/http-requests/).
+* **Ergonomics Meets Power:** Easy for the simple, powerful for the complex. Use `tab.find()` for 90% of cases and `tab.query()` for complex [CSS/XPath selectors](https://pydoll.tech/docs/deep-dive/guides/selectors-guide/).
 
 ## 📦 Installation
 
 ```bash
 pip install pydoll-python
 ```
+That's it. No `webdrivers`. No external dependencies.
 
-And that's it! Just install and start automating.
+## 🚀 Getting Started in 60 Seconds
 
-
-## ⭐ Sponsors
-The support from sponsors is essential to keep the project alive, evolving, and accessible to the entire community. Each partnership helps cover costs, drive new features, and ensure ongoing development.
-We are truly grateful to everyone who believes in and supports the project!
-
-<br>
-<p style="font-size:21px; color:black;">Browser testing via 
-    <a href="https://www.lambdatest.com/?utm_source=pydoll&utm_medium=sponsor" target="_blank">
-        <img src="https://www.lambdatest.com/blue-logo.png" style="vertical-align: middle;" width="250" height="45" />
-    </a>
-</p>
-<br>
-
-## 🚀 Getting Started
-
-### Your first automation
-
-Let's start with a real example: an automation that performs a Google search and clicks on the first result. With this example, we can see how the library works and how you can start automating your tasks.
+Thanks to its `async` architecture and context managers, Pydoll is clean and efficient.
 
 ```python
 import asyncio
-
 from pydoll.browser import Chrome
 from pydoll.constants import Key
 
 async def google_search(query: str):
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://www.google.com')
-        search_box = await tab.find(tag_name='textarea', name='q')
-        await search_box.insert_text(query)
-        await search_box.press_keyboard_key(Key.ENTER)
-        await (await tab.find(
-            tag_name='h3',
-            text='autoscrape-labs/pydoll',
-            timeout=10,
-        )).click()
-        await tab.find(id='repository-container-header', timeout=10)
+    # Context manager handles browser start() and stop()
+    async with Chrome() as browser:
+        tab = await browser.start()
+        await tab.go_to('https://www.google.com')
+
+        # Intuitive finding API: find by HTML attributes
+        search_box = await tab.find(tag_name='textarea', name='q')
+        
+        # "Human-like" interactions simulate typing
+        await search_box.insert_text(query)
+        await search_box.press_keyboard_key(Key.ENTER)
+
+        # Find by text and click (simulates mouse movement)
+        first_result = await tab.find(
+            tag_name='h3',
+            text='autoscrape-labs/pydoll', # Supports partial text matching
+            timeout=10,
+        )
+        await first_result.click()
+
+        # Wait for an element to confirm navigation
+        await tab.find(id='repository-container-header', timeout=10)
+        print(f"Page loaded: {await tab.title}")
 
 asyncio.run(google_search('pydoll python'))
 ```
 
-Without configurations, just a simple script, we can do a complete Google search!
-Okay, now let's see how we can extract data from a page, using the same previous example.
-Let's consider in the code below that we're already on the Pydoll page. We want to extract the following information:
+## ⚡ The Pydoll Feature Ecosystem
 
-- Project description
-- Number of stars
-- Number of forks
-- Number of issues
-- Number of pull requests
+Pydoll is a complete toolkit for professional automation.
 
-Let's get started! To get the project description, we'll use xpath queries. You can check the documentation on how to build your own queries.
+<details>
+<summary><b>1. Hybrid Automation (UI + API): The Game-Changer</b></summary>
+<br>
 
-```python
-description = await (await tab.query(
-    '//h2[contains(text(), "About")]/following-sibling::p',
-    timeout=10,
-)).text
-```
+Tired of manually extracting and managing cookies to use `requests` or `httpx`? Pydoll solves this.
 
-And that's it! Let's understand what this query does:
-
-1. `//h2[contains(text(), "About")]` - Selects the first `<h2>` that contains "About"
-2. `/following-sibling::p` - Selects the first `<p>` that comes after the `<h2>`
-
-Now let's get the rest of the data:
+Use the UI automation to pass a complex login (with CAPTCHAs, JS challenges, etc.) and then use `tab.request` to make **authenticated** API calls that automatically inherit all cookies, headers, and session state from the browser. It's the best of both worlds: the robustness of UI automation for auth, and the speed of direct API calls for data extraction.
 
 ```python
-number_of_stars = await (await tab.find(
-    id='repo-stars-counter-star'
-)).text
-
-number_of_forks = await (await tab.find(
-    id='repo-network-counter'
-)).text
-number_of_issues = await (await tab.find(
-    id='issues-repo-tab-count',
-)).text
-number_of_pull_requests = await (await tab.find(
-    id='pull-requests-repo-tab-count',
-)).text
-
-data = {
-    'description': description,
-    'number_of_stars': number_of_stars,
-    'number_of_forks': number_of_forks,
-    'number_of_issues': number_of_issues,
-    'number_of_pull_requests': number_of_pull_requests,
-}
-print(data)
-
-```
-
-We managed to extract all the necessary data!
-
-### Custom Configurations
-
-Sometimes we need more control over the browser. Pydoll offers a flexible way to do this. Let's see the example below:
-
-
-```python
-from pydoll.browser import Chrome
-from pydoll.browser.options import ChromiumOptions as Options
-
-async def custom_automation():
-    # Configure browser options
-    options = Options()
-    options.add_argument('--proxy-server=username:password@ip:port')
-    options.add_argument('--window-size=1920,1080')
-    options.binary_location = '/path/to/your/browser'
-    options.start_timeout = 20
-
-    async with Chrome(options=options) as browser:
-        tab = await browser.start()
-        # Your automation code here
-        await tab.go_to('https://example.com')
-        # The browser is now using your custom settings
-
-asyncio.run(custom_automation())
-```
-
-In this example, we're configuring the browser to use a proxy and a 1920x1080 window, in addition to a custom path for the Chrome binary, in case your installation location is different from the common defaults.
-
-
-## ⚡ Advanced Features
-
-Pydoll offers a series of advanced features to please even the most
-demanding users.
-
-
-### Advanced Element Search
-
-We have several ways to find elements on the page. No matter how you prefer, we have a way that makes sense for you:
-
-```python
-import asyncio
-from pydoll.browser import Chrome
-
-async def element_finding_examples():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://example.com')
-
-        # Find by attributes (most intuitive)
-        submit_btn = await tab.find(
-            tag_name='button',
-            class_name='btn-primary',
-            text='Submit'
-        )
-        # Find by ID
-        username_field = await tab.find(id='username')
-        # Find multiple elements
-        all_links = await tab.find(tag_name='a', find_all=True)
-        # CSS selectors and XPath
-        nav_menu = await tab.query('nav.main-menu')
-        specific_item = await tab.query('//div[@data-testid="item-123"]')
-        # With timeout and error handling
-        delayed_element = await tab.find(
-            class_name='dynamic-content',
-            timeout=10,
-            raise_exc=False  # Returns None if not found
-        )
-        # Advanced: Custom attributes
-        custom_element = await tab.find(
-            data_testid='submit-button',
-            aria_label='Submit form'
-        )
-
-asyncio.run(element_finding_examples())
-```
-
-The `find` method is more user-friendly. We can search by common attributes like id, tag_name, class_name, etc., up to custom attributes (e.g. `data-testid`).
-
-If that's not enough, we can use the `query` method to search for elements using CSS selectors, XPath queries, etc. Pydoll automatically takes care of identifying what type of query we're using.
-
-
-### Browser-context HTTP requests - game changer for hybrid automation!
-Ever wished you could make HTTP requests that automatically inherit all your browser's session state? **Now you can!**<br>
-The `tab.request` property gives you a beautiful `requests`-like interface that executes HTTP calls directly in the browser's JavaScript context. This means every request automatically gets cookies, authentication headers, CORS policies, and session state, just as if the browser made the request itself.
-
-**Perfect for Hybrid Automation:**
-```python
-# Navigate to a site and login normally with PyDoll
-await tab.go_to('https://example.com/login')
-await (await tab.find(id='username')).type_text('user@example.com')
-await (await tab.find(id='password')).type_text('password')
+# 1. Log in via the UI (handles CAPTCHAs, JS, etc.)
+await tab.go_to('https://my-site.com/login')
+await (await tab.find(id='username')).type_text('user')
+await (await tab.find(id='password')).type_text('pass123')
 await (await tab.find(id='login-btn')).click()
 
-# Now make API calls that inherit the logged-in session!
-response = await tab.request.get('https://example.com/api/user/profile')
+# 2. Now, use the browser's session to hit the API!
+# This request automatically INHERITS the login cookies
+response = await tab.request.get('https://my-site.com/api/user/profile')
 user_data = response.json()
-
-# POST data while staying authenticated
-response = await tab.request.post(
-    'https://example.com/api/settings', 
-    json={'theme': 'dark', 'notifications': True}
-)
-
-# Access response content in different formats
-raw_data = response.content
-text_data = response.text
-json_data = response.json()
-
-# Check cookies that were set
-for cookie in response.cookies:
-    print(f"Cookie: {cookie['name']} = {cookie['value']}")
-
-# Add custom headers to your requests
-headers = [
-    {'name': 'X-Custom-Header', 'value': 'my-value'},
-    {'name': 'X-API-Version', 'value': '2.0'}
-]
-
-await tab.request.get('https://api.example.com/data', headers=headers)
-
+print(f"Welcome, {user_data['name']}!")
 ```
+[**📖 Read more about Hybrid Automation**](https://pydoll.tech/docs/features/network/http-requests/)
+</details>
 
-**Why this is great:**
-- **No more session juggling** - Requests inherit browser cookies automatically
-- **CORS just works** - Requests respect browser security policies  
-- **Perfect for modern SPAs** - Seamlessly mix UI automation with API calls
-- **Authentication made easy** - Login once via UI, then hammer APIs
-- **Hybrid workflows** - Use the best tool for each step (UI or API)
+<details>
+<summary><b>2. Total Network Control: Monitor & Intercept Traffic</b></summary>
+<br>
+    
+Take full control of the network stack. Pydoll allows you to not only **monitor** traffic for reverse-engineering APIs but also to **intercept** requests in real-time.
 
-This opens up incredible possibilities for automation scenarios where you need both browser interaction AND API efficiency!
-
-### New expect_download() context manager — robust file downloads made easy!
-Tired of fighting with flaky download flows, missing files, or racy event listeners? Meet `tab.expect_download()`, a delightful, reliable way to handle file downloads.
-
-- Automatically sets the browser’s download behavior
-- Works with your own directory or a temporary folder (auto-cleaned!)
-- Waits for completion with a timeout (so your tests don’t hang)
-- Gives you a handy handle to read bytes/base64 or check `file_path`
-
-Tiny example that just works:
+Use this to block ads, trackers, images, or CSS to dramatically speed up your scraping and save bandwidth, or even to modify headers and mock API responses for testing.
 
 ```python
 import asyncio
-from pathlib import Path
-from pydoll.browser import Chrome
+from pydoll.browser.chromium import Chrome
+from pydoll.protocol.fetch.events import FetchEvent, RequestPausedEvent
+from pydoll.protocol.network.types import ErrorReason
 
-async def download_report():
+async def block_images():
     async with Chrome() as browser:
         tab = await browser.start()
-        await tab.go_to('https://example.com/reports')
 
-        target_dir = Path('/tmp/my-downloads')
-        async with tab.expect_download(keep_file_at=target_dir, timeout=10) as download:
-            # Trigger the download in the page (button/link/etc.)
-            await (await tab.find(text='Download latest report')).click()
-            # Wait until finished and read the content
-            data = await download.read_bytes()
-            print(f"Downloaded {len(data)} bytes to: {download.file_path}")
+        async def block_resource(event: RequestPausedEvent):
+            request_id = event['params']['requestId']
+            resource_type = event['params']['resourceType']
+            url = event['params']['request']['url']
 
-asyncio.run(download_report())
+            # Block images and stylesheets
+            if resource_type in ['Image', 'Stylesheet']:
+                await tab.fail_request(request_id, ErrorReason.BLOCKED_BY_CLIENT)
+            else:
+                # Continue other requests
+                await tab.continue_request(request_id)
+
+        await tab.enable_fetch_events()
+        await tab.on(FetchEvent.REQUEST_PAUSED, block_resource)
+
+        await tab.go_to('https://example.com')
+        await asyncio.sleep(3)
+        await tab.disable_fetch_events()
+
+asyncio.run(block_images())
 ```
+[**📖 Network Monitoring Docs**](https://pydoll.tech/docs/features/network/monitoring/) | [**📖 Request Interception Docs**](https://pydoll.tech/docs/features/network/interception/)
+</details>
 
-Want zero-hassle cleanup? Omit `keep_file_at` and we’ll create a temp folder and remove it automatically after the context exits. Perfect for tests.
+<details>
+<summary><b>3. Deep Browser Control: The Fingerprint Evasion Manual</b></summary>
+<br>
 
-### Total browser control with custom preferences! (thanks to [@LucasAlvws](https://github.com/LucasAlvws))
-Want to completely customize how Chrome behaves? **Now you can control EVERYTHING!**<br>
-The new `browser_preferences` system gives you access to hundreds of internal Chrome settings that were previously impossible to change programmatically. We're talking about deep browser customization that goes way beyond command-line flags!
+A `User-Agent` isn't enough. Pydoll gives you granular control over [Browser Preferences](https://pydoll.tech/docs/features/configuration/browser-preferences/), allowing you to modify hundreds of internal Chrome settings to build a robust and consistent fingerprint.
 
-**The possibilities are endless:**
+Our documentation doesn't just give you the tool; it [explains in detail](https://pydoll.tech/docs/deep-dive/fingerprinting/browser-fingerprinting/) how `canvas`, WebGL, font, and timezone fingerprinting works, and how to use these preferences to defend your automation.
+
 ```python
 options = ChromiumOptions()
 
-# Create the perfect automation environment
+# Create a realistic and clean browser profile
 options.browser_preferences = {
-    'download': {
-        'default_directory': '/tmp/downloads',
-        'prompt_for_download': False,
-        'directory_upgrade': True,
-        'extensions_to_open': ''  # Don't auto-open any downloads
-    },
-    'profile': {
-        'default_content_setting_values': {
-            'notifications': 2,        # Block all notifications
-            'geolocation': 2,         # Block location requests
-            'media_stream_camera': 2, # Block camera access
-            'media_stream_mic': 2,    # Block microphone access
-            'popups': 1               # Allow popups (useful for automation)
-        },
-        'password_manager_enabled': False,  # Disable password prompts
-        'exit_type': 'Normal'              # Always exit cleanly
-    },
-    'intl': {
-        'accept_languages': 'en-US,en',
-        'charset_default': 'UTF-8'
-    },
-    'browser': {
-        'check_default_browser': False,    # Don't ask about default browser
-        'show_update_promotion_infobar': False
-    }
-}
-
-# Or use the convenient helper methods
-options.set_default_download_directory('/tmp/downloads')
-options.set_accept_languages('en-US,en,pt-BR')  
-options.prompt_for_download = False
-```
-
-**Real-world power examples:**
-- **Silent downloads** - No prompts, no dialogs, just automated downloads
-- **Block ALL distractions** - Notifications, popups, camera requests, you name it
-- **Perfect for CI/CD** - Disable update checks, default browser prompts, crash reporting
-- **Multi-region testing** - Change languages, timezones, and locale settings instantly
-- **Security hardening** - Lock down permissions and disable unnecessary features
-- **Advanced fingerprinting control** - Modify browser install dates, engagement history, and behavioral patterns
-
-**Fingerprint customization for stealth automation:**
-```python
-import time
-
-# Simulate a browser that's been around for months
-fake_engagement_time = int(time.time()) - (7 * 24 * 60 * 60)  # 7 days ago
-
-options.browser_preferences = {
-    'settings': {
-        'touchpad': {
-            'natural_scroll': True,
-        }
-    },
-    'profile': {
-        'last_engagement_time': fake_engagement_time,
-        'exit_type': 'Normal',
-        'exited_cleanly': True
-    },
-    'newtab_page_location_override': 'https://www.google.com',
-    'session': {
-        'restore_on_startup': 1,  # Restore last session
-        'startup_urls': ['https://www.google.com']
-    }
+    'profile': {
+        'default_content_setting_values': {
+            'notifications': 2,       # Block notification popups
+            'geolocation': 2,        # Block location requests
+        },
+        'password_manager_enabled': False # Disable "save password" prompt
+    },
+    'intl': {
+        'accept_languages': 'en-US,en', # Make consistent with your proxy IP
+    },
+    'browser': {
+        'check_default_browser': False,   # Don't ask to be default browser
+    }
 }
 ```
+[**📖 Full Guide to Browser Preferences**](https://pydoll.tech/docs/features/configuration/browser-preferences/)
+</details>
 
-This level of control was previously only available to Chrome extension developers - now it's in your automation toolkit!
+<details>
+<summary><b>4. Built for Scale: Concurrency, Contexts & Remote Connections</b></summary>
+<br>
 
-Check the [documentation](https://pydoll.tech/docs/features/#custom-browser-preferences/) for more details.
+Pydoll is built for scale. Its `async` architecture allows you to manage [multiple tabs](https://pydoll.tech/docs/features/browser-management/tabs/) and [browser contexts](https://pydoll.tech/docs/features/browser-management/contexts/) (isolated sessions) in parallel.
 
-### Concurrent Automation
-
-One of the great advantages of Pydoll is the ability to process multiple tasks simultaneously thanks to its asynchronous implementation. We can automate multiple tabs
-at the same time! Let's see an example:
+Furthermore, Pydoll excels in production architectures. You can run your browser in a Docker container and **connect to it remotely** from your Python script, decoupling the controller from the worker. Our documentation includes guides on [how to set up your own remote server](https://pydoll.tech/docs/features/advanced/remote-connections/).
 
 ```python
-import asyncio
-from pydoll.browser import Chrome
+# Example: Scrape 2 sites in parallel
 
 async def scrape_page(url, tab):
-    await tab.go_to(url)
-    title = await tab.execute_script('return document.title')
-    links = await tab.find(tag_name='a', find_all=True)
-    return {
-        'url': url,
-        'title': title,
-        'link_count': len(links)
-    }
+    await tab.go_to(url)
+    return await tab.title
 
 async def concurrent_scraping():
-    browser = Chrome()
-    tab_google = await browser.start()
-    tab_duckduckgo = await browser.new_tab()
-    tasks = [
-        scrape_page('https://google.com/', tab_google),
-        scrape_page('https://duckduckgo.com/', tab_duckduckgo)
-    ]
-    results = await asyncio.gather(*tasks)
-    print(results)
-    await browser.stop()
+    async with Chrome() as browser:
+        tab_google = await browser.start()
+        tab_ddg = await browser.new_tab() # Create a new tab
 
-asyncio.run(concurrent_scraping())
+        # Execute both scraping tasks concurrently
+        tasks = [
+            scrape_page('https://google.com/', tab_google),
+            scrape_page('https://duckduckgo.com/', tab_ddg)
+        ]
+        results = await asyncio.gather(*tasks)
+        print(results)
 ```
+[**📖 Multi-Tab Management Docs**](https://pydoll.tech/docs/features/browser-management/tabs/) | [**📖 Remote Connection Docs**](https://pydoll.tech/docs/features/advanced/remote-connections/)
+</details>
 
-We managed to extract data from two pages at the same time!
+<details>
+<summary><b>5. Robust Engineering: `@retry` Decorator & 100% Typed</b></summary>
+<br>
 
-And there's much, much more! Event system for reactive automations, request interception and modification, and so on. Take a look at the documentation, you won't
-regret it!
+**Reliable Engineering:** Pydoll is **fully typed**, providing a fantastic Developer Experience (DX) with full autocompletion in your IDE and error-checking before you even run your code. [Read about our Type System](https://pydoll.tech/docs/deep-dive/fundamentals/typing-system/).
 
+**Robust-by-Design:** The `@retry` decorator turns fragile scripts into production-ready automations. It doesn't just "try again"; it lets you execute custom **recovery logic** (`on_retry`), like refreshing the page or rotating a proxy, before the next attempt.
 
-## 🔧 Quick Troubleshooting
-
-**Browser not found?**
 ```python
-from pydoll.browser import Chrome
-from pydoll.browser.options import ChromiumOptions
+from pydoll.decorators import retry
+from pydoll.exceptions import ElementNotFound, NetworkError
 
-options = ChromiumOptions()
-options.binary_location = '/path/to/your/chrome'
-browser = Chrome(options=options)
+@retry(
+    max_retries=3,
+    exceptions=[ElementNotFound, NetworkError], # Only retry on these specific errors
+    on_retry=my_recovery_function,          # Run your custom recovery logic
+    exponential_backoff=True              # Wait 2s, 4s, 8s...
+)
+async def scrape_product(self, url: str):
+    # ... your scraping logic ...
 ```
+[**📖 `@retry` Decorator Docs**](https://pydoll.tech/docs/features/advanced/decorators/)
+</details>
 
-**Browser starts after a FailedToStartBrowser error?**
-```python
-from pydoll.browser import Chrome
-from pydoll.browser.options import ChromiumOptions
+---
 
-options = ChromiumOptions()
-options.start_timeout = 20  # default is 10 seconds
+## 🧠 More Than an API: A Knowledge Base
 
-browser = Chrome(options=options)
-```
+Pydoll is not a black box. We believe that to defeat anti-bot systems, you must understand them. Our documentation is one of the most comprehensive public resources on the subject, teaching you not just the "how," but the "why."
 
-**Need a proxy?**
-```python
-options.add_argument('--proxy-server=your-proxy:port')
-```
+### 1. The Battle Against Fingerprinting (Strategic Guide)
+Understand how bots are detected and how Pydoll is designed to win.
+* **[Evasion Techniques Guide](https://pydoll.tech/docs/deep-dive/fingerprinting/evasion-techniques/)**: Our unified 3-layer evasion strategy.
+* **[Network Fingerprinting](https://pydoll.tech/docs/deep-dive/fingerprinting/network-fingerprinting/)**: How your IP, TTL, and TLS (JA3) headers give you away.
+* **[Browser Fingerprinting](https://pydoll.tech/docs/deep-dive/fingerprinting/browser-fingerprinting/)**: How `canvas`, WebGL, and fonts create your unique ID.
+* **[Behavioral Fingerprinting](https://pydoll.tech/docs/deep-dive/fingerprinting/behavioral-fingerprinting/)**: Why mouse/keyboard telemetry is the new front line of detection.
 
-**Running in Docker?**
-```python
-options.add_argument('--no-sandbox')
-options.add_argument('--disable-dev-shm-usage')
-```
+### 2. The Advanced Networking Manual (The Foundation)
+Proxies are more than just `--proxy-server`.
+* **[HTTP vs. SOCKS5](https://pydoll.tech/docs/deep-dive/network/socks-proxies/)**: Why SOCKS5 is superior (it solves DNS leaks).
+* **[Proxy Detection](https://pydoll.tech/docs/deep-dive/network/proxy-detection/)**: How sites know you're using a proxy (WebRTC Leaks).
+* **[Build Your Own Proxy](https://pydoll.tech/docs/deep-dive/network/build-proxy/)**: Yes, we even teach you how to build your own SOCKS5 proxy server in Python.
 
-## 📚 Documentation
+### 3. Transparent Architecture (Software Engineering)
+Software engineering you can trust.
+* **[Domain-Driven Design (OOP)](https://pydoll.tech/docs/deep-dive/architecture/browser-domain/)**: The clean architecture behind `Browser`, `Tab`, and `WebElement`.
+* **[The FindElements Mixin](https://pydoll.tech/docs/deep-dive/architecture/find-elements-mixin/)**: The magic behind the intuitive `find()` API.
+* **[The Connection Layer](https://pydoll.tech/docs/deep-dive/fundamentals/connection-layer/)**: How Pydoll manages `asyncio` and the CDP.
 
-For complete documentation, detailed examples and deep dives into all Pydoll functionalities, visit our [official documentation](https://pydoll.tech/).
-
-The documentation includes:
-- **Getting Started Guide** - Step-by-step tutorials
-- **API Reference** - Complete method documentation
-- **Advanced Techniques** - Network interception, event handling, performance optimization
-
->The chinese version of this README is [here](README_zh.md).
+---
 
 ## 🤝 Contributing
 
-We would love your help to make Pydoll even better! Check out our [contribution guidelines](CONTRIBUTING.md) to get started. Whether it's fixing bugs, adding features or improving documentation - all contributions are welcome!
+We would love your help to make Pydoll even better! Check out our [contribution guidelines](CONTRIBUTING.md) to get started.
 
-Please make sure to:
-- Write tests for new features or bug fixes
-- Follow code style and conventions
-- Use conventional commits for pull requests
-- Run lint checks and tests before submitting
+## 💖 Support This Project
 
-## 💖 Support My Work
-
-If you find Pydoll useful, consider [supporting me on GitHub](https://github.com/sponsors/thalissonvs).  
-You'll get access to exclusive benefits like priority support, custom features and much more!
-
-Can't sponsor right now? No problem, you can still help a lot by:
-- Starring the repository
-- Sharing on social media
-- Writing posts or tutorials
-- Giving feedback or reporting issues
-
-Every bit of support makes a difference/
-
-## 💬 Spread the word
-
-If Pydoll saved you time, mental health, or a keyboard from being smashed, give it a ⭐, share it, or tell your weird dev friends.
+If you find Pydoll useful, consider [sponsoring my work on GitHub](https://github.com/sponsors/thalissonvs). Every contribution helps keep the project alive and drives new features!
 
 ## 📄 License
 
 Pydoll is licensed under the [MIT License](LICENSE).
 
 <p align="center">
-  <b>Pydoll</b> — Making browser automation magical!
+  <b>Pydoll</b> — Web automation, taken seriously.
 </p>

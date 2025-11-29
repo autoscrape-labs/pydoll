@@ -255,3 +255,31 @@ def has_return_outside_function(script: str) -> bool:
             in_function = False
 
     return False
+
+
+def normalize_synthetic_xpath(selector: str) -> str:
+    """
+    Normalize synthetic XPath selector produced by the builder.
+
+    Converts selectors of the form //*[@xpath="..."] back into the original
+    XPath string between the quotes. Returns the input unchanged if the
+    pattern is not present or cannot be parsed safely.
+
+    Args:
+        selector: The selector string that may contain the synthetic XPath format.
+
+    Returns:
+        str: The normalized original XPath or the input selector if no normalization applies.
+    """
+    s = selector.strip()
+    if not s.startswith('//*[@xpath='):
+        return selector
+    prefix = '//*[@xpath="'
+    start_idx = s.find(prefix)
+    if start_idx == -1:
+        return selector
+    start_idx += len(prefix)
+    end_idx = s.rfind('"]')
+    if end_idx == -1 or end_idx <= start_idx:
+        return selector
+    return s[start_idx:end_idx]

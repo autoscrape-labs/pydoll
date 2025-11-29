@@ -5,7 +5,8 @@ Tests for pydoll.browser.requests.response module.
 import json
 import pytest
 
-from pydoll.browser.requests.response import HTTPError, Response, STATUS_CODE_RANGE_OK
+from pydoll.browser.requests.response import Response, STATUS_CODE_RANGE_OK
+from pydoll.exceptions import HTTPError
 from pydoll.protocol.fetch.types import HeaderEntry
 from pydoll.protocol.network.types import CookieParam
 

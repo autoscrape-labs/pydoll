@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import asyncio
-from typing import TYPE_CHECKING, Literal, Optional, Union, overload
+import logging
+from typing import TYPE_CHECKING, Optional, Union, cast, overload
 
 from pydoll.commands import (
     DomCommands,
@@ -8,19 +11,24 @@ from pydoll.commands import (
 from pydoll.connection.connection_handler import ConnectionHandler
 from pydoll.constants import By, Scripts
 from pydoll.exceptions import ElementNotFound, WaitElementTimeout
-from pydoll.protocol.base import Command, T_CommandParams, T_CommandResponse
-from pydoll.protocol.dom.methods import DescribeNodeResponse
-from pydoll.protocol.dom.types import Node
-from pydoll.protocol.runtime.methods import (
-    CallFunctionOnParams,
-    CallFunctionOnResponse,
-    EvaluateParams,
-    EvaluateResponse,
-    GetPropertiesResponse,
-)
 
 if TYPE_CHECKING:
-    from pydoll.elements.web_element import WebElement
+    from typing import Literal, Optional, Union
+
+    from pydoll.elements.web_element import WebElement, _IFrameContext
+    from pydoll.protocol.base import Command, T_CommandParams, T_CommandResponse
+    from pydoll.protocol.dom.methods import DescribeNodeResponse
+    from pydoll.protocol.dom.types import Node
+    from pydoll.protocol.runtime.methods import (
+        CallFunctionOnParams,
+        CallFunctionOnResponse,
+        EvaluateParams,
+        EvaluateResponse,
+        GetPropertiesResponse,
+    )
+
+
+logger = logging.getLogger(__name__)
 
 
 def create_web_element(*args, **kwargs):
@@ -60,35 +68,7 @@ class FindElementsMixin:
         find_all: Literal[False] = False,
         raise_exc: Literal[True] = True,
         **attributes,
-    ) -> 'WebElement': ...
-
-    @overload
-    async def find(
-        self,
-        id: Optional[str] = ...,
-        class_name: Optional[str] = ...,
-        name: Optional[str] = ...,
-        tag_name: Optional[str] = ...,
-        text: Optional[str] = ...,
-        timeout: int = ...,
-        find_all: Literal[True] = True,
-        raise_exc: Literal[True] = True,
-        **attributes,
-    ) -> list['WebElement']: ...
-
-    @overload
-    async def find(
-        self,
-        id: Optional[str] = ...,
-        class_name: Optional[str] = ...,
-        name: Optional[str] = ...,
-        tag_name: Optional[str] = ...,
-        text: Optional[str] = ...,
-        timeout: int = ...,
-        find_all: Literal[True] = True,
-        raise_exc: Literal[False] = False,
-        **attributes,
-    ) -> Optional[list['WebElement']]: ...
+    ) -> WebElement: ...
 
     @overload
     async def find(
@@ -102,7 +82,35 @@ class FindElementsMixin:
         find_all: Literal[False] = False,
         raise_exc: Literal[False] = False,
         **attributes,
-    ) -> Optional['WebElement']: ...
+    ) -> Optional[WebElement]: ...
+
+    @overload
+    async def find(
+        self,
+        id: Optional[str] = ...,
+        class_name: Optional[str] = ...,
+        name: Optional[str] = ...,
+        tag_name: Optional[str] = ...,
+        text: Optional[str] = ...,
+        timeout: int = ...,
+        find_all: Literal[True] = True,
+        raise_exc: Literal[True] = True,
+        **attributes,
+    ) -> list[WebElement]: ...
+
+    @overload
+    async def find(
+        self,
+        id: Optional[str] = ...,
+        class_name: Optional[str] = ...,
+        name: Optional[str] = ...,
+        tag_name: Optional[str] = ...,
+        text: Optional[str] = ...,
+        timeout: int = ...,
+        find_all: Literal[True] = True,
+        raise_exc: Literal[False] = False,
+        **attributes,
+    ) -> Optional[list[WebElement]]: ...
 
     @overload
     async def find(
@@ -116,7 +124,7 @@ class FindElementsMixin:
         find_all: bool = ...,
         raise_exc: bool = ...,
         **attributes,
-    ) -> Union['WebElement', list['WebElement'], None]: ...
+    ) -> Union[WebElement, list[WebElement], None]: ...
 
     async def find(
         self,
@@ -129,7 +137,7 @@ class FindElementsMixin:
         find_all: bool = False,
         raise_exc: bool = True,
         **attributes: dict[str, str],
-    ) -> Union['WebElement', list['WebElement'], None]:
+    ) -> Union[WebElement, list[WebElement], None]:
         """
         Find element(s) using combination of common HTML attributes.
 
@@ -155,6 +163,11 @@ class FindElementsMixin:
             ElementNotFound: If no elements found and raise_exc=True.
             WaitElementTimeout: If timeout specified and no elements appear in time.
         """
+        logger.debug(
+            f'find() called with id={id}, class_name={class_name}, name={name}, '
+            f'tag_name={tag_name}, text={text}, timeout={timeout}, '
+            f'find_all={find_all}, raise_exc={raise_exc}, attrs={attributes}'
+        )
         if not any([id, class_name, name, tag_name, text, *attributes.keys()]):
             raise ValueError(
                 'At least one of the following arguments must be provided: id, '
@@ -171,6 +184,7 @@ class FindElementsMixin:
         by, value = self._get_by_and_value(
             by_map, id, class_name, name, tag_name, text, **attributes
         )
+        logger.debug(f'find() resolved to by={by} value={value}')
         return await self.find_or_wait_element(
             by, value, timeout=timeout, find_all=find_all, raise_exc=raise_exc
         )
@@ -182,7 +196,7 @@ class FindElementsMixin:
         timeout: int = ...,
         find_all: Literal[False] = False,
         raise_exc: Literal[True] = True,
-    ) -> 'WebElement': ...
+    ) -> WebElement: ...
 
     @overload
     async def query(
@@ -191,7 +205,7 @@ class FindElementsMixin:
         timeout: int = ...,
         find_all: Literal[False] = False,
         raise_exc: Literal[False] = False,
-    ) -> Optional['WebElement']: ...
+    ) -> Optional[WebElement]: ...
 
     @overload
     async def query(
@@ -200,7 +214,7 @@ class FindElementsMixin:
         timeout: int = ...,
         find_all: Literal[True] = True,
         raise_exc: Literal[True] = True,
-    ) -> list['WebElement']: ...
+    ) -> list[WebElement]: ...
 
     @overload
     async def query(
@@ -209,7 +223,7 @@ class FindElementsMixin:
         timeout: int = ...,
         find_all: Literal[True] = True,
         raise_exc: Literal[False] = False,
-    ) -> Optional[list['WebElement']]: ...
+    ) -> Optional[list[WebElement]]: ...
 
     @overload
     async def query(
@@ -218,11 +232,11 @@ class FindElementsMixin:
         timeout: int = ...,
         find_all: bool = ...,
         raise_exc: bool = ...,
-    ) -> Union['WebElement', list['WebElement'], None]: ...
+    ) -> Union[WebElement, list[WebElement], None]: ...
 
     async def query(
         self, expression: str, timeout: int = 0, find_all: bool = False, raise_exc: bool = True
-    ) -> Union['WebElement', list['WebElement'], None]:
+    ) -> Union[WebElement, list[WebElement], None]:
         """
         Find element(s) using raw CSS selector or XPath expression.
 
@@ -242,7 +256,12 @@ class FindElementsMixin:
             ElementNotFound: If no elements found and raise_exc=True.
             WaitElementTimeout: If timeout specified and no elements appear in time.
         """
+        logger.debug(
+            f'query() called with expression={expression}, timeout={timeout}, '
+            f'find_all={find_all}, raise_exc={raise_exc}'
+        )
         by = self._get_expression_type(expression)
+        logger.debug(f'query() resolved to by={by}')
         return await self.find_or_wait_element(
             by=by, value=expression, timeout=timeout, find_all=find_all, raise_exc=raise_exc
         )
@@ -254,7 +273,7 @@ class FindElementsMixin:
         timeout: int = 0,
         find_all: bool = False,
         raise_exc: bool = True,
-    ) -> Union['WebElement', list['WebElement'], None]:
+    ) -> Union[WebElement, list[WebElement], None]:
         """
         Core element finding method with optional waiting capability.
 
@@ -276,19 +295,29 @@ class FindElementsMixin:
             ElementNotFound: If no elements found with timeout=0 and raise_exc=True.
             WaitElementTimeout: If elements not found within timeout and raise_exc=True.
         """
+        logger.debug(
+            f'find_or_wait_element(): by={by}, value={value}, timeout={timeout}, '
+            f'find_all={find_all}, raise_exc={raise_exc}'
+        )
         find_method = self._find_element if not find_all else self._find_elements
         start_time = asyncio.get_event_loop().time()
 
         if not timeout:
+            logger.debug('No timeout specified; performing single attempt')
             return await find_method(by, value, raise_exc=raise_exc)
 
         while True:
             element = await find_method(by, value, raise_exc=False)
             if element:
+                if isinstance(element, list):
+                    logger.debug(f'Found {len(element)} elements within timeout window')
+                else:
+                    logger.debug('Found 1 element within timeout window')
                 return element
 
             if asyncio.get_event_loop().time() - start_time > timeout:
                 if raise_exc:
+                    logger.error('Timeout while waiting for elements')
                     raise WaitElementTimeout()
                 return None
 
@@ -296,7 +325,7 @@ class FindElementsMixin:
 
     async def _find_element(
         self, by: By, value: str, raise_exc: bool = True
-    ) -> Optional['WebElement']:
+    ) -> Optional[WebElement]:
         """
         Find first element matching selector.
 
@@ -315,7 +344,20 @@ class FindElementsMixin:
         Raises:
             ElementNotFound: If element not found and raise_exc=True.
         """
-        if hasattr(self, '_object_id'):
+        logger.debug(f'_find_element(): by={by}, value={value}, raise_exc={raise_exc}')
+        iframe_context = None
+        if getattr(self, 'is_iframe', False):
+            element_self = cast('WebElement', self)
+            iframe_context = await element_self.iframe_context
+
+        if iframe_context:
+            command = self._get_find_element_command(
+                by,
+                value,
+                object_id=iframe_context.document_object_id or '',
+                execution_context_id=iframe_context.execution_context_id,
+            )
+        elif hasattr(self, '_object_id'):
             command = self._get_find_element_command(by, value, self._object_id)
         else:
             command = self._get_find_element_command(by, value)
@@ -326,16 +368,18 @@ class FindElementsMixin:
 
         if not self._has_object_id_key(response_for_command):
             if raise_exc:
+                logger.debug('Element not found and raise_exc=True')
                 raise ElementNotFound()
             return None
 
         object_id = response_for_command['result']['result']['objectId']
         attributes = await self._get_object_attributes(object_id=object_id)
-        return create_web_element(object_id, self._connection_handler, by, value, attributes)
+        logger.debug(f'_find_element() found object_id={object_id}')
+        element = create_web_element(object_id, self._connection_handler, by, value, attributes)
+        self._apply_iframe_context_to_element(element, iframe_context)
+        return element
 
-    async def _find_elements(
-        self, by: By, value: str, raise_exc: bool = True
-    ) -> list['WebElement']:
+    async def _find_elements(self, by: By, value: str, raise_exc: bool = True) -> list[WebElement]:
         """
         Find all elements matching selector.
 
@@ -354,7 +398,20 @@ class FindElementsMixin:
         Raises:
             ElementNotFound: If no elements found and raise_exc=True.
         """
-        if hasattr(self, '_object_id'):
+        logger.debug(f'_find_elements(): by={by}, value={value}, raise_exc={raise_exc}')
+        iframe_context = None
+        if getattr(self, 'is_iframe', False):
+            element_self = cast('WebElement', self)
+            iframe_context = await element_self.iframe_context
+
+        if iframe_context:
+            command = self._get_find_elements_command(
+                by,
+                value,
+                object_id=iframe_context.document_object_id or '',
+                execution_context_id=iframe_context.execution_context_id,
+            )
+        elif hasattr(self, '_object_id'):
             command = self._get_find_elements_command(by, value, self._object_id)
         else:
             command = self._get_find_elements_command(by, value)
@@ -365,6 +422,7 @@ class FindElementsMixin:
 
         if not response_for_command.get('result', {}).get('result', {}).get('objectId'):
             if raise_exc:
+                logger.debug('No elements found and raise_exc=True')
                 raise ElementNotFound()
             return []
 
@@ -389,9 +447,10 @@ class FindElementsMixin:
             tag_name = node_description.get('nodeName', '').lower()
             attributes.extend(['tag_name', tag_name])
 
-            elements.append(
-                create_web_element(object_id, self._connection_handler, by, value, attributes)
-            )
+            child = create_web_element(object_id, self._connection_handler, by, value, attributes)
+            self._apply_iframe_context_to_element(child, iframe_context)
+            elements.append(child)
+        logger.debug(f'_find_elements() returning {len(elements)} elements')
         return elements
 
     async def _get_object_attributes(self, object_id: str) -> list[str]:
@@ -399,6 +458,10 @@ class FindElementsMixin:
         Get attributes of a DOM node.
         """
         node_description = await self._describe_node(object_id=object_id)
+        if not node_description:
+            # If the node couldn't be described (e.g., object id doesn't reference a Node),
+            # return minimal attributes to keep the flow stable.
+            return ['tag_name', '']
         attributes = node_description.get('attributes', [])
         tag_name = node_description.get('nodeName', '').lower()
         attributes.extend(['tag_name', tag_name])
@@ -420,6 +483,15 @@ class FindElementsMixin:
         For single attribute: uses direct selector strategy.
         For multiple attributes: builds XPath expression.
         """
+        logger.debug(
+            f'_get_by_and_value(): id={id}, class_name={class_name}, name={name}, '
+            f'tag_name={tag_name}, text={text}, attrs={attributes}'
+        )
+        xpath_raw = attributes.get('xpath')
+        if isinstance(xpath_raw, str) and xpath_raw:
+            logger.debug(f'Explicit XPath provided; using raw expression: {xpath_raw}')
+            return By.XPATH, xpath_raw
+
         simple_selectors = {
             'id': id,
             'class_name': class_name,
@@ -431,9 +503,11 @@ class FindElementsMixin:
         if len(provided_selectors) == 1 and not text and not attributes:
             key, value = next(iter(provided_selectors.items()))
             by = by_map[key]
+            logger.debug(f'Simple selector resolved: by={by}, value={value}')
             return by, value
 
         xpath = self._build_xpath(id, class_name, name, tag_name, text, **attributes)
+        logger.debug(f'Complex selector resolved to XPath: {xpath}')
         return By.XPATH, xpath
 
     @staticmethod
@@ -451,6 +525,10 @@ class FindElementsMixin:
         Constructs complex XPath combining multiple conditions with 'and' operators.
         Handles class names correctly for space-separated class lists.
         Uses contains() for text matching (partial text support).
+
+        Note:
+            Attribute names with underscores are automatically converted to hyphens
+            to match HTML attribute naming conventions (e.g., data_test -> data-test).
         """
         xpath_conditions = []
         base_xpath = f'//{tag_name}' if tag_name else '//*'
@@ -465,9 +543,15 @@ class FindElementsMixin:
         if text:
             xpath_conditions.append(f'contains(text(), "{text}")')
         for attribute, value in attributes.items():
-            xpath_conditions.append(f'@{attribute}="{value}"')
+            # Convert underscores to hyphens for HTML attribute names
+            html_attribute = attribute.replace('_', '-')
+            xpath_conditions.append(f'@{html_attribute}="{value}"')
 
-        return f'{base_xpath}[{" and ".join(xpath_conditions)}]' if xpath_conditions else base_xpath
+        xpath = (
+            f'{base_xpath}[{" and ".join(xpath_conditions)}]' if xpath_conditions else base_xpath
+        )
+        logger.debug(f'_build_xpath() -> {xpath}')
+        return xpath
 
     @staticmethod
     def _get_expression_type(expression: str) -> By:
@@ -492,15 +576,58 @@ class FindElementsMixin:
         response: DescribeNodeResponse = await self._execute_command(
             DomCommands.describe_node(object_id=object_id)
         )
-        return response['result']['node']
+        if 'error' in response:
+            # Return empty node structure when CDP reports that the objectId
+            # doesn't reference a Node or any other describe error occurs.
+            return {}
+        return response.get('result', {}).get('node', {})
+
+    def _apply_iframe_context_to_element(
+        self, element: WebElement, iframe_context: _IFrameContext | None
+    ) -> None:
+        """
+        Propagate iframe context to the newly created element.
+        - If the element is also an iframe, configure session routing.
+        - Otherwise, inject the iframe's own context.
+        """
+        if not iframe_context:
+            return
+        if getattr(element, 'is_iframe', False):
+            routing_handler = iframe_context.session_handler or self._connection_handler
+            element._routing_session_handler = routing_handler
+            element._routing_session_id = iframe_context.session_id
+            element._routing_parent_frame_id = iframe_context.frame_id
+            return
+        element._iframe_context = iframe_context
+
+    def _resolve_routing(self) -> tuple[ConnectionHandler, Optional[str]]:
+        """
+        Resolve handler and sessionId for the current context (iframe routed or default).
+        """
+        iframe_context = getattr(self, '_iframe_context', None)
+        if iframe_context and getattr(iframe_context, 'session_handler', None):
+            return iframe_context.session_handler, getattr(iframe_context, 'session_id', None)
+        routing_handler = getattr(self, '_routing_session_handler', None)
+        if routing_handler is not None:
+            return routing_handler, getattr(self, '_routing_session_id', None)
+        return self._connection_handler, None
 
     async def _execute_command(
         self, command: Command[T_CommandParams, T_CommandResponse]
     ) -> T_CommandResponse:
-        """Execute CDP command via connection handler (60s timeout)."""
-        return await self._connection_handler.execute_command(command, timeout=60)
+        """Execute CDP command via resolved handler (60s timeout)."""
+        handler, session_id = self._resolve_routing()
+        if session_id:
+            command['sessionId'] = session_id
+        return await handler.execute_command(command, timeout=60)
 
-    def _get_find_element_command(self, by: By, value: str, object_id: str = ''):
+    def _get_find_element_command(
+        self,
+        by: By,
+        value: str,
+        object_id: str = '',
+        execution_context_id: Optional[int] = None,
+    ):
         """
         Create CDP command for finding single element.
 
@@ -530,18 +657,29 @@ class FindElementsMixin:
                 return_by_value=False,
             )
         elif by == By.XPATH:
-            command = self._get_find_element_by_xpath_command(value, object_id)
+            command = self._get_find_element_by_xpath_command(
+                value, object_id=object_id, execution_context_id=execution_context_id
+            )
         elif by == By.NAME:
             command = self._get_find_element_by_xpath_command(
-                f'//*[@name="{escaped_value}"]', object_id
+                f'//*[@name="{escaped_value}"]',
+                object_id=object_id,
+                execution_context_id=execution_context_id,
             )
         else:
             command = RuntimeCommands.evaluate(
-                expression=Scripts.QUERY_SELECTOR.replace('{selector}', selector)
+                expression=Scripts.QUERY_SELECTOR.replace('{selector}', selector),
+                context_id=execution_context_id,
             )
         return command
 
-    def _get_find_elements_command(self, by: By, value: str, object_id: str = ''):
+    def _get_find_elements_command(
+        self,
+        by: By,
+        value: str,
+        object_id: str = '',
+        execution_context_id: Optional[int] = None,
+    ):
         """
         Create CDP command for finding multiple elements.
 
@@ -568,14 +706,22 @@ class FindElementsMixin:
                 return_by_value=False,
             )
         elif by == By.XPATH:
-            command = self._get_find_elements_by_xpath_command(value, object_id)
+            command = self._get_find_elements_by_xpath_command(
+                value, object_id=object_id, execution_context_id=execution_context_id
+            )
         else:
             command = RuntimeCommands.evaluate(
-                expression=Scripts.QUERY_SELECTOR_ALL.replace('{selector}', selector)
+                expression=Scripts.QUERY_SELECTOR_ALL.replace('{selector}', selector),
+                context_id=execution_context_id,
             )
         return command
 
-    def _get_find_element_by_xpath_command(self, xpath: str, object_id: str):
+    def _get_find_element_by_xpath_command(
+        self,
+        xpath: str,
+        object_id: str,
+        execution_context_id: Optional[int] = None,
+    ):
         """
         Create CDP command specifically for XPath single element finding.
 
@@ -597,10 +743,15 @@ class FindElementsMixin:
             )
         else:
             script = Scripts.FIND_XPATH_ELEMENT.replace('{escaped_value}', escaped_value)
-            command = RuntimeCommands.evaluate(expression=script)
+            command = RuntimeCommands.evaluate(expression=script, context_id=execution_context_id)
         return command
 
-    def _get_find_elements_by_xpath_command(self, xpath: str, object_id: str):
+    def _get_find_elements_by_xpath_command(
+        self,
+        xpath: str,
+        object_id: str,
+        execution_context_id: Optional[int] = None,
+    ):
         """
         Create CDP command specifically for XPath multiple element finding.
 
@@ -622,7 +773,7 @@ class FindElementsMixin:
             )
         else:
             script = Scripts.FIND_XPATH_ELEMENTS.replace('{escaped_value}', escaped_value)
-            command = RuntimeCommands.evaluate(expression=script)
+            command = RuntimeCommands.evaluate(expression=script, context_id=execution_context_id)
         return command
 
     @staticmethod

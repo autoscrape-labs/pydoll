@@ -15,6 +15,13 @@ class PageLoadState(str, Enum):
     INTERACTIVE = 'interactive'
 
 
+class ScrollPosition(str, Enum):
+    UP = 'up'
+    DOWN = 'down'
+    LEFT = 'left'
+    RIGHT = 'right'
+
+
 class Scripts:
     ELEMENT_VISIBLE = """
     function() {
@@ -79,10 +86,16 @@ class Scripts:
 
     CLICK_OPTION_TAG = """
     function() {
-    this.selected = true;
-    var select = this.parentElement.closest('select');
-    var event = new Event('change', { bubbles: true });
-    select.dispatchEvent(event);
+        var select = this && this.parentElement ? this.parentElement.closest('select') : null;
+        if (!select) { return false; }
+        for (var i = 0; i < select.options.length; i++) {
+            select.options[i].selected = false;
+        }
+        this.selected = true;
+        select.value = this.value;
+        select.dispatchEvent(new Event('input', { bubbles: true }));
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+        return true;
     }
     """
 
@@ -149,6 +162,26 @@ class Scripts:
         function() {
             return this.querySelectorAll("{selector}");
         }
+    """
+
+    GET_TEXT_BY_XPATH = """
+        (() => {
+            const node = document.evaluate(
+                "{escaped_value}",
+                document,
+                null,
+                XPathResult.FIRST_ORDERED_NODE_TYPE,
+                null
+            ).singleNodeValue;
+            return node ? (node.textContent || "") : "";
+        })()
+    """
+
+    GET_TEXT_BY_CSS = """
+        (() => {
+            const el = document.querySelector("{selector}");
+            return el ? (el.textContent || "") : "";
+        })()
     """
 
     GET_PARENT_NODE = """
@@ -268,6 +301,153 @@ class Scripts:
 }})();
 """
 
+    SCROLL_BY = """
+new Promise((resolve) => {{
+    const behavior = '{behavior}';
+    if (behavior === 'auto') {{
+        window.scrollBy({{
+            {axis}: {distance},
+            behavior: 'auto'
+        }});
+        resolve();
+    }} else {{
+        const onScrollEnd = () => {{
+            window.removeEventListener('scrollend', onScrollEnd);
+            resolve();
+        }};
+        window.addEventListener('scrollend', onScrollEnd);
+        window.scrollBy({{
+            {axis}: {distance},
+            behavior: 'smooth'
+        }});
+        setTimeout(() => {{
+            window.removeEventListener('scrollend', onScrollEnd);
+            resolve();
+        }}, 2000);
+    }}
+}});
+"""
+
+    SCROLL_TO_TOP = """
+new Promise((resolve) => {{
+    const behavior = '{behavior}';
+    if (behavior === 'auto') {{
+        window.scrollTo({{
+            top: 0,
+            behavior: 'auto'
+        }});
+        resolve();
+    }} else {{
+        const onScrollEnd = () => {{
+            window.removeEventListener('scrollend', onScrollEnd);
+            resolve();
+        }};
+        window.addEventListener('scrollend', onScrollEnd);
+        window.scrollTo({{
+            top: 0,
+            behavior: 'smooth'
+        }});
+        setTimeout(() => {{
+            window.removeEventListener('scrollend', onScrollEnd);
+            resolve();
+        }}, 2000);
+    }}
+}});
+"""
+
+    SCROLL_TO_BOTTOM = """
+new Promise((resolve) => {{
+    const behavior = '{behavior}';
+    if (behavior === 'auto') {{
+        window.scrollTo({{
+            top: document.body.scrollHeight,
+            behavior: 'auto'
+        }});
+        resolve();
+    }} else {{
+        const onScrollEnd = () => {{
+            window.removeEventListener('scrollend', onScrollEnd);
+            resolve();
+        }};
+        window.addEventListener('scrollend', onScrollEnd);
+        window.scrollTo({{
+            top: document.body.scrollHeight,
+            behavior: 'smooth'
+        }});
+        setTimeout(() => {{
+            window.removeEventListener('scrollend', onScrollEnd);
+            resolve();
+        }}, 2000);
+    }}
+}});
+"""
+
+    INSERT_TEXT = """
+    function() {
+        const el = this;
+        const text = arguments[0];
+
+        // Standard input/textarea
+        if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+            const start = el.selectionStart || el.value.length;
+            const end = el.selectionEnd || el.value.length;
+            const before = el.value.substring(0, start);
+            const after = el.value.substring(end);
+            el.value = before + text + after;
+            el.selectionStart = el.selectionEnd = start + text.length;
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+            return true;
+        }
+
+        // ContentEditable elements
+        if (el.isContentEditable) {
+            el.focus();
+            const selection = window.getSelection();
+            const range = selection.getRangeAt(0);
+            range.deleteContents();
+            const textNode = document.createTextNode(text);
+            range.insertNode(textNode);
+            range.setStartAfter(textNode);
+            range.setEndAfter(textNode);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            return true;
+        }
+
+        return false;
+    }
+    """
+
+    IS_EDITABLE = """
+    function() {
+        const el = this;
+
+        // Check standard input elements
+        if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+            return !el.disabled && !el.readOnly;
+        }
+
+        // Check contenteditable (including inherited)
+        let current = el;
+        while (current) {
+            if (current.isContentEditable) {
+                return true;
+            }
+            current = current.parentElement;
+        }
+
+        return false;
+    }
+    """
+
+    IS_OPTION_TAG = """
+    function() {
+        return !!(this && this.tagName && this.tagName.toLowerCase() === 'option');
+    }
+    """
+
 
 class Key(tuple[str, int], Enum):
     BACKSPACE = ('Backspace', 8)
@@ -291,11 +471,64 @@ class Key(tuple[str, int], Enum):
     PRINTSCREEN = ('PrintScreen', 44)
     INSERT = ('Insert', 45)
     DELETE = ('Delete', 46)
+
+    DIGIT0 = ('0', 48)
+    DIGIT1 = ('1', 49)
+    DIGIT2 = ('2', 50)
+    DIGIT3 = ('3', 51)
+    DIGIT4 = ('4', 52)
+    DIGIT5 = ('5', 53)
+    DIGIT6 = ('6', 54)
+    DIGIT7 = ('7', 55)
+    DIGIT8 = ('8', 56)
+    DIGIT9 = ('9', 57)
+
+    A = ('A', 65)
+    B = ('B', 66)
+    C = ('C', 67)
+    D = ('D', 68)
+    E = ('E', 69)
+    F = ('F', 70)
+    G = ('G', 71)
+    H = ('H', 72)
+    I = ('I', 73)  # noqa: E741
+    J = ('J', 74)
+    K = ('K', 75)
+    L = ('L', 76)
+    M = ('M', 77)
+    N = ('N', 78)
+    O = ('O', 79)  # noqa: E741
+    P = ('P', 80)
+    Q = ('Q', 81)
+    R = ('R', 82)
+    S = ('S', 83)
+    T = ('T', 84)
+    U = ('U', 85)
+    V = ('V', 86)
+    W = ('W', 87)
+    X = ('X', 88)
+    Y = ('Y', 89)
+    Z = ('Z', 90)
+
     META = ('Meta', 91)
     METARIGHT = ('MetaRight', 92)
     CONTEXTMENU = ('ContextMenu', 93)
-    NUMLOCK = ('NumLock', 144)
-    SCROLLLOCK = ('ScrollLock', 145)
+
+    NUMPAD0 = ('Numpad0', 96)
+    NUMPAD1 = ('Numpad1', 97)
+    NUMPAD2 = ('Numpad2', 98)
+    NUMPAD3 = ('Numpad3', 99)
+    NUMPAD4 = ('Numpad4', 100)
+    NUMPAD5 = ('Numpad5', 101)
+    NUMPAD6 = ('Numpad6', 102)
+    NUMPAD7 = ('Numpad7', 103)
+    NUMPAD8 = ('Numpad8', 104)
+    NUMPAD9 = ('Numpad9', 105)
+    NUMPADMULTIPLY = ('NumpadMultiply', 106)
+    NUMPADADD = ('NumpadAdd', 107)
+    NUMPADSUBTRACT = ('NumpadSubtract', 109)
+    NUMPADDECIMAL = ('NumpadDecimal', 110)
+    NUMPADDIVIDE = ('NumpadDivide', 111)
 
     F1 = ('F1', 112)
     F2 = ('F2', 113)
@@ -309,6 +542,9 @@ class Key(tuple[str, int], Enum):
     F10 = ('F10', 121)
     F11 = ('F11', 122)
     F12 = ('F12', 123)
+
+    NUMLOCK = ('NumLock', 144)
+    SCROLLLOCK = ('ScrollLock', 145)
 
     SEMICOLON = ('Semicolon', 186)
     EQUALSIGN = ('EqualSign', 187)

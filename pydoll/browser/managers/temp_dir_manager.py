@@ -1,8 +1,12 @@
+import logging
+import os
 import shutil
 import time
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Callable
+
+logger = logging.getLogger(__name__)
 
 
 class TempDirectoryManager:
@@ -23,6 +27,7 @@ class TempDirectoryManager:
         """
         self._temp_dir_factory = temp_dir_factory
         self._temp_dirs: list[TemporaryDirectory] = []
+        logger.debug('TempDirectoryManager initialized')
 
     def create_temp_dir(self) -> TemporaryDirectory:
         """
@@ -33,6 +38,7 @@ class TempDirectoryManager:
         """
         temp_dir = self._temp_dir_factory()
         self._temp_dirs.append(temp_dir)
+        logger.debug(f'Created temp directory: {temp_dir.name}')
         return temp_dir
 
     @staticmethod
@@ -56,6 +62,9 @@ class TempDirectoryManager:
                 break
             except PermissionError:
                 time.sleep(0.1)
+                logger.debug(
+                    f'Retrying file operation due to PermissionError (attempt {retry_time})'
+                )
         else:
             raise PermissionError()
 
@@ -72,15 +81,43 @@ class TempDirectoryManager:
             Handles Chromium-specific locked files like CrashpadMetrics.
         """
         matches = ['CrashpadMetrics-active.pma']
+        match_substrings = ['Safe Browsing', 'Safe Browsing Cookies']
+        # Extra patterns commonly locked on Windows; compare case-insensitively
+        windows_locked_substrings = [
+            '\\cache\\',
+            '/cache/',
+            'no_vary_search',
+            'journal.baj',
+            '\\network\\cookies',
+            '/network/cookies',
+            'cookies-journal',
+            '\\local storage\\',
+            '/local storage/',
+            '\\local storage\\leveldb\\',
+            '/local storage/leveldb/',
+            'leveldb',
+            'indexeddb',
+        ]
         exc_type, exc_value, _ = exc_info
 
         if exc_type is PermissionError:
-            if Path(path).name in matches:
+            filename = Path(path).name
+            # Known Chromium files that may remain locked briefly on Windows
+            path_lc = path.lower()
+            windows_match = os.name == 'nt' and any(
+                substr in path_lc for substr in windows_locked_substrings
+            )
+            if (
+                filename in matches
+                or any(substr in path for substr in match_substrings)
+                or windows_match
+            ):
                 try:
                     self.retry_process_file(func, path)
                     return
                 except PermissionError:
-                    raise exc_value
+                    logger.warning(f'Ignoring locked Chrome file during cleanup: {path}')
+                    return
         elif exc_type is OSError:
             return
         raise exc_value
@@ -93,4 +130,25 @@ class TempDirectoryManager:
         Continues cleanup even if some files resist deletion.
         """
         for temp_dir in self._temp_dirs:
+            logger.info(f'Cleaning up temp directory: {temp_dir.name}')
             shutil.rmtree(temp_dir.name, onerror=self.handle_cleanup_error)
+            remaining = Path(temp_dir.name)
+            if not remaining.exists():
+                continue
+
+            for attempt in range(10):
+                time.sleep(0.2)
+                try:
+                    shutil.rmtree(temp_dir.name, onerror=self.handle_cleanup_error)
+                except Exception:  # noqa: BLE001 - best-effort cleanup
+                    pass
+                if not remaining.exists():
+                    logger.debug(
+                        f'Temp directory removed after retry #{attempt + 1}: {temp_dir.name}'
+                    )
+                    break
+            if remaining.exists():
+                logger.warning(
+                    f'Temp directory still present after retries (leftover files may remain): '
+                    f'{temp_dir.name}'
+                )

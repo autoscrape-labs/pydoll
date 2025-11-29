@@ -3,15 +3,18 @@ import asyncio
 import pytest
 import pytest_asyncio
 import uuid
-from unittest.mock import AsyncMock, MagicMock, patch, ANY
+from unittest.mock import AsyncMock, MagicMock, Mock, patch, ANY
 from pathlib import Path
 
+from pydoll.elements.web_element import WebElement
+from pydoll.protocol.runtime.types import CallArgument, SerializationOptions
 from pydoll.browser.options import ChromiumOptions
+
 from pydoll.protocol.network.types import ResourceType, RequestMethod
 from pydoll.protocol.fetch.types import RequestStage
 from pydoll.constants import By
 from pydoll.browser.tab import Tab
-from pydoll.protocol.browser.events import BrowserEvent
+from pydoll.protocol.page.events import PageEvent
 from pydoll.protocol.browser.types import DownloadBehavior
 from pydoll.exceptions import DownloadTimeout, InvalidTabInitialization
 from pydoll.exceptions import (
@@ -23,8 +26,8 @@ from pydoll.exceptions import (
     InvalidFileExtension,
     WaitElementTimeout,
     NetworkEventsNotEnabled,
-    InvalidScriptWithElement,
     TopLevelTargetRequired,
+    InvalidScriptWithElement,
 )
 
 @pytest_asyncio.fixture
@@ -464,7 +467,7 @@ class TestTabScreenshotAndPDF:
             'result': {'data': pdf_data}
         }
         
-        result = await tab.print_to_pdf('', as_base64=True)
+        result = await tab.print_to_pdf(as_base64=True)
         
         assert result == pdf_data
         assert_mock_called_at_least_once(tab._connection_handler)
@@ -583,74 +586,6 @@ class TestTabScriptExecution:
         assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
-    async def test_execute_script_with_element(self, tab):
-        """Test execute_script with element context."""
-        # Mock element
-        element = MagicMock()
-        element._object_id = 'test-object-id'
-        
-        tab._connection_handler.execute_command.return_value = {
-            'result': {'result': {'value': 'Element clicked'}}
-        }
-        
-        result = await tab.execute_script('argument.click()', element)
-        
-        assert_mock_called_at_least_once(tab._connection_handler)
-
-    @pytest.mark.asyncio
-    async def test_execute_script_argument_without_element_raises_exception(self, tab):
-        """Test execute_script raises exception when script contains 'argument' but no element provided."""
-        with pytest.raises(InvalidScriptWithElement) as exc_info:
-            await tab.execute_script('argument.click()')
-        
-        assert str(exc_info.value) == 'Script contains "argument" but no element was provided'
-        tab._connection_handler.execute_command.assert_not_called()
-
-    @pytest.mark.asyncio
-    async def test_execute_script_element_without_argument_raises_exception(self, tab):
-        """Test execute_script raises exception when element is provided but script doesn't contain 'argument'."""
-        element = MagicMock()
-        element._object_id = 'test-object-id'
-        
-        with pytest.raises(InvalidScriptWithElement) as exc_info:
-            await tab.execute_script('console.log("test")', element)
-        
-        assert str(exc_info.value) == 'Script does not contain "argument"'
-        tab._connection_handler.execute_command.assert_not_called()
-
-    @pytest.mark.asyncio
-    async def test_execute_script_with_element_already_function(self, tab):
-        """Test execute_script with element when script is already a function."""
-        element = MagicMock()
-        element._object_id = 'test-object-id'
-        
-        tab._connection_handler.execute_command.return_value = {
-            'result': {'result': {'value': 'Function executed'}}
-        }
-        
-        # Script already wrapped in function
-        script = 'function() { argument.click(); return "done"; }'
-        result = await tab.execute_script(script, element)
-        
-        assert_mock_called_at_least_once(tab._connection_handler)
-
-    @pytest.mark.asyncio
-    async def test_execute_script_with_element_arrow_function(self, tab):
-        """Test execute_script with element when script is already an arrow function."""
-        element = MagicMock()
-        element._object_id = 'test-object-id'
-        
-        tab._connection_handler.execute_command.return_value = {
-            'result': {'result': {'value': 'Arrow function executed'}}
-        }
-        
-        # Script already wrapped in arrow function
-        script = '() => { argument.click(); return "done"; }'
-        result = await tab.execute_script(script, element)
-        
-        assert_mock_called_at_least_once(tab._connection_handler)
-
-    @pytest.mark.asyncio
     async def test_execute_script_return_outside_function(self, tab):
         """Test execute_script wraps return statement outside function."""
         tab._connection_handler.execute_command.return_value = {
@@ -722,6 +657,126 @@ class TestTabScriptExecution:
         result = await tab.execute_script(script)
         
         assert_mock_called_at_least_once(tab._connection_handler)
+
+    @pytest.mark.asyncio
+    async def test_execute_script_with_webelement_deprecation_warning(self, tab):
+        """Test execute_script with WebElement triggers deprecation warning."""
+        mock_element = Mock(spec=WebElement)
+        mock_element.execute_script.return_value = {'result': {'value': 'element result'}}
+        
+        with pytest.warns(DeprecationWarning, match="Passing a WebElement to Tab.execute_script\\(\\) is deprecated"):
+            result = await tab.execute_script('return this.tagName', element=mock_element)
+        
+        mock_element.execute_script.assert_called_once_with(
+            'return this.tagName',
+            arguments=None,
+            silent=None,
+            return_by_value=None,
+            generate_preview=None,
+            user_gesture=None,
+            await_promise=None,
+            execution_context_id=None,
+            object_group=None,
+            throw_on_side_effect=None,
+            unique_context_id=None,
+            serialization_options=None,
+        )
+        
+        assert result == {'result': {'value': 'element result'}}
+
+    @pytest.mark.asyncio
+    async def test_execute_script_with_webelement_all_parameters(self, tab):
+        """Test execute_script with WebElement passes all parameters correctly."""
+        mock_element = Mock(spec=WebElement)
+        mock_element.execute_script.return_value = {'result': {'value': 'element result'}}
+        
+        arguments = [CallArgument(value="test")]
+        serialization_options = SerializationOptions(serialization="deep")
+        
+        with pytest.warns(DeprecationWarning):
+            result = await tab.execute_script(
+                'return this.tagName',
+                element=mock_element,
+                arguments=arguments,
+                silent=True,
+                return_by_value=True,
+                generate_preview=True,
+                user_gesture=True,
+                await_promise=True,
+                execution_context_id=123,
+                object_group="test_group",
+                throw_on_side_effect=True,
+                unique_context_id="unique_123",
+                serialization_options=serialization_options,
+            )
+        
+        mock_element.execute_script.assert_called_once_with(
+            'return this.tagName',
+            arguments=arguments,
+            silent=True,
+            return_by_value=True,
+            generate_preview=True,
+            user_gesture=True,
+            await_promise=True,
+            execution_context_id=123,
+            object_group="test_group",
+            throw_on_side_effect=True,
+            unique_context_id="unique_123",
+            serialization_options=serialization_options,
+        )
+        
+        assert result == {'result': {'value': 'element result'}}
+
+    @pytest.mark.parametrize('response', [
+        {},
+        {'result': 'not a dict'},
+        {'result': {}},
+        {'result': {'result': 'not a dict'}},
+        {'result': {'result': {'type': 'string', 'subtype': 'error', 'className': 'ReferenceError', 'description': 'argument is not defined'}}},
+        {'result': {'result': {'type': 'object', 'subtype': 'not_error', 'className': 'ReferenceError', 'description': 'argument is not defined'}}},
+        {'result': {'result': {'type': 'object', 'subtype': 'error', 'className': 'TypeError', 'description': 'argument is not defined'}}},
+        {'result': {'result': {'type': 'object', 'subtype': 'error', 'className': 'ReferenceError', 'description': 'some other error'}}},
+        {'result': {'result': {'type': 'object', 'subtype': 'error', 'className': 'ReferenceError', 'description': ''}}},
+        {'result': {'result': {'type': 'object', 'subtype': 'error', 'className': 'ReferenceError'}}},
+    ])
+    def test_validate_argument_error_early_returns(self, tab, response):
+        """Test _validate_argument_error returns early for invalid responses."""
+        tab._validate_argument_error(response)
+
+    @pytest.mark.parametrize('description', [
+        'argument is not defined',
+        'Error: argument is not defined at line 1',
+    ])
+    def test_validate_argument_error_raises_on_match(self, tab, description):
+        """Test _validate_argument_error raises InvalidScriptWithElement when all conditions match."""
+        response = {
+            'result': {
+                'result': {
+                    'type': 'object',
+                    'subtype': 'error',
+                    'className': 'ReferenceError',
+                    'description': description,
+                }
+            }
+        }
+        with pytest.raises(InvalidScriptWithElement, match='Script contains "argument" but no element was provided'):
+            tab._validate_argument_error(response)
+
+    @pytest.mark.asyncio
+    async def test_execute_script_triggers_validation(self, tab):
+        """Test that execute_script calls _validate_argument_error when script fails with ReferenceError."""
+        tab._connection_handler.execute_command.return_value = {
+            'result': {
+                'result': {
+                    'type': 'object',
+                    'subtype': 'error',
+                    'className': 'ReferenceError',
+                    'description': 'argument is not defined'
+                }
+            }
+        }
+        with pytest.raises(InvalidScriptWithElement, match='Script contains "argument" but no element was provided'):
+            await tab.execute_script('argument.click()')
 
 
 class TestTabEventCallbacks:
@@ -1063,6 +1118,88 @@ class TestTabCloudflareBypass:
         assert_mock_called_at_least_once(tab._connection_handler, 'register_callback')
         assert tab._cloudflare_captcha_callback_id == callback_id
 
+    @pytest.mark.asyncio
+    async def test_disable_auto_solve_cloudflare_captcha(self, tab):
+        """Test disabling auto-solve Cloudflare captcha."""
+        tab._cloudflare_captcha_callback_id = 777
+        tab._connection_handler.remove_callback.return_value = True
+        
+        await tab.disable_auto_solve_cloudflare_captcha()
+        
+        tab._connection_handler.remove_callback.assert_called_with(777)
+
+    @pytest.mark.asyncio
+    async def test_expect_and_bypass_cloudflare_captcha(self, tab):
+        """Test expect_and_bypass_cloudflare_captcha context manager."""
+        mock_event = MagicMock()
+        mock_event.wait = AsyncMock()
+        
+        callback_id = 666
+        tab._connection_handler.register_callback.return_value = callback_id
+        
+        mock_enable_page_events = AsyncMock()
+        mock_disable_page_events = AsyncMock()
+        
+        with patch.object(tab, 'enable_page_events', mock_enable_page_events):
+            with patch.object(tab, 'disable_page_events', mock_disable_page_events):
+                with patch('asyncio.Event', return_value=mock_event):
+                    async with tab.expect_and_bypass_cloudflare_captcha():
+                        pass
+        
+        mock_enable_page_events.assert_called_once()
+        mock_disable_page_events.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler, 'register_callback')
+        tab._connection_handler.remove_callback.assert_called_with(callback_id)
+
+    @pytest.mark.asyncio
+    async def test_bypass_cloudflare_with_element_found(self, tab):
+        """Test _bypass_cloudflare when element is found."""
+        mock_element = AsyncMock()
+        
+        mock_find = AsyncMock(return_value=mock_element)
+        
+        with patch.object(tab, 'find_or_wait_element', mock_find):
+            with patch('asyncio.sleep', AsyncMock()):
+                await tab._bypass_cloudflare({})
+        
+        mock_find.assert_called_once()
+        mock_element.execute_script.assert_called_once_with('this.style="width: 300px"')
+        mock_element.click.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_bypass_cloudflare_no_element_found(self, tab):
+        """Test _bypass_cloudflare when no element is found."""
+        mock_find = AsyncMock(return_value=None)
+        
+        with patch.object(tab, 'find_or_wait_element', mock_find):
+            await tab._bypass_cloudflare({})
+        
+        mock_find.assert_called_once()
+        # execute_script and click should not be called when no element is found
+
+    @pytest.mark.asyncio
+    async def test_bypass_cloudflare_with_custom_selector(self, tab):
+        """Test _bypass_cloudflare with custom selector."""
+        mock_element = AsyncMock()
+        custom_selector = (By.ID, 'custom-captcha')
+        
+        mock_find = AsyncMock(return_value=mock_element)
+        
+        with patch.object(tab, 'find_or_wait_element', mock_find):
+            with patch('asyncio.sleep', AsyncMock()):
+                await tab._bypass_cloudflare(
+                    {},
+                    custom_selector=custom_selector,
+                    time_before_click=3,
+                    time_to_wait_captcha=10
+                )
+        
+        mock_find.assert_called_with(
+            By.ID, 'custom-captcha', timeout=10, raise_exc=False
+        )
+        mock_element.execute_script.assert_called_once_with('this.style="width: 300px"')
+        mock_element.click.assert_called_once()
+
 
 class TestTabDownload:
     """Tests for Tab.expect_download context manager."""
@@ -1077,13 +1214,13 @@ class TestTabDownload:
 
         async def fake_on(event_name, handler, temporary=False):
             handlers[event_name] = handler
-            return 100 if event_name == BrowserEvent.DOWNLOAD_WILL_BEGIN else 101
+            return 100 if event_name == PageEvent.DOWNLOAD_WILL_BEGIN else 101
 
         with patch.object(tab, 'on', fake_on):
             async with tab.expect_download(keep_file_at=str(target_dir)) as download:
                 # Simulate willBegin
-                await handlers[BrowserEvent.DOWNLOAD_WILL_BEGIN]({
-                    'method': BrowserEvent.DOWNLOAD_WILL_BEGIN,
+                await handlers[PageEvent.DOWNLOAD_WILL_BEGIN]({
+                    'method': PageEvent.DOWNLOAD_WILL_BEGIN,
                     'params': {
                         'frameId': 'frame-1',
                         'guid': 'guid-1',
@@ -1092,8 +1229,8 @@ class TestTabDownload:
                     }
                 })
                 # Simulate progress Completed without filePath (fallback to suggested)
-                await handlers[BrowserEvent.DOWNLOAD_PROGRESS]({
-                    'method': BrowserEvent.DOWNLOAD_PROGRESS,
+                await handlers[PageEvent.DOWNLOAD_PROGRESS]({
+                    'method': PageEvent.DOWNLOAD_PROGRESS,
                     'params': {
                         'guid': 'guid-1',
                         'totalBytes': 10,
@@ -1122,14 +1259,14 @@ class TestTabDownload:
 
         async def fake_on(event_name, handler, temporary=False):
             handlers[event_name] = handler
-            return 200 if event_name == BrowserEvent.DOWNLOAD_WILL_BEGIN else 201
+            return 200 if event_name == PageEvent.DOWNLOAD_WILL_BEGIN else 201
 
         with patch.object(tab, 'on', fake_on):
             with pytest.raises(DownloadTimeout):
                 async with tab.expect_download(keep_file_at=str(tmp_path), timeout=0.01):
                     # Trigger will begin but never complete
-                    await handlers[BrowserEvent.DOWNLOAD_WILL_BEGIN]({
-                        'method': BrowserEvent.DOWNLOAD_WILL_BEGIN,
+                    await handlers[PageEvent.DOWNLOAD_WILL_BEGIN]({
+                        'method': PageEvent.DOWNLOAD_WILL_BEGIN,
                         'params': {
                             'frameId': 'frame-1',
                             'guid': 'guid-2',
@@ -1147,13 +1284,13 @@ class TestTabDownload:
 
         async def fake_on(event_name, handler, temporary=False):
             handlers[event_name] = handler
-            return 300 if event_name == BrowserEvent.DOWNLOAD_WILL_BEGIN else 301
+            return 300 if event_name == PageEvent.DOWNLOAD_WILL_BEGIN else 301
 
         with patch.object(tab, 'on', fake_on):
             # Use None to create temp dir and ensure cleanup occurs
             async with tab.expect_download(keep_file_at=None) as download:
-                await handlers[BrowserEvent.DOWNLOAD_WILL_BEGIN]({
-                    'method': BrowserEvent.DOWNLOAD_WILL_BEGIN,
+                await handlers[PageEvent.DOWNLOAD_WILL_BEGIN]({
+                    'method': PageEvent.DOWNLOAD_WILL_BEGIN,
                     'params': {
                         'frameId': 'frame-1',
                         'guid': 'guid-3',
@@ -1161,8 +1298,8 @@ class TestTabDownload:
                         'suggestedFilename': 'tmp.txt',
                     }
                 })
-                await handlers[BrowserEvent.DOWNLOAD_PROGRESS]({
-                    'method': BrowserEvent.DOWNLOAD_PROGRESS,
+                await handlers[PageEvent.DOWNLOAD_PROGRESS]({
+                    'method': PageEvent.DOWNLOAD_PROGRESS,
                     'params': {
                         'guid': 'guid-3',
                         'totalBytes': 3,
@@ -1183,92 +1320,138 @@ class TestTabDownload:
             assert not file_path.exists()
 
     @pytest.mark.asyncio
-    async def test_disable_auto_solve_cloudflare_captcha(self, tab):
-        """Test disabling auto-solve Cloudflare captcha."""
-        tab._cloudflare_captcha_callback_id = 777
-        tab._connection_handler.remove_callback.return_value = True
-        
-        await tab.disable_auto_solve_cloudflare_captcha()
-        
-        tab._connection_handler.remove_callback.assert_called_with(777)
+    async def test_expect_download_ignores_progress_with_different_guid(self, tab, tmp_path):
+        tab._browser.set_download_behavior = AsyncMock()
+
+        handlers = {}
+
+        async def fake_on(event_name, handler, temporary=False):
+            handlers[event_name] = handler
+            return 400 if event_name == PageEvent.DOWNLOAD_WILL_BEGIN else 401
+
+        with patch.object(tab, 'on', fake_on):
+            async with tab.expect_download(keep_file_at=str(tmp_path)) as download:
+                await handlers[PageEvent.DOWNLOAD_WILL_BEGIN]({
+                    'method': PageEvent.DOWNLOAD_WILL_BEGIN,
+                    'params': {
+                        'frameId': 'frame-1',
+                        'guid': 'guid-x',
+                        'url': 'https://example.com/file.bin',
+                        'suggestedFilename': 'file.bin',
+                    }
+                })
+
+                # Wrong guid should be ignored and not mark as done
+                await handlers[PageEvent.DOWNLOAD_PROGRESS]({
+                    'method': PageEvent.DOWNLOAD_PROGRESS,
+                    'params': {
+                        'guid': 'wrong-guid',
+                        'totalBytes': 1,
+                        'receivedBytes': 1,
+                        'state': 'completed',
+                    }
+                })
+
+                # Still not finished
+                assert download.file_path is None
+
+                # Correct guid completes
+                await handlers[PageEvent.DOWNLOAD_PROGRESS]({
+                    'method': PageEvent.DOWNLOAD_PROGRESS,
+                    'params': {
+                        'guid': 'guid-x',
+                        'totalBytes': 10,
+                        'receivedBytes': 10,
+                        'state': 'completed',
+                        'filePath': str(tmp_path / 'file.bin'),
+                    }
+                })
+
+                await download.wait_finished()
 
     @pytest.mark.asyncio
-    async def test_expect_and_bypass_cloudflare_captcha(self, tab):
-        """Test expect_and_bypass_cloudflare_captcha context manager."""
-        mock_event = AsyncMock()
-        mock_event.set = MagicMock()
-        mock_event.wait = AsyncMock()
-        
-        callback_id = 666
-        tab._connection_handler.register_callback.return_value = callback_id
-        
-        mock_enable_page_events = AsyncMock()
-        mock_disable_page_events = AsyncMock()
-        
-        with patch.object(tab, 'enable_page_events', mock_enable_page_events):
-            with patch.object(tab, 'disable_page_events', mock_disable_page_events):
-                with patch('asyncio.Event', return_value=mock_event):
-                    async with tab.expect_and_bypass_cloudflare_captcha():
-                        pass
-        
-        mock_enable_page_events.assert_called_once()
-        mock_disable_page_events.assert_called_once()
-        assert_mock_called_at_least_once(tab._connection_handler, 'register_callback')
-        tab._connection_handler.remove_callback.assert_called_with(callback_id)
+    async def test_expect_download_page_events_auto_enable_disable(self, tab, tmp_path):
+        """When page events are disabled, expect_download should enable and then disable them."""
+        tab._browser.set_download_behavior = AsyncMock()
+        tab._page_events_enabled = False
+
+        enable_page_events = AsyncMock()
+        disable_page_events = AsyncMock()
+
+        handlers = {}
+
+        async def fake_on(event_name, handler, temporary=False):
+            handlers[event_name] = handler
+            return 500 if event_name == PageEvent.DOWNLOAD_WILL_BEGIN else 501
+
+        with patch.object(tab, 'enable_page_events', enable_page_events), \
+             patch.object(tab, 'disable_page_events', disable_page_events), \
+             patch.object(tab, 'on', fake_on):
+            async with tab.expect_download(keep_file_at=str(tmp_path)):
+                await handlers[PageEvent.DOWNLOAD_WILL_BEGIN]({
+                    'method': PageEvent.DOWNLOAD_WILL_BEGIN,
+                    'params': {
+                        'frameId': 'frame-1',
+                        'guid': 'guid-y',
+                        'url': 'https://example.com/auto.bin',
+                        'suggestedFilename': 'auto.bin',
+                    }
+                })
+                await handlers[PageEvent.DOWNLOAD_PROGRESS]({
+                    'method': PageEvent.DOWNLOAD_PROGRESS,
+                    'params': {
+                        'guid': 'guid-y',
+                        'totalBytes': 2,
+                        'receivedBytes': 2,
+                        'state': 'completed',
+                        'filePath': str(tmp_path / 'auto.bin'),
+                    }
+                })
+
+        enable_page_events.assert_awaited_once()
+        disable_page_events.assert_awaited_once()
 
     @pytest.mark.asyncio
-    async def test_bypass_cloudflare_with_element_found(self, tab):
-        """Test _bypass_cloudflare when element is found."""
-        mock_element = AsyncMock()
-        
-        mock_find = AsyncMock(return_value=mock_element)
-        mock_execute_script = AsyncMock()
-        
-        with patch.object(tab, 'find_or_wait_element', mock_find):
-            with patch.object(tab, 'execute_script', mock_execute_script):
-                with patch('asyncio.sleep', AsyncMock()):
-                    await tab._bypass_cloudflare({})
-        
-        mock_find.assert_called_once()
-        mock_execute_script.assert_called_once()
-        mock_element.click.assert_called_once()
+    async def test_expect_download_keeps_page_events_enabled_when_already_enabled(self, tab, tmp_path):
+        """When page events already enabled, expect_download should not disable them on exit."""
+        tab._browser.set_download_behavior = AsyncMock()
+        tab._page_events_enabled = True
 
-    @pytest.mark.asyncio
-    async def test_bypass_cloudflare_no_element_found(self, tab):
-        """Test _bypass_cloudflare when no element is found."""
-        mock_find = AsyncMock(return_value=None)
-        mock_execute_script = AsyncMock()
-        
-        with patch.object(tab, 'find_or_wait_element', mock_find):
-            with patch.object(tab, 'execute_script', mock_execute_script):
-                await tab._bypass_cloudflare({})
-        
-        mock_find.assert_called_once()
-        # execute_script and click should not be called
-        mock_execute_script.assert_not_called()
+        enable_page_events = AsyncMock()
+        disable_page_events = AsyncMock()
 
-    @pytest.mark.asyncio
-    async def test_bypass_cloudflare_with_custom_selector(self, tab):
-        """Test _bypass_cloudflare with custom selector."""
-        mock_element = AsyncMock()
-        custom_selector = (By.ID, 'custom-captcha')
-        
-        mock_find = AsyncMock(return_value=mock_element)
-        mock_execute_script = AsyncMock()
-        
-        with patch.object(tab, 'find_or_wait_element', mock_find):
-            with patch.object(tab, 'execute_script', mock_execute_script):
-                with patch('asyncio.sleep', AsyncMock()):
-                    await tab._bypass_cloudflare(
-                        {},
-                        custom_selector=custom_selector,
-                        time_before_click=3,
-                        time_to_wait_captcha=10
-                    )
-        
-        mock_find.assert_called_with(
-            By.ID, 'custom-captcha', timeout=10, raise_exc=False
-        )
+        handlers = {}
+
+        async def fake_on(event_name, handler, temporary=False):
+            handlers[event_name] = handler
+            return 600 if event_name == PageEvent.DOWNLOAD_WILL_BEGIN else 601
+
+        with patch.object(tab, 'enable_page_events', enable_page_events), \
+             patch.object(tab, 'disable_page_events', disable_page_events), \
+             patch.object(tab, 'on', fake_on):
+            async with tab.expect_download(keep_file_at=str(tmp_path)):
+                await handlers[PageEvent.DOWNLOAD_WILL_BEGIN]({
+                    'method': PageEvent.DOWNLOAD_WILL_BEGIN,
+                    'params': {
+                        'frameId': 'frame-1',
+                        'guid': 'guid-z',
+                        'url': 'https://example.com/enabled.bin',
+                        'suggestedFilename': 'enabled.bin',
+                    }
+                })
+                await handlers[PageEvent.DOWNLOAD_PROGRESS]({
+                    'method': PageEvent.DOWNLOAD_PROGRESS,
+                    'params': {
+                        'guid': 'guid-z',
+                        'totalBytes': 2,
+                        'receivedBytes': 2,
+                        'state': 'completed',
+                        'filePath': str(tmp_path / 'enabled.bin'),
+                    }
+                })
+
+        enable_page_events.assert_not_awaited()
+        disable_page_events.assert_not_awaited()
 
 
 class TestTabFrameHandling:
@@ -1286,7 +1469,8 @@ class TestTabFrameHandling:
             {'targetId': 'iframe-target-id', 'url': 'https://example.com/iframe'}
         ])
 
-        frame = await tab.get_frame(mock_iframe_element)
+        with pytest.warns(DeprecationWarning):
+            frame = await tab.get_frame(mock_iframe_element)
         
         assert isinstance(frame, Tab)
         mock_browser.get_targets.assert_called_once()
@@ -1306,9 +1490,11 @@ class TestTabFrameHandling:
         tab._browser._tabs_opened = {}
 
         with patch('pydoll.browser.tab.ConnectionHandler', autospec=True):
-            frame1 = await tab.get_frame(mock_iframe_element)
+            with pytest.warns(DeprecationWarning):
+                frame1 = await tab.get_frame(mock_iframe_element)
             # Second call should reuse from cache and not create a new Tab
-            frame2 = await tab.get_frame(mock_iframe_element)
+            with pytest.warns(DeprecationWarning):
+                frame2 = await tab.get_frame(mock_iframe_element)
 
         assert isinstance(frame1, Tab)
         assert frame1 is frame2
@@ -1320,8 +1506,9 @@ class TestTabFrameHandling:
         mock_element = MagicMock()
         mock_element.tag_name = 'div'  # Mock the property directly
         
-        with pytest.raises(NotAnIFrame):
-            await tab.get_frame(mock_element)
+        with pytest.warns(DeprecationWarning):
+            with pytest.raises(NotAnIFrame):
+                await tab.get_frame(mock_element)
 
     @pytest.mark.asyncio
     async def test_get_frame_no_frame_id(self, tab, mock_browser):
@@ -1333,8 +1520,9 @@ class TestTabFrameHandling:
 
         mock_browser.get_targets = AsyncMock(return_value=[])
         
-        with pytest.raises(IFrameNotFound):
-            await tab.get_frame(mock_iframe_element)
+        with pytest.warns(DeprecationWarning):
+            with pytest.raises(IFrameNotFound):
+                await tab.get_frame(mock_iframe_element)
 
 
 class TestTabUtilityMethods:
@@ -1645,28 +1833,15 @@ class TestTabEdgeCases:
 
     @pytest.mark.asyncio
     async def test_print_to_pdf_with_invalid_path(self, tab):
-        """Test print_to_pdf with invalid path handling."""
+        """Test print_to_pdf with missing path when not using base64."""
         # Mock the response
         tab._connection_handler.execute_command.return_value = {
             'result': {'data': 'JVBERi0xLjQKJdPr6eEKMSAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwo+PgplbmRvYmoKdHJhaWxlcgo8PAovUm9vdCAxIDAgUgo+PgpzdGFydHhyZWYKMTgKJSVFT0Y='}
         }
         
-        # Should not raise exception - print_to_pdf doesn't validate extensions
-        result = await tab.print_to_pdf('document.txt', as_base64=True)
-        
-        assert result is not None
-        assert_mock_called_at_least_once(tab._connection_handler)
-
-    @pytest.mark.asyncio
-    async def test_execute_script_with_none_element(self, tab):
-        """Test execute_script with None element."""
-        tab._connection_handler.execute_command.return_value = {
-            'result': {'result': {'value': 'Test Result'}}
-        }
-        
-        result = await tab.execute_script('return "Test Result"', None)
-        
-        assert_mock_called_at_least_once(tab._connection_handler)
+        # Should raise ValueError when path is not provided and as_base64=False
+        with pytest.raises(ValueError, match="path is required when as_base64=False"):
+            await tab.print_to_pdf(as_base64=False)
 
     @pytest.mark.asyncio
     async def test_network_logs_property(self, tab):
