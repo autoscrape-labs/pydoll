@@ -5273,6 +5273,10 @@
 <li><strong><a href="https://github.com/HumanSignal/label-studio-frontend/blob/master/src/utils/utilities.js">Humanize.js</a></strong>: Advanced composite curves</li>
 </ul>
 </div>
+<div class="admonition success">
+<p class="admonition-title">Pydoll Implementation</p>
+<p>Pydoll implements <strong>Cubic Bezier curves</strong> for its scroll engine, ensuring that all scroll movements follow natural acceleration and deceleration profiles. This is combined with random jitter, micro-pauses, and overshoot correction to defeat advanced behavioral analysis.</p>
+</div>
 <h3 id="mouse-movement-entropy">Mouse Movement Entropy</h3>
 <p><strong>What is Entropy in This Context?</strong></p>
 <p>In information theory, <strong>entropy</strong> measures the amount of randomness or unpredictability in data. Applied to mouse movements, it quantifies how "varied" or "unpredictable" the path is.</p>
@@ -5621,6 +5625,15 @@
 </ul>
 <p>These studies show keystroke dynamics can achieve <strong>95%+ authentication accuracy</strong> with as few as 50-100 keystrokes.</p>
 </div>
+<div class="admonition success">
+<p class="admonition-title">Pydoll Implementation</p>
+<p>Pydoll's <code>type_text(humanize=True)</code> automatically handles keystroke dynamics by:</p>
+<ol>
+<li><strong>Variable Intervals</strong>: Using a bell curve distribution for inter-key timings.</li>
+<li><strong>Typo Simulation</strong>: Intentionally making mistakes based on keyboard layout proximity (e.g., pressing 's' instead of 'a').</li>
+<li><strong>Correction Logic</strong>: Simulating the backspace sequence to correct typos, adding to the "human" noise.</li>
+</ol>
+</div>
 <h3 id="the-paste-detection-problem">The "Paste Detection" Problem</h3>
 <p>One of the easiest bot indicators is <strong>text insertion without keyboard events</strong>:</p>
 <div class="language-javascript highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1">// Server-side detection (pseudocode)</span>
@@ -5884,6 +5897,16 @@
 <li><strong>Micro-adjustments</strong>: Small corrections near target</li>
 </ol>
 <p>This is implemented in browsers' smooth scrolling via CSS <code>scroll-behavior: smooth</code> using <strong>bezier easing functions</strong>.</p>
+</div>
+<div class="admonition success">
+<p class="admonition-title">Pydoll Implementation</p>
+<p>Pydoll's scroll engine is built on top of these physics principles. When you use <code>scroll.by(..., humanize=True)</code>, it:</p>
+<ol>
+<li>Calculates a <strong>Cubic Bezier</strong> trajectory for the scroll.</li>
+<li>Applies <strong>momentum</strong> and <strong>friction</strong> to the velocity profile.</li>
+<li>Injects <strong>random jitter</strong> to the delta values.</li>
+<li>Adds <strong>micro-pauses</strong> and <strong>overshoot</strong> behavior to mimic human imperfection.</li>
+</ol>
 </div>
 <h2 id="event-sequence-analysis">Event Sequence Analysis</h2>
 <p>Beyond individual actions, anti-bot systems analyze the <strong>sequence and timing</strong> of events. Humans follow predictable interaction patterns, while bots often skip steps or execute them in unnatural orders.</p>
