@@ -373,6 +373,138 @@ class TestTabNavigation:
         assert tab._connection_handler.execute_command.call_count == 2
 
 
+class TestTabToMarkdown:
+    """Test Tab.to_markdown method."""
+
+    @pytest.mark.asyncio
+    async def test_to_markdown_basic(self, tab):
+        """Test basic HTML to Markdown conversion."""
+        html_content = '<html><body><h1>Title</h1><p>Content</p></body></html>'
+        tab._connection_handler.execute_command.return_value = {
+            'result': {'result': {'value': html_content}}
+        }
+
+        result = await tab.to_markdown()
+
+        assert '# Title' in result
+        assert 'Content' in result
+        assert_mock_called_at_least_once(tab._connection_handler)
+
+    @pytest.mark.asyncio
+    async def test_to_markdown_skip_nav_default(self, tab):
+        """Test that navigation elements are skipped by default."""
+        html_content = '<html><body><nav>Navigation</nav><p>Main content</p></body></html>'
+        tab._connection_handler.execute_command.return_value = {
+            'result': {'result': {'value': html_content}}
+        }
+
+        result = await tab.to_markdown()
+
+        assert 'Navigation' not in result
+        assert 'Main content' in result
+
+    @pytest.mark.asyncio
+    async def test_to_markdown_include_nav(self, tab):
+        """Test including navigation elements when skip_nav=False."""
+        html_content = '<html><body><nav>Navigation</nav><p>Main content</p></body></html>'
+        tab._connection_handler.execute_command.return_value = {
+            'result': {'result': {'value': html_content}}
+        }
+
+        result = await tab.to_markdown(skip_nav=False)
+
+        assert 'Navigation' in result
+        assert 'Main content' in result
+
+    @pytest.mark.asyncio
+    async def test_to_markdown_skip_images(self, tab):
+        """Test skipping images when skip_images=True."""
+        html_content = '<html><body><p>Text</p><img src="test.png" alt="Image"></body></html>'
+        tab._connection_handler.execute_command.return_value = {
+            'result': {'result': {'value': html_content}}
+        }
+
+        result = await tab.to_markdown(skip_images=True)
+
+        assert 'Text' in result
+        assert '![' not in result
+        assert 'test.png' not in result
+
+    @pytest.mark.asyncio
+    async def test_to_markdown_include_images(self, tab):
+        """Test including images when skip_images=False (default)."""
+        html_content = '<html><body><img src="test.png" alt="Test Image"></body></html>'
+        tab._connection_handler.execute_command.return_value = {
+            'result': {'result': {'value': html_content}}
+        }
+
+        result = await tab.to_markdown(skip_images=False)
+
+        assert '![Test Image](test.png)' in result
+
+    @pytest.mark.asyncio
+    async def test_to_markdown_custom_options(self, tab):
+        """Test passing custom options to converter."""
+        html_content = '<html><body><pre>code</pre></body></html>'
+        tab._connection_handler.execute_command.return_value = {
+            'result': {'result': {'value': html_content}}
+        }
+
+        result = await tab.to_markdown(code_fence='~~~')
+
+        assert '~~~' in result
+        assert '```' not in result
+
+    @pytest.mark.asyncio
+    async def test_to_markdown_invalid_result_structure_keyerror(self, tab):
+        """Test ValueError raised when result has unexpected structure (KeyError)."""
+        # Missing 'result' key in response
+        tab._connection_handler.execute_command.return_value = {}
+
+        with pytest.raises(ValueError, match='Failed to extract HTML from page'):
+            await tab.to_markdown()
+
+    @pytest.mark.asyncio
+    async def test_to_markdown_invalid_result_structure_typeerror(self, tab):
+        """Test ValueError raised when result has None values (TypeError)."""
+        # Value is None instead of expected dict
+        tab._connection_handler.execute_command.return_value = {
+            'result': {'result': None}
+        }
+
+        with pytest.raises(ValueError, match='Failed to extract HTML from page'):
+            await tab.to_markdown()
+
+    @pytest.mark.asyncio
+    async def test_to_markdown_complex_html(self, tab):
+        """Test conversion of complex HTML with multiple elements."""
+        html_content = '''
+        <html>
+        <body>
+            <h1>Main Title</h1>
+            <p>Introduction with <strong>bold</strong> and <em>italic</em>.</p>
+            <ul>
+                <li>Item 1</li>
+                <li>Item 2</li>
+            </ul>
+            <a href="https://example.com">Link</a>
+        </body>
+        </html>
+        '''
+        tab._connection_handler.execute_command.return_value = {
+            'result': {'result': {'value': html_content}}
+        }
+
+        result = await tab.to_markdown()
+
+        assert '# Main Title' in result
+        assert '**bold**' in result
+        assert '*italic*' in result
+        assert '- Item 1' in result
+        assert '- Item 2' in result
+        assert '[Link](https://example.com)' in result
+
+
 class TestTabScreenshotAndPDF:
     """Test Tab screenshot and PDF methods."""
 
