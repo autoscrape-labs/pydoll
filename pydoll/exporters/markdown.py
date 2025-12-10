@@ -190,21 +190,6 @@ class HTMLtoMarkdown(HTMLParser):
             self.markdown.append(f'{self.code_fence}\n')
             self.in_pre = True
 
-    def _handle_link_start(self, attrs_dict: Dict[str, str]) -> None:
-        """Handle opening anchor tag."""
-        href = attrs_dict.get('href', '')
-        self.link_buffer = {'href': href, 'text': []}
-
-    def _handle_image_start(self, attrs_dict: Dict[str, str]) -> bool:
-        """Handle image tag. Returns True if image was skipped."""
-        if self.skip_images:
-            return True
-        src = attrs_dict.get('src', '')
-        alt = attrs_dict.get('alt', '')
-        self._add_block_separator()
-        self.markdown.append(f'![{alt}]({src})')
-        return False
-
     def _handle_simple_block_start(self, tag: str) -> None:
         """Handle simple block tags (p, br)."""
         if tag == 'p':
@@ -486,8 +471,6 @@ class HTMLtoMarkdown(HTMLParser):
             return
 
         rows = self.table_buffer['rows']
-        if not rows:
-            return
 
         self._add_block_separator()
 
