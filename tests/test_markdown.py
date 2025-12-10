@@ -193,6 +193,24 @@ class TestHTMLtoMarkdownImages:
         assert 'image.png' not in result
         assert 'Text' in result
 
+    def test_skip_images_only_image(self):
+        """Test skip_images when only an image is present."""
+        converter = HTMLtoMarkdown(skip_images=True)
+        result = converter.convert('<img src="test.png" alt="Test">')
+        assert result == ''
+        assert '![' not in result
+
+    def test_skip_images_multiple_images(self):
+        """Test that all images are skipped when skip_images is True."""
+        converter = HTMLtoMarkdown(skip_images=True)
+        html = '<img src="1.png"><p>Text</p><img src="2.png"><img src="3.png">'
+        result = converter.convert(html)
+        assert '![' not in result
+        assert '1.png' not in result
+        assert '2.png' not in result
+        assert '3.png' not in result
+        assert 'Text' in result
+
 
 class TestHTMLtoMarkdownLists:
     """Tests for list conversion."""
@@ -304,6 +322,30 @@ class TestHTMLtoMarkdownTables:
         # Should pad shorter rows
         assert '| A | B | C |' in result
         assert '| 1 | 2 |' in result
+
+    def test_convert_empty_table(self):
+        """Test conversion of empty table element."""
+        converter = HTMLtoMarkdown()
+        html = '<table></table>'
+        result = converter.convert(html)
+        # Empty table should not produce table output
+        assert '|' not in result
+
+    def test_convert_table_no_rows(self):
+        """Test conversion of table with no tr elements."""
+        converter = HTMLtoMarkdown()
+        html = '<table><caption>Empty</caption></table>'
+        result = converter.convert(html)
+        # Should not crash and not produce table syntax
+        assert '|---' not in result
+
+    def test_convert_table_empty_rows(self):
+        """Test conversion of table with empty rows."""
+        converter = HTMLtoMarkdown()
+        html = '<table><tr></tr></table>'
+        result = converter.convert(html)
+        # Empty row should not be added
+        assert '|---' not in result
 
 
 class TestHTMLtoMarkdownSkipTags:
