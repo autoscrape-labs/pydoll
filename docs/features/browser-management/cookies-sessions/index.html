@@ -5041,6 +5041,11 @@
 </ul>
 <p>Both methods return <strong>all cookies</strong> from the context, not just cookies for the current page domain.</p>
 </div>
+<div class="admonition warning">
+<p class="admonition-title">Incognito Mode Limitation</p>
+<p><code>browser.get_cookies()</code> does <strong>not work</strong> with native incognito mode (<code>--incognito</code> flag). This is a Chrome DevTools Protocol limitation where <code>Storage.getCookies</code> cannot access cookies in native incognito mode.</p>
+<p><strong>Workaround:</strong> Use <code>tab.get_cookies()</code> instead, which uses <code>Network.getCookies</code> and works correctly in incognito mode.</p>
+</div>
 <h4 id="get-cookies-from-specific-context">Get Cookies from Specific Context</h4>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Get cookies from specific browser context</span>
 </span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">context_id</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">create_browser_context</span><span class="p">()</span>

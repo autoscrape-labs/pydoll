@@ -5043,6 +5043,11 @@
 </ul>
 <p>两种方法都返回上下文中的<strong>所有 Cookie</strong>，而不仅仅是当前页面域的 Cookie。</p>
 </div>
+<div class="admonition warning">
+<p class="admonition-title">隐身模式限制</p>
+<p><code>browser.get_cookies()</code> 在原生隐身模式（<code>--incognito</code> 标志）下<strong>不起作用</strong>。这是 Chrome DevTools Protocol 的限制，<code>Storage.getCookies</code> 无法在原生隐身模式下访问 Cookie。</p>
+<p><strong>解决方法：</strong> 改用 <code>tab.get_cookies()</code>，它使用 <code>Network.getCookies</code> 并在隐身模式下正常工作。</p>
+</div>
 <h4 id="cookie_10">从特定上下文获取 Cookie</h4>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># 从特定浏览器上下文获取 Cookie</span>
 </span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">context_id</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">create_browser_context</span><span class="p">()</span>
