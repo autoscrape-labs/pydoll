@@ -376,6 +376,9 @@ class Browser(ABC):  # noqa: PLR0904
         )
         return existing_tabs + new_tabs
 
+    async def get_tab_by_target(self, target: TargetInfo) -> Tab:
+        return Tab(self, **self._get_tab_kwargs(target['targetId']))
+
     async def set_download_path(self, path: str, browser_context_id: Optional[str] = None):
         """Set download directory path (convenience method for set_download_behavior)."""
         logger.info(f'Setting download path: {path} (context={browser_context_id})')
@@ -430,7 +433,12 @@ class Browser(ABC):  # noqa: PLR0904
         return await self._execute_command(StorageCommands.set_cookies(cookies, browser_context_id))
 
     async def get_cookies(self, browser_context_id: Optional[str] = None) -> list[Cookie]:
-        """Get all cookies from browser or context."""
+        """Get all cookies from browser or context.
+
+        Note:
+            This method does not work with native incognito mode (--incognito flag).
+            For incognito mode, use ``tab.get_cookies()`` instead.
+        """
         response: GetCookiesResponse = await self._execute_command(
             StorageCommands.get_cookies(browser_context_id)
         )

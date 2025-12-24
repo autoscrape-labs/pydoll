@@ -366,6 +366,9 @@ B(t) = (1-t)R₀ + tR₁
     - **[Pyautogui](https://pyautogui.readthedocs.io/)**：基本补间（容易检测）
     - **[Humanize.js](https://github.com/HumanSignal/label-studio-frontend/blob/master/src/utils/utilities.js)**：高级复合曲线
 
+!!! success \"Pydoll 实现\"
+    Pydoll 为其滚动引擎实现了**三次贝塞尔曲线**，确保所有滚动移动都遵循自然的加速和减速配置文件。这与随机抖动、微暂停和过冲校正相结合，以击败高级行为分析。
+
 ### 鼠标移动熵
 
 **在这种情况下什么是熵？**

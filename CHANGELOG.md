@@ -1,3 +1,38 @@
+## 2.15.0 (2025-12-24)
+
+### Feat
+
+- Implement incognito mode cookie retrieval for `tab.get_cookies()` and update related documentation
+
+### Fix
+
+- inconsistence in type checking
+- Dispatch `KEY_DOWN` and `KEY_UP` events for character typing
+
+## 2.14.0 (2025-12-10)
+
+### Feat
+
+- get_tab_by_target method added
+- get_tab_by_target method added
+
+### Fix
+
+- adding type: ignore in JavascriptDialogOpeningEvent object
+- adding type: ignore in JavascriptDialogOpeningEvent object
+
+## 2.13.1 (2025-12-07)
+
+### Fix
+
+- add stuck scroll detection and minimum flick distance to humanized scroll, and correct scroll distance calculation.
+
+## 2.13.0 (2025-12-07)
+
+### Feat
+
+- Implement humanized keyboard typing and physics-based scroll, and add iframe interaction support.
+
 ## 2.12.4 (2025-11-29)
 
 ### Fix

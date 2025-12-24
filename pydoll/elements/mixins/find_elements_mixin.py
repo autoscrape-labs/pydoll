@@ -11,11 +11,13 @@ from pydoll.commands import (
 from pydoll.connection.connection_handler import ConnectionHandler
 from pydoll.constants import By, Scripts
 from pydoll.exceptions import ElementNotFound, WaitElementTimeout
+from pydoll.utils import normalize_synthetic_xpath
 
 if TYPE_CHECKING:
     from typing import Literal, Optional, Union
 
-    from pydoll.elements.web_element import WebElement, _IFrameContext
+    from pydoll.elements.web_element import WebElement
+    from pydoll.interactions.iframe import IFrameContext
     from pydoll.protocol.base import Command, T_CommandParams, T_CommandResponse
     from pydoll.protocol.dom.methods import DescribeNodeResponse
     from pydoll.protocol.dom.types import Node
@@ -55,6 +57,35 @@ class FindElementsMixin:
 
     if TYPE_CHECKING:
         _connection_handler: ConnectionHandler
+
+    @staticmethod
+    def _build_text_expression(selector: str, method: str) -> Optional[str]:
+        """
+        Build JS expression using Scripts to extract textContent based on selector type.
+        """
+        raw = str(selector)
+        method_lc = (method or '').lower()
+
+        if 'xpath' in method_lc:
+            normalized_xpath = normalize_synthetic_xpath(raw)
+            escaped_xpath = normalized_xpath.replace('"', '\\"')
+            return Scripts.GET_TEXT_BY_XPATH.replace('{escaped_value}', escaped_xpath)
+
+        if method_lc == 'name':
+            escaped_name = raw.replace('"', '\\"')
+            xpath = f'//*[@name="{escaped_name}"]'
+            return Scripts.GET_TEXT_BY_XPATH.replace('{escaped_value}', xpath)
+
+        escaped = raw.replace('\\', '\\\\').replace('"', '\\"')
+        if method_lc == 'id':
+            css = f'#{escaped}'
+        elif method_lc == 'class_name':
+            css = f'.{escaped}'
+        elif method_lc == 'tag_name':
+            css = escaped
+        else:
+            css = escaped
+        return Scripts.GET_TEXT_BY_CSS.replace('{selector}', css)
 
     @overload
     async def find(
@@ -583,7 +614,7 @@ class FindElementsMixin:
         return response.get('result', {}).get('node', {})
 
     def _apply_iframe_context_to_element(
-        self, element: WebElement, iframe_context: _IFrameContext | None
+        self, element: WebElement, iframe_context: IFrameContext | None
     ) -> None:
         """
         Propagate iframe context to the newly created element.

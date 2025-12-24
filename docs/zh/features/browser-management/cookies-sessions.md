@@ -218,6 +218,11 @@ asyncio.run(get_cookies_example())
     
     两种方法都返回上下文中的**所有 Cookie**，而不仅仅是当前页面域的 Cookie。
 
+!!! warning "隐身模式限制"
+    `browser.get_cookies()` 在原生隐身模式（`--incognito` 标志）下**不起作用**。这是 Chrome DevTools Protocol 的限制，`Storage.getCookies` 无法在原生隐身模式下访问 Cookie。
+    
+    **解决方法：** 改用 `tab.get_cookies()`，它使用 `Network.getCookies` 并在隐身模式下正常工作。
+
 #### 从特定上下文获取 Cookie
 
 ```python

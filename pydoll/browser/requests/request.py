@@ -15,35 +15,39 @@ from pydoll.commands.runtime_commands import RuntimeCommands
 from pydoll.constants import Scripts
 from pydoll.exceptions import HTTPError
 from pydoll.protocol.fetch.types import HeaderEntry
-from pydoll.protocol.network.events import NetworkEvent, ResponseReceivedExtraInfoEventParams
+from pydoll.protocol.network.events import (
+    NetworkEvent,
+    RequestWillBeSentEvent,
+    RequestWillBeSentExtraInfoEvent,
+    ResponseReceivedEvent,
+    ResponseReceivedExtraInfoEvent,
+    ResponseReceivedExtraInfoEventParams,
+)
 from pydoll.protocol.network.types import CookieParam
 
 logger = logging.getLogger(__name__)
 
+RequestReceivedEvent = Union[
+    ResponseReceivedEvent,
+    ResponseReceivedExtraInfoEvent,
+]
+RequestSentEvent = Union[
+    RequestWillBeSentEvent,
+    RequestWillBeSentExtraInfoEvent,
+]
+
 if TYPE_CHECKING:
     from pydoll.browser.tab import Tab
     from pydoll.protocol.network.events import (
-        RequestWillBeSentEvent,
         RequestWillBeSentEventParams,
-        RequestWillBeSentExtraInfoEvent,
         RequestWillBeSentExtraInfoEventParams,
-        ResponseReceivedEvent,
         ResponseReceivedEventParams,
-        ResponseReceivedExtraInfoEvent,
     )
     from pydoll.protocol.runtime.methods import EvaluateResponse
 
-    RequestReceivedEvent = Union[
-        ResponseReceivedEvent,
-        ResponseReceivedExtraInfoEvent,
-    ]
     RequestReceivedEventParams = Union[
         ResponseReceivedEventParams,
         ResponseReceivedExtraInfoEventParams,
-    ]
-    RequestSentEvent = Union[
-        RequestWillBeSentEvent,
-        RequestWillBeSentExtraInfoEvent,
     ]
     RequestSentEventParams = Union[
         RequestWillBeSentEventParams,

@@ -894,6 +894,21 @@ async def test_disable_runtime_events(mock_browser):
     mock_browser._connection_handler.execute_command.assert_called_with(RuntimeCommands.disable())
 
 
+@pytest.mark.asyncio
+async def test_get_tab_by_target(mock_browser):
+    """Test get_tab_by_target creates Tab with correct target info."""
+    target_info = {
+        'targetId': 'test_target_123',
+        'type': 'page',
+        'url': 'https://example.com',
+    }
+    
+    tab = await mock_browser.get_tab_by_target(target_info)
+    
+    assert isinstance(tab, Tab)
+    assert tab._target_id == 'test_target_123'
+
+
 # Tests for continue_request, fail_request and fulfill_request
 @pytest.mark.asyncio
 async def test_continue_request(mock_browser):

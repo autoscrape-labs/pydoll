@@ -280,6 +280,64 @@ class TestTabCookieManagement:
         assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
+    async def test_get_cookies_uses_storage_commands_with_browser_context_id(
+        self, mock_browser, mock_connection_handler
+    ):
+        """Test that get_cookies uses StorageCommands when browser_context_id is set.
+        
+        This ensures proper cookie isolation for explicit browser contexts.
+        """
+        test_cookies = [{'name': 'isolated', 'value': 'cookie', 'domain': 'example.com'}]
+        mock_connection_handler.execute_command.return_value = {
+            'result': {'cookies': test_cookies}
+        }
+        
+        with patch('pydoll.browser.tab.ConnectionHandler', return_value=mock_connection_handler):
+            tab_with_context = Tab(
+                browser=mock_browser,
+                connection_port=9222,
+                target_id='test-target-with-context',
+                browser_context_id='explicit-context-id'
+            )
+        
+        cookies = await tab_with_context.get_cookies()
+        
+        assert cookies == test_cookies
+        # Verify StorageCommands was used (method contains 'Storage.getCookies')
+        call_args = mock_connection_handler.execute_command.call_args[0][0]
+        assert call_args['method'] == 'Storage.getCookies'
+        assert call_args['params']['browserContextId'] == 'explicit-context-id'
+
+    @pytest.mark.asyncio
+    async def test_get_cookies_uses_network_commands_without_browser_context_id(
+        self, mock_browser, mock_connection_handler
+    ):
+        """Test that get_cookies uses NetworkCommands when browser_context_id is None.
+        
+        This is important for incognito mode (--incognito flag) where Storage.getCookies
+        does not work properly, but Network.getCookies does.
+        """
+        test_cookies = [{'name': 'incognito', 'value': 'cookie', 'domain': 'example.com'}]
+        mock_connection_handler.execute_command.return_value = {
+            'result': {'cookies': test_cookies}
+        }
+        
+        with patch('pydoll.browser.tab.ConnectionHandler', return_value=mock_connection_handler):
+            tab_without_context = Tab(
+                browser=mock_browser,
+                connection_port=9222,
+                target_id='test-target-no-context',
+                browser_context_id=None  # No explicit context (incognito/default mode)
+            )
+        
+        cookies = await tab_without_context.get_cookies()
+        
+        assert cookies == test_cookies
+        # Verify NetworkCommands was used (method contains 'Network.getCookies')
+        call_args = mock_connection_handler.execute_command.call_args[0][0]
+        assert call_args['method'] == 'Network.getCookies'
+
+    @pytest.mark.asyncio
     async def test_set_cookies(self, tab):
         """Test setting cookies."""
         test_cookies = [{'name': 'test', 'value': 'value', 'domain': 'example.com'}]

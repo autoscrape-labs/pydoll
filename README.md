@@ -39,6 +39,56 @@ pip install pydoll-python
 ```
 That's it. No `webdrivers`. No external dependencies.
 
+## 🆕 What's New
+
+<details>
+<summary><b>Humanized Keyboard Input (<code>humanize=True</code>)</b></summary>
+<br>
+
+Pydoll now includes a **humanized typing engine** that simulates realistic human typing behavior:
+
+- **Variable keystroke timing**: 30-120ms between keys (not fixed intervals)
+- **Realistic typos**: ~2% error rate with automatic correction behavior
+- **No more `interval` parameter**: Just use `humanize=True` for anti-bot evasion
+
+```python
+# Old way (detectable)
+await element.type_text("hello", interval=0.1)
+
+# New way (human-like, anti-bot)
+await element.type_text("hello", humanize=True)
+```
+</details>
+
+<details>
+<summary><b>Humanized Scroll with Physics Engine (<code>humanize=True</code>)</b></summary>
+<br>
+
+The scroll API now features a **Cubic Bezier curve physics engine** for realistic scrolling:
+
+- **Momentum & friction**: Natural acceleration and deceleration
+- **Micro-pauses**: Brief stops during long scrolls (simulates reading)
+- **Jitter injection**: Small random variations in scroll path
+- **Overshoot correction**: Occasionally scrolls past target and corrects back
+
+```python
+# Smooth scroll (CSS animation, predictable timing)
+await tab.scroll.by(ScrollPosition.DOWN, 500, smooth=True)
+
+# Humanized scroll (physics engine, anti-bot)
+await tab.scroll.by(ScrollPosition.DOWN, 500, humanize=True)
+await tab.scroll.to_bottom(humanize=True)
+```
+
+| Mode | Parameter | Use Case |
+|------|-----------|----------|
+| **Instant** | `smooth=False` | Speed-critical operations |
+| **Smooth** | `smooth=True` | General browsing simulation |
+| **Humanized** | `humanize=True` | **Anti-bot evasion** |
+
+[**📖 Human-Like Interactions Docs**](https://pydoll.tech/docs/features/automation/human-interactions/)
+</details>
+
 ## 🚀 Getting Started in 60 Seconds
 
 Thanks to its `async` architecture and context managers, Pydoll is clean and efficient.

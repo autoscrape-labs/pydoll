@@ -382,6 +382,22 @@ new Promise((resolve) => {{
 }});
 """
 
+    GET_SCROLL_Y = 'window.scrollY || window.pageYOffset || 0'
+
+    GET_REMAINING_SCROLL_TO_BOTTOM = """
+(function() {
+    const scrollHeight = Math.max(
+        document.body.scrollHeight,
+        document.documentElement.scrollHeight
+    );
+    const clientHeight = window.innerHeight;
+    const scrollTop = window.scrollY || window.pageYOffset || 0;
+    return Math.max(0, scrollHeight - clientHeight - scrollTop);
+})()
+"""
+
+    GET_VIEWPORT_CENTER = 'JSON.stringify([window.innerWidth / 2, window.innerHeight / 2])'
+
     INSERT_TEXT = """
     function() {
         const el = this;
@@ -562,3 +578,66 @@ class Key(tuple[str, int], Enum):
 class BrowserType(Enum):
     CHROME = auto()
     EDGE = auto()
+
+
+class TypoType(str, Enum):
+    """Types of realistic typing errors."""
+
+    ADJACENT = 'adjacent'
+    TRANSPOSE = 'transpose'
+    DOUBLE = 'double'
+    SKIP = 'skip'
+    MISSED_SPACE = 'missed_space'
+
+
+DEFAULT_TYPO_PROBABILITY = 0.02
+
+
+QWERTY_NEIGHBORS: dict[str, list[str]] = {
+    '1': ['2', 'q'],
+    '2': ['1', '3', 'q', 'w'],
+    '3': ['2', '4', 'w', 'e'],
+    '4': ['3', '5', 'e', 'r'],
+    '5': ['4', '6', 'r', 't'],
+    '6': ['5', '7', 't', 'y'],
+    '7': ['6', '8', 'y', 'u'],
+    '8': ['7', '9', 'u', 'i'],
+    '9': ['8', '0', 'i', 'o'],
+    '0': ['9', '-', 'o', 'p'],
+    '-': ['0', '=', 'p', '['],
+    '=': ['-', '[', ']'],
+    'q': ['1', '2', 'w', 'a', 's'],
+    'w': ['q', '2', '3', 'e', 'a', 's', 'd'],
+    'e': ['w', '3', '4', 'r', 's', 'd', 'f'],
+    'r': ['e', '4', '5', 't', 'd', 'f', 'g'],
+    't': ['r', '5', '6', 'y', 'f', 'g', 'h'],
+    'y': ['t', '6', '7', 'u', 'g', 'h', 'j'],
+    'u': ['y', '7', '8', 'i', 'h', 'j', 'k'],
+    'i': ['u', '8', '9', 'o', 'j', 'k', 'l'],
+    'o': ['i', '9', '0', 'p', 'k', 'l', ';'],
+    'p': ['o', '0', '-', '[', 'l', ';', "'"],
+    '[': ['p', '-', '=', ']', ';', "'"],
+    ']': ['[', '=', "'"],
+    'a': ['q', 'w', 's', 'z', 'x'],
+    's': ['q', 'w', 'e', 'a', 'd', 'z', 'x', 'c'],
+    'd': ['w', 'e', 'r', 's', 'f', 'x', 'c', 'v'],
+    'f': ['e', 'r', 't', 'd', 'g', 'c', 'v', 'b'],
+    'g': ['r', 't', 'y', 'f', 'h', 'v', 'b', 'n'],
+    'h': ['t', 'y', 'u', 'g', 'j', 'b', 'n', 'm'],
+    'j': ['y', 'u', 'i', 'h', 'k', 'n', 'm', ','],
+    'k': ['u', 'i', 'o', 'j', 'l', 'm', ',', '.'],
+    'l': ['i', 'o', 'p', 'k', ';', ',', '.', '/'],
+    ';': ['o', 'p', '[', 'l', "'", '.', '/'],
+    "'": ['p', '[', ']', ';', '/'],
+    'z': ['a', 's', 'x'],
+    'x': ['z', 'a', 's', 'd', 'c'],
+    'c': ['x', 's', 'd', 'f', 'v'],
+    'v': ['c', 'd', 'f', 'g', 'b'],
+    'b': ['v', 'f', 'g', 'h', 'n'],
+    'n': ['b', 'g', 'h', 'j', 'm'],
+    'm': ['n', 'h', 'j', 'k', ','],
+    ',': ['m', 'j', 'k', 'l', '.'],
+    '.': [',', 'k', 'l', ';', '/'],
+    '/': ['.', 'l', ';', "'"],
+    ' ': ['c', 'v', 'b', 'n', 'm'],
+}

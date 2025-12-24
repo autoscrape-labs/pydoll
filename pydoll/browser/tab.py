@@ -61,7 +61,6 @@ from pydoll.protocol.runtime.methods import (
     SerializationOptions,
 )
 from pydoll.protocol.runtime.types import CallArgument
-from pydoll.protocol.storage.methods import GetCookiesResponse
 from pydoll.utils import (
     decode_base64_to_bytes,
     has_return_outside_function,
@@ -77,6 +76,7 @@ if TYPE_CHECKING:
     )
     from pydoll.protocol.fetch.types import AuthChallengeResponseType, HeaderEntry, RequestStage
     from pydoll.protocol.network.events import RequestWillBeSentEvent
+    from pydoll.protocol.network.methods import GetCookiesResponse as NetworkGetCookiesResponse
     from pydoll.protocol.network.methods import GetResponseBodyResponse
     from pydoll.protocol.network.types import (
         Cookie,
@@ -88,7 +88,7 @@ if TYPE_CHECKING:
     from pydoll.protocol.page.events import FileChooserOpenedEvent
     from pydoll.protocol.page.methods import CaptureScreenshotResponse, PrintToPDFResponse
     from pydoll.protocol.runtime.methods import CallFunctionOnResponse, EvaluateResponse
-    from pydoll.protocol.storage.methods import GetCookiesResponse
+    from pydoll.protocol.storage.methods import GetCookiesResponse as StorageGetCookiesResponse
 
 logger = logging.getLogger(__name__)
 
@@ -468,10 +468,18 @@ class Tab(FindElementsMixin):
     async def get_cookies(self) -> list[Cookie]:
         """Get all cookies accessible from current page."""
         logger.debug('Fetching cookies for current page')
-        response: GetCookiesResponse = await self._execute_command(
-            StorageCommands.get_cookies(self._browser_context_id)
+        if self._browser_context_id:
+            response_storage: StorageGetCookiesResponse = await self._execute_command(
+                StorageCommands.get_cookies(self._browser_context_id)
+            )
+            cookies = response_storage['result']['cookies']
+            logger.debug(f'Fetched {len(cookies)} cookies')
+            return cookies
+
+        response_network: NetworkGetCookiesResponse = await self._execute_command(
+            NetworkCommands.get_cookies()
         )
-        cookies = response['result']['cookies']
+        cookies = response_network['result']['cookies']
         logger.debug(f'Fetched {len(cookies)} cookies')
         return cookies
 

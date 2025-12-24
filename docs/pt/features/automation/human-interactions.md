@@ -2,18 +2,17 @@
 
 Um dos principais diferenciais entre uma automação bem-sucedida e bots facilmente detectados é o quão realistas são as interações. O Pydoll fornece ferramentas sofisticadas para tornar sua automação virtualmente indistinguível do comportamento humano.
 
-!!! warning "Melhorias Futuras"
-    O Pydoll está continuamente melhorando suas capacidades de interação semelhante à humana. Versões futuras incluirão:
+!!! info "Status das Funcionalidades"
+    **Já Implementado:**
     
-    - **Velocidade de digitação variável**: Intervalos aleatórios integrados entre as teclas para eliminar a necessidade de aleatorização manual
-    - **Sequências de teclado realistas**: Simulação automática de erros de digitação, retrocesso (backspace), correções e pausas dinâmicas para máximo realismo
-    - **Deslocamentos (offsets) de clique aleatórios automáticos**: Parâmetro opcional para randomizar automaticamente as posições de clique dentro dos elementos, eliminando cálculos manuais de deslocamento
-    - **Simulação de movimento do mouse**: Trajetórias de cursor realistas com curvas de bezier
-    - **Eventos delta do mouse**: Padrões naturais de aceleração e desaceleração
-    - **Comportamento de hover (passar o mouse)**: Atrasos e movimentos realistas ao passar o mouse
-    - **Variações de tempo**: Atrasos aleatórios para evitar padrões previsíveis
+    - **Teclado Humanizado**: Velocidade de digitação variável, erros realistas com correção automática (`humanize=True`)
+    - **Scroll Humanizado**: Rolagem baseada em física com momentum, fricção, jitter e overshoot (`humanize=True`)
     
-    Essas funcionalidades aproveitam as capacidades do CDP e do JavaScript para máximo realismo.
+    **Em Breve:**
+    
+    - **Módulo de Movimento de Mouse Realista**: Trajetórias de mouse com curvas de Bezier, aceleração/desaceleração natural, overshoot e correção
+    - **Deslocamentos de clique aleatórios automáticos**: Parâmetro opcional para randomizar automaticamente as posições de clique dentro dos elementos
+    - **Comportamento de hover**: Atrasos e movimentos realistas ao passar o mouse sobre elementos
 
 ## Por que Interações Semelhantes a Humanas Importam
 
@@ -160,12 +159,19 @@ asyncio.run(click_methods_comparison())
 
 ## Entrada de Texto Realista
 
-### Digitação Natural com Intervalos
+A API de teclado do Pydoll fornece dois modos de digitação para equilibrar velocidade e furtividade.
 
-O método `type_text()` simula a digitação humana enviando pressionamentos de tecla individuais. O parâmetro `interval` adiciona um **atraso fixo** entre cada pressionamento de tecla.
+!!! info "Entendendo os Modos de Digitação"
+    | Modo | Parâmetros | Comportamento | Caso de Uso |
+    |------|------------|---------------|-------------|
+    | **Padrão** | `humanize=False` | Intervalos fixos de 50ms, sem erros | Cenários de velocidade, baixo risco |
+    | **Humanizado** | `humanize=True` | Timing variável, ~2% de taxa de erros com correção automática | **Evasão anti-bot** |
+    
+    O parâmetro `interval` está obsoleto. Use `humanize=True` em vez disso.
 
-!!! info "Estado Atual: Aleatorização Manual Necessária"
-    Atualmente, o parâmetro `interval` usa um **atraso constante** para todos os caracteres. Para máximo realismo, você precisa randomizar manualmente as velocidades de digitação (como mostrado nos exemplos avançados abaixo). Versões futuras incluirão velocidade de digitação variável automática com aleatoriedade integrada.
+### Digitação Natural com Humanização
+
+Use `humanize=True` para simular digitação humana realista com velocidades variáveis e erros ocasionais que são corrigidos automaticamente:
 
 ```python
 import asyncio
@@ -178,13 +184,11 @@ async def natural_typing():
         
         username_field = await tab.find(id="username")
         password_field = await tab.find(id="password")
-        
-        # Digitar com intervalos fixos (atualmente)
-        # Digitação humana média: 0.1-0.3 segundos por caractere
-        await username_field.type_text("john.doe@example.com", interval=0.15)
-        
-        # Digitação mais lenta para senhas complexas
-        await password_field.type_text("MyC0mpl3xP@ssw0rd!", interval=0.12)
+
+        # Velocidade variável: 30-120ms entre teclas
+        # ~2% de taxa de erros com comportamento de correção realista
+        await username_field.type_text("john.doe@example.com", humanize=True)
+        await password_field.type_text("MyC0mpl3xP@ssw0rd!", humanize=True)
 
 asyncio.run(natural_typing())
 ```
@@ -226,6 +230,17 @@ asyncio.run(fast_vs_realistic_input())
 
 O Pydoll fornece uma API dedicada de scroll que aguarda a conclusão da rolagem antes de prosseguir, tornando suas automações mais realistas e confiáveis.
 
+!!! info "Entendendo os Modos de Scroll"
+    A API de scroll do Pydoll oferece **três modos distintos**:
+    
+    | Modo | Parâmetros | Comportamento | Caso de Uso |
+    |------|------------|---------------|-------------|
+    | **Instantâneo** | `smooth=False` | Teletransporta para a posição imediatamente | Operações focadas em velocidade |
+    | **Suave** | `smooth=True` (padrão) | Animação CSS, previsível | Simulação de navegação geral |
+    | **Humanizado** | `humanize=True` | Motor de física com momentum, jitter, overshoot | **Evasão anti-bot** |
+    
+    Para contornar fingerprinting comportamental, sempre use `humanize=True`.
+
 ### Rolagem Básica por Direção
 
 Use o método `scroll.by()` para rolar a página em qualquer direção com controle preciso:
@@ -240,27 +255,24 @@ async def basic_scrolling():
         tab = await browser.start()
         await tab.go_to('https://example.com/long-page')
         
-        # Rolar para baixo 500 pixels (com animação suave)
-        await tab.scroll.by(ScrollPosition.DOWN, 500, smooth=True)
-        
-        # Rolar para cima 300 pixels
-        await tab.scroll.by(ScrollPosition.UP, 300, smooth=True)
-        
-        # Rolar para a direita (útil para páginas com scroll horizontal)
-        await tab.scroll.by(ScrollPosition.RIGHT, 200, smooth=True)
-        
-        # Rolar para a esquerda
-        await tab.scroll.by(ScrollPosition.LEFT, 200, smooth=True)
-        
-        # Scroll instantâneo (sem animação)
+        # Teletransporta instantaneamente - mais rápido mas facilmente detectável
         await tab.scroll.by(ScrollPosition.DOWN, 1000, smooth=False)
+        
+        # Animação CSS - visual agradável mas timing previsível
+        await tab.scroll.by(ScrollPosition.DOWN, 500, smooth=True)
+        await tab.scroll.by(ScrollPosition.UP, 300, smooth=True)
+
+        # Motor de física com curvas de Bezier - mais realista
+        # Inclui: momentum, fricção, jitter, micro-pausas, overshoot
+        await tab.scroll.by(ScrollPosition.DOWN, 500, humanize=True)
+        await tab.scroll.by(ScrollPosition.UP, 300, humanize=True)
 
 asyncio.run(basic_scrolling())
 ```
 
 ### Rolagem para Posições Específicas
 
-Navegue rapidamente para o topo ou o final da página:
+Navegue para o topo ou o final da página com controle sobre o realismo:
 
 ```python
 import asyncio
@@ -274,28 +286,34 @@ async def scroll_to_positions():
         # Ler o início do artigo
         await asyncio.sleep(2.0)
         
-        # Rolar suavemente até o final
+        # Opção 1: Scroll suave (animação CSS, previsível)
         await tab.scroll.to_bottom(smooth=True)
-        
-        # Pausar no final
         await asyncio.sleep(1.5)
-        
-        # Voltar ao topo
         await tab.scroll.to_top(smooth=True)
+        
+        # Opção 2: Scroll humanizado (motor de física, evasão anti-bot)
+        await tab.scroll.to_bottom(humanize=True)
+        await asyncio.sleep(1.5)
+        await tab.scroll.to_top(humanize=True)
 
 asyncio.run(scroll_to_positions())
 ```
 
-!!! tip "Smooth vs Instant"
-    - **smooth=True**: Usa animação suave do navegador e aguarda o evento `scrollend`
-    - **smooth=False**: Rolagem instantânea para máxima velocidade quando o realismo não é crítico
+!!! tip "Escolhendo o Modo Certo"
+    - **`smooth=True`**: Bom para demos, screenshots e automação geral
+    - **`humanize=True`**: Essencial quando enfrentando fingerprinting comportamental ou detecção de bots
+    - **`smooth=False`**: Velocidade máxima quando a furtividade não é uma preocupação
 
 ### Padrões de Rolagem Semelhantes a Humanos
 
-!!! info "Melhoria Futura: Rolagem Realista Integrada"
-    Atualmente, você deve implementar manualmente padrões de rolagem aleatórios. Versões futuras incluirão um parâmetro `realistic=True` que adiciona automaticamente variações naturais nas distâncias de rolagem, velocidades e pausas para imitar o comportamento humano de leitura.
+O motor de scroll do Pydoll usa **Curvas de Bezier Cúbicas** para simular a física da rolagem humana. Isso inclui:
 
-Simule comportamento natural de leitura e navegação:
+- **Momentum**: Explosão inicial de velocidade seguida de desaceleração gradual.
+- **Fricção**: Desaceleração natural baseada em "resistência física".
+- **Micro-pausas**: Breves paradas durante scrolls longos, imitando leitura ou movimento dos olhos.
+- **Overshoot**: Rolagem ocasional além do alvo e correção de volta.
+
+Este comportamento é automaticamente habilitado quando você usa `humanize=True`.
 
 ```python
 import asyncio
@@ -313,24 +331,25 @@ async def human_like_scrolling():
         await asyncio.sleep(random.uniform(2.0, 4.0))
         
         # Rolar gradualmente enquanto lê
+        # O motor de scroll cuida da física (aceleração/desaceleração)
         for _ in range(random.randint(5, 8)):
             # Distâncias de rolagem variadas (simula velocidade de leitura)
             scroll_distance = random.randint(300, 600)
             await tab.scroll.by(
                 ScrollPosition.DOWN, 
                 scroll_distance, 
-                smooth=True
+                humanize=True  # Habilita física com curvas de Bezier
             )
             
             # Pausar para "ler" o conteúdo
             await asyncio.sleep(random.uniform(2.0, 5.0))
         
-        # Rolar rapidamente para verificar o final
-        await tab.scroll.to_bottom(smooth=True)
+        # Scroll rápido para verificar o final
+        await tab.scroll.to_bottom(humanize=True)
         await asyncio.sleep(random.uniform(1.0, 2.0))
         
         # Voltar ao topo para reler algo
-        await tab.scroll.to_top(smooth=True)
+        await tab.scroll.to_top(humanize=True)
 
 asyncio.run(human_like_scrolling())
 ```

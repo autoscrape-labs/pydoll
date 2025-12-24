@@ -218,6 +218,11 @@ asyncio.run(get_cookies_example())
     
     Both methods return **all cookies** from the context, not just cookies for the current page domain.
 
+!!! warning "Incognito Mode Limitation"
+    `browser.get_cookies()` does **not work** with native incognito mode (`--incognito` flag). This is a Chrome DevTools Protocol limitation where `Storage.getCookies` cannot access cookies in native incognito mode.
+    
+    **Workaround:** Use `tab.get_cookies()` instead, which uses `Network.getCookies` and works correctly in incognito mode.
+
 #### Get Cookies from Specific Context
 
 ```python

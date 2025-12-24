@@ -2,18 +2,17 @@
 
 成功自动化与易被识破的机器人之间的关键区别之一在于交互的逼真程度。Pydoll提供精密工具，使您的自动化操作几乎与人类行为无异。
 
-!!! 警告 "未来增强功能"
-    Pydoll正持续提升其类人交互能力。未来版本将包含：
+!!! info "功能状态"
+    **已实现:**
     
-    - **可变输入速度**：键盘敲击间隔内置随机化，免除手动调整需求
-    - **真实键盘序列**：自动模拟输入错误、退格修正及动态停顿，实现极致逼真
-    - **自动随机点击偏移**：可选参数实现元素内点击位置随机化，免除手动偏移计算
-    - **鼠标移动模拟**：贝塞尔曲线生成真实光标轨迹
-    - **鼠标位移事件**：自然的加速与减速模式
-    - **悬停行为**：悬停时的真实延迟与移动效果
-    - **时间变异性**：随机延迟避免可预测模式
+    - **人性化键盘**: 可变输入速度，真实错误与自动纠正 (`humanize=True`)
+    - **人性化滚动**: 基于物理的滚动，包含动量、摩擦、抖动和过冲 (`humanize=True`)
     
-    这些功能通过CDP与JavaScript技术实现极致逼真效果。
+    **即将推出:**
+    
+    - **真实鼠标移动模块**: 基于贝塞尔曲线的鼠标路径，自然加速/减速、过冲和纠正
+    - **自动随机点击偏移**: 可选参数自动随机化元素内点击位置
+    - **悬停行为**: 悬停时的真实延迟与移动效果
 
 ## 拟人化交互为何重要
 
@@ -160,12 +159,19 @@ asyncio.run(click_methods_comparison())
 
 ## 逼真文本输入
 
-### 带间隔的自然输入
+Pydoll的键盘API提供两种输入模式，平衡速度与隐蔽性。
 
-`type_text()`方法通过发送单个按键模拟人工输入。`interval`参数会在每次按键间添加**固定延迟**。
+!!! info "了解输入模式"
+    | 模式 | 参数 | 行为 | 使用场景 |
+    |------|------|------|----------|
+    | **默认** | `humanize=False` | 固定50毫秒间隔，无错误 | 速度优先、低风险场景 |
+    | **人性化** | `humanize=True` | 可变时序，约2%错误率并自动纠正 | **反机器人规避** |
+    
+    `interval`参数已弃用。请改用`humanize=True`。
 
-!!! info “当前状态：需手动随机化”
-    当前`interval`参数对所有字符采用**恒定延迟**。为实现最高逼真度，需手动随机化输入速度（如下文高级示例所示）。未来版本将内置随机化功能实现自动可变输入速度。
+### 人性化自然输入
+
+使用`humanize=True`模拟真实人类输入，包含可变速度和自动纠正的偶发错误：
 
 ```python
 import asyncio
@@ -174,17 +180,15 @@ from pydoll.browser.chromium import Chrome
 async def natural_typing():
     async with Chrome() as browser:
         tab = await browser.start()
-        await tab.go_to(‘https://example.com/login’)
+        await tab.go_to('https://example.com/login')
         
-        username_field = await tab.find(id=“username”)
-        password_field = await tab.find(id=“password”)
-        
-        # 固定间隔输入（当前实现）
-        # 人类平均输入速度：每字符0.1-0.3秒
-        await username_field.type_text(“john.doe@example.com”, interval=0.15)
-        
-        # 复杂密码采用慢速输入
-        await password_field.type_text(“MyC0mpl3xP@ssw0rd!”, interval=0.12)
+        username_field = await tab.find(id="username")
+        password_field = await tab.find(id="password")
+
+        # 可变速度：按键间隔30-120毫秒
+        # 约2%错误率，带真实纠正行为
+        await username_field.type_text("john.doe@example.com", humanize=True)
+        await password_field.type_text("MyC0mpl3xP@ssw0rd!", humanize=True)
 
 asyncio.run(natural_typing())
 ```
@@ -226,6 +230,17 @@ asyncio.run(fast_vs_realistic_input())
 
 Pydoll提供专用滚动API，在继续执行前等待滚动完成，使您的自动化更加真实可靠。
 
+!!! info "了解滚动模式"
+    Pydoll的滚动API提供**三种不同模式**：
+    
+    | 模式 | 参数 | 行为 | 使用场景 |
+    |------|------|------|----------|
+    | **即时** | `smooth=False` | 立即传送到目标位置 | 速度优先场景 |
+    | **平滑** | `smooth=True`（默认） | CSS动画，可预测 | 一般浏览模拟 |
+    | **人性化** | `humanize=True` | 物理引擎：动量、抖动、过冲 | **反机器人规避** |
+    
+    要绕过行为指纹识别，请始终使用`humanize=True`。
+
 ### 基础方向滚动
 
 使用`scroll.by()`方法精确控制页面任意方向的滚动：
@@ -240,27 +255,24 @@ async def basic_scrolling():
         tab = await browser.start()
         await tab.go_to('https://example.com/long-page')
         
-        # 向下滚动500像素（平滑动画）
-        await tab.scroll.by(ScrollPosition.DOWN, 500, smooth=True)
-        
-        # 向上滚动300像素
-        await tab.scroll.by(ScrollPosition.UP, 300, smooth=True)
-        
-        # 向右滚动（适用于横向滚动页面）
-        await tab.scroll.by(ScrollPosition.RIGHT, 200, smooth=True)
-        
-        # 向左滚动
-        await tab.scroll.by(ScrollPosition.LEFT, 200, smooth=True)
-        
-        # 即时滚动（无动画）
+        # 即时传送 - 最快但易被检测
         await tab.scroll.by(ScrollPosition.DOWN, 1000, smooth=False)
+        
+        # CSS动画 - 外观平滑但时序可预测
+        await tab.scroll.by(ScrollPosition.DOWN, 500, smooth=True)
+        await tab.scroll.by(ScrollPosition.UP, 300, smooth=True)
+
+        # 贝塞尔曲线物理引擎 - 最逼真
+        # 包含：动量、摩擦、抖动、微停顿、过冲
+        await tab.scroll.by(ScrollPosition.DOWN, 500, humanize=True)
+        await tab.scroll.by(ScrollPosition.UP, 300, humanize=True)
 
 asyncio.run(basic_scrolling())
 ```
 
 ### 滚动至特定位置
 
-快速导航至页面顶部或底部：
+导航至页面顶部或底部，可控制逼真程度：
 
 ```python
 import asyncio
@@ -274,28 +286,34 @@ async def scroll_to_positions():
         # 阅读文章开头
         await asyncio.sleep(2.0)
         
-        # 平滑滚动至底部
+        # 选项1：平滑滚动（CSS动画，可预测）
         await tab.scroll.to_bottom(smooth=True)
-        
-        # 在底部停顿
         await asyncio.sleep(1.5)
-        
-        # 返回顶部
         await tab.scroll.to_top(smooth=True)
+        
+        # 选项2：人性化滚动（物理引擎，反机器人）
+        await tab.scroll.to_bottom(humanize=True)
+        await asyncio.sleep(1.5)
+        await tab.scroll.to_top(humanize=True)
 
 asyncio.run(scroll_to_positions())
 ```
 
-!!! tip "平滑 vs 即时"
-    - **smooth=True**：使用浏览器平滑动画并等待`scrollend`事件
-    - **smooth=False**：即时滚动，在逼真度非关键时实现最大速度
+!!! tip "选择正确的模式"
+    - **`smooth=True`**：适用于演示、截图和一般自动化
+    - **`humanize=True`**：面对行为指纹识别或机器人检测时必需
+    - **`smooth=False`**：隐蔽性不重要时追求最大速度
 
 ### 类人滚动模式
 
-!!! info "未来增强：内置真实滚动"
-    目前需手动实现随机滚动模式。未来版本将提供`realistic=True`参数，自动添加滚动距离、速度及停顿的自然变化，模拟人类阅读行为。
+Pydoll的滚动引擎使用**三次贝塞尔曲线**模拟人类滚动的物理特性，包括：
 
-模拟自然阅读与导航行为：
+- **动量**：初始速度爆发后逐渐减速
+- **摩擦**：基于"物理阻力"的自然减速
+- **微停顿**：长距离滚动时的短暂停顿，模拟阅读或眼球移动
+- **过冲**：偶尔滚动超过目标后回调
+
+使用`humanize=True`时自动启用此行为。
 
 ```python
 import asyncio
@@ -313,24 +331,25 @@ async def human_like_scrolling():
         await asyncio.sleep(random.uniform(2.0, 4.0))
         
         # 阅读时逐步滚动
+        # 滚动引擎处理物理效果（加速/减速）
         for _ in range(random.randint(5, 8)):
             # 变化滚动距离（模拟阅读速度）
             scroll_distance = random.randint(300, 600)
             await tab.scroll.by(
                 ScrollPosition.DOWN, 
                 scroll_distance, 
-                smooth=True
+                humanize=True  # 启用贝塞尔曲线物理
             )
             
             # 停顿"阅读"内容
             await asyncio.sleep(random.uniform(2.0, 5.0))
         
         # 快速滚动查看末尾
-        await tab.scroll.to_bottom(smooth=True)
+        await tab.scroll.to_bottom(humanize=True)
         await asyncio.sleep(random.uniform(1.0, 2.0))
         
         # 滚回顶部重读某处
-        await tab.scroll.to_top(smooth=True)
+        await tab.scroll.to_top(humanize=True)
 
 asyncio.run(human_like_scrolling())
 ```

@@ -4,9 +4,8 @@ import asyncio
 import json
 import logging
 import warnings
-from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Iterable, Optional
+from typing import TYPE_CHECKING, Optional
 
 import aiofiles
 
@@ -15,7 +14,6 @@ from pydoll.commands import (
     InputCommands,
     PageCommands,
     RuntimeCommands,
-    TargetCommands,
 )
 from pydoll.connection import ConnectionHandler
 from pydoll.constants import (
@@ -33,16 +31,15 @@ from pydoll.exceptions import (
     MissingScreenshotPath,
     WaitElementTimeout,
 )
-from pydoll.protocol.dom.methods import GetFrameOwnerResponse
-from pydoll.protocol.dom.types import Node
+from pydoll.interactions.iframe import IFrameContext, IFrameContextResolver
+from pydoll.interactions.keyboard import Keyboard
 from pydoll.protocol.input.types import (
     KeyEventType,
     KeyModifier,
     MouseButton,
     MouseEventType,
 )
-from pydoll.protocol.page.methods import CreateIsolatedWorldResponse, GetFrameTreeResponse
-from pydoll.protocol.page.types import Frame, FrameTree, ScreenshotFormat, Viewport
+from pydoll.protocol.page.types import ScreenshotFormat, Viewport
 from pydoll.protocol.runtime.methods import (
     CallFunctionOnResponse,
     EvaluateResponse,
@@ -50,24 +47,11 @@ from pydoll.protocol.runtime.methods import (
     SerializationOptions,
 )
 from pydoll.protocol.runtime.types import CallArgument
-from pydoll.protocol.target.methods import AttachToTargetResponse, GetTargetsResponse
 from pydoll.utils import (
     decode_base64_to_bytes,
     extract_text_from_html,
     is_script_already_function,
-    normalize_synthetic_xpath,
 )
-
-
-@dataclass
-class _IFrameContext:
-    frame_id: str
-    document_url: Optional[str] = None
-    execution_context_id: Optional[int] = None
-    document_object_id: Optional[str] = None
-    session_handler: Optional[ConnectionHandler] = None
-    session_id: Optional[str] = None
-
 
 if TYPE_CHECKING:
     from pydoll.protocol.dom.methods import (
@@ -117,13 +101,27 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         self._selector = selector
         self._connection_handler = connection_handler
         self._attributes: dict[str, str] = {}
+        self._keyboard: Optional[Keyboard] = None
+        self._iframe_context: Optional[IFrameContext] = None
+        self._iframe_resolver: Optional[IFrameContextResolver] = None
         self._def_attributes(attributes_list)
-        self._iframe_context: Optional[_IFrameContext] = None
         logger.debug(
             f'WebElement initialized: object_id={self._object_id}, '
             f'method={self._search_method}, selector={self._selector}, '
             f'attributes={len(self._attributes)}'
         )
+
+    def _get_keyboard(self) -> Keyboard:
+        """Get or create the keyboard controller."""
+        if self._keyboard is None:
+            self._keyboard = Keyboard(self)
+        return self._keyboard
+
+    def _get_iframe_resolver(self) -> IFrameContextResolver:
+        """Get or create the iframe context resolver."""
+        if self._iframe_resolver is None:
+            self._iframe_resolver = IFrameContextResolver(self)
+        return self._iframe_resolver
 
     @property
     def value(self) -> Optional[str]:
@@ -158,57 +156,18 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
     @property
     async def text(self) -> str:
         """Visible text content of the element."""
-        text_in_iframe = await self._text_via_iframe_context()
-        if text_in_iframe is not None:
-            logger.debug(f'Extracted text length (iframe ctx): {len(text_in_iframe)}')
-            return text_in_iframe
+        if self._is_inside_iframe():
+            response: CallFunctionOnResponse = await self.execute_script(
+                'return (this.textContent || "").trim()', return_by_value=True
+            )
+            text_value = response.get('result', {}).get('result', {}).get('value', '') or ''
+            logger.debug(f'Extracted text length (iframe ctx): {len(text_value)}')
+            return text_value
 
         outer_html = await self.inner_html
         text_value = extract_text_from_html(outer_html, strip=True)
         logger.debug(f'Extracted text length: {len(text_value)}')
         return text_value
-
-    async def _text_via_iframe_context(self) -> Optional[str]:
-        """
-        Resolve textContent for elements inside an iframe by executing on the element itself.
-        """
-        iframe_ctx = getattr(self, '_iframe_context', None)
-        if iframe_ctx is None or self.is_iframe:
-            return None
-        # Execute directly against this element to avoid selector ambiguity
-        response_cf: CallFunctionOnResponse = await self.execute_script(
-            'return (this.textContent || "").trim()', return_by_value=True
-        )
-        return response_cf.get('result', {}).get('result', {}).get('value', '') or ''
-
-    @staticmethod
-    def _build_text_expression(selector: str, method: str) -> Optional[str]:
-        """
-        Build JS expression using Scripts to extract textContent based on selector type.
-        """
-        raw = str(selector)
-        method_lc = (method or '').lower()
-
-        if 'xpath' in method_lc:
-            normalized_xpath = normalize_synthetic_xpath(raw)
-            escaped_xpath = normalized_xpath.replace('"', '\\"')
-            return Scripts.GET_TEXT_BY_XPATH.replace('{escaped_value}', escaped_xpath)
-
-        if method_lc == 'name':
-            escaped_name = raw.replace('"', '\\"')
-            xpath = f'//*[@name="{escaped_name}"]'
-            return Scripts.GET_TEXT_BY_XPATH.replace('{escaped_value}', xpath)
-
-        escaped = raw.replace('\\', '\\\\').replace('"', '\\"')
-        if method_lc == 'id':
-            css = f'#{escaped}'
-        elif method_lc == 'class_name':
-            css = f'.{escaped}'
-        elif method_lc == 'tag_name':
-            css = escaped
-        else:
-            css = escaped
-        return Scripts.GET_TEXT_BY_CSS.replace('{selector}', css)
 
     @property
     async def bounds(self) -> Quad:
@@ -226,32 +185,53 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
     @property
     async def inner_html(self) -> str:
         if self.is_iframe:
-            iframe_context = await self.iframe_context
-            if iframe_context is None:
-                raise InvalidIFrame('Unable to resolve iframe context')
-            response_evaluate: EvaluateResponse = await self._execute_command(
-                RuntimeCommands.evaluate(
-                    expression='document.documentElement.outerHTML',
-                    context_id=iframe_context.execution_context_id,
-                    return_by_value=True,
-                )
-            )
-            return response_evaluate['result']['result'].get('value', '')
+            return await self._get_iframe_inner_html()
 
-        iframe_ctx = getattr(self, '_iframe_context', None)
-        if iframe_ctx is not None:
-            response_cf: CallFunctionOnResponse = await self._execute_command(
-                RuntimeCommands.call_function_on(
-                    function_declaration='function(){ return this.outerHTML }',
-                    object_id=self._object_id,
-                    return_by_value=True,
-                )
+        if self._is_inside_iframe():
+            response: CallFunctionOnResponse = await self.execute_script(
+                'return this.outerHTML', return_by_value=True
             )
-            return response_cf.get('result', {}).get('result', {}).get('value', '')
+            return response.get('result', {}).get('result', {}).get('value', '')
 
         command = DomCommands.get_outer_html(object_id=self._object_id)
         response_get_outer_html: GetOuterHTMLResponse = await self._execute_command(command)
         return response_get_outer_html['result']['outerHTML']
+
+    @property
+    async def iframe_context(self) -> Optional[IFrameContext]:
+        """
+        Return the resolved iframe context for this element when it is an <iframe>.
+
+        The context includes: frame_id, document_url, execution_context_id,
+        document_object_id and, for OOPIF targets, the session_id and
+        session_handler used for routing commands. The first call resolves and
+        caches the context. Non-iframe elements return None.
+
+        Returns:
+            IFrameContext | None: Cached iframe context or None for non-iframes.
+        """
+        if not self.is_iframe:
+            return None
+
+        if self._iframe_context:
+            return self._iframe_context
+
+        resolver = self._get_iframe_resolver()
+        self._iframe_context = await resolver.resolve()
+        self._apply_routing_from_context()
+        return self._iframe_context
+
+    def get_attribute(self, name: str) -> Optional[str]:
+        """
+        Get element attribute value.
+
+        Note:
+            Only provides attributes available when element was located.
+            For dynamic attributes, consider using JavaScript execution.
+        """
+        if name == 'class' and 'class_name' in self._attributes:
+            return self._attributes.get('class_name')
+        return self._attributes.get(name)
 
     async def get_bounds_using_js(self) -> dict[str, int]:
         """
@@ -406,18 +386,6 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
             logger.info(f'Element screenshot saved: {path}')
 
         return None
-
-    def get_attribute(self, name: str) -> Optional[str]:
-        """
-        Get element attribute value.
-
-        Note:
-            Only provides attributes available when element was located.
-            For dynamic attributes, consider using JavaScript execution.
-        """
-        if name == 'class' and 'class_name' in self._attributes:
-            return self._attributes.get('class_name')
-        return self._attributes.get(name)
 
     async def scroll_into_view(self):
         """Scroll element into visible viewport."""
@@ -617,22 +585,24 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
             DomCommands.set_file_input_files(files=files_list, object_id=self._object_id)
         )
 
-    async def type_text(self, text: str, interval: float = 0.1):
+    async def type_text(
+        self,
+        text: str,
+        humanize: bool = False,
+        interval: Optional[float] = None,
+    ):
         """
-        Type text character by character with realistic timing.
+        Type text character by character.
 
-        More realistic than insert_text() but slower.
+        Args:
+            text: Text to type into the element.
+            humanize: When True, simulates human-like typing.
+            interval: Deprecated. Use humanize=True instead.
         """
-        logger.info(f'Typing text (length={len(text)}, interval={interval}s)')
+        logger.info(f'Typing text (length={len(text)}, humanize={humanize})')
         await self.click()
-        for char in text:
-            await self._execute_command(
-                InputCommands.dispatch_key_event(
-                    type=KeyEventType.CHAR,
-                    text=char,
-                )
-            )
-            await asyncio.sleep(interval)
+        keyboard = self._get_keyboard()
+        await keyboard.type_text(text, humanize=humanize, interval=interval)
 
     async def key_down(self, key: Key, modifiers: Optional[KeyModifier] = None):
         """
@@ -721,490 +691,6 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         is_editable = result['result']['result']['value']
         logger.debug(f'Element editable check: {is_editable}')
         return is_editable
-
-    async def _click_option_tag(self):
-        """Specialized method for clicking <option> elements in dropdowns."""
-        await self._execute_command(
-            RuntimeCommands.call_function_on(
-                object_id=self._object_id,
-                function_declaration=Scripts.CLICK_OPTION_TAG,
-                return_by_value=True,
-            )
-        )
-
-    @property
-    async def iframe_context(self) -> Optional[_IFrameContext]:
-        """
-        Return the resolved iframe context for this element when it is an <iframe>.
-
-        The context includes: frame_id, document_url, execution_context_id,
-        document_object_id and, for OOPIF targets, the session_id and
-        session_handler used for routing commands. The first call resolves and
-        caches the context. Non-iframe elements return None.
-
-        Returns:
-            _IFrameContext | None: Cached iframe context or None for non-iframes.
-        """
-        if not self.is_iframe:
-            return None
-
-        if self._iframe_context:
-            return self._iframe_context
-
-        await self._ensure_iframe_context()
-        return self._iframe_context
-
-    @staticmethod
-    async def _get_frame_tree_for(
-        handler: ConnectionHandler, session_id: Optional[str]
-    ) -> FrameTree:
-        """
-        Get the Page frame tree for the given connection/target.
-
-        Args:
-            handler (ConnectionHandler): Connection to execute the command on.
-            session_id (str | None): Target session id (flattened mode). When
-                provided, the command is routed to that target.
-
-        Returns:
-            FrameTree: Frame tree returned by Page.getFrameTree.
-        """
-        command = PageCommands.get_frame_tree()
-        if session_id:
-            command['sessionId'] = session_id
-        response: GetFrameTreeResponse = await handler.execute_command(command)
-        return response['result']['frameTree']
-
-    @staticmethod
-    def _walk_frames(tree: FrameTree) -> Iterable[Frame]:
-        """
-        Recursively traverse a FrameTree and collect all frame descriptors.
-
-        Args:
-            tree (FrameTree): Root frame tree node.
-
-        Returns:
-            Iterable[Frame]: Sequence of frame dictionaries (root first).
-        """
-        if not tree:
-            return []
-        frames: list[Frame] = [tree['frame']]
-        for child_frame in tree.get('childFrames', []) or []:
-            frames.extend(WebElement._walk_frames(child_frame))
-        return [frame_node for frame_node in frames if frame_node]
-
-    @staticmethod
-    async def _owner_backend_for(
-        handler: ConnectionHandler, session_id: Optional[str], frame_id: str
-    ) -> Optional[int]:
-        """
-        Get the backendNodeId of the DOM element that owns the given frame.
-
-        Args:
-            handler (ConnectionHandler): Connection used to execute the command.
-            session_id (str | None): Optional session id to route to the target.
-            frame_id (str): Frame id to query.
-
-        Returns:
-            int | None: backendNodeId of the owner iframe element, or None.
-        """
-        command = DomCommands.get_frame_owner(frame_id=frame_id)
-        if session_id:
-            command['sessionId'] = session_id
-        response: GetFrameOwnerResponse = await handler.execute_command(command)
-        return response.get('result', {}).get('backendNodeId')
-
-    async def _find_frame_by_owner(
-        self, handler: ConnectionHandler, session_id: Optional[str], backend_node_id: int
-    ) -> tuple[Optional[str], Optional[str]]:
-        """
-        Find a frame by matching the owner backend_node_id of the <iframe> element.
-
-        Args:
-            handler (ConnectionHandler): Connection used to query Page/DOM.
-            session_id (str | None): Optional session id used for routing.
-            backend_node_id (int): Backend node id of the iframe element.
-
-        Returns:
-            tuple[str | None, str | None]: (frame_id, frame_url) or (None, None).
-        """
-        frame_tree = await self._get_frame_tree_for(handler, session_id)
-        for frame_node in WebElement._walk_frames(frame_tree):
-            candidate_frame_id = frame_node.get('id', '')
-            if not candidate_frame_id:
-                continue
-            owner_backend_id = await self._owner_backend_for(
-                handler, session_id, candidate_frame_id
-            )
-            if owner_backend_id == backend_node_id:
-                return candidate_frame_id, frame_node.get('url')
-        return None, None
-
-    @staticmethod
-    def _find_child_by_parent(tree: FrameTree, parent_id: str) -> Optional[str]:
-        """
-        Find the id of a child frame whose parentId equals the given one.
-
-        Args:
-            tree (FrameTree): Root frame tree node.
-            parent_id (str): Parent frame id to match.
-
-        Returns:
-            str | None: Child frame id or None if not found.
-        """
-        if not tree:
-            return None
-        for child in tree.get('childFrames', []) or []:
-            cframe = child.get('frame', {})
-            if cframe.get('parentId') == parent_id:
-                return cframe.get('id')
-            found = WebElement._find_child_by_parent(child, parent_id)
-            if found:
-                return found
-        return None
-
-    async def _resolve_oopif_by_parent(
-        self,
-        parent_frame_id: str,
-        backend_node_id: Optional[int],
-    ) -> tuple[Optional[ConnectionHandler], Optional[str], Optional[str], Optional[str]]:
-        """
-        Resolve an out-of-process iframe (OOPIF) using the given parent frame id.
-
-        Strategy:
-        - Try to attach to a direct child target whose parentFrameId matches.
-        - Otherwise attach to targets and either:
-          - find a child frame with matching parentId, or
-          - match the root frame whose owner equals backend_node_id.
-
-        Args:
-            parent_frame_id (str): Parent frame id the iframe belongs to.
-            backend_node_id (int | None): Backend node id of the iframe element.
-
-        Returns:
-            tuple[ConnectionHandler | None, str | None, str | None, str | None]:
-                (session_handler, session_id, frame_id, document_url).
-        """
-        browser_handler = ConnectionHandler(
-            connection_port=self._connection_handler._connection_port
-        )
-        targets_response: GetTargetsResponse = await browser_handler.execute_command(
-            TargetCommands.get_targets()
-        )
-        target_infos = targets_response.get('result', {}).get('targetInfos', [])
-
-        direct_children = [
-            target_info
-            for target_info in target_infos
-            if target_info.get('type') in {'iframe', 'page'}
-            and target_info.get('parentFrameId') == parent_frame_id
-        ]
-
-        is_single_child = len(direct_children) == 1
-        for child_target in direct_children:
-            attach_response: AttachToTargetResponse = await browser_handler.execute_command(
-                TargetCommands.attach_to_target(target_id=child_target['targetId'], flatten=True)
-            )
-            attached_session_id = attach_response.get('result', {}).get('sessionId')
-            if not attached_session_id:
-                continue
-
-            frame_tree = await self._get_frame_tree_for(browser_handler, attached_session_id)
-            root_frame = (frame_tree or {}).get('frame', {})
-            root_frame_id = root_frame.get('id', '')
-
-            if is_single_child and root_frame_id and backend_node_id is None:
-                return (
-                    browser_handler,
-                    attached_session_id,
-                    root_frame_id,
-                    root_frame.get('url'),
-                )
-
-            if root_frame_id and backend_node_id is not None:
-                owner_backend_id = await self._owner_backend_for(
-                    self._connection_handler, None, root_frame_id
-                )
-                if owner_backend_id == backend_node_id:
-                    return (
-                        browser_handler,
-                        attached_session_id,
-                        root_frame_id,
-                        root_frame.get('url'),
-                    )
-
-        for target_info in target_infos:
-            if target_info.get('type') not in {'iframe', 'page'}:
-                continue
-            attach_response = await browser_handler.execute_command(
-                TargetCommands.attach_to_target(
-                    target_id=target_info.get('targetId', ''), flatten=True
-                )
-            )
-            attached_session_id = attach_response.get('result', {}).get('sessionId')
-            if not attached_session_id:
-                continue
-            frame_tree = await self._get_frame_tree_for(browser_handler, attached_session_id)
-            root_frame = (frame_tree or {}).get('frame', {})
-            root_frame_id = root_frame.get('id', '')
-
-            if root_frame_id and backend_node_id is not None:
-                owner_backend_id = await self._owner_backend_for(
-                    self._connection_handler, None, root_frame_id
-                )
-                if owner_backend_id == backend_node_id:
-                    return (
-                        browser_handler,
-                        attached_session_id,
-                        root_frame_id,
-                        root_frame.get('url'),
-                    )
-
-            child_frame_id = WebElement._find_child_by_parent(frame_tree, parent_frame_id)
-            if child_frame_id:
-                return browser_handler, attached_session_id, child_frame_id, None
-
-        return None, None, None, None
-
-    @staticmethod
-    def _extract_frame_metadata(
-        node_info: Node,
-    ) -> tuple[Optional[str], Optional[str], Optional[str], Optional[int]]:
-        """
-        Extract iframe-related metadata from a DOM.describeNode Node.task
-
-        Args:
-            node_info (Node): DOM node information of the iframe element.
-
-        Returns:
-            tuple[str | None, str | None, str | None, int | None]:
-                (frame_id, document_url, parent_frame_id, backend_node_id).
-        """
-        content_document = node_info.get('contentDocument') or {}
-        parent_frame_id = node_info.get('frameId')
-        backend_node_id = node_info.get('backendNodeId')
-        frame_id = content_document.get('frameId')
-        document_url = (
-            content_document.get('documentURL')
-            or content_document.get('baseURL')
-            or node_info.get('documentURL')
-            or node_info.get('baseURL')
-        )
-        return frame_id, document_url, parent_frame_id, backend_node_id
-
-    def _get_base_session(self) -> tuple[ConnectionHandler, Optional[str]]:
-        """
-        Return the default handler and session id for routing commands.
-
-        Prefers a routing handler/session inherited from a parent iframe, otherwise
-        falls back to this element's connection handler.
-
-        Returns:
-            tuple[ConnectionHandler, str | None]: (handler, session_id).
-        """
-        handler = getattr(self, '_routing_session_handler', None) or self._connection_handler
-        session_id = getattr(self, '_routing_session_id', None)
-        return handler, session_id
-
-    async def _resolve_frame_by_owner(
-        self,
-        base_handler: ConnectionHandler,
-        base_session_id: Optional[str],
-        backend_node_id: int,
-        current_document_url: Optional[str],
-    ) -> tuple[Optional[str], Optional[str]]:
-        """
-        Resolve a frame id and URL by matching the owner backend_node_id.
-
-        Args:
-            base_handler (ConnectionHandler): Connection used to query Page/DOM.
-            base_session_id (str | None): Optional session id for routing.
-            backend_node_id (int): Backend node id of the iframe element.
-            current_document_url (str | None): Current best-known document URL.
-
-        Returns:
-            tuple[str | None, str | None]: (frame_id, document_url) or (None, url).
-        """
-        owner_frame_id, owner_url = await self._find_frame_by_owner(
-            base_handler, base_session_id, backend_node_id
-        )
-        if not owner_frame_id:
-            return None, current_document_url
-        return owner_frame_id, owner_url or current_document_url
-
-    async def _resolve_oopif_if_needed(
-        self,
-        current_frame_id: Optional[str],
-        parent_frame_id: Optional[str],
-        backend_node_id: Optional[int],
-        current_document_url: Optional[str],
-    ) -> tuple[Optional[ConnectionHandler], Optional[str], Optional[str], Optional[str]]:
-        """
-        Resolve OOPIF and routing when needed.
-
-        For cross-origin iframes (OOPIFs), commands must be routed to the OOPIF's
-        target using a sessionId. For same-origin iframes, use the frame_id directly.
-
-        Args:
-            current_frame_id (str | None): Already known frame id, if any.
-            parent_frame_id (str | None): Parent frame id used to search children.
-            backend_node_id (int | None): Backend node id of the iframe element.
-            current_document_url (str | None): Current best-known document URL.
-
-        Returns:
-            tuple[ConnectionHandler | None, str | None, str | None, str | None]:
-                (session_handler, session_id, frame_id, document_url).
-        """
-        if not parent_frame_id or (current_frame_id and backend_node_id is None):
-            return None, None, current_frame_id, current_document_url
-
-        (
-            session_handler,
-            session_id,
-            resolved_frame_id,
-            resolved_url,
-        ) = await self._resolve_oopif_by_parent(parent_frame_id, backend_node_id)
-
-        if session_handler and session_id and resolved_url:
-            return (
-                session_handler,
-                session_id,
-                resolved_frame_id or current_frame_id,
-                resolved_url or current_document_url,
-            )
-
-        return (
-            None,
-            None,
-            current_frame_id or resolved_frame_id,
-            current_document_url or resolved_url,
-        )
-
-    def _init_iframe_context(
-        self,
-        frame_id: str,
-        document_url: Optional[str],
-        session_handler: Optional[ConnectionHandler],
-        session_id: Optional[str],
-    ) -> None:
-        """
-        Initialize and cache iframe context on this element.
-
-        Args:
-            frame_id (str): Resolved frame id of the iframe document.
-            document_url (str | None): Resolved document URL of the iframe.
-            session_handler (ConnectionHandler | None): OOPIF target handler, if any.
-            session_id (str | None): OOPIF target session id, if any.
-        """
-        self._iframe_context = _IFrameContext(frame_id=frame_id, document_url=document_url)
-        if hasattr(self, '_routing_session_handler'):
-            delattr(self, '_routing_session_handler')
-        if hasattr(self, '_routing_session_id'):
-            delattr(self, '_routing_session_id')
-        if session_handler and session_id:
-            self._iframe_context.session_handler = session_handler
-            self._iframe_context.session_id = session_id
-
-    @staticmethod
-    async def _create_isolated_world_for_frame(
-        frame_id: str,
-        handler: ConnectionHandler,
-        session_id: Optional[str],
-    ) -> int:
-        """
-        Create an isolated world (Page.createIsolatedWorld) for the given frame.
-
-        Args:
-            frame_id (str): Target frame id to create the isolated world in.
-            handler (ConnectionHandler): Connection used to execute the command.
-            session_id (str | None): Optional session id to route the command.
-
-        Returns:
-            int: Execution context id for the created isolated world.
-
-        Raises:
-            InvalidIFrame: If the isolated world could not be created.
-        """
-        create_command = PageCommands.create_isolated_world(
-            frame_id=frame_id,
-            world_name=f'pydoll::iframe::{frame_id}',
-            grant_universal_access=True,
-        )
-        if session_id:
-            create_command['sessionId'] = session_id
-        create_response: CreateIsolatedWorldResponse = await handler.execute_command(create_command)
-        execution_context_id = create_response.get('result', {}).get('executionContextId')
-        if not execution_context_id:
-            raise InvalidIFrame('Unable to create isolated world for iframe')
-        return execution_context_id
-
-    async def _set_iframe_document_object_id(self, execution_context_id: int) -> None:
-        """
-        Evaluate document.documentElement in the iframe context and cache its object id.
-
-        Args:
-            execution_context_id (int): Execution context id for the iframe document.
-
-        Raises:
-            InvalidIFrame: If the document object id cannot be obtained.
-        """
-        evaluate_command = RuntimeCommands.evaluate(
-            expression='document.documentElement',
-            context_id=execution_context_id,
-        )
-        if self._iframe_context and self._iframe_context.session_id:
-            evaluate_command['sessionId'] = self._iframe_context.session_id
-        evaluate_response: EvaluateResponse = await (
-            (self._iframe_context.session_handler if self._iframe_context else None)
-            or self._connection_handler
-        ).execute_command(evaluate_command)
-        result_object = evaluate_response.get('result', {}).get('result', {})
-        document_object_id = result_object.get('objectId')
-        if not document_object_id:
-            raise InvalidIFrame('Unable to obtain document reference for iframe')
-        if self._iframe_context:
-            self._iframe_context.document_object_id = document_object_id
-
-    async def _ensure_iframe_context(self) -> None:
-        """
-        Initialize and cache context information for iframe elements.
-
-        Populates frame id, document URL, execution context and document object id.
-        """
-        node_info = await self._describe_node(object_id=self._object_id)
-        base_handler, base_session_id = self._get_base_session()
-        frame_id, document_url, parent_frame_id, backend_node_id = self._extract_frame_metadata(
-            node_info
-        )
-
-        if not frame_id and backend_node_id is not None:
-            frame_id, document_url = await self._resolve_frame_by_owner(
-                base_handler, base_session_id, backend_node_id, document_url
-            )
-
-        (
-            session_handler,
-            session_id,
-            frame_id,
-            document_url,
-        ) = await self._resolve_oopif_if_needed(
-            frame_id, parent_frame_id, backend_node_id, document_url
-        )
-
-        if not frame_id:
-            raise InvalidIFrame('Unable to resolve frameId for the iframe element')
-
-        self._init_iframe_context(frame_id, document_url, session_handler, session_id)
-
-        effective_handler = session_handler or base_handler
-        effective_session_id = session_id or base_session_id
-        execution_context_id = await self._create_isolated_world_for_frame(
-            frame_id, effective_handler, effective_session_id
-        )
-        if self._iframe_context:
-            self._iframe_context.execution_context_id = execution_context_id
-
-        await self._set_iframe_document_object_id(execution_context_id)
 
     async def is_visible(self):
         """Check if element is visible using comprehensive JavaScript visibility test."""
@@ -1304,6 +790,46 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         )
         return await self._execute_command(command)
 
+    def __repr__(self):
+        """String representation showing attributes and object ID."""
+        attrs = ', '.join(f'{k}={v!r}' for k, v in self._attributes.items())
+        return f'{self.__class__.__name__}({attrs})(object_id={self._object_id})'
+
+    def _is_inside_iframe(self) -> bool:
+        """Check if this element is inside an iframe context (not the iframe itself)."""
+        return self._iframe_context is not None and not self.is_iframe
+
+    async def _get_iframe_inner_html(self) -> str:
+        """Get inner HTML of an iframe element."""
+        iframe_context = await self.iframe_context
+        if iframe_context is None:
+            raise InvalidIFrame('Unable to resolve iframe context')
+        response: EvaluateResponse = await self._execute_command(
+            RuntimeCommands.evaluate(
+                expression='document.documentElement.outerHTML',
+                context_id=iframe_context.execution_context_id,
+                return_by_value=True,
+            )
+        )
+        return response['result']['result'].get('value', '')
+
+    def _apply_routing_from_context(self) -> None:
+        """Apply routing attributes from iframe context."""
+        if hasattr(self, '_routing_session_handler'):
+            delattr(self, '_routing_session_handler')
+        if hasattr(self, '_routing_session_id'):
+            delattr(self, '_routing_session_id')
+
+    async def _click_option_tag(self):
+        """Specialized method for clicking <option> elements in dropdowns."""
+        await self._execute_command(
+            RuntimeCommands.call_function_on(
+                object_id=self._object_id,
+                function_declaration=Scripts.CLICK_OPTION_TAG,
+                return_by_value=True,
+            )
+        )
+
     async def _get_family_elements(
         self, script: str, max_depth: int = 1, tag_filter: list[str] = []
     ) -> list[WebElement]:
@@ -1389,8 +915,3 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         x_center = sum(x_values) / len(x_values)
         y_center = sum(y_values) / len(y_values)
         return x_center, y_center
-
-    def __repr__(self):
-        """String representation showing attributes and object ID."""
-        attrs = ', '.join(f'{k}={v!r}' for k, v in self._attributes.items())
-        return f'{self.__class__.__name__}({attrs})(object_id={self._object_id})'

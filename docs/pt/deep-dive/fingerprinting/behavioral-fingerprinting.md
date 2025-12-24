@@ -368,6 +368,9 @@ Essa interpolação de três níveis produz o mesmo resultado, mas evita polinô
     - **[Pyautogui](https://pyautogui.readthedocs.io/)**: Interpolação básica (facilmente detectável)
     - **[Humanize.js](https://github.com/HumanSignal/label-studio-frontend/blob/master/src/utils/utilities.js)**: Curvas compostas avançadas
 
+!!! success \"Implementação Pydoll\"
+    O Pydoll implementa **Curvas de Bezier Cúbicas** para seu motor de scroll, garantindo que todos os movimentos de rolagem sigam perfis naturais de aceleração e desaceleração. Isso é combinado com jitter aleatório, micro-pausas e correção de overshoot para derrotar análise comportamental avançada.
+
 ### Entropia do Movimento do Mouse
 
 **O que é Entropia neste Contexto?**
