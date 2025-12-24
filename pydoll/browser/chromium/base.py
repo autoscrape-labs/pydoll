@@ -1,5 +1,4 @@
 from __future__ import annotations
-from functools import cached_property
 
 import asyncio
 import json
@@ -9,7 +8,7 @@ import shutil
 import warnings
 from abc import ABC, abstractmethod
 from contextlib import suppress
-from functools import partial
+from functools import cached_property, partial
 from random import randint
 from tempfile import TemporaryDirectory
 from typing import (
@@ -52,6 +51,7 @@ from pydoll.protocol.fetch.types import AuthChallengeResponseType
 
 if TYPE_CHECKING:  # pragma: no cover
     from tempfile import TemporaryDirectory
+    from typing import TypeVar
 
     from pydoll.browser.interfaces import BrowserOptionsManager
     from pydoll.protocol.base import (
@@ -83,7 +83,8 @@ if TYPE_CHECKING:  # pragma: no cover
         GetTargetsResponse,
     )
     from pydoll.protocol.target.types import TargetInfo
-    T = TypeVar("T")
+
+    T = TypeVar('T')
 
 logger = logging.getLogger(__name__)
 
@@ -559,11 +560,9 @@ class Browser(ABC):  # noqa: PLR0904
         try:
             current_loop = asyncio.get_running_loop()
         except RuntimeError:
-
             current_loop = None
 
         if current_loop is self._loop:
-
             return await run_gather()
 
         if not self._loop.is_running():
@@ -586,10 +585,8 @@ class Browser(ABC):  # noqa: PLR0904
         Returns:
             The result of the coroutine execution.
         """
-        if self.options.max_parallel_tasks and self._semaphore is not None:
-            async with self._semaphore:
-                return await coroutine
-        return await coroutine
+        async with self._semaphore:
+            return await coroutine
 
     @overload
     async def on(
@@ -1047,8 +1044,6 @@ class Browser(ABC):  # noqa: PLR0904
 
     @cached_property
     def _semaphore(self) -> asyncio.Semaphore | None:
-        if not self.options.max_parallel_tasks:
-            return None
         return asyncio.Semaphore(self.options.max_parallel_tasks)
 
     @staticmethod
