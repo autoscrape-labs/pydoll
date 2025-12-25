@@ -344,6 +344,13 @@ const SPONSORS = [
     logo: 'https://www.lambdatest.com/blue-logo.png',
     width: 200,
     height: 45
+  },
+  {
+    name: 'CapSolver',
+    url: 'https://dashboard.capsolver.com/passport/register?inviteCode=WPhTbOsbXEpc',
+    logo: '/images/capsolver-logo.png',
+    width: 200,
+    height: 45
   }
 ]
 
