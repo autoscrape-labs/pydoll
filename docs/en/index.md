@@ -252,10 +252,25 @@ The small number of dependencies also contributes to Pydoll's reliability and pe
 
 The support from sponsors is essential to keep the project alive, evolving, and accessible to the entire community. Each partnership helps cover costs, drive new features, and ensure ongoing development. We are truly grateful to everyone who believes in and supports the project!
 
-<a href="https://www.lambdatest.com/?utm_source=pydoll&utm_medium=sponsor" target="_blank" rel="noopener nofollow sponsored">
-  <img src="https://www.lambdatest.com/blue-logo.png" alt="LambdaTest" width="200" height="45" />
-  
-</a>
+<table>
+  <tr>
+    <td>
+      <a href="https://www.thordata.com/?ls=github&lk=pydoll" target="_blank" rel="noopener nofollow sponsored">
+        <img src="resources/images/Thordata-logo.png" alt="Thordata" width="200" height="45" />
+      </a>
+    </td>
+    <td>
+      <a href="https://www.lambdatest.com/?utm_source=pydoll&utm_medium=sponsor" target="_blank" rel="noopener nofollow sponsored">
+        <img src="https://www.lambdatest.com/blue-logo.png" alt="LambdaTest" width="200" height="45" />
+      </a>
+    </td>
+    <td>
+      <a href="https://dashboard.capsolver.com/passport/register?inviteCode=WPhTbOsbXEpc" target="_blank" rel="noopener nofollow sponsored">
+        <img src="resources/images/capsolver-logo.png" alt="CapSolver" width="200" height="45" />
+      </a>
+    </td>
+  </tr>
+</table>
 
 <p>
   <a href="https://github.com/sponsors/thalissonvs" target="_blank" rel="noopener">Become a sponsor</a>

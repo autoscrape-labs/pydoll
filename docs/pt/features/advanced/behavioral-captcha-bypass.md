@@ -19,7 +19,7 @@ O Pydoll oferece suporte nativo para interagir com captchas Cloudflare Turnstile
     - **Fingerprint do Navegador**: Seu navegador parece legítimo?
     - **Padrões Comportamentais**: Você se comporta como um humano?
     
-    Quando a pontuação de confiança é alta o suficiente, o clique na caixa de seleção é aceito. Quando está muito baixa, o Turnstile pode mostrar um desafio (que o Pydoll **não pode resolver**) ou bloqueá-lo totalmente.
+    Quando a pontuação de confiança é alta o suficiente, o clique na caixa de seleção é aceito. Quando está muito baixa, o Turnstile pode mostrar um desafio (que o Pydoll **não pode resolver**) ou bloqueá-lo totalmente. Para resolver desafios com imagens ou quebra-cabeças, considere usar o **[CapSolver](https://dashboard.capsolver.com/passport/register?inviteCode=WPhTbOsbXEpc)**.
 
 ## Guia Rápido
 
@@ -316,7 +316,7 @@ asyncio.run(troubleshooting_example())
 - Use proxies residenciais com boa reputação
 - Configure um fingerprint de navegador realista
 - Adicione padrões comportamentais mais realistas (rolagem, movimento do mouse, atrasos)
-- **Nota**: O Pydoll não pode resolver o desafio em si
+- **Nota**: O Pydoll não pode resolver o desafio em si. Se você precisa de resolução automática de captchas, considere integrar com o **[CapSolver](https://dashboard.capsolver.com/passport/register?inviteCode=WPhTbOsbXEpc)**
 
 ### "Acesso Negado" ou Bloqueio Imediato
 
