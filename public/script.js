@@ -339,11 +339,24 @@
 // You can add more sponsors by pushing new objects to this array
 const SPONSORS = [
   {
+    name: 'Thordata',
+    url: 'https://www.thordata.com/?ls=github&lk=pydoll',
+    logo: '/images/Thordata-logo.png',
+    width: 200,
+    height: 45
+  },
+  {
     name: 'LambdaTest',
     url: 'https://www.lambdatest.com/?utm_source=pydoll&utm_medium=sponsor',
     logo: 'https://www.lambdatest.com/blue-logo.png',
     width: 200,
     height: 45
+  },
+  {
+    name: 'CapSolver',
+    url: 'https://dashboard.capsolver.com/passport/register?inviteCode=WPhTbOsbXEpc',
+    logo: '/images/capsolver-logo.png',
+    width: 150
   }
 ]
 

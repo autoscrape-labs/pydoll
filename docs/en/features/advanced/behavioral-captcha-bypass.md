@@ -19,7 +19,7 @@ Pydoll provides native support for interacting with Cloudflare Turnstile captcha
     - **Browser fingerprint**: Does your browser look legitimate?
     - **Behavioral patterns**: Do you behave like a human?
     
-    When trust score is high enough, the checkbox click is accepted. When it's too low, Turnstile may show a challenge (which Pydoll **cannot solve**) or block you entirely.
+    When trust score is high enough, the checkbox click is accepted. When it's too low, Turnstile may show a challenge (which Pydoll **cannot solve**) or block you entirely. For image or puzzle challenges, consider using **[CapSolver](https://dashboard.capsolver.com/passport/register?inviteCode=WPhTbOsbXEpc)**.
 
 ## Quick Start
 
@@ -316,7 +316,7 @@ asyncio.run(troubleshooting_example())
 - Use residential proxies with good reputation
 - Configure realistic browser fingerprint
 - Add more realistic behavioral patterns (scrolling, mouse movement, delays)
-- **Note**: Pydoll cannot solve the challenge itself
+- **Note**: Pydoll cannot solve the challenge itself. If you need automated captcha solving, consider integrating with **[CapSolver](https://dashboard.capsolver.com/passport/register?inviteCode=WPhTbOsbXEpc)**
 
 ### "Access Denied" or Immediate Block
 
@@ -398,4 +398,4 @@ asyncio.run(troubleshooting_example())
 
 ---
 
-**Remember**: Pydoll provides the mechanism to click on captchas, but your environment (IP, fingerprint, behavior) determines success. This is not a magic solution, it's a tool that works when used in the right environment with proper configuration.
+**Remember**: Pydoll provides the mechanism to click on captchas, but your environment (IP, fingerprint, behavior) determines success. This is not a magic solution, it's a tool that works when used in the right environment with proper configuration. For challenges that require image recognition or puzzle solving, consider using **[CapSolver](https://dashboard.capsolver.com/passport/register?inviteCode=WPhTbOsbXEpc)** — use code **PYDOLL** for an extra 6% balance bonus.

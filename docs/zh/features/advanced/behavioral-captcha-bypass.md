@@ -19,7 +19,7 @@ Pydoll 通过执行真实的浏览器点击，为与 Cloudflare Turnstile 验证
     - **浏览器指纹**：您的浏览器看起来合法吗？
     - **行为模式**：您的行为像人类吗？
     
-    当信任分数足够高时，复选框点击被接受。当分数太低时，Turnstile 可能会显示挑战（Pydoll **无法解决**）或完全阻止您。
+    当信任分数足够高时，复选框点击被接受。当分数太低时，Turnstile 可能会显示挑战（Pydoll **无法解决**）或完全阻止您。对于图像或拼图挑战，可以考虑使用 **[CapSolver](https://dashboard.capsolver.com/passport/register?inviteCode=WPhTbOsbXEpc)**。
 
 ## 快速开始
 
@@ -316,7 +316,7 @@ asyncio.run(troubleshooting_example())
 - 使用声誉良好的住宅代理
 - 配置真实的浏览器指纹
 - 添加更真实的行为模式（滚动、鼠标移动、延迟）
-- **注意**：Pydoll 无法自行解决挑战
+- **注意**：Pydoll 无法自行解决挑战 — 如果您需要自动验证码解决，请考虑集成 **[CapSolver](https://dashboard.capsolver.com/passport/register?inviteCode=WPhTbOsbXEpc)**
 
 ### "访问被拒绝"或立即阻止
 
@@ -398,4 +398,4 @@ asyncio.run(troubleshooting_example())
 
 ---
 
-**记住**：Pydoll 提供点击验证码的机制，但您的环境（IP、指纹、行为）决定成功。这不是魔法解决方案，它是在正确的环境和适当配置下使用的工具。
+**记住**：Pydoll 提供点击验证码的机制，但您的环境（IP、指纹、行为）决定成功。这不是魔法解决方案，它是在正确的环境和适当配置下使用的工具。对于需要图像识别或拼图解决的挑战，可以考虑使用 **[CapSolver](https://dashboard.capsolver.com/passport/register?inviteCode=WPhTbOsbXEpc)** — 使用代码 **PYDOLL** 获得额外 6% 余额奖励。
