@@ -355,7 +355,7 @@ const SPONSORS = [
   {
     name: 'CapSolver',
     url: 'https://dashboard.capsolver.com/passport/register?inviteCode=WPhTbOsbXEpc',
-    logo: '/Users/thalisson/pydoll/public/images/capsolver-logo.png',
+    logo: '/images/capsolver-logo.png',
     width: 150
   }
 ]
