@@ -549,10 +549,17 @@ class Browser(ABC):  # noqa: PLR0904
         Note:
             Respects max_parallel_tasks option for concurrency control.
         """
+        logger.info(
+            f'Starting parallel execution of {len(coroutines)} coroutine(s) '
+            f'(max_parallel_tasks={self.options.max_parallel_tasks})'
+        )
+
         if self._loop is None:
+            logger.error('Browser loop not initialized')
             raise RuntimeError('Browser loop not initialized. Call start() first.')
 
         wrapped = [self._limited_coroutine(coro) for coro in coroutines]
+        logger.debug(f'Wrapped {len(wrapped)} coroutines with semaphore limiting')
 
         async def run_gather():
             return await asyncio.gather(*wrapped, return_exceptions=False)
@@ -563,16 +570,24 @@ class Browser(ABC):  # noqa: PLR0904
             current_loop = None
 
         if current_loop is self._loop:
-            return await run_gather()
+            logger.debug('Executing in same event loop (direct execution)')
+            result = await run_gather()
+            logger.info(f'Parallel execution completed successfully ({len(coroutines)} coroutines)')
+            return result
 
         if not self._loop.is_running():
+            logger.error('Browser loop is not running')
             raise RunInParallelError('Browser loop is not running. Cannot execute coroutines.')
 
+        logger.debug('Executing in different event loop (using run_coroutine_threadsafe)')
         future = asyncio.run_coroutine_threadsafe(run_gather(), self._loop)
 
         try:
-            return future.result()
+            result = future.result()
+            logger.info(f'Parallel execution completed successfully ({len(coroutines)} coroutines)')
+            return result
         except Exception as e:
+            logger.error(f'Parallel execution failed: {e}')
             raise RunInParallelError(f'Coroutine execution failed: {e}') from e
 
     async def _limited_coroutine(self, coroutine: Coroutine[Any, Any, Any]) -> Any:
@@ -585,8 +600,12 @@ class Browser(ABC):  # noqa: PLR0904
         Returns:
             The result of the coroutine execution.
         """
+        logger.debug('Acquiring semaphore for coroutine.')
         async with self._semaphore:
-            return await coroutine
+            logger.debug('Semaphore acquired, executing coroutine')
+            result = await coroutine
+            logger.debug('Coroutine execution completed, releasing semaphore')
+            return result
 
     @overload
     async def on(
@@ -1043,7 +1062,7 @@ class Browser(ABC):  # noqa: PLR0904
         return ws
 
     @cached_property
-    def _semaphore(self) -> asyncio.Semaphore | None:
+    def _semaphore(self) -> asyncio.Semaphore:
         return asyncio.Semaphore(self.options.max_parallel_tasks)
 
     @staticmethod
