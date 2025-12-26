@@ -533,7 +533,7 @@ class Browser(ABC):  # noqa: PLR0904
         logger.info(f'Resetting permissions (context={browser_context_id})')
         return await self._execute_command(BrowserCommands.reset_permissions(browser_context_id))
 
-    async def run_in_parallel(self, *coroutines: Coroutine[Any, Any, T]) -> list[Any]:
+    async def run_in_parallel(self, *coroutines: Coroutine[Any, Any, T]) -> list[T]:
         """
         Run coroutines in parallel with optional concurrency limiting.
 
