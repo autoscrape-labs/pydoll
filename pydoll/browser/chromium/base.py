@@ -150,6 +150,10 @@ class Browser(ABC):  # noqa: PLR0904
 
         await self._connection_handler.close()
 
+    @cached_property
+    def _semaphore(self) -> asyncio.Semaphore:
+        return asyncio.Semaphore(self.options.max_parallel_tasks)
+
     async def connect(self, ws_address: str) -> Tab:
         """
         Connect to browser using WebSocket address. When we set
@@ -1060,10 +1064,6 @@ class Browser(ABC):  # noqa: PLR0904
         ws = urlunsplit((parts.scheme, parts.netloc, page_path, parts.query, parts.fragment))
         logger.debug(f'Resolved tab WebSocket address: {ws}')
         return ws
-
-    @cached_property
-    def _semaphore(self) -> asyncio.Semaphore:
-        return asyncio.Semaphore(self.options.max_parallel_tasks)
 
     @staticmethod
     def _sanitize_proxy_and_extract_auth(
