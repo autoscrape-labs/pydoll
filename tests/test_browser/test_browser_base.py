@@ -372,9 +372,22 @@ def test__validate_ws_address_raises_on_invalid_scheme():
         Browser._validate_ws_address('http://localhost:9222/devtools/browser/abc')
 
 
+def test__validate_ws_address_accepts_ws_scheme():
+    Browser._validate_ws_address('ws://localhost:9222/devtools/browser/abc')
+
+
+def test__validate_ws_address_accepts_wss_scheme():
+    Browser._validate_ws_address('wss://connect.browserbase.com/devtools/browser/abc')
+
+
 def test__validate_ws_address_raises_on_insufficient_slashes():
     with pytest.raises(InvalidWebSocketAddress):
         Browser._validate_ws_address('ws://localhost')
+
+
+def test__validate_ws_address_raises_on_insufficient_slashes_wss():
+    with pytest.raises(InvalidWebSocketAddress):
+        Browser._validate_ws_address('wss://localhost')
 
 
 def test__get_tab_ws_address_raises_when_ws_not_set(mock_browser):
@@ -387,6 +400,12 @@ def test__get_tab_ws_address_preserves_query_and_fragment(mock_browser):
     mock_browser._ws_address = 'ws://host:9222/devtools/browser/abc?token=XYZ#frag'
     result = mock_browser._get_tab_ws_address('tab1')
     assert result == 'ws://host:9222/devtools/page/tab1?token=XYZ#frag'
+
+
+def test__get_tab_ws_address_preserves_wss_scheme(mock_browser):
+    mock_browser._ws_address = 'wss://connect.browserbase.com/devtools/browser/abc?token=secret'
+    result = mock_browser._get_tab_ws_address('tab1')
+    assert result == 'wss://connect.browserbase.com/devtools/page/tab1?token=secret'
 
 
 @pytest.mark.asyncio
