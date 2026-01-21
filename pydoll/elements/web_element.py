@@ -530,6 +530,89 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         await asyncio.sleep(hold_time)
         await self._connection_handler.execute_command(release_command)
 
+    async def double_click(
+        self,
+        x_offset: int = 0,
+        y_offset: int = 0,
+        hold_time: float = 0.1,
+        wait_time: float = 0.2,
+    ):
+        """
+        Double click element using simulated mouse events.
+
+        Args:
+            x_offset: Horizontal offset from element center.
+            y_offset: Vertical offset from element center.
+            hold_time: Duration to hold mouse button down.
+            wait_time: Duration to wait between the first click and the second.
+
+        Raises:
+            ElementNotVisible: If element is not visible.
+
+        Note:
+            For <option> elements, delegates to specialized JavaScript approach.
+            Element is automatically scrolled into view.
+        """
+
+        if not await self.is_visible():
+            raise ElementNotVisible()
+
+        await self.scroll_into_view()
+
+        try:
+            element_bounds = await self.bounds
+            position_to_click = self._calculate_center(element_bounds)
+            position_to_click = (
+                position_to_click[0] + x_offset,
+                position_to_click[1] + y_offset,
+            )
+        except KeyError:
+            element_bounds_js = await self.get_bounds_using_js()
+            position_to_click = (
+                element_bounds_js['x'] + element_bounds_js['width'] / 2,
+                element_bounds_js['y'] + element_bounds_js['height'] / 2,
+            )
+        logger.info(
+            f'Double clicking element: x={position_to_click[0]}, '
+            f'y={position_to_click[1]}, hold={hold_time}s'
+        )
+
+        press_command = InputCommands.dispatch_mouse_event(
+            type=MouseEventType.MOUSE_PRESSED,
+            x=int(position_to_click[0]),
+            y=int(position_to_click[1]),
+            button=MouseButton.LEFT,
+            click_count=1,
+        )
+        release_command = InputCommands.dispatch_mouse_event(
+            type=MouseEventType.MOUSE_RELEASED,
+            x=int(position_to_click[0]),
+            y=int(position_to_click[1]),
+            button=MouseButton.LEFT,
+            click_count=1,
+        )
+        press_command2 = InputCommands.dispatch_mouse_event(
+            type=MouseEventType.MOUSE_PRESSED,
+            x=int(position_to_click[0]),
+            y=int(position_to_click[1]),
+            button=MouseButton.LEFT,
+            click_count=2,
+        )
+        release_command2 = InputCommands.dispatch_mouse_event(
+            type=MouseEventType.MOUSE_RELEASED,
+            x=int(position_to_click[0]),
+            y=int(position_to_click[1]),
+            button=MouseButton.LEFT,
+            click_count=2,
+        )
+        await self._connection_handler.execute_command(press_command)
+        await asyncio.sleep(hold_time)
+        await self._connection_handler.execute_command(release_command)
+        await asyncio.sleep(wait_time)
+        await self._connection_handler.execute_command(press_command2)
+        await asyncio.sleep(hold_time)
+        await self._connection_handler.execute_command(release_command2)
+
     async def insert_text(self, text: str):
         """
         Insert text into element using JavaScript.

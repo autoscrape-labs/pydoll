@@ -1,7 +1,7 @@
 import asyncio
 import json
 from pathlib import Path
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, patch, call
 
 import pytest
 import pytest_asyncio
@@ -765,6 +765,38 @@ class TestWebElementClicking:
         # Should execute script with option value
         option_element._connection_handler.execute_command.assert_called_once()
 
+    @pytest.mark.asyncio
+    async def test_double_click_success(self, web_element):
+        """Test successful mouse double click."""
+        bounds = [0, 0, 100, 0, 100, 100, 0, 100]  # Rectangle coordinates
+        web_element.is_visible = AsyncMock(return_value=True)
+        web_element.scroll_into_view = AsyncMock()
+        web_element._connection_handler.execute_command.side_effect = [
+            {'result': {'model': {'content': bounds}}},  # bounds
+            None,  # mouse press
+            None,  # mouse release
+            None,  # mouse press second time
+            None,  # mouse release second time
+        ]
+
+        with patch('asyncio.sleep') as mock_sleep:
+            await web_element.double_click(x_offset=5, y_offset=10, hold_time=0.2, wait_time=0.3)
+
+        # Should call mouse press and release
+        assert web_element._connection_handler.execute_command.call_count == 5
+        mock_sleep.assert_has_calls([
+            call(0.2),
+            call(0.3),
+            call(0.2),
+        ])
+
+    @pytest.mark.asyncio
+    async def test_double_click_not_visible(self, web_element):
+        """Test double click when element is not visible."""
+        web_element.is_visible = AsyncMock(return_value=False)
+
+        with pytest.raises(ElementNotVisible):
+            await web_element.double_click()
 
 class TestWebElementFileInput:
     """Test file input specific functionality."""
