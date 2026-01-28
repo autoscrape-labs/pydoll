@@ -233,6 +233,17 @@ class Keyboard:
 
     async def _type_char(self, char: str):
         """Type a single character."""
+        from pydoll.constants import Key
+
+        if char == '\n':
+            await self.down(Key.ENTER)
+            await self.up(Key.ENTER)
+            return
+        if char == '\t':
+            await self.down(Key.TAB)
+            await self.up(Key.TAB)
+            return
+
         command_down = InputCommands.dispatch_key_event(
             type=KeyEventType.KEY_DOWN,
             text=char,
