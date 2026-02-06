@@ -4115,6 +4115,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#pydoll.constants.PageLoadState.LOADING" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;LOADING
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -4484,6 +4495,17 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;INSERT_TEXT
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.constants.Scripts.CLEAR_INPUT" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;CLEAR_INPUT
       
     </span>
   </a>
@@ -6007,6 +6029,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#pydoll.constants.PageLoadState.LOADING" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;LOADING
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -6376,6 +6409,17 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;INSERT_TEXT
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.constants.Scripts.CLEAR_INPUT" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;CLEAR_INPUT
       
     </span>
   </a>
@@ -8072,6 +8116,29 @@
 
 </div>
 
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="pydoll.constants.PageLoadState.LOADING" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">LOADING</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">LOADING</span> <span class="o">=</span> <span class="s1">&#39;loading&#39;</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
 
 
 
@@ -8867,6 +8934,29 @@
 
 </h4>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">INSERT_TEXT</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">    function() {</span><span class="se">\n</span><span class="s2">        const el = this;</span><span class="se">\n</span><span class="s2">        const text = arguments[0];</span><span class="se">\n\n</span><span class="s2">        // Standard input/textarea</span><span class="se">\n</span><span class="s2">        if (el.tagName === &#39;INPUT&#39; || el.tagName === &#39;TEXTAREA&#39;) {</span><span class="se">\n</span><span class="s2">            const start = el.selectionStart || el.value.length;</span><span class="se">\n</span><span class="s2">            const end = el.selectionEnd || el.value.length;</span><span class="se">\n</span><span class="s2">            const before = el.value.substring(0, start);</span><span class="se">\n</span><span class="s2">            const after = el.value.substring(end);</span><span class="se">\n</span><span class="s2">            el.value = before + text + after;</span><span class="se">\n</span><span class="s2">            el.selectionStart = el.selectionEnd = start + text.length;</span><span class="se">\n</span><span class="s2">            el.dispatchEvent(new Event(&#39;input&#39;, { bubbles: true }));</span><span class="se">\n</span><span class="s2">            el.dispatchEvent(new Event(&#39;change&#39;, { bubbles: true }));</span><span class="se">\n</span><span class="s2">            return true;</span><span class="se">\n</span><span class="s2">        }</span><span class="se">\n\n</span><span class="s2">        // ContentEditable elements</span><span class="se">\n</span><span class="s2">        if (el.isContentEditable) {</span><span class="se">\n</span><span class="s2">            el.focus();</span><span class="se">\n</span><span class="s2">            const selection = window.getSelection();</span><span class="se">\n</span><span class="s2">            const range = selection.getRangeAt(0);</span><span class="se">\n</span><span class="s2">            range.deleteContents();</span><span class="se">\n</span><span class="s2">            const textNode = document.createTextNode(text);</span><span class="se">\n</span><span class="s2">            range.insertNode(textNode);</span><span class="se">\n</span><span class="s2">            range.setStartAfter(textNode);</span><span class="se">\n</span><span class="s2">            range.setEndAfter(textNode);</span><span class="se">\n</span><span class="s2">            selection.removeAllRanges();</span><span class="se">\n</span><span class="s2">            selection.addRange(range);</span><span class="se">\n</span><span class="s2">            el.dispatchEvent(new Event(&#39;input&#39;, { bubbles: true }));</span><span class="se">\n</span><span class="s2">            return true;</span><span class="se">\n</span><span class="s2">        }</span><span class="se">\n\n</span><span class="s2">        return false;</span><span class="se">\n</span><span class="s2">    }</span><span class="se">\n</span><span class="s2">    &quot;</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="pydoll.constants.Scripts.CLEAR_INPUT" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">CLEAR_INPUT</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">CLEAR_INPUT</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">    function() {</span><span class="se">\n</span><span class="s2">        const el = this;</span><span class="se">\n\n</span><span class="s2">        // Standard input/textarea</span><span class="se">\n</span><span class="s2">        if (el.tagName === &#39;INPUT&#39; || el.tagName === &#39;TEXTAREA&#39;) {</span><span class="se">\n</span><span class="s2">            el.value = &#39;&#39;;</span><span class="se">\n</span><span class="s2">            el.dispatchEvent(new Event(&#39;input&#39;, { bubbles: true }));</span><span class="se">\n</span><span class="s2">            el.dispatchEvent(new Event(&#39;change&#39;, { bubbles: true }));</span><span class="se">\n</span><span class="s2">            return true;</span><span class="se">\n</span><span class="s2">        }</span><span class="se">\n\n</span><span class="s2">        // ContentEditable elements</span><span class="se">\n</span><span class="s2">        if (el.isContentEditable) {</span><span class="se">\n</span><span class="s2">            el.focus();</span><span class="se">\n</span><span class="s2">            el.innerHTML = &#39;&#39;;</span><span class="se">\n</span><span class="s2">            el.dispatchEvent(new Event(&#39;input&#39;, { bubbles: true }));</span><span class="se">\n</span><span class="s2">            return true;</span><span class="se">\n</span><span class="s2">        }</span><span class="se">\n\n</span><span class="s2">        return false;</span><span class="se">\n</span><span class="s2">    }</span><span class="se">\n</span><span class="s2">    &quot;</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
