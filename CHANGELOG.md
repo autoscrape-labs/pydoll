@@ -1,3 +1,13 @@
+## 2.16.0 (2026-02-06)
+
+### Feat
+
+- add clear method for input and enhance page load state handling
+
+### Fix
+
+- **browser**: support secure websocket connections
+
 ## 2.15.1 (2026-01-04)
 
 ### Fix
