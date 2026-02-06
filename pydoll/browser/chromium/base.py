@@ -906,9 +906,9 @@ class Browser(ABC):  # noqa: PLR0904
     def _validate_ws_address(ws_address: str):
         """Validate WebSocket address."""
         min_slashes = 4
-        if not ws_address.startswith('ws://'):
-            logger.error('Invalid WebSocket address: missing ws:// prefix')
-            raise InvalidWebSocketAddress('WebSocket address must start with ws://')
+        if not ws_address.startswith(('ws://', 'wss://')):
+            logger.error('Invalid WebSocket address: missing ws:// or wss:// prefix')
+            raise InvalidWebSocketAddress('WebSocket address must start with ws:// or wss://')
         if len(ws_address.split('/')) < min_slashes:
             logger.error('Invalid WebSocket address: not enough slashes')
             raise InvalidWebSocketAddress(
