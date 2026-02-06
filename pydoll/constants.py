@@ -13,6 +13,7 @@ class By(str, Enum):
 class PageLoadState(str, Enum):
     COMPLETE = 'complete'
     INTERACTIVE = 'interactive'
+    LOADING = 'loading'
 
 
 class ScrollPosition(str, Enum):
@@ -428,6 +429,30 @@ new Promise((resolve) => {{
             range.setEndAfter(textNode);
             selection.removeAllRanges();
             selection.addRange(range);
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            return true;
+        }
+
+        return false;
+    }
+    """
+
+    CLEAR_INPUT = """
+    function() {
+        const el = this;
+
+        // Standard input/textarea
+        if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+            el.value = '';
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+            return true;
+        }
+
+        // ContentEditable elements
+        if (el.isContentEditable) {
+            el.focus();
+            el.innerHTML = '';
             el.dispatchEvent(new Event('input', { bubbles: true }));
             return true;
         }

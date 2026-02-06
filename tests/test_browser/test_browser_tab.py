@@ -12,7 +12,7 @@ from pydoll.browser.options import ChromiumOptions
 
 from pydoll.protocol.network.types import ResourceType, RequestMethod
 from pydoll.protocol.fetch.types import RequestStage
-from pydoll.constants import By
+from pydoll.constants import By, PageLoadState
 from pydoll.browser.tab import Tab
 from pydoll.protocol.page.events import PageEvent
 from pydoll.protocol.browser.types import DownloadBehavior
@@ -157,6 +157,28 @@ class TestTabProperties:
         assert source == expected_html
         tab._connection_handler.execute_command.assert_called()
         assert tab._connection_handler.execute_command.call_count >= 1
+
+    @pytest.mark.asyncio
+    async def test_title(self, tab):
+        """Test title property."""
+        tab._connection_handler.execute_command.return_value = {
+            'result': {'result': {'value': 'My Page Title'}}
+        }
+
+        title = await tab.title
+        assert title == 'My Page Title'
+        tab._connection_handler.execute_command.assert_called()
+        assert tab._connection_handler.execute_command.call_count >= 1
+
+    @pytest.mark.asyncio
+    async def test_title_empty(self, tab):
+        """Test title property when page has no title."""
+        tab._connection_handler.execute_command.return_value = {
+            'result': {'result': {}}
+        }
+
+        title = await tab.title
+        assert title == ''
 
 
 class TestTabEventManagement:
@@ -1614,6 +1636,36 @@ class TestTabUtilityMethods:
         
         await tab._wait_page_load()
         
+        assert_mock_called_at_least_once(tab._connection_handler)
+
+    @pytest.mark.asyncio
+    async def test_wait_page_load_interactive_already_complete(self, tab):
+        """Test _wait_page_load when target is interactive but page already reached complete.
+
+        Regression test: when page_load_state is INTERACTIVE and the page
+        transitions past 'interactive' to 'complete' before the first poll,
+        _wait_page_load must still resolve immediately instead of looping
+        indefinitely.
+        """
+        tab._browser.options.page_load_state = PageLoadState.INTERACTIVE
+        tab._connection_handler.execute_command.return_value = {
+            'result': {'result': {'value': 'complete'}}
+        }
+
+        await tab._wait_page_load()
+
+        assert_mock_called_at_least_once(tab._connection_handler)
+
+    @pytest.mark.asyncio
+    async def test_wait_page_load_interactive_exact(self, tab):
+        """Test _wait_page_load resolves when readyState is exactly 'interactive'."""
+        tab._browser.options.page_load_state = PageLoadState.INTERACTIVE
+        tab._connection_handler.execute_command.return_value = {
+            'result': {'result': {'value': 'interactive'}}
+        }
+
+        await tab._wait_page_load()
+
         assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
