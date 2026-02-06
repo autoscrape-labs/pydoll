@@ -125,6 +125,42 @@ class TestCoreClickAndInput:
             assert 'World' in (textarea.get_attribute('value') or '')
 
     @pytest.mark.asyncio
+    async def test_clear_input_and_textarea(self, ci_chrome_options):
+        """Test clear() removes existing value from input and textarea."""
+        test_file = Path(__file__).parent / 'pages' / 'test_core_simple.html'
+        file_url = f'file://{test_file.absolute()}'
+
+        async with Chrome(options=ci_chrome_options) as browser:
+            tab = await browser.start()
+            await tab.go_to(file_url)
+            await asyncio.sleep(0.5)
+
+            # -- input: insert text, clear, verify empty, insert again --
+            input_el = await tab.find(id='text-input')
+            await input_el.insert_text('old value')
+            await asyncio.sleep(0.1)
+
+            await input_el.clear()
+            await asyncio.sleep(0.1)
+            prop = await input_el.execute_script('return this.value', return_by_value=True)
+            assert prop['result']['result']['value'] == ''
+
+            await input_el.insert_text('new value')
+            await asyncio.sleep(0.1)
+            prop = await input_el.execute_script('return this.value', return_by_value=True)
+            assert prop['result']['result']['value'] == 'new value'
+
+            # -- textarea: insert text, clear, verify empty --
+            textarea = await tab.find(id='text-area')
+            await textarea.insert_text('old message')
+            await asyncio.sleep(0.1)
+
+            await textarea.clear()
+            await asyncio.sleep(0.1)
+            prop = await textarea.execute_script('return this.value', return_by_value=True)
+            assert prop['result']['result']['value'] == ''
+
+    @pytest.mark.asyncio
     async def test_select_option_click(self, ci_chrome_options):
         test_file = Path(__file__).parent / 'pages' / 'test_core_simple.html'
         file_url = f'file://{test_file.absolute()}'

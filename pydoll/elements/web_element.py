@@ -124,6 +124,11 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         return self._iframe_resolver
 
     @property
+    def attributes(self) -> dict[str, str]:
+        """Read-only copy of the element's cached attributes."""
+        return dict(self._attributes)
+
+    @property
     def value(self) -> Optional[str]:
         """Element's value attribute (for form elements)."""
         return self._attributes.get('value')
@@ -529,6 +534,25 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         await self._connection_handler.execute_command(press_command)
         await asyncio.sleep(hold_time)
         await self._connection_handler.execute_command(release_command)
+
+    async def clear(self):
+        """
+        Clear the current value of the element.
+
+        Supports standard inputs, textareas, and contenteditable elements.
+        Dispatches ``input`` and ``change`` events so frameworks detect the update.
+
+        Raises:
+            ElementNotInteractable: If the element does not accept text input.
+        """
+        logger.info('Clearing element value')
+        result = await self.execute_script(Scripts.CLEAR_INPUT, return_by_value=True)
+        success = result['result'].get('result', {}).get('value', False)
+        if not success:
+            logger.error('Element does not accept text input')
+            raise ElementNotInteractable('Element does not accept text input')
+        if self._attributes.get('tag_name', '').lower() in {'input', 'textarea'}:
+            self._attributes['value'] = ''
 
     async def insert_text(self, text: str):
         """

@@ -34,7 +34,7 @@ from pydoll.commands import (
     StorageCommands,
 )
 from pydoll.connection import ConnectionHandler
-from pydoll.constants import By
+from pydoll.constants import By, PageLoadState
 from pydoll.elements.mixins import FindElementsMixin
 from pydoll.exceptions import (
     DownloadTimeout,
@@ -103,6 +103,8 @@ class Tab(FindElementsMixin):
     JavaScript execution, event handling, network monitoring, and specialized tasks
     like Cloudflare bypass.
     """
+
+    _READY_STATE_ORDER = (PageLoadState.LOADING, PageLoadState.INTERACTIVE, PageLoadState.COMPLETE)
 
     def __init__(
         self,
@@ -230,6 +232,14 @@ class Tab(FindElementsMixin):
             RuntimeCommands.evaluate('document.documentElement.outerHTML')
         )
         return response['result']['result']['value']
+
+    @property
+    async def title(self) -> str:
+        """Get current page title."""
+        response: EvaluateResponse = await self._execute_command(
+            RuntimeCommands.evaluate('document.title')
+        )
+        return response['result']['result'].get('value', '')
 
     async def enable_page_events(self):
         """Enable CDP Page domain events (load, navigation, dialogs, etc.)."""
@@ -1409,17 +1419,28 @@ class Tab(FindElementsMixin):
         """
         Wait for page to finish loading.
 
+        Waits until ``document.readyState`` reaches **at least** the level
+        configured in ``browser.options.page_load_state``.  For example, when
+        the target state is ``interactive``, both ``"interactive"`` and
+        ``"complete"`` satisfy the condition — this prevents an infinite
+        polling loop when the page transitions past ``interactive`` before the
+        first check runs.
+
         Raises:
-            asyncio.TimeoutError: If page doesn't load within timeout.
+            WaitElementTimeout: If page doesn't load within *timeout* seconds.
         """
+        target_state = self._browser.options.page_load_state.value
+        target_index = self._READY_STATE_ORDER.index(target_state)
         start_time = asyncio.get_event_loop().time()
         logger.debug(f'Waiting for page load (timeout={timeout}s)')
         while True:
             response: EvaluateResponse = await self._execute_command(
                 RuntimeCommands.evaluate(expression='document.readyState')
             )
-            if response['result']['result']['value'] == self._browser.options.page_load_state.value:
-                logger.debug(f'Page load state reached: {self._browser.options.page_load_state}')
+            current_state = response['result']['result']['value']
+            current_index = self._READY_STATE_ORDER.index(current_state)
+            if current_index >= target_index:
+                logger.debug(f'Page load state reached: {current_state} (target: {target_state})')
                 break
             if asyncio.get_event_loop().time() - start_time > timeout:
                 raise WaitElementTimeout('Page load timed out')
