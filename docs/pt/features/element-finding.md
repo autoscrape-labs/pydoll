@@ -586,6 +586,106 @@ asyncio.run(practical_example())
 ```
 
 
+## Suporte a Shadow DOM
+
+Muitas aplicações web modernas utilizam [Shadow DOM](https://developer.mozilla.org/pt-BR/docs/Web/API/Web_components/Using_shadow_DOM) para encapsular os internos de componentes. O Pydoll fornece acesso transparente a elementos dentro de árvores shadow através da classe `ShadowRoot`.
+
+### Como o Shadow DOM Funciona
+
+```mermaid
+graph TB
+    Host["div#my-component (shadow host)"]
+    SR["ShadowRoot (open)"]
+    Internal1["button.internal-btn"]
+    Internal2["input.internal-input"]
+
+    Host --> SR
+    SR --> Internal1
+    SR --> Internal2
+```
+
+Elementos dentro de um shadow root são ocultos de consultas DOM regulares. Você precisa primeiro acessar o shadow root e então buscar dentro dele.
+
+### Acessando Shadow Roots
+
+```python
+import asyncio
+from pydoll.browser.chromium import Chrome
+
+async def shadow_dom_example():
+    async with Chrome() as browser:
+        tab = await browser.start()
+        await tab.go_to('https://example.com/web-components')
+
+        # Encontrar o elemento shadow host
+        shadow_host = await tab.find(id='my-component')
+
+        # Acessar seu shadow root
+        shadow_root = await shadow_host.get_shadow_root()
+
+        # Encontrar elementos dentro do shadow root — mesma API do tab ou element
+        button = await shadow_root.find(class_name='internal-btn')
+        await button.click()
+
+        input_field = await shadow_root.query('input[type="email"]')
+        await input_field.type_text('user@example.com')
+
+asyncio.run(shadow_dom_example())
+```
+
+### Todos os Métodos do FindElementsMixin Funcionam
+
+`ShadowRoot` herda de `FindElementsMixin`, então todos os métodos de busca de elementos funcionam:
+
+```python
+# find() com qualquer atributo
+element = await shadow_root.find(id='inner-id')
+element = await shadow_root.find(tag_name='button', class_name='primary')
+
+# query() com seletores CSS
+element = await shadow_root.query('div.container > .content')
+
+# find_all para múltiplos elementos
+items = await shadow_root.find(class_name='item', find_all=True)
+
+# Espera com timeout
+element = await shadow_root.find(id='dynamic', timeout=5)
+```
+
+### Shadow Roots Aninhados
+
+Web components podem conter outros web components com seus próprios shadow roots:
+
+```python
+async def nested_shadow():
+    outer_host = await tab.find(tag_name='outer-component')
+    outer_shadow = await outer_host.get_shadow_root()
+
+    inner_host = await outer_shadow.find(tag_name='inner-component')
+    inner_shadow = await inner_host.get_shadow_root()
+
+    deep_button = await inner_shadow.find(class_name='deep-btn')
+    await deep_button.click()
+```
+
+### Propriedades do Shadow Root
+
+```python
+shadow_root = await element.get_shadow_root()
+
+# Verificar o modo do shadow root (open, closed ou user-agent)
+print(shadow_root.mode)  # ShadowRootType.OPEN
+
+# Acessar o elemento host
+host = shadow_root.host_element
+
+# Obter o HTML interno do shadow root
+html = await shadow_root.inner_html
+```
+
+!!! note "Shadow Roots Fechados"
+    Shadow roots fechados (`mode='closed'`) são acessíveis via CDP pois o protocolo ignora as restrições do JavaScript. Porém, alguns shadow roots internos do navegador (user-agent) podem ter acessibilidade limitada.
+
 ## Trabalhando com iFrames
 
 !!! info "Guia Completo de IFrame Disponível"
