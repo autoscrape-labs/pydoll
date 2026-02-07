@@ -430,7 +430,7 @@ async def google_search(query: str):
         await tab.go_to('https://www.google.com')
         search_box = await tab.find(tag_name='textarea', name='q')
         await search_box.insert_text(query)
-        await search_box.press_keyboard_key(Key.ENTER)
+        await tab.keyboard.press(Key.ENTER)
         await (await tab.find(
             tag_name='h3',
             text='autoscrape-labs/pydoll',
@@ -438,7 +438,7 @@ async def google_search(query: str):
         )).click()
         await tab.find(id='repository-container-header', timeout=10)
 
-asyncio.run(google_search('pydoll python'))
+asyncio.run(google_search('pydoll site:github.com'))
 ```
 
 无需任何配置，只需一个简单脚本，我们就能完成一次完整的谷歌搜索！
