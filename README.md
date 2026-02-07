@@ -122,31 +122,31 @@ from pydoll.browser import Chrome
 from pydoll.constants import Key
 
 async def google_search(query: str):
-    # Context manager handles browser start() and stop()
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://www.google.com')
+    # Context manager handles browser start() and stop()
+    async with Chrome() as browser:
+        tab = await browser.start()
+        await tab.go_to('https://www.google.com')
 
-        # Intuitive finding API: find by HTML attributes
-        search_box = await tab.find(tag_name='textarea', name='q')
-        
-        # "Human-like" interactions simulate typing
-        await search_box.insert_text(query)
-        await search_box.press_keyboard_key(Key.ENTER)
+        # Intuitive finding API: find by HTML attributes
+        search_box = await tab.find(tag_name='textarea', name='q')
 
-        # Find by text and click (simulates mouse movement)
-        first_result = await tab.find(
-            tag_name='h3',
-            text='autoscrape-labs/pydoll', # Supports partial text matching
-            timeout=10,
-        )
-        await first_result.click()
+        # "Human-like" interactions simulate typing
+        await search_box.insert_text(query)
+        await tab.keyboard.press(Key.ENTER)
 
-        # Wait for an element to confirm navigation
-        await tab.find(id='repository-container-header', timeout=10)
-        print(f"Page loaded: {await tab.title}")
+        # Find by text and click (simulates mouse movement)
+        first_result = await tab.find(
+            tag_name='h3',
+            text='autoscrape-labs/pydoll', # Supports partial text matching
+            timeout=10,
+        )
+        await first_result.click()
 
-asyncio.run(google_search('pydoll python'))
+        # Wait for an element to confirm navigation
+        await tab.find(id='repository-container-header', timeout=10)
+        print(f"Page loaded: {await tab.title}")
+
+asyncio.run(google_search('pydoll site:github.com'))
 ```
 
 ## ⚡ The Pydoll Feature Ecosystem
