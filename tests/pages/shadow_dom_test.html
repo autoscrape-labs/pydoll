@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Shadow DOM Test Page</title>
+</head>
+<body>
+    <h1>Shadow DOM Test</h1>
+
+    <div id="open-host"></div>
+    <div id="closed-host"></div>
+    <div id="nested-host"></div>
+
+    <script>
+        // Open shadow root
+        const openHost = document.getElementById('open-host');
+        const openShadow = openHost.attachShadow({ mode: 'open' });
+        openShadow.innerHTML = `
+            <style>p { color: blue; }</style>
+            <p class="open-text">Open shadow content</p>
+            <button id="open-btn" class="shadow-btn">Open Button</button>
+            <input type="email" name="open-email" placeholder="open email">
+        `;
+
+        // Closed shadow root
+        const closedHost = document.getElementById('closed-host');
+        const closedShadow = closedHost.attachShadow({ mode: 'closed' });
+        closedShadow.innerHTML = `
+            <style>p { color: red; }</style>
+            <p class="closed-text">Closed shadow content</p>
+            <button id="closed-btn" class="shadow-btn">Closed Button</button>
+            <input type="password" name="closed-pass" placeholder="closed password">
+        `;
+
+        // Nested: outer open -> inner component with closed shadow
+        const nestedHost = document.getElementById('nested-host');
+        const outerShadow = nestedHost.attachShadow({ mode: 'open' });
+        outerShadow.innerHTML = `
+            <p class="outer-text">Outer shadow</p>
+            <div id="inner-host"></div>
+        `;
+        const innerHost = outerShadow.getElementById('inner-host');
+        const innerShadow = innerHost.attachShadow({ mode: 'closed' });
+        innerShadow.innerHTML = `
+            <p class="inner-text">Inner closed shadow</p>
+            <button id="deep-btn">Deep Button</button>
+        `;
+    </script>
+</body>
+</html>
