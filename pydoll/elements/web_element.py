@@ -21,6 +21,7 @@ from pydoll.constants import (
     Scripts,
 )
 from pydoll.elements.mixins import FindElementsMixin
+from pydoll.elements.shadow_root import ShadowRoot
 from pydoll.exceptions import (
     ElementNotAFileInput,
     ElementNotFound,
@@ -29,10 +30,12 @@ from pydoll.exceptions import (
     InvalidFileExtension,
     InvalidIFrame,
     MissingScreenshotPath,
+    ShadowRootNotFound,
     WaitElementTimeout,
 )
 from pydoll.interactions.iframe import IFrameContext, IFrameContextResolver
 from pydoll.interactions.keyboard import Keyboard
+from pydoll.protocol.dom.types import ShadowRootType
 from pydoll.protocol.input.types import (
     KeyEventType,
     KeyModifier,
@@ -260,6 +263,44 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         attributes = await self._get_object_attributes(object_id=object_id)
         logger.debug(f'Parent element resolved: object_id={object_id}')
         return WebElement(object_id, self._connection_handler, attributes_list=attributes)
+
+    async def get_shadow_root(self) -> ShadowRoot:
+        """
+        Get the shadow root attached to this element.
+
+        Returns:
+            ShadowRoot instance for traversing the shadow DOM.
+
+        Raises:
+            ShadowRootNotFound: If no shadow root is attached to this element.
+        """
+        response = await self._execute_command(
+            DomCommands.describe_node(object_id=self._object_id, depth=1, pierce=True)
+        )
+        node_info = response.get('result', {}).get('node', {})
+        shadow_roots = node_info.get('shadowRoots', [])
+        if not shadow_roots:
+            raise ShadowRootNotFound()
+
+        shadow_root_data = shadow_roots[0]
+        backend_node_id = shadow_root_data.get('backendNodeId')
+        if not backend_node_id:
+            raise ShadowRootNotFound('Shadow root found but backend node ID is unavailable')
+
+        resolve_response = await self._execute_command(
+            DomCommands.resolve_node(backend_node_id=backend_node_id)
+        )
+        shadow_object_id = resolve_response['result']['object']['objectId']
+
+        mode = ShadowRootType(shadow_root_data.get('shadowRootType', 'open'))
+
+        logger.debug(f'Shadow root resolved: object_id={shadow_object_id}, mode={mode.value}')
+        return ShadowRoot(
+            object_id=shadow_object_id,
+            connection_handler=self._connection_handler,
+            mode=mode,
+            host_element=self,
+        )
 
     async def get_children_elements(
         self, max_depth: int = 1, tag_filter: list[str] = [], raise_exc: bool = False
