@@ -71,7 +71,7 @@ sequenceDiagram
     participant CDP as Chrome CDP
     participant DOM as 浏览器 DOM
 
-    User->>SR: shadow_root.find(class_name='btn')
+    User->>SR: shadow_root.query('.btn')
     SR->>SR: _get_find_element_command(object_id)
     SR->>CH: execute_command(Runtime.callFunctionOn)
     CH->>CDP: WebSocket 发送
@@ -170,7 +170,7 @@ flowchart TD
 有了 shadow root 的 `objectId`，Pydoll 利用 `FindElementsMixin` 现有的相对搜索机制：
 
 ```python
-# 当调用 ShadowRoot.find(class_name='btn') 时：
+# 当调用 ShadowRoot.query('.btn') 时：
 {
     "method": "Runtime.callFunctionOn",
     "params": {
@@ -197,7 +197,7 @@ class ShadowRoot(FindElementsMixin):
         self._host_element = host_element          # 返回宿主的引用
 ```
 
-**为什么这能工作**：`FindElementsMixin._find_element()` 检查 `hasattr(self, '_object_id')`。当存在时，它使用 `RELATIVE_QUERY_SELECTOR`，即在引用的对象上调用 `this.querySelector()`。由于 shadow root 原生支持 `querySelector()`，整个元素查找 API 自动工作，无需任何 shadow 特定代码。
+**为什么这能工作**：`FindElementsMixin._find_element()` 检查 `hasattr(self, '_object_id')`。当存在时，它使用 `RELATIVE_QUERY_SELECTOR`，即在引用的对象上调用 `this.querySelector()`。由于 shadow root 原生支持 `querySelector()`，使用 CSS 选择器的 `query()` 自动工作。`ShadowRoot` 上的 `_css_only = True` 标志阻止 `find()` 和使用 XPath 的 `query()`，会抛出 `NotImplementedError`。
 
 ```python
 # FindElementsMixin 中的这一行启用了 shadow root 搜索：
@@ -205,7 +205,7 @@ elif hasattr(self, '_object_id'):
     command = self._get_find_element_command(by, value, self._object_id)
 ```
 
-这意味着 `ShadowRoot` 免费继承了 `find()`、`query()`、`find_or_wait_element()` 以及所有选择器策略（CSS、XPath、ID、class name、tag name、属性）。
+这意味着 `ShadowRoot` 继承了 `query()` 和 `find_or_wait_element()`。但是，`_css_only = True` 标志将使用限制为仅使用 CSS 选择器的 `query()`；`find()` 和 XPath 会抛出 `NotImplementedError`。
 
 !!! tip "架构一致性"
     这与 `WebElement.find()` 在元素子节点内搜索的机制相同：`_object_id` 属性表示"相对于我搜索"而不是"搜索整个文档"。`ShadowRoot`、`WebElement` 和 `Tab` 通过 `FindElementsMixin` 共享完全相同的元素查找行为。
@@ -300,7 +300,7 @@ async def verify_closed_access():
         shadow = await host.get_shadow_root()
         print(f"Shadow 模式: {shadow.mode}")  # ShadowRootType.CLOSED
 
-        secret = await shadow.find(class_name='secret')
+        secret = await shadow.query('.secret')
         text = await secret.text
         print(f"内容: {text}")  # "隐藏内容"
 
@@ -343,10 +343,10 @@ Pydoll 通过链式 `get_shadow_root()` 调用自然处理这种情况。每个 
 outer_host = await tab.find(tag_name='outer-component')
 outer_shadow = await outer_host.get_shadow_root()        # open
 
-inner_host = await outer_shadow.find(tag_name='inner-component')
+inner_host = await outer_shadow.query('inner-component')
 inner_shadow = await inner_host.get_shadow_root()        # closed，仍然有效
 
-deep_button = await inner_shadow.find(class_name='deep-btn')
+deep_button = await inner_shadow.query('.deep-btn')
 await deep_button.click()
 ```
 
@@ -390,7 +390,7 @@ Pydoll 通过 **iframe 上下文传播** 透明地处理这种情况。当创建
 shadow_host = await tab.find(id='widget-container')
 first_shadow = await shadow_host.get_shadow_root()
 
-iframe = await first_shadow.find(tag_name='iframe')
+iframe = await first_shadow.query('iframe')
 body = await iframe.find(tag_name='body')
 second_shadow = await body.get_shadow_root()
 
@@ -406,7 +406,7 @@ await button.click()
 1. **IFrame 解析其上下文**：`iframe.find()` 建立包含 `session_id` 和 `session_handler` 的 `IFrameContext`
 2. **子元素继承上下文**：在 iframe 内找到的元素接收 `IFrameContext`
 3. **Shadow root 从宿主继承**：`ShadowRoot` 复制其宿主元素的 `_iframe_context`
-4. **Shadow 内的元素从 shadow root 继承**：通过 `shadow.find()` 找到的元素接收传播的上下文
+4. **Shadow 内的元素从 shadow root 继承**：通过 `shadow.query()` 找到的元素接收传播的上下文
 5. **命令正确路由**：`_execute_command()` 检测继承的上下文，并通过 OOPIF 会话路由 CDP 命令（包括 `click()` 的 `Input.dispatchMouseEvent`）
 
 这意味着来自 `DOM.getBoxModel` 的坐标（相对于 iframe 视口）与发送到同一 OOPIF 会话的鼠标事件正确配对。
@@ -476,36 +476,35 @@ Tab.find_shadow_roots(deep=True)
               └─ 在宿主元素上设置 IFrameContext（或直接在 ShadowRoot 上设置）
 ```
 
-返回的 `ShadowRoot` 对象携带 OOPIF 路由上下文（`IFrameContext`），因此通过 `shadow_root.find()` 找到的元素会自动通过正确的 OOPIF 会话路由 CDP 命令。这对于 Cloudflare Turnstile 验证码等场景至关重要，其中复选框位于跨域 iframe 内的封闭 shadow root 中。
+返回的 `ShadowRoot` 对象携带 OOPIF 路由上下文（`IFrameContext`），因此通过 `shadow_root.query()` 找到的元素会自动通过正确的 OOPIF 会话路由 CDP 命令。这对于 Cloudflare Turnstile 验证码等场景至关重要，其中复选框位于跨域 iframe 内的封闭 shadow root 中。
 
 ## 限制和边界情况
 
 ### Shadow Root 内的选择器策略
 
-!!! warning "在 Shadow Root 内优先使用 CSS 选择器"
-    始终在 shadow root 内使用 `query()` 或基于 CSS 的 `find()` 方法（`id`、`class_name`、`tag_name`）。基于 XPath 的搜索可能找到元素但返回不完整的属性元数据。
+!!! warning "在 Shadow Root 内仅使用 query() 配合 CSS"
+    `ShadowRoot` 设置了 `_css_only = True`，这意味着仅支持使用 CSS 选择器的 `query()`。`find()` 和使用 XPath 的 `query()` 会抛出 `NotImplementedError`。
 
 Shadow root 原生实现了 `querySelector()` 和 `querySelectorAll()`，使 CSS 选择器成为自然且可靠的选择：
 
 | 方法 | Shadow Root 内 | 说明 |
 |------|:--:|---|
 | `query('css选择器')` | 完全支持 | 推荐方法 |
-| `find(id='...')` | 完全支持 | 内部转换为 CSS `#id` |
-| `find(class_name='...')` | 完全支持 | 内部转换为 CSS `.class` |
-| `find(tag_name='...')` | 完全支持 | 标签名是有效的 CSS 选择器 |
-| `find(xpath='...')` | 不可靠 | 可找到元素但属性可能不完整 |
-| `find(name='...')` | 不支持 | 在作用域搜索中不工作 |
+| `query('css选择器', find_all=True)` | 完全支持 | 返回元素列表 |
+| `find()` | 不支持 | 抛出 `NotImplementedError` |
+| `query('//xpath')` | 不支持 | 抛出 `NotImplementedError` |
 
 ```python
 shadow = await host.get_shadow_root()
 
-# ✓ 推荐：CSS 选择器
+# ✓ 推荐：query() 配合 CSS 选择器
 button = await shadow.query('button.submit')
-email = await shadow.find(id='email-input')
-items = await shadow.find(class_name='item', find_all=True)
+email = await shadow.query('#email-input')
+items = await shadow.query('.item', find_all=True)
 
-# ✗ 避免：shadow root 内的 XPath
-button = await shadow.find(xpath='.//button')  # 可能有空属性
+# ✗ 不支持：find() 和 XPath 抛出 NotImplementedError
+# shadow.find(id='email-input')        # NotImplementedError
+# shadow.query('//button')             # NotImplementedError
 ```
 
 ### XPath 无法穿越 Shadow 边界
@@ -549,11 +548,11 @@ shadow = await host.get_shadow_root()                 # 新的 shadow root
 - **Shadow DOM 封装** 隐藏元素不被文档级 `querySelector()` 发现，破坏传统自动化
 - **CDP 在 JavaScript API 层之下运行**，完全绕过 shadow 模式限制
 - **`backendNodeId`** 是用于 shadow root 解析的稳定标识符，避免了启用 DOM 域的需要
-- **`ShadowRoot` 继承 `FindElementsMixin`**，通过 `_object_id` 机制自动获得 `find()`、`query()` 和所有选择器策略
+- **`ShadowRoot` 继承 `FindElementsMixin`**，带有 `_css_only = True`，仅支持使用 CSS 选择器的 `query()`；`find()` 和 XPath 抛出 `NotImplementedError`
 - **封闭的 shadow root** 完全可访问，因为 `closed` 模式是 JavaScript 级别的策略，不是 DOM 级别的限制
 - **嵌套 shadow root** 通过在每个层级链式调用 `get_shadow_root()` 自然工作
 - **IFrame 内的 shadow root** 通过自动 iframe 上下文传播透明地工作
-- **使用 CSS 选择器**（`query()`、`find(id=...)`、`find(class_name=...)`）在 shadow root 内查找元素；避免使用 XPath
+- **使用 CSS 选择器**（`query()`）在 shadow root 内查找元素；`find()` 和 XPath 不受支持
 - **`find_shadow_roots()`** 发现页面上的所有 shadow root；支持 `timeout` 进行轮询和 `deep=True` 用于跨域 iframe（OOPIF）
 - **`get_shadow_root(timeout)`** 等待特定元素的 shadow root 出现
 

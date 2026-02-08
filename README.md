@@ -121,7 +121,7 @@ Pydoll now provides **full Shadow DOM support**, automatically handling both ope
 ```python
 # Get the shadow root of a specific element
 shadow = await element.get_shadow_root()
-button = await shadow.find(class_name='internal-btn')
+button = await shadow.query('.internal-btn')
 await button.click()
 
 # Or discover ALL shadow roots on the page at once

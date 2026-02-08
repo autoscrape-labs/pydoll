@@ -71,7 +71,7 @@ sequenceDiagram
     participant CDP as Chrome CDP
     participant DOM as DOM do Navegador
 
-    User->>SR: shadow_root.find(class_name='btn')
+    User->>SR: shadow_root.query('.btn')
     SR->>SR: _get_find_element_command(object_id)
     SR->>CH: execute_command(Runtime.callFunctionOn)
     CH->>CDP: WebSocket send
@@ -170,7 +170,7 @@ A resposta fornece um `objectId`, um handle para o shadow root no espaco de obje
 Com o `objectId` do shadow root, o Pydoll aproveita o mecanismo de busca relativa existente do `FindElementsMixin`:
 
 ```python
-# Quando ShadowRoot.find(class_name='btn') e chamado:
+# Quando ShadowRoot.query('.btn') e chamado:
 {
     "method": "Runtime.callFunctionOn",
     "params": {
@@ -197,7 +197,7 @@ class ShadowRoot(FindElementsMixin):
         self._host_element = host_element          # Referencia de volta ao host
 ```
 
-**Por que isso funciona**: `FindElementsMixin._find_element()` verifica `hasattr(self, '_object_id')`. Quando presente, usa `RELATIVE_QUERY_SELECTOR`, que chama `this.querySelector()` no objeto referenciado. Como shadow roots suportam `querySelector()` nativamente, toda a API de busca de elementos funciona automaticamente sem nenhum codigo especifico para shadow.
+**Por que isso funciona**: `FindElementsMixin._find_element()` verifica `hasattr(self, '_object_id')`. Quando presente, usa `RELATIVE_QUERY_SELECTOR`, que chama `this.querySelector()` no objeto referenciado. Como shadow roots suportam `querySelector()` nativamente, `query()` com seletores CSS funciona automaticamente. A flag `_css_only = True` no `ShadowRoot` bloqueia `find()` e `query()` com XPath, lancando `NotImplementedError`.
 
 ```python
 # Esta unica linha no FindElementsMixin habilita buscas em shadow root:
@@ -205,7 +205,7 @@ elif hasattr(self, '_object_id'):
     command = self._get_find_element_command(by, value, self._object_id)
 ```
 
-Isso significa que `ShadowRoot` herda `find()`, `query()`, `find_or_wait_element()`, e todas as estrategias de seletor (CSS, XPath, ID, class name, tag name, atributos) gratuitamente.
+Isso significa que `ShadowRoot` herda `query()` e `find_or_wait_element()` do mixin. Porem, a flag `_css_only = True` restringe o uso a apenas `query()` com seletores CSS; `find()` e XPath lancam `NotImplementedError`.
 
 !!! tip "Consistencia Arquitetural"
     Este e o mesmo mecanismo que faz `WebElement.find()` buscar dentro dos filhos de um elemento: o atributo `_object_id` sinaliza "busque relativo a mim" em vez de "busque no documento inteiro." `ShadowRoot`, `WebElement` e `Tab` compartilham comportamento identico de busca de elementos atraves do `FindElementsMixin`.
@@ -300,7 +300,7 @@ async def verify_closed_access():
         shadow = await host.get_shadow_root()
         print(f"Modo do shadow: {shadow.mode}")  # ShadowRootType.CLOSED
 
-        secret = await shadow.find(class_name='secret')
+        secret = await shadow.query('.secret')
         text = await secret.text
         print(f"Conteudo: {text}")  # "Conteudo oculto"
 
@@ -343,10 +343,10 @@ O Pydoll lida com isso naturalmente encadeando chamadas `get_shadow_root()`. Cad
 outer_host = await tab.find(tag_name='outer-component')
 outer_shadow = await outer_host.get_shadow_root()        # open
 
-inner_host = await outer_shadow.find(tag_name='inner-component')
+inner_host = await outer_shadow.query('inner-component')
 inner_shadow = await inner_host.get_shadow_root()        # closed, ainda funciona
 
-deep_button = await inner_shadow.find(class_name='deep-btn')
+deep_button = await inner_shadow.query('.deep-btn')
 await deep_button.click()
 ```
 
@@ -390,7 +390,7 @@ O Pydoll lida com isso de forma transparente atraves da **propagacao de contexto
 shadow_host = await tab.find(id='widget-container')
 first_shadow = await shadow_host.get_shadow_root()
 
-iframe = await first_shadow.find(tag_name='iframe')
+iframe = await first_shadow.query('iframe')
 body = await iframe.find(tag_name='body')
 second_shadow = await body.get_shadow_root()
 
@@ -406,7 +406,7 @@ IFrames cross-origin rodam em um processo separado do navegador (Out-of-Process 
 1. **IFrame resolve seu contexto**: `iframe.find()` estabelece um `IFrameContext` com `session_id` e `session_handler` para o OOPIF
 2. **Elementos filhos herdam o contexto**: Elementos encontrados dentro do iframe recebem o `IFrameContext`
 3. **Shadow roots herdam do host**: `ShadowRoot` copia o `_iframe_context` do seu elemento host
-4. **Elementos no shadow herdam do shadow root**: Elementos encontrados via `shadow.find()` recebem o contexto propagado
+4. **Elementos no shadow herdam do shadow root**: Elementos encontrados via `shadow.query()` recebem o contexto propagado
 5. **Comandos roteiam corretamente**: `_execute_command()` detecta o contexto herdado e roteia comandos CDP (incluindo `Input.dispatchMouseEvent` para `click()`) pela sessao OOPIF
 
 Isso significa que coordenadas de `DOM.getBoxModel` (que sao relativas ao viewport do iframe) sao corretamente pareadas com eventos de mouse despachados para a mesma sessao OOPIF.
@@ -476,36 +476,35 @@ Tab.find_shadow_roots(deep=True)
               └─ Definir IFrameContext no elemento host (ou diretamente no ShadowRoot)
 ```
 
-Os objetos `ShadowRoot` retornados carregam o contexto de roteamento OOPIF (`IFrameContext`), entao elementos encontrados via `shadow_root.find()` roteiam automaticamente comandos CDP pela sessao OOPIF correta. Isso e critico para cenarios como captchas Cloudflare Turnstile, onde o checkbox esta dentro de um shadow root fechado dentro de um iframe cross-origin.
+Os objetos `ShadowRoot` retornados carregam o contexto de roteamento OOPIF (`IFrameContext`), entao elementos encontrados via `shadow_root.query()` roteiam automaticamente comandos CDP pela sessao OOPIF correta. Isso e critico para cenarios como captchas Cloudflare Turnstile, onde o checkbox esta dentro de um shadow root fechado dentro de um iframe cross-origin.
 
 ## Limitacoes e Casos Especiais
 
 ### Estrategias de Seletores Dentro de Shadow Roots
 
-!!! warning "Prefira Seletores CSS Dentro de Shadow Roots"
-    Sempre use `query()` ou metodos `find()` baseados em CSS (`id`, `class_name`, `tag_name`) dentro de shadow roots. Buscas baseadas em XPath podem encontrar elementos mas retorna-los com metadados de atributos incompletos.
+!!! warning "Use Apenas query() com CSS Dentro de Shadow Roots"
+    `ShadowRoot` define `_css_only = True`, o que significa que apenas `query()` com seletores CSS e suportado. `find()` e `query()` com XPath lancam `NotImplementedError`.
 
 Shadow roots implementam nativamente `querySelector()` e `querySelectorAll()`, tornando seletores CSS a escolha natural e confiavel:
 
 | Metodo | Dentro do Shadow Root | Notas |
 |--------|:--:|---|
 | `query('seletor-css')` | Totalmente suportado | Abordagem recomendada |
-| `find(id='...')` | Totalmente suportado | Convertido para CSS `#id` internamente |
-| `find(class_name='...')` | Totalmente suportado | Convertido para CSS `.class` internamente |
-| `find(tag_name='...')` | Totalmente suportado | Nomes de tag sao seletores CSS validos |
-| `find(xpath='...')` | Nao confiavel | Elementos encontrados mas atributos podem estar incompletos |
-| `find(name='...')` | Nao suportado | Nao funciona em buscas com escopo |
+| `query('seletor-css', find_all=True)` | Totalmente suportado | Retorna lista de elementos |
+| `find()` | Nao suportado | Lanca `NotImplementedError` |
+| `query('//xpath')` | Nao suportado | Lanca `NotImplementedError` |
 
 ```python
 shadow = await host.get_shadow_root()
 
-# ✓ Recomendado: seletores CSS
+# ✓ Recomendado: query() com seletores CSS
 button = await shadow.query('button.submit')
-email = await shadow.find(id='email-input')
-items = await shadow.find(class_name='item', find_all=True)
+email = await shadow.query('#email-input')
+items = await shadow.query('.item', find_all=True)
 
-# ✗ Evite: XPath dentro de shadow roots
-button = await shadow.find(xpath='.//button')  # Pode ter atributos vazios
+# ✗ Nao suportado: find() e XPath lancam NotImplementedError
+# shadow.find(id='email-input')        # NotImplementedError
+# shadow.query('//button')             # NotImplementedError
 ```
 
 ### XPath Nao Cruza Fronteiras do Shadow
@@ -549,11 +548,11 @@ shadow = await host.get_shadow_root()                 # Shadow root atualizado
 - **Encapsulamento Shadow DOM** oculta elementos do `querySelector()` no nivel do documento, quebrando automacao tradicional
 - **CDP opera abaixo da camada de API JavaScript**, contornando restricoes de modo do shadow completamente
 - **`backendNodeId`** e o identificador estavel usado para resolucao de shadow root, evitando a necessidade de habilitar o dominio DOM
-- **`ShadowRoot` herda `FindElementsMixin`**, ganhando `find()`, `query()`, e todas as estrategias de seletor automaticamente atraves do mecanismo `_object_id`
+- **`ShadowRoot` herda `FindElementsMixin`** com `_css_only = True`, suportando apenas `query()` com seletores CSS; `find()` e XPath lancam `NotImplementedError`
 - **Shadow roots fechados** sao totalmente acessiveis porque o modo `closed` e uma politica no nivel JavaScript, nao uma restricao no nivel DOM
 - **Shadow roots aninhados** funcionam naturalmente encadeando chamadas `get_shadow_root()` em cada nivel
 - **Shadow roots dentro de iframes** funcionam de forma transparente atraves da propagacao automatica de contexto do iframe
-- **Use seletores CSS** (`query()`, `find(id=...)`, `find(class_name=...)`) dentro de shadow roots; evite XPath
+- **Use seletores CSS** (`query()`) dentro de shadow roots; `find()` e XPath nao sao suportados
 - **`find_shadow_roots()`** descobre todos os shadow roots na pagina; suporta `timeout` para polling e `deep=True` para iframes cross-origin (OOPIFs)
 - **`get_shadow_root(timeout)`** espera pelo shadow root de um elemento especifico
 

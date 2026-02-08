@@ -623,8 +623,8 @@ async def shadow_dom_example():
         # Access its shadow root
         shadow_root = await shadow_host.get_shadow_root()
 
-        # Find elements inside the shadow root — same API as tab or element
-        button = await shadow_root.find(class_name='internal-btn')
+        # Find elements inside the shadow root using query() with CSS selectors
+        button = await shadow_root.query('.internal-btn')
         await button.click()
 
         input_field = await shadow_root.query('input[type="email"]')
@@ -633,23 +633,26 @@ async def shadow_dom_example():
 asyncio.run(shadow_dom_example())
 ```
 
-### All FindElementsMixin Methods Work
+!!! warning "Use `query()` with CSS selectors inside shadow roots"
+    `find()` and XPath are **not supported** on `ShadowRoot` and will raise `NotImplementedError`. Always use `query()` with CSS selectors to search inside shadow roots.
 
-`ShadowRoot` inherits from `FindElementsMixin`, so all element finding methods work:
+### query() with CSS Selectors
+
+`ShadowRoot` supports `query()` with CSS selectors for element finding:
 
 ```python
-# find() with any attribute
-element = await shadow_root.find(id='inner-id')
-element = await shadow_root.find(tag_name='button', class_name='primary')
-
 # query() with CSS selectors
+element = await shadow_root.query('#inner-id')
+element = await shadow_root.query('button.primary')
+
+# Complex selectors
 element = await shadow_root.query('div.container > .content')
 
 # find_all for multiple elements
-items = await shadow_root.find(class_name='item', find_all=True)
+items = await shadow_root.query('.item', find_all=True)
 
 # Waiting with timeout
-element = await shadow_root.find(id='dynamic', timeout=5)
+element = await shadow_root.query('#dynamic', timeout=5)
 ```
 
 ### Nested Shadow Roots
@@ -661,10 +664,10 @@ async def nested_shadow():
     outer_host = await tab.find(tag_name='outer-component')
     outer_shadow = await outer_host.get_shadow_root()
 
-    inner_host = await outer_shadow.find(tag_name='inner-component')
+    inner_host = await outer_shadow.query('inner-component')
     inner_shadow = await inner_host.get_shadow_root()
 
-    deep_button = await inner_shadow.find(class_name='deep-btn')
+    deep_button = await inner_shadow.query('.deep-btn')
     await deep_button.click()
 ```
 

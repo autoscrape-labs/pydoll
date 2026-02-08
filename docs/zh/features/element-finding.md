@@ -622,8 +622,8 @@ async def shadow_dom_example():
         # 访问其 shadow root
         shadow_root = await shadow_host.get_shadow_root()
 
-        # 在 shadow root 内查找元素 - 与 tab 或 element 相同的 API
-        button = await shadow_root.find(class_name='internal-btn')
+        # 在 shadow root 内使用 query() 和 CSS 选择器查找元素
+        button = await shadow_root.query('.internal-btn')
         await button.click()
 
         input_field = await shadow_root.query('input[type="email"]')
@@ -632,24 +632,25 @@ async def shadow_dom_example():
 asyncio.run(shadow_dom_example())
 ```
 
-### 所有 FindElementsMixin 方法都可用
+### 使用 query() 和 CSS 选择器
 
-`ShadowRoot` 继承自 `FindElementsMixin`，因此所有元素查找方法都可以使用：
+`ShadowRoot` 继承自 `FindElementsMixin`，但带有 `_css_only` 限制，这意味着仅支持使用 CSS 选择器的 `query()`。`find()` 方法和使用 XPath 的 `query()` 会抛出 `NotImplementedError`：
 
 ```python
-# find() 支持任何属性
-element = await shadow_root.find(id='inner-id')
-element = await shadow_root.find(tag_name='button', class_name='primary')
-
-# query() 支持 CSS 选择器
+# query() 配合 CSS 选择器 — 推荐方法
+element = await shadow_root.query('#inner-id')
+element = await shadow_root.query('button.primary')
 element = await shadow_root.query('div.container > .content')
 
 # find_all 查找多个元素
-items = await shadow_root.find(class_name='item', find_all=True)
+items = await shadow_root.query('.item', find_all=True)
 
 # 带超时的等待
-element = await shadow_root.find(id='dynamic', timeout=5)
+element = await shadow_root.query('#dynamic', timeout=5)
 ```
+
+!!! warning "ShadowRoot 不支持 find() 和 XPath"
+    调用 `shadow_root.find()` 或 `shadow_root.query('//xpath')` 会抛出 `NotImplementedError`。在 shadow root 中请始终使用带 CSS 选择器的 `query()`。
 
 ### 嵌套 Shadow Root
 
@@ -660,10 +661,10 @@ async def nested_shadow():
     outer_host = await tab.find(tag_name='outer-component')
     outer_shadow = await outer_host.get_shadow_root()
 
-    inner_host = await outer_shadow.find(tag_name='inner-component')
+    inner_host = await outer_shadow.query('inner-component')
     inner_shadow = await inner_host.get_shadow_root()
 
-    deep_button = await inner_shadow.find(class_name='deep-btn')
+    deep_button = await inner_shadow.query('.deep-btn')
     await deep_button.click()
 ```
 
