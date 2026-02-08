@@ -1,3 +1,18 @@
+## 2.17.0 (2026-02-08)
+
+### Feat
+
+- **tab**: refactor cloudflare bypass to use shadow root traversal
+- **elements**: add shadow root timeout, CSS restriction and context propagation
+- **tab**: add find_shadow_roots with OOPIF traversal and timeout
+- **elements**: add shadow DOM support
+
+### Fix
+
+- **docs**: replace shadow.find() with query() in all documentation
+- **tests**: replace shadow.find() with query() in integration tests
+- **elements**: use float timeout and add contextual WaitElementTimeout messages
+
 ## 2.16.0 (2026-02-06)
 
 ### Feat
