@@ -65,6 +65,73 @@ That's it. No `webdrivers`. No external dependencies.
 ## 🆕 What's New
 
 <details>
+<summary><b>Shadow DOM Support: Access Closed Shadow Roots with Zero Effort</b></summary>
+<br>
+
+Pydoll now provides **full Shadow DOM support**, automatically handling both open and closed shadow roots — something traditional automation tools can't do. Because Pydoll operates at the CDP level (below JavaScript), the `closed` mode restriction simply doesn't apply.
+
+```python
+# Get the shadow root of a specific element
+shadow = await element.get_shadow_root()
+button = await shadow.query('.internal-btn')
+await button.click()
+
+# Or discover ALL shadow roots on the page at once
+shadow_roots = await tab.find_shadow_roots()
+for sr in shadow_roots:
+    checkbox = await sr.query('input[type="checkbox"]', raise_exc=False)
+    if checkbox:
+        await checkbox.click()
+```
+
+**Key highlights:**
+
+- **Closed shadow roots just work** — no workarounds, no hacks
+- **`find_shadow_roots()`** discovers every shadow root on the page, even when you don't know the host selector
+- **`timeout` parameter** for polling until shadow roots appear asynchronously — works on both `find_shadow_roots()` and `get_shadow_root()`
+- **`deep=True`** traverses cross-origin iframes (OOPIFs) — essential for widgets like Cloudflare Turnstile captchas
+- **Same familiar API** — use `find()`, `query()`, and `click()` inside shadow roots just like anywhere else
+
+```python
+# Real-world example: Cloudflare Turnstile inside a cross-origin iframe
+shadow_roots = await tab.find_shadow_roots(deep=True, timeout=10)
+for sr in shadow_roots:
+    checkbox = await sr.query('input[type="checkbox"]', raise_exc=False)
+    if checkbox:
+        await checkbox.click()
+```
+
+[**📖 Shadow DOM Docs**](https://pydoll.tech/docs/deep-dive/architecture/shadow-dom/)
+</details>
+
+<details>
+<summary><b>Cloudflare Turnstile Bypass: Faster, More Robust, Fully Automatic</b></summary>
+<br>
+
+The Cloudflare Turnstile bypass has been **completely rewritten** using shadow root traversal, making it significantly more reliable than the old selector-based approach.
+
+**What changed:**
+
+- **Automatic detection** — Pydoll now polls the page's shadow DOM for the Cloudflare challenge domain, no selectors needed
+- **Full shadow root traversal** — navigates outer shadow root → cross-origin iframe → inner shadow root → actual checkbox element
+- **No more artificial delays** — the old `time_before_click` sleep is gone; the checkbox is clicked as soon as it's found
+- **Zero configuration** — just call the method, Pydoll handles the rest
+
+```python
+async with Chrome() as browser:
+    tab = await browser.start()
+
+    # That's it — fully automatic
+    async with tab.expect_and_bypass_cloudflare_captcha():
+        await tab.go_to('https://site-with-turnstile.com')
+
+    print("Captcha handled!")
+```
+
+[**📖 Cloudflare Turnstile Docs**](https://pydoll.tech/docs/features/advanced/behavioral-captcha-bypass/)
+</details>
+
+<details>
 <summary><b>Humanized Keyboard Input (<code>humanize=True</code>)</b></summary>
 <br>
 
@@ -110,46 +177,6 @@ await tab.scroll.to_bottom(humanize=True)
 | **Humanized** | `humanize=True` | **Anti-bot evasion** |
 
 [**📖 Human-Like Interactions Docs**](https://pydoll.tech/docs/features/automation/human-interactions/)
-</details>
-
-<details>
-<summary><b>Shadow DOM Support: Access Closed Shadow Roots with Zero Effort</b></summary>
-<br>
-
-Pydoll now provides **full Shadow DOM support**, automatically handling both open and closed shadow roots — something traditional automation tools can't do. Because Pydoll operates at the CDP level (below JavaScript), the `closed` mode restriction simply doesn't apply.
-
-```python
-# Get the shadow root of a specific element
-shadow = await element.get_shadow_root()
-button = await shadow.query('.internal-btn')
-await button.click()
-
-# Or discover ALL shadow roots on the page at once
-shadow_roots = await tab.find_shadow_roots()
-for sr in shadow_roots:
-    checkbox = await sr.query('input[type="checkbox"]', raise_exc=False)
-    if checkbox:
-        await checkbox.click()
-```
-
-**Key highlights:**
-
-- **Closed shadow roots just work** — no workarounds, no hacks
-- **`find_shadow_roots()`** discovers every shadow root on the page, even when you don't know the host selector
-- **`timeout` parameter** for polling until shadow roots appear asynchronously — works on both `find_shadow_roots()` and `get_shadow_root()`
-- **`deep=True`** traverses cross-origin iframes (OOPIFs) — essential for widgets like Cloudflare Turnstile captchas
-- **Same familiar API** — use `find()`, `query()`, and `click()` inside shadow roots just like anywhere else
-
-```python
-# Real-world example: Cloudflare Turnstile inside a cross-origin iframe
-shadow_roots = await tab.find_shadow_roots(deep=True, timeout=10)
-for sr in shadow_roots:
-    checkbox = await sr.query('input[type="checkbox"]', raise_exc=False)
-    if checkbox:
-        await checkbox.click()
-```
-
-[**📖 Shadow DOM Docs**](https://pydoll.tech/docs/deep-dive/architecture/shadow-dom/)
 </details>
 
 ## 🚀 Getting Started in 60 Seconds

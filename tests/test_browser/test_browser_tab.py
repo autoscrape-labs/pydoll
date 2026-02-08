@@ -1169,31 +1169,27 @@ class TestTabCloudflareBypass:
         """Test enabling auto-solve Cloudflare captcha."""
         callback_id = 999
         tab._connection_handler.register_callback.return_value = callback_id
-        
+
         mock_enable_page_events = AsyncMock()
         with patch.object(tab, 'enable_page_events', mock_enable_page_events):
             await tab.enable_auto_solve_cloudflare_captcha()
-        
+
         mock_enable_page_events.assert_called_once()
         assert_mock_called_at_least_once(tab._connection_handler, 'register_callback')
         assert tab._cloudflare_captcha_callback_id == callback_id
 
     @pytest.mark.asyncio
     async def test_enable_auto_solve_cloudflare_captcha_with_params(self, tab):
-        """Test enabling auto-solve Cloudflare captcha with custom parameters."""
+        """Test enabling auto-solve Cloudflare captcha with timing parameters."""
         callback_id = 888
         tab._connection_handler.register_callback.return_value = callback_id
-        
-        custom_selector = (By.ID, 'custom-captcha')
-        
+
         mock_enable_page_events = AsyncMock()
         with patch.object(tab, 'enable_page_events', mock_enable_page_events):
             await tab.enable_auto_solve_cloudflare_captcha(
-                custom_selector=custom_selector,
-                time_before_click=3,
-                time_to_wait_captcha=10
+                time_to_wait_captcha=10,
             )
-        
+
         mock_enable_page_events.assert_called_once()
         assert_mock_called_at_least_once(tab._connection_handler, 'register_callback')
         assert tab._cloudflare_captcha_callback_id == callback_id
@@ -1203,9 +1199,9 @@ class TestTabCloudflareBypass:
         """Test disabling auto-solve Cloudflare captcha."""
         tab._cloudflare_captcha_callback_id = 777
         tab._connection_handler.remove_callback.return_value = True
-        
+
         await tab.disable_auto_solve_cloudflare_captcha()
-        
+
         tab._connection_handler.remove_callback.assert_called_with(777)
 
     @pytest.mark.asyncio
@@ -1213,72 +1209,184 @@ class TestTabCloudflareBypass:
         """Test expect_and_bypass_cloudflare_captcha context manager."""
         mock_event = MagicMock()
         mock_event.wait = AsyncMock()
-        
+
         callback_id = 666
         tab._connection_handler.register_callback.return_value = callback_id
-        
+
         mock_enable_page_events = AsyncMock()
         mock_disable_page_events = AsyncMock()
-        
+
         with patch.object(tab, 'enable_page_events', mock_enable_page_events):
             with patch.object(tab, 'disable_page_events', mock_disable_page_events):
                 with patch('asyncio.Event', return_value=mock_event):
                     async with tab.expect_and_bypass_cloudflare_captcha():
                         pass
-        
+
         mock_enable_page_events.assert_called_once()
         mock_disable_page_events.assert_called_once()
         assert_mock_called_at_least_once(tab._connection_handler, 'register_callback')
         tab._connection_handler.remove_callback.assert_called_with(callback_id)
 
     @pytest.mark.asyncio
-    async def test_bypass_cloudflare_with_element_found(self, tab):
-        """Test _bypass_cloudflare when element is found."""
-        mock_element = AsyncMock()
-        
-        mock_find = AsyncMock(return_value=mock_element)
-        
-        with patch.object(tab, 'find_or_wait_element', mock_find):
-            with patch('asyncio.sleep', AsyncMock()):
-                await tab._bypass_cloudflare({})
-        
-        mock_find.assert_called_once()
-        mock_element.execute_script.assert_called_once_with('this.style="width: 300px"')
-        mock_element.click.assert_called_once()
+    async def test_bypass_cloudflare_with_shadow_root_traversal(self, tab):
+        """Test _bypass_cloudflare traverses shadow roots to click checkbox."""
+        mock_checkbox = AsyncMock()
+        mock_inner_shadow = AsyncMock()
+        mock_inner_shadow.query = AsyncMock(return_value=mock_checkbox)
+        mock_body = AsyncMock()
+        mock_body.get_shadow_root = AsyncMock(return_value=mock_inner_shadow)
+        mock_iframe = AsyncMock()
+        mock_iframe.find = AsyncMock(return_value=mock_body)
+        mock_shadow_root = AsyncMock()
+        mock_shadow_root.query = AsyncMock(return_value=mock_iframe)
 
-    @pytest.mark.asyncio
-    async def test_bypass_cloudflare_no_element_found(self, tab):
-        """Test _bypass_cloudflare when no element is found."""
-        mock_find = AsyncMock(return_value=None)
-        
-        with patch.object(tab, 'find_or_wait_element', mock_find):
+        mock_find_cf = AsyncMock(return_value=mock_shadow_root)
+
+        with patch.object(tab, '_find_cloudflare_shadow_root', mock_find_cf):
             await tab._bypass_cloudflare({})
-        
-        mock_find.assert_called_once()
-        # execute_script and click should not be called when no element is found
+
+        mock_find_cf.assert_called_once_with(timeout=5)
+        mock_shadow_root.query.assert_called_once()
+        mock_iframe.find.assert_called_once()
+        mock_body.get_shadow_root.assert_called_once()
+        mock_inner_shadow.query.assert_called_once()
+        mock_checkbox.click.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_bypass_cloudflare_with_custom_selector(self, tab):
-        """Test _bypass_cloudflare with custom selector."""
-        mock_element = AsyncMock()
-        custom_selector = (By.ID, 'custom-captcha')
-        
-        mock_find = AsyncMock(return_value=mock_element)
-        
-        with patch.object(tab, 'find_or_wait_element', mock_find):
-            with patch('asyncio.sleep', AsyncMock()):
-                await tab._bypass_cloudflare(
-                    {},
-                    custom_selector=custom_selector,
-                    time_before_click=3,
-                    time_to_wait_captcha=10
-                )
-        
-        mock_find.assert_called_with(
-            By.ID, 'custom-captcha', timeout=10, raise_exc=False
+    async def test_bypass_cloudflare_no_shadow_root_found(self, tab):
+        """Test _bypass_cloudflare logs error when shadow root not found."""
+        mock_find_cf = AsyncMock(
+            side_effect=WaitElementTimeout('Timed out')
         )
-        mock_element.execute_script.assert_called_once_with('this.style="width: 300px"')
-        mock_element.click.assert_called_once()
+
+        with patch.object(tab, '_find_cloudflare_shadow_root', mock_find_cf):
+            # Should not raise — error is caught and logged
+            await tab._bypass_cloudflare({})
+
+        mock_find_cf.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_bypass_cloudflare_custom_selector_emits_deprecation(self, tab):
+        """Test that passing custom_selector emits DeprecationWarning."""
+        callback_id = 111
+        tab._connection_handler.register_callback.return_value = callback_id
+
+        mock_enable_page_events = AsyncMock()
+        with patch.object(tab, 'enable_page_events', mock_enable_page_events):
+            with pytest.warns(DeprecationWarning, match='custom_selector is deprecated'):
+                await tab.enable_auto_solve_cloudflare_captcha(
+                    custom_selector=(By.ID, 'custom-captcha'),
+                )
+
+    @pytest.mark.asyncio
+    async def test_time_before_click_emits_deprecation(self, tab):
+        """Test that passing time_before_click emits DeprecationWarning."""
+        callback_id = 112
+        tab._connection_handler.register_callback.return_value = callback_id
+
+        mock_enable_page_events = AsyncMock()
+        with patch.object(tab, 'enable_page_events', mock_enable_page_events):
+            with pytest.warns(DeprecationWarning, match='time_before_click is deprecated'):
+                await tab.enable_auto_solve_cloudflare_captcha(
+                    time_before_click=3,
+                )
+
+    @pytest.mark.asyncio
+    async def test_expect_bypass_time_before_click_emits_deprecation(self, tab):
+        """Test that expect_and_bypass with time_before_click emits DeprecationWarning."""
+        mock_event = MagicMock()
+        mock_event.wait = AsyncMock()
+
+        tab._connection_handler.register_callback.return_value = 223
+
+        mock_enable_page_events = AsyncMock()
+        mock_disable_page_events = AsyncMock()
+
+        with patch.object(tab, 'enable_page_events', mock_enable_page_events):
+            with patch.object(tab, 'disable_page_events', mock_disable_page_events):
+                with patch('asyncio.Event', return_value=mock_event):
+                    with pytest.warns(DeprecationWarning, match='time_before_click is deprecated'):
+                        async with tab.expect_and_bypass_cloudflare_captcha(
+                            time_before_click=2,
+                        ):
+                            pass
+
+    @pytest.mark.asyncio
+    async def test_expect_bypass_custom_selector_emits_deprecation(self, tab):
+        """Test that expect_and_bypass with custom_selector emits DeprecationWarning."""
+        mock_event = MagicMock()
+        mock_event.wait = AsyncMock()
+
+        tab._connection_handler.register_callback.return_value = 222
+
+        mock_enable_page_events = AsyncMock()
+        mock_disable_page_events = AsyncMock()
+
+        with patch.object(tab, 'enable_page_events', mock_enable_page_events):
+            with patch.object(tab, 'disable_page_events', mock_disable_page_events):
+                with patch('asyncio.Event', return_value=mock_event):
+                    with pytest.warns(DeprecationWarning, match='custom_selector is deprecated'):
+                        async with tab.expect_and_bypass_cloudflare_captcha(
+                            custom_selector=(By.ID, 'old-sel'),
+                        ):
+                            pass
+
+    @pytest.mark.asyncio
+    async def test_find_cloudflare_shadow_root_polls_until_found(self, tab):
+        """Test _find_cloudflare_shadow_root polls until CF shadow root appears."""
+
+        class MockShadowRoot:
+            def __init__(self, html):
+                self._html = html
+
+            @property
+            async def inner_html(self):
+                return self._html
+
+        non_cf_sr = MockShadowRoot('<div>other content</div>')
+        cf_sr = MockShadowRoot(
+            '<iframe src="https://challenges.cloudflare.com/cdn-cgi/"></iframe>'
+        )
+
+        call_count = 0
+
+        async def mock_find_shadow_roots(deep=False):
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                return [non_cf_sr]
+            return [non_cf_sr, cf_sr]
+
+        with patch.object(tab, 'find_shadow_roots', side_effect=mock_find_shadow_roots):
+            with patch('asyncio.sleep', AsyncMock()):
+                result = await tab._find_cloudflare_shadow_root(timeout=10)
+
+        assert result is cf_sr
+        assert call_count == 2
+
+    @pytest.mark.asyncio
+    async def test_find_cloudflare_shadow_root_timeout(self, tab):
+        """Test _find_cloudflare_shadow_root raises WaitElementTimeout on timeout."""
+
+        class MockShadowRoot:
+            @property
+            async def inner_html(self):
+                return '<div>other content</div>'
+
+        non_cf_sr = MockShadowRoot()
+        mock_find = AsyncMock(return_value=[non_cf_sr])
+
+        # Simulate time progressing past the timeout
+        time_values = iter([0, 0.5, 1.0, 100.0])
+
+        mock_loop = MagicMock()
+        mock_loop.time = lambda: next(time_values)
+
+        with patch.object(tab, 'find_shadow_roots', mock_find):
+            with patch('asyncio.get_event_loop', return_value=mock_loop):
+                with patch('asyncio.sleep', AsyncMock()):
+                    with pytest.raises(WaitElementTimeout, match='Timed out'):
+                        await tab._find_cloudflare_shadow_root(timeout=5)
 
 
 class TestTabDownload:
