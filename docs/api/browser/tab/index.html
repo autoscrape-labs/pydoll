@@ -1729,6 +1729,8 @@
       
         
       
+        
+      
     
     
     
@@ -1940,6 +1942,34 @@
     
   
     Browser Requests Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../deep-dive/architecture/shadow-dom/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Shadow DOM
   
 
     
@@ -3155,6 +3185,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pydoll.browser.tab.Tab.find_shadow_roots" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;find_shadow_roots
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pydoll.browser.tab.Tab.bring_to_front" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3592,6 +3633,8 @@
       
         
       
+        
+      
     
     
     
@@ -3657,6 +3700,34 @@
     
   
     WebElement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../elements/shadow_root/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ShadowRoot
   
 
     
@@ -5054,6 +5125,17 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;get_frame
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.browser.tab.Tab.find_shadow_roots" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;find_shadow_roots
       
     </span>
   </a>
@@ -6665,6 +6747,142 @@ like Cloudflare bypass.</p>
             <td class="doc-raises-details">
               <div class="doc-md-description">
                 <p>If iframe target not found in browser.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="pydoll.browser.tab.Tab.find_shadow_roots" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">find_shadow_roots</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">find_shadow_roots</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Find all shadow roots in the page.</p>
+<p>Traverses the entire DOM tree (including iframes and nested shadow DOMs)
+to collect all shadow roots found. This is especially useful when the
+shadow host element selector is unknown or dynamic (e.g., Cloudflare
+challenge pages).</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>deep</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>If True, also traverses cross-origin iframes (OOPIFs) to
+discover shadow roots inside them. The returned ShadowRoot
+objects will automatically route CDP commands through the
+correct OOPIF session.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="bool">bool</span></code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>False</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>timeout</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Maximum seconds to wait for shadow roots to appear.
+When &gt; 0, repeatedly polls the DOM (every 0.5s) until at least
+one shadow root is found or the timeout expires. Useful when
+shadow hosts are injected asynchronously (e.g., Cloudflare
+Turnstile loading inside an OOPIF).</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="float">float</span></code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>0</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <span class="doc-returns-annotation">
+                    <code><span title="list">list</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;pydoll.elements.shadow_root.ShadowRoot&lt;/span&gt;" href="../../elements/shadow_root/#pydoll.elements.shadow_root.ShadowRoot">ShadowRoot</a>]</code>
+                </span>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>List of ShadowRoot instances found in the page.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RAISES</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+              <span class="doc-raises-annotation">
+                  <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;WaitElementTimeout&lt;/span&gt; (&lt;code&gt;pydoll.exceptions.WaitElementTimeout&lt;/code&gt;)" href="../../core/exceptions/#pydoll.exceptions.WaitElementTimeout">WaitElementTimeout</a></code>
+              </span>
+            </td>
+            <td class="doc-raises-details">
+              <div class="doc-md-description">
+                <p>If timeout &gt; 0 and no shadow roots are found
+within the specified duration.</p>
               </div>
             </td>
           </tr>
@@ -9077,6 +9295,18 @@ can be combined for specific selectors (builds XPath when multiple specified).</
               </div>
             </td>
           </tr>
+          <tr class="doc-section-item">
+            <td>
+              <span class="doc-raises-annotation">
+                  <code><span title="NotImplementedError">NotImplementedError</span></code>
+              </span>
+            </td>
+            <td class="doc-raises-details">
+              <div class="doc-md-description">
+                <p>If called on a ShadowRoot (use query() with CSS instead).</p>
+              </div>
+            </td>
+          </tr>
       </tbody>
     </table>
 
@@ -9255,6 +9485,18 @@ determined based on expression pattern.</p>
             <td class="doc-raises-details">
               <div class="doc-md-description">
                 <p>If timeout specified and no elements appear in time.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+              <span class="doc-raises-annotation">
+                  <code><span title="NotImplementedError">NotImplementedError</span></code>
+              </span>
+            </td>
+            <td class="doc-raises-details">
+              <div class="doc-md-description">
+                <p>If called with XPath on a ShadowRoot.</p>
               </div>
             </td>
           </tr>

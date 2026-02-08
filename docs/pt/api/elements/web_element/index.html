@@ -14,7 +14,7 @@
         <link rel="prev" href="../../browser/managers/">
       
       
-        <link rel="next" href="../mixins/">
+        <link rel="next" href="../shadow_root/">
       
       
         
@@ -1733,6 +1733,8 @@
       
         
       
+        
+      
     
     
     
@@ -1944,6 +1946,34 @@
     
   
     Arquitetura de Requisições do Navegador
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../deep-dive/architecture/shadow-dom/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arquitetura Shadow DOM
   
 
     
@@ -2879,6 +2909,8 @@
       
         
       
+        
+      
     
     
     
@@ -3153,6 +3185,17 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;get_parent_element
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.elements.web_element.WebElement.get_shadow_root" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;get_shadow_root
       
     </span>
   </a>
@@ -3460,6 +3503,34 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shadow_root/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Shadow Root
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -4702,6 +4773,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pydoll.elements.web_element.WebElement.get_shadow_root" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;get_shadow_root
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pydoll.elements.web_element.WebElement.get_children_elements" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -5600,6 +5682,125 @@ For dynamic attributes, consider using JavaScript execution.</p>
     <div class="doc doc-contents ">
 
         <p>Element's parent element.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="pydoll.elements.web_element.WebElement.get_shadow_root" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">get_shadow_root</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">get_shadow_root</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Get the shadow root attached to this element.</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>timeout</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Maximum seconds to wait for the shadow root to appear.
+When &gt; 0, repeatedly polls (every 0.5s) until a shadow root
+is found or the timeout expires.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="float">float</span></code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>0</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <span class="doc-returns-annotation">
+                    <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;pydoll.elements.shadow_root.ShadowRoot&lt;/span&gt;" href="../../../../api/elements/shadow_root/#pydoll.elements.shadow_root.ShadowRoot">ShadowRoot</a></code>
+                </span>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>ShadowRoot instance for traversing the shadow DOM.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RAISES</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+              <span class="doc-raises-annotation">
+                  <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;ShadowRootNotFound&lt;/span&gt; (&lt;code&gt;pydoll.exceptions.ShadowRootNotFound&lt;/code&gt;)" href="../../../../api/core/exceptions/#pydoll.exceptions.ShadowRootNotFound">ShadowRootNotFound</a></code>
+              </span>
+            </td>
+            <td class="doc-raises-details">
+              <div class="doc-md-description">
+                <p>If no shadow root is attached (when timeout=0).</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+              <span class="doc-raises-annotation">
+                  <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;WaitElementTimeout&lt;/span&gt; (&lt;code&gt;pydoll.exceptions.WaitElementTimeout&lt;/code&gt;)" href="../../../../api/core/exceptions/#pydoll.exceptions.WaitElementTimeout">WaitElementTimeout</a></code>
+              </span>
+            </td>
+            <td class="doc-raises-details">
+              <div class="doc-md-description">
+                <p>If timeout &gt; 0 and no shadow root appears
+within the specified duration.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     </div>
@@ -7393,6 +7594,18 @@ can be combined for specific selectors (builds XPath when multiple specified).</
               </div>
             </td>
           </tr>
+          <tr class="doc-section-item">
+            <td>
+              <span class="doc-raises-annotation">
+                  <code><span title="NotImplementedError">NotImplementedError</span></code>
+              </span>
+            </td>
+            <td class="doc-raises-details">
+              <div class="doc-md-description">
+                <p>If called on a ShadowRoot (use query() with CSS instead).</p>
+              </div>
+            </td>
+          </tr>
       </tbody>
     </table>
 
@@ -7571,6 +7784,18 @@ determined based on expression pattern.</p>
             <td class="doc-raises-details">
               <div class="doc-md-description">
                 <p>If timeout specified and no elements appear in time.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+              <span class="doc-raises-annotation">
+                  <code><span title="NotImplementedError">NotImplementedError</span></code>
+              </span>
+            </td>
+            <td class="doc-raises-details">
+              <div class="doc-md-description">
+                <p>If called with XPath on a ShadowRoot.</p>
               </div>
             </td>
           </tr>
