@@ -352,21 +352,169 @@ await deep_button.click()
 
 每个层级遵循相同的 CDP 解析流程：`describeNode` 然后 `resolveNode` 然后带有 `_object_id` 的 `ShadowRoot` 然后通过 `callFunctionOn` 执行 `querySelector`。
 
-## 限制和边界情况
+## IFrame 内的 Shadow Root
 
-### Shadow Root 内的 XPath
+一个常见的实际场景涉及跨域 iframe 内的 shadow root——例如 Cloudflare Turnstile 验证码。这结合了两种隔离机制：iframe 边界和 shadow 边界。
 
-在 shadow root 内使用相对 XPath 时，XPath 表达式可以工作（Pydoll 自动处理）。但是，从文档根开始的绝对 XPath 无法穿越 shadow 边界：
+```mermaid
+graph TB
+    subgraph "主页面"
+        Host["div.widget\n(shadow 宿主)"]
+    end
+
+    subgraph "Shadow 树"
+        SR1["#shadow-root"]
+        IFrame["iframe\n(跨域)"]
+    end
+
+    subgraph "IFrame (OOPIF)"
+        Body["body"]
+    end
+
+    subgraph "IFrame Shadow 树"
+        SR2["#shadow-root"]
+        Button["label.checkbox"]
+    end
+
+    Host -.-> SR1
+    SR1 --> IFrame
+    IFrame -.->|"独立进程"| Body
+    Body -.-> SR2
+    SR2 --> Button
+```
+
+Pydoll 通过 **iframe 上下文传播** 透明地处理这种情况。当创建 `ShadowRoot` 时，它从宿主元素继承 iframe 路由上下文：
 
 ```python
-# 有效：shadow root 内的相对 XPath
-element = await shadow_root.query('.//div[@class="content"]')
+# 完整链：主页面 → shadow root → iframe → shadow root → 元素
+shadow_host = await tab.find(id='widget-container')
+first_shadow = await shadow_host.get_shadow_root()
 
-# 有效：Pydoll 自动转换为相对路径
-element = await shadow_root.find(name='email')  # 内部使用 XPath
+iframe = await first_shadow.find(tag_name='iframe')
+body = await iframe.find(tag_name='body')
+second_shadow = await body.get_shadow_root()
 
-# 无法找到 shadow 内容：文档级 XPath
-element = await tab.query('//div[@id="host"]//button')  # 无法穿越边界
+# click() 正确工作——鼠标事件通过 OOPIF 会话路由
+button = await second_shadow.query('label.checkbox')
+await button.click()
+```
+
+### 上下文传播如何工作
+
+跨域 iframe 在浏览器的独立进程中运行（Out-of-Process IFrame，即 OOPIF）。这些 iframe 的 CDP 命令必须通过专用的 `sessionId` 路由。Pydoll 自动在整个链中传播此路由上下文：
+
+1. **IFrame 解析其上下文**：`iframe.find()` 建立包含 `session_id` 和 `session_handler` 的 `IFrameContext`
+2. **子元素继承上下文**：在 iframe 内找到的元素接收 `IFrameContext`
+3. **Shadow root 从宿主继承**：`ShadowRoot` 复制其宿主元素的 `_iframe_context`
+4. **Shadow 内的元素从 shadow root 继承**：通过 `shadow.find()` 找到的元素接收传播的上下文
+5. **命令正确路由**：`_execute_command()` 检测继承的上下文，并通过 OOPIF 会话路由 CDP 命令（包括 `click()` 的 `Input.dispatchMouseEvent`）
+
+这意味着来自 `DOM.getBoxModel` 的坐标（相对于 iframe 视口）与发送到同一 OOPIF 会话的鼠标事件正确配对。
+
+## 查找 Shadow Root：find_shadow_roots()
+
+`Tab.find_shadow_roots()` 遍历整个 DOM 树以收集页面上找到的所有 shadow root。
+
+### 工作原理
+
+```
+Tab.find_shadow_roots()
+  ├─ DOM.getDocument(depth=-1, pierce=true)
+  │   └─ 返回包含 shadowRoots 数组的完整 DOM 树
+  ├─ 递归树遍历：_collect_shadow_roots_from_tree()
+  │   ├─ 收集包含宿主 backendNodeId 的 shadowRoots 条目
+  │   ├─ 递归遍历子节点
+  │   └─ 遍历 contentDocument（同源 iframe）
+  ├─ 对于每个 shadow root 条目：
+  │   ├─ DOM.resolveNode(backendNodeId) → objectId
+  │   └─ 解析宿主元素（尽力而为）
+  └─ 返回 list[ShadowRoot] 包含宿主引用
+```
+
+### 超时：等待 Shadow Root
+
+Shadow 宿主通常是异步注入的。`Tab.find_shadow_roots()` 接受 `timeout` 参数，每 0.5 秒轮询一次，直到找到至少一个 shadow root 或超时到期（抛出 `WaitElementTimeout`）。同样，`WebElement.get_shadow_root()` 也支持 `timeout` 来等待特定元素的 shadow root：
+
+```python
+# 等待最多 10 秒让 shadow root 出现
+shadow_roots = await tab.find_shadow_roots(timeout=10)
+
+# 等待特定元素的 shadow root
+shadow = await element.get_shadow_root(timeout=5)
+```
+
+### 关键细节
+
+- `DOM.getDocument` 中的 **`pierce=True`** 使浏览器在节点描述中包含 `shadowRoots` 数组，允许发现所有 shadow root 而无需逐个导航到每个宿主。
+- **同源 iframe 内容** 通过 `contentDocument` 节点包含在树中。遍历会处理这些。
+- 每个返回的 `ShadowRoot` 都有对其 `host_element` 的引用（通过 `DOM.resolveNode` 尽力解析）。
+
+### 深度遍历：跨域 IFrame（OOPIF）
+
+默认情况下，跨域 iframe（OOPIF）**不**包含在 DOM 树中——其内容存在于浏览器的独立进程中。传入 `deep=True` 以同时发现 OOPIF 内的 shadow root：
+
+```python
+shadow_roots = await tab.find_shadow_roots(deep=True, timeout=10)
+```
+
+当设置 `deep=True` 时，该方法执行额外步骤：
+
+```
+Tab.find_shadow_roots(deep=True)
+  ├─ ...（如上所述的主文档遍历）...
+  └─ _collect_oopif_shadow_roots()
+      ├─ 浏览器级别的 ConnectionHandler（无 page_id → 浏览器端点）
+      ├─ Target.getTargets() → 过滤 type='iframe'
+      └─ 对于每个 iframe 目标：
+          ├─ Target.attachToTarget(targetId, flatten=True) → sessionId
+          ├─ DOM.getDocument(depth=-1, pierce=True) 带 sessionId
+          ├─ _collect_shadow_roots_from_tree() 在 OOPIF DOM 上执行
+          └─ 对于找到的每个 shadow root：
+              ├─ DOM.resolveNode(backendNodeId) 带 sessionId
+              ├─ 解析宿主元素（尽力而为）带 sessionId
+              ├─ 创建 IFrameContext(frame_id, session_handler, session_id)
+              └─ 在宿主元素上设置 IFrameContext（或直接在 ShadowRoot 上设置）
+```
+
+返回的 `ShadowRoot` 对象携带 OOPIF 路由上下文（`IFrameContext`），因此通过 `shadow_root.find()` 找到的元素会自动通过正确的 OOPIF 会话路由 CDP 命令。这对于 Cloudflare Turnstile 验证码等场景至关重要，其中复选框位于跨域 iframe 内的封闭 shadow root 中。
+
+## 限制和边界情况
+
+### Shadow Root 内的选择器策略
+
+!!! warning "在 Shadow Root 内优先使用 CSS 选择器"
+    始终在 shadow root 内使用 `query()` 或基于 CSS 的 `find()` 方法（`id`、`class_name`、`tag_name`）。基于 XPath 的搜索可能找到元素但返回不完整的属性元数据。
+
+Shadow root 原生实现了 `querySelector()` 和 `querySelectorAll()`，使 CSS 选择器成为自然且可靠的选择：
+
+| 方法 | Shadow Root 内 | 说明 |
+|------|:--:|---|
+| `query('css选择器')` | 完全支持 | 推荐方法 |
+| `find(id='...')` | 完全支持 | 内部转换为 CSS `#id` |
+| `find(class_name='...')` | 完全支持 | 内部转换为 CSS `.class` |
+| `find(tag_name='...')` | 完全支持 | 标签名是有效的 CSS 选择器 |
+| `find(xpath='...')` | 不可靠 | 可找到元素但属性可能不完整 |
+| `find(name='...')` | 不支持 | 在作用域搜索中不工作 |
+
+```python
+shadow = await host.get_shadow_root()
+
+# ✓ 推荐：CSS 选择器
+button = await shadow.query('button.submit')
+email = await shadow.find(id='email-input')
+items = await shadow.find(class_name='item', find_all=True)
+
+# ✗ 避免：shadow root 内的 XPath
+button = await shadow.find(xpath='.//button')  # 可能有空属性
+```
+
+### XPath 无法穿越 Shadow 边界
+
+从文档根开始的 XPath 表达式无法穿越 shadow 边界。这是 XPath 的根本限制，因为它在 Shadow DOM 出现之前就被设计了：
+
+```python
+# 无法找到 shadow 内容：文档级 XPath 无法穿越边界
+element = await tab.find(xpath='//div[@id="host"]//button')
 ```
 
 ### User-Agent Shadow Root
@@ -404,10 +552,15 @@ shadow = await host.get_shadow_root()                 # 新的 shadow root
 - **`ShadowRoot` 继承 `FindElementsMixin`**，通过 `_object_id` 机制自动获得 `find()`、`query()` 和所有选择器策略
 - **封闭的 shadow root** 完全可访问，因为 `closed` 模式是 JavaScript 级别的策略，不是 DOM 级别的限制
 - **嵌套 shadow root** 通过在每个层级链式调用 `get_shadow_root()` 自然工作
+- **IFrame 内的 shadow root** 通过自动 iframe 上下文传播透明地工作
+- **使用 CSS 选择器**（`query()`、`find(id=...)`、`find(class_name=...)`）在 shadow root 内查找元素；避免使用 XPath
+- **`find_shadow_roots()`** 发现页面上的所有 shadow root；支持 `timeout` 进行轮询和 `deep=True` 用于跨域 iframe（OOPIF）
+- **`get_shadow_root(timeout)`** 等待特定元素的 shadow root 出现
 
 ## 相关文档
 
 - **[元素查找指南](../../features/element-finding.md)**：`find()`、`query()` 和 shadow root 访问的实际用法
+- **[IFrame 与上下文](../fundamentals/iframes-and-contexts.md)**：Pydoll 如何解析和路由命令到 iframe，包括 OOPIF 处理
 - **[FindElements Mixin 架构](./find-elements-mixin.md)**：`_object_id` 机制如何实现作用域搜索
 - **[WebElement 域](./webelement-domain.md)**：元素如何与 CDP 交互
 - **[连接层](../fundamentals/connection-layer.md)**：与浏览器的 WebSocket 通信

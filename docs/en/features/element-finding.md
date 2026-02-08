@@ -668,6 +668,59 @@ async def nested_shadow():
     await deep_button.click()
 ```
 
+### Finding Shadow Roots: find_shadow_roots()
+
+When you need to explore which shadow roots exist on a page (useful for debugging or dynamic pages like Cloudflare challenges), use `find_shadow_roots()`:
+
+```python
+# Find all shadow roots in the page
+shadow_roots = await tab.find_shadow_roots()
+
+for sr in shadow_roots:
+    print(f'Mode: {sr.mode}, Host: {sr.host_element}')
+    # Search inside each shadow root
+    btn = await sr.query('button', raise_exc=False)
+    if btn:
+        await btn.click()
+```
+
+#### Waiting for Shadow Roots: `timeout`
+
+Shadow hosts are often injected asynchronously (e.g., Cloudflare Turnstile loading inside an OOPIF). Use `timeout` to poll until shadow roots appear:
+
+```python
+# Wait up to 10 seconds for shadow roots to appear
+shadow_roots = await tab.find_shadow_roots(timeout=10)
+```
+
+The `get_shadow_root()` method on elements also supports `timeout`:
+
+```python
+# Wait for a shadow root to be attached to an element
+host = await tab.find(id='my-component', timeout=5)
+shadow = await host.get_shadow_root(timeout=5)
+```
+
+#### Deep Traversal: Cross-Origin IFrames (OOPIFs)
+
+By default, `find_shadow_roots()` only traverses the main document's DOM tree (which includes same-origin iframes via `contentDocument` but **not** cross-origin iframes). Pass `deep=True` to also discover shadow roots inside cross-origin iframes (OOPIFs):
+
+```python
+# Include shadow roots from cross-origin iframes (e.g., Cloudflare Turnstile)
+shadow_roots = await tab.find_shadow_roots(deep=True, timeout=10)
+
+for sr in shadow_roots:
+    print(f'Mode: {sr.mode}, Host: {sr.host_element}')
+    # Elements found inside these shadow roots automatically route
+    # CDP commands through the correct OOPIF session
+    btn = await sr.query('input[type="checkbox"]', raise_exc=False)
+    if btn:
+        await btn.click()
+```
+
+!!! tip "When to use `deep=True`"
+    Use `deep=True` when automating pages with cross-origin embedded widgets such as Cloudflare Turnstile captchas, third-party payment forms, or social login buttons. These widgets typically use cross-origin iframes with closed shadow roots inside them.
+
 ### Shadow Root Properties
 
 ```python

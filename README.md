@@ -112,6 +112,46 @@ await tab.scroll.to_bottom(humanize=True)
 [**📖 Human-Like Interactions Docs**](https://pydoll.tech/docs/features/automation/human-interactions/)
 </details>
 
+<details>
+<summary><b>Shadow DOM Support: Access Closed Shadow Roots with Zero Effort</b></summary>
+<br>
+
+Pydoll now provides **full Shadow DOM support**, automatically handling both open and closed shadow roots — something traditional automation tools can't do. Because Pydoll operates at the CDP level (below JavaScript), the `closed` mode restriction simply doesn't apply.
+
+```python
+# Get the shadow root of a specific element
+shadow = await element.get_shadow_root()
+button = await shadow.find(class_name='internal-btn')
+await button.click()
+
+# Or discover ALL shadow roots on the page at once
+shadow_roots = await tab.find_shadow_roots()
+for sr in shadow_roots:
+    checkbox = await sr.query('input[type="checkbox"]', raise_exc=False)
+    if checkbox:
+        await checkbox.click()
+```
+
+**Key highlights:**
+
+- **Closed shadow roots just work** — no workarounds, no hacks
+- **`find_shadow_roots()`** discovers every shadow root on the page, even when you don't know the host selector
+- **`timeout` parameter** for polling until shadow roots appear asynchronously — works on both `find_shadow_roots()` and `get_shadow_root()`
+- **`deep=True`** traverses cross-origin iframes (OOPIFs) — essential for widgets like Cloudflare Turnstile captchas
+- **Same familiar API** — use `find()`, `query()`, and `click()` inside shadow roots just like anywhere else
+
+```python
+# Real-world example: Cloudflare Turnstile inside a cross-origin iframe
+shadow_roots = await tab.find_shadow_roots(deep=True, timeout=10)
+for sr in shadow_roots:
+    checkbox = await sr.query('input[type="checkbox"]', raise_exc=False)
+    if checkbox:
+        await checkbox.click()
+```
+
+[**📖 Shadow DOM Docs**](https://pydoll.tech/docs/deep-dive/architecture/shadow-dom/)
+</details>
+
 ## 🚀 Getting Started in 60 Seconds
 
 Thanks to its `async` architecture and context managers, Pydoll is clean and efficient.

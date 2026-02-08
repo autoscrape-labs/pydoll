@@ -667,6 +667,59 @@ async def nested_shadow():
     await deep_button.click()
 ```
 
+### 查找 Shadow Root：find_shadow_roots()
+
+当您需要探索页面上存在哪些 shadow root（对调试或 Cloudflare 挑战等动态页面很有用）时，使用 `find_shadow_roots()`：
+
+```python
+# 查找页面上的所有 shadow root
+shadow_roots = await tab.find_shadow_roots()
+
+for sr in shadow_roots:
+    print(f'模式: {sr.mode}, 宿主: {sr.host_element}')
+    # 在每个 shadow root 内搜索
+    btn = await sr.query('button', raise_exc=False)
+    if btn:
+        await btn.click()
+```
+
+#### 等待 Shadow Root：`timeout`
+
+Shadow 宿主通常是异步注入的（例如 Cloudflare Turnstile 在 OOPIF 中加载）。使用 `timeout` 进行轮询直到 shadow root 出现：
+
+```python
+# 等待最多 10 秒让 shadow root 出现
+shadow_roots = await tab.find_shadow_roots(timeout=10)
+```
+
+元素上的 `get_shadow_root()` 方法也支持 `timeout`：
+
+```python
+# 等待元素的 shadow root 出现
+host = await tab.find(id='my-component', timeout=5)
+shadow = await host.get_shadow_root(timeout=5)
+```
+
+#### 深度遍历：跨域 IFrame（OOPIF）
+
+默认情况下，`find_shadow_roots()` 仅遍历主文档的 DOM 树（包括通过 `contentDocument` 访问的同源 iframe，但**不包括**跨域 iframe）。传入 `deep=True` 以同时发现跨域 iframe（OOPIF）内的 shadow root：
+
+```python
+# 包含跨域 iframe 中的 shadow root（例如 Cloudflare Turnstile）
+shadow_roots = await tab.find_shadow_roots(deep=True, timeout=10)
+
+for sr in shadow_roots:
+    print(f'模式: {sr.mode}, 宿主: {sr.host_element}')
+    # 在这些 shadow root 中找到的元素会自动通过
+    # 正确的 OOPIF 会话路由 CDP 命令
+    btn = await sr.query('input[type="checkbox"]', raise_exc=False)
+    if btn:
+        await btn.click()
+```
+
+!!! tip "何时使用 `deep=True`"
+    在自动化包含跨域嵌入式组件的页面时使用 `deep=True`，例如 Cloudflare Turnstile 验证码、第三方支付表单或社交登录按钮。这些组件通常使用跨域 iframe，其中包含关闭的 shadow root。
+
 ### Shadow Root 属性
 
 ```python

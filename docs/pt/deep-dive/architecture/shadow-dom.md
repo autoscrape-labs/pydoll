@@ -352,21 +352,169 @@ await deep_button.click()
 
 Cada nivel segue o mesmo fluxo de resolucao CDP: `describeNode` depois `resolveNode` depois `ShadowRoot` com `_object_id` depois `querySelector` via `callFunctionOn`.
 
-## Limitacoes e Casos Especiais
+## Shadow Roots Dentro de IFrames
 
-### XPath Dentro de Shadow Roots
+Um cenario comum no mundo real envolve shadow roots dentro de iframes cross-origin — por exemplo, captchas Cloudflare Turnstile. Isso combina dois mecanismos de isolamento: a fronteira do iframe e a fronteira do shadow.
 
-Expressoes XPath funcionam dentro de shadow roots quando usam XPath relativo (que o Pydoll trata automaticamente). Porem, XPath absoluto a partir da raiz do documento nao consegue atravessar fronteiras do shadow:
+```mermaid
+graph TB
+    subgraph "Pagina Principal"
+        Host["div.widget\n(shadow host)"]
+    end
+
+    subgraph "Shadow Tree"
+        SR1["#shadow-root"]
+        IFrame["iframe\n(cross-origin)"]
+    end
+
+    subgraph "IFrame (OOPIF)"
+        Body["body"]
+    end
+
+    subgraph "Shadow Tree do IFrame"
+        SR2["#shadow-root"]
+        Button["label.checkbox"]
+    end
+
+    Host -.-> SR1
+    SR1 --> IFrame
+    IFrame -.->|"processo separado"| Body
+    Body -.-> SR2
+    SR2 --> Button
+```
+
+O Pydoll lida com isso de forma transparente atraves da **propagacao de contexto do iframe**. Quando um `ShadowRoot` e criado, ele herda o contexto de roteamento do iframe do seu elemento host:
 
 ```python
-# Funciona: XPath relativo dentro do shadow root
-element = await shadow_root.query('.//div[@class="content"]')
+# A cadeia completa: pagina principal → shadow root → iframe → shadow root → elemento
+shadow_host = await tab.find(id='widget-container')
+first_shadow = await shadow_host.get_shadow_root()
 
-# Funciona: Pydoll auto-converte para relativo
-element = await shadow_root.find(name='email')  # Usa XPath internamente
+iframe = await first_shadow.find(tag_name='iframe')
+body = await iframe.find(tag_name='body')
+second_shadow = await body.get_shadow_root()
 
-# Nao encontra conteudo shadow: XPath no nivel do documento
-element = await tab.query('//div[@id="host"]//button')  # Nao cruza fronteira
+# click() funciona corretamente — eventos de mouse roteados pela sessao OOPIF
+button = await second_shadow.query('label.checkbox')
+await button.click()
+```
+
+### Como a Propagacao de Contexto Funciona
+
+IFrames cross-origin rodam em um processo separado do navegador (Out-of-Process IFrame, ou OOPIF). Comandos CDP para esses iframes devem ser roteados atraves de um `sessionId` dedicado. O Pydoll propaga esse contexto de roteamento automaticamente por toda a cadeia:
+
+1. **IFrame resolve seu contexto**: `iframe.find()` estabelece um `IFrameContext` com `session_id` e `session_handler` para o OOPIF
+2. **Elementos filhos herdam o contexto**: Elementos encontrados dentro do iframe recebem o `IFrameContext`
+3. **Shadow roots herdam do host**: `ShadowRoot` copia o `_iframe_context` do seu elemento host
+4. **Elementos no shadow herdam do shadow root**: Elementos encontrados via `shadow.find()` recebem o contexto propagado
+5. **Comandos roteiam corretamente**: `_execute_command()` detecta o contexto herdado e roteia comandos CDP (incluindo `Input.dispatchMouseEvent` para `click()`) pela sessao OOPIF
+
+Isso significa que coordenadas de `DOM.getBoxModel` (que sao relativas ao viewport do iframe) sao corretamente pareadas com eventos de mouse despachados para a mesma sessao OOPIF.
+
+## Buscando Shadow Roots: find_shadow_roots()
+
+`Tab.find_shadow_roots()` percorre toda a arvore DOM para coletar todos os shadow roots encontrados na pagina.
+
+### Como Funciona
+
+```
+Tab.find_shadow_roots()
+  ├─ DOM.getDocument(depth=-1, pierce=true)
+  │   └─ Retorna arvore DOM completa com arrays shadowRoots
+  ├─ Percurso recursivo da arvore: _collect_shadow_roots_from_tree()
+  │   ├─ Coleta entradas shadowRoots com backendNodeId do host
+  │   ├─ Percorre filhos recursivamente
+  │   └─ Percorre contentDocument (iframes same-origin)
+  ├─ Para cada entrada de shadow root:
+  │   ├─ DOM.resolveNode(backendNodeId) → objectId
+  │   └─ Resolver elemento host (melhor esforco)
+  └─ Retorna list[ShadowRoot] com referencias de host
+```
+
+### Timeout: Esperando Shadow Roots
+
+Shadow hosts sao frequentemente injetados de forma assincrona. `Tab.find_shadow_roots()` aceita um parametro `timeout` que faz polling a cada 0.5s ate que pelo menos um shadow root seja encontrado ou o timeout expire (lanca `WaitElementTimeout`). Da mesma forma, `WebElement.get_shadow_root()` tambem suporta `timeout` para esperar pelo shadow root de um elemento especifico:
+
+```python
+# Esperar ate 10 segundos pelos shadow roots
+shadow_roots = await tab.find_shadow_roots(timeout=10)
+
+# Esperar pelo shadow root de um elemento especifico
+shadow = await element.get_shadow_root(timeout=5)
+```
+
+### Detalhes Importantes
+
+- **`pierce=True`** em `DOM.getDocument` faz o navegador incluir arrays `shadowRoots` nas descricoes de nos, permitindo a descoberta de todos os shadow roots sem navegar individualmente ate cada host.
+- **Conteudo de iframes same-origin** e incluido na arvore via nos `contentDocument`. A travessia os manipula.
+- Cada `ShadowRoot` retornado tem uma referencia ao seu `host_element` (resolvido por melhor esforco via `DOM.resolveNode`).
+
+### Travessia Profunda: IFrames Cross-Origin (OOPIFs)
+
+Por padrao, iframes cross-origin (OOPIFs) **nao** sao incluidos na arvore DOM — seu conteudo vive em um processo separado do navegador. Passe `deep=True` para tambem descobrir shadow roots dentro de OOPIFs:
+
+```python
+shadow_roots = await tab.find_shadow_roots(deep=True, timeout=10)
+```
+
+Quando `deep=True` e definido, o metodo executa etapas adicionais:
+
+```
+Tab.find_shadow_roots(deep=True)
+  ├─ ... (travessia do documento principal como acima) ...
+  └─ _collect_oopif_shadow_roots()
+      ├─ ConnectionHandler de nivel browser (sem page_id → endpoint do browser)
+      ├─ Target.getTargets() → filtrar type='iframe'
+      └─ Para cada target iframe:
+          ├─ Target.attachToTarget(targetId, flatten=True) → sessionId
+          ├─ DOM.getDocument(depth=-1, pierce=True) com sessionId
+          ├─ _collect_shadow_roots_from_tree() no DOM do OOPIF
+          └─ Para cada shadow root encontrado:
+              ├─ DOM.resolveNode(backendNodeId) com sessionId
+              ├─ Resolver elemento host (melhor esforco) com sessionId
+              ├─ Criar IFrameContext(frame_id, session_handler, session_id)
+              └─ Definir IFrameContext no elemento host (ou diretamente no ShadowRoot)
+```
+
+Os objetos `ShadowRoot` retornados carregam o contexto de roteamento OOPIF (`IFrameContext`), entao elementos encontrados via `shadow_root.find()` roteiam automaticamente comandos CDP pela sessao OOPIF correta. Isso e critico para cenarios como captchas Cloudflare Turnstile, onde o checkbox esta dentro de um shadow root fechado dentro de um iframe cross-origin.
+
+## Limitacoes e Casos Especiais
+
+### Estrategias de Seletores Dentro de Shadow Roots
+
+!!! warning "Prefira Seletores CSS Dentro de Shadow Roots"
+    Sempre use `query()` ou metodos `find()` baseados em CSS (`id`, `class_name`, `tag_name`) dentro de shadow roots. Buscas baseadas em XPath podem encontrar elementos mas retorna-los com metadados de atributos incompletos.
+
+Shadow roots implementam nativamente `querySelector()` e `querySelectorAll()`, tornando seletores CSS a escolha natural e confiavel:
+
+| Metodo | Dentro do Shadow Root | Notas |
+|--------|:--:|---|
+| `query('seletor-css')` | Totalmente suportado | Abordagem recomendada |
+| `find(id='...')` | Totalmente suportado | Convertido para CSS `#id` internamente |
+| `find(class_name='...')` | Totalmente suportado | Convertido para CSS `.class` internamente |
+| `find(tag_name='...')` | Totalmente suportado | Nomes de tag sao seletores CSS validos |
+| `find(xpath='...')` | Nao confiavel | Elementos encontrados mas atributos podem estar incompletos |
+| `find(name='...')` | Nao suportado | Nao funciona em buscas com escopo |
+
+```python
+shadow = await host.get_shadow_root()
+
+# ✓ Recomendado: seletores CSS
+button = await shadow.query('button.submit')
+email = await shadow.find(id='email-input')
+items = await shadow.find(class_name='item', find_all=True)
+
+# ✗ Evite: XPath dentro de shadow roots
+button = await shadow.find(xpath='.//button')  # Pode ter atributos vazios
+```
+
+### XPath Nao Cruza Fronteiras do Shadow
+
+Expressoes XPath a partir da raiz do documento nao conseguem atravessar fronteiras do shadow. Esta e uma limitacao fundamental do XPath, que foi projetado antes do Shadow DOM existir:
+
+```python
+# Nao encontra conteudo shadow: XPath no nivel do documento nao cruza a fronteira
+element = await tab.find(xpath='//div[@id="host"]//button')
 ```
 
 ### Shadow Roots User-Agent
@@ -404,10 +552,15 @@ shadow = await host.get_shadow_root()                 # Shadow root atualizado
 - **`ShadowRoot` herda `FindElementsMixin`**, ganhando `find()`, `query()`, e todas as estrategias de seletor automaticamente atraves do mecanismo `_object_id`
 - **Shadow roots fechados** sao totalmente acessiveis porque o modo `closed` e uma politica no nivel JavaScript, nao uma restricao no nivel DOM
 - **Shadow roots aninhados** funcionam naturalmente encadeando chamadas `get_shadow_root()` em cada nivel
+- **Shadow roots dentro de iframes** funcionam de forma transparente atraves da propagacao automatica de contexto do iframe
+- **Use seletores CSS** (`query()`, `find(id=...)`, `find(class_name=...)`) dentro de shadow roots; evite XPath
+- **`find_shadow_roots()`** descobre todos os shadow roots na pagina; suporta `timeout` para polling e `deep=True` para iframes cross-origin (OOPIFs)
+- **`get_shadow_root(timeout)`** espera pelo shadow root de um elemento especifico
 
 ## Documentacao Relacionada
 
 - **[Guia de Pesquisa de Elementos](../../features/element-finding.md)**: Uso pratico de `find()`, `query()`, e acesso a shadow root
+- **[IFrames e Contextos](../fundamentals/iframes-and-contexts.md)**: Como o Pydoll resolve e roteia comandos para iframes, incluindo tratamento de OOPIF
 - **[Arquitetura do FindElements Mixin](./find-elements-mixin.md)**: Como o mecanismo `_object_id` habilita buscas com escopo
 - **[Dominio WebElement](./webelement-domain.md)**: Como elementos interagem com CDP
 - **[Camada de Conexao](../fundamentals/connection-layer.md)**: Comunicacao WebSocket com o navegador
