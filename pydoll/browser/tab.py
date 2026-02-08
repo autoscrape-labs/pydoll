@@ -32,11 +32,15 @@ from pydoll.commands import (
     PageCommands,
     RuntimeCommands,
     StorageCommands,
+    TargetCommands,
 )
 from pydoll.connection import ConnectionHandler
 from pydoll.constants import By, PageLoadState
 from pydoll.elements.mixins import FindElementsMixin
+from pydoll.elements.shadow_root import ShadowRoot
+from pydoll.elements.web_element import WebElement
 from pydoll.exceptions import (
+    CommandExecutionTimeout,
     DownloadTimeout,
     IFrameNotFound,
     InvalidFileExtension,
@@ -50,9 +54,12 @@ from pydoll.exceptions import (
     PageLoadTimeout,
     TopLevelTargetRequired,
     WaitElementTimeout,
+    WebSocketConnectionClosed,
 )
 from pydoll.interactions import KeyboardAPI, ScrollAPI
+from pydoll.interactions.iframe import IFrameContext
 from pydoll.protocol.browser.types import DownloadBehavior, DownloadProgressState
+from pydoll.protocol.dom.types import Node, ShadowRootType
 from pydoll.protocol.page.events import PageEvent
 from pydoll.protocol.page.types import ScreenshotFormat
 from pydoll.protocol.runtime.methods import (
@@ -61,6 +68,7 @@ from pydoll.protocol.runtime.methods import (
     SerializationOptions,
 )
 from pydoll.protocol.runtime.types import CallArgument
+from pydoll.protocol.target.types import TargetInfo
 from pydoll.utils import (
     decode_base64_to_bytes,
     has_return_outside_function,
@@ -68,11 +76,15 @@ from pydoll.utils import (
 
 if TYPE_CHECKING:
     from pydoll.browser.chromium.base import Browser
-    from pydoll.elements.web_element import WebElement
     from pydoll.protocol.base import EmptyResponse, Response
     from pydoll.protocol.browser.events import (
         DownloadProgressEvent,
         DownloadWillBeginEvent,
+    )
+    from pydoll.protocol.dom.methods import (
+        DescribeNodeResponse,
+        GetDocumentResponse,
+        ResolveNodeResponse,
     )
     from pydoll.protocol.fetch.types import AuthChallengeResponseType, HeaderEntry, RequestStage
     from pydoll.protocol.network.events import RequestWillBeSentEvent
@@ -89,6 +101,7 @@ if TYPE_CHECKING:
     from pydoll.protocol.page.methods import CaptureScreenshotResponse, PrintToPDFResponse
     from pydoll.protocol.runtime.methods import CallFunctionOnResponse, EvaluateResponse
     from pydoll.protocol.storage.methods import GetCookiesResponse as StorageGetCookiesResponse
+    from pydoll.protocol.target.methods import AttachToTargetResponse, GetTargetsResponse
 
 logger = logging.getLogger(__name__)
 
@@ -469,6 +482,269 @@ class Tab(FindElementsMixin):
         self._browser._tabs_opened[target_id] = tab
         logger.debug(f'Iframe tab created and registered: {target_id}')
         return tab
+
+    async def find_shadow_roots(self, deep: bool = False, timeout: int = 0) -> list[ShadowRoot]:
+        """
+        Find all shadow roots in the page.
+
+        Traverses the entire DOM tree (including iframes and nested shadow DOMs)
+        to collect all shadow roots found. This is especially useful when the
+        shadow host element selector is unknown or dynamic (e.g., Cloudflare
+        challenge pages).
+
+        Args:
+            deep: If True, also traverses cross-origin iframes (OOPIFs) to
+                discover shadow roots inside them. The returned ShadowRoot
+                objects will automatically route CDP commands through the
+                correct OOPIF session.
+            timeout: Maximum seconds to wait for shadow roots to appear.
+                When > 0, repeatedly polls the DOM (every 0.5s) until at least
+                one shadow root is found or the timeout expires. Useful when
+                shadow hosts are injected asynchronously (e.g., Cloudflare
+                Turnstile loading inside an OOPIF).
+
+        Returns:
+            List of ShadowRoot instances found in the page.
+
+        Raises:
+            WaitElementTimeout: If timeout > 0 and no shadow roots are found
+                within the specified duration.
+        """
+        logger.debug('Finding all shadow roots in page (timeout=%s)', timeout)
+
+        if not timeout:
+            return await self._collect_all_shadow_roots(deep)
+
+        start_time = asyncio.get_event_loop().time()
+        while True:
+            shadow_roots = await self._collect_all_shadow_roots(deep)
+            if shadow_roots:
+                return shadow_roots
+
+            if asyncio.get_event_loop().time() - start_time > timeout:
+                raise WaitElementTimeout()
+
+            await asyncio.sleep(0.5)
+
+    async def _collect_all_shadow_roots(self, deep: bool) -> list[ShadowRoot]:
+        """Collect shadow roots from the main document and optionally OOPIFs."""
+        response: GetDocumentResponse = await self._execute_command(
+            DomCommands.get_document(depth=-1, pierce=True)
+        )
+        root_node = response.get('result', {}).get('root', {})
+
+        shadow_root_entries: list[tuple[Node, int | None]] = []
+        self._collect_shadow_roots_from_tree(root_node, shadow_root_entries)
+
+        shadow_roots: list[ShadowRoot] = []
+        for shadow_data, host_backend_id in shadow_root_entries:
+            backend_node_id = shadow_data.get('backendNodeId')
+            if not backend_node_id:
+                continue
+
+            try:
+                resolve_response: ResolveNodeResponse = await self._execute_command(
+                    DomCommands.resolve_node(backend_node_id=backend_node_id)
+                )
+                shadow_object_id = resolve_response['result']['object']['objectId']
+            except (CommandExecutionTimeout, WebSocketConnectionClosed, KeyError):
+                logger.debug(f'Failed to resolve shadow root: backend_node_id={backend_node_id}')
+                continue
+
+            try:
+                host_element = await self._resolve_shadow_host(host_backend_id)
+            except (CommandExecutionTimeout, WebSocketConnectionClosed, KeyError):
+                logger.debug(f'Failed to resolve shadow host: backend_node_id={host_backend_id}')
+                host_element = None
+            mode = ShadowRootType(shadow_data.get('shadowRootType', 'open'))
+            shadow_roots.append(
+                ShadowRoot(
+                    object_id=shadow_object_id,
+                    connection_handler=self._connection_handler,
+                    mode=mode,
+                    host_element=host_element,
+                )
+            )
+
+        if deep:
+            oopif_roots = await self._collect_oopif_shadow_roots()
+            shadow_roots.extend(oopif_roots)
+
+        logger.debug(f'Found {len(shadow_roots)} shadow roots')
+        return shadow_roots
+
+    async def _resolve_shadow_host(self, host_backend_id: int | None) -> WebElement | None:
+        """Resolve the host element for a shadow root (best-effort)."""
+        if not host_backend_id:
+            return None
+
+        host_response: ResolveNodeResponse = await self._execute_command(
+            DomCommands.resolve_node(backend_node_id=host_backend_id)
+        )
+        host_object_id = host_response['result']['object']['objectId']
+        host_attrs = await self._get_object_attributes(object_id=host_object_id)
+        return WebElement(host_object_id, self._connection_handler, attributes_list=host_attrs)
+
+    async def _collect_oopif_shadow_roots(self) -> list[ShadowRoot]:
+        """Discover shadow roots inside cross-origin iframes (OOPIFs)."""
+        browser_handler = ConnectionHandler(connection_port=self._connection_port)
+        targets_response: GetTargetsResponse = await browser_handler.execute_command(
+            TargetCommands.get_targets()
+        )
+
+        target_infos = targets_response.get('result', {}).get('targetInfos', [])
+        iframe_targets = [t for t in target_infos if t.get('type') == 'iframe']
+
+        if not iframe_targets:
+            logger.debug('No OOPIF targets found')
+            return []
+
+        shadow_roots: list[ShadowRoot] = []
+        for target in iframe_targets:
+            roots = await self._collect_shadow_roots_from_oopif_target(target, browser_handler)
+            shadow_roots.extend(roots)
+
+        logger.debug(f'Found {len(shadow_roots)} shadow roots in OOPIFs')
+        return shadow_roots
+
+    async def _collect_shadow_roots_from_oopif_target(
+        self,
+        target: TargetInfo,
+        browser_handler: ConnectionHandler,
+    ) -> list[ShadowRoot]:
+        """Collect shadow roots from a single OOPIF target."""
+        target_id = target.get('targetId', '')
+        try:
+            attach_response: AttachToTargetResponse = await browser_handler.execute_command(
+                TargetCommands.attach_to_target(target_id=target_id, flatten=True)
+            )
+            session_id = attach_response.get('result', {}).get('sessionId')
+            if not session_id:
+                return []
+        except (CommandExecutionTimeout, WebSocketConnectionClosed):
+            logger.debug(f'Failed to attach to OOPIF target: {target_id}')
+            return []
+
+        try:
+            get_doc_command = DomCommands.get_document(depth=-1, pierce=True)
+            get_doc_command['sessionId'] = session_id
+            doc_response: GetDocumentResponse = await browser_handler.execute_command(
+                get_doc_command
+            )
+            root_node = doc_response.get('result', {}).get('root', {})
+        except (CommandExecutionTimeout, WebSocketConnectionClosed):
+            logger.debug(f'Failed to get document from OOPIF target: {target_id}')
+            return []
+
+        entries: list[tuple[Node, int | None]] = []
+        self._collect_shadow_roots_from_tree(root_node, entries)
+
+        iframe_context = IFrameContext(
+            frame_id=target_id,
+            session_handler=browser_handler,
+            session_id=session_id,
+        )
+
+        results: list[ShadowRoot] = []
+        for shadow_data, host_backend_id in entries:
+            sr = await self._resolve_oopif_shadow_entry(
+                shadow_data, host_backend_id, browser_handler, session_id, iframe_context
+            )
+            if sr:
+                results.append(sr)
+        return results
+
+    async def _resolve_oopif_shadow_entry(
+        self,
+        shadow_data: Node,
+        host_backend_id: int | None,
+        browser_handler: ConnectionHandler,
+        session_id: str,
+        iframe_context: IFrameContext,
+    ) -> ShadowRoot | None:
+        """Resolve a single shadow root entry from an OOPIF."""
+        backend_node_id = shadow_data.get('backendNodeId')
+        if not backend_node_id:
+            return None
+
+        try:
+            resolve_command = DomCommands.resolve_node(backend_node_id=backend_node_id)
+            resolve_command['sessionId'] = session_id
+            resolve_response: ResolveNodeResponse = await browser_handler.execute_command(
+                resolve_command
+            )
+            shadow_object_id = resolve_response['result']['object']['objectId']
+        except (CommandExecutionTimeout, WebSocketConnectionClosed, KeyError):
+            logger.debug(f'Failed to resolve OOPIF shadow root: backend_node_id={backend_node_id}')
+            return None
+
+        host_element = await self._resolve_oopif_shadow_host(
+            host_backend_id, browser_handler, session_id
+        )
+
+        if host_element:
+            host_element._iframe_context = iframe_context
+
+        mode = ShadowRootType(shadow_data.get('shadowRootType', 'open'))
+        sr = ShadowRoot(
+            object_id=shadow_object_id,
+            connection_handler=self._connection_handler,
+            mode=mode,
+            host_element=host_element,
+        )
+
+        if not host_element:
+            sr._iframe_context = iframe_context
+
+        return sr
+
+    async def _resolve_oopif_shadow_host(
+        self,
+        host_backend_id: int | None,
+        browser_handler: ConnectionHandler,
+        session_id: str,
+    ) -> WebElement | None:
+        """Resolve the host element for a shadow root inside an OOPIF (best-effort)."""
+        if not host_backend_id:
+            return None
+
+        try:
+            resolve_command = DomCommands.resolve_node(backend_node_id=host_backend_id)
+            resolve_command['sessionId'] = session_id
+            host_response: ResolveNodeResponse = await browser_handler.execute_command(
+                resolve_command
+            )
+            host_object_id = host_response['result']['object']['objectId']
+
+            describe_command = DomCommands.describe_node(object_id=host_object_id)
+            describe_command['sessionId'] = session_id
+            describe_response: DescribeNodeResponse = await browser_handler.execute_command(
+                describe_command
+            )
+            node_info = describe_response.get('result', {}).get('node', {})
+            attributes = node_info.get('attributes', [])
+            tag_name = node_info.get('nodeName', '').lower()
+            attributes.extend(['tag_name', tag_name])
+
+            return WebElement(host_object_id, self._connection_handler, attributes_list=attributes)
+        except (CommandExecutionTimeout, WebSocketConnectionClosed, KeyError):
+            logger.debug(f'Failed to resolve OOPIF shadow host: backend_node_id={host_backend_id}')
+            return None
+
+    @staticmethod
+    def _collect_shadow_roots_from_tree(node: Node, results: list[tuple[Node, int | None]]) -> None:
+        """Recursively walk a DOM tree collecting shadow root entries."""
+        host_backend_id = node.get('backendNodeId')
+        for shadow_root in node.get('shadowRoots', []):
+            results.append((shadow_root, host_backend_id))
+            Tab._collect_shadow_roots_from_tree(shadow_root, results)
+
+        for child in node.get('children', []):
+            Tab._collect_shadow_roots_from_tree(child, results)
+
+        content_doc = node.get('contentDocument')
+        if content_doc:
+            Tab._collect_shadow_roots_from_tree(content_doc, results)
 
     async def bring_to_front(self):
         """Brings the page to front."""
