@@ -6350,7 +6350,7 @@ like Cloudflare bypass.</p>
   </span>
 
 </h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">enable_auto_solve_cloudflare_captcha</span><span class="p">(</span><span class="n">custom_selector</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">time_before_click</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">time_to_wait_captcha</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">enable_auto_solve_cloudflare_captcha</span><span class="p">(</span><span class="n">custom_selector</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">time_before_click</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">time_to_wait_captcha</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6372,7 +6372,8 @@ like Cloudflare bypass.</p>
             </td>
             <td class="doc-param-details">
               <div class="doc-md-description">
-                <p>Custom captcha selector (default: cf-turnstile class).</p>
+                <p>Deprecated — ignored. Cloudflare Turnstile is now
+detected automatically via shadow root inspection.</p>
               </div>
               <p>
                   <span class="doc-param-annotation">
@@ -6392,16 +6393,17 @@ like Cloudflare bypass.</p>
             </td>
             <td class="doc-param-details">
               <div class="doc-md-description">
-                <p>Delay before clicking captcha (default 2s).</p>
+                <p>Deprecated — ignored. The checkbox is now
+located via shadow root polling and clicked immediately.</p>
               </div>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="int">int</span></code>
+                      <code><span title="typing.Optional">Optional</span>[<span title="float">float</span>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
-                      <code>5</code>
+                      <code>None</code>
                   </span>
               </p>
             </td>
@@ -6417,7 +6419,7 @@ like Cloudflare bypass.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="int">int</span></code>
+                      <code><span title="float">float</span></code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -8656,7 +8658,7 @@ with handle_auth=True.</p>
   </span>
 
 </h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">expect_and_bypass_cloudflare_captcha</span><span class="p">(</span><span class="n">custom_selector</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">time_before_click</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">time_to_wait_captcha</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">expect_and_bypass_cloudflare_captcha</span><span class="p">(</span><span class="n">custom_selector</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">time_before_click</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">time_to_wait_captcha</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -8678,7 +8680,8 @@ with handle_auth=True.</p>
             </td>
             <td class="doc-param-details">
               <div class="doc-md-description">
-                <p>Custom captcha selector (default: cf-turnstile class).</p>
+                <p>Deprecated — ignored. Cloudflare Turnstile is now
+detected automatically via shadow root inspection.</p>
               </div>
               <p>
                   <span class="doc-param-annotation">
@@ -8698,16 +8701,17 @@ with handle_auth=True.</p>
             </td>
             <td class="doc-param-details">
               <div class="doc-md-description">
-                <p>Delay before clicking (default 2s).</p>
+                <p>Deprecated — ignored. The checkbox is now
+located via shadow root polling and clicked immediately.</p>
               </div>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="int">int</span></code>
+                      <code><span title="typing.Optional">Optional</span>[<span title="float">float</span>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
-                      <code>2</code>
+                      <code>None</code>
                   </span>
               </p>
             </td>
@@ -8723,7 +8727,7 @@ with handle_auth=True.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="int">int</span></code>
+                      <code><span title="float">float</span></code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
