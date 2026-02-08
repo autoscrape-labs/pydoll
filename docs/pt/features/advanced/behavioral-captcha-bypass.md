@@ -84,55 +84,24 @@ asyncio.run(background_turnstile())
 
 ## Personalizando a Interação com o Captcha
 
-### Seletor Personalizado
+### Como Funciona
 
-Alguns sites usam nomes de classe ou invólucros (wrappers) diferentes para o captcha:
-
-```python
-from pydoll.constants import By
-
-async def custom_selector_example():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        
-        # Use um seletor personalizado se o padrão não funcionar
-        custom_selector = (By.CLASS_NAME, 'custom-captcha-wrapper')
-        
-        async with tab.expect_and_bypass_cloudflare_captcha(
-            custom_selector=custom_selector
-        ):
-            await tab.go_to('https://site-with-custom-turnstile.com')
-        
-        print("Seletor personalizado usado com sucesso!")
-
-asyncio.run(custom_selector_example())
-```
-
-!!! tip "Encontrando o Seletor Correto"
-    Para encontrar o seletor correto:
-    
-    1. Abra o site no Chrome DevTools
-    2. Inspecione o iframe/contêiner do captcha
-    3. Procure por nomes de classe ou IDs únicos
-    4. Use esse seletor com o parâmetro `custom_selector`
-    
-    O seletor padrão é `(By.CLASS_NAME, 'cf-turnstile')`, que funciona para a maioria das implementações padrão do Cloudflare Turnstile.
+O Pydoll detecta automaticamente o Cloudflare Turnstile percorrendo o shadow DOM da página. Ele procura um shadow root contendo `challenges.cloudflare.com`, navega até seu iframe cross-origin, encontra o shadow root interno e clica no elemento checkbox real. Nenhuma configuração manual de seletor é necessária.
 
 ### Configuração de Tempo (Timing)
 
-A caixa de seleção do captcha nem sempre aparece imediatamente. Ajuste o tempo para corresponder ao comportamento do site:
+O shadow root do captcha nem sempre aparece imediatamente. Ajuste o timeout para corresponder ao comportamento do site:
 
 ```python
 async def timing_configuration_example():
     async with Chrome() as browser:
         tab = await browser.start()
-        
+
         async with tab.expect_and_bypass_cloudflare_captcha(
-            time_before_click=3,      # Esperar 3 segundos antes de clicar (padrão: 2)
             time_to_wait_captcha=10   # Esperar até 10 segundos pelo captcha aparecer (padrão: 5)
         ):
             await tab.go_to('https://site-with-slow-turnstile.com')
-        
+
         print("Interação com o captcha concluída com tempo personalizado!")
 
 asyncio.run(timing_configuration_example())
@@ -142,13 +111,10 @@ asyncio.run(timing_configuration_example())
 
 | Parâmetro | Tipo | Padrão | Descrição |
 |---|---|---|---|
-| `custom_selector` | `Optional[tuple[By, str]]` | `(By.CLASS_NAME, 'cf-turnstile')` | Seletor CSS para o contêiner do captcha |
-| `time_before_click` | `int` | `2` | Segundos para esperar antes de clicar (simula tempo de pensamento humano) |
-| `time_to_wait_captcha` | `int` | `5` | Segundos máximos para esperar o captcha aparecer |
+| `time_to_wait_captcha` | `float` | `5` | Segundos máximos para esperar o captcha aparecer |
 
 !!! info "Por que o Tempo Importa"
-    - **`time_before_click`**: Simula o tempo de reação humano. Clicar muito rápido pode parecer suspeito.
-    - **`time_to_wait_captcha`**: Alguns sites carregam o captcha assincronamente. Se o captcha não aparecer dentro desse tempo, a interação é pulada.
+    Alguns sites carregam o captcha assincronamente. Se o shadow root do Cloudflare não aparecer dentro de `time_to_wait_captcha`, a interação é pulada.
 
 ## Outros Sistemas de Captcha
 
@@ -283,9 +249,8 @@ asyncio.run(realistic_behavior())
 
 **Causas Possíveis:**
 
-1.  **Seletor errado**: O site usa classe/ID de elemento diferente
-2.  **Tempo muito curto**: O captcha ainda não carregou quando o Pydoll tenta clicar
-3.  **Elemento não visível**: O captcha está oculto ou renderizado de forma diferente
+1.  **Tempo muito curto**: O captcha ainda não carregou quando o Pydoll tenta clicar
+2.  **Shadow root não encontrado**: O shadow root do Cloudflare Turnstile ainda não apareceu no DOM
 
 **Soluções:**
 
@@ -293,10 +258,9 @@ asyncio.run(realistic_behavior())
 async def troubleshooting_example():
     async with Chrome() as browser:
         tab = await browser.start()
-        
-        # Aumentar tempos de espera e usar seletor personalizado
+
+        # Aumentar tempos de espera
         async with tab.expect_and_bypass_cloudflare_captcha(
-            custom_selector=(By.CLASS_NAME, 'your-selector-here'),
             time_before_click=5,     # Atraso maior antes de clicar
             time_to_wait_captcha=15  # Mais tempo para encontrar o captcha
         ):
@@ -366,9 +330,8 @@ asyncio.run(troubleshooting_example())
 2.  **Configure opções de furtividade**: Remova indicadores de automação
 3.  **Adicione padrões comportamentais**: Role, espere, mova o mouse antes de clicar
 4.  **Ajuste o tempo**: Dê tempo ao captcha para carregar antes de tentar clicar
-5.  **Use seletores personalizados**: Quando o seletor padrão não funcionar
-6.  **Lide com falhas graciosamente**: Tenha lógica de fallback para quando o captcha não puder ser passado
-7.  **Teste seu ambiente**: Verifique a reputação do IP e o fingerprint do navegador antes da automação
+5.  **Lide com falhas graciosamente**: Tenha lógica de fallback para quando o captcha não puder ser passado
+6.  **Teste seu ambiente**: Verifique a reputação do IP e o fingerprint do navegador antes da automação
 
 ## Diretrizes Éticas
 
