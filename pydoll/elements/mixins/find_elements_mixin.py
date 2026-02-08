@@ -363,7 +363,10 @@ class FindElementsMixin:
             if asyncio.get_event_loop().time() - start_time > timeout:
                 if raise_exc:
                     logger.error('Timeout while waiting for elements')
-                    raise WaitElementTimeout()
+                    raise WaitElementTimeout(
+                        f'Timed out after {timeout}s waiting for element '
+                        f'(by={by.value}, value={value!r})'
+                    )
                 return None
 
             await asyncio.sleep(0.5)

@@ -266,7 +266,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         logger.debug(f'Parent element resolved: object_id={object_id}')
         return WebElement(object_id, self._connection_handler, attributes_list=attributes)
 
-    async def get_shadow_root(self, timeout: int = 0) -> ShadowRoot:
+    async def get_shadow_root(self, timeout: float = 0) -> ShadowRoot:
         """
         Get the shadow root attached to this element.
 
@@ -294,7 +294,9 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
                 pass
 
             if asyncio.get_event_loop().time() - start_time > timeout:
-                raise WaitElementTimeout()
+                raise WaitElementTimeout(
+                    f'Timed out after {timeout}s waiting for shadow root on element'
+                )
 
             await asyncio.sleep(0.5)
 

@@ -483,7 +483,7 @@ class Tab(FindElementsMixin):
         logger.debug(f'Iframe tab created and registered: {target_id}')
         return tab
 
-    async def find_shadow_roots(self, deep: bool = False, timeout: int = 0) -> list[ShadowRoot]:
+    async def find_shadow_roots(self, deep: bool = False, timeout: float = 0) -> list[ShadowRoot]:
         """
         Find all shadow roots in the page.
 
@@ -522,7 +522,9 @@ class Tab(FindElementsMixin):
                 return shadow_roots
 
             if asyncio.get_event_loop().time() - start_time > timeout:
-                raise WaitElementTimeout()
+                raise WaitElementTimeout(
+                    f'Timed out after {timeout}s waiting for shadow roots in page'
+                )
 
             await asyncio.sleep(0.5)
 
