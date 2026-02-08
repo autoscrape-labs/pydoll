@@ -41,12 +41,12 @@ class TestOpenShadowRoot:
             host = await tab.find(id='open-host')
             shadow = await host.get_shadow_root()
 
-            text_el = await shadow.find(class_name='open-text')
+            text_el = await shadow.query('.open-text')
             assert isinstance(text_el, WebElement)
             text = await text_el.text
             assert text == 'Open shadow content'
 
-            btn = await shadow.find(id='open-btn')
+            btn = await shadow.query('#open-btn')
             assert btn is not None
 
     @pytest.mark.asyncio
@@ -72,7 +72,7 @@ class TestOpenShadowRoot:
             host = await tab.find(id='open-host')
             shadow = await host.get_shadow_root()
 
-            buttons = await shadow.find(class_name='shadow-btn', find_all=True)
+            buttons = await shadow.query('.shadow-btn', find_all=True)
             assert len(buttons) == 1
 
     @pytest.mark.asyncio
@@ -115,7 +115,7 @@ class TestClosedShadowRoot:
             host = await tab.find(id='closed-host')
             shadow = await host.get_shadow_root()
 
-            text_el = await shadow.find(class_name='closed-text')
+            text_el = await shadow.query('.closed-text')
             assert isinstance(text_el, WebElement)
             text = await text_el.text
             assert text == 'Closed shadow content'
@@ -130,7 +130,7 @@ class TestClosedShadowRoot:
             host = await tab.find(id='closed-host')
             shadow = await host.get_shadow_root()
 
-            btn = await shadow.find(id='closed-btn')
+            btn = await shadow.query('#closed-btn')
             assert btn is not None
 
             input_el = await shadow.query('input[type="password"]')
@@ -164,19 +164,19 @@ class TestNestedShadowRoots:
             outer_shadow = await nested_host.get_shadow_root()
             assert outer_shadow.mode == ShadowRootType.OPEN
 
-            outer_text = await outer_shadow.find(class_name='outer-text')
+            outer_text = await outer_shadow.query('.outer-text')
             text = await outer_text.text
             assert text == 'Outer shadow'
 
-            inner_host = await outer_shadow.find(id='inner-host')
+            inner_host = await outer_shadow.query('#inner-host')
             inner_shadow = await inner_host.get_shadow_root()
             assert inner_shadow.mode == ShadowRootType.CLOSED
 
-            inner_text = await inner_shadow.find(class_name='inner-text')
+            inner_text = await inner_shadow.query('.inner-text')
             text = await inner_text.text
             assert text == 'Inner closed shadow'
 
-            deep_btn = await inner_shadow.find(id='deep-btn')
+            deep_btn = await inner_shadow.query('#deep-btn')
             assert deep_btn is not None
 
 
