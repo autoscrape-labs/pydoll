@@ -105,33 +105,6 @@ for sr in shadow_roots:
 </details>
 
 <details>
-<summary><b>Cloudflare Turnstile Bypass: Faster, More Robust, Fully Automatic</b></summary>
-<br>
-
-The Cloudflare Turnstile bypass has been **completely rewritten** using shadow root traversal, making it significantly more reliable than the old selector-based approach.
-
-**What changed:**
-
-- **Automatic detection** — Pydoll now polls the page's shadow DOM for the Cloudflare challenge domain, no selectors needed
-- **Full shadow root traversal** — navigates outer shadow root → cross-origin iframe → inner shadow root → actual checkbox element
-- **No more artificial delays** — the old `time_before_click` sleep is gone; the checkbox is clicked as soon as it's found
-- **Zero configuration** — just call the method, Pydoll handles the rest
-
-```python
-async with Chrome() as browser:
-    tab = await browser.start()
-
-    # That's it — fully automatic
-    async with tab.expect_and_bypass_cloudflare_captcha():
-        await tab.go_to('https://site-with-turnstile.com')
-
-    print("Captcha handled!")
-```
-
-[**📖 Cloudflare Turnstile Docs**](https://pydoll.tech/docs/features/advanced/behavioral-captcha-bypass/)
-</details>
-
-<details>
 <summary><b>Humanized Keyboard Input (<code>humanize=True</code>)</b></summary>
 <br>
 
