@@ -181,6 +181,12 @@ class ElementNotAFileInput(ElementException):
     message = 'The element is not a file input'
 
 
+class ShadowRootNotFound(ElementException):
+    """Raised when an element does not have an attached shadow root."""
+
+    message = 'No shadow root attached to this element'
+
+
 class TimeoutException(PydollException):
     """Base class for exceptions related to timeouts."""
 

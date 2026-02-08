@@ -51,6 +51,7 @@ nav:
           - FindElements Mixin: deep-dive/architecture/find-elements-mixin.md
           - Event Architecture: deep-dive/architecture/event-architecture.md
           - Browser Requests Architecture: deep-dive/architecture/browser-requests-architecture.md
+          - Shadow DOM: deep-dive/architecture/shadow-dom.md
       - Network & Security:
           - Overview: deep-dive/network/index.md
           - Network Fundamentals: deep-dive/network/network-fundamentals.md
@@ -79,6 +80,7 @@ nav:
           - Managers: api/browser/managers.md
       - Elements:
           - WebElement: api/elements/web_element.md
+          - ShadowRoot: api/elements/shadow_root.md
           - Mixins: api/elements/mixins.md
       - Connection:
           - Connection Handler: api/connection/connection.md
@@ -208,6 +210,7 @@ plugins:
             FindElements Mixin: 查找元素混合器
             Event Architecture: 事件架构
             Browser Requests Architecture: 浏览器请求架构
+            Shadow DOM: Shadow DOM 架构
             Network & Security: 网络与安全
             Network Fundamentals: 网络基础
             HTTP/HTTPS Proxies: HTTP/HTTPS 代理
@@ -232,6 +235,7 @@ plugins:
             Managers: 管理器
             Elements: 元素
             WebElement: Web元素
+            ShadowRoot: Shadow根
             Mixins: 混合器
             Connection: 连接
             Connection Handler: 连接处理器
@@ -306,6 +310,7 @@ plugins:
             FindElements Mixin: Mixin FindElements
             Event Architecture: Arquitetura de Eventos
             Browser Requests Architecture: Arquitetura de Requisições do Navegador
+            Shadow DOM: Arquitetura Shadow DOM
             Network & Security: Rede e Segurança
             Network Fundamentals: Fundamentos de Rede
             HTTP/HTTPS Proxies: Proxies HTTP/HTTPS
@@ -330,6 +335,7 @@ plugins:
             Managers: Gerenciadores
             Elements: Elementos
             WebElement: Elemento Web
+            ShadowRoot: Shadow Root
             Mixins: Mixins
             Connection: Conexão
             Connection Handler: Manipulador de Conexão

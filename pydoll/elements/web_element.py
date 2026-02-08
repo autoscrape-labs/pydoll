@@ -21,6 +21,7 @@ from pydoll.constants import (
     Scripts,
 )
 from pydoll.elements.mixins import FindElementsMixin
+from pydoll.elements.shadow_root import ShadowRoot
 from pydoll.exceptions import (
     ElementNotAFileInput,
     ElementNotFound,
@@ -29,10 +30,12 @@ from pydoll.exceptions import (
     InvalidFileExtension,
     InvalidIFrame,
     MissingScreenshotPath,
+    ShadowRootNotFound,
     WaitElementTimeout,
 )
 from pydoll.interactions.iframe import IFrameContext, IFrameContextResolver
 from pydoll.interactions.keyboard import Keyboard
+from pydoll.protocol.dom.types import ShadowRootType
 from pydoll.protocol.input.types import (
     KeyEventType,
     KeyModifier,
@@ -55,8 +58,10 @@ from pydoll.utils import (
 
 if TYPE_CHECKING:
     from pydoll.protocol.dom.methods import (
+        DescribeNodeResponse,
         GetBoxModelResponse,
         GetOuterHTMLResponse,
+        ResolveNodeResponse,
     )
     from pydoll.protocol.dom.types import Quad
     from pydoll.protocol.page.methods import CaptureScreenshotResponse
@@ -260,6 +265,70 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         attributes = await self._get_object_attributes(object_id=object_id)
         logger.debug(f'Parent element resolved: object_id={object_id}')
         return WebElement(object_id, self._connection_handler, attributes_list=attributes)
+
+    async def get_shadow_root(self, timeout: float = 0) -> ShadowRoot:
+        """
+        Get the shadow root attached to this element.
+
+        Args:
+            timeout: Maximum seconds to wait for the shadow root to appear.
+                When > 0, repeatedly polls (every 0.5s) until a shadow root
+                is found or the timeout expires.
+
+        Returns:
+            ShadowRoot instance for traversing the shadow DOM.
+
+        Raises:
+            ShadowRootNotFound: If no shadow root is attached (when timeout=0).
+            WaitElementTimeout: If timeout > 0 and no shadow root appears
+                within the specified duration.
+        """
+        if not timeout:
+            return await self._get_shadow_root()
+
+        start_time = asyncio.get_event_loop().time()
+        while True:
+            try:
+                return await self._get_shadow_root()
+            except ShadowRootNotFound:
+                pass
+
+            if asyncio.get_event_loop().time() - start_time > timeout:
+                raise WaitElementTimeout(
+                    f'Timed out after {timeout}s waiting for shadow root on element'
+                )
+
+            await asyncio.sleep(0.5)
+
+    async def _get_shadow_root(self) -> ShadowRoot:
+        """Get the shadow root attached to this element (single attempt)."""
+        response: DescribeNodeResponse = await self._execute_command(
+            DomCommands.describe_node(object_id=self._object_id, depth=1, pierce=True)
+        )
+        node_info = response.get('result', {}).get('node', {})
+        shadow_roots = node_info.get('shadowRoots', [])
+        if not shadow_roots:
+            raise ShadowRootNotFound()
+
+        shadow_root_data = shadow_roots[0]
+        backend_node_id = shadow_root_data.get('backendNodeId')
+        if not backend_node_id:
+            raise ShadowRootNotFound('Shadow root found but backend node ID is unavailable')
+
+        resolve_response: ResolveNodeResponse = await self._execute_command(
+            DomCommands.resolve_node(backend_node_id=backend_node_id)
+        )
+        shadow_object_id = resolve_response['result']['object']['objectId']
+
+        mode = ShadowRootType(shadow_root_data.get('shadowRootType', 'open'))
+
+        logger.debug(f'Shadow root resolved: object_id={shadow_object_id}, mode={mode.value}')
+        return ShadowRoot(
+            object_id=shadow_object_id,
+            connection_handler=self._connection_handler,
+            mode=mode,
+            host_element=self,
+        )
 
     async def get_children_elements(
         self, max_depth: int = 1, tag_filter: list[str] = [], raise_exc: bool = False
@@ -531,9 +600,9 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
             button=MouseButton.LEFT,
             click_count=1,
         )
-        await self._connection_handler.execute_command(press_command)
+        await self._execute_command(press_command)
         await asyncio.sleep(hold_time)
-        await self._connection_handler.execute_command(release_command)
+        await self._execute_command(release_command)
 
     async def clear(self):
         """
@@ -719,17 +788,23 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
     async def is_visible(self):
         """Check if element is visible using comprehensive JavaScript visibility test."""
         result = await self.execute_script(Scripts.ELEMENT_VISIBLE, return_by_value=True)
-        return bool(result['result']['result']['value'])
+        if 'error' in result:
+            return False
+        return bool(result.get('result', {}).get('result', {}).get('value', False))
 
     async def is_on_top(self):
         """Check if element is topmost at its center point (not covered by overlays)."""
         result = await self.execute_script(Scripts.ELEMENT_ON_TOP, return_by_value=True)
-        return result['result']['result']['value']
+        if 'error' in result:
+            return False
+        return bool(result.get('result', {}).get('result', {}).get('value', False))
 
     async def is_interactable(self):
         """Check if element is interactable based on visibility and position."""
         result = await self.execute_script(Scripts.ELEMENT_INTERACTIVE, return_by_value=True)
-        return result['result']['result']['value']
+        if 'error' in result:
+            return False
+        return bool(result.get('result', {}).get('result', {}).get('value', False))
 
     async def execute_script(
         self,

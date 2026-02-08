@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Nested Click Test Page</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .click-counter { color: green; font-weight: bold; }
+        .section { margin: 20px 0; padding: 10px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h1 id="main-heading">Nested Click Test</h1>
+
+    <!-- Section 1: Regular button with click counter -->
+    <div class="section">
+        <h2>Regular Element</h2>
+        <button id="regular-btn">Regular Button</button>
+        <span id="regular-btn-count" class="click-counter">0</span>
+    </div>
+
+    <!-- Section 2: Shadow root with button -->
+    <div class="section">
+        <h2>Shadow Root Element</h2>
+        <div id="shadow-host"></div>
+    </div>
+
+    <!-- Section 3: Iframe with elements -->
+    <div class="section">
+        <h2>Iframe Element</h2>
+        <iframe id="test-iframe" src="test_click_nested_iframe_content.html"
+                style="width: 600px; height: 300px; border: 1px solid #999;"></iframe>
+    </div>
+
+    <!-- Section 4: Nested shadow roots -->
+    <div class="section">
+        <h2>Nested Shadow Roots</h2>
+        <div id="nested-shadow-host"></div>
+    </div>
+
+    <script>
+        // Regular button click counter
+        (function() {
+            var count = 0;
+            document.getElementById('regular-btn').addEventListener('click', function() {
+                count++;
+                document.getElementById('regular-btn-count').textContent = String(count);
+            });
+        })();
+
+        // Shadow root with clickable button
+        (function() {
+            var host = document.getElementById('shadow-host');
+            var shadow = host.attachShadow({ mode: 'open' });
+            shadow.innerHTML = [
+                '<style>.shadow-btn { padding: 8px 16px; cursor: pointer; }</style>',
+                '<p class="shadow-text">Content inside shadow root</p>',
+                '<button id="shadow-btn" class="shadow-btn">Shadow Button</button>',
+                '<span id="shadow-btn-count" class="click-counter">0</span>',
+            ].join('');
+
+            var count = 0;
+            shadow.getElementById('shadow-btn').addEventListener('click', function() {
+                count++;
+                shadow.getElementById('shadow-btn-count').textContent = String(count);
+            });
+        })();
+
+        // Nested shadow roots: outer -> inner with button
+        (function() {
+            var outerHost = document.getElementById('nested-shadow-host');
+            var outerShadow = outerHost.attachShadow({ mode: 'open' });
+            outerShadow.innerHTML = [
+                '<p class="outer-text">Outer shadow content</p>',
+                '<div id="inner-shadow-host"></div>',
+            ].join('');
+
+            var innerHost = outerShadow.getElementById('inner-shadow-host');
+            var innerShadow = innerHost.attachShadow({ mode: 'closed' });
+            innerShadow.innerHTML = [
+                '<style>.deep-btn { padding: 8px 16px; cursor: pointer; }</style>',
+                '<p class="inner-text">Inner shadow content</p>',
+                '<button id="deep-btn" class="deep-btn">Deep Nested Button</button>',
+                '<span id="deep-btn-count" class="click-counter">0</span>',
+            ].join('');
+
+            var count = 0;
+            innerShadow.getElementById('deep-btn').addEventListener('click', function() {
+                count++;
+                innerShadow.getElementById('deep-btn-count').textContent = String(count);
+            });
+        })();
+    </script>
+</body>
+</html>
