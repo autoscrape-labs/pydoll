@@ -107,6 +107,10 @@ logger = logging.getLogger(__name__)
 
 IFrame: TypeAlias = 'Tab'
 
+_CLOUDFLARE_CHALLENGE_DOMAIN = 'challenges.cloudflare.com'
+_CLOUDFLARE_IFRAME_SELECTOR = f'iframe[src*="{_CLOUDFLARE_CHALLENGE_DOMAIN}"]'
+_CLOUDFLARE_CHECKBOX_SELECTOR = 'span.cb-i'
+
 
 class Tab(FindElementsMixin):
     """
@@ -334,25 +338,41 @@ class Tab(FindElementsMixin):
     async def enable_auto_solve_cloudflare_captcha(
         self,
         custom_selector: Optional[tuple[By, str]] = None,
-        time_before_click: int = 5,
-        time_to_wait_captcha: int = 5,
+        time_before_click: Optional[float] = None,
+        time_to_wait_captcha: float = 5,
     ):
         """
         Enable automatic Cloudflare Turnstile captcha bypass.
 
         Args:
-            custom_selector: Custom captcha selector (default: cf-turnstile class).
-            time_before_click: Delay before clicking captcha (default 2s).
+            custom_selector: Deprecated — ignored. Cloudflare Turnstile is now
+                detected automatically via shadow root inspection.
+            time_before_click: Deprecated — ignored. The checkbox is now
+                located via shadow root polling and clicked immediately.
             time_to_wait_captcha: Timeout for captcha detection (default 5s).
         """
+        if custom_selector is not None:
+            warnings.warn(
+                'custom_selector is deprecated and ignored. Cloudflare Turnstile is now '
+                'detected automatically via shadow root inspection.',
+                DeprecationWarning,
+                stacklevel=2,
+            )
+
+        if time_before_click is not None:
+            warnings.warn(
+                'time_before_click is deprecated and ignored. The checkbox is now '
+                'located via shadow root polling and clicked immediately.',
+                DeprecationWarning,
+                stacklevel=2,
+            )
+
         logger.info('Enabling Cloudflare captcha auto-solve')
         if not self.page_events_enabled:
             await self.enable_page_events()
 
         callback = partial(
             self._bypass_cloudflare,
-            custom_selector=custom_selector,
-            time_before_click=time_before_click,
             time_to_wait_captcha=time_to_wait_captcha,
         )
 
@@ -1372,26 +1392,42 @@ class Tab(FindElementsMixin):
     async def expect_and_bypass_cloudflare_captcha(
         self,
         custom_selector: Optional[tuple[By, str]] = None,
-        time_before_click: int = 2,
-        time_to_wait_captcha: int = 5,
+        time_before_click: Optional[float] = None,
+        time_to_wait_captcha: float = 5,
     ) -> AsyncGenerator[None, None]:
         """
         Context manager for automatic Cloudflare captcha bypass.
 
         Args:
-            custom_selector: Custom captcha selector (default: cf-turnstile class).
-            time_before_click: Delay before clicking (default 2s).
+            custom_selector: Deprecated — ignored. Cloudflare Turnstile is now
+                detected automatically via shadow root inspection.
+            time_before_click: Deprecated — ignored. The checkbox is now
+                located via shadow root polling and clicked immediately.
             time_to_wait_captcha: Timeout for captcha detection (default 5s).
         """
+        if custom_selector is not None:
+            warnings.warn(
+                'custom_selector is deprecated and ignored. Cloudflare Turnstile is now '
+                'detected automatically via shadow root inspection.',
+                DeprecationWarning,
+                stacklevel=2,
+            )
+
+        if time_before_click is not None:
+            warnings.warn(
+                'time_before_click is deprecated and ignored. The checkbox is now '
+                'located via shadow root polling and clicked immediately.',
+                DeprecationWarning,
+                stacklevel=2,
+            )
+
         captcha_processed = asyncio.Event()
 
         async def bypass_cloudflare(_: dict):
             try:
                 await self._bypass_cloudflare(
                     _,
-                    custom_selector,
-                    time_before_click,
-                    time_to_wait_captcha,
+                    time_to_wait_captcha=time_to_wait_captcha,
                 )
             finally:
                 captcha_processed.set()
@@ -1724,25 +1760,57 @@ class Tab(FindElementsMixin):
                 raise WaitElementTimeout('Page load timed out')
             await asyncio.sleep(0.5)
 
+    async def _find_cloudflare_shadow_root(self, timeout: float) -> ShadowRoot:
+        """Poll for the Cloudflare Turnstile shadow root.
+
+        Repeatedly calls ``find_shadow_roots(deep=False)`` and checks each
+        shadow root's ``inner_html`` for the Cloudflare challenge domain.
+
+        Args:
+            timeout: Maximum seconds to wait for the shadow root.
+
+        Returns:
+            The first ShadowRoot whose inner HTML contains
+            ``challenges.cloudflare.com``.
+
+        Raises:
+            WaitElementTimeout: If no matching shadow root is found within
+                *timeout* seconds.
+        """
+        start_time = asyncio.get_event_loop().time()
+        while True:
+            shadow_roots = await self.find_shadow_roots(deep=False)
+            for sr in shadow_roots:
+                html = await sr.inner_html
+                if _CLOUDFLARE_CHALLENGE_DOMAIN in html:
+                    return sr
+
+            if asyncio.get_event_loop().time() - start_time > timeout:
+                raise WaitElementTimeout(
+                    f'Timed out after {timeout}s waiting for Cloudflare Turnstile shadow root'
+                )
+            await asyncio.sleep(0.5)
+
     async def _bypass_cloudflare(
         self,
         event: dict,
-        custom_selector: Optional[tuple[By, str]] = None,
-        time_before_click: int = 2,
-        time_to_wait_captcha: int = 5,
-    ):
-        """Attempt to bypass Cloudflare Turnstile captcha when detected."""
+        time_to_wait_captcha: float = 5,
+    ) -> None:
+        """Attempt to bypass Cloudflare Turnstile captcha via shadow root traversal.
+
+        Traverses shadow roots to locate the Cloudflare iframe, navigates into
+        it, and clicks the actual checkbox element (``span.cb-i``).
+        """
         try:
-            selector = custom_selector or (By.CLASS_NAME, 'cf-turnstile')
-            element = await self.find_or_wait_element(
-                *selector, timeout=time_to_wait_captcha, raise_exc=False
+            timeout_int = int(time_to_wait_captcha)
+            shadow_root = await self._find_cloudflare_shadow_root(
+                timeout=time_to_wait_captcha,
             )
-            element = cast('WebElement', element)
-            if element:
-                # adjust the external div size to shadow root width (usually 300px)
-                await element.execute_script('this.style="width: 300px"')
-                await asyncio.sleep(time_before_click)
-                await element.click()
+            iframe = await shadow_root.query(_CLOUDFLARE_IFRAME_SELECTOR, timeout=timeout_int)
+            body = await iframe.find(tag_name='body', timeout=timeout_int)
+            inner_shadow = await body.get_shadow_root(timeout=time_to_wait_captcha)
+            checkbox = await inner_shadow.query(_CLOUDFLARE_CHECKBOX_SELECTOR, timeout=timeout_int)
+            await checkbox.click()
         except Exception as exc:
             logger.error(f'Error in cloudflare bypass: {exc}')
 
