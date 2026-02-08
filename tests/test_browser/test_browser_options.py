@@ -55,16 +55,19 @@ def test_add_duplicate_argument():
     with pytest.raises(ArgumentAlreadyExistsInOptions, match='Argument already exists: --headless'):
         options.add_argument('--headless')
 
+
 def test_remove_argument():
     options = Options()
     options.add_argument('--headless')
     options.remove_argument('--headless')
     assert options.arguments == []
 
+
 def test_remove_argument_not_exists():
     options = Options()
     with pytest.raises(ArgumentNotFoundInOptions, match='Argument not found: --headless'):
         options.remove_argument('--headless')
+
 
 def test_add_multiple_arguments():
     options = Options()
@@ -187,10 +190,12 @@ def test_wrong_dict_prefs_error():
             }
         }
 
+
 def test_set_arguments():
     options = Options()
     options.arguments = ['--headless']
     assert options.arguments == ['--headless']
+
 
 def test_get_pref_path():
     options = Options()
@@ -238,6 +243,10 @@ def test_options_interface_enforcement():
             return False
 
         @property
+        def max_parallel_tasks(self):
+            return 1
+        
+        @property
         def page_load_state(self):
             return PageLoadState.COMPLETE
 
@@ -247,11 +256,13 @@ def test_options_interface_enforcement():
 
     CompleteOptions()
 
+
 def test_set_headless():
     options = Options()
     options.headless = True
     assert options.headless is True
     assert options.arguments == ['--headless']
+
 
 def test_set_headless_false():
     options = Options()
@@ -262,6 +273,7 @@ def test_set_headless_false():
     assert options.headless is False
     assert options.arguments == []
 
+
 def test_set_headless_true_twice():
     options = Options()
     options.headless = True
@@ -271,6 +283,7 @@ def test_set_headless_true_twice():
     assert options.headless is True
     assert options.arguments == ['--headless']
 
+
 def test_set_headless_false_twice():
     options = Options()
     options.headless = False
@@ -279,3 +292,15 @@ def test_set_headless_false_twice():
     options.headless = False
     assert options.headless is False
     assert options.arguments == []
+
+
+def test_set_max_parallel_tasks():
+    options = Options()
+    options.max_parallel_tasks = 2
+    assert options.max_parallel_tasks == 2
+
+
+def test_set_max_parallel_tasks_error():
+    options = Options()
+    with pytest.raises(ValueError, match='max_parallel_tasks must be greater than 0'):
+        options.max_parallel_tasks = 0
