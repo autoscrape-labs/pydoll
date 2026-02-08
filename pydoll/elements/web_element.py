@@ -58,8 +58,10 @@ from pydoll.utils import (
 
 if TYPE_CHECKING:
     from pydoll.protocol.dom.methods import (
+        DescribeNodeResponse,
         GetBoxModelResponse,
         GetOuterHTMLResponse,
+        ResolveNodeResponse,
     )
     from pydoll.protocol.dom.types import Quad
     from pydoll.protocol.page.methods import CaptureScreenshotResponse
@@ -264,17 +266,41 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         logger.debug(f'Parent element resolved: object_id={object_id}')
         return WebElement(object_id, self._connection_handler, attributes_list=attributes)
 
-    async def get_shadow_root(self) -> ShadowRoot:
+    async def get_shadow_root(self, timeout: int = 0) -> ShadowRoot:
         """
         Get the shadow root attached to this element.
+
+        Args:
+            timeout: Maximum seconds to wait for the shadow root to appear.
+                When > 0, repeatedly polls (every 0.5s) until a shadow root
+                is found or the timeout expires.
 
         Returns:
             ShadowRoot instance for traversing the shadow DOM.
 
         Raises:
-            ShadowRootNotFound: If no shadow root is attached to this element.
+            ShadowRootNotFound: If no shadow root is attached (when timeout=0).
+            WaitElementTimeout: If timeout > 0 and no shadow root appears
+                within the specified duration.
         """
-        response = await self._execute_command(
+        if not timeout:
+            return await self._get_shadow_root()
+
+        start_time = asyncio.get_event_loop().time()
+        while True:
+            try:
+                return await self._get_shadow_root()
+            except ShadowRootNotFound:
+                pass
+
+            if asyncio.get_event_loop().time() - start_time > timeout:
+                raise WaitElementTimeout()
+
+            await asyncio.sleep(0.5)
+
+    async def _get_shadow_root(self) -> ShadowRoot:
+        """Get the shadow root attached to this element (single attempt)."""
+        response: DescribeNodeResponse = await self._execute_command(
             DomCommands.describe_node(object_id=self._object_id, depth=1, pierce=True)
         )
         node_info = response.get('result', {}).get('node', {})
@@ -287,7 +313,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         if not backend_node_id:
             raise ShadowRootNotFound('Shadow root found but backend node ID is unavailable')
 
-        resolve_response = await self._execute_command(
+        resolve_response: ResolveNodeResponse = await self._execute_command(
             DomCommands.resolve_node(backend_node_id=backend_node_id)
         )
         shadow_object_id = resolve_response['result']['object']['objectId']
@@ -572,9 +598,9 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
             button=MouseButton.LEFT,
             click_count=1,
         )
-        await self._connection_handler.execute_command(press_command)
+        await self._execute_command(press_command)
         await asyncio.sleep(hold_time)
-        await self._connection_handler.execute_command(release_command)
+        await self._execute_command(release_command)
 
     async def clear(self):
         """
@@ -760,17 +786,23 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
     async def is_visible(self):
         """Check if element is visible using comprehensive JavaScript visibility test."""
         result = await self.execute_script(Scripts.ELEMENT_VISIBLE, return_by_value=True)
-        return bool(result['result']['result']['value'])
+        if 'error' in result:
+            return False
+        return bool(result.get('result', {}).get('result', {}).get('value', False))
 
     async def is_on_top(self):
         """Check if element is topmost at its center point (not covered by overlays)."""
         result = await self.execute_script(Scripts.ELEMENT_ON_TOP, return_by_value=True)
-        return result['result']['result']['value']
+        if 'error' in result:
+            return False
+        return bool(result.get('result', {}).get('result', {}).get('value', False))
 
     async def is_interactable(self):
         """Check if element is interactable based on visibility and position."""
         result = await self.execute_script(Scripts.ELEMENT_INTERACTIVE, return_by_value=True)
-        return result['result']['result']['value']
+        if 'error' in result:
+            return False
+        return bool(result.get('result', {}).get('result', {}).get('value', False))
 
     async def execute_script(
         self,

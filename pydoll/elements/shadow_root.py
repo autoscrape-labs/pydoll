@@ -10,6 +10,7 @@ from pydoll.protocol.dom.types import ShadowRootType
 
 if TYPE_CHECKING:
     from pydoll.elements.web_element import WebElement
+    from pydoll.protocol.dom.methods import GetOuterHTMLResponse
 
 logger = logging.getLogger(__name__)
 
@@ -19,14 +20,17 @@ class ShadowRoot(FindElementsMixin):
     Shadow root wrapper for shadow DOM traversal.
 
     Provides element finding capabilities within shadow DOM boundaries
-    using the same API as Tab and WebElement (find, query, find_or_wait_element).
+    using query() with CSS selectors. Use query() instead of find() —
+    find() and XPath are not supported inside shadow roots.
 
     Usage:
         shadow_host = await tab.find(id='my-component')
         shadow_root = await shadow_host.get_shadow_root()
-        button = await shadow_root.find(class_name='internal-button')
+        button = await shadow_root.query('#internal-button')
         await button.click()
     """
+
+    _css_only = True
 
     def __init__(
         self,
@@ -48,6 +52,14 @@ class ShadowRoot(FindElementsMixin):
         self._connection_handler = connection_handler
         self._mode = mode
         self._host_element = host_element
+
+        # Inherit iframe/routing context from host element if present
+        if host_element:
+            self._iframe_context = getattr(host_element, '_iframe_context', None)
+            self._routing_session_handler = getattr(host_element, '_routing_session_handler', None)
+            self._routing_session_id = getattr(host_element, '_routing_session_id', None)
+            self._routing_parent_frame_id = getattr(host_element, '_routing_parent_frame_id', None)
+
         logger.debug(
             f'ShadowRoot initialized: object_id={self._object_id}, mode={self._mode.value}'
         )
@@ -65,7 +77,7 @@ class ShadowRoot(FindElementsMixin):
     @property
     async def inner_html(self) -> str:
         """HTML content of the shadow root."""
-        response = await self._execute_command(
+        response: GetOuterHTMLResponse = await self._execute_command(
             DomCommands.get_outer_html(object_id=self._object_id)
         )
         return response['result']['outerHTML']

@@ -55,6 +55,8 @@ class FindElementsMixin:
     complex location logic themselves.
     """
 
+    _css_only: bool = False
+
     if TYPE_CHECKING:
         _connection_handler: ConnectionHandler
 
@@ -193,7 +195,13 @@ class FindElementsMixin:
             ValueError: If no search criteria provided.
             ElementNotFound: If no elements found and raise_exc=True.
             WaitElementTimeout: If timeout specified and no elements appear in time.
+            NotImplementedError: If called on a ShadowRoot (use query() with CSS instead).
         """
+        if self._css_only:
+            raise NotImplementedError(
+                'find() is not supported on ShadowRoot. Use query() with a CSS selector instead.'
+            )
+
         logger.debug(
             f'find() called with id={id}, class_name={class_name}, name={name}, '
             f'tag_name={tag_name}, text={text}, timeout={timeout}, '
@@ -286,7 +294,13 @@ class FindElementsMixin:
         Raises:
             ElementNotFound: If no elements found and raise_exc=True.
             WaitElementTimeout: If timeout specified and no elements appear in time.
+            NotImplementedError: If called with XPath on a ShadowRoot.
         """
+        if self._css_only and self._get_expression_type(expression) == By.XPATH:
+            raise NotImplementedError(
+                'XPath is not supported on ShadowRoot. Use a CSS selector instead.'
+            )
+
         logger.debug(
             f'query() called with expression={expression}, timeout={timeout}, '
             f'find_all={find_all}, raise_exc={raise_exc}'
@@ -407,7 +421,9 @@ class FindElementsMixin:
         attributes = await self._get_object_attributes(object_id=object_id)
         logger.debug(f'_find_element() found object_id={object_id}')
         element = create_web_element(object_id, self._connection_handler, by, value, attributes)
-        self._apply_iframe_context_to_element(element, iframe_context)
+        self._apply_iframe_context_to_element(
+            element, iframe_context or getattr(self, '_iframe_context', None)
+        )
         return element
 
     async def _find_elements(self, by: By, value: str, raise_exc: bool = True) -> list[WebElement]:
@@ -467,6 +483,7 @@ class FindElementsMixin:
                 continue
             response.append(query['value']['objectId'])
 
+        inherited_context = iframe_context or getattr(self, '_iframe_context', None)
         elements = []
         for object_id in response:
             try:
@@ -479,7 +496,7 @@ class FindElementsMixin:
             attributes.extend(['tag_name', tag_name])
 
             child = create_web_element(object_id, self._connection_handler, by, value, attributes)
-            self._apply_iframe_context_to_element(child, iframe_context)
+            self._apply_iframe_context_to_element(child, inherited_context)
             elements.append(child)
         logger.debug(f'_find_elements() returning {len(elements)} elements')
         return elements
