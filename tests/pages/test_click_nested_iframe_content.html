@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Iframe Content with Shadow DOM</title>
+    <style>
+        body { font-family: sans-serif; padding: 10px; }
+        .click-counter { color: green; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h2 id="iframe-heading">Iframe Content</h2>
+
+    <button id="iframe-btn">Iframe Button</button>
+    <span id="iframe-btn-count" class="click-counter">0</span>
+
+    <div id="shadow-host-in-iframe"></div>
+
+    <script>
+        // Click counter for iframe button
+        (function() {
+            var count = 0;
+            document.getElementById('iframe-btn').addEventListener('click', function() {
+                count++;
+                document.getElementById('iframe-btn-count').textContent = String(count);
+            });
+        })();
+
+        // Shadow root inside the iframe
+        var host = document.getElementById('shadow-host-in-iframe');
+        var shadow = host.attachShadow({ mode: 'open' });
+        shadow.innerHTML = [
+            '<style>.shadow-btn { padding: 8px 16px; cursor: pointer; }</style>',
+            '<p class="shadow-text">Shadow content inside iframe</p>',
+            '<button id="shadow-btn-in-iframe" class="shadow-btn">Shadow Button in Iframe</button>',
+            '<span id="shadow-btn-count" class="click-counter">0</span>',
+        ].join('');
+
+        // Click counter for shadow button inside iframe
+        (function() {
+            var count = 0;
+            shadow.getElementById('shadow-btn-in-iframe').addEventListener('click', function() {
+                count++;
+                shadow.getElementById('shadow-btn-count').textContent = String(count);
+            });
+        })();
+    </script>
+</body>
+</html>
