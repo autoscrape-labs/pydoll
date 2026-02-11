@@ -167,12 +167,50 @@ asyncio.run(authenticated_proxy_example())
 
 !!! tip "凭据格式"
     直接在代理 URL 中包含凭据：
-    
+
     - HTTP: `http://username:password@host:port`
     - HTTPS: `https://username:password@host:port`
     - SOCKS5: `socks5://username:password@host:port`
-    
+
     Pydoll 会自动提取并使用这些凭据。
+
+!!! warning "SOCKS5 身份验证限制"
+    **Chrome 不原生支持 SOCKS5 身份验证**（[Chromium Issue #40323993](https://issues.chromium.org/issues/40323993)）。嵌入在 `socks5://user:pass@host:port` 中的凭据会被静默忽略 — Chrome 只会向 SOCKS5 代理发送"无需身份验证"的问候。
+
+    这意味着 Pydoll 的自动代理身份验证（通过 `Fetch.authRequired`）**对 SOCKS5 不起作用**，因为 Chrome 从不会为 SOCKS5 连接发出 HTTP 407 质询。
+
+    **解决方案 — 本地代理转发器：**
+
+    运行一个本地 SOCKS5 代理（无需身份验证），将流量转发到远程的身份验证代理。Pydoll 提供了一个即用脚本：
+
+    ```python
+    import asyncio
+    from pydoll.utils import SOCKS5Forwarder
+    from pydoll.browser.chromium import Chrome
+    from pydoll.browser.options import ChromiumOptions
+
+    async def main():
+        forwarder = SOCKS5Forwarder(
+            remote_host='proxy.example.com',
+            remote_port=1080,
+            username='myuser',
+            password='mypass',
+            local_port=1081,
+        )
+        async with forwarder:
+            options = ChromiumOptions()
+            options.add_argument('--proxy-server=socks5://127.0.0.1:1081')
+
+            async with Chrome(options=options) as browser:
+                tab = await browser.start()
+                await tab.go_to('https://httpbin.org/ip')
+
+    asyncio.run(main())
+    ```
+
+    转发器负责与远程代理进行用户名/密码握手，而 Chrome 无需身份验证即可连接到本地主机。
+
+    有关此问题的完整技术解释，请参阅 **[SOCKS5 身份验证深入解析](../../deep-dive/network/socks-proxies.md#socks5-身份验证与-chrome)**。
 
 ### 身份验证实现细节
 
