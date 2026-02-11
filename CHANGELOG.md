@@ -1,3 +1,10 @@
+## 2.18.0 (2026-02-11)
+
+### Feat
+
+- **utils**: add SOCKS5 proxy forwarder and convert utils to package
+- **elements**: add cross-iframe selector support for XPath and CSS
+
 ## 2.17.0 (2026-02-08)
 
 ### Feat
