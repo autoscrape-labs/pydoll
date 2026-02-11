@@ -2401,6 +2401,78 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#socks5-authentication-and-chrome" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SOCKS5 Authentication and Chrome
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="SOCKS5 Authentication and Chrome">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-chrome-ignores-socks5-credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why Chrome Ignores SOCKS5 Credentials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-local-forwarder-solution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Local Forwarder Solution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-the-forwarder-with-pydoll" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using the Forwarder with Pydoll
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#security-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security Considerations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#environment-limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment Limitations
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#summary-and-key-takeaways" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4636,6 +4708,78 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#socks5-authentication-and-chrome" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SOCKS5 Authentication and Chrome
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="SOCKS5 Authentication and Chrome">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-chrome-ignores-socks5-credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why Chrome Ignores SOCKS5 Credentials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-local-forwarder-solution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Local Forwarder Solution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-the-forwarder-with-pydoll" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using the Forwarder with Pydoll
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#security-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security Considerations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#environment-limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment Limitations
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#summary-and-key-takeaways" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -5288,6 +5432,122 @@
 </ul>
 <p>SOCKS5 has a smaller trust surface area.</p>
 </div>
+<h2 id="socks5-authentication-and-chrome">SOCKS5 Authentication and Chrome</h2>
+<p>One of the most common pitfalls when using SOCKS5 proxies with browser automation is <strong>authentication</strong>. Chrome/Chromium does <strong>not</strong> support SOCKS5 username/password authentication natively. This is a known, longstanding limitation tracked as <a href="https://issues.chromium.org/issues/40323993">Chromium Issue #40323993</a>.</p>
+<h3 id="why-chrome-ignores-socks5-credentials">Why Chrome Ignores SOCKS5 Credentials</h3>
+<p>When you configure Chrome with <code>--proxy-server=socks5://user:pass@proxy:1080</code>, Chrome <strong>silently ignores</strong> the embedded credentials. During the SOCKS5 method negotiation, Chrome only offers method <code>0x00</code> (no authentication required) — it never offers method <code>0x02</code> (username/password).</p>
+<p>This happens because SOCKS5 authentication operates at <strong>a completely different protocol layer</strong> than HTTP proxy authentication:</p>
+<p><strong>HTTP proxy authentication flow (works in Chrome):</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>Chrome → HTTP CONNECT → Proxy responds 407 → Chrome provides credentials → Proxy connects
+</span></code></pre></div>
+<p>Chrome handles this via the CDP <strong>Fetch domain</strong> — Pydoll intercepts <code>Fetch.authRequired</code> events and automatically responds with stored credentials.</p>
+<p><strong>SOCKS5 authentication flow (NOT supported by Chrome):</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>Chrome → SOCKS5 Hello [methods: 0x00] → Proxy selects 0x00 or rejects → No auth possible
+</span></code></pre></div>
+<p>The SOCKS5 handshake is a <strong>binary protocol</strong> negotiation at the session layer. Chrome's network stack simply does not implement the username/password subnegotiation (RFC 1929). There is no HTTP 407 challenge, no <code>Fetch.authRequired</code> event, and no way for Pydoll (or any CDP-based tool) to inject credentials.</p>
+<h3 id="the-local-forwarder-solution">The Local Forwarder Solution</h3>
+<p>The standard industry workaround is a <strong>local proxy forwarder</strong> — a lightweight local SOCKS5 server that:</p>
+<ol>
+<li><strong>Accepts connections from Chrome</strong> without authentication (method <code>0x00</code>)</li>
+<li><strong>Connects to the remote SOCKS5 proxy</strong> with full authentication (method <code>0x02</code>, RFC 1929)</li>
+<li><strong>Relays data bidirectionally</strong> between Chrome and the remote proxy</li>
+</ol>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>┌────────────┐     no auth      ┌──────────────┐    user/pass    ┌──────────────┐
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>│   Chrome   │ ──────────────►  │  Local SOCKS5 │ ─────────────► │ Remote SOCKS5│
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>│            │  socks5://       │  Forwarder    │  socks5://     │    Proxy     │
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>│            │  127.0.0.1:1081  │  (localhost)  │  proxy:1080    │  (internet)  │
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>└────────────┘                  └──────────────┘                 └──────┬───────┘
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>                                                                        │
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>                                                                        ▼
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>                                                                 ┌──────────────┐
+</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>                                                                 │ Destination  │
+</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>                                                                 │   Server     │
+</span><span id="__span-11-11"><a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>                                                                 └──────────────┘
+</span></code></pre></div>
+<p><strong>Detailed handshake sequence:</strong></p>
+<pre class="mermaid"><code>sequenceDiagram
+    participant Chrome
+    participant Forwarder as Local Forwarder
+    participant Remote as Remote SOCKS5 Proxy
+    participant Server as Destination
+
+    Note over Chrome,Forwarder: Phase 1: Chrome → Forwarder (no auth)
+    Chrome-&gt;&gt;Forwarder: SOCKS5 Hello [VER=5, METHODS=[0x00]]
+    Forwarder-&gt;&gt;Chrome: Method Selected [VER=5, METHOD=0x00]
+    Chrome-&gt;&gt;Forwarder: CONNECT example.com:443
+
+    Note over Forwarder,Remote: Phase 2: Forwarder → Remote (with auth)
+    Forwarder-&gt;&gt;Remote: SOCKS5 Hello [VER=5, METHODS=[0x02]]
+    Remote-&gt;&gt;Forwarder: Method Selected [VER=5, METHOD=0x02]
+    Forwarder-&gt;&gt;Remote: Auth [VER=1, USER=..., PASS=...]
+    Remote-&gt;&gt;Forwarder: Auth OK [VER=1, STATUS=0x00]
+    Forwarder-&gt;&gt;Remote: CONNECT example.com:443
+    Remote-&gt;&gt;Server: TCP Connection
+    Remote-&gt;&gt;Forwarder: Connect Reply [SUCCESS]
+
+    Note over Chrome,Forwarder: Phase 3: Relay confirmation
+    Forwarder-&gt;&gt;Chrome: Connect Reply [SUCCESS]
+
+    Note over Chrome,Server: Phase 4: Bidirectional data relay
+    Chrome-&gt;&gt;Forwarder: Application Data (TLS)
+    Forwarder-&gt;&gt;Remote: Forward Data
+    Remote-&gt;&gt;Server: Forward Data
+    Server-&gt;&gt;Remote: Response
+    Remote-&gt;&gt;Forwarder: Forward Response
+    Forwarder-&gt;&gt;Chrome: Forward Response</code></pre>
+<h3 id="using-the-forwarder-with-pydoll">Using the Forwarder with Pydoll</h3>
+<p>Pydoll provides a ready-to-use forwarder in the <code>pydoll.utils</code> module:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">SOCKS5Forwarder</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.chromium</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChromiumOptions</span>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>    <span class="n">forwarder</span> <span class="o">=</span> <span class="n">SOCKS5Forwarder</span><span class="p">(</span>
+</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>        <span class="n">remote_host</span><span class="o">=</span><span class="s1">&#39;proxy.example.com&#39;</span><span class="p">,</span>
+</span><span id="__span-12-9"><a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>        <span class="n">remote_port</span><span class="o">=</span><span class="mi">1080</span><span class="p">,</span>
+</span><span id="__span-12-10"><a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>        <span class="n">username</span><span class="o">=</span><span class="s1">&#39;myuser&#39;</span><span class="p">,</span>
+</span><span id="__span-12-11"><a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>        <span class="n">password</span><span class="o">=</span><span class="s1">&#39;mypass&#39;</span><span class="p">,</span>
+</span><span id="__span-12-12"><a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a>        <span class="n">local_port</span><span class="o">=</span><span class="mi">1081</span><span class="p">,</span>  <span class="c1"># Use 0 for auto-assigned port</span>
+</span><span id="__span-12-13"><a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>    <span class="p">)</span>
+</span><span id="__span-12-14"><a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a>    <span class="k">async</span> <span class="k">with</span> <span class="n">forwarder</span><span class="p">:</span>
+</span><span id="__span-12-15"><a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a>        <span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
+</span><span id="__span-12-16"><a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a>        <span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;--proxy-server=socks5://127.0.0.1:</span><span class="si">{</span><span class="n">forwarder</span><span class="o">.</span><span class="n">local_port</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</span><span id="__span-12-17"><a id="__codelineno-12-17" name="__codelineno-12-17" href="#__codelineno-12-17"></a>
+</span><span id="__span-12-18"><a id="__codelineno-12-18" name="__codelineno-12-18" href="#__codelineno-12-18"></a>        <span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">(</span><span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
+</span><span id="__span-12-19"><a id="__codelineno-12-19" name="__codelineno-12-19" href="#__codelineno-12-19"></a>            <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</span><span id="__span-12-20"><a id="__codelineno-12-20" name="__codelineno-12-20" href="#__codelineno-12-20"></a>            <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">&#39;https://httpbin.org/ip&#39;</span><span class="p">)</span>
+</span><span id="__span-12-21"><a id="__codelineno-12-21" name="__codelineno-12-21" href="#__codelineno-12-21"></a>
+</span><span id="__span-12-22"><a id="__codelineno-12-22" name="__codelineno-12-22" href="#__codelineno-12-22"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</span></code></pre></div>
+<p>The forwarder can also be used as a standalone CLI tool:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>python<span class="w"> </span>-m<span class="w"> </span>pydoll.utils.socks5_proxy_forwarder<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">    </span>--remote-host<span class="w"> </span>proxy.example.com<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">    </span>--remote-port<span class="w"> </span><span class="m">1080</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">    </span>--username<span class="w"> </span>myuser<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="w">    </span>--password<span class="w"> </span>mypass<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="w">    </span>--local-port<span class="w"> </span><span class="m">1081</span>
+</span></code></pre></div>
+<h3 id="security-considerations">Security Considerations</h3>
+<div class="admonition warning">
+<p class="admonition-title">Security Notes</p>
+<ul>
+<li>The local forwarder binds to <code>127.0.0.1</code> by default — only accessible from your machine</li>
+<li><strong>Never</strong> bind to <code>0.0.0.0</code> in production, as this would expose an unauthenticated SOCKS5 proxy to the network</li>
+<li>Credentials are transmitted in plaintext during the SOCKS5 handshake with the remote proxy (this is inherent to SOCKS5 RFC 1929) — use SSH tunnels or VPN for additional encryption if needed</li>
+<li>The forwarder adds minimal latency (local loopback is sub-millisecond)</li>
+</ul>
+</div>
+<h3 id="environment-limitations">Environment Limitations</h3>
+<div class="admonition info">
+<p class="admonition-title">Restricted Environments</p>
+<p>Some environments (Docker containers, serverless platforms, hardened VMs) may restrict binding to local ports. In these cases:</p>
+<ul>
+<li>Ensure your environment allows binding to <code>127.0.0.1</code> on arbitrary ports</li>
+<li>Use <code>local_port=0</code> to let the OS assign an available port</li>
+<li>If local binding is completely blocked, consider using an HTTP CONNECT proxy instead, which Chrome supports natively with authentication</li>
+</ul>
+</div>
 <h2 id="summary-and-key-takeaways">Summary and Key Takeaways</h2>
 <p>SOCKS5 represents the <strong>gold standard</strong> for privacy-conscious proxying, offering protocol flexibility, reduced trust requirements, and superior security compared to application-layer alternatives. Understanding SOCKS architecture is essential for building robust, undetectable automation systems.</p>
 <h3 id="core-concepts-covered">Core Concepts Covered</h3>
@@ -5407,30 +5667,30 @@
 </ul>
 <h3 id="practical-pydoll-configuration">Practical Pydoll Configuration</h3>
 <p><strong>Basic SOCKS5 Proxy:</strong>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChromiumOptions</span>
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
-</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--proxy-server=socks5://proxy.example.com:1080&#39;</span><span class="p">)</span>
-</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="c1"># For proxies with authentication, embed credentials in the URL:</span>
-</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="c1"># options.add_argument(&#39;--proxy-server=socks5://user:pass@proxy.example.com:1080&#39;)</span>
-</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>
-</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">(</span><span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
-</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>    <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>    <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">&#39;https://example.com&#39;</span><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChromiumOptions</span>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--proxy-server=socks5://proxy.example.com:1080&#39;</span><span class="p">)</span>
+</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="c1"># For proxies with authentication, embed credentials in the URL:</span>
+</span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="c1"># options.add_argument(&#39;--proxy-server=socks5://user:pass@proxy.example.com:1080&#39;)</span>
+</span><span id="__span-14-8"><a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a>
+</span><span id="__span-14-9"><a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a><span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">(</span><span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
+</span><span id="__span-14-10"><a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a>    <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</span><span id="__span-14-11"><a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a>    <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">&#39;https://example.com&#39;</span><span class="p">)</span>
 </span></code></pre></div></p>
 <p><strong>SOCKS5 with Authentication (via Pydoll):</strong>
 Pydoll automatically handles SOCKS5 username/password authentication through Chrome's Fetch domain. No manual implementation needed.</p>
 <p><strong>Testing SOCKS5 Proxy:</strong>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">socket</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">socks</span>
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="c1"># Manual SOCKS5 test (without Pydoll)</span>
-</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="n">socks</span><span class="o">.</span><span class="n">set_default_proxy</span><span class="p">(</span><span class="n">socks</span><span class="o">.</span><span class="n">SOCKS5</span><span class="p">,</span> <span class="s2">&quot;proxy.example.com&quot;</span><span class="p">,</span> <span class="mi">1080</span><span class="p">,</span> 
-</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>                        <span class="n">username</span><span class="o">=</span><span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;pass&quot;</span><span class="p">)</span>
-</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="n">socket</span><span class="o">.</span><span class="n">socket</span> <span class="o">=</span> <span class="n">socks</span><span class="o">.</span><span class="n">socksocket</span>
-</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>
-</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="c1"># Now all socket connections use SOCKS5</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">socket</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">socks</span>
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="c1"># Manual SOCKS5 test (without Pydoll)</span>
+</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="n">socks</span><span class="o">.</span><span class="n">set_default_proxy</span><span class="p">(</span><span class="n">socks</span><span class="o">.</span><span class="n">SOCKS5</span><span class="p">,</span> <span class="s2">&quot;proxy.example.com&quot;</span><span class="p">,</span> <span class="mi">1080</span><span class="p">,</span> 
+</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>                        <span class="n">username</span><span class="o">=</span><span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;pass&quot;</span><span class="p">)</span>
+</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="n">socket</span><span class="o">.</span><span class="n">socket</span> <span class="o">=</span> <span class="n">socks</span><span class="o">.</span><span class="n">socksocket</span>
+</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>
+</span><span id="__span-15-9"><a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="c1"># Now all socket connections use SOCKS5</span>
 </span></code></pre></div></p>
 <div class="admonition tip">
 <p class="admonition-title">SOCKS5 Best Practices</p>
@@ -5508,10 +5768,10 @@ Pydoll automatically handles SOCKS5 username/password authentication through Chr
 <p><strong>Testing Tools:</strong></p>
 <ul>
 <li><strong>curl with SOCKS5</strong>:
-  <div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>curl<span class="w"> </span>--socks5<span class="w"> </span>proxy:1080<span class="w"> </span>--socks5-basic<span class="w"> </span>--user<span class="w"> </span>user:pass<span class="w"> </span>https://example.com
+  <div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>curl<span class="w"> </span>--socks5<span class="w"> </span>proxy:1080<span class="w"> </span>--socks5-basic<span class="w"> </span>--user<span class="w"> </span>user:pass<span class="w"> </span>https://example.com
 </span></code></pre></div></li>
 <li><strong>proxychains</strong>: Force any application through SOCKS5
-  <div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>proxychains4<span class="w"> </span>firefox
+  <div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>proxychains4<span class="w"> </span>firefox
 </span></code></pre></div></li>
 <li><strong>Wireshark</strong>: Packet analysis to verify SOCKS5 handshake</li>
 </ul>

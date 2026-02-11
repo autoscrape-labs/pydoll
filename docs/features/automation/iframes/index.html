@@ -873,6 +873,78 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#cross-iframe-selectors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cross-iframe Selectors
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Cross-iframe Selectors">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#css-selectors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CSS selectors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xpath-expressions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        XPath expressions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-splitting-does-not-happen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When splitting does NOT happen
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#find_all-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        find_all support
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#best-practices" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4326,6 +4398,78 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#cross-iframe-selectors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cross-iframe Selectors
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Cross-iframe Selectors">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#css-selectors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CSS selectors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xpath-expressions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        XPath expressions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-splitting-does-not-happen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When splitting does NOT happen
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#find_all-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        find_all support
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#best-practices" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4499,6 +4643,71 @@ An iframe nowadays behaves like any other <code>WebElement</code>: you can call 
 <div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">iframe</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">tag_name</span><span class="o">=</span><span class="s1">&#39;iframe&#39;</span><span class="p">)</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">chart</span> <span class="o">=</span> <span class="k">await</span> <span class="n">iframe</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s1">&#39;sales-chart&#39;</span><span class="p">)</span>
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="k">await</span> <span class="n">chart</span><span class="o">.</span><span class="n">take_screenshot</span><span class="p">(</span><span class="s1">&#39;chart.png&#39;</span><span class="p">)</span>
+</span></code></pre></div>
+<h2 id="cross-iframe-selectors">Cross-iframe Selectors</h2>
+<p>Instead of manually finding each iframe and then searching inside it, you can write a <strong>single selector</strong> that crosses iframe boundaries. Pydoll automatically detects <code>iframe</code> steps in your XPath or CSS selector, splits them into segments, and walks the iframe chain for you.</p>
+<h3 id="css-selectors">CSS selectors</h3>
+<p>Use any standard combinator (<code>&gt;</code>, space) after an <code>iframe</code> compound:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Single iframe crossing</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">button</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;iframe &gt; .submit-btn&#39;</span><span class="p">)</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1"># With attribute selectors on the iframe</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="n">button</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;iframe[src*=&quot;checkout&quot;] &gt; #pay-button&#39;</span><span class="p">)</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="c1"># Nested iframes</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="n">element</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;iframe.outer &gt; iframe.inner &gt; div.content&#39;</span><span class="p">)</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="c1"># Multiple steps after the iframe</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="n">link</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;iframe &gt; nav &gt; a.home-link&#39;</span><span class="p">)</span>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="c1"># Iframe inside another element (not at root)</span>
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="n">button</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;div &gt; iframe &gt; button.submit&#39;</span><span class="p">)</span>
+</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="n">content</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;.wrapper iframe &gt; div.content&#39;</span><span class="p">)</span>
+</span></code></pre></div>
+<h3 id="xpath-expressions">XPath expressions</h3>
+<p>Use <code>/</code> after an <code>iframe</code> step — Pydoll splits at the iframe node:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Single iframe crossing</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">button</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;//iframe/body/button[@id=&quot;submit&quot;]&#39;</span><span class="p">)</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1"># Iframe inside another element (not at root)</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="n">div</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;//div/iframe/div&#39;</span><span class="p">)</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="n">item</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;//div[@class=&quot;wrapper&quot;]/iframe/body/div&#39;</span><span class="p">)</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="c1"># With predicates on the iframe</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="n">heading</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;//iframe[@src*=&quot;cloudflare&quot;]//h1&#39;</span><span class="p">)</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="c1"># Nested iframes</span>
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="n">element</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;//iframe[@id=&quot;outer&quot;]//iframe[@id=&quot;inner&quot;]//div&#39;</span><span class="p">)</span>
+</span></code></pre></div>
+<h3 id="how-it-works">How it works</h3>
+<p>When Pydoll encounters a selector like <code>iframe[src*="checkout"] &gt; form &gt; button</code>:</p>
+<ol>
+<li><strong>Parses</strong> the selector into segments: <code>iframe[src*="checkout"]</code> and <code>form &gt; button</code></li>
+<li><strong>Finds</strong> the iframe element using the first segment</li>
+<li><strong>Searches inside</strong> the iframe using the second segment</li>
+<li>For nested iframes, repeats the process at each boundary</li>
+</ol>
+<p>This is equivalent to the manual approach but in a single call:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Manual (still works)</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="n">iframe</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">tag_name</span><span class="o">=</span><span class="s1">&#39;iframe&#39;</span><span class="p">,</span> <span class="n">src</span><span class="o">=</span><span class="s1">&#39;*checkout*&#39;</span><span class="p">)</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">button</span> <span class="o">=</span> <span class="k">await</span> <span class="n">iframe</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;form &gt; button&#39;</span><span class="p">)</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="c1"># Automatic (same result, one line)</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="n">button</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;iframe[src*=&quot;checkout&quot;] &gt; form &gt; button&#39;</span><span class="p">)</span>
+</span></code></pre></div>
+<h3 id="when-splitting-does-not-happen">When splitting does NOT happen</h3>
+<p>Selectors are only split when <code>iframe</code> appears as a <strong>tag name</strong>. These selectors pass through unchanged:</p>
+<ul>
+<li><code>.iframe &gt; body</code> — class selector, not a tag</li>
+<li><code>#iframe &gt; body</code> — ID selector</li>
+<li><code>div.iframe &gt; body</code> — tag is <code>div</code>, not <code>iframe</code></li>
+<li><code>[data-type="iframe"] &gt; body</code> — attribute selector</li>
+<li><code>iframe</code> or <code>//iframe</code> — no content after iframe (nothing to search inside)</li>
+</ul>
+<h3 id="find_all-support">find_all support</h3>
+<p>The last segment respects <code>find_all=True</code>, returning all matching elements inside the final iframe:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Get all links inside an iframe</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">links</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;iframe &gt; a&#39;</span><span class="p">,</span> <span class="n">find_all</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span></code></pre></div>
 <h2 id="best-practices">Best practices</h2>
 <ul>

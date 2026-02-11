@@ -897,7 +897,79 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#iframe_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        跨 iframe 选择器
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="跨 iframe 选择器">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#css" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CSS 选择器
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xpath" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        XPath 表达式
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        工作原理
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        不进行拆分的情况
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#find_all" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        find_all 支持
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
     <span class="md-ellipsis">
       
         最佳实践
@@ -908,7 +980,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
+  <a href="#_7" class="md-nav__link">
     <span class="md-ellipsis">
       
         延伸阅读
@@ -4372,7 +4444,79 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#iframe_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        跨 iframe 选择器
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="跨 iframe 选择器">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#css" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CSS 选择器
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xpath" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        XPath 表达式
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        工作原理
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        不进行拆分的情况
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#find_all" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        find_all 支持
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
     <span class="md-ellipsis">
       
         最佳实践
@@ -4383,7 +4527,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
+  <a href="#_7" class="md-nav__link">
     <span class="md-ellipsis">
       
         延伸阅读
@@ -4556,14 +4700,79 @@ iframe 现在和其他 <code>WebElement</code> 一样：可以直接调用 <code
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="k">await</span> <span class="n">iframe</span><span class="o">.</span><span class="n">wait_until</span><span class="p">(</span><span class="n">is_visible</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 </span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="n">banner</span> <span class="o">=</span> <span class="k">await</span> <span class="n">iframe</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s1">&#39;promo-banner&#39;</span><span class="p">)</span>
 </span></code></pre></div>
-<h2 id="_4">最佳实践</h2>
+<h2 id="iframe_6">跨 iframe 选择器</h2>
+<p>无需手动逐个查找 iframe 再在其中搜索，您可以编写一个<strong>单一选择器</strong>来跨越 iframe 边界。Pydoll 会自动检测 XPath 或 CSS 选择器中的 <code>iframe</code> 步骤，将其拆分为片段，并依次遍历 iframe 链。</p>
+<h3 id="css">CSS 选择器</h3>
+<p>在 <code>iframe</code> 复合选择器后使用任意标准组合器（<code>&gt;</code>、空格）：</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># 单个 iframe 穿越</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="n">button</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;iframe &gt; .submit-btn&#39;</span><span class="p">)</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="c1"># iframe 上带属性选择器</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="n">button</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;iframe[src*=&quot;checkout&quot;] &gt; #pay-button&#39;</span><span class="p">)</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="c1"># 嵌套 iframe</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="n">element</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;iframe.outer &gt; iframe.inner &gt; div.content&#39;</span><span class="p">)</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="c1"># iframe 后的多步查找</span>
+</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="n">link</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;iframe &gt; nav &gt; a.home-link&#39;</span><span class="p">)</span>
+</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>
+</span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="c1"># iframe 在其他元素内部（不在根位置）</span>
+</span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span class="n">button</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;div &gt; iframe &gt; button.submit&#39;</span><span class="p">)</span>
+</span><span id="__span-6-15"><a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a><span class="n">content</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;.wrapper iframe &gt; div.content&#39;</span><span class="p">)</span>
+</span></code></pre></div>
+<h3 id="xpath">XPath 表达式</h3>
+<p>在 <code>iframe</code> 步骤后使用 <code>/</code> —— Pydoll 会在 iframe 节点处拆分：</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># 单个 iframe 穿越</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">button</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;//iframe/body/button[@id=&quot;submit&quot;]&#39;</span><span class="p">)</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="c1"># iframe 在其他元素内部（不在根位置）</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="n">div</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;//div/iframe/div&#39;</span><span class="p">)</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="n">item</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;//div[@class=&quot;wrapper&quot;]/iframe/body/div&#39;</span><span class="p">)</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="c1"># iframe 上带谓词</span>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="n">heading</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;//iframe[@src*=&quot;cloudflare&quot;]//h1&#39;</span><span class="p">)</span>
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>
+</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="c1"># 嵌套 iframe</span>
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="n">element</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;//iframe[@id=&quot;outer&quot;]//iframe[@id=&quot;inner&quot;]//div&#39;</span><span class="p">)</span>
+</span></code></pre></div>
+<h3 id="_4">工作原理</h3>
+<p>当 Pydoll 遇到类似 <code>iframe[src*="checkout"] &gt; form &gt; button</code> 的选择器时：</p>
+<ol>
+<li><strong>解析</strong>选择器为片段：<code>iframe[src*="checkout"]</code> 和 <code>form &gt; button</code></li>
+<li>使用第一个片段<strong>查找</strong> iframe 元素</li>
+<li>使用第二个片段<strong>在 iframe 内部搜索</strong></li>
+<li>对于嵌套 iframe，在每个边界重复此过程</li>
+</ol>
+<p>这等同于手动方式，但只需一次调用：</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># 手动方式（仍然有效）</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="n">iframe</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">tag_name</span><span class="o">=</span><span class="s1">&#39;iframe&#39;</span><span class="p">,</span> <span class="n">src</span><span class="o">=</span><span class="s1">&#39;*checkout*&#39;</span><span class="p">)</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="n">button</span> <span class="o">=</span> <span class="k">await</span> <span class="n">iframe</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;form &gt; button&#39;</span><span class="p">)</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="c1"># 自动方式（相同结果，一行代码）</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="n">button</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;iframe[src*=&quot;checkout&quot;] &gt; form &gt; button&#39;</span><span class="p">)</span>
+</span></code></pre></div>
+<h3 id="_5">不进行拆分的情况</h3>
+<p>只有当 <code>iframe</code> 作为<strong>标签名</strong>出现时才会进行拆分。以下选择器保持不变：</p>
+<ul>
+<li><code>.iframe &gt; body</code> —— 类选择器，不是标签</li>
+<li><code>#iframe &gt; body</code> —— ID 选择器</li>
+<li><code>div.iframe &gt; body</code> —— 标签是 <code>div</code>，不是 <code>iframe</code></li>
+<li><code>[data-type="iframe"] &gt; body</code> —— 属性选择器</li>
+<li><code>iframe</code> 或 <code>//iframe</code> —— iframe 后无内容（没有需要搜索的内容）</li>
+</ul>
+<h3 id="find_all">find_all 支持</h3>
+<p>最后一个片段支持 <code>find_all=True</code>，返回最终 iframe 内所有匹配的元素：</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># 获取 iframe 内的所有链接</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="n">links</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;iframe &gt; a&#39;</span><span class="p">,</span> <span class="n">find_all</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span></code></pre></div>
+<h2 id="_6">最佳实践</h2>
 <ul>
 <li><strong>把 iframe 作为作用域：</strong> 在 iframe <code>WebElement</code> 上调用 <code>find</code>、<code>query</code>、<code>execute_script</code> 等方法。</li>
 <li><strong>避免 <code>tab.find</code> 查找内部元素：</strong> 它只能访问顶级文档。</li>
 <li><strong>复用引用：</strong> Pydoll 会缓存 iframe 的上下文，可重复使用。</li>
 <li><strong>现有工作流保持一致：</strong> 滚动、截图、等待、脚本执行、读取属性等操作与普通元素完全一致。</li>
 </ul>
-<h2 id="_5">延伸阅读</h2>
+<h2 id="_7">延伸阅读</h2>
 <ul>
 <li><strong><a href="../../element-finding/">元素查找</a></strong> —— 介绍查找范围与链式查询。</li>
 <li><strong><a href="../screenshots-and-pdfs/">截图与 PDF</a></strong> —— 讲解如何获取视觉输出。</li>
