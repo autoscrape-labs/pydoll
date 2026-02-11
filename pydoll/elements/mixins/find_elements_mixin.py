@@ -10,8 +10,8 @@ from pydoll.commands import (
 )
 from pydoll.connection.connection_handler import ConnectionHandler
 from pydoll.constants import By, Scripts
+from pydoll.elements.utils import SelectorParser
 from pydoll.exceptions import ElementNotFound, WaitElementTimeout
-from pydoll.utils import normalize_synthetic_xpath
 
 if TYPE_CHECKING:
     from typing import Literal, Optional, Union
@@ -65,29 +65,7 @@ class FindElementsMixin:
         """
         Build JS expression using Scripts to extract textContent based on selector type.
         """
-        raw = str(selector)
-        method_lc = (method or '').lower()
-
-        if 'xpath' in method_lc:
-            normalized_xpath = normalize_synthetic_xpath(raw)
-            escaped_xpath = normalized_xpath.replace('"', '\\"')
-            return Scripts.GET_TEXT_BY_XPATH.replace('{escaped_value}', escaped_xpath)
-
-        if method_lc == 'name':
-            escaped_name = raw.replace('"', '\\"')
-            xpath = f'//*[@name="{escaped_name}"]'
-            return Scripts.GET_TEXT_BY_XPATH.replace('{escaped_value}', xpath)
-
-        escaped = raw.replace('\\', '\\\\').replace('"', '\\"')
-        if method_lc == 'id':
-            css = f'#{escaped}'
-        elif method_lc == 'class_name':
-            css = f'.{escaped}'
-        elif method_lc == 'tag_name':
-            css = escaped
-        else:
-            css = escaped
-        return Scripts.GET_TEXT_BY_CSS.replace('{selector}', css)
+        return SelectorParser.build_text_expression(selector, method)
 
     @overload
     async def find(
@@ -344,6 +322,17 @@ class FindElementsMixin:
             f'find_or_wait_element(): by={by}, value={value}, timeout={timeout}, '
             f'find_all={find_all}, raise_exc={raise_exc}'
         )
+
+        if by == By.XPATH:
+            segments = SelectorParser.parse_iframe_segments_xpath(value)
+        elif by == By.CSS_SELECTOR:
+            segments = SelectorParser.parse_iframe_segments_css(value)
+        else:
+            segments = [(by, value)]
+
+        if len(segments) > 1:
+            return await self._find_across_iframes(segments, timeout, find_all, raise_exc)
+
         find_method = self._find_element if not find_all else self._find_elements
         start_time = asyncio.get_event_loop().time()
 
@@ -370,6 +359,90 @@ class FindElementsMixin:
                 return None
 
             await asyncio.sleep(0.5)
+
+    async def _find_across_iframes(
+        self,
+        segments: list[tuple[By, str]],
+        timeout: int,
+        find_all: bool,
+        raise_exc: bool,
+    ) -> Union[WebElement, list[WebElement], None]:
+        """
+        Retry loop for iframe-crossing element searches.
+
+        Repeatedly calls :meth:`_attempt_find_across_iframes` until the target
+        element is found or the *timeout* expires.
+
+        Args:
+            segments: Ordered ``(By, selector)`` pairs — one per iframe boundary
+                plus a final selector for the target element(s).
+            timeout: Maximum seconds to wait (0 = single attempt).
+            find_all: If ``True``, the last segment uses ``_find_elements``.
+            raise_exc: Whether to raise on failure.
+
+        Returns:
+            The found element(s), or ``None`` / ``[]`` on failure.
+
+        Raises:
+            ElementNotFound: If ``timeout=0``, nothing found, and ``raise_exc=True``.
+            WaitElementTimeout: If timeout expires and ``raise_exc=True``.
+        """
+        start_time = asyncio.get_event_loop().time()
+        selector_repr = ' -> '.join(seg for _, seg in segments)
+
+        while True:
+            result = await self._attempt_find_across_iframes(segments, find_all)
+            if result is not None and result != []:
+                return result
+
+            if not timeout:
+                if raise_exc:
+                    raise ElementNotFound(f'Element not found across iframes: {selector_repr}')
+                return [] if find_all else None
+
+            if asyncio.get_event_loop().time() - start_time > timeout:
+                if raise_exc:
+                    raise WaitElementTimeout(
+                        f'Timed out after {timeout}s waiting for element '
+                        f'across iframes: {selector_repr}'
+                    )
+                return [] if find_all else None
+
+            await asyncio.sleep(0.5)
+
+    async def _attempt_find_across_iframes(
+        self,
+        segments: list[tuple[By, str]],
+        find_all: bool,
+    ) -> Union[WebElement, list[WebElement], None]:
+        """
+        Single attempt to walk iframe segments and find the target element.
+
+        For each intermediate segment, finds a single iframe element and uses it
+        as the search context for the next segment. The last segment respects
+        *find_all*.
+
+        Args:
+            segments: Ordered ``(By, selector)`` pairs.
+            find_all: Whether the final segment should return all matches.
+
+        Returns:
+            Found element(s) or ``None`` / ``[]`` if any intermediate step fails.
+        """
+        current_context: FindElementsMixin = self
+        for i, (by, selector) in enumerate(segments):
+            is_last = i == len(segments) - 1
+            if is_last:
+                if find_all:
+                    result = await current_context._find_elements(by, selector, raise_exc=False)
+                    return result if result else []
+                return await current_context._find_element(by, selector, raise_exc=False)
+
+            element = await current_context._find_element(by, selector, raise_exc=False)
+            if not element or not getattr(element, 'is_iframe', False):
+                return None
+            current_context = element
+        return None
 
     async def _find_element(
         self, by: By, value: str, raise_exc: bool = True
@@ -568,7 +641,7 @@ class FindElementsMixin:
         name: Optional[str] = None,
         tag_name: Optional[str] = None,
         text: Optional[str] = None,
-        **attributes,
+        **attributes: str,
     ) -> str:
         """
         Build XPath expression from multiple attribute criteria.
@@ -581,28 +654,7 @@ class FindElementsMixin:
             Attribute names with underscores are automatically converted to hyphens
             to match HTML attribute naming conventions (e.g., data_test -> data-test).
         """
-        xpath_conditions = []
-        base_xpath = f'//{tag_name}' if tag_name else '//*'
-        if id:
-            xpath_conditions.append(f'@id="{id}"')
-        if class_name:
-            xpath_conditions.append(
-                f'contains(concat(" ", normalize-space(@class), " "), " {class_name} ")'
-            )
-        if name:
-            xpath_conditions.append(f'@name="{name}"')
-        if text:
-            xpath_conditions.append(f'contains(text(), "{text}")')
-        for attribute, value in attributes.items():
-            # Convert underscores to hyphens for HTML attribute names
-            html_attribute = attribute.replace('_', '-')
-            xpath_conditions.append(f'@{html_attribute}="{value}"')
-
-        xpath = (
-            f'{base_xpath}[{" and ".join(xpath_conditions)}]' if xpath_conditions else base_xpath
-        )
-        logger.debug(f'_build_xpath() -> {xpath}')
-        return xpath
+        return SelectorParser.build_xpath(id, class_name, name, tag_name, text, **attributes)
 
     @staticmethod
     def _get_expression_type(expression: str) -> By:
@@ -613,10 +665,7 @@ class FindElementsMixin:
         - XPath: starts with ./, or /
         - Default: CSS_SELECTOR
         """
-        if expression.startswith(('./', '/', '(/')):
-            return By.XPATH
-
-        return By.CSS_SELECTOR
+        return SelectorParser.get_expression_type(expression)
 
     async def _describe_node(self, object_id: str = '') -> Node:
         """
@@ -834,7 +883,7 @@ class FindElementsMixin:
 
         Converts absolute XPath to relative for context-based searches.
         """
-        return f'.{xpath}' if not xpath.startswith('.') else xpath
+        return SelectorParser.ensure_relative_xpath(xpath)
 
     @staticmethod
     def _has_object_id_key(response: Union[EvaluateResponse, CallFunctionOnResponse]) -> bool:
