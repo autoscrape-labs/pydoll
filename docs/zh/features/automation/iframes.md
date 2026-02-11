@@ -97,6 +97,90 @@ await iframe.wait_until(is_visible=True, timeout=10)
 banner = await iframe.find(id='promo-banner')
 ```
 
+## 跨 iframe 选择器
+
+无需手动逐个查找 iframe 再在其中搜索，您可以编写一个**单一选择器**来跨越 iframe 边界。Pydoll 会自动检测 XPath 或 CSS 选择器中的 `iframe` 步骤，将其拆分为片段，并依次遍历 iframe 链。
+
+### CSS 选择器
+
+在 `iframe` 复合选择器后使用任意标准组合器（`>`、空格）：
+
+```python
+# 单个 iframe 穿越
+button = await tab.query('iframe > .submit-btn')
+
+# iframe 上带属性选择器
+button = await tab.query('iframe[src*="checkout"] > #pay-button')
+
+# 嵌套 iframe
+element = await tab.query('iframe.outer > iframe.inner > div.content')
+
+# iframe 后的多步查找
+link = await tab.query('iframe > nav > a.home-link')
+
+# iframe 在其他元素内部（不在根位置）
+button = await tab.query('div > iframe > button.submit')
+content = await tab.query('.wrapper iframe > div.content')
+```
+
+### XPath 表达式
+
+在 `iframe` 步骤后使用 `/` —— Pydoll 会在 iframe 节点处拆分：
+
+```python
+# 单个 iframe 穿越
+button = await tab.query('//iframe/body/button[@id="submit"]')
+
+# iframe 在其他元素内部（不在根位置）
+div = await tab.query('//div/iframe/div')
+item = await tab.query('//div[@class="wrapper"]/iframe/body/div')
+
+# iframe 上带谓词
+heading = await tab.query('//iframe[@src*="cloudflare"]//h1')
+
+# 嵌套 iframe
+element = await tab.query('//iframe[@id="outer"]//iframe[@id="inner"]//div')
+```
+
+### 工作原理
+
+当 Pydoll 遇到类似 `iframe[src*="checkout"] > form > button` 的选择器时：
+
+1. **解析**选择器为片段：`iframe[src*="checkout"]` 和 `form > button`
+2. 使用第一个片段**查找** iframe 元素
+3. 使用第二个片段**在 iframe 内部搜索**
+4. 对于嵌套 iframe，在每个边界重复此过程
+
+这等同于手动方式，但只需一次调用：
+
+```python
+# 手动方式（仍然有效）
+iframe = await tab.find(tag_name='iframe', src='*checkout*')
+button = await iframe.query('form > button')
+
+# 自动方式（相同结果，一行代码）
+button = await tab.query('iframe[src*="checkout"] > form > button')
+```
+
+### 不进行拆分的情况
+
+只有当 `iframe` 作为**标签名**出现时才会进行拆分。以下选择器保持不变：
+
+- `.iframe > body` —— 类选择器，不是标签
+- `#iframe > body` —— ID 选择器
+- `div.iframe > body` —— 标签是 `div`，不是 `iframe`
+- `[data-type="iframe"] > body` —— 属性选择器
+- `iframe` 或 `//iframe` —— iframe 后无内容（没有需要搜索的内容）
+
+### find_all 支持
+
+最后一个片段支持 `find_all=True`，返回最终 iframe 内所有匹配的元素：
+
+```python
+# 获取 iframe 内的所有链接
+links = await tab.query('iframe > a', find_all=True)
+```
+
 ## 最佳实践
 
 - **把 iframe 作为作用域：** 在 iframe `WebElement` 上调用 `find`、`query`、`execute_script` 等方法。

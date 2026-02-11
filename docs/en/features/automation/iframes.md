@@ -83,6 +83,90 @@ await chart.take_screenshot('chart.png')
 ```
 
 
+## Cross-iframe Selectors
+
+Instead of manually finding each iframe and then searching inside it, you can write a **single selector** that crosses iframe boundaries. Pydoll automatically detects `iframe` steps in your XPath or CSS selector, splits them into segments, and walks the iframe chain for you.
+
+### CSS selectors
+
+Use any standard combinator (`>`, space) after an `iframe` compound:
+
+```python
+# Single iframe crossing
+button = await tab.query('iframe > .submit-btn')
+
+# With attribute selectors on the iframe
+button = await tab.query('iframe[src*="checkout"] > #pay-button')
+
+# Nested iframes
+element = await tab.query('iframe.outer > iframe.inner > div.content')
+
+# Multiple steps after the iframe
+link = await tab.query('iframe > nav > a.home-link')
+
+# Iframe inside another element (not at root)
+button = await tab.query('div > iframe > button.submit')
+content = await tab.query('.wrapper iframe > div.content')
+```
+
+### XPath expressions
+
+Use `/` after an `iframe` step — Pydoll splits at the iframe node:
+
+```python
+# Single iframe crossing
+button = await tab.query('//iframe/body/button[@id="submit"]')
+
+# Iframe inside another element (not at root)
+div = await tab.query('//div/iframe/div')
+item = await tab.query('//div[@class="wrapper"]/iframe/body/div')
+
+# With predicates on the iframe
+heading = await tab.query('//iframe[@src*="cloudflare"]//h1')
+
+# Nested iframes
+element = await tab.query('//iframe[@id="outer"]//iframe[@id="inner"]//div')
+```
+
+### How it works
+
+When Pydoll encounters a selector like `iframe[src*="checkout"] > form > button`:
+
+1. **Parses** the selector into segments: `iframe[src*="checkout"]` and `form > button`
+2. **Finds** the iframe element using the first segment
+3. **Searches inside** the iframe using the second segment
+4. For nested iframes, repeats the process at each boundary
+
+This is equivalent to the manual approach but in a single call:
+
+```python
+# Manual (still works)
+iframe = await tab.find(tag_name='iframe', src='*checkout*')
+button = await iframe.query('form > button')
+
+# Automatic (same result, one line)
+button = await tab.query('iframe[src*="checkout"] > form > button')
+```
+
+### When splitting does NOT happen
+
+Selectors are only split when `iframe` appears as a **tag name**. These selectors pass through unchanged:
+
+- `.iframe > body` — class selector, not a tag
+- `#iframe > body` — ID selector
+- `div.iframe > body` — tag is `div`, not `iframe`
+- `[data-type="iframe"] > body` — attribute selector
+- `iframe` or `//iframe` — no content after iframe (nothing to search inside)
+
+### find_all support
+
+The last segment respects `find_all=True`, returning all matching elements inside the final iframe:
+
+```python
+# Get all links inside an iframe
+links = await tab.query('iframe > a', find_all=True)
+```
+
 ## Best practices
 
 - **Use the iframe element as scope:** call `find`, `query`, or other helpers on the iframe itself.

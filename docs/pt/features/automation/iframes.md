@@ -97,6 +97,90 @@ await iframe.wait_until(is_visible=True, timeout=10)
 banner = await iframe.find(id='promo-banner')
 ```
 
+## Seletores que Cruzam IFrames
+
+Em vez de localizar manualmente cada iframe e depois buscar dentro dele, você pode escrever um **único seletor** que cruza as fronteiras do iframe. O Pydoll detecta automaticamente os passos `iframe` no seu XPath ou CSS, divide em segmentos e percorre a cadeia de iframes por você.
+
+### Seletores CSS
+
+Use qualquer combinador padrão (`>`, espaço) após um composto `iframe`:
+
+```python
+# Cruzamento de um único iframe
+button = await tab.query('iframe > .submit-btn')
+
+# Com seletores de atributo no iframe
+button = await tab.query('iframe[src*="checkout"] > #pay-button')
+
+# Iframes aninhados
+element = await tab.query('iframe.outer > iframe.inner > div.content')
+
+# Múltiplos passos após o iframe
+link = await tab.query('iframe > nav > a.home-link')
+
+# Iframe dentro de outro elemento (não na raiz)
+button = await tab.query('div > iframe > button.submit')
+content = await tab.query('.wrapper iframe > div.content')
+```
+
+### Expressões XPath
+
+Use `/` após um passo `iframe` — o Pydoll divide no nó do iframe:
+
+```python
+# Cruzamento de um único iframe
+button = await tab.query('//iframe/body/button[@id="submit"]')
+
+# Iframe dentro de outro elemento (não na raiz)
+div = await tab.query('//div/iframe/div')
+item = await tab.query('//div[@class="wrapper"]/iframe/body/div')
+
+# Com predicados no iframe
+heading = await tab.query('//iframe[@src*="cloudflare"]//h1')
+
+# Iframes aninhados
+element = await tab.query('//iframe[@id="outer"]//iframe[@id="inner"]//div')
+```
+
+### Como funciona
+
+Quando o Pydoll encontra um seletor como `iframe[src*="checkout"] > form > button`:
+
+1. **Analisa** o seletor em segmentos: `iframe[src*="checkout"]` e `form > button`
+2. **Encontra** o elemento iframe usando o primeiro segmento
+3. **Busca dentro** do iframe usando o segundo segmento
+4. Para iframes aninhados, repete o processo em cada fronteira
+
+Isso equivale à abordagem manual, mas em uma única chamada:
+
+```python
+# Manual (continua funcionando)
+iframe = await tab.find(tag_name='iframe', src='*checkout*')
+button = await iframe.query('form > button')
+
+# Automático (mesmo resultado, uma linha)
+button = await tab.query('iframe[src*="checkout"] > form > button')
+```
+
+### Quando a divisão NÃO acontece
+
+Seletores só são divididos quando `iframe` aparece como **nome de tag**. Estes seletores passam inalterados:
+
+- `.iframe > body` — seletor de classe, não de tag
+- `#iframe > body` — seletor de ID
+- `div.iframe > body` — tag é `div`, não `iframe`
+- `[data-type="iframe"] > body` — seletor de atributo
+- `iframe` ou `//iframe` — sem conteúdo após o iframe (nada para buscar dentro)
+
+### Suporte a find_all
+
+O último segmento respeita `find_all=True`, retornando todos os elementos correspondentes dentro do iframe final:
+
+```python
+# Obter todos os links dentro de um iframe
+links = await tab.query('iframe > a', find_all=True)
+```
+
 ## Boas práticas
 
 - **Use o iframe como escopo:** prefira chamar `find`, `query` e derivados diretamente nele.
