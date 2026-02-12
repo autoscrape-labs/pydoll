@@ -1,3 +1,17 @@
+## 2.19.0 (2026-02-12)
+
+### Feat
+
+- **interactions**: default humanize=True for keyboard type_text
+- **elements**: integrate Mouse API into WebElement.click()
+- **interactions**: add Mouse API with humanized simulation
+- **browser**: add webrtc_leak_protection property to ChromiumOptions
+- **browser**: add automatic User-Agent consistency override
+
+### Fix
+
+- **utils**: harden SOCKS5 proxy forwarder security and robustness
+
 ## 2.18.0 (2026-02-11)
 
 ### Feat
