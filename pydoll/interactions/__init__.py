@@ -7,6 +7,7 @@ from pydoll.interactions.keyboard import (
     TypoConfig,
     TypoResult,
 )
+from pydoll.interactions.mouse import Mouse, MouseAPI, MouseTimingConfig
 from pydoll.interactions.scroll import Scroll, ScrollAPI, ScrollTimingConfig
 
 __all__ = [
@@ -15,6 +16,9 @@ __all__ = [
     'IFrameContextResolver',
     'Keyboard',
     'KeyboardAPI',
+    'Mouse',
+    'MouseAPI',
+    'MouseTimingConfig',
     'Scroll',
     'ScrollAPI',
     'ScrollTimingConfig',

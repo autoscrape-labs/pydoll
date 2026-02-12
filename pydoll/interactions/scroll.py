@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Optional
 
 from pydoll.commands import InputCommands, RuntimeCommands
 from pydoll.constants import Scripts, ScrollPosition
+from pydoll.interactions.utils import CubicBezier
 from pydoll.protocol.input.types import MouseEventType
 from pydoll.protocol.runtime.methods import EvaluateResponse
 
@@ -35,79 +36,6 @@ class ScrollTimingConfig:
     overshoot_probability: float = 0.15
     overshoot_factor_min: float = 1.02
     overshoot_factor_max: float = 1.08
-
-
-class CubicBezier:
-    """
-    Cubic Bezier curve solver for smooth animation timing.
-    Based on UnitBezier from WebKit/Chromium.
-    """
-
-    def __init__(self, point1_x: float, point1_y: float, point2_x: float, point2_y: float):
-        self.coefficient_c_x = 3.0 * point1_x
-        self.coefficient_b_x = 3.0 * (point2_x - point1_x) - self.coefficient_c_x
-        self.coefficient_a_x = 1.0 - self.coefficient_c_x - self.coefficient_b_x
-
-        self.coefficient_c_y = 3.0 * point1_y
-        self.coefficient_b_y = 3.0 * (point2_y - point1_y) - self.coefficient_c_y
-        self.coefficient_a_y = 1.0 - self.coefficient_c_y - self.coefficient_b_y
-
-    def sample_curve_x(self, time_progress: float) -> float:
-        return (
-            (self.coefficient_a_x * time_progress + self.coefficient_b_x) * time_progress
-            + self.coefficient_c_x
-        ) * time_progress
-
-    def sample_curve_y(self, time_progress: float) -> float:
-        return (
-            (self.coefficient_a_y * time_progress + self.coefficient_b_y) * time_progress
-            + self.coefficient_c_y
-        ) * time_progress
-
-    def sample_curve_derivative_x(self, time_progress: float) -> float:
-        return (
-            3.0 * self.coefficient_a_x * time_progress + 2.0 * self.coefficient_b_x
-        ) * time_progress + self.coefficient_c_x
-
-    def solve_curve_x(self, target_x: float, epsilon: float = 1e-6) -> float:
-        """Given an x value, find the corresponding t value."""
-        estimated_t = target_x
-
-        # Newton's method
-        for _ in range(8):
-            current_x = self.sample_curve_x(estimated_t) - target_x
-            if abs(current_x) < epsilon:
-                return estimated_t
-            derivative = self.sample_curve_derivative_x(estimated_t)
-            if abs(derivative) < epsilon:
-                break
-            estimated_t -= current_x / derivative
-
-        # Fallback to bisection
-        lower_bound = 0.0
-        upper_bound = 1.0
-        estimated_t = target_x
-
-        if estimated_t < lower_bound:
-            return lower_bound
-        if estimated_t > upper_bound:
-            return upper_bound
-
-        while lower_bound < upper_bound:
-            current_x = self.sample_curve_x(estimated_t)
-            if abs(current_x - target_x) < epsilon:
-                return estimated_t
-            if target_x > current_x:
-                lower_bound = estimated_t
-            else:
-                upper_bound = estimated_t
-            estimated_t = (upper_bound - lower_bound) * 0.5 + lower_bound
-
-        return estimated_t
-
-    def solve(self, input_x: float) -> float:
-        """Get y value for a given x (time progress)."""
-        return self.sample_curve_y(self.solve_curve_x(input_x))
 
 
 class Scroll:
@@ -139,7 +67,7 @@ class Scroll:
         position: ScrollPosition,
         distance: int | float,
         smooth: bool = True,
-        humanize: bool = False,
+        humanize: bool = True,
     ):
         """
         Scroll the page by a relative distance in the specified direction.
@@ -165,7 +93,7 @@ class Scroll:
 
         await self._execute_script_await_promise(script)
 
-    async def to_top(self, smooth: bool = True, humanize: bool = False):
+    async def to_top(self, smooth: bool = True, humanize: bool = True):
         """
         Scroll to the top of the page (Y=0).
 
@@ -181,7 +109,7 @@ class Scroll:
         script = Scripts.SCROLL_TO_TOP.format(behavior=behavior)
         await self._execute_script_await_promise(script)
 
-    async def to_bottom(self, smooth: bool = True, humanize: bool = False):
+    async def to_bottom(self, smooth: bool = True, humanize: bool = True):
         """
         Scroll to the bottom of the page (Y=document.body.scrollHeight).
 
