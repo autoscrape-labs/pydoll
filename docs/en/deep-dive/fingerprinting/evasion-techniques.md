@@ -23,113 +23,73 @@ One of the **most common** fingerprinting inconsistencies in automation is the m
 
 1. **HTTP `User-Agent` header** (sent with every request)
 2. **`navigator.userAgent`** property (JavaScript-accessible)
+3. **`Sec-CH-UA` Client Hints headers** (sent by Chromium browsers)
 
-**The problem:**
+Without proper handling, setting `--user-agent=...` only modifies HTTP headers while `navigator.userAgent` and Client Hints remain unchanged — creating a trivially detectable mismatch.
 
-```python
-# Bad approach: Setting User-Agent via command-line argument
-options = ChromiumOptions()
-options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64)...')
+### Automatic User-Agent Consistency
 
-# Result:
-# HTTP header: Mozilla/5.0 (Windows NT 10.0; Win64; x64)... (correct)
-# navigator.userAgent: Chrome/120.0.0.0 (original value - wrong!)
-# → MISMATCH DETECTED!
-```
-
-**Why this happens:**
-
-- `--user-agent` flag only modifies **HTTP headers**
-- `navigator.userAgent` is set **before** page load from internal Chromium values
-- JavaScript cannot see HTTP headers directly, but servers can compare both values
-
-**Detection technique (server-side):**
-
-```python
-def detect_user_agent_mismatch(request):
-    """
-    Server-side detection of User-Agent inconsistency.
-    """
-    # Get HTTP header
-    http_user_agent = request.headers.get('User-Agent')
-    
-    # Execute JavaScript to get navigator.userAgent
-    # (done via challenge/captcha page)
-    navigator_user_agent = get_client_navigator_ua()
-    
-    if http_user_agent != navigator_user_agent:
-        return 'AUTOMATION_DETECTED'  # Clear mismatch
-    
-    return 'OK'
-```
-
-### Solution: CDP Emulation Domain
-
-The correct way to set User-Agent is via CDP's **Emulation.setUserAgentOverride** method, which modifies **both** the HTTP header and navigator properties. In Pydoll, you can execute CDP commands directly:
+Pydoll **automatically** synchronizes all User-Agent layers when you set `--user-agent=`. No manual overrides needed:
 
 ```python
 import asyncio
 from pydoll.browser.chromium import Chrome
-from pydoll.commands import PageCommands
-
-
-async def set_user_agent_correctly(tab, user_agent: str, platform: str = 'Win32'):
-    """
-    Set User-Agent properly using CDP Emulation domain.
-    This ensures consistency between HTTP headers and navigator properties.
-    
-    Note: Pydoll doesn't expose Emulation commands directly yet, so we use
-    execute_script to override navigator properties for now.
-    """
-    # Override navigator.userAgent via JavaScript
-    override_script = f'''
-        Object.defineProperty(Navigator.prototype, 'userAgent', {{
-            get: () => '{user_agent}'
-        }});
-        Object.defineProperty(Navigator.prototype, 'platform', {{
-            get: () => '{platform}'
-        }});
-    '''
-    
-    await tab.execute_script(override_script)
+from pydoll.browser.options import ChromiumOptions
 
 
 async def main():
-    async with Chrome() as browser:
-        # Set User-Agent via command-line argument (affects HTTP headers)
-        options = browser.options
-        custom_ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-        options.add_argument(f'--user-agent={custom_ua}')
-        
+    options = ChromiumOptions()
+    options.add_argument(
+        '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+        'AppleWebKit/537.36 (KHTML, like Gecko) '
+        'Chrome/120.0.6099.109 Safari/537.36'
+    )
+
+    async with Chrome(options=options) as browser:
         tab = await browser.start()
-        
-        # Also override navigator.userAgent via JavaScript for consistency
-        await set_user_agent_correctly(tab, custom_ua)
-        
-        # Navigate (User-Agent now consistent)
         await tab.go_to('https://example.com')
-        
-        # Verify consistency
-        result = await tab.execute_script('return navigator.userAgent')
-        nav_ua = result['result']['result']['value']
-        print(f"navigator.userAgent: {nav_ua}")
-        # Both match now!
 
 asyncio.run(main())
 ```
 
-!!! warning "Client Hints Consistency"
-    When setting a custom User-Agent, you **must** also set consistent `userAgentMetadata` (Client Hints), otherwise modern Chromium will send **inconsistent** `Sec-CH-UA` headers!
-    
-    **Example inconsistency:**
+When Pydoll detects `--user-agent=` in the browser arguments, it automatically:
 
-    - User-Agent: "Chrome/120.0.0.0"
-    - Sec-CH-UA: "Chrome/119" (wrong version!)
-    - → Detection!
+1. **Parses the UA string** to extract browser, version, and OS information
+2. **Sends `Emulation.setUserAgentOverride`** via CDP with:
+    - `userAgent` — the full UA string (HTTP header + `navigator.userAgent`)
+    - `platform` — the correct `navigator.platform` value (e.g., `Win32`, `MacIntel`, `Linux x86_64`)
+    - `userAgentMetadata` — full Client Hints data (`Sec-CH-UA`, `Sec-CH-UA-Platform`, `Sec-CH-UA-Full-Version-List`, etc.)
+3. **Injects JavaScript** via `Page.addScriptToEvaluateOnNewDocument` to override:
+    - `navigator.vendor` — mapped from browser type (e.g., `Google Inc.`)
+    - `navigator.appVersion` — derived from the UA string
+
+This ensures **complete consistency** across all layers:
+
+| Layer | Property | Status |
+|-------|----------|--------|
+| HTTP | `User-Agent` header | ✅ Consistent |
+| HTTP | `Sec-CH-UA` header | ✅ Consistent |
+| HTTP | `Sec-CH-UA-Platform` header | ✅ Consistent |
+| HTTP | `Sec-CH-UA-Full-Version-List` header | ✅ Consistent |
+| JS | `navigator.userAgent` | ✅ Consistent |
+| JS | `navigator.platform` | ✅ Consistent |
+| JS | `navigator.vendor` | ✅ Consistent |
+| JS | `navigator.appVersion` | ✅ Consistent |
+| JS | `navigator.userAgentData` | ✅ Consistent |
+
+!!! tip "Works on all tabs"
+    The override is automatically applied to the initial tab from `browser.start()`, new tabs from `browser.new_tab()`, and any tabs discovered via `browser.get_opened_tabs()`.
+
+!!! info "Supported browsers and platforms"
+    The parser correctly handles:
+
+    - **Browsers**: Google Chrome, Microsoft Edge
+    - **Platforms**: Windows (NT 6.1–10.0), macOS, Linux, Android, iOS (iPhone/iPad), Chrome OS
+    - **Client Hints GREASE**: Proper GREASE brand generation following the Chromium spec
 
 ### Fingerprint Modification Techniques
 
-While Pydoll doesn't expose all CDP Emulation commands directly, you can achieve similar results using JavaScript overrides and browser options:
+Beyond the automatic User-Agent consistency, you can further customize your fingerprint using JavaScript overrides and browser options:
 
 #### 1. Timezone Override (via JavaScript)
 
