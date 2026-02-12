@@ -40,6 +40,16 @@ class Options(ABC):
 
     @property
     @abstractmethod
+    def max_parallel_tasks(self) -> int:
+        pass
+
+    @max_parallel_tasks.setter
+    @abstractmethod
+    def max_parallel_tasks(self, max_parallel_tasks: int):
+        pass
+
+    @property
+    @abstractmethod
     def page_load_state(self) -> PageLoadState:
         pass
 

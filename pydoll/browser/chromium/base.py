@@ -8,9 +8,18 @@ import shutil
 import warnings
 from abc import ABC, abstractmethod
 from contextlib import suppress
-from functools import partial
+from functools import cached_property, partial
 from random import randint
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, overload
+from tempfile import TemporaryDirectory
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Awaitable,
+    Callable,
+    Coroutine,
+    Optional,
+    overload,
+)
 from urllib.parse import urlsplit, urlunsplit
 
 from pydoll.browser.managers import (
@@ -34,16 +43,23 @@ from pydoll.exceptions import (
     InvalidWebSocketAddress,
     MissingTargetOrWebSocket,
     NoValidTabFound,
+    RunInParallelError,
 )
 from pydoll.protocol.browser.types import DownloadBehavior
 from pydoll.protocol.fetch.events import FetchEvent
 from pydoll.protocol.fetch.types import AuthChallengeResponseType
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from tempfile import TemporaryDirectory
+    from typing import TypeVar
 
     from pydoll.browser.interfaces import BrowserOptionsManager
-    from pydoll.protocol.base import Command, Response, T_CommandParams, T_CommandResponse
+    from pydoll.protocol.base import (
+        Command,
+        Response,
+        T_CommandParams,
+        T_CommandResponse,
+    )
     from pydoll.protocol.browser.methods import (
         GetVersionResponse,
         GetVersionResult,
@@ -67,6 +83,8 @@ if TYPE_CHECKING:
         GetTargetsResponse,
     )
     from pydoll.protocol.target.types import TargetInfo
+
+    T = TypeVar('T')
 
 logger = logging.getLogger(__name__)
 
@@ -105,6 +123,7 @@ class Browser(ABC):  # noqa: PLR0904
         self._connection_handler = ConnectionHandler(self._connection_port)
         self._backup_preferences_dir = ''
         self._tabs_opened: dict[str, Tab] = {}
+        self._loop: Optional[asyncio.AbstractEventLoop] = None
         self._context_proxy_auth: dict[str, tuple[str, str]] = {}
         logger.debug(
             f'Browser initialized: port={self._connection_port}, '
@@ -130,6 +149,10 @@ class Browser(ABC):  # noqa: PLR0904
             await self.stop()
 
         await self._connection_handler.close()
+
+    @cached_property
+    def _semaphore(self) -> asyncio.Semaphore:
+        return asyncio.Semaphore(self.options.max_parallel_tasks)
 
     async def connect(self, ws_address: str) -> Tab:
         """
@@ -166,6 +189,7 @@ class Browser(ABC):  # noqa: PLR0904
         Raises:
             FailedToStartBrowser: If the browser fails to start or connect.
         """
+        self._loop = asyncio.get_running_loop()
         if headless:
             warnings.warn(
                 "The 'headless' parameter is deprecated and will be removed in a future version. "
@@ -512,6 +536,80 @@ class Browser(ABC):  # noqa: PLR0904
         """Reset all permissions to defaults and restore prompting behavior."""
         logger.info(f'Resetting permissions (context={browser_context_id})')
         return await self._execute_command(BrowserCommands.reset_permissions(browser_context_id))
+
+    async def run_in_parallel(self, *coroutines: Coroutine[Any, Any, T]) -> list[T]:
+        """
+        Run coroutines in parallel with optional concurrency limiting.
+
+        Args:
+            *coroutines: Variable number of coroutines to execute in parallel.
+
+        Returns:
+            List of results from all coroutines in the same order as input.
+
+        Raises:
+            RuntimeError: If browser loop is not initialized or not running.
+
+        Note:
+            Respects max_parallel_tasks option for concurrency control.
+        """
+        logger.info(
+            f'Starting parallel execution of {len(coroutines)} coroutine(s) '
+            f'(max_parallel_tasks={self.options.max_parallel_tasks})'
+        )
+
+        if self._loop is None:
+            logger.error('Browser loop not initialized')
+            raise RuntimeError('Browser loop not initialized. Call start() first.')
+
+        wrapped = [self._limited_coroutine(coro) for coro in coroutines]
+        logger.debug(f'Wrapped {len(wrapped)} coroutines with semaphore limiting')
+
+        async def run_gather():
+            return await asyncio.gather(*wrapped, return_exceptions=False)
+
+        try:
+            current_loop = asyncio.get_running_loop()
+        except RuntimeError:
+            current_loop = None
+
+        if current_loop is self._loop:
+            logger.debug('Executing in same event loop (direct execution)')
+            result = await run_gather()
+            logger.info(f'Parallel execution completed successfully ({len(coroutines)} coroutines)')
+            return result
+
+        if not self._loop.is_running():
+            logger.error('Browser loop is not running')
+            raise RunInParallelError('Browser loop is not running. Cannot execute coroutines.')
+
+        logger.debug('Executing in different event loop (using run_coroutine_threadsafe)')
+        future = asyncio.run_coroutine_threadsafe(run_gather(), self._loop)
+
+        try:
+            result = future.result()
+            logger.info(f'Parallel execution completed successfully ({len(coroutines)} coroutines)')
+            return result
+        except Exception as e:
+            logger.error(f'Parallel execution failed: {e}')
+            raise RunInParallelError(f'Coroutine execution failed: {e}') from e
+
+    async def _limited_coroutine(self, coroutine: Coroutine[Any, Any, Any]) -> Any:
+        """
+        Execute coroutine with semaphore limiting if configured.
+
+        Args:
+            coroutine: The coroutine to execute.
+
+        Returns:
+            The result of the coroutine execution.
+        """
+        logger.debug('Acquiring semaphore for coroutine.')
+        async with self._semaphore:
+            logger.debug('Semaphore acquired, executing coroutine')
+            result = await coroutine
+            logger.debug('Coroutine execution completed, releasing semaphore')
+            return result
 
     @overload
     async def on(

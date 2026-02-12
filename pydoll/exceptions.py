@@ -329,3 +329,9 @@ class ElementPreconditionError(ElementException):
     """Raised when invalid or missing preconditions are provided for element operations."""
 
     message = 'Invalid element preconditions'
+
+
+class RunInParallelError(PydollException):
+    """Raised when run_in_parallel fails."""
+
+    message = 'Failed to run coroutines in parallel'

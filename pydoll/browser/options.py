@@ -29,6 +29,7 @@ class ChromiumOptions(Options):
         self._start_timeout = 10
         self._browser_preferences = {}
         self._headless = False
+        self._max_parallel_tasks = 2
         self._page_load_state = PageLoadState.COMPLETE
 
     @property
@@ -318,6 +319,16 @@ class ChromiumOptions(Options):
         if headless == has_argument:
             return
         methods_map[headless]('--headless')
+
+    @property
+    def max_parallel_tasks(self) -> int:
+        return self._max_parallel_tasks
+
+    @max_parallel_tasks.setter
+    def max_parallel_tasks(self, max_parallel_tasks: int):
+        if max_parallel_tasks < 1:
+            raise ValueError('max_parallel_tasks must be greater than 0')
+        self._max_parallel_tasks = max_parallel_tasks
 
     @property
     def page_load_state(self) -> PageLoadState:
