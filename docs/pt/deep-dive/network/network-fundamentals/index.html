@@ -584,6 +584,8 @@
       
         
       
+        
+      
     
     
     
@@ -674,6 +676,34 @@
     
   
     Controle de Teclado
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/automation/mouse-control/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Controle do Mouse
   
 
     
@@ -5249,8 +5279,9 @@ O endereço IP é "XORado" com o magic cookie e o ID da transação para <strong
 </span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChromiumOptions</span>
 </span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
 </span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--force-webrtc-ip-handling-policy=disable_non_proxied_udp&#39;</span><span class="p">)</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="n">options</span><span class="o">.</span><span class="n">webrtc_leak_protection</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># Adiciona --force-webrtc-ip-handling-policy=disable_non_proxied_udp</span>
 </span></code></pre></div>
+<p>O Pydoll fornece uma propriedade conveniente <code>webrtc_leak_protection</code> que gerencia o argumento <code>--force-webrtc-ip-handling-policy=disable_non_proxied_udp</code> automaticamente.</p>
 <p><strong>O que isso faz:</strong></p>
 <ul>
 <li>Desabilita UDP se nenhum proxy o suportar</li>

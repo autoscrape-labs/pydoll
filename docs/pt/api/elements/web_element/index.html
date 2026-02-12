@@ -584,6 +584,8 @@
       
         
       
+        
+      
     
     
     
@@ -674,6 +676,34 @@
     
   
     Controle de Teclado
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/automation/mouse-control/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Controle do Mouse
   
 
     
@@ -5178,7 +5208,7 @@
 
 
 </h2>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">WebElement</span><span class="p">(</span><span class="n">object_id</span><span class="p">,</span> <span class="n">connection_handler</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">selector</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">attributes_list</span><span class="o">=</span><span class="p">[])</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">WebElement</span><span class="p">(</span><span class="n">object_id</span><span class="p">,</span> <span class="n">connection_handler</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">selector</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">attributes_list</span><span class="o">=</span><span class="p">[],</span> <span class="n">mouse</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents first">
@@ -5290,6 +5320,26 @@ and manipulation using Chrome DevTools Protocol commands.</p>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
                       <code>[]</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>mouse</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Optional Mouse instance for humanized click behavior.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="typing.Optional">Optional</span>[&#39;MouseType&#39;]</code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>None</code>
                   </span>
               </p>
             </td>
@@ -6359,7 +6409,7 @@ Element is automatically scrolled into view.</p>
   </span>
 
 </h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">click</span><span class="p">(</span><span class="n">x_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">y_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">hold_time</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">click</span><span class="p">(</span><span class="n">x_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">y_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">hold_time</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6421,7 +6471,7 @@ Element is automatically scrolled into view.</p>
             </td>
             <td class="doc-param-details">
               <div class="doc-md-description">
-                <p>Duration to hold mouse button down.</p>
+                <p>Duration to hold mouse button down (used when humanize=False).</p>
               </div>
               <p>
                   <span class="doc-param-annotation">
@@ -6431,6 +6481,29 @@ Element is automatically scrolled into view.</p>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
                       <code>0.1</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>humanize</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>When True and a Mouse instance is available, uses humanized
+Bezier curve movement from the current tracked position to the
+element center before clicking. When False, dispatches raw CDP
+mousePressed/mouseReleased events directly.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="bool">bool</span></code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>True</code>
                   </span>
               </p>
             </td>
@@ -6695,7 +6768,7 @@ Automatically handles input/textarea and contenteditable elements.</p>
   </span>
 
 </h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">type_text</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">type_text</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6733,7 +6806,7 @@ Automatically handles input/textarea and contenteditable elements.</p>
             </td>
             <td class="doc-param-details">
               <div class="doc-md-description">
-                <p>When True, simulates human-like typing.</p>
+                <p>When True (default), simulates human-like typing.</p>
               </div>
               <p>
                   <span class="doc-param-annotation">
@@ -6742,7 +6815,7 @@ Automatically handles input/textarea and contenteditable elements.</p>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
-                      <code>False</code>
+                      <code>True</code>
                   </span>
               </p>
             </td>

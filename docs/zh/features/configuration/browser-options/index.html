@@ -585,6 +585,8 @@
       
         
       
+        
+      
     
     
     
@@ -678,6 +680,34 @@
     
   
     键盘控制
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../automation/mouse-control/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    鼠标控制
   
 
     
@@ -5494,7 +5524,15 @@
 </span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="c1"># 密码管理器</span>
 </span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="n">options</span><span class="o">.</span><span class="n">password_manager_enabled</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># 禁用保存密码提示</span>
 </span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="n">options</span><span class="o">.</span><span class="n">password_manager_enabled</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># 启用（默认）</span>
+</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>
+</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="c1"># WebRTC 泄露保护（防止通过 WebRTC 暴露真实 IP）</span>
+</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="n">options</span><span class="o">.</span><span class="n">webrtc_leak_protection</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># 添加 --force-webrtc-ip-handling-policy=disable_non_proxied_udp</span>
+</span><span id="__span-15-9"><a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="n">options</span><span class="o">.</span><span class="n">webrtc_leak_protection</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># 禁用（默认）</span>
 </span></code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">WebRTC 泄露保护</p>
+<p>即使使用代理，WebRTC 也可能泄露您的真实 IP 地址。启用 <code>webrtc_leak_protection</code> 以阻止非代理的 UDP 连接，防止 STUN 请求绕过您的代理。在使用代理进行匿名时，这是<strong>必不可少的</strong>。详见 <strong><a href="../../../deep-dive/network/network-fundamentals/#webrtc-和-ip-泄露">网络基础 - WebRTC</a></strong> 了解详情。</p>
+</div>
 <h3 id="_19">文件处理</h3>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
 </span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>
@@ -5591,7 +5629,7 @@
 </span><span id="__span-19-24"><a id="__codelineno-19-24" name="__codelineno-19-24" href="#__codelineno-19-24"></a>    <span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--disable-features=WebGLDraftExtensions&#39;</span><span class="p">)</span>
 </span><span id="__span-19-25"><a id="__codelineno-19-25" name="__codelineno-19-25" href="#__codelineno-19-25"></a>
 </span><span id="__span-19-26"><a id="__codelineno-19-26" name="__codelineno-19-26" href="#__codelineno-19-26"></a>    <span class="c1"># WebRTC IP 泄露防护</span>
-</span><span id="__span-19-27"><a id="__codelineno-19-27" name="__codelineno-19-27" href="#__codelineno-19-27"></a>    <span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--force-webrtc-ip-handling-policy=disable_non_proxied_udp&#39;</span><span class="p">)</span>
+</span><span id="__span-19-27"><a id="__codelineno-19-27" name="__codelineno-19-27" href="#__codelineno-19-27"></a>    <span class="n">options</span><span class="o">.</span><span class="n">webrtc_leak_protection</span> <span class="o">=</span> <span class="kc">True</span>
 </span><span id="__span-19-28"><a id="__codelineno-19-28" name="__codelineno-19-28" href="#__codelineno-19-28"></a>
 </span><span id="__span-19-29"><a id="__codelineno-19-29" name="__codelineno-19-29" href="#__codelineno-19-29"></a>    <span class="c1"># 权限和首次运行</span>
 </span><span id="__span-19-30"><a id="__codelineno-19-30" name="__codelineno-19-30" href="#__codelineno-19-30"></a>    <span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--no-first-run&#39;</span><span class="p">)</span>

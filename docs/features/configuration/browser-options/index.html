@@ -583,6 +583,8 @@
       
         
       
+        
+      
     
     
     
@@ -676,6 +678,34 @@
     
   
     Keyboard Control
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../automation/mouse-control/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mouse Control
   
 
     
@@ -5492,7 +5522,15 @@
 </span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="c1"># Password manager</span>
 </span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="n">options</span><span class="o">.</span><span class="n">password_manager_enabled</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># Disable save password prompts</span>
 </span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="n">options</span><span class="o">.</span><span class="n">password_manager_enabled</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># Enable (default)</span>
+</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>
+</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="c1"># WebRTC leak protection (prevents real IP exposure through WebRTC)</span>
+</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="n">options</span><span class="o">.</span><span class="n">webrtc_leak_protection</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># Adds --force-webrtc-ip-handling-policy=disable_non_proxied_udp</span>
+</span><span id="__span-15-9"><a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="n">options</span><span class="o">.</span><span class="n">webrtc_leak_protection</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># Disable (default)</span>
 </span></code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">WebRTC Leak Protection</p>
+<p>WebRTC can leak your real IP address even when using a proxy. Enable <code>webrtc_leak_protection</code> to block non-proxied UDP connections, preventing STUN requests from bypassing your proxy. This is <strong>essential</strong> when using proxies for anonymity. See <strong><a href="../../../deep-dive/network/network-fundamentals/#webrtc-and-ip-leakage">Network Fundamentals - WebRTC</a></strong> for details.</p>
+</div>
 <h3 id="file-handling">File Handling</h3>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
 </span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>
@@ -5589,7 +5627,7 @@
 </span><span id="__span-19-24"><a id="__codelineno-19-24" name="__codelineno-19-24" href="#__codelineno-19-24"></a>    <span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--disable-features=WebGLDraftExtensions&#39;</span><span class="p">)</span>
 </span><span id="__span-19-25"><a id="__codelineno-19-25" name="__codelineno-19-25" href="#__codelineno-19-25"></a>
 </span><span id="__span-19-26"><a id="__codelineno-19-26" name="__codelineno-19-26" href="#__codelineno-19-26"></a>    <span class="c1"># WebRTC IP leak prevention</span>
-</span><span id="__span-19-27"><a id="__codelineno-19-27" name="__codelineno-19-27" href="#__codelineno-19-27"></a>    <span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--force-webrtc-ip-handling-policy=disable_non_proxied_udp&#39;</span><span class="p">)</span>
+</span><span id="__span-19-27"><a id="__codelineno-19-27" name="__codelineno-19-27" href="#__codelineno-19-27"></a>    <span class="n">options</span><span class="o">.</span><span class="n">webrtc_leak_protection</span> <span class="o">=</span> <span class="kc">True</span>
 </span><span id="__span-19-28"><a id="__codelineno-19-28" name="__codelineno-19-28" href="#__codelineno-19-28"></a>
 </span><span id="__span-19-29"><a id="__codelineno-19-29" name="__codelineno-19-29" href="#__codelineno-19-29"></a>    <span class="c1"># Permissions and first-run</span>
 </span><span id="__span-19-30"><a id="__codelineno-19-30" name="__codelineno-19-30" href="#__codelineno-19-30"></a>    <span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--no-first-run&#39;</span><span class="p">)</span>

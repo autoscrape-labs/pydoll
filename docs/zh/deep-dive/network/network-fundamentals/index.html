@@ -582,6 +582,8 @@
       
         
       
+        
+      
     
     
     
@@ -672,6 +674,34 @@
     
   
     键盘控制
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/automation/mouse-control/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    鼠标控制
   
 
     
@@ -5247,8 +5277,9 @@ IP 地址与魔法 Cookie 和事务 ID 进行异或 (XOR) 操作，以实现 <st
 </span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChromiumOptions</span>
 </span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
 </span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--force-webrtc-ip-handling-policy=disable_non_proxied_udp&#39;</span><span class="p">)</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="n">options</span><span class="o">.</span><span class="n">webrtc_leak_protection</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># 添加 --force-webrtc-ip-handling-policy=disable_non_proxied_udp</span>
 </span></code></pre></div>
+<p>Pydoll 提供了一个便捷的 <code>webrtc_leak_protection</code> 属性，自动管理底层的 <code>--force-webrtc-ip-handling-policy=disable_non_proxied_udp</code> 参数。</p>
 <p><strong>这会做什么：</strong></p>
 <ul>
 <li>如果没有代理支持 UDP，则禁用 UDP</li>

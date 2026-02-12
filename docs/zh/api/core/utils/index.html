@@ -580,6 +580,8 @@
       
         
       
+        
+      
     
     
     
@@ -670,6 +672,34 @@
     
   
     键盘控制
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/automation/mouse-control/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    鼠标控制
   
 
     
@@ -4279,6 +4309,34 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pydoll.utils.UserAgentParser" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;UserAgentParser
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" UserAgentParser">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.utils.UserAgentParser.parse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;parse
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pydoll.utils.clean_script_for_analysis" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4610,6 +4668,34 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;serve_forever
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.utils.UserAgentParser" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;UserAgentParser
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" UserAgentParser">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.utils.UserAgentParser.parse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;parse
       
     </span>
   </a>
@@ -5451,6 +5537,149 @@ SOCKS5 proxy.</p>
     <div class="doc doc-contents ">
 
         <p>Block until the server is closed (useful for CLI mode).</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pydoll.utils.UserAgentParser" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">UserAgentParser</span>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Stateless parser that extracts consistent metadata from a User-Agent string.</p>
+
+
+<details class="given-a-ua-string-like" open>
+  <summary>Given a UA string like</summary>
+  <p>Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
+(KHTML, like Gecko) Chrome/120.0.6099.109 Safari/537.36</p>
+</details>        <p>It produces all the metadata needed for CDP Emulation.setUserAgentOverride
+and JavaScript navigator property overrides, ensuring full consistency
+between HTTP headers and JS properties.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="pydoll.utils.UserAgentParser.parse" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">parse</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-staticmethod"><code>staticmethod</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">parse</span><span class="p">(</span><span class="n">user_agent</span><span class="p">)</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Parse a User-Agent string into consistent browser metadata.</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>user_agent</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Full User-Agent string.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="str">str</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <span class="doc-returns-annotation">
+                    <code><span title="pydoll.utils.user_agent_parser.ParsedUserAgent">ParsedUserAgent</span></code>
+                </span>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>ParsedUserAgent with platform, vendor, appVersion,</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <span class="doc-returns-annotation">
+                    <code><span title="pydoll.utils.user_agent_parser.ParsedUserAgent">ParsedUserAgent</span></code>
+                </span>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>userAgentMetadata, and JS override script.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     </div>
