@@ -15,6 +15,7 @@ nav:
       - Automation:
           - Human-Like Interactions: features/automation/human-interactions.md
           - Keyboard Control: features/automation/keyboard-control.md
+          - Mouse Control: features/automation/mouse-control.md
           - File Operations: features/automation/file-operations.md
           - IFrames: features/automation/iframes.md
           - Screenshots & PDF: features/automation/screenshots-and-pdfs.md
@@ -178,6 +179,7 @@ plugins:
             Automation: 自动化
             Human-Like Interactions: 类人交互
             Keyboard Control: 键盘控制
+            Mouse Control: 鼠标控制
             File Operations: 文件操作
             IFrames: IFrame交互
             Screenshots & PDF: 截图与PDF
@@ -278,6 +280,7 @@ plugins:
             Automation: Automação
             Human-Like Interactions: Interações Humanas
             Keyboard Control: Controle de Teclado
+            Mouse Control: Controle do Mouse
             File Operations: Operações com Arquivos
             IFrames: IFrames
             Screenshots & PDF: Capturas e PDF
