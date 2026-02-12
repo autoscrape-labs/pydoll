@@ -496,7 +496,14 @@ class FindElementsMixin:
         object_id = response_for_command['result']['result']['objectId']
         attributes = await self._get_object_attributes(object_id=object_id)
         logger.debug(f'_find_element() found object_id={object_id}')
-        element = create_web_element(object_id, self._connection_handler, by, value, attributes)
+        element = create_web_element(
+            object_id,
+            self._connection_handler,
+            by,
+            value,
+            attributes,
+            mouse=getattr(self, '_mouse', None),
+        )
         self._apply_iframe_context_to_element(
             element, iframe_context or getattr(self, '_iframe_context', None)
         )
@@ -571,7 +578,14 @@ class FindElementsMixin:
             tag_name = node_description.get('nodeName', '').lower()
             attributes.extend(['tag_name', tag_name])
 
-            child = create_web_element(object_id, self._connection_handler, by, value, attributes)
+            child = create_web_element(
+                object_id,
+                self._connection_handler,
+                by,
+                value,
+                attributes,
+                mouse=getattr(self, '_mouse', None),
+            )
             self._apply_iframe_context_to_element(child, inherited_context)
             elements.append(child)
         logger.debug(f'_find_elements() returning {len(elements)} elements')
