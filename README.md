@@ -105,29 +105,28 @@ for sr in shadow_roots:
 </details>
 
 <details>
-<summary><b>Humanized Keyboard Input (<code>humanize=True</code>)</b></summary>
+<summary><b>Humanized Keyboard Input</b></summary>
 <br>
 
-Pydoll now includes a **humanized typing engine** that simulates realistic human typing behavior:
+Pydoll's typing engine simulates realistic human typing behavior out of the box:
 
 - **Variable keystroke timing**: 30-120ms between keys (not fixed intervals)
 - **Realistic typos**: ~2% error rate with automatic correction behavior
-- **No more `interval` parameter**: Just use `humanize=True` for anti-bot evasion
 
 ```python
-# Old way (detectable)
-await element.type_text("hello", interval=0.1)
+# Realistic typing by default
+await element.type_text("hello")
 
-# New way (human-like, anti-bot)
-await element.type_text("hello", humanize=True)
+# Opt out when speed is critical
+await element.type_text("hello", humanize=False)
 ```
 </details>
 
 <details>
-<summary><b>Humanized Scroll with Physics Engine (<code>humanize=True</code>)</b></summary>
+<summary><b>Humanized Scroll with Physics Engine</b></summary>
 <br>
 
-The scroll API now features a **Cubic Bezier curve physics engine** for realistic scrolling:
+The scroll API features a **Cubic Bezier curve physics engine** for realistic scrolling:
 
 - **Momentum & friction**: Natural acceleration and deceleration
 - **Micro-pauses**: Brief stops during long scrolls (simulates reading)
@@ -135,21 +134,50 @@ The scroll API now features a **Cubic Bezier curve physics engine** for realisti
 - **Overshoot correction**: Occasionally scrolls past target and corrects back
 
 ```python
-# Smooth scroll (CSS animation, predictable timing)
-await tab.scroll.by(ScrollPosition.DOWN, 500, smooth=True)
+# Humanized by default (physics engine, anti-bot)
+await tab.scroll.by(ScrollPosition.DOWN, 500)
+await tab.scroll.to_bottom()
 
-# Humanized scroll (physics engine, anti-bot)
-await tab.scroll.by(ScrollPosition.DOWN, 500, humanize=True)
-await tab.scroll.to_bottom(humanize=True)
+# CSS smooth scroll (predictable timing)
+await tab.scroll.by(ScrollPosition.DOWN, 500, humanize=False, smooth=True)
 ```
 
 | Mode | Parameter | Use Case |
 |------|-----------|----------|
-| **Instant** | `smooth=False` | Speed-critical operations |
-| **Smooth** | `smooth=True` | General browsing simulation |
-| **Humanized** | `humanize=True` | **Anti-bot evasion** |
+| **Humanized** | default | **Anti-bot evasion** |
+| **Smooth** | `humanize=False, smooth=True` | General browsing simulation |
+| **Instant** | `humanize=False, smooth=False` | Speed-critical operations |
 
 [**📖 Human-Like Interactions Docs**](https://pydoll.tech/docs/features/automation/human-interactions/)
+</details>
+
+<details>
+<summary><b>Humanized Mouse Movement</b></summary>
+<br>
+
+All mouse operations produce **human-like cursor movement** by default, using a multi-layered simulation pipeline:
+
+- **Bezier curve paths**: Curved trajectories with asymmetric control points
+- **Fitts's Law timing**: Movement duration scales naturally with distance
+- **Minimum-jerk velocity**: Bell-shaped speed profile (slow start, peak, slow end)
+- **Physiological tremor**: Gaussian noise (σ ≈ 1px) scaled inversely with velocity
+- **Overshoot correction**: ~70% chance of overshooting fast movements, then correcting back
+
+```python
+# All operations are humanized by default
+await tab.mouse.move(500, 300)
+await tab.mouse.click(500, 300)
+await tab.mouse.drag(100, 200, 500, 400)
+
+# Element clicks also use realistic Bezier curve movement
+button = await tab.find(id='submit')
+await button.click()
+
+# Opt out when speed matters
+await tab.mouse.click(500, 300, humanize=False)
+```
+
+[**📖 Mouse Control Docs**](https://pydoll.tech/docs/features/automation/mouse-control/)
 </details>
 
 ## 🚀 Getting Started in 60 Seconds
