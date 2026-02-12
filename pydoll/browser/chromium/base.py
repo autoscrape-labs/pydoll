@@ -21,7 +21,9 @@ from pydoll.browser.managers import (
 from pydoll.browser.tab import Tab
 from pydoll.commands import (
     BrowserCommands,
+    EmulationCommands,
     FetchCommands,
+    PageCommands,
     RuntimeCommands,
     StorageCommands,
     TargetCommands,
@@ -38,6 +40,7 @@ from pydoll.exceptions import (
 from pydoll.protocol.browser.types import DownloadBehavior
 from pydoll.protocol.fetch.events import FetchEvent
 from pydoll.protocol.fetch.types import AuthChallengeResponseType
+from pydoll.utils.user_agent_parser import UserAgentParser
 
 if TYPE_CHECKING:
     from tempfile import TemporaryDirectory
@@ -193,6 +196,7 @@ class Browser(ABC):  # noqa: PLR0904
         valid_tab_id = await self._get_valid_tab_id(await self.get_targets())
         tab = Tab(self, target_id=valid_tab_id, connection_port=self._connection_port)
         self._tabs_opened[valid_tab_id] = tab
+        await self._apply_user_agent_override(tab)
         logger.info(f'Initial tab attached: {valid_tab_id}')
         return tab
 
@@ -306,6 +310,7 @@ class Browser(ABC):  # noqa: PLR0904
         target_id = response['result']['targetId']
         tab = Tab(self, **self._get_tab_kwargs(target_id, browser_context_id))
         self._tabs_opened[target_id] = tab
+        await self._apply_user_agent_override(tab)
         await self._setup_context_proxy_auth_for_tab(tab, browser_context_id)
         if url:
             await tab.go_to(url)
@@ -347,10 +352,11 @@ class Browser(ABC):  # noqa: PLR0904
             target_id for target_id in all_target_ids if target_id not in existing_target_ids
         ]
         existing_tabs = [self._tabs_opened[target_id] for target_id in existing_target_ids]
-        new_tabs = [
-            Tab(self, **self._get_tab_kwargs(target_id))
-            for target_id in reversed(remaining_target_ids)
-        ]
+        new_tabs = []
+        for target_id in reversed(remaining_target_ids):
+            tab = Tab(self, **self._get_tab_kwargs(target_id))
+            await self._apply_user_agent_override(tab)
+            new_tabs.append(tab)
         self._tabs_opened.update(dict(zip(remaining_target_ids, new_tabs)))
         logger.debug(
             f'Opened tabs resolved: existing={len(existing_tabs)}, new={len(new_tabs)}',
@@ -358,7 +364,9 @@ class Browser(ABC):  # noqa: PLR0904
         return existing_tabs + new_tabs
 
     async def get_tab_by_target(self, target: TargetInfo) -> Tab:
-        return Tab(self, **self._get_tab_kwargs(target['targetId']))
+        tab = Tab(self, **self._get_tab_kwargs(target['targetId']))
+        await self._apply_user_agent_override(tab)
+        return tab
 
     async def set_download_path(self, path: str, browser_context_id: Optional[str] = None):
         """Set download directory path (convenience method for set_download_behavior)."""
@@ -753,6 +761,43 @@ class Browser(ABC):  # noqa: PLR0904
             ),
             temporary=True,
         )
+
+    async def _apply_user_agent_override(self, tab: Tab) -> None:
+        """Apply consistent User-Agent override to a tab if --user-agent= is set.
+
+        Detects the --user-agent= argument in browser options and automatically
+        synchronizes HTTP headers, navigator JS properties, and Client Hints
+        via CDP Emulation.setUserAgentOverride + JS injection.
+        """
+        user_agent = self._get_user_agent_from_options()
+        if not user_agent:
+            return
+
+        parsed = UserAgentParser.parse(user_agent)
+        logger.debug('Applying User-Agent override: %s', user_agent[:60])
+
+        await tab._execute_command(
+            EmulationCommands.set_user_agent_override(
+                user_agent=user_agent,
+                platform=parsed.platform,
+                user_agent_metadata=parsed.user_agent_metadata,
+            )
+        )
+
+        if parsed.navigator_override_js:
+            await tab._execute_command(
+                PageCommands.add_script_to_evaluate_on_new_document(
+                    source=parsed.navigator_override_js,
+                    run_immediately=True,
+                )
+            )
+
+    def _get_user_agent_from_options(self) -> Optional[str]:
+        """Extract User-Agent value from --user-agent= browser argument."""
+        for arg in self.options.arguments:
+            if arg.startswith('--user-agent='):
+                return arg[len('--user-agent=') :]
+        return None
 
     async def _verify_browser_running(self):
         """
