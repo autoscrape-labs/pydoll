@@ -466,7 +466,14 @@ options = ChromiumOptions()
 # Gerenciador de senhas
 options.password_manager_enabled = False  # Desabilitar avisos de salvar senha
 options.password_manager_enabled = True  # Habilitar (padrão)
+
+# Proteção contra vazamento WebRTC (previne exposição do IP real via WebRTC)
+options.webrtc_leak_protection = True  # Adiciona --force-webrtc-ip-handling-policy=disable_non_proxied_udp
+options.webrtc_leak_protection = False  # Desabilitar (padrão)
 ```
+
+!!! tip "Proteção contra Vazamento WebRTC"
+    O WebRTC pode vazar seu endereço IP real mesmo quando estiver usando um proxy. Habilite `webrtc_leak_protection` para bloquear conexões UDP não proxyadas, impedindo que requisições STUN contornem seu proxy. Isso é **essencial** ao usar proxies para anonimato. Veja **[Fundamentos de Rede - WebRTC](../../deep-dive/network/network-fundamentals.md#webrtc-e-vazamento-de-ip)** para detalhes.
 
 ### Manuseio de Arquivos
 
@@ -578,8 +585,8 @@ def create_full_stealth_options() -> ChromiumOptions:
     options.add_argument('--disable-features=WebGLDraftExtensions')
     
     # Prevenção de vazamento de IP via WebRTC
-    options.add_argument('--force-webrtc-ip-handling-policy=disable_non_proxied_udp')
-    
+    options.webrtc_leak_protection = True
+
     # Permissões e primeira execução
     options.add_argument('--no-first-run')
     options.add_argument('--no-default-browser-check')

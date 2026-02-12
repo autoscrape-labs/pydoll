@@ -657,12 +657,16 @@ REAL_PROFILES = {
 
 ### 3. Use Browser Preferences for Stealth
 
-Leverage Pydoll's browser preferences (see [Browser Preferences](../features/configuration/browser-preferences.md)):
+Leverage Pydoll's browser preferences and options (see [Browser Preferences](../features/configuration/browser-preferences.md) and [Browser Options](../features/configuration/browser-options.md)):
 
 ```python
 from pydoll.browser.options import ChromiumOptions
 
 options = ChromiumOptions()
+
+# WebRTC IP leak protection (prevents real IP exposure)
+options.webrtc_leak_protection = True
+
 options.browser_preferences = {
     # Simulate usage history
     'profile': {
@@ -670,18 +674,13 @@ options.browser_preferences = {
         'creation_time': str(time.time() - (90 * 24 * 60 * 60)),  # 90 days old
         'exit_type': 'Normal',
     },
-    
+
     # Realistic content settings
     'profile.default_content_setting_values': {
         'cookies': 1,
         'images': 1,
         'javascript': 1,
         'notifications': 2,  # Ask (realistic)
-    },
-    
-    # WebRTC IP handling (prevent leaks)
-    'webrtc': {
-        'ip_handling_policy': 'disable_non_proxied_udp',
     },
 }
 ```

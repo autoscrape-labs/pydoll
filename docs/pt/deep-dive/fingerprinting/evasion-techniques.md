@@ -657,12 +657,16 @@ REAL_PROFILES = {
 
 ### 3. Use Preferências do Navegador para Furtividade
 
-Aproveite as preferências de navegador do Pydoll (veja [Preferências do Navegador](../features/configuration/browser-preferences.md)):
+Aproveite as preferências e opções de navegador do Pydoll (veja [Preferências do Navegador](../features/configuration/browser-preferences.md) e [Opções do Navegador](../features/configuration/browser-options.md)):
 
 ```python
 from pydoll.browser.options import ChromiumOptions
 
 options = ChromiumOptions()
+
+# Proteção contra vazamento de IP WebRTC (previne exposição do IP real)
+options.webrtc_leak_protection = True
+
 options.browser_preferences = {
     # Simular histórico de uso
     'profile': {
@@ -670,18 +674,13 @@ options.browser_preferences = {
         'creation_time': str(time.time() - (90 * 24 * 60 * 60)),  # 90 dias atrás
         'exit_type': 'Normal',
     },
-    
+
     # Configurações de conteúdo realistas
     'profile.default_content_setting_values': {
         'cookies': 1,
         'images': 1,
         'javascript': 1,
         'notifications': 2,  # Perguntar (realista)
-    },
-    
-    # Manuseio de IP WebRTC (prevenir vazamentos)
-    'webrtc': {
-        'ip_handling_policy': 'disable_non_proxied_udp',
     },
 }
 ```

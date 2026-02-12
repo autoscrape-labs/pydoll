@@ -466,7 +466,14 @@ options = ChromiumOptions()
 # 密码管理器
 options.password_manager_enabled = False  # 禁用保存密码提示
 options.password_manager_enabled = True  # 启用（默认）
+
+# WebRTC 泄露保护（防止通过 WebRTC 暴露真实 IP）
+options.webrtc_leak_protection = True  # 添加 --force-webrtc-ip-handling-policy=disable_non_proxied_udp
+options.webrtc_leak_protection = False  # 禁用（默认）
 ```
+
+!!! tip "WebRTC 泄露保护"
+    即使使用代理，WebRTC 也可能泄露您的真实 IP 地址。启用 `webrtc_leak_protection` 以阻止非代理的 UDP 连接，防止 STUN 请求绕过您的代理。在使用代理进行匿名时，这是**必不可少的**。详见 **[网络基础 - WebRTC](../../deep-dive/network/network-fundamentals.md#webrtc-和-ip-泄露)** 了解详情。
 
 ### 文件处理
 
@@ -578,8 +585,8 @@ def create_full_stealth_options() -> ChromiumOptions:
     options.add_argument('--disable-features=WebGLDraftExtensions')
     
     # WebRTC IP 泄露防护
-    options.add_argument('--force-webrtc-ip-handling-policy=disable_non_proxied_udp')
-    
+    options.webrtc_leak_protection = True
+
     # 权限和首次运行
     options.add_argument('--no-first-run')
     options.add_argument('--no-default-browser-check')

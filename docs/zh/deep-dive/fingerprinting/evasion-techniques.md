@@ -657,12 +657,16 @@ REAL_PROFILES = {
 
 ### 3. 使用浏览器偏好设置以实现隐蔽
 
-利用 Pydoll 的浏览器偏好设置 (参见 [浏览器偏好设置](../features/configuration/browser-preferences.md))：
+利用 Pydoll 的浏览器偏好设置和选项 (参见 [浏览器偏好设置](../features/configuration/browser-preferences.md) 和 [浏览器选项](../features/configuration/browser-options.md))：
 
 ```python
 from pydoll.browser.options import ChromiumOptions
 
 options = ChromiumOptions()
+
+# WebRTC IP 泄露保护 (防止真实 IP 暴露)
+options.webrtc_leak_protection = True
+
 options.browser_preferences = {
     # 模拟使用历史
     'profile': {
@@ -670,18 +674,13 @@ options.browser_preferences = {
         'creation_time': str(time.time() - (90 * 24 * 60 * 60)),  # 90 天前
         'exit_type': 'Normal',
     },
-    
+
     # 真实的内容设置
     'profile.default_content_setting_values': {
         'cookies': 1,
         'images': 1,
         'javascript': 1,
         'notifications': 2,  # 询问 (真实)
-    },
-    
-    # WebRTC IP 处理 (防止泄露)
-    'webrtc': {
-        'ip_handling_policy': 'disable_non_proxied_udp',
     },
 }
 ```
