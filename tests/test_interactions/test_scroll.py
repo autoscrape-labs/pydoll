@@ -36,7 +36,7 @@ class TestScrollAPIBy:
     @pytest.mark.asyncio
     async def test_scroll_down_smooth(self, scroll_api, mock_tab):
         """Test scrolling down with smooth animation."""
-        await scroll_api.by(ScrollPosition.DOWN, 500, smooth=True)
+        await scroll_api.by(ScrollPosition.DOWN, 500, smooth=True, humanize=False)
 
         # Verify execute_command was called
         assert mock_tab._execute_command.called
@@ -55,7 +55,7 @@ class TestScrollAPIBy:
     @pytest.mark.asyncio
     async def test_scroll_up_smooth(self, scroll_api, mock_tab):
         """Test scrolling up with smooth animation."""
-        await scroll_api.by(ScrollPosition.UP, 300, smooth=True)
+        await scroll_api.by(ScrollPosition.UP, 300, smooth=True, humanize=False)
 
         call_args = mock_tab._execute_command.call_args
         command = call_args[0][0]
@@ -67,7 +67,7 @@ class TestScrollAPIBy:
     @pytest.mark.asyncio
     async def test_scroll_right_smooth(self, scroll_api, mock_tab):
         """Test scrolling right with smooth animation."""
-        await scroll_api.by(ScrollPosition.RIGHT, 200, smooth=True)
+        await scroll_api.by(ScrollPosition.RIGHT, 200, smooth=True, humanize=False)
 
         call_args = mock_tab._execute_command.call_args
         command = call_args[0][0]
@@ -79,7 +79,7 @@ class TestScrollAPIBy:
     @pytest.mark.asyncio
     async def test_scroll_left_smooth(self, scroll_api, mock_tab):
         """Test scrolling left with smooth animation."""
-        await scroll_api.by(ScrollPosition.LEFT, 150, smooth=True)
+        await scroll_api.by(ScrollPosition.LEFT, 150, smooth=True, humanize=False)
 
         call_args = mock_tab._execute_command.call_args
         command = call_args[0][0]
@@ -91,7 +91,7 @@ class TestScrollAPIBy:
     @pytest.mark.asyncio
     async def test_scroll_down_instant(self, scroll_api, mock_tab):
         """Test scrolling down without smooth animation."""
-        await scroll_api.by(ScrollPosition.DOWN, 1000, smooth=False)
+        await scroll_api.by(ScrollPosition.DOWN, 1000, smooth=False, humanize=False)
 
         call_args = mock_tab._execute_command.call_args
         command = call_args[0][0]
@@ -103,7 +103,7 @@ class TestScrollAPIBy:
     @pytest.mark.asyncio
     async def test_scroll_with_float_distance(self, scroll_api, mock_tab):
         """Test scrolling with float distance."""
-        await scroll_api.by(ScrollPosition.DOWN, 250.5, smooth=True)
+        await scroll_api.by(ScrollPosition.DOWN, 250.5, smooth=True, humanize=False)
 
         call_args = mock_tab._execute_command.call_args
         command = call_args[0][0]
@@ -118,7 +118,7 @@ class TestScrollAPIToTop:
     @pytest.mark.asyncio
     async def test_scroll_to_top_smooth(self, scroll_api, mock_tab):
         """Test scrolling to top with smooth animation."""
-        await scroll_api.to_top(smooth=True)
+        await scroll_api.to_top(smooth=True, humanize=False)
 
         assert mock_tab._execute_command.called
         call_args = mock_tab._execute_command.call_args
@@ -134,7 +134,7 @@ class TestScrollAPIToTop:
     @pytest.mark.asyncio
     async def test_scroll_to_top_instant(self, scroll_api, mock_tab):
         """Test scrolling to top without smooth animation."""
-        await scroll_api.to_top(smooth=False)
+        await scroll_api.to_top(smooth=False, humanize=False)
 
         call_args = mock_tab._execute_command.call_args
         command = call_args[0][0]
@@ -150,7 +150,7 @@ class TestScrollAPIToBottom:
     @pytest.mark.asyncio
     async def test_scroll_to_bottom_smooth(self, scroll_api, mock_tab):
         """Test scrolling to bottom with smooth animation."""
-        await scroll_api.to_bottom(smooth=True)
+        await scroll_api.to_bottom(smooth=True, humanize=False)
 
         assert mock_tab._execute_command.called
         call_args = mock_tab._execute_command.call_args
@@ -166,7 +166,7 @@ class TestScrollAPIToBottom:
     @pytest.mark.asyncio
     async def test_scroll_to_bottom_instant(self, scroll_api, mock_tab):
         """Test scrolling to bottom without smooth animation."""
-        await scroll_api.to_bottom(smooth=False)
+        await scroll_api.to_bottom(smooth=False, humanize=False)
 
         call_args = mock_tab._execute_command.call_args
         command = call_args[0][0]
@@ -264,7 +264,7 @@ class TestScrollAPIIntegrationWithTab:
             tab._execute_command = AsyncMock()
 
             # Call scroll method
-            await tab.scroll.by(ScrollPosition.DOWN, 500, smooth=True)
+            await tab.scroll.by(ScrollPosition.DOWN, 500, smooth=True, humanize=False)
 
             # Verify _execute_command was called
             assert tab._execute_command.called
@@ -282,7 +282,7 @@ class TestScrollAPIScriptGeneration:
     @pytest.mark.asyncio
     async def test_scroll_by_script_structure(self, scroll_api, mock_tab):
         """Test that scroll.by generates correct script structure."""
-        await scroll_api.by(ScrollPosition.DOWN, 500, smooth=True)
+        await scroll_api.by(ScrollPosition.DOWN, 500, smooth=True, humanize=False)
 
         call_args = mock_tab._execute_command.call_args
         command = call_args[0][0]
@@ -296,7 +296,7 @@ class TestScrollAPIScriptGeneration:
     @pytest.mark.asyncio
     async def test_to_top_script_structure(self, scroll_api, mock_tab):
         """Test that scroll.to_top generates correct script structure."""
-        await scroll_api.to_top(smooth=True)
+        await scroll_api.to_top(smooth=True, humanize=False)
 
         call_args = mock_tab._execute_command.call_args
         command = call_args[0][0]
@@ -310,7 +310,7 @@ class TestScrollAPIScriptGeneration:
     @pytest.mark.asyncio
     async def test_to_bottom_script_structure(self, scroll_api, mock_tab):
         """Test that scroll.to_bottom generates correct script structure."""
-        await scroll_api.to_bottom(smooth=True)
+        await scroll_api.to_bottom(smooth=True, humanize=False)
 
         call_args = mock_tab._execute_command.call_args
         command = call_args[0][0]
@@ -328,7 +328,7 @@ class TestScrollAPIAwaitPromise:
     @pytest.mark.asyncio
     async def test_scroll_by_uses_await_promise(self, scroll_api, mock_tab):
         """Test that scroll.by uses awaitPromise parameter."""
-        await scroll_api.by(ScrollPosition.DOWN, 100, smooth=True)
+        await scroll_api.by(ScrollPosition.DOWN, 100, smooth=True, humanize=False)
 
         call_args = mock_tab._execute_command.call_args
         command = call_args[0][0]
@@ -339,7 +339,7 @@ class TestScrollAPIAwaitPromise:
     @pytest.mark.asyncio
     async def test_to_top_uses_await_promise(self, scroll_api, mock_tab):
         """Test that scroll.to_top uses awaitPromise parameter."""
-        await scroll_api.to_top(smooth=True)
+        await scroll_api.to_top(smooth=True, humanize=False)
 
         call_args = mock_tab._execute_command.call_args
         command = call_args[0][0]
@@ -349,7 +349,7 @@ class TestScrollAPIAwaitPromise:
     @pytest.mark.asyncio
     async def test_to_bottom_uses_await_promise(self, scroll_api, mock_tab):
         """Test that scroll.to_bottom uses awaitPromise parameter."""
-        await scroll_api.to_bottom(smooth=True)
+        await scroll_api.to_bottom(smooth=True, humanize=False)
 
         call_args = mock_tab._execute_command.call_args
         command = call_args[0][0]

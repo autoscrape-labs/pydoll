@@ -480,7 +480,7 @@ class TestKeyboardTypeText:
     @pytest.mark.asyncio
     async def test_type_text_basic(self, keyboard_api, mock_tab):
         """Test basic text typing."""
-        await keyboard_api.type_text("ab")
+        await keyboard_api.type_text("ab", humanize=False)
 
         # Should call execute_command for each character (KEY_DOWN + KEY_UP)
         assert mock_tab._execute_command.call_count == 4
