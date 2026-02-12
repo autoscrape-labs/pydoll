@@ -156,12 +156,14 @@ class Browser(ABC):  # noqa: PLR0904
     async def start(self, headless: bool = False) -> Tab:
         """
         Start browser process and establish CDP connection.
+        Closes the initial tab that is opened by default to ensure
+        that the browser preferences are properly loaded.
 
         Args:
             headless: Deprecated. Use `options.headless = True` instead.
 
         Returns:
-            Initial tab for interaction.
+            New tab for interaction.
 
         Raises:
             FailedToStartBrowser: If the browser fails to start or connect.
@@ -191,9 +193,11 @@ class Browser(ABC):  # noqa: PLR0904
         await self._configure_proxy(proxy_config[0], proxy_config[1])
 
         valid_tab_id = await self._get_valid_tab_id(await self.get_targets())
-        tab = Tab(self, target_id=valid_tab_id, connection_port=self._connection_port)
-        self._tabs_opened[valid_tab_id] = tab
-        logger.info(f'Initial tab attached: {valid_tab_id}')
+        initial_tab = Tab(self, target_id=valid_tab_id, connection_port=self._connection_port)
+        self._tabs_opened[valid_tab_id] = initial_tab
+        await initial_tab.close()
+        tab: Tab = await self.new_tab()
+        logger.info('Initial tab attached')
         return tab
 
     async def stop(self):

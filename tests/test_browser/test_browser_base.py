@@ -94,7 +94,8 @@ async def test_start_browser_success(mock_browser):
     mock_browser._connection_handler.ping.return_value = True
     mock_browser._get_valid_tab_id = AsyncMock(return_value='page1')
 
-    tab = await mock_browser.start()
+    with patch('pydoll.browser.tab.Tab.close', new_callable=AsyncMock):
+        tab = await mock_browser.start()
     assert isinstance(tab, Tab)
 
     mock_browser._browser_process_manager.start_browser_process.assert_called_once_with(
@@ -167,7 +168,8 @@ async def test_start_browser_success_with_start_timeout(mock_browser):
     )
     mock_browser._connection_handler.ping = AsyncMock(side_effect=ping_side_effect)
 
-    await mock_browser.start()
+    with patch('pydoll.browser.tab.Tab.close', new_callable=AsyncMock):
+        await mock_browser.start()
 
 
 @pytest.mark.asyncio
@@ -176,7 +178,8 @@ async def test_proxy_configuration(mock_browser):
         return_value=(True, ('user', 'pass'))
     )
     mock_browser._get_valid_tab_id = AsyncMock(return_value='page1')
-    await mock_browser.start()
+    with patch('pydoll.browser.tab.Tab.close', new_callable=AsyncMock):
+        await mock_browser.start()
 
     mock_browser._connection_handler.execute_command.assert_any_call(
         FetchCommands.enable(handle_auth_requests=True, resource_type=None)
@@ -347,8 +350,15 @@ async def test_window_management(mock_browser):
 async def test_get_window_id_for_target(mock_browser):
     mock_browser._connection_handler.ping.return_value = True
     mock_browser._get_valid_tab_id = AsyncMock(return_value='page1')
+    mock_browser.get_targets = AsyncMock(return_value=[])
+    mock_browser._proxy_manager.get_proxy_credentials.return_value = (False, None)
+    mock_browser._connection_handler.execute_command.return_value = {
+        'result': {'targetId': 'page1'}
+    }
 
-    tab = await mock_browser.start()
+    with patch('pydoll.browser.tab.Tab.close', new_callable=AsyncMock):
+        tab = await mock_browser.start()
+
     mock_browser._connection_handler.execute_command.return_value = {
         'result': {'windowId': 'page1'}
     }
@@ -808,7 +818,8 @@ async def test_headless_mode(mock_browser):
     mock_browser._connection_handler.ping.return_value = True
     mock_browser._get_valid_tab_id = AsyncMock(return_value='page1')
 
-    await mock_browser.start(headless=True)
+    with patch('pydoll.browser.tab.Tab.close', new_callable=AsyncMock):
+        await mock_browser.start(headless=True)
 
     assert '--headless' in mock_browser.options.arguments
     mock_browser._browser_process_manager.start_browser_process.assert_called_once()
@@ -1381,12 +1392,12 @@ async def test_get_opened_tabs_integration_with_new_tab(mock_browser):
 async def test_headless_parameter_deprecation_warning(mock_browser):
     mock_browser._connection_handler.ping.return_value = True
     mock_browser._get_valid_tab_id = AsyncMock(return_value='page1')
-    
-    with pytest.warns(
-        DeprecationWarning,
-        match="The 'headless' parameter is deprecated and will be removed in a future version"
-    ):
-        await mock_browser.start(headless=True)
+    with patch('pydoll.browser.tab.Tab.close', new_callable=AsyncMock):
+        with pytest.warns(
+            DeprecationWarning,
+            match="The 'headless' parameter is deprecated and will be removed in a future version"
+        ):
+            await mock_browser.start(headless=True)
     
     assert mock_browser.options.headless is True
     assert '--headless' in mock_browser.options.arguments

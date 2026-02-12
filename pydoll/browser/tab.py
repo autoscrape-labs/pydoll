@@ -446,7 +446,7 @@ class Tab(FindElementsMixin):
         """
         logger.info(f'Closing tab: target_id={self._target_id}')
         result = await self._execute_command(PageCommands.close())
-        self._browser._tabs_opened.pop(self._target_id)
+        self._browser._tabs_opened.pop(self._target_id, None)
         logger.debug('Tab closed and removed from browser registry')
         return result
 
