@@ -56,6 +56,7 @@ from pydoll.exceptions import (
     WaitElementTimeout,
     WebSocketConnectionClosed,
 )
+from pydoll.exporters.markdown import HTMLtoMarkdown
 from pydoll.interactions import KeyboardAPI, ScrollAPI
 from pydoll.interactions.iframe import IFrameContext
 from pydoll.protocol.browser.types import DownloadBehavior, DownloadProgressState
@@ -883,6 +884,32 @@ class Tab(FindElementsMixin):
         except WaitElementTimeout:
             logger.error(f'Page load timeout after {timeout}s for URL: {url}')
             raise PageLoadTimeout()
+
+    async def to_markdown(self, skip_nav: bool = True, skip_images: bool = False, **options) -> str:
+        """
+        Export current page HTML to Markdown.
+
+        Args:
+            skip_nav: Skip navigation elements (nav, aside, header, footer)
+            skip_images: Skip image elements
+            **options: Additional options for the converter
+
+        Returns:
+            Markdown representation of the page
+        """
+
+        result = await self.execute_script('return document.documentElement.outerHTML')
+
+        try:
+            html = result['result']['result']['value']
+        except (KeyError, TypeError) as e:
+            raise ValueError(
+                f'Failed to extract HTML from page. Unexpected result structure: {type(result)}'
+            ) from e
+
+        convertor = HTMLtoMarkdown(skip_nav=skip_nav, skip_images=skip_images, **options)
+
+        return convertor.convert(html)
 
     async def refresh(
         self,
