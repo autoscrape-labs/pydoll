@@ -1,6 +1,6 @@
 # Controle do Mouse
 
-A API de Mouse fornece controle completo sobre a entrada do mouse no nível da página, permitindo simular movimentos realistas do cursor, cliques, cliques duplos e operações de arrastar. Por padrão, todas as operações do mouse usam simulação humanizada — as trajetórias seguem curvas de Bezier naturais com temporização pela Lei de Fitts, perfis de velocidade minimum-jerk, tremor fisiológico e correção de overshoot — tornando a automação virtualmente indistinguível do comportamento humano.
+A API de Mouse fornece controle completo sobre a entrada do mouse no nível da página, permitindo simular movimentos realistas do cursor, cliques, cliques duplos e operações de arrastar. Por padrão, todas as operações do mouse usam simulação humanizada: as trajetórias seguem curvas de Bezier naturais com temporização pela Lei de Fitts, perfis de velocidade minimum-jerk, tremor fisiológico e correção de overshoot, tornando a automação virtualmente indistinguível do comportamento humano.
 
 !!! info "Interface Centralizada de Mouse"
     Todas as operações do mouse são acessíveis via `tab.mouse`, fornecendo uma API limpa e unificada para todas as interações com o mouse.
@@ -38,7 +38,7 @@ async with Chrome() as browser:
 Move o cursor do mouse para uma posição específica na página:
 
 ```python
-# Movimento humanizado (padrão — trajetória curva com temporização natural)
+# Movimento humanizado (padrão, trajetória curva com temporização natural)
 await tab.mouse.move(500, 300)
 
 # Movimento instantâneo (único evento CDP, sem simulação)
@@ -75,7 +75,7 @@ await tab.mouse.click(500, 300, humanize=False)
 
 - `x`: Coordenada X de destino
 - `y`: Coordenada Y de destino
-- `button` (keyword-only): Botão do mouse — `LEFT`, `RIGHT`, `MIDDLE` (padrão: `LEFT`)
+- `button` (keyword-only): Botão do mouse, sendo `LEFT`, `RIGHT` ou `MIDDLE` (padrão: `LEFT`)
 - `click_count` (keyword-only): Número de cliques (padrão: `1`)
 - `humanize` (keyword-only): Simular comportamento semelhante ao humano (padrão: `True`)
 
@@ -104,7 +104,7 @@ await tab.mouse.down(button=MouseButton.RIGHT)
 await tab.mouse.up(button=MouseButton.RIGHT)
 ```
 
-Esses são primitivos — operam na posição atual do cursor e não possuem parâmetro `humanize`.
+Esses são primitivos que operam na posição atual do cursor e não possuem parâmetro `humanize`.
 
 ### drag: Arrastar e Soltar
 
@@ -129,13 +129,13 @@ await tab.mouse.drag(100, 200, 500, 400, humanize=False)
 Todos os métodos do mouse usam `humanize=True` por padrão. Para realizar operações instantâneas sem humanização, passe `humanize=False`:
 
 ```python
-# Movimento instantâneo — único evento CDP mouseMoved
+# Movimento instantâneo, único evento CDP mouseMoved
 await tab.mouse.move(500, 300, humanize=False)
 
-# Clique instantâneo — move + press + release, sem simulação
+# Clique instantâneo: move + press + release, sem simulação
 await tab.mouse.click(500, 300, humanize=False)
 
-# Arrasto instantâneo — sem curvas, sem pausas
+# Arrasto instantâneo, sem curvas, sem pausas
 await tab.mouse.drag(100, 200, 500, 400, humanize=False)
 ```
 
@@ -155,11 +155,11 @@ A duração do movimento segue a Lei de Fitts: `MT = a + b × log₂(D/W + 1)`. 
 
 ### Perfil de Velocidade Minimum-Jerk
 
-O cursor segue um perfil de velocidade em forma de sino — iniciando lento, acelerando até a velocidade máxima no meio, depois desacelerando no final. Isso corresponde à trajetória de movimento humano mais suave possível.
+O cursor segue um perfil de velocidade em forma de sino, iniciando lento, acelerando até a velocidade máxima no meio e depois desacelerando no final. Isso corresponde à trajetória de movimento humano mais suave possível.
 
 ### Tremor Fisiológico
 
-Ruído gaussiano pequeno (σ ≈ 1px) é adicionado a cada quadro, simulando tremor da mão. A amplitude do tremor escala inversamente com a velocidade — mais tremor quando o cursor está lento ou parado, menos durante movimentos balísticos rápidos.
+Ruído gaussiano pequeno (σ ≈ 1px) é adicionado a cada quadro, simulando tremor da mão. A amplitude do tremor escala inversamente com a velocidade, com mais tremor quando o cursor está lento ou parado e menos durante movimentos balísticos rápidos.
 
 ### Overshoot e Correção
 
@@ -174,18 +174,18 @@ Cliques humanizados incluem uma pausa pré-clique (50–200ms) que simula o temp
 Quando você usa `element.click()`, a API do Mouse é utilizada automaticamente para produzir um movimento realista com curva de Bezier da posição atual do cursor até o centro do elemento antes de clicar. Isso significa que cada chamada `element.click()` gera movimento natural do mouse, tornando cliques em elementos indistinguíveis do comportamento humano.
 
 ```python
-# Clique humanizado (padrão) — movimento com curva de Bezier + clique
+# Clique humanizado (padrão): movimento com curva de Bezier + clique
 button = await tab.find(id='submit')
 await button.click()
 
 # Com deslocamento do centro
 await button.click(x_offset=10, y_offset=5)
 
-# Desabilitar humanização — press/release CDP bruto, sem movimento do cursor
+# Desabilitar humanização: press/release CDP bruto, sem movimento do cursor
 await button.click(humanize=False)
 ```
 
-O rastreamento de posição é mantido entre cliques em elementos — clicar no elemento A, depois no elemento B, produz um caminho curvo natural de A até B.
+O rastreamento de posição é mantido entre cliques em elementos. Clicar no elemento A, depois no elemento B, produz um caminho curvo natural de A até B.
 
 ## Configuração Personalizada de Temporização
 

@@ -51,7 +51,7 @@ Técnicas aplicadas durante operações humanizadas do mouse:
 
 - **Trajetórias com curvas de Bezier**: Trajetórias curvas com pontos de controle assimétricos (mais curvatura no início do movimento)
 - **Temporização pela Lei de Fitts**: A duração do movimento escala com a distância: `MT = a + b × log₂(D/W + 1)`
-- **Velocidade minimum-jerk**: Perfil de velocidade em forma de sino — início lento, pico no meio, fim lento
+- **Velocidade minimum-jerk**: Perfil de velocidade em forma de sino, início lento, pico no meio, fim lento
 - **Tremor fisiológico**: Ruído gaussiano (σ ≈ 1px) escalado inversamente com a velocidade
 - **Overshoot e correção**: ~70% de chance de ultrapassar movimentos rápidos em 3–12%, depois corrigir
 !!! info "Documentação Dedicada de Controle do Mouse"
@@ -202,7 +202,7 @@ A API de teclado do Pydoll fornece dois modos de digitação para equilibrar vel
 
 ### Digitação Natural com Humanização
 
-Por padrão, `type_text()` usa modo humanizado — simulando digitação humana realista com velocidades variáveis e erros ocasionais que são corrigidos automaticamente:
+Por padrão, `type_text()` usa modo humanizado, simulando digitação humana realista com velocidades variáveis e erros ocasionais que são corrigidos automaticamente:
 
 ```python
 import asyncio
@@ -316,7 +316,7 @@ async def scroll_to_positions():
         # Ler o início do artigo
         await asyncio.sleep(2.0)
         
-        # Scroll humanizado (padrão — motor de física, evasão anti-bot)
+        # Scroll humanizado (padrão, motor de física, evasão anti-bot)
         await tab.scroll.to_bottom()
         await asyncio.sleep(1.5)
         await tab.scroll.to_top()
@@ -330,7 +330,7 @@ asyncio.run(scroll_to_positions())
 ```
 
 !!! tip "Escolhendo o Modo Certo"
-    - **Padrão** (`humanize=True`): Melhor para evasão anti-bot — usado automaticamente
+    - **Padrão** (`humanize=True`): Melhor para evasão anti-bot, usado automaticamente
     - **`humanize=False, smooth=True`**: Bom para demos, screenshots e automação geral
     - **`humanize=False, smooth=False`**: Velocidade máxima quando a furtividade não é uma preocupação
 
@@ -471,7 +471,7 @@ asyncio.run(infinite_scroll_loading())
 
 ### Exemplo Completo de Preenchimento de Formulário
 
-Aqui está um exemplo abrangente combinando todas as técnicas de interação semelhantes a humanas. **Isso demonstra a abordagem manual atual** para alcançar o máximo realismo — versões futuras automatizarão muito dessa aleatorização:
+Aqui está um exemplo abrangente combinando todas as técnicas de interação semelhantes a humanas. **Isso demonstra a abordagem manual atual** para alcançar o máximo realismo. Versões futuras automatizarão muito dessa aleatorização:
 
 ```python
 import asyncio

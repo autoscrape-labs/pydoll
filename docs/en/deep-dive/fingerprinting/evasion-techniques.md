@@ -25,7 +25,7 @@ One of the **most common** fingerprinting inconsistencies in automation is the m
 2. **`navigator.userAgent`** property (JavaScript-accessible)
 3. **`Sec-CH-UA` Client Hints headers** (sent by Chromium browsers)
 
-Without proper handling, setting `--user-agent=...` only modifies HTTP headers while `navigator.userAgent` and Client Hints remain unchanged — creating a trivially detectable mismatch.
+Without proper handling, setting `--user-agent=...` only modifies HTTP headers while `navigator.userAgent` and Client Hints remain unchanged, creating a trivially detectable mismatch.
 
 ### Automatic User-Agent Consistency
 
@@ -56,12 +56,12 @@ When Pydoll detects `--user-agent=` in the browser arguments, it automatically:
 
 1. **Parses the UA string** to extract browser, version, and OS information
 2. **Sends `Emulation.setUserAgentOverride`** via CDP with:
-    - `userAgent` — the full UA string (HTTP header + `navigator.userAgent`)
-    - `platform` — the correct `navigator.platform` value (e.g., `Win32`, `MacIntel`, `Linux x86_64`)
-    - `userAgentMetadata` — full Client Hints data (`Sec-CH-UA`, `Sec-CH-UA-Platform`, `Sec-CH-UA-Full-Version-List`, etc.)
+    - `userAgent`: the full UA string (HTTP header + `navigator.userAgent`)
+    - `platform`: the correct `navigator.platform` value (e.g., `Win32`, `MacIntel`, `Linux x86_64`)
+    - `userAgentMetadata`: full Client Hints data (`Sec-CH-UA`, `Sec-CH-UA-Platform`, `Sec-CH-UA-Full-Version-List`, etc.)
 3. **Injects JavaScript** via `Page.addScriptToEvaluateOnNewDocument` to override:
-    - `navigator.vendor` — mapped from browser type (e.g., `Google Inc.`)
-    - `navigator.appVersion` — derived from the UA string
+    - `navigator.vendor`: mapped from browser type (e.g., `Google Inc.`)
+    - `navigator.appVersion`: derived from the UA string
 
 This ensures **complete consistency** across all layers:
 
@@ -612,7 +612,7 @@ for delta, delay in scroll_events:
 ```
 
 !!! warning "Behavioral Detection is ML-Powered"
-    Modern anti-bot systems use machine learning trained on billions of interactions. They don't use simple rules—they detect **statistical patterns**. Focus on:
+    Modern anti-bot systems use machine learning trained on billions of interactions. They don't use simple rules, they detect **statistical patterns**. Focus on:
     
     1. **Variability**: No two actions should be identical
     2. **Context**: Actions must follow natural sequences

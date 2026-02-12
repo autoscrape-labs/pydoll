@@ -25,7 +25,7 @@ Chrome 开发者工具协议 (CDP) 提供了在深层次修改浏览器行为的
 2. **`navigator.userAgent`** 属性（JavaScript 可访问）
 3. **`Sec-CH-UA` Client Hints 标头**（由 Chromium 浏览器发送）
 
-如果不进行适当处理，设置 `--user-agent=...` 只会修改 HTTP 标头，而 `navigator.userAgent` 和 Client Hints 保持不变 — 形成一个可以被轻易检测到的不匹配。
+如果不进行适当处理，设置 `--user-agent=...` 只会修改 HTTP 标头，而 `navigator.userAgent` 和 Client Hints 保持不变，形成一个可以被轻易检测到的不匹配。
 
 ### User-Agent 自动一致性
 
@@ -56,12 +56,12 @@ asyncio.run(main())
 
 1. **解析 UA 字符串** 以提取浏览器、版本和操作系统信息
 2. **通过 CDP 发送 `Emulation.setUserAgentOverride`**，包含：
-    - `userAgent` — 完整的 UA 字符串（HTTP 标头 + `navigator.userAgent`）
-    - `platform` — 正确的 `navigator.platform` 值（如 `Win32`、`MacIntel`、`Linux x86_64`）
-    - `userAgentMetadata` — 完整的 Client Hints 数据（`Sec-CH-UA`、`Sec-CH-UA-Platform`、`Sec-CH-UA-Full-Version-List` 等）
+    - `userAgent`：完整的 UA 字符串（HTTP 标头 + `navigator.userAgent`）
+    - `platform`：正确的 `navigator.platform` 值（如 `Win32`、`MacIntel`、`Linux x86_64`）
+    - `userAgentMetadata`：完整的 Client Hints 数据（`Sec-CH-UA`、`Sec-CH-UA-Platform`、`Sec-CH-UA-Full-Version-List` 等）
 3. **通过 `Page.addScriptToEvaluateOnNewDocument` 注入 JavaScript** 以覆盖：
-    - `navigator.vendor` — 从浏览器类型映射（如 `Google Inc.`）
-    - `navigator.appVersion` — 从 UA 字符串派生
+    - `navigator.vendor`：从浏览器类型映射（如 `Google Inc.`）
+    - `navigator.appVersion`：从 UA 字符串派生
 
 这确保了 **所有层的完全一致性**：
 
@@ -612,7 +612,7 @@ for delta, delay in scroll_events:
 ```
 
 !!! warning "行为检测由机器学习驱动"
-    现代反机器人系统使用在数十亿次交互上训练的机器学习。它们不使用简单的规则——它们检测 **统计模式**。专注于：
+    现代反机器人系统使用在数十亿次交互上训练的机器学习。它们不使用简单的规则，它们检测 **统计模式**。专注于：
     
     1.  **可变性**：没有两个动作应该是完全相同的
     2.  **上下文**：动作必须遵循自然的顺序

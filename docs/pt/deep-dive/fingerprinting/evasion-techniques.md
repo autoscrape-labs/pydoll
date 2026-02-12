@@ -25,7 +25,7 @@ Uma das inconsistências de fingerprinting **mais comuns** na automação é a i
 2. **Propriedade `navigator.userAgent`** (acessível via JavaScript)
 3. **Cabeçalhos `Sec-CH-UA` Client Hints** (enviados por navegadores Chromium)
 
-Sem tratamento adequado, definir `--user-agent=...` modifica apenas os cabeçalhos HTTP enquanto `navigator.userAgent` e Client Hints permanecem inalterados — criando uma incompatibilidade trivialmente detectável.
+Sem tratamento adequado, definir `--user-agent=...` modifica apenas os cabeçalhos HTTP enquanto `navigator.userAgent` e Client Hints permanecem inalterados, criando uma incompatibilidade trivialmente detectável.
 
 ### Consistência Automática do User-Agent
 
@@ -56,12 +56,12 @@ Quando o Pydoll detecta `--user-agent=` nos argumentos do navegador, ele automat
 
 1. **Analisa a string UA** para extrair informações de navegador, versão e sistema operacional
 2. **Envia `Emulation.setUserAgentOverride`** via CDP com:
-    - `userAgent` — a string UA completa (cabeçalho HTTP + `navigator.userAgent`)
-    - `platform` — o valor correto de `navigator.platform` (ex: `Win32`, `MacIntel`, `Linux x86_64`)
-    - `userAgentMetadata` — dados completos de Client Hints (`Sec-CH-UA`, `Sec-CH-UA-Platform`, `Sec-CH-UA-Full-Version-List`, etc.)
+    - `userAgent`: a string UA completa (cabeçalho HTTP + `navigator.userAgent`)
+    - `platform`: o valor correto de `navigator.platform` (ex: `Win32`, `MacIntel`, `Linux x86_64`)
+    - `userAgentMetadata`: dados completos de Client Hints (`Sec-CH-UA`, `Sec-CH-UA-Platform`, `Sec-CH-UA-Full-Version-List`, etc.)
 3. **Injeta JavaScript** via `Page.addScriptToEvaluateOnNewDocument` para sobrescrever:
-    - `navigator.vendor` — mapeado do tipo de navegador (ex: `Google Inc.`)
-    - `navigator.appVersion` — derivado da string UA
+    - `navigator.vendor`: mapeado do tipo de navegador (ex: `Google Inc.`)
+    - `navigator.appVersion`: derivado da string UA
 
 Isso garante **consistência completa** em todas as camadas:
 
@@ -612,7 +612,7 @@ for delta, delay in scroll_events:
 ```
 
 !!! warning "Detecção Comportamental é Potencializada por ML"
-    Sistemas anti-bot modernos usam machine learning treinado em bilhões de interações. Eles não usam regras simples — eles detectam **padrões estatísticos**. Foque em:
+    Sistemas anti-bot modernos usam machine learning treinado em bilhões de interações. Eles não usam regras simples, eles detectam **padrões estatísticos**. Foque em:
     
     1.  **Variabilidade**: Nenhuma duas ações devem ser idênticas
     2.  **Contexto**: Ações devem seguir sequências naturais

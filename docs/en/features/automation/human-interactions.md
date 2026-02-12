@@ -51,7 +51,7 @@ Key techniques applied during humanized mouse operations:
 
 - **Bezier curve paths**: Curved trajectories with asymmetric control points (more curvature early in the movement)
 - **Fitts's Law timing**: Movement duration scales with distance: `MT = a + b × log₂(D/W + 1)`
-- **Minimum-jerk velocity**: Bell-shaped speed profile — slow start, peak in the middle, slow end
+- **Minimum-jerk velocity**: Bell-shaped speed profile, slow start, peak in the middle, slow end
 - **Physiological tremor**: Gaussian noise (σ ≈ 1px) scaled inversely with velocity
 - **Overshoot and correction**: ~70% chance of overshooting fast movements by 3–12%, then correcting back
 !!! info "Dedicated Mouse Control Documentation"
@@ -202,7 +202,7 @@ Pydoll's keyboard API provides two typing modes to balance speed and stealth.
 
 ### Natural Typing with Humanization
 
-By default, `type_text()` uses humanized mode — simulating realistic human typing with variable speeds and occasional typos that are automatically corrected:
+By default, `type_text()` uses humanized mode, simulating realistic human typing with variable speeds and occasional typos that are automatically corrected:
 
 ```python
 import asyncio
@@ -313,7 +313,7 @@ async def scroll_to_positions():
         # Read the beginning of the article
         await asyncio.sleep(2.0)
         
-        # Humanized scroll (default — physics engine, anti-bot evasion)
+        # Humanized scroll (default, physics engine, anti-bot evasion)
         await tab.scroll.to_bottom()
         await asyncio.sleep(1.5)
         await tab.scroll.to_top()
@@ -327,7 +327,7 @@ asyncio.run(scroll_to_positions())
 ```
 
 !!! tip "Choosing the Right Mode"
-    - **Default** (`humanize=True`): Best for anti-bot evasion — used automatically
+    - **Default** (`humanize=True`): Best for anti-bot evasion, used automatically
     - **`humanize=False, smooth=True`**: Good for demos, screenshots, and general automation
     - **`humanize=False, smooth=False`**: Maximum speed when stealth is not a concern
 
@@ -468,7 +468,7 @@ asyncio.run(infinite_scroll_loading())
 
 ### Complete Form Filling Example
 
-Here's a comprehensive example combining all human-like interaction techniques. **This demonstrates the current manual approach** for achieving maximum realism—future versions will automate much of this randomization:
+Here's a comprehensive example combining all human-like interaction techniques. **This demonstrates the current manual approach** for achieving maximum realism. Future versions will automate much of this randomization:
 
 ```python
 import asyncio

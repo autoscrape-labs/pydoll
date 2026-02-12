@@ -1,6 +1,6 @@
 # 鼠标控制
 
-鼠标API提供页面级别的完整鼠标输入控制，支持模拟逼真的光标移动、点击、双击和拖拽操作。默认情况下，所有鼠标操作使用人性化模拟——路径遵循自然贝塞尔曲线，配合菲茨定律时序、最小急动速度曲线、生理性手抖和过冲修正——使自动化操作几乎无法与人类行为区分。
+鼠标API提供页面级别的完整鼠标输入控制，支持模拟逼真的光标移动、点击、双击和拖拽操作。默认情况下，所有鼠标操作使用人性化模拟：路径遵循自然贝塞尔曲线，配合菲茨定律时序、最小急动速度曲线、生理性手抖和过冲修正，使自动化操作几乎无法与人类行为区分。
 
 !!! info "集中式鼠标接口"
     所有鼠标操作均通过`tab.mouse`访问，为所有鼠标交互提供简洁统一的API。
@@ -38,7 +38,7 @@ async with Chrome() as browser:
 将鼠标光标移动到页面上的指定位置：
 
 ```python
-# 人性化移动（默认——自然时序的曲线路径）
+# 人性化移动（默认，自然时序的曲线路径）
 await tab.mouse.move(500, 300)
 
 # 瞬时移动（单个CDP事件，无模拟）
@@ -75,7 +75,7 @@ await tab.mouse.click(500, 300, humanize=False)
 
 - `x`：目标X坐标
 - `y`：目标Y坐标
-- `button`（仅关键字）：鼠标按钮 — `LEFT`、`RIGHT`、`MIDDLE`（默认：`LEFT`）
+- `button`（仅关键字）：鼠标按钮，可选 `LEFT`、`RIGHT`、`MIDDLE`（默认：`LEFT`）
 - `click_count`（仅关键字）：点击次数（默认：`1`）
 - `humanize`（仅关键字）：模拟人类般的行为（默认：`True`）
 
@@ -104,7 +104,7 @@ await tab.mouse.down(button=MouseButton.RIGHT)
 await tab.mouse.up(button=MouseButton.RIGHT)
 ```
 
-这些是底层原语——在当前光标位置操作，没有`humanize`参数。
+这些是底层原语，在当前光标位置操作，没有`humanize`参数。
 
 ### drag: 拖放
 
@@ -129,13 +129,13 @@ await tab.mouse.drag(100, 200, 500, 400, humanize=False)
 所有鼠标方法默认使用`humanize=True`。要执行瞬时非人性化操作，传入`humanize=False`：
 
 ```python
-# 瞬时移动——单个CDP mouseMoved事件
+# 瞬时移动，单个CDP mouseMoved事件
 await tab.mouse.move(500, 300, humanize=False)
 
-# 瞬时点击——移动+按下+释放，无模拟
+# 瞬时点击：移动+按下+释放，无模拟
 await tab.mouse.click(500, 300, humanize=False)
 
-# 瞬时拖拽——无曲线，无停顿
+# 瞬时拖拽，无曲线，无停顿
 await tab.mouse.drag(100, 200, 500, 400, humanize=False)
 ```
 
@@ -155,11 +155,11 @@ await tab.mouse.drag(100, 200, 500, 400, humanize=False)
 
 ### 最小急动速度曲线
 
-光标遵循钟形速度曲线——起始缓慢，中间加速到峰值速度，然后在末尾减速。这符合最平滑的人类运动轨迹。
+光标遵循钟形速度曲线，起始缓慢，中间加速到峰值速度，然后在末尾减速。这符合最平滑的人类运动轨迹。
 
 ### 生理性手抖
 
-每帧添加小幅高斯噪声（σ ≈ 1像素），模拟手部震颤。颤抖幅度与速度成反比——光标缓慢或悬停时颤抖更多，快速弹道运动时颤抖减少。
+每帧添加小幅高斯噪声（σ ≈ 1像素），模拟手部震颤。颤抖幅度与速度成反比，光标缓慢或悬停时颤抖更多，快速弹道运动时颤抖减少。
 
 ### 过冲与修正
 
@@ -174,18 +174,18 @@ await tab.mouse.drag(100, 200, 500, 400, humanize=False)
 当您使用`element.click()`时，鼠标API会自动使用，从当前光标位置到元素中心产生逼真的贝塞尔曲线运动后再点击。这意味着每次`element.click()`调用都会产生自然的鼠标移动，使元素点击与人类行为无法区分。
 
 ```python
-# 人性化点击（默认）——贝塞尔曲线运动+点击
+# 人性化点击（默认）：贝塞尔曲线运动+点击
 button = await tab.find(id='submit')
 await button.click()
 
 # 带中心偏移
 await button.click(x_offset=10, y_offset=5)
 
-# 禁用人性化——原始CDP按下/释放，无光标移动
+# 禁用人性化：原始CDP按下/释放，无光标移动
 await button.click(humanize=False)
 ```
 
-位置追踪在元素点击之间保持——点击元素A，然后点击元素B，会产生从A到B的自然曲线路径。
+位置追踪在元素点击之间保持。点击元素A，然后点击元素B，会产生从A到B的自然曲线路径。
 
 ## 自定义时序配置
 

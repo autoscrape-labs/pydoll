@@ -1,6 +1,6 @@
 # Mouse Control
 
-The Mouse API provides complete control over mouse input at the page level, enabling you to simulate realistic cursor movement, clicks, double-clicks, and drag operations. By default, all mouse operations use humanized simulation — paths follow natural Bezier curves with Fitts's Law timing, minimum-jerk velocity profiles, physiological tremor, and overshoot correction — making automation virtually indistinguishable from human behavior.
+The Mouse API provides complete control over mouse input at the page level, enabling you to simulate realistic cursor movement, clicks, double-clicks, and drag operations. By default, all mouse operations use humanized simulation: paths follow natural Bezier curves with Fitts's Law timing, minimum-jerk velocity profiles, physiological tremor, and overshoot correction, making automation virtually indistinguishable from human behavior.
 
 !!! info "Centralized Mouse Interface"
     All mouse operations are accessible via `tab.mouse`, providing a clean, unified API for all mouse interactions.
@@ -38,7 +38,7 @@ async with Chrome() as browser:
 Move the mouse cursor to a specific position on the page:
 
 ```python
-# Humanized move (default — curved path with natural timing)
+# Humanized move (default, curved path with natural timing)
 await tab.mouse.move(500, 300)
 
 # Instant move (single CDP event, no simulation)
@@ -75,7 +75,7 @@ await tab.mouse.click(500, 300, humanize=False)
 
 - `x`: Target X coordinate
 - `y`: Target Y coordinate
-- `button` (keyword-only): Mouse button — `LEFT`, `RIGHT`, `MIDDLE` (default: `LEFT`)
+- `button` (keyword-only): Mouse button, one of `LEFT`, `RIGHT`, `MIDDLE` (default: `LEFT`)
 - `click_count` (keyword-only): Number of clicks (default: `1`)
 - `humanize` (keyword-only): Simulate human-like behavior (default: `True`)
 
@@ -104,7 +104,7 @@ await tab.mouse.down(button=MouseButton.RIGHT)
 await tab.mouse.up(button=MouseButton.RIGHT)
 ```
 
-These are primitives — they operate at the current cursor position and have no `humanize` parameter.
+These are primitives that operate at the current cursor position and have no `humanize` parameter.
 
 ### drag: Drag and Drop
 
@@ -129,13 +129,13 @@ await tab.mouse.drag(100, 200, 500, 400, humanize=False)
 All mouse methods default to `humanize=True`. To perform instant, non-humanized operations, pass `humanize=False`:
 
 ```python
-# Instant move — single CDP mouseMoved event
+# Instant move, single CDP mouseMoved event
 await tab.mouse.move(500, 300, humanize=False)
 
-# Instant click — move + press + release, no simulation
+# Instant click: move + press + release, no simulation
 await tab.mouse.click(500, 300, humanize=False)
 
-# Instant drag — no curves, no pauses
+# Instant drag, no curves, no pauses
 await tab.mouse.drag(100, 200, 500, 400, humanize=False)
 ```
 
@@ -155,11 +155,11 @@ Movement duration follows Fitts's Law: `MT = a + b × log₂(D/W + 1)`. Longer d
 
 ### Minimum-Jerk Velocity Profile
 
-The cursor follows a bell-shaped speed profile — starting slow, accelerating to peak velocity in the middle, then decelerating at the end. This matches the smoothest possible human movement trajectory.
+The cursor follows a bell-shaped speed profile, starting slow, accelerating to peak velocity in the middle, then decelerating at the end. This matches the smoothest possible human movement trajectory.
 
 ### Physiological Tremor
 
-Small Gaussian noise (σ ≈ 1px) is added to each frame, simulating hand tremor. The tremor amplitude scales inversely with velocity — more tremor when the cursor is slow or hovering, less during fast ballistic movements.
+Small Gaussian noise (σ ≈ 1px) is added to each frame, simulating hand tremor. The tremor amplitude scales inversely with velocity, with more tremor when the cursor is slow or hovering and less during fast ballistic movements.
 
 ### Overshoot and Correction
 
@@ -174,18 +174,18 @@ Humanized clicks include a pre-click pause (50–200ms) that simulates the natur
 When you use `element.click()`, the Mouse API is automatically used to produce a realistic Bezier curve movement from the current cursor position to the element center before clicking. This means every `element.click()` call generates natural mouse movement, making element clicks indistinguishable from human behavior.
 
 ```python
-# Humanized click (default) — Bezier curve movement + click
+# Humanized click (default): Bezier curve movement + click
 button = await tab.find(id='submit')
 await button.click()
 
 # With offset from center
 await button.click(x_offset=10, y_offset=5)
 
-# Disable humanization — raw CDP press/release, no cursor movement
+# Disable humanization: raw CDP press/release, no cursor movement
 await button.click(humanize=False)
 ```
 
-Position tracking is maintained across element clicks — clicking element A, then element B, produces a natural curved path from A's position to B.
+Position tracking is maintained across element clicks. Clicking element A, then element B, produces a natural curved path from A's position to B.
 
 ## Custom Timing Configuration
 
