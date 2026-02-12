@@ -466,7 +466,14 @@ options = ChromiumOptions()
 # Password manager
 options.password_manager_enabled = False  # Disable save password prompts
 options.password_manager_enabled = True  # Enable (default)
+
+# WebRTC leak protection (prevents real IP exposure through WebRTC)
+options.webrtc_leak_protection = True  # Adds --force-webrtc-ip-handling-policy=disable_non_proxied_udp
+options.webrtc_leak_protection = False  # Disable (default)
 ```
+
+!!! tip "WebRTC Leak Protection"
+    WebRTC can leak your real IP address even when using a proxy. Enable `webrtc_leak_protection` to block non-proxied UDP connections, preventing STUN requests from bypassing your proxy. This is **essential** when using proxies for anonymity. See **[Network Fundamentals - WebRTC](../../deep-dive/network/network-fundamentals.md#webrtc-and-ip-leakage)** for details.
 
 ### File Handling
 
@@ -578,8 +585,8 @@ def create_full_stealth_options() -> ChromiumOptions:
     options.add_argument('--disable-features=WebGLDraftExtensions')
     
     # WebRTC IP leak prevention
-    options.add_argument('--force-webrtc-ip-handling-policy=disable_non_proxied_udp')
-    
+    options.webrtc_leak_protection = True
+
     # Permissions and first-run
     options.add_argument('--no-first-run')
     options.add_argument('--no-default-browser-check')

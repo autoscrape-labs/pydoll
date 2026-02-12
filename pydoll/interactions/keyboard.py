@@ -184,7 +184,7 @@ class Keyboard:
     async def type_text(
         self,
         text: str,
-        humanize: bool = False,
+        humanize: bool = True,
         interval: Optional[float] = None,
     ):
         """
@@ -192,13 +192,13 @@ class Keyboard:
 
         Args:
             text: Text to type.
-            humanize: When True, simulates human-like typing with
+            humanize: When True (default), simulates human-like typing with
                 variable delays and occasional typos (~2%).
             interval: Deprecated. Use humanize=True instead.
 
         Example:
             await tab.keyboard.type_text("Hello World")
-            await tab.keyboard.type_text("Hello World", humanize=True)
+            await tab.keyboard.type_text("Hello World", humanize=False)
         """
         if interval is not None:
             warnings.warn(

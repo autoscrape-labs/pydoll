@@ -56,7 +56,7 @@ from pydoll.exceptions import (
     WaitElementTimeout,
     WebSocketConnectionClosed,
 )
-from pydoll.interactions import KeyboardAPI, ScrollAPI
+from pydoll.interactions import KeyboardAPI, MouseAPI, ScrollAPI
 from pydoll.interactions.iframe import IFrameContext
 from pydoll.protocol.browser.types import DownloadBehavior, DownloadProgressState
 from pydoll.protocol.dom.types import Node, ShadowRootType
@@ -160,6 +160,7 @@ class Tab(FindElementsMixin):
         self._request: Optional[Request] = None
         self._scroll: Optional[ScrollAPI] = None
         self._keyboard: Optional[KeyboardAPI] = None
+        self._mouse: MouseAPI = MouseAPI(self)
         logger.debug(
             (
                 f'Tab initialized: target_id={self._target_id}, '
@@ -228,6 +229,16 @@ class Tab(FindElementsMixin):
         if self._keyboard is None:
             self._keyboard = KeyboardAPI(self)
         return self._keyboard
+
+    @property
+    def mouse(self) -> MouseAPI:
+        """
+        Get the mouse API for controlling mouse input.
+
+        Returns:
+            MouseAPI: An instance of the MouseAPI class for mouse operations.
+        """
+        return self._mouse
 
     @property
     def intercept_file_chooser_dialog_enabled(self) -> bool:
@@ -605,7 +616,9 @@ class Tab(FindElementsMixin):
         )
         host_object_id = host_response['result']['object']['objectId']
         host_attrs = await self._get_object_attributes(object_id=host_object_id)
-        return WebElement(host_object_id, self._connection_handler, attributes_list=host_attrs)
+        return WebElement(
+            host_object_id, self._connection_handler, attributes_list=host_attrs, mouse=self._mouse
+        )
 
     async def _collect_oopif_shadow_roots(self) -> list[ShadowRoot]:
         """Discover shadow roots inside cross-origin iframes (OOPIFs)."""
@@ -748,7 +761,12 @@ class Tab(FindElementsMixin):
             tag_name = node_info.get('nodeName', '').lower()
             attributes.extend(['tag_name', tag_name])
 
-            return WebElement(host_object_id, self._connection_handler, attributes_list=attributes)
+            return WebElement(
+                host_object_id,
+                self._connection_handler,
+                attributes_list=attributes,
+                mouse=self._mouse,
+            )
         except (CommandExecutionTimeout, WebSocketConnectionClosed, KeyError):
             logger.debug(f'Failed to resolve OOPIF shadow host: backend_node_id={host_backend_id}')
             return None

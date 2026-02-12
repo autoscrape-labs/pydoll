@@ -57,6 +57,7 @@ from pydoll.utils import (
 )
 
 if TYPE_CHECKING:
+    from pydoll.interactions.mouse import Mouse as MouseType
     from pydoll.protocol.dom.methods import (
         DescribeNodeResponse,
         GetBoxModelResponse,
@@ -90,6 +91,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         method: Optional[str] = None,
         selector: Optional[str] = None,
         attributes_list: list[str] = [],
+        mouse: Optional['MouseType'] = None,
     ):
         """
         Initialize WebElement wrapper.
@@ -100,6 +102,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
             method: Search method used to find this element (for debugging).
             selector: Selector string used to find this element (for debugging).
             attributes_list: Flat list of alternating attribute names and values.
+            mouse: Optional Mouse instance for humanized click behavior.
         """
         self._object_id = object_id
         self._search_method = method
@@ -107,6 +110,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         self._connection_handler = connection_handler
         self._attributes: dict[str, str] = {}
         self._keyboard: Optional[Keyboard] = None
+        self._mouse = mouse
         self._iframe_context: Optional[IFrameContext] = None
         self._iframe_resolver: Optional[IFrameContextResolver] = None
         self._def_attributes(attributes_list)
@@ -264,7 +268,9 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         object_id = result['result']['result']['objectId']
         attributes = await self._get_object_attributes(object_id=object_id)
         logger.debug(f'Parent element resolved: object_id={object_id}')
-        return WebElement(object_id, self._connection_handler, attributes_list=attributes)
+        return WebElement(
+            object_id, self._connection_handler, attributes_list=attributes, mouse=self._mouse
+        )
 
     async def get_shadow_root(self, timeout: float = 0) -> ShadowRoot:
         """
@@ -544,6 +550,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         x_offset: int = 0,
         y_offset: int = 0,
         hold_time: float = 0.1,
+        humanize: bool = True,
     ):
         """
         Click element using simulated mouse events.
@@ -551,7 +558,11 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         Args:
             x_offset: Horizontal offset from element center.
             y_offset: Vertical offset from element center.
-            hold_time: Duration to hold mouse button down.
+            hold_time: Duration to hold mouse button down (used when humanize=False).
+            humanize: When True and a Mouse instance is available, uses humanized
+                Bezier curve movement from the current tracked position to the
+                element center before clicking. When False, dispatches raw CDP
+                mousePressed/mouseReleased events directly.
 
         Raises:
             ElementNotVisible: If element is not visible.
@@ -578,14 +589,21 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         except KeyError:
             element_bounds_js = await self.get_bounds_using_js()
             position_to_click = (
-                element_bounds_js['x'] + element_bounds_js['width'] / 2,
-                element_bounds_js['y'] + element_bounds_js['height'] / 2,
+                element_bounds_js['x'] + element_bounds_js['width'] / 2 + x_offset,
+                element_bounds_js['y'] + element_bounds_js['height'] / 2 + y_offset,
             )
+
+        if humanize and self._mouse is not None:
+            logger.info(
+                f'Clicking element (humanized): x={position_to_click[0]}, y={position_to_click[1]}'
+            )
+            await self._mouse.click(position_to_click[0], position_to_click[1])
+            return
+
         logger.info(
             f'Clicking element: x={position_to_click[0]}, '
             f'y={position_to_click[1]}, hold={hold_time}s'
         )
-
         press_command = InputCommands.dispatch_mouse_event(
             type=MouseEventType.MOUSE_PRESSED,
             x=int(position_to_click[0]),
@@ -681,7 +699,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
     async def type_text(
         self,
         text: str,
-        humanize: bool = False,
+        humanize: bool = True,
         interval: Optional[float] = None,
     ):
         """
@@ -689,7 +707,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
 
         Args:
             text: Text to type into the element.
-            humanize: When True, simulates human-like typing.
+            humanize: When True (default), simulates human-like typing.
             interval: Deprecated. Use humanize=True instead.
         """
         logger.info(f'Typing text (length={len(text)}, humanize={humanize})')
@@ -964,7 +982,12 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
             child_object_id = prop['value']['objectId']
             attributes = await self._get_object_attributes(object_id=child_object_id)
             family_elements.append(
-                WebElement(child_object_id, self._connection_handler, attributes_list=attributes)
+                WebElement(
+                    child_object_id,
+                    self._connection_handler,
+                    attributes_list=attributes,
+                    mouse=self._mouse,
+                )
             )
 
         logger.debug(f'Family elements found: {len(family_elements)}')

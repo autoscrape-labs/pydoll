@@ -301,7 +301,7 @@ class TestWebElementMethods:
         test_text = 'Hi'
         input_element.click = AsyncMock()
         with patch('asyncio.sleep') as mock_sleep:
-            await input_element.type_text(test_text, interval=0.05)
+            await input_element.type_text(test_text, humanize=False, interval=0.05)
 
         # Should call execute_command for each character (KEY_DOWN + KEY_UP)
         assert input_element._connection_handler.execute_command.call_count == len(test_text) * 2
@@ -317,7 +317,7 @@ class TestWebElementMethods:
         test_text = 'A'
         input_element.click = AsyncMock()
         with patch('asyncio.sleep') as mock_sleep:
-            await input_element.type_text(test_text)
+            await input_element.type_text(test_text, humanize=False)
 
         mock_sleep.assert_called_with(0.05)  # Default interval
         assert input_element.click.call_count == 1
@@ -786,6 +786,110 @@ class TestWebElementClicking:
 
         # Should execute script with option value
         option_element._connection_handler.execute_command.assert_called_once()
+
+
+class TestWebElementHumanizedClick:
+    """Test WebElement.click() humanized behavior via Mouse API."""
+
+    @pytest.fixture
+    def mouse_mock(self):
+        mock = AsyncMock()
+        mock.click = AsyncMock()
+        return mock
+
+    @pytest.fixture
+    def element_with_mouse(self, mock_connection_handler, mouse_mock):
+        attributes_list = ['id', 'btn-1', 'tag_name', 'button']
+        elem = WebElement(
+            object_id='obj-1',
+            connection_handler=mock_connection_handler,
+            method='css',
+            selector='#btn-1',
+            attributes_list=attributes_list,
+            mouse=mouse_mock,
+        )
+        return elem
+
+    @pytest.mark.asyncio
+    async def test_click_humanized_uses_mouse(self, element_with_mouse, mouse_mock):
+        """When humanize=True and mouse is set, mouse.click() is called."""
+        bounds = [0, 0, 100, 0, 100, 100, 0, 100]
+        element_with_mouse.is_visible = AsyncMock(return_value=True)
+        element_with_mouse.scroll_into_view = AsyncMock()
+        element_with_mouse._connection_handler.execute_command.return_value = {
+            'result': {'model': {'content': bounds}}
+        }
+
+        await element_with_mouse.click()
+
+        mouse_mock.click.assert_called_once_with(50.0, 50.0)
+
+    @pytest.mark.asyncio
+    async def test_click_humanized_with_offset(self, element_with_mouse, mouse_mock):
+        """Offset is applied before passing to mouse.click()."""
+        bounds = [0, 0, 100, 0, 100, 100, 0, 100]
+        element_with_mouse.is_visible = AsyncMock(return_value=True)
+        element_with_mouse.scroll_into_view = AsyncMock()
+        element_with_mouse._connection_handler.execute_command.return_value = {
+            'result': {'model': {'content': bounds}}
+        }
+
+        await element_with_mouse.click(x_offset=10, y_offset=20)
+
+        mouse_mock.click.assert_called_once_with(60.0, 70.0)
+
+    @pytest.mark.asyncio
+    async def test_click_humanize_false_uses_raw_cdp(self, element_with_mouse, mouse_mock):
+        """When humanize=False, raw CDP events are used even if mouse is set."""
+        bounds = [0, 0, 100, 0, 100, 100, 0, 100]
+        element_with_mouse.is_visible = AsyncMock(return_value=True)
+        element_with_mouse.scroll_into_view = AsyncMock()
+        element_with_mouse._connection_handler.execute_command.side_effect = [
+            {'result': {'model': {'content': bounds}}},
+            None,  # mouse press
+            None,  # mouse release
+        ]
+
+        with patch('asyncio.sleep'):
+            await element_with_mouse.click(humanize=False)
+
+        mouse_mock.click.assert_not_called()
+        assert element_with_mouse._connection_handler.execute_command.call_count == 3
+
+    @pytest.mark.asyncio
+    async def test_click_no_mouse_falls_through(self, web_element):
+        """When _mouse is None, raw CDP fallback is used."""
+        assert web_element._mouse is None
+        bounds = [0, 0, 100, 0, 100, 100, 0, 100]
+        web_element.is_visible = AsyncMock(return_value=True)
+        web_element.scroll_into_view = AsyncMock()
+        web_element._connection_handler.execute_command.side_effect = [
+            {'result': {'model': {'content': bounds}}},
+            None,  # mouse press
+            None,  # mouse release
+        ]
+
+        with patch('asyncio.sleep'):
+            await web_element.click()
+
+        assert web_element._connection_handler.execute_command.call_count == 3
+
+    @pytest.mark.asyncio
+    async def test_click_option_element_skips_mouse(self, mouse_mock, mock_connection_handler):
+        """Option elements use JS click path regardless of mouse."""
+        attributes_list = ['tag_name', 'option', 'value', 'opt-1']
+        elem = WebElement(
+            object_id='opt-obj',
+            connection_handler=mock_connection_handler,
+            attributes_list=attributes_list,
+            mouse=mouse_mock,
+        )
+        elem._click_option_tag = AsyncMock()
+
+        await elem.click()
+
+        elem._click_option_tag.assert_called_once()
+        mouse_mock.click.assert_not_called()
 
 
 class TestWebElementFileInput:

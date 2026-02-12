@@ -4,13 +4,13 @@
 
 !!! info "功能状态"
     **已实现:**
-    
+
     - **人性化键盘**: 可变输入速度，真实错误与自动纠正 (`humanize=True`)
     - **人性化滚动**: 基于物理的滚动，包含动量、摩擦、抖动和过冲 (`humanize=True`)
-    
+    - **人性化鼠标**: 贝塞尔曲线路径、菲茨定律时序、最小急动速度、手抖和过冲 (`humanize=True`)
+
     **即将推出:**
-    
-    - **真实鼠标移动模块**: 基于贝塞尔曲线的鼠标路径，自然加速/减速、过冲和纠正
+
     - **自动随机点击偏移**: 可选参数自动随机化元素内点击位置
     - **悬停行为**: 悬停时的真实延迟与移动效果
 
@@ -25,6 +25,37 @@
 - **操作序列**：识别用户行为中的非人类模式
 
 Pydoll通过提供模拟真实用户行为的交互方法，助您规避检测。
+
+## 逼真鼠标移动
+
+鼠标API（`tab.mouse`）提供多层逼真效果的人性化光标控制。启用`humanize=True`时，鼠标移动遵循自然贝塞尔曲线路径，配合菲茨定律时序、最小急动速度曲线、生理性手抖和过冲修正。
+
+```python
+from pydoll.browser.chromium import Chrome
+
+async with Chrome() as browser:
+    tab = await browser.start()
+    await tab.go_to('https://example.com')
+
+    # 以自然曲线路径移动
+    await tab.mouse.move(500, 300, humanize=True)
+
+    # 以逼真的移动、偏移和时序点击
+    await tab.mouse.click(500, 300, humanize=True)
+
+    # 以自然移动拖拽
+    await tab.mouse.drag(100, 200, 500, 400, humanize=True)
+```
+
+人性化鼠标操作中应用的关键技术：
+
+- **贝塞尔曲线路径**：具有非对称控制点的曲线轨迹（移动初期曲率更大）
+- **菲茨定律时序**：移动持续时间随距离缩放：`MT = a + b × log₂(D/W + 1)`
+- **最小急动速度**：钟形速度曲线，起始缓慢、中间达到峰值、结尾缓慢
+- **生理性手抖**：高斯噪声（σ ≈ 1像素）与速度成反比
+- **过冲与修正**：快速移动约70%概率过冲3–12%，然后修正回来
+!!! info "鼠标控制专用文档"
+    有关鼠标控制的完整文档，包括所有方法、自定义时序配置、位置追踪和调试模式，请参阅**[鼠标控制](mouse-control.md)**。
 
 ## 真实点击模拟
 
@@ -164,14 +195,14 @@ Pydoll的键盘API提供两种输入模式，平衡速度与隐蔽性。
 !!! info "了解输入模式"
     | 模式 | 参数 | 行为 | 使用场景 |
     |------|------|------|----------|
-    | **默认** | `humanize=False` | 固定50毫秒间隔，无错误 | 速度优先、低风险场景 |
-    | **人性化** | `humanize=True` | 可变时序，约2%错误率并自动纠正 | **反机器人规避** |
-    
-    `interval`参数已弃用。请改用`humanize=True`。
+    | **默认（人性化）** | `humanize=True` | 可变时序，约2%错误率并自动纠正 | **反机器人规避**（默认） |
+    | **快速** | `humanize=False` | 固定50毫秒间隔，无错误 | 速度优先、低风险场景 |
+
+    `interval`参数已弃用。使用默认`humanize=True`进行真实输入。
 
 ### 人性化自然输入
 
-使用`humanize=True`模拟真实人类输入，包含可变速度和自动纠正的偶发错误：
+默认情况下，`type_text()`使用人性化模式，模拟真实人类输入，包含可变速度和自动纠正的偶发错误：
 
 ```python
 import asyncio
@@ -187,8 +218,8 @@ async def natural_typing():
 
         # 可变速度：按键间隔30-120毫秒
         # 约2%错误率，带真实纠正行为
-        await username_field.type_text("john.doe@example.com", humanize=True)
-        await password_field.type_text("MyC0mpl3xP@ssw0rd!", humanize=True)
+        await username_field.type_text("john.doe@example.com")  # 默认 humanize=True
+        await password_field.type_text("MyC0mpl3xP@ssw0rd!")
 
 asyncio.run(natural_typing())
 ```
@@ -232,14 +263,14 @@ Pydoll提供专用滚动API，在继续执行前等待滚动完成，使您的�
 
 !!! info "了解滚动模式"
     Pydoll的滚动API提供**三种不同模式**：
-    
+
     | 模式 | 参数 | 行为 | 使用场景 |
     |------|------|------|----------|
-    | **即时** | `smooth=False` | 立即传送到目标位置 | 速度优先场景 |
-    | **平滑** | `smooth=True`（默认） | CSS动画，可预测 | 一般浏览模拟 |
-    | **人性化** | `humanize=True` | 物理引擎：动量、抖动、过冲 | **反机器人规避** |
-    
-    要绕过行为指纹识别，请始终使用`humanize=True`。
+    | **人性化（默认）** | `humanize=True` | 物理引擎：动量、抖动、过冲 | **反机器人规避**（默认） |
+    | **平滑** | `humanize=False, smooth=True` | CSS动画，可预测 | 一般浏览模拟 |
+    | **即时** | `humanize=False, smooth=False` | 立即传送到目标位置 | 速度优先场景 |
+
+    人性化滚动现在是默认模式。传入`humanize=False`以使用CSS或即时滚动。
 
 ### 基础方向滚动
 
@@ -255,17 +286,16 @@ async def basic_scrolling():
         tab = await browser.start()
         await tab.go_to('https://example.com/long-page')
         
-        # 即时传送 - 最快但易被检测
-        await tab.scroll.by(ScrollPosition.DOWN, 1000, smooth=False)
-        
-        # CSS动画 - 外观平滑但时序可预测
-        await tab.scroll.by(ScrollPosition.DOWN, 500, smooth=True)
-        await tab.scroll.by(ScrollPosition.UP, 300, smooth=True)
-
-        # 贝塞尔曲线物理引擎 - 最逼真
+        # 人性化（默认）- 贝塞尔曲线物理引擎
         # 包含：动量、摩擦、抖动、微停顿、过冲
-        await tab.scroll.by(ScrollPosition.DOWN, 500, humanize=True)
-        await tab.scroll.by(ScrollPosition.UP, 300, humanize=True)
+        await tab.scroll.by(ScrollPosition.DOWN, 500)
+        await tab.scroll.by(ScrollPosition.UP, 300)
+
+        # CSS动画 - 外观平滑但时序可预测
+        await tab.scroll.by(ScrollPosition.DOWN, 500, humanize=False, smooth=True)
+
+        # 即时传送 - 最快但易被检测
+        await tab.scroll.by(ScrollPosition.DOWN, 1000, humanize=False, smooth=False)
 
 asyncio.run(basic_scrolling())
 ```
@@ -286,23 +316,23 @@ async def scroll_to_positions():
         # 阅读文章开头
         await asyncio.sleep(2.0)
         
-        # 选项1：平滑滚动（CSS动画，可预测）
-        await tab.scroll.to_bottom(smooth=True)
+        # 人性化滚动（默认 - 物理引擎，反机器人）
+        await tab.scroll.to_bottom()
         await asyncio.sleep(1.5)
-        await tab.scroll.to_top(smooth=True)
-        
-        # 选项2：人性化滚动（物理引擎，反机器人）
-        await tab.scroll.to_bottom(humanize=True)
+        await tab.scroll.to_top()
+
+        # CSS平滑滚动（可预测动画）
+        await tab.scroll.to_bottom(humanize=False, smooth=True)
         await asyncio.sleep(1.5)
-        await tab.scroll.to_top(humanize=True)
+        await tab.scroll.to_top(humanize=False, smooth=True)
 
 asyncio.run(scroll_to_positions())
 ```
 
 !!! tip "选择正确的模式"
-    - **`smooth=True`**：适用于演示、截图和一般自动化
-    - **`humanize=True`**：面对行为指纹识别或机器人检测时必需
-    - **`smooth=False`**：隐蔽性不重要时追求最大速度
+    - **默认** (`humanize=True`)：反机器人规避的最佳选择，自动启用
+    - **`humanize=False, smooth=True`**：适用于演示、截图和一般自动化
+    - **`humanize=False, smooth=False`**：隐蔽性不重要时追求最大速度
 
 ### 类人滚动模式
 
@@ -441,7 +471,7 @@ asyncio.run(infinite_scroll_loading())
 
 ### 完整表单填写示例
 
-以下综合示例融合了所有类人交互技术。**这展示了当前手动实现最高逼真度的方案**——未来版本将自动化处理大部分随机化操作：
+以下综合示例融合了所有类人交互技术。**这展示了当前手动实现最高逼真度的方案**。未来版本将自动化处理大部分随机化操作：
 
 
 ```python

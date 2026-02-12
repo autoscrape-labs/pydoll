@@ -533,8 +533,10 @@ from pydoll.browser import Chrome
 from pydoll.browser.options import ChromiumOptions
 
 options = ChromiumOptions()
-options.add_argument('--force-webrtc-ip-handling-policy=disable_non_proxied_udp')
+options.webrtc_leak_protection = True  # 添加 --force-webrtc-ip-handling-policy=disable_non_proxied_udp
 ```
+
+Pydoll 提供了一个便捷的 `webrtc_leak_protection` 属性，自动管理底层的 `--force-webrtc-ip-handling-policy=disable_non_proxied_udp` 参数。
 
 **这会做什么：**
 

@@ -1390,3 +1390,117 @@ async def test_headless_parameter_deprecation_warning(mock_browser):
     
     assert mock_browser.options.headless is True
     assert '--headless' in mock_browser.options.arguments
+
+
+# --- User-Agent Override Tests ---
+
+
+@pytest.mark.asyncio
+async def test_get_user_agent_from_options_found(mock_browser):
+    mock_browser.options.add_argument(
+        '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.6099.109'
+    )
+    result = mock_browser._get_user_agent_from_options()
+    assert result == 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.6099.109'
+
+
+@pytest.mark.asyncio
+async def test_get_user_agent_from_options_not_found(mock_browser):
+    result = mock_browser._get_user_agent_from_options()
+    assert result is None
+
+
+@pytest.mark.asyncio
+async def test_apply_user_agent_override_no_ua_set(mock_browser):
+    tab = MagicMock(spec=Tab)
+    tab._execute_command = AsyncMock()
+
+    await mock_browser._apply_user_agent_override(tab)
+
+    tab._execute_command.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_apply_user_agent_override_with_ua_set(mock_browser):
+    custom_ua = (
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+        'AppleWebKit/537.36 (KHTML, like Gecko) '
+        'Chrome/120.0.6099.109 Safari/537.36'
+    )
+    mock_browser.options.add_argument(f'--user-agent={custom_ua}')
+
+    tab = MagicMock(spec=Tab)
+    tab._execute_command = AsyncMock()
+
+    await mock_browser._apply_user_agent_override(tab)
+
+    assert tab._execute_command.call_count == 2
+
+    emulation_call = tab._execute_command.call_args_list[0]
+    command = emulation_call[0][0]
+    assert command['method'] == 'Emulation.setUserAgentOverride'
+    assert command['params']['userAgent'] == custom_ua
+    assert command['params']['platform'] == 'Win32'
+    assert 'userAgentMetadata' in command['params']
+
+    js_call = tab._execute_command.call_args_list[1]
+    js_command = js_call[0][0]
+    assert js_command['method'] == 'Page.addScriptToEvaluateOnNewDocument'
+    assert "Navigator.prototype, 'vendor'" in js_command['params']['source']
+    assert "Navigator.prototype, 'appVersion'" in js_command['params']['source']
+
+
+@pytest.mark.asyncio
+async def test_apply_user_agent_override_metadata_consistency(mock_browser):
+    custom_ua = (
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
+        'AppleWebKit/537.36 (KHTML, like Gecko) '
+        'Chrome/121.0.6167.85 Safari/537.36'
+    )
+    mock_browser.options.add_argument(f'--user-agent={custom_ua}')
+
+    tab = MagicMock(spec=Tab)
+    tab._execute_command = AsyncMock()
+
+    await mock_browser._apply_user_agent_override(tab)
+
+    emulation_call = tab._execute_command.call_args_list[0]
+    command = emulation_call[0][0]
+    metadata = command['params']['userAgentMetadata']
+    assert metadata['platform'] == 'macOS'
+    assert metadata['mobile'] is False
+    assert command['params']['platform'] == 'MacIntel'
+    brands = metadata['brands']
+    brand_names = [b['brand'] for b in brands]
+    assert 'Chromium' in brand_names
+    assert 'Google Chrome' in brand_names
+
+
+@pytest.mark.asyncio
+async def test_start_applies_user_agent_override(mock_browser):
+    custom_ua = (
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+        'Chrome/120.0.6099.109 Safari/537.36'
+    )
+    mock_browser.options.add_argument(f'--user-agent={custom_ua}')
+    mock_browser._connection_handler.ping.return_value = True
+    mock_browser._get_valid_tab_id = AsyncMock(return_value='page1')
+    mock_browser._apply_user_agent_override = AsyncMock()
+
+    tab = await mock_browser.start()
+
+    mock_browser._apply_user_agent_override.assert_called_once_with(tab)
+
+
+@pytest.mark.asyncio
+async def test_new_tab_applies_user_agent_override(mock_browser):
+    custom_ua = 'Mozilla/5.0 Chrome/120.0.6099.109'
+    mock_browser.options.add_argument(f'--user-agent={custom_ua}')
+    mock_browser._connection_handler.execute_command = AsyncMock(
+        return_value={'result': {'targetId': 'new_tab_1'}}
+    )
+    mock_browser._apply_user_agent_override = AsyncMock()
+
+    tab = await mock_browser.new_tab()
+
+    mock_browser._apply_user_agent_override.assert_called_once_with(tab)
