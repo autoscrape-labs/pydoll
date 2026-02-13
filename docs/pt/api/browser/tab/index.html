@@ -824,6 +824,8 @@
       
         
       
+        
+      
     
     
     
@@ -942,6 +944,34 @@
     
   
     Requisições HTTP no Contexto do Navegador
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/network/network-recording/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gravação de Rede HAR
   
 
     
@@ -3351,6 +3381,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pydoll.browser.tab.Tab.save_bundle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;save_bundle
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pydoll.browser.tab.Tab.has_dialog" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -5302,6 +5343,17 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;print_to_pdf
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.browser.tab.Tab.save_bundle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;save_bundle
       
     </span>
   </a>
@@ -7909,6 +7961,107 @@ include the entire page</p>
             <td class="doc-raises-details">
               <div class="doc-md-description">
                 <p>If path is not provided when as_base64=False.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="pydoll.browser.tab.Tab.save_bundle" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">save_bundle</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">save_bundle</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">inline_assets</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Save current page and its assets as a .zip bundle for offline viewing.</p>
+<p>Captures the page HTML along with CSS, JS, images, fonts, and media
+into a single zip archive. The archive contains an <code>index.html</code> with
+URLs rewritten to reference local asset files.</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>path</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Destination path for the <code>.zip</code> file.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="str">str</span> | <span title="pathlib.Path">Path</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>inline_assets</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>When True, embed all assets directly into
+<code>index.html</code> using data URIs, <code>&lt;style&gt;</code>, and <code>&lt;script&gt;</code>
+tags instead of saving them as separate files.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="bool">bool</span></code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>False</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RAISES</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+              <span class="doc-raises-annotation">
+                  <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;InvalidFileExtension&lt;/span&gt; (&lt;code&gt;pydoll.exceptions.InvalidFileExtension&lt;/code&gt;)" href="../../../../api/core/exceptions/#pydoll.exceptions.InvalidFileExtension">InvalidFileExtension</a></code>
+              </span>
+            </td>
+            <td class="doc-raises-details">
+              <div class="doc-md-description">
+                <p>If path does not end with <code>.zip</code>.</p>
               </div>
             </td>
           </tr>

@@ -1023,6 +1023,56 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#exportacao-de-bundle-da-pagina" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exportação de Bundle da Página
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Exportação de Bundle da Página">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#uso-basico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Uso Básico
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#modo-inline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modo Inline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parametros" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parâmetros
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#aprenda-mais" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1058,6 +1108,8 @@
   
     
     
+      
+        
       
         
       
@@ -1186,6 +1238,34 @@
     
   
     Requisições HTTP no Contexto do Navegador
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/network-recording/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gravação de Rede HAR
   
 
     
@@ -4525,6 +4605,56 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#exportacao-de-bundle-da-pagina" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exportação de Bundle da Página
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Exportação de Bundle da Página">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#uso-basico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Uso Básico
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#modo-inline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modo Inline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parametros" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parâmetros
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#aprenda-mais" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4994,6 +5124,57 @@
 </span><span id="__span-9-31"><a id="__codelineno-9-31" name="__codelineno-9-31" href="#__codelineno-9-31"></a>        <span class="n">content</span> <span class="o">=</span> <span class="k">await</span> <span class="n">iframe_element</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s1">&#39;content&#39;</span><span class="p">)</span>
 </span><span id="__span-9-32"><a id="__codelineno-9-32" name="__codelineno-9-32" href="#__codelineno-9-32"></a>        <span class="k">await</span> <span class="n">content</span><span class="o">.</span><span class="n">take_screenshot</span><span class="p">(</span><span class="s1">&#39;iframe-content.png&#39;</span><span class="p">)</span>
 </span></code></pre></div>
+<h2 id="exportacao-de-bundle-da-pagina">Exportação de Bundle da Página</h2>
+<p>Salve uma página inteira com todos os seus assets (CSS, JS, imagens, fontes) como um arquivo <code>.zip</code> para visualização offline.</p>
+<h3 id="uso-basico">Uso Básico</h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.chromium</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">save_page</span><span class="p">():</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>    <span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">()</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>        <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">&#39;https://example.com&#39;</span><span class="p">)</span>
+</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>
+</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>        <span class="c1"># Salvar página com assets como arquivos separados</span>
+</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">save_bundle</span><span class="p">(</span><span class="s1">&#39;page.zip&#39;</span><span class="p">)</span>
+</span><span id="__span-10-11"><a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>
+</span><span id="__span-10-12"><a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">save_page</span><span class="p">())</span>
+</span></code></pre></div>
+<p>O zip resultante contém um <code>index.html</code> com todas as URLs reescritas para referenciar arquivos locais no diretório <code>assets/</code>.</p>
+<h3 id="modo-inline">Modo Inline</h3>
+<p>Incorpore tudo diretamente em um único <code>index.html</code> usando data URIs, <code>&lt;style&gt;</code> e <code>&lt;script&gt;</code>:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># Um único arquivo HTML autocontido dentro do zip</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">save_bundle</span><span class="p">(</span><span class="s1">&#39;page-inline.zip&#39;</span><span class="p">,</span> <span class="n">inline_assets</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span></code></pre></div>
+<h3 id="parametros">Parâmetros</h3>
+<table>
+<thead>
+<tr>
+<th>Parâmetro</th>
+<th>Tipo</th>
+<th>Padrão</th>
+<th>Descrição</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>path</code></td>
+<td><code>str \| Path</code></td>
+<td><em>(obrigatório)</em></td>
+<td>Caminho de destino. Deve terminar com <code>.zip</code>.</td>
+</tr>
+<tr>
+<td><code>inline_assets</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>Incorporar todos os assets inline em vez de salvá-los como arquivos separados.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition info">
+<p class="admonition-title">O Que é Incluído no Bundle</p>
+<p>O bundle inclui recursos dos tipos: Document, Stylesheet, Script, Image, Font e Media. Recursos que falharam ao carregar, foram cancelados ou usam URIs <code>data:</code> são automaticamente ignorados.</p>
+</div>
 <h2 id="aprenda-mais">Aprenda Mais</h2>
 <p>Para contexto adicional sobre como screenshots e PDFs se integram com a arquitetura do Pydoll:</p>
 <ul>

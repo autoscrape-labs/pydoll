@@ -1024,6 +1024,56 @@
   <a href="#_8" class="md-nav__link">
     <span class="md-ellipsis">
       
+        页面打包导出
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="页面打包导出">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        基本用法
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        内联模式
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        参数
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
         了解更多
       
     </span>
@@ -1056,6 +1106,8 @@
   
     
     
+      
+        
       
         
       
@@ -1184,6 +1236,34 @@
     
   
     浏览器上下文HTTP请求
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/network-recording/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HAR网络录制
   
 
     
@@ -4526,6 +4606,56 @@
   <a href="#_8" class="md-nav__link">
     <span class="md-ellipsis">
       
+        页面打包导出
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="页面打包导出">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        基本用法
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        内联模式
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        参数
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
         了解更多
       
     </span>
@@ -4992,7 +5122,58 @@
 </span><span id="__span-9-31"><a id="__codelineno-9-31" name="__codelineno-9-31" href="#__codelineno-9-31"></a>        <span class="n">content</span> <span class="o">=</span> <span class="k">await</span> <span class="n">iframe_element</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s1">&#39;content&#39;</span><span class="p">)</span>
 </span><span id="__span-9-32"><a id="__codelineno-9-32" name="__codelineno-9-32" href="#__codelineno-9-32"></a>        <span class="k">await</span> <span class="n">content</span><span class="o">.</span><span class="n">take_screenshot</span><span class="p">(</span><span class="s1">&#39;iframe-content.png&#39;</span><span class="p">)</span>
 </span></code></pre></div>
-<h2 id="_8">了解更多</h2>
+<h2 id="_8">页面打包导出</h2>
+<p>将整个页面及其所有资源（CSS、JS、图片、字体）保存为 <code>.zip</code> 压缩包，支持离线查看。</p>
+<h3 id="_9">基本用法</h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.chromium</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">save_page</span><span class="p">():</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>    <span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">()</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>        <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">&#39;https://example.com&#39;</span><span class="p">)</span>
+</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>
+</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>        <span class="c1"># 将页面和资源保存为独立文件</span>
+</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">save_bundle</span><span class="p">(</span><span class="s1">&#39;page.zip&#39;</span><span class="p">)</span>
+</span><span id="__span-10-11"><a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>
+</span><span id="__span-10-12"><a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">save_page</span><span class="p">())</span>
+</span></code></pre></div>
+<p>生成的 zip 包含一个 <code>index.html</code>，所有 URL 已被重写为引用 <code>assets/</code> 目录下的本地文件。</p>
+<h3 id="_10">内联模式</h3>
+<p>使用 data URI、<code>&lt;style&gt;</code> 和 <code>&lt;script&gt;</code> 标签将所有内容直接嵌入到单个 <code>index.html</code> 中：</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># zip 中只包含一个自包含的 HTML 文件</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">save_bundle</span><span class="p">(</span><span class="s1">&#39;page-inline.zip&#39;</span><span class="p">,</span> <span class="n">inline_assets</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span></code></pre></div>
+<h3 id="_11">参数</h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>path</code></td>
+<td><code>str \| Path</code></td>
+<td><em>（必填）</em></td>
+<td>目标路径，必须以 <code>.zip</code> 结尾。</td>
+</tr>
+<tr>
+<td><code>inline_assets</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>将所有资源内联嵌入，而非保存为独立文件。</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition info">
+<p class="admonition-title">打包包含的内容</p>
+<p>打包包括以下类型的资源：Document、Stylesheet、Script、Image、Font 和 Media。加载失败、已取消或使用 <code>data:</code> URI 的资源会被自动跳过。</p>
+</div>
+<h2 id="_12">了解更多</h2>
 <p>有关截图和PDF如何与Pydoll架构集成的更多信息：</p>
 <ul>
 <li><strong><a href="../../../deep-dive/fundamentals/cdp/">深入探讨：CDP</a></strong>：理解Chrome DevTools Protocol命令</li>

@@ -824,6 +824,8 @@
       
         
       
+        
+      
     
     
     
@@ -942,6 +944,34 @@
     
   
     Requisições HTTP no Contexto do Navegador
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/network/network-recording/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gravação de Rede HAR
   
 
     
@@ -2984,6 +3014,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pydoll.browser.requests.request.Request._callback_ids" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;_callback_ids
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pydoll.browser.requests.request.Request._requests_sent" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3087,6 +3128,17 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;options
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.browser.requests.request.Request.record" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;record
       
     </span>
   </a>
@@ -4954,6 +5006,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pydoll.browser.requests.request.Request._callback_ids" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;_callback_ids
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pydoll.browser.requests.request.Request._requests_sent" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -5057,6 +5120,17 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;options
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.browser.requests.request.Request.record" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;record
       
     </span>
   </a>
@@ -5849,6 +5923,28 @@ the browser's session state (cookies, authentication, etc.).</p>
 
 </h4>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">_network_events_enabled</span> <span class="o">=</span> <span class="kc">False</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="pydoll.browser.requests.request.Request._callback_ids" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">_callback_ids</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">_callback_ids</span> <span class="o">=</span> <span class="p">[]</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6937,6 +7033,107 @@ without downloading the full content.</p>
 <div class="doc doc-object doc-function">
 
 
+<h4 id="pydoll.browser.requests.request.Request.record" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">record</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">record</span><span class="p">(</span><span class="n">resource_types</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Record network traffic as HAR.</p>
+<p>Context manager that captures all network activity on the tab
+and produces a HarCapture object for export.</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>resource_types</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Optional list of resource types to capture.
+When provided, only requests matching these types are
+recorded. When None (default), all resource types are
+captured.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="list">list</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;ResourceType&lt;/span&gt; (&lt;code&gt;pydoll.protocol.network.types.ResourceType&lt;/code&gt;)" href="../../../../api/protocol/network/#pydoll.protocol.network.types.ResourceType">ResourceType</a>] | None</code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>None</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+        <p>Usage::</p>
+<div class="language-text highlight"><pre><span></span><code>async with tab.request.record() as capture:
+    await tab.go_to(&#39;https://example.com&#39;)
+capture.save(&#39;flow.har&#39;)
+
+# Record only fetch and XHR requests
+async with tab.request.record(
+    resource_types=[ResourceType.FETCH, ResourceType.XHR]
+) as capture:
+    await tab.go_to(&#39;https://example.com&#39;)
+capture.save(&#39;api_calls.har&#39;)
+</code></pre></div>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">YIELDS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>HarCapture</code>
+            </td>
+            <td class="doc-yields-details">
+              <div class="doc-md-description">
+                <p>Object with .save(), .to_dict(), and .entries.</p>
+              </div>
+                <p>
+                  <span class="doc-yields-annotation">
+                    <b>TYPE::</b>
+                      <code><span title="collections.abc.AsyncIterator">AsyncIterator</span>[<span title="pydoll.browser.requests.har_recorder.HarCapture">HarCapture</span>]</code>
+                  </span>
+                </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
 <h4 id="pydoll.browser.requests.request.Request._build_url_with_params" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">_build_url_with_params</span>
 
@@ -7144,8 +7341,9 @@ response data, which are used for header and cookie extraction.</p>
     <div class="doc doc-contents ">
 
         <p>Clean up network event listeners and disable network monitoring.</p>
-<p>Removes all registered event callbacks and disables network events
-if they were enabled by this request instance.</p>
+<p>Removes only the callbacks registered by this request instance
+(surgical removal) so other listeners (e.g. HarRecorder) are
+not affected.</p>
 
 
     </div>
