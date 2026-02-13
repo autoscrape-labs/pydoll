@@ -7,13 +7,17 @@ from __future__ import annotations
 
 import json as jsonlib
 import logging
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Optional, Union, cast
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
+from pydoll.browser.requests.har_recorder import HarCapture, HarRecorder
 from pydoll.browser.requests.response import Response
 from pydoll.commands.runtime_commands import RuntimeCommands
 from pydoll.constants import Scripts
-from pydoll.exceptions import HTTPError
+from pydoll.exceptions import HarReplayError, HTTPError
 from pydoll.protocol.fetch.types import HeaderEntry
 from pydoll.protocol.network.events import (
     NetworkEvent,
@@ -23,7 +27,7 @@ from pydoll.protocol.network.events import (
     ResponseReceivedExtraInfoEvent,
     ResponseReceivedExtraInfoEventParams,
 )
-from pydoll.protocol.network.types import CookieParam
+from pydoll.protocol.network.types import CookieParam, ResourceType
 
 logger = logging.getLogger(__name__)
 
@@ -274,6 +278,105 @@ class Request:
             Response object with allowed methods and CORS headers.
         """
         return await self.request('OPTIONS', url, **kwargs)
+
+    @asynccontextmanager
+    async def record(
+        self,
+        resource_types: list[ResourceType] | None = None,
+    ) -> AsyncIterator[HarCapture]:
+        """Record network traffic as HAR.
+
+        Context manager that captures all network activity on the tab
+        and produces a HarCapture object for export.
+
+        Args:
+            resource_types: Optional list of resource types to capture.
+                When provided, only requests matching these types are
+                recorded. When None (default), all resource types are
+                captured.
+
+        Usage::
+
+            async with tab.request.record() as capture:
+                await tab.go_to('https://example.com')
+            capture.save('flow.har')
+
+            # Record only fetch and XHR requests
+            async with tab.request.record(
+                resource_types=[ResourceType.FETCH, ResourceType.XHR]
+            ) as capture:
+                await tab.go_to('https://example.com')
+            capture.save('api_calls.har')
+
+        Yields:
+            HarCapture: Object with .save(), .to_dict(), and .entries.
+        """
+        recorder = HarRecorder(self.tab, resource_types=resource_types)
+        capture = HarCapture(recorder)
+        await recorder.start()
+        try:
+            yield capture
+        finally:
+            await recorder.stop()
+
+    async def replay(self, path: str | Path) -> list[Response]:
+        """Replay requests from a HAR file.
+
+        Replays each HAR entry sequentially using the browser's fetch API,
+        preserving the original method, URL, headers, and body.
+
+        Args:
+            path: Path to a .har file.
+
+        Returns:
+            List of Response objects from the replayed requests.
+
+        Raises:
+            HarReplayError: If the HAR file is invalid or unreadable.
+        """
+        try:
+            with open(path, encoding='utf-8') as f:
+                har_data = jsonlib.load(f)
+        except (OSError, jsonlib.JSONDecodeError) as exc:
+            raise HarReplayError(f'Failed to read HAR file: {exc}') from exc
+
+        entries = har_data.get('log', {}).get('entries', [])
+        if not isinstance(entries, list):
+            raise HarReplayError('Invalid HAR file: entries is not a list')
+
+        responses: list[Response] = []
+        for entry in entries:
+            har_request = entry.get('request', {})
+            method = har_request.get('method', 'GET')
+            url = har_request.get('url', '')
+
+            if not url:
+                continue
+
+            headers_list = har_request.get('headers', [])
+            header_entries = [
+                HeaderEntry(name=h['name'], value=h['value'])
+                for h in headers_list
+                if isinstance(h, dict) and 'name' in h and 'value' in h
+            ]
+
+            post_data = har_request.get('postData', {})
+            body = post_data.get('text') if post_data else None
+
+            kwargs: dict[str, Any] = {}
+            if body:
+                kwargs['data'] = body
+
+            response = await self.request(
+                method=method,
+                url=url,
+                headers=header_entries if header_entries else None,
+                **kwargs,
+            )
+            responses.append(response)
+
+        logger.info('HAR replay completed: %d requests replayed', len(responses))
+        return responses
 
     @staticmethod
     def _build_url_with_params(url: str, params: Optional[dict[str, str]]) -> str:
