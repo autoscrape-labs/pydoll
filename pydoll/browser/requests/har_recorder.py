@@ -67,7 +67,7 @@ def _get_pydoll_version() -> str:
 class HarRecorder:
     """Internal engine that listens to CDP network events and builds HAR entries.
 
-    This class registers callbacks for 6 CDP Network events, correlates them
+    This class registers callbacks for 7 CDP Network events, correlates them
     by requestId, and builds HAR 1.2 entries. It is not intended for direct
     use — instead, use ``tab.request.record()`` which wraps this engine.
     """
@@ -87,7 +87,7 @@ class HarRecorder:
         """Start recording network traffic.
 
         Enables network events if not already on, and registers callbacks
-        for the 6 CDP events needed to build HAR entries.
+        for the 7 CDP events needed to build HAR entries.
         """
         if not self._tab.network_events_enabled:
             await self._tab.enable_network_events()

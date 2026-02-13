@@ -1106,31 +1106,32 @@ class Tab(FindElementsMixin):
         if not page_was_enabled:
             await self.enable_page_events()
 
-        tree_response: GetResourceTreeResponse = await self._execute_command(
-            PageCommands.get_resource_tree()
-        )
-        frame_tree: FrameResourceTree = tree_response['result']['frameTree']
-        page_url = frame_tree['frame']['url']
-        html = await self._fetch_document_html(frame_tree)
-        asset_map = await self._fetch_bundle_assets(frame_tree, page_url)
+        try:
+            tree_response: GetResourceTreeResponse = await self._execute_command(
+                PageCommands.get_resource_tree()
+            )
+            frame_tree: FrameResourceTree = tree_response['result']['frameTree']
+            page_url = frame_tree['frame']['url']
+            html = await self._fetch_document_html(frame_tree)
+            asset_map = await self._fetch_bundle_assets(frame_tree, page_url)
 
-        buf = io.BytesIO()
-        with zipfile.ZipFile(buf, 'w', zipfile.ZIP_DEFLATED) as zf:
-            if inline_assets:
-                html = inline_all_assets(html, asset_map)
-            else:
-                html = rewrite_html_urls(html, asset_map)
-            zf.writestr('index.html', html.encode('utf-8'))
-            if not inline_assets:
-                for _url, (filename, data, _mime, _rtype) in asset_map.items():
-                    zf.writestr(f'assets/{filename}', data)
+            buf = io.BytesIO()
+            with zipfile.ZipFile(buf, 'w', zipfile.ZIP_DEFLATED) as zf:
+                if inline_assets:
+                    html = inline_all_assets(html, asset_map)
+                else:
+                    html = rewrite_html_urls(html, asset_map)
+                zf.writestr('index.html', html.encode('utf-8'))
+                if not inline_assets:
+                    for _url, (filename, data, _mime, _rtype) in asset_map.items():
+                        zf.writestr(f'assets/{filename}', data)
 
-        if not page_was_enabled:
-            await self.disable_page_events()
-
-        async with aiofiles.open(path, 'wb') as f:
-            await f.write(buf.getvalue())
-        logger.info(f'Page bundle saved to: {path}')
+            async with aiofiles.open(path, 'wb') as f:
+                await f.write(buf.getvalue())
+            logger.info(f'Page bundle saved to: {path}')
+        finally:
+            if not page_was_enabled:
+                await self.disable_page_events()
 
     async def _fetch_document_html(self, frame_tree: FrameResourceTree) -> str:
         """Fetch the main document HTML from the frame tree."""

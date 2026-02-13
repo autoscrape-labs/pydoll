@@ -91,6 +91,7 @@ class Request:
         """
         self.tab = tab
         self._network_events_enabled = False
+        self._callback_ids: list[int] = []
         self._requests_sent: list[RequestSentEvent] = []
         self._requests_received: list[RequestReceivedEvent] = []
         logger.debug('Request helper initialized for tab')
@@ -345,35 +346,52 @@ class Request:
             raise HarReplayError('Invalid HAR file: entries is not a list')
 
         responses: list[Response] = []
-        for entry in entries:
-            har_request = entry.get('request', {})
-            method = har_request.get('method', 'GET')
-            url = har_request.get('url', '')
+        for idx, entry in enumerate(entries):
+            if not isinstance(entry, dict):
+                raise HarReplayError(f'Entry {idx}: expected dict, got {type(entry).__name__}')
 
-            if not url:
-                continue
+            har_request = entry.get('request')
+            if not isinstance(har_request, dict):
+                raise HarReplayError(f'Entry {idx}: missing or invalid "request" field')
 
-            headers_list = har_request.get('headers', [])
-            header_entries = [
-                HeaderEntry(name=h['name'], value=h['value'])
-                for h in headers_list
-                if isinstance(h, dict) and 'name' in h and 'value' in h
-            ]
+            try:
+                method = har_request.get('method', 'GET')
+                url = har_request.get('url', '')
 
-            post_data = har_request.get('postData', {})
-            body = post_data.get('text') if post_data else None
+                if not url:
+                    continue
 
-            kwargs: dict[str, Any] = {}
-            if body:
-                kwargs['data'] = body
+                headers_list = har_request.get('headers', [])
+                if not isinstance(headers_list, list):
+                    headers_list = []
+                header_entries = [
+                    HeaderEntry(name=h['name'], value=h['value'])
+                    for h in headers_list
+                    if isinstance(h, dict) and 'name' in h and 'value' in h
+                ]
 
-            response = await self.request(
-                method=method,
-                url=url,
-                headers=header_entries if header_entries else None,
-                **kwargs,
-            )
-            responses.append(response)
+                post_data = har_request.get('postData')
+                body = (
+                    post_data.get('text')
+                    if isinstance(post_data, dict)
+                    else None
+                )
+
+                kwargs: dict[str, Any] = {}
+                if body:
+                    kwargs['data'] = body
+
+                response = await self.request(
+                    method=method,
+                    url=url,
+                    headers=header_entries if header_entries else None,
+                    **kwargs,
+                )
+                responses.append(response)
+            except (TypeError, AttributeError, KeyError) as exc:
+                raise HarReplayError(
+                    f'Entry {idx}: failed to parse request ({type(exc).__name__}: {exc})'
+                ) from exc
 
         logger.info('HAR replay completed: %d requests replayed', len(responses))
         return responses
@@ -501,35 +519,39 @@ class Request:
             self._requests_sent.append(cast(RequestSentEvent, event))
             logger.debug(f'Appended sent request: event={event}')
 
-        await self.tab.on(
-            NetworkEvent.REQUEST_WILL_BE_SENT,
-            callback=append_sent_request,
-        )
-        await self.tab.on(
-            NetworkEvent.REQUEST_WILL_BE_SENT_EXTRA_INFO,
-            callback=append_sent_request,
-        )
-        await self.tab.on(
-            NetworkEvent.RESPONSE_RECEIVED,
-            callback=append_received_request,
-        )
-        await self.tab.on(
-            NetworkEvent.RESPONSE_RECEIVED_EXTRA_INFO,
-            callback=append_received_request,
-        )
+        self._callback_ids = [
+            await self.tab.on(
+                NetworkEvent.REQUEST_WILL_BE_SENT,
+                callback=append_sent_request,
+            ),
+            await self.tab.on(
+                NetworkEvent.REQUEST_WILL_BE_SENT_EXTRA_INFO,
+                callback=append_sent_request,
+            ),
+            await self.tab.on(
+                NetworkEvent.RESPONSE_RECEIVED,
+                callback=append_received_request,
+            ),
+            await self.tab.on(
+                NetworkEvent.RESPONSE_RECEIVED_EXTRA_INFO,
+                callback=append_received_request,
+            ),
+        ]
 
     async def _clear_callbacks(self) -> None:
         """Clean up network event listeners and disable network monitoring.
 
-        Removes all registered event callbacks and disables network events
-        if they were enabled by this request instance.
+        Removes only the callbacks registered by this request instance
+        (surgical removal) so other listeners (e.g. HarRecorder) are
+        not affected.
         """
+        for callback_id in self._callback_ids:
+            await self.tab.remove_callback(callback_id)
+        self._callback_ids.clear()
         if self._network_events_enabled:
             await self.tab.disable_network_events()
             self._network_events_enabled = False
             logger.debug('Network events disabled on tab after request')
-        await self.tab.clear_callbacks()
-        logger.debug('Cleared network callbacks on tab')
 
     def _extract_received_headers(self) -> list[HeaderEntry]:
         """Extract headers from response network events.
