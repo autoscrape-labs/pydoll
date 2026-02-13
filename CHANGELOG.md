@@ -1,3 +1,20 @@
+## 2.20.0 (2026-02-13)
+
+### Feat
+
+- **mouse**: add timing property for runtime configuration
+- **requests**: add record() and replay() to Request class
+- **requests**: add HAR network recorder
+- **protocol**: add HAR 1.2 type definitions
+
+### Fix
+
+- **requests**: use surgical callback removal instead of nuclear clear_callbacks
+
+### Refactor
+
+- **tab**: extract bundle static methods to utils module
+
 ## 2.19.0 (2026-02-12)
 
 ### Feat
