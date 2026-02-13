@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import asyncio
 import base64 as _b64
+import io
 import logging
 import shutil
 import warnings
+import zipfile
 from contextlib import asynccontextmanager
 from functools import partial
 from pathlib import Path
@@ -60,8 +62,9 @@ from pydoll.interactions import KeyboardAPI, MouseAPI, ScrollAPI
 from pydoll.interactions.iframe import IFrameContext
 from pydoll.protocol.browser.types import DownloadBehavior, DownloadProgressState
 from pydoll.protocol.dom.types import Node, ShadowRootType
+from pydoll.protocol.network.types import ResourceType
 from pydoll.protocol.page.events import PageEvent
-from pydoll.protocol.page.types import ScreenshotFormat
+from pydoll.protocol.page.types import FrameResourceTree, ScreenshotFormat
 from pydoll.protocol.runtime.methods import (
     CallFunctionOnResponse,
     EvaluateResponse,
@@ -72,6 +75,13 @@ from pydoll.protocol.target.types import TargetInfo
 from pydoll.utils import (
     decode_base64_to_bytes,
     has_return_outside_function,
+)
+from pydoll.utils.bundle import (
+    build_asset_filename,
+    collect_frame_resources,
+    filter_fetchable_resources,
+    inline_all_assets,
+    rewrite_html_urls,
 )
 
 if TYPE_CHECKING:
@@ -95,10 +105,14 @@ if TYPE_CHECKING:
         CookieParam,
         ErrorReason,
         RequestMethod,
-        ResourceType,
     )
     from pydoll.protocol.page.events import FileChooserOpenedEvent
-    from pydoll.protocol.page.methods import CaptureScreenshotResponse, PrintToPDFResponse
+    from pydoll.protocol.page.methods import (
+        CaptureScreenshotResponse,
+        GetResourceContentResponse,
+        GetResourceTreeResponse,
+        PrintToPDFResponse,
+    )
     from pydoll.protocol.runtime.methods import CallFunctionOnResponse, EvaluateResponse
     from pydoll.protocol.storage.methods import GetCookiesResponse as StorageGetCookiesResponse
     from pydoll.protocol.target.methods import AttachToTargetResponse, GetTargetsResponse
@@ -1064,6 +1078,109 @@ class Tab(FindElementsMixin):
         logger.info(f'PDF saved to: {path}')
 
         return None
+
+    async def save_bundle(self, path: str | Path, inline_assets: bool = False) -> None:
+        """
+        Save current page and its assets as a .zip bundle for offline viewing.
+
+        Captures the page HTML along with CSS, JS, images, fonts, and media
+        into a single zip archive. The archive contains an ``index.html`` with
+        URLs rewritten to reference local asset files.
+
+        Args:
+            path: Destination path for the ``.zip`` file.
+            inline_assets: When True, embed all assets directly into
+                ``index.html`` using data URIs, ``<style>``, and ``<script>``
+                tags instead of saving them as separate files.
+
+        Raises:
+            InvalidFileExtension: If path does not end with ``.zip``.
+        """
+        path = Path(path)
+        if path.suffix.lower() != '.zip':
+            raise InvalidFileExtension(f'Expected .zip extension, got {path.suffix!r}')
+
+        logger.info(f'Saving page bundle: path={path}, inline={inline_assets}')
+
+        page_was_enabled = self.page_events_enabled
+        if not page_was_enabled:
+            await self.enable_page_events()
+
+        tree_response: GetResourceTreeResponse = await self._execute_command(
+            PageCommands.get_resource_tree()
+        )
+        frame_tree: FrameResourceTree = tree_response['result']['frameTree']
+        page_url = frame_tree['frame']['url']
+        html = await self._fetch_document_html(frame_tree)
+        asset_map = await self._fetch_bundle_assets(frame_tree, page_url)
+
+        buf = io.BytesIO()
+        with zipfile.ZipFile(buf, 'w', zipfile.ZIP_DEFLATED) as zf:
+            if inline_assets:
+                html = inline_all_assets(html, asset_map)
+            else:
+                html = rewrite_html_urls(html, asset_map)
+            zf.writestr('index.html', html.encode('utf-8'))
+            if not inline_assets:
+                for _url, (filename, data, _mime, _rtype) in asset_map.items():
+                    zf.writestr(f'assets/{filename}', data)
+
+        if not page_was_enabled:
+            await self.disable_page_events()
+
+        async with aiofiles.open(path, 'wb') as f:
+            await f.write(buf.getvalue())
+        logger.info(f'Page bundle saved to: {path}')
+
+    async def _fetch_document_html(self, frame_tree: FrameResourceTree) -> str:
+        """Fetch the main document HTML from the frame tree."""
+        frame_id = frame_tree['frame']['id']
+        page_url = frame_tree['frame']['url']
+        try:
+            doc_response: GetResourceContentResponse = await self._execute_command(
+                PageCommands.get_resource_content(frame_id, page_url)
+            )
+            result = doc_response['result']
+            html = result['content']
+            if result.get('base64Encoded'):
+                html = _b64.b64decode(html).decode('utf-8', errors='replace')
+            return html
+        except Exception:
+            logger.debug('getResourceContent failed for document, falling back to JS')
+            response = await self.execute_script('return document.documentElement.outerHTML')
+            return cast(str, response['result']['result']['value'])
+
+    async def _fetch_bundle_assets(
+        self,
+        frame_tree: FrameResourceTree,
+        page_url: str,
+    ) -> dict[str, tuple[str, bytes, str, ResourceType]]:
+        """Fetch all bundleable resources and return an asset map."""
+        all_resources = collect_frame_resources(frame_tree)
+        fetchable = filter_fetchable_resources(all_resources, page_url)
+
+        fetch_tasks: list[Awaitable[GetResourceContentResponse]] = [
+            self._execute_command(PageCommands.get_resource_content(fid, res['url']))
+            for fid, res in fetchable
+        ]
+        results = await asyncio.gather(*fetch_tasks, return_exceptions=True)
+
+        asset_map: dict[str, tuple[str, bytes, str, ResourceType]] = {}
+        for idx, ((_fid, res), result) in enumerate(zip(fetchable, results)):
+            if isinstance(result, BaseException):
+                logger.warning(f'Failed to fetch resource {res["url"]}: {result}')
+                continue
+            response: GetResourceContentResponse = result
+            content_result = response.get('result')
+            if content_result is None:
+                logger.warning(f'No result for resource {res["url"]}: {response.get("error")}')
+                continue
+            raw_content: str = content_result['content']
+            is_base64: bool = content_result.get('base64Encoded', False)
+            data = _b64.b64decode(raw_content) if is_base64 else raw_content.encode('utf-8')
+            filename = build_asset_filename(res['url'], res['mimeType'], idx)
+            asset_map[res['url']] = (filename, data, res['mimeType'], res['type'])
+        return asset_map
 
     async def has_dialog(self) -> bool:
         """
