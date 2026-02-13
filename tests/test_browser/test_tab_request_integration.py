@@ -138,9 +138,9 @@ class TestTabRequestIntegration:
         # Mock network events methods
         tab.enable_network_events = AsyncMock()
         tab.disable_network_events = AsyncMock()
-        tab.on = AsyncMock()
-        tab.clear_callbacks = AsyncMock()
-        
+        tab.on = AsyncMock(side_effect=lambda *a, **kw: len(tab.on.call_args_list))
+        tab.remove_callback = AsyncMock()
+
         # Mock tab execute command for HTTP request
         tab._execute_command = AsyncMock()
         mock_result = {
@@ -187,9 +187,9 @@ class TestTabRequestIntegration:
         tab._network_events_enabled = False
         tab.enable_network_events = AsyncMock()
         tab.disable_network_events = AsyncMock()
-        tab.on = AsyncMock()
-        tab.clear_callbacks = AsyncMock()
-        
+        tab.on = AsyncMock(side_effect=lambda *a, **kw: len(tab.on.call_args_list))
+        tab.remove_callback = AsyncMock()
+
         # Mock tab execute command
         tab._execute_command = AsyncMock()
         mock_result = {
@@ -206,19 +206,19 @@ class TestTabRequestIntegration:
             }
         }
         tab._execute_command.return_value = mock_result
-        
+
         # Mock helper methods
         with patch.object(request_instance, '_extract_received_headers') as mock_extract_headers, \
              patch.object(request_instance, '_extract_sent_headers') as mock_extract_sent, \
              patch.object(request_instance, '_extract_set_cookies') as mock_extract_cookies:
-            
+
             mock_extract_headers.return_value = []
             mock_extract_sent.return_value = []
             mock_extract_cookies.return_value = []
-            
+
             # Make a request
             await request_instance.get('https://example.com')
-            
+
             # Verify network events were enabled and callbacks were registered
             tab.enable_network_events.assert_called_once()
             assert tab.on.call_count == 4  # Four network events should be registered
@@ -232,10 +232,10 @@ class TestTabRequestIntegration:
         tab._network_events_enabled = False
         tab.enable_network_events = AsyncMock()
         tab.disable_network_events = AsyncMock()
-        tab.on = AsyncMock()
-        tab.clear_callbacks = AsyncMock()
+        tab.on = AsyncMock(side_effect=lambda *a, **kw: len(tab.on.call_args_list))
+        tab.remove_callback = AsyncMock()
         tab._execute_command = AsyncMock()
-        
+
         mock_result = {
             'result': {
                 'result': {
@@ -250,21 +250,21 @@ class TestTabRequestIntegration:
             }
         }
         tab._execute_command.return_value = mock_result
-        
+
         # Mock helper methods
         with patch.object(request_instance, '_extract_received_headers') as mock_extract_headers, \
              patch.object(request_instance, '_extract_sent_headers') as mock_extract_sent, \
              patch.object(request_instance, '_extract_set_cookies') as mock_extract_cookies:
-            
+
             mock_extract_headers.return_value = []
             mock_extract_sent.return_value = []
             mock_extract_cookies.return_value = []
-            
+
             # Make a request
             await request_instance.get('https://example.com')
-            
-            # Verify callbacks were cleared
-            tab.clear_callbacks.assert_called_once()
+
+            # Verify callbacks were removed surgically (4 callbacks registered)
+            assert tab.remove_callback.call_count == 4
 
     @pytest.mark.asyncio
     async def test_request_clears_callbacks_on_error(self, tab):
@@ -275,18 +275,18 @@ class TestTabRequestIntegration:
         tab._network_events_enabled = False
         tab.enable_network_events = AsyncMock()
         tab.disable_network_events = AsyncMock()
-        tab.on = AsyncMock()
-        tab.clear_callbacks = AsyncMock()
-        
+        tab.on = AsyncMock(side_effect=lambda *a, **kw: len(tab.on.call_args_list))
+        tab.remove_callback = AsyncMock()
+
         # Make tab._execute_command raise an exception
         tab._execute_command = AsyncMock(side_effect=Exception("Network error"))
-        
+
         # Make a request that should fail
         with pytest.raises(Exception):  # Should raise HTTPError wrapping the original exception
             await request_instance.get('https://example.com')
-        
-        # Verify callbacks were still cleared despite the error
-        tab.clear_callbacks.assert_called_once()
+
+        # Verify callbacks were still removed despite the error
+        assert tab.remove_callback.call_count == 4
 
     @pytest.mark.asyncio
     async def test_request_http_methods_integration(self, tab):
@@ -297,10 +297,10 @@ class TestTabRequestIntegration:
         tab._network_events_enabled = False
         tab.enable_network_events = AsyncMock()
         tab.disable_network_events = AsyncMock()
-        tab.on = AsyncMock()
-        tab.clear_callbacks = AsyncMock()
+        tab.on = AsyncMock(side_effect=lambda *a, **kw: len(tab.on.call_args_list))
+        tab.remove_callback = AsyncMock()
         tab._execute_command = AsyncMock()
-        
+
         mock_result = {
             'result': {
                 'result': {
@@ -315,16 +315,16 @@ class TestTabRequestIntegration:
             }
         }
         tab._execute_command.return_value = mock_result
-        
+
         # Mock helper methods
         with patch.object(request_instance, '_extract_received_headers') as mock_extract_headers, \
              patch.object(request_instance, '_extract_sent_headers') as mock_extract_sent, \
              patch.object(request_instance, '_extract_set_cookies') as mock_extract_cookies:
-            
+
             mock_extract_headers.return_value = []
             mock_extract_sent.return_value = []
             mock_extract_cookies.return_value = []
-            
+
             # Test all HTTP methods
             methods_to_test = [
                 ('get', lambda: request_instance.get('https://example.com')),
@@ -335,22 +335,23 @@ class TestTabRequestIntegration:
                 ('head', lambda: request_instance.head('https://example.com')),
                 ('options', lambda: request_instance.options('https://example.com')),
             ]
-            
+
             for method_name, method_call in methods_to_test:
                 # Reset mocks
                 tab._execute_command.reset_mock()
-                tab.clear_callbacks.reset_mock()
-                
+                tab.remove_callback.reset_mock()
+
                 # Execute method
                 response = await method_call()
-                
+
                 # Verify response
                 assert isinstance(response, Response)
                 assert response.status_code == 200
-                
+
                 # Verify tab's execute_command was called
                 tab._execute_command.assert_called_once()
-                tab.clear_callbacks.assert_called_once()
+                # Verify callbacks were removed surgically (4 per request)
+                assert tab.remove_callback.call_count == 4
 
     def test_request_property_singleton_behavior(self, tab):
         """Test that request property maintains singleton behavior per tab."""

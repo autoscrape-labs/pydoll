@@ -185,7 +185,7 @@ class TestHarRecorderStart:
     """Test HarRecorder.start()."""
 
     @pytest.mark.asyncio
-    async def test_start_registers_six_callbacks(self, recorder, mock_tab):
+    async def test_start_registers_seven_callbacks(self, recorder, mock_tab):
         await recorder.start()
         assert mock_tab.on.call_count == 7
 

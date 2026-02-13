@@ -23,8 +23,8 @@ async def mock_tab():
     tab.network_events_enabled = False
     tab.enable_network_events = AsyncMock()
     tab.disable_network_events = AsyncMock()
-    tab.clear_callbacks = AsyncMock()
-    tab.on = AsyncMock()
+    tab.remove_callback = AsyncMock()
+    tab.on = AsyncMock(side_effect=lambda *a, **kw: len(tab.on.call_args_list))
     tab._execute_command = AsyncMock()
     return tab
 
@@ -405,22 +405,26 @@ class TestRequestCallbackManagement:
     async def test_clear_callbacks_disables_network_events(self, request_instance, mock_tab):
         """Test that clearing callbacks disables network events if they were enabled."""
         request_instance._network_events_enabled = True
-        
+        request_instance._callback_ids = [10, 11, 12, 13]
+
         await request_instance._clear_callbacks()
-        
+
         mock_tab.disable_network_events.assert_called_once()
-        mock_tab.clear_callbacks.assert_called_once()
+        assert mock_tab.remove_callback.call_count == 4
         assert request_instance._network_events_enabled is False
+        assert request_instance._callback_ids == []
 
     @pytest.mark.asyncio
     async def test_clear_callbacks_skips_disable_if_not_enabled(self, request_instance, mock_tab):
         """Test that network events are not disabled if not enabled by request."""
         request_instance._network_events_enabled = False
-        
+        request_instance._callback_ids = [10, 11]
+
         await request_instance._clear_callbacks()
-        
+
         mock_tab.disable_network_events.assert_not_called()
-        mock_tab.clear_callbacks.assert_called_once()
+        assert mock_tab.remove_callback.call_count == 2
+        assert request_instance._callback_ids == []
 
 
 class TestRequestCookieExtraction:

@@ -82,6 +82,8 @@ def api_server():
     thread.start()
     yield f'http://127.0.0.1:{port}'
     server.shutdown()
+    server.server_close()
+    thread.join(timeout=5)
 
 
 @pytest.fixture(scope='module')
@@ -114,7 +116,7 @@ class TestHarRecordIntegration:
 
             async with tab.request.record() as recording:
                 await tab.go_to(page_url)
-                await _wait_for_requests_done(tab)
+                assert await _wait_for_requests_done(tab), 'Page requests did not complete'
                 await asyncio.sleep(1)
 
             assert isinstance(recording, HarCapture)
@@ -141,7 +143,7 @@ class TestHarRecordIntegration:
 
             async with tab.request.record() as recording:
                 await tab.go_to(page_url)
-                await _wait_for_requests_done(tab)
+                assert await _wait_for_requests_done(tab), 'Page requests did not complete'
                 await asyncio.sleep(1)
 
             entries = recording.entries
@@ -166,7 +168,7 @@ class TestHarRecordIntegration:
 
             async with tab.request.record() as recording:
                 await tab.go_to(page_url)
-                await _wait_for_requests_done(tab)
+                assert await _wait_for_requests_done(tab), 'Page requests did not complete'
                 await asyncio.sleep(1)
 
             entries = recording.entries
@@ -196,7 +198,7 @@ class TestHarRecordIntegration:
 
             async with tab.request.record() as recording:
                 await tab.go_to(page_url)
-                await _wait_for_requests_done(tab)
+                assert await _wait_for_requests_done(tab), 'Page requests did not complete'
                 await asyncio.sleep(1)
 
             entries = recording.entries
@@ -233,7 +235,7 @@ class TestHarRecordIntegration:
 
             async with tab.request.record() as recording:
                 await tab.go_to(page_url)
-                await _wait_for_requests_done(tab)
+                assert await _wait_for_requests_done(tab), 'Page requests did not complete'
                 await asyncio.sleep(1)
 
             entries = recording.entries
@@ -265,7 +267,7 @@ class TestHarRecordIntegration:
 
             async with tab.request.record() as recording:
                 await tab.go_to(page_url)
-                await _wait_for_requests_done(tab)
+                assert await _wait_for_requests_done(tab), 'Page requests did not complete'
                 await asyncio.sleep(1)
 
             entries = recording.entries
@@ -294,7 +296,7 @@ class TestHarSaveIntegration:
 
             async with tab.request.record() as recording:
                 await tab.go_to(page_url)
-                await _wait_for_requests_done(tab)
+                assert await _wait_for_requests_done(tab), 'Page requests did not complete'
                 await asyncio.sleep(1)
 
             har_path = tmp_path / 'test_output.har'
@@ -322,7 +324,7 @@ class TestHarSaveIntegration:
 
             async with tab.request.record() as recording:
                 await tab.go_to(page_url)
-                await _wait_for_requests_done(tab)
+                assert await _wait_for_requests_done(tab), 'Page requests did not complete'
                 await asyncio.sleep(1)
 
             har_path = tmp_path / 'test_sorted.har'
@@ -346,7 +348,7 @@ class TestHarSaveIntegration:
 
             async with tab.request.record() as recording:
                 await tab.go_to(page_url)
-                await _wait_for_requests_done(tab)
+                assert await _wait_for_requests_done(tab), 'Page requests did not complete'
                 await asyncio.sleep(1)
 
             har_path = tmp_path / 'test_fields.har'
