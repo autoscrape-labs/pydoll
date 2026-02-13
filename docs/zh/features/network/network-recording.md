@@ -27,59 +27,98 @@ async def record_traffic():
     async with Chrome() as browser:
         tab = await browser.start()
 
-        async with tab.request.record() as recording:
+        async with tab.request.record() as capture:
             await tab.go_to('https://example.com')
 
-        # 保存录制为 HAR 文件
-        recording.save('flow.har')
-        print(f'捕获了 {len(recording.entries)} 个请求')
+        # 保存捕获为 HAR 文件
+        capture.save('flow.har')
+        print(f'捕获了 {len(capture.entries)} 个请求')
 
 asyncio.run(record_traffic())
 ```
 
 ## 录制 API
 
-### `tab.request.record()`
+### `tab.request.record(resource_types=None)`
 
-上下文管理器，捕获标签页上的所有网络流量。
+上下文管理器，捕获标签页上的网络流量。
+
+| 参数 | 类型 | 描述 |
+|------|------|------|
+| `resource_types` | `list[ResourceType] \| None` | 可选的资源类型列表。当为 `None`（默认）时，捕获所有类型。 |
 
 ```python
-async with tab.request.record() as recording:
+async with tab.request.record() as capture:
     # 此块内的所有网络活动都会被捕获
     await tab.go_to('https://example.com')
     await (await tab.find(id='search')).type_text('pydoll')
     await (await tab.find(type='submit')).click()
 ```
 
-`recording` 对象提供：
+`capture` 对象（`HarCapture`）提供：
 
 | 属性/方法 | 描述 |
 |----------|------|
-| `recording.entries` | 捕获的 HAR 条目列表 |
-| `recording.to_dict()` | 完整的 HAR 1.2 字典（用于自定义处理） |
-| `recording.save(path)` | 保存为 HAR JSON 文件 |
+| `capture.entries` | 捕获的 HAR 条目列表 |
+| `capture.to_dict()` | 完整的 HAR 1.2 字典（用于自定义处理） |
+| `capture.save(path)` | 保存为 HAR JSON 文件 |
 
-### 保存录制
+### 按资源类型过滤
+
+仅录制特定资源类型而非所有流量：
+
+```python
+from pydoll.protocol.network.types import ResourceType
+
+# 仅录制 fetch/XHR 请求（跳过文档、图像等）
+async with tab.request.record(
+    resource_types=[ResourceType.FETCH, ResourceType.XHR]
+) as capture:
+    await tab.go_to('https://example.com')
+
+# 仅录制文档和样式表请求
+async with tab.request.record(
+    resource_types=[ResourceType.DOCUMENT, ResourceType.STYLESHEET]
+) as capture:
+    await tab.go_to('https://example.com')
+```
+
+可用的 `ResourceType` 值：
+
+| 值 | 描述 |
+|----|------|
+| `ResourceType.DOCUMENT` | HTML 文档 |
+| `ResourceType.STYLESHEET` | CSS 样式表 |
+| `ResourceType.SCRIPT` | JavaScript 文件 |
+| `ResourceType.IMAGE` | 图像 |
+| `ResourceType.FONT` | Web 字体 |
+| `ResourceType.MEDIA` | 音频/视频 |
+| `ResourceType.FETCH` | Fetch API 请求 |
+| `ResourceType.XHR` | XMLHttpRequest 调用 |
+| `ResourceType.WEB_SOCKET` | WebSocket 连接 |
+| `ResourceType.OTHER` | 其他资源类型 |
+
+### 保存捕获
 
 ```python
 # 保存为 HAR 文件（可以在 Chrome DevTools 中打开）
-recording.save('flow.har')
+capture.save('flow.har')
 
 # 保存到嵌套目录（自动创建）
-recording.save('recordings/session1/flow.har')
+capture.save('recordings/session1/flow.har')
 
 # 访问原始 HAR 字典进行自定义处理
-har_dict = recording.to_dict()
+har_dict = capture.to_dict()
 print(har_dict['log']['version'])  # "1.2"
 ```
 
 ### 检查条目
 
 ```python
-async with tab.request.record() as recording:
+async with tab.request.record() as capture:
     await tab.go_to('https://example.com')
 
-for entry in recording.entries:
+for entry in capture.entries:
     req = entry['request']
     resp = entry['response']
     print(f"{req['method']} {req['url']} -> {resp['status']}")
@@ -126,34 +165,34 @@ async def record_and_replay():
         tab = await browser.start()
 
         # 步骤 1：录制原始会话
-        async with tab.request.record() as recording:
+        async with tab.request.record() as capture:
             await tab.go_to('https://api.example.com')
             await tab.request.post(
                 'https://api.example.com/data',
                 json={'key': 'value'}
             )
 
-        recording.save('api_session.har')
+        capture.save('api_session.har')
 
         # 步骤 2：稍后重放
         responses = await tab.request.replay('api_session.har')
 ```
 
-### 过滤录制的条目
+### 过滤捕获的条目
 
 ```python
-async with tab.request.record() as recording:
+async with tab.request.record() as capture:
     await tab.go_to('https://example.com')
 
 # 仅过滤 API 调用
 api_entries = [
-    e for e in recording.entries
+    e for e in capture.entries
     if '/api/' in e['request']['url']
 ]
 
 # 仅过滤失败的请求
 failed = [
-    e for e in recording.entries
+    e for e in capture.entries
     if e['response']['status'] >= 400
 ]
 ```
@@ -161,7 +200,7 @@ failed = [
 ### 自定义 HAR 处理
 
 ```python
-har = recording.to_dict()
+har = capture.to_dict()
 
 # 按类型统计请求
 from collections import Counter

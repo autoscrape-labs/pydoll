@@ -27,59 +27,98 @@ async def gravar_trafego():
     async with Chrome() as browser:
         tab = await browser.start()
 
-        async with tab.request.record() as recording:
+        async with tab.request.record() as capture:
             await tab.go_to('https://example.com')
 
-        # Salve a gravacao como arquivo HAR
-        recording.save('flow.har')
-        print(f'Capturadas {len(recording.entries)} requisicoes')
+        # Salve a captura como arquivo HAR
+        capture.save('flow.har')
+        print(f'Capturadas {len(capture.entries)} requisicoes')
 
 asyncio.run(gravar_trafego())
 ```
 
 ## API de Gravacao
 
-### `tab.request.record()`
+### `tab.request.record(resource_types=None)`
 
-Gerenciador de contexto que captura todo o trafego de rede na aba.
+Gerenciador de contexto que captura o trafego de rede na aba.
+
+| Parametro | Tipo | Descricao |
+|-----------|------|-----------|
+| `resource_types` | `list[ResourceType] \| None` | Lista opcional de tipos de recurso a capturar. Quando `None` (padrao), todos os tipos sao capturados. |
 
 ```python
-async with tab.request.record() as recording:
+async with tab.request.record() as capture:
     # Toda atividade de rede dentro deste bloco e capturada
     await tab.go_to('https://example.com')
     await (await tab.find(id='search')).type_text('pydoll')
     await (await tab.find(type='submit')).click()
 ```
 
-O objeto `recording` fornece:
+O objeto `capture` (`HarCapture`) fornece:
 
 | Propriedade/Metodo | Descricao |
 |-------------------|-----------|
-| `recording.entries` | Lista de entradas HAR capturadas |
-| `recording.to_dict()` | Dict HAR 1.2 completo (para processamento customizado) |
-| `recording.save(path)` | Salvar como arquivo JSON HAR |
+| `capture.entries` | Lista de entradas HAR capturadas |
+| `capture.to_dict()` | Dict HAR 1.2 completo (para processamento customizado) |
+| `capture.save(path)` | Salvar como arquivo JSON HAR |
 
-### Salvando Gravacoes
+### Filtrando por Tipo de Recurso
+
+Grave apenas tipos de recurso especificos ao inves de todo o trafego:
+
+```python
+from pydoll.protocol.network.types import ResourceType
+
+# Gravar apenas requisicoes fetch/XHR (ignorar documentos, imagens, etc.)
+async with tab.request.record(
+    resource_types=[ResourceType.FETCH, ResourceType.XHR]
+) as capture:
+    await tab.go_to('https://example.com')
+
+# Gravar apenas documentos e folhas de estilo
+async with tab.request.record(
+    resource_types=[ResourceType.DOCUMENT, ResourceType.STYLESHEET]
+) as capture:
+    await tab.go_to('https://example.com')
+```
+
+Valores disponiveis de `ResourceType`:
+
+| Valor | Descricao |
+|-------|-----------|
+| `ResourceType.DOCUMENT` | Documentos HTML |
+| `ResourceType.STYLESHEET` | Folhas de estilo CSS |
+| `ResourceType.SCRIPT` | Arquivos JavaScript |
+| `ResourceType.IMAGE` | Imagens |
+| `ResourceType.FONT` | Fontes web |
+| `ResourceType.MEDIA` | Audio/video |
+| `ResourceType.FETCH` | Requisicoes Fetch API |
+| `ResourceType.XHR` | Chamadas XMLHttpRequest |
+| `ResourceType.WEB_SOCKET` | Conexoes WebSocket |
+| `ResourceType.OTHER` | Outros tipos de recurso |
+
+### Salvando Capturas
 
 ```python
 # Salvar como arquivo HAR (pode ser aberto no Chrome DevTools)
-recording.save('flow.har')
+capture.save('flow.har')
 
 # Salvar em diretorio aninhado (criado automaticamente)
-recording.save('recordings/session1/flow.har')
+capture.save('recordings/session1/flow.har')
 
 # Acessar o dict HAR bruto para processamento customizado
-har_dict = recording.to_dict()
+har_dict = capture.to_dict()
 print(har_dict['log']['version'])  # "1.2"
 ```
 
 ### Inspecionando Entradas
 
 ```python
-async with tab.request.record() as recording:
+async with tab.request.record() as capture:
     await tab.go_to('https://example.com')
 
-for entry in recording.entries:
+for entry in capture.entries:
     req = entry['request']
     resp = entry['response']
     print(f"{req['method']} {req['url']} -> {resp['status']}")
@@ -126,34 +165,34 @@ async def gravar_e_reproduzir():
         tab = await browser.start()
 
         # Passo 1: Gravar a sessao original
-        async with tab.request.record() as recording:
+        async with tab.request.record() as capture:
             await tab.go_to('https://api.example.com')
             await tab.request.post(
                 'https://api.example.com/data',
                 json={'key': 'value'}
             )
 
-        recording.save('api_session.har')
+        capture.save('api_session.har')
 
         # Passo 2: Reproduzir depois
         responses = await tab.request.replay('api_session.har')
 ```
 
-### Filtrando Entradas Gravadas
+### Filtrando Entradas Capturadas
 
 ```python
-async with tab.request.record() as recording:
+async with tab.request.record() as capture:
     await tab.go_to('https://example.com')
 
 # Filtrar apenas chamadas de API
 api_entries = [
-    e for e in recording.entries
+    e for e in capture.entries
     if '/api/' in e['request']['url']
 ]
 
 # Filtrar apenas requisicoes com falha
 falhas = [
-    e for e in recording.entries
+    e for e in capture.entries
     if e['response']['status'] >= 400
 ]
 ```
@@ -161,7 +200,7 @@ falhas = [
 ### Processamento HAR Customizado
 
 ```python
-har = recording.to_dict()
+har = capture.to_dict()
 
 # Contar requisicoes por tipo
 from collections import Counter

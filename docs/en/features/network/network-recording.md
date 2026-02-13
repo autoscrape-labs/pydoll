@@ -27,59 +27,98 @@ async def record_traffic():
     async with Chrome() as browser:
         tab = await browser.start()
 
-        async with tab.request.record() as recording:
+        async with tab.request.record() as capture:
             await tab.go_to('https://example.com')
 
-        # Save the recording as a HAR file
-        recording.save('flow.har')
-        print(f'Captured {len(recording.entries)} requests')
+        # Save the capture as a HAR file
+        capture.save('flow.har')
+        print(f'Captured {len(capture.entries)} requests')
 
 asyncio.run(record_traffic())
 ```
 
 ## Recording API
 
-### `tab.request.record()`
+### `tab.request.record(resource_types=None)`
 
-Context manager that captures all network traffic on the tab.
+Context manager that captures network traffic on the tab.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `resource_types` | `list[ResourceType] \| None` | Optional list of resource types to capture. When `None` (default), all types are captured. |
 
 ```python
-async with tab.request.record() as recording:
+async with tab.request.record() as capture:
     # All network activity inside this block is captured
     await tab.go_to('https://example.com')
     await (await tab.find(id='search')).type_text('pydoll')
     await (await tab.find(type='submit')).click()
 ```
 
-The `recording` object provides:
+The `capture` object (`HarCapture`) provides:
 
 | Property/Method | Description |
 |----------------|-------------|
-| `recording.entries` | List of captured HAR entries |
-| `recording.to_dict()` | Full HAR 1.2 dict (for custom processing) |
-| `recording.save(path)` | Save as HAR JSON file |
+| `capture.entries` | List of captured HAR entries |
+| `capture.to_dict()` | Full HAR 1.2 dict (for custom processing) |
+| `capture.save(path)` | Save as HAR JSON file |
 
-### Saving Recordings
+### Filtering by Resource Type
+
+Record only specific resource types instead of all traffic:
+
+```python
+from pydoll.protocol.network.types import ResourceType
+
+# Record only fetch/XHR requests (skip documents, images, etc.)
+async with tab.request.record(
+    resource_types=[ResourceType.FETCH, ResourceType.XHR]
+) as capture:
+    await tab.go_to('https://example.com')
+
+# Record only document and stylesheet requests
+async with tab.request.record(
+    resource_types=[ResourceType.DOCUMENT, ResourceType.STYLESHEET]
+) as capture:
+    await tab.go_to('https://example.com')
+```
+
+Available `ResourceType` values:
+
+| Value | Description |
+|-------|-------------|
+| `ResourceType.DOCUMENT` | HTML documents |
+| `ResourceType.STYLESHEET` | CSS stylesheets |
+| `ResourceType.SCRIPT` | JavaScript files |
+| `ResourceType.IMAGE` | Images |
+| `ResourceType.FONT` | Web fonts |
+| `ResourceType.MEDIA` | Audio/video |
+| `ResourceType.FETCH` | Fetch API requests |
+| `ResourceType.XHR` | XMLHttpRequest calls |
+| `ResourceType.WEB_SOCKET` | WebSocket connections |
+| `ResourceType.OTHER` | Other resource types |
+
+### Saving Captures
 
 ```python
 # Save as HAR file (can be opened in Chrome DevTools)
-recording.save('flow.har')
+capture.save('flow.har')
 
 # Save to a nested directory (created automatically)
-recording.save('recordings/session1/flow.har')
+capture.save('recordings/session1/flow.har')
 
 # Access the raw HAR dict for custom processing
-har_dict = recording.to_dict()
+har_dict = capture.to_dict()
 print(har_dict['log']['version'])  # "1.2"
 ```
 
 ### Inspecting Entries
 
 ```python
-async with tab.request.record() as recording:
+async with tab.request.record() as capture:
     await tab.go_to('https://example.com')
 
-for entry in recording.entries:
+for entry in capture.entries:
     req = entry['request']
     resp = entry['response']
     print(f"{req['method']} {req['url']} -> {resp['status']}")
@@ -126,34 +165,34 @@ async def record_and_replay():
         tab = await browser.start()
 
         # Step 1: Record the original session
-        async with tab.request.record() as recording:
+        async with tab.request.record() as capture:
             await tab.go_to('https://api.example.com')
             await tab.request.post(
                 'https://api.example.com/data',
                 json={'key': 'value'}
             )
 
-        recording.save('api_session.har')
+        capture.save('api_session.har')
 
         # Step 2: Replay later
         responses = await tab.request.replay('api_session.har')
 ```
 
-### Filtering Recorded Entries
+### Filtering Captured Entries
 
 ```python
-async with tab.request.record() as recording:
+async with tab.request.record() as capture:
     await tab.go_to('https://example.com')
 
 # Filter only API calls
 api_entries = [
-    e for e in recording.entries
+    e for e in capture.entries
     if '/api/' in e['request']['url']
 ]
 
 # Filter only failed requests
 failed = [
-    e for e in recording.entries
+    e for e in capture.entries
     if e['response']['status'] >= 400
 ]
 ```
@@ -161,7 +200,7 @@ failed = [
 ### Custom HAR Processing
 
 ```python
-har = recording.to_dict()
+har = capture.to_dict()
 
 # Count requests by type
 from collections import Counter
