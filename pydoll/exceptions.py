@@ -307,6 +307,18 @@ class HTTPError(RequestException):
     message = 'An HTTP error occurred'
 
 
+class HarRecordingError(RequestException):
+    """Raised when HAR recording fails."""
+
+    message = 'HAR recording error occurred'
+
+
+class HarReplayError(RequestException):
+    """Raised when HAR replay fails."""
+
+    message = 'HAR replay error occurred'
+
+
 class ScriptException(PydollException):
     """Base class for exceptions related to JavaScript execution."""
 
