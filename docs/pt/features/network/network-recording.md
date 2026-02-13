@@ -1,0 +1,171 @@
+# Gravacao de Rede HAR
+
+Capture toda a atividade de rede durante uma sessao do navegador e exporte como um arquivo HAR (HTTP Archive) 1.2 padrao. Perfeito para depuracao, analise de desempenho e fixtures de teste.
+
+!!! tip "Depure Como um Profissional"
+    Arquivos HAR sao o padrao da industria para gravar trafego de rede. Voce pode importa-los diretamente no Chrome DevTools, Charles Proxy ou qualquer visualizador HAR para analise detalhada.
+
+## Por que Usar Gravacao HAR?
+
+| Caso de Uso | Beneficio |
+|-------------|-----------|
+| Depurar requisicoes com falha | Veja headers exatos, timing e corpos de resposta |
+| Analise de desempenho | Identifique requisicoes lentas e gargalos |
+| Documentacao de API | Capture pares reais de requisicao/resposta |
+| Fixtures de teste | Grave trafego real para mocking em testes |
+
+## Inicio Rapido
+
+Grave todo o trafego de rede durante uma navegacao:
+
+```python
+import asyncio
+from pydoll.browser.chromium import Chrome
+
+async def gravar_trafego():
+    async with Chrome() as browser:
+        tab = await browser.start()
+
+        async with tab.request.record() as capture:
+            await tab.go_to('https://example.com')
+
+        # Salve a captura como arquivo HAR
+        capture.save('flow.har')
+        print(f'Capturadas {len(capture.entries)} requisicoes')
+
+asyncio.run(gravar_trafego())
+```
+
+## API de Gravacao
+
+### `tab.request.record(resource_types=None)`
+
+Gerenciador de contexto que captura o trafego de rede na aba.
+
+| Parametro | Tipo | Descricao |
+|-----------|------|-----------|
+| `resource_types` | `list[ResourceType] \| None` | Lista opcional de tipos de recurso a capturar. Quando `None` (padrao), todos os tipos sao capturados. |
+
+```python
+async with tab.request.record() as capture:
+    # Toda atividade de rede dentro deste bloco e capturada
+    await tab.go_to('https://example.com')
+    await (await tab.find(id='search')).type_text('pydoll')
+    await (await tab.find(type='submit')).click()
+```
+
+O objeto `capture` (`HarCapture`) fornece:
+
+| Propriedade/Metodo | Descricao |
+|-------------------|-----------|
+| `capture.entries` | Lista de entradas HAR capturadas |
+| `capture.to_dict()` | Dict HAR 1.2 completo (para processamento customizado) |
+| `capture.save(path)` | Salvar como arquivo JSON HAR |
+
+### Filtrando por Tipo de Recurso
+
+Grave apenas tipos de recurso especificos ao inves de todo o trafego:
+
+```python
+from pydoll.protocol.network.types import ResourceType
+
+# Gravar apenas requisicoes fetch/XHR (ignorar documentos, imagens, etc.)
+async with tab.request.record(
+    resource_types=[ResourceType.FETCH, ResourceType.XHR]
+) as capture:
+    await tab.go_to('https://example.com')
+
+# Gravar apenas documentos e folhas de estilo
+async with tab.request.record(
+    resource_types=[ResourceType.DOCUMENT, ResourceType.STYLESHEET]
+) as capture:
+    await tab.go_to('https://example.com')
+```
+
+Valores disponiveis de `ResourceType`:
+
+| Valor | Descricao |
+|-------|-----------|
+| `ResourceType.DOCUMENT` | Documentos HTML |
+| `ResourceType.STYLESHEET` | Folhas de estilo CSS |
+| `ResourceType.SCRIPT` | Arquivos JavaScript |
+| `ResourceType.IMAGE` | Imagens |
+| `ResourceType.FONT` | Fontes web |
+| `ResourceType.MEDIA` | Audio/video |
+| `ResourceType.FETCH` | Requisicoes Fetch API |
+| `ResourceType.XHR` | Chamadas XMLHttpRequest |
+| `ResourceType.WEB_SOCKET` | Conexoes WebSocket |
+| `ResourceType.OTHER` | Outros tipos de recurso |
+
+### Salvando Capturas
+
+```python
+# Salvar como arquivo HAR (pode ser aberto no Chrome DevTools)
+capture.save('flow.har')
+
+# Salvar em diretorio aninhado (criado automaticamente)
+capture.save('recordings/session1/flow.har')
+
+# Acessar o dict HAR bruto para processamento customizado
+har_dict = capture.to_dict()
+print(har_dict['log']['version'])  # "1.2"
+```
+
+### Inspecionando Entradas
+
+```python
+async with tab.request.record() as capture:
+    await tab.go_to('https://example.com')
+
+for entry in capture.entries:
+    req = entry['request']
+    resp = entry['response']
+    print(f"{req['method']} {req['url']} -> {resp['status']}")
+```
+
+## Uso Avancado
+
+### Filtrando Entradas Capturadas
+
+```python
+async with tab.request.record() as capture:
+    await tab.go_to('https://example.com')
+
+# Filtrar apenas chamadas de API
+api_entries = [
+    e for e in capture.entries
+    if '/api/' in e['request']['url']
+]
+
+# Filtrar apenas requisicoes com falha
+falhas = [
+    e for e in capture.entries
+    if e['response']['status'] >= 400
+]
+```
+
+### Processamento HAR Customizado
+
+```python
+har = capture.to_dict()
+
+# Contar requisicoes por tipo
+from collections import Counter
+tipos = Counter(
+    e.get('_resourceType', 'Other')
+    for e in har['log']['entries']
+)
+print(tipos)  # Counter({'Document': 1, 'Script': 5, 'Stylesheet': 3, ...})
+```
+
+## Formato de Arquivo HAR
+
+O HAR exportado segue a [especificacao HAR 1.2](http://www.softwareishard.com/blog/har-12-spec/). Cada entrada contem:
+
+- **Request**: metodo, URL, headers, parametros de query, dados POST
+- **Response**: status, headers, corpo da resposta (texto ou codificado em base64)
+- **Timings**: DNS, conexao, SSL, envio, espera (TTFB), recebimento
+- **Metadata**: IP do servidor, ID de conexao, tipo de recurso
+
+!!! note "Corpos de Resposta"
+    Os corpos de resposta sao capturados automaticamente apos cada requisicao ser concluida. Conteudo binario (imagens, fontes, etc.) e armazenado como strings codificadas em base64.

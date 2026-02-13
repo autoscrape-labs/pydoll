@@ -14,6 +14,11 @@ from pydoll.protocol.network.types import ResourceType, RequestMethod
 from pydoll.protocol.fetch.types import RequestStage
 from pydoll.constants import By, PageLoadState
 from pydoll.browser.tab import Tab
+from pydoll.utils.bundle import (
+    build_asset_filename,
+    collect_frame_resources,
+    rewrite_css_urls,
+)
 from pydoll.protocol.page.events import PageEvent
 from pydoll.protocol.browser.types import DownloadBehavior
 from pydoll.exceptions import DownloadTimeout, InvalidTabInitialization
@@ -2238,8 +2243,459 @@ class TestTabNetworkMethods:
             }
         ]
         tab._connection_handler.network_logs = test_logs
-        
+
         result = await tab.get_network_logs(filter='example')
-        
+
         # Should handle missing request data gracefully
         assert result == []
+
+
+class TestTabSaveBundle:
+    """Tests for Tab.save_bundle() page bundle export."""
+
+    @pytest.fixture(autouse=True)
+    def _enable_page_events(self, tab):
+        """Pre-enable page events so save_bundle skips enable/disable calls."""
+        tab._page_events_enabled = True
+
+    def _make_frame_tree(self, frame_id='F1', page_url='https://example.com/',
+                          resources=None, child_frames=None):
+        tree = {
+            'frame': {
+                'id': frame_id,
+                'url': page_url,
+                'loaderId': 'L1',
+                'domainAndRegistry': 'example.com',
+                'securityOrigin': 'https://example.com',
+                'mimeType': 'text/html',
+                'secureContextType': 'Secure',
+                'crossOriginIsolatedContextType': 'NotIsolated',
+                'gatedAPIFeatures': [],
+            },
+            'resources': resources or [],
+        }
+        if child_frames:
+            tree['childFrames'] = child_frames
+        return tree
+
+    def _make_resource(self, url, rtype='Stylesheet', mime='text/css',
+                        failed=False, canceled=False):
+        res = {'url': url, 'type': rtype, 'mimeType': mime}
+        if failed:
+            res['failed'] = True
+        if canceled:
+            res['canceled'] = True
+        return res
+
+    @pytest.mark.asyncio
+    async def test_save_bundle_invalid_extension(self, tab):
+        with pytest.raises(InvalidFileExtension, match=r'\.zip'):
+            await tab.save_bundle('output.tar.gz')
+
+    @pytest.mark.asyncio
+    async def test_save_bundle_separate_assets(self, tab, tmp_path):
+        page_url = 'https://example.com/'
+        css_url = 'https://example.com/style.css'
+        js_url = 'https://example.com/app.js'
+
+        resources = [
+            self._make_resource(css_url, 'Stylesheet', 'text/css'),
+            self._make_resource(js_url, 'Script', 'text/javascript'),
+        ]
+        frame_tree = self._make_frame_tree(resources=resources)
+
+        html_content = (
+            '<html><head>'
+            f'<link rel="stylesheet" href="{css_url}">'
+            f'<script src="{js_url}"></script>'
+            '</head><body>Hello</body></html>'
+        )
+        css_content = 'body { color: red; }'
+        js_content = 'console.log("hi");'
+
+        responses = [
+            {'result': {'frameTree': frame_tree}},
+            {'result': {'content': html_content, 'base64Encoded': False}},
+            {'result': {'content': css_content, 'base64Encoded': False}},
+            {'result': {'content': js_content, 'base64Encoded': False}},
+        ]
+        tab._connection_handler.execute_command = AsyncMock(side_effect=responses)
+
+        zip_path = tmp_path / 'bundle.zip'
+        await tab.save_bundle(str(zip_path))
+
+        assert zip_path.exists()
+        import zipfile
+        with zipfile.ZipFile(zip_path) as zf:
+            names = zf.namelist()
+            assert 'index.html' in names
+            assert any('style.css' in n for n in names)
+            assert any('app.js' in n for n in names)
+            index = zf.read('index.html').decode('utf-8')
+            assert 'assets/' in index
+            assert css_url not in index
+
+    @pytest.mark.asyncio
+    async def test_save_bundle_inline_assets(self, tab, tmp_path):
+        page_url = 'https://example.com/'
+        css_url = 'https://example.com/style.css'
+        js_url = 'https://example.com/app.js'
+        img_url = 'https://example.com/logo.png'
+
+        resources = [
+            self._make_resource(css_url, 'Stylesheet', 'text/css'),
+            self._make_resource(js_url, 'Script', 'text/javascript'),
+            self._make_resource(img_url, 'Image', 'image/png'),
+        ]
+        frame_tree = self._make_frame_tree(resources=resources)
+
+        html_content = (
+            '<html><head>'
+            f'<link rel="stylesheet" href="{css_url}">'
+            f'<script src="{js_url}"></script>'
+            '</head><body>'
+            f'<img src="{img_url}">'
+            '</body></html>'
+        )
+        css_content = 'body { color: red; }'
+        js_content = 'console.log("hi");'
+        img_b64 = base64.b64encode(b'\x89PNG').decode()
+
+        responses = [
+            {'result': {'frameTree': frame_tree}},
+            {'result': {'content': html_content, 'base64Encoded': False}},
+            {'result': {'content': css_content, 'base64Encoded': False}},
+            {'result': {'content': js_content, 'base64Encoded': False}},
+            {'result': {'content': img_b64, 'base64Encoded': True}},
+        ]
+        tab._connection_handler.execute_command = AsyncMock(side_effect=responses)
+
+        zip_path = tmp_path / 'bundle.zip'
+        await tab.save_bundle(str(zip_path), inline_assets=True)
+
+        import zipfile
+        with zipfile.ZipFile(zip_path) as zf:
+            names = zf.namelist()
+            assert names == ['index.html']
+            index = zf.read('index.html').decode('utf-8')
+            assert '<style>' in index
+            assert '<script>' in index
+            assert 'data:image/png;base64,' in index
+
+    @pytest.mark.asyncio
+    async def test_save_bundle_skips_failed_resources(self, tab, tmp_path):
+        page_url = 'https://example.com/'
+        resources = [
+            self._make_resource('https://example.com/ok.css', 'Stylesheet', 'text/css'),
+            self._make_resource('https://example.com/bad.css', 'Stylesheet', 'text/css',
+                                failed=True),
+        ]
+        frame_tree = self._make_frame_tree(resources=resources)
+
+        html = '<html><head></head><body></body></html>'
+        responses = [
+            {'result': {'frameTree': frame_tree}},
+            {'result': {'content': html, 'base64Encoded': False}},
+            {'result': {'content': 'body{}', 'base64Encoded': False}},
+        ]
+        tab._connection_handler.execute_command = AsyncMock(side_effect=responses)
+
+        zip_path = tmp_path / 'bundle.zip'
+        await tab.save_bundle(str(zip_path))
+
+        # Only 3 calls: getResourceTree, getResourceContent(doc), getResourceContent(ok.css)
+        assert tab._connection_handler.execute_command.call_count == 3
+
+    @pytest.mark.asyncio
+    async def test_save_bundle_handles_fetch_exceptions(self, tab, tmp_path):
+        page_url = 'https://example.com/'
+        resources = [
+            self._make_resource('https://example.com/style.css', 'Stylesheet', 'text/css'),
+        ]
+        frame_tree = self._make_frame_tree(resources=resources)
+        html = '<html><body></body></html>'
+
+        responses = [
+            {'result': {'frameTree': frame_tree}},
+            {'result': {'content': html, 'base64Encoded': False}},
+            RuntimeError('fetch failed'),
+        ]
+        tab._connection_handler.execute_command = AsyncMock(side_effect=responses)
+
+        zip_path = tmp_path / 'bundle.zip'
+        await tab.save_bundle(str(zip_path))
+
+        import zipfile
+        with zipfile.ZipFile(zip_path) as zf:
+            assert 'index.html' in zf.namelist()
+            assert not any(n.startswith('assets/') for n in zf.namelist())
+
+    @pytest.mark.asyncio
+    async def test_save_bundle_handles_cdp_error_responses(self, tab, tmp_path):
+        """CDP returns {'error': ...} instead of {'result': ...} for some resources."""
+        resources = [
+            self._make_resource('https://example.com/style.css', 'Stylesheet', 'text/css'),
+        ]
+        frame_tree = self._make_frame_tree(resources=resources)
+        html = '<html><body></body></html>'
+
+        responses = [
+            {'result': {'frameTree': frame_tree}},
+            {'result': {'content': html, 'base64Encoded': False}},
+            {'error': {'code': -32000, 'message': 'No resource with given URL'}},
+        ]
+        tab._connection_handler.execute_command = AsyncMock(side_effect=responses)
+
+        zip_path = tmp_path / 'bundle.zip'
+        await tab.save_bundle(str(zip_path))
+
+        import zipfile
+        with zipfile.ZipFile(zip_path) as zf:
+            assert 'index.html' in zf.namelist()
+            assert not any(n.startswith('assets/') for n in zf.namelist())
+
+    @pytest.mark.asyncio
+    async def test_save_bundle_empty_resources(self, tab, tmp_path):
+        frame_tree = self._make_frame_tree(resources=[])
+        html = '<html><body>Hello</body></html>'
+
+        responses = [
+            {'result': {'frameTree': frame_tree}},
+            {'result': {'content': html, 'base64Encoded': False}},
+        ]
+        tab._connection_handler.execute_command = AsyncMock(side_effect=responses)
+
+        zip_path = tmp_path / 'bundle.zip'
+        await tab.save_bundle(str(zip_path))
+
+        import zipfile
+        with zipfile.ZipFile(zip_path) as zf:
+            assert zf.namelist() == ['index.html']
+            assert zf.read('index.html').decode() == html
+
+    @pytest.mark.asyncio
+    async def test_save_bundle_base64_encoded_resource(self, tab, tmp_path):
+        page_url = 'https://example.com/'
+        img_url = 'https://example.com/image.png'
+        resources = [
+            self._make_resource(img_url, 'Image', 'image/png'),
+        ]
+        frame_tree = self._make_frame_tree(resources=resources)
+        html = f'<html><body><img src="{img_url}"></body></html>'
+        img_bytes = b'\x89PNG\r\n\x1a\n' + b'\x00' * 16
+        img_b64 = base64.b64encode(img_bytes).decode()
+
+        responses = [
+            {'result': {'frameTree': frame_tree}},
+            {'result': {'content': html, 'base64Encoded': False}},
+            {'result': {'content': img_b64, 'base64Encoded': True}},
+        ]
+        tab._connection_handler.execute_command = AsyncMock(side_effect=responses)
+
+        zip_path = tmp_path / 'bundle.zip'
+        await tab.save_bundle(str(zip_path))
+
+        import zipfile
+        with zipfile.ZipFile(zip_path) as zf:
+            asset_names = [n for n in zf.namelist() if n.startswith('assets/')]
+            assert len(asset_names) == 1
+            assert zf.read(asset_names[0]) == img_bytes
+
+    @pytest.mark.asyncio
+    async def test_save_bundle_css_url_rewriting(self, tab, tmp_path):
+        page_url = 'https://example.com/'
+        css_url = 'https://example.com/css/style.css'
+        font_url = 'https://example.com/css/font.woff2'
+
+        resources = [
+            self._make_resource(css_url, 'Stylesheet', 'text/css'),
+            self._make_resource(font_url, 'Font', 'font/woff2'),
+        ]
+        frame_tree = self._make_frame_tree(resources=resources)
+
+        html = f'<html><head><link rel="stylesheet" href="{css_url}"></head><body></body></html>'
+        css_content = 'body { font-family: url("font.woff2"); }'
+        font_bytes = b'woff2data'
+
+        responses = [
+            {'result': {'frameTree': frame_tree}},
+            {'result': {'content': html, 'base64Encoded': False}},
+            {'result': {'content': css_content, 'base64Encoded': False}},
+            {'result': {'content': base64.b64encode(font_bytes).decode(), 'base64Encoded': True}},
+        ]
+        tab._connection_handler.execute_command = AsyncMock(side_effect=responses)
+
+        zip_path = tmp_path / 'bundle.zip'
+        await tab.save_bundle(str(zip_path))
+
+        import zipfile
+        with zipfile.ZipFile(zip_path) as zf:
+            css_files = [n for n in zf.namelist() if n.endswith('.css')]
+            assert len(css_files) == 1
+            css_data = zf.read(css_files[0]).decode('utf-8')
+            # CSS url() should reference the font's local filename
+            assert 'font.woff2' not in css_data or 'assets/' not in css_data
+            # The font.woff2 reference should have been rewritten
+            assert 'url("' in css_data
+
+    @pytest.mark.asyncio
+    async def test_save_bundle_child_frames(self, tab, tmp_path):
+        child_resources = [
+            self._make_resource('https://example.com/child.css', 'Stylesheet', 'text/css'),
+        ]
+        child_frame_tree = self._make_frame_tree(
+            frame_id='F2',
+            page_url='https://example.com/child.html',
+            resources=child_resources,
+        )
+        parent_resources = [
+            self._make_resource('https://example.com/main.css', 'Stylesheet', 'text/css'),
+        ]
+        frame_tree = self._make_frame_tree(
+            resources=parent_resources,
+            child_frames=[child_frame_tree],
+        )
+
+        html = '<html><body></body></html>'
+        responses = [
+            {'result': {'frameTree': frame_tree}},
+            {'result': {'content': html, 'base64Encoded': False}},
+            {'result': {'content': 'body{}', 'base64Encoded': False}},
+            {'result': {'content': 'p{}', 'base64Encoded': False}},
+        ]
+        tab._connection_handler.execute_command = AsyncMock(side_effect=responses)
+
+        zip_path = tmp_path / 'bundle.zip'
+        await tab.save_bundle(str(zip_path))
+
+        import zipfile
+        with zipfile.ZipFile(zip_path) as zf:
+            asset_names = [n for n in zf.namelist() if n.startswith('assets/')]
+            assert len(asset_names) == 2
+
+    @pytest.mark.asyncio
+    async def test_save_bundle_skips_data_urls(self, tab, tmp_path):
+        resources = [
+            self._make_resource('data:image/png;base64,abc', 'Image', 'image/png'),
+            self._make_resource('https://example.com/real.css', 'Stylesheet', 'text/css'),
+        ]
+        frame_tree = self._make_frame_tree(resources=resources)
+        html = '<html><body></body></html>'
+
+        responses = [
+            {'result': {'frameTree': frame_tree}},
+            {'result': {'content': html, 'base64Encoded': False}},
+            {'result': {'content': 'body{}', 'base64Encoded': False}},
+        ]
+        tab._connection_handler.execute_command = AsyncMock(side_effect=responses)
+
+        zip_path = tmp_path / 'bundle.zip'
+        await tab.save_bundle(str(zip_path))
+
+        # Only 3 calls: tree, doc content, real.css — data: URL was skipped
+        assert tab._connection_handler.execute_command.call_count == 3
+
+    def test_collect_frame_resources_recursive(self):
+        child = {
+            'frame': {'id': 'F2', 'url': 'https://example.com/child',
+                       'loaderId': 'L2', 'domainAndRegistry': '', 'securityOrigin': '',
+                       'mimeType': 'text/html', 'secureContextType': 'Secure',
+                       'crossOriginIsolatedContextType': 'NotIsolated',
+                       'gatedAPIFeatures': []},
+            'resources': [
+                {'url': 'https://example.com/c.css', 'type': 'Stylesheet', 'mimeType': 'text/css'},
+            ],
+        }
+        parent = {
+            'frame': {'id': 'F1', 'url': 'https://example.com/',
+                       'loaderId': 'L1', 'domainAndRegistry': '', 'securityOrigin': '',
+                       'mimeType': 'text/html', 'secureContextType': 'Secure',
+                       'crossOriginIsolatedContextType': 'NotIsolated',
+                       'gatedAPIFeatures': []},
+            'resources': [
+                {'url': 'https://example.com/p.css', 'type': 'Stylesheet', 'mimeType': 'text/css'},
+            ],
+            'childFrames': [child],
+        }
+        result = collect_frame_resources(parent)
+        assert len(result) == 2
+        assert result[0][0] == 'F1'
+        assert result[1][0] == 'F2'
+
+    def test_build_asset_filename(self):
+        name = build_asset_filename(
+            'https://example.com/css/style.css', 'text/css', 0
+        )
+        assert name == '0000_style.css'
+
+    def test_build_asset_filename_no_extension(self):
+        name = build_asset_filename(
+            'https://example.com/api/image', 'image/png', 5
+        )
+        assert name == '0005_image.png'
+
+    def test_build_asset_filename_no_path(self):
+        name = build_asset_filename(
+            'https://example.com/', 'text/css', 1
+        )
+        assert name == '0001_resource.css'
+
+    def test_rewrite_css_urls(self):
+        asset_map = {
+            'https://example.com/fonts/bold.woff2': (
+                '0001_bold.woff2', b'data', 'font/woff2', 'Font'
+            ),
+        }
+        css = 'body { font: url("https://example.com/fonts/bold.woff2"); }'
+        result = rewrite_css_urls(
+            css, 'https://example.com/css/style.css', asset_map
+        )
+        assert '0001_bold.woff2' in result
+
+    def test_rewrite_css_urls_relative(self):
+        asset_map = {
+            'https://example.com/css/bg.png': (
+                '0002_bg.png', b'data', 'image/png', 'Image'
+            ),
+        }
+        css = 'div { background: url("bg.png"); }'
+        result = rewrite_css_urls(
+            css, 'https://example.com/css/style.css', asset_map
+        )
+        assert '0002_bg.png' in result
+
+    def test_rewrite_css_urls_skips_data_uris(self):
+        css = 'div { background: url("data:image/png;base64,abc"); }'
+        result = rewrite_css_urls(css, 'https://example.com/style.css', {})
+        assert 'data:image/png;base64,abc' in result
+
+    @pytest.mark.asyncio
+    async def test_save_bundle_js_fallback_when_resource_content_fails(self, tab, tmp_path):
+        """When getResourceContent fails for the document, fall back to JS."""
+        frame_tree = self._make_frame_tree(resources=[])
+        html = '<html><body>Fallback</body></html>'
+
+        call_count = 0
+
+        async def side_effect(*args, **kwargs):
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                # getResourceTree succeeds
+                return {'result': {'frameTree': frame_tree}}
+            if call_count == 2:
+                # getResourceContent for document fails (no 'result' key)
+                return {'error': {'code': -32000, 'message': 'No resource'}}
+            if call_count == 3:
+                # execute_script fallback
+                return {'result': {'result': {'value': html}}}
+            return {}
+
+        tab._connection_handler.execute_command = AsyncMock(side_effect=side_effect)
+
+        zip_path = tmp_path / 'bundle.zip'
+        await tab.save_bundle(str(zip_path))
+
+        import zipfile
+        with zipfile.ZipFile(zip_path) as zf:
+            assert zf.read('index.html').decode() == html

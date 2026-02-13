@@ -192,7 +192,7 @@ await button.click(humanize=False)
 所有人性化参数均可通过`MouseTimingConfig`配置：
 
 ```python
-from pydoll.interactions.mouse import Mouse, MouseTimingConfig
+from pydoll.interactions.mouse import MouseTimingConfig
 
 config = MouseTimingConfig(
     fitts_a=0.070,              # 菲茨定律截距（秒）
@@ -206,8 +206,8 @@ config = MouseTimingConfig(
     max_duration=2.5,           # 最大移动持续时间
 )
 
-# 与Tab一起使用
-tab._mouse = Mouse(tab, timing=config)
+# 应用到tab的鼠标实例
+tab.mouse.timing = config
 ```
 
 查看`MouseTimingConfig`数据类了解所有可用参数。
@@ -240,11 +240,7 @@ await tab.mouse.up()     # 在(300, 400)释放
 - **红色点**：点击位置
 
 ```python
-# 通过构造函数启用
-from pydoll.interactions.mouse import Mouse
-tab._mouse = Mouse(tab, debug=True)
-
-# 或通过属性在运行时切换
+# 通过属性在运行时启用
 tab.mouse.debug = True
 
 # 现在所有移动都会绘制彩色点
@@ -262,12 +258,9 @@ tab.mouse.debug = False
 
 ```python
 async def click_button_naturally(tab):
+    # element.click() 自动使用 tab.mouse 进行人性化移动
     button = await tab.find(id='submit')
-    bounds = await button.get_bounds_using_js()
-    center_x = bounds['x'] + bounds['width'] / 2
-    center_y = bounds['y'] + bounds['height'] / 2
-
-    await tab.mouse.click(center_x, center_y)
+    await button.click()
 ```
 
 ### 拖动滑块

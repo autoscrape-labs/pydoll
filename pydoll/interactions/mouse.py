@@ -120,6 +120,20 @@ class Mouse:
         self._debug_initialized = False
 
     @property
+    def timing(self) -> MouseTimingConfig:
+        """Current timing configuration for humanized movement."""
+        return self._timing
+
+    @timing.setter
+    def timing(self, config: MouseTimingConfig) -> None:
+        """Replace the timing configuration.
+
+        Args:
+            config: New MouseTimingConfig to use for future operations.
+        """
+        self._timing = config
+
+    @property
     def debug(self) -> bool:
         """Whether to draw debug dots on the page."""
         return self._debug

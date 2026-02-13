@@ -94,6 +94,22 @@ class TestMouseInitialization:
         mouse = Mouse(mock_tab, timing=config)
         assert mouse._timing.fitts_a == 0.1
 
+    def test_timing_property_getter(self, mock_tab):
+        config = MouseTimingConfig(fitts_a=0.2)
+        mouse = Mouse(mock_tab, timing=config)
+        assert mouse.timing is config
+        assert mouse.timing.fitts_a == 0.2
+
+    def test_timing_property_setter(self, mock_tab):
+        mouse = Mouse(mock_tab)
+        default_timing = mouse.timing
+        new_config = MouseTimingConfig(fitts_a=0.5, tremor_amplitude=2.0)
+        mouse.timing = new_config
+        assert mouse.timing is new_config
+        assert mouse.timing is not default_timing
+        assert mouse.timing.fitts_a == 0.5
+        assert mouse.timing.tremor_amplitude == 2.0
+
     def test_initial_position_is_origin(self, mock_tab):
         mouse = Mouse(mock_tab)
         assert mouse._position == (0.0, 0.0)

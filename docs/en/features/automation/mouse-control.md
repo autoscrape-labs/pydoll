@@ -192,7 +192,7 @@ Position tracking is maintained across element clicks. Clicking element A, then 
 All humanization parameters are configurable via `MouseTimingConfig`:
 
 ```python
-from pydoll.interactions.mouse import Mouse, MouseTimingConfig
+from pydoll.interactions.mouse import MouseTimingConfig
 
 config = MouseTimingConfig(
     fitts_a=0.070,              # Fitts's Law intercept (seconds)
@@ -206,8 +206,8 @@ config = MouseTimingConfig(
     max_duration=2.5,           # Maximum movement duration
 )
 
-# Use with Tab
-tab._mouse = Mouse(tab, timing=config)
+# Apply to the tab's mouse instance
+tab.mouse.timing = config
 ```
 
 See the `MouseTimingConfig` dataclass for all available parameters.
@@ -240,11 +240,7 @@ Enable debug mode to visualize mouse movement on the page. When active, colored 
 - **Red dots**: click positions
 
 ```python
-# Enable via constructor
-from pydoll.interactions.mouse import Mouse
-tab._mouse = Mouse(tab, debug=True)
-
-# Or toggle at runtime via property
+# Enable at runtime via property
 tab.mouse.debug = True
 
 # Now all movements draw colored dots
@@ -262,12 +258,9 @@ This is useful for tuning timing parameters and verifying that paths look natura
 
 ```python
 async def click_button_naturally(tab):
+    # element.click() automatically uses tab.mouse for humanized movement
     button = await tab.find(id='submit')
-    bounds = await button.get_bounds_using_js()
-    center_x = bounds['x'] + bounds['width'] / 2
-    center_y = bounds['y'] + bounds['height'] / 2
-
-    await tab.mouse.click(center_x, center_y)
+    await button.click()
 ```
 
 ### Drag a Slider

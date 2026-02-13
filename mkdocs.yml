@@ -23,6 +23,7 @@ nav:
           - Network Monitoring: features/network/monitoring.md
           - Request Interception: features/network/interception.md
           - Browser-Context HTTP Requests: features/network/http-requests.md
+          - HAR Network Recording: features/network/network-recording.md
       - Browser Management:
           - Multi-Tab Management: features/browser-management/tabs.md
           - Browser Contexts: features/browser-management/contexts.md
@@ -187,6 +188,7 @@ plugins:
             Network Monitoring: 网络监控
             Request Interception: 请求拦截
             Browser-Context HTTP Requests: 浏览器上下文HTTP请求
+            HAR Network Recording: HAR网络录制
             Browser Management: 浏览器管理
             Multi-Tab Management: 多标签页管理
             Browser Contexts: 浏览器上下文
@@ -288,6 +290,7 @@ plugins:
             Network Monitoring: Monitoramento de Rede
             Request Interception: Interceptação de Requisições
             Browser-Context HTTP Requests: Requisições HTTP no Contexto do Navegador
+            HAR Network Recording: Gravação de Rede HAR
             Browser Management: Gerenciamento do Navegador
             Multi-Tab Management: Gerenciamento de Abas
             Browser Contexts: Contextos do Navegador

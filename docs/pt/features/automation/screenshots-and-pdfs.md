@@ -310,6 +310,48 @@ async def safe_screenshot():
         await content.take_screenshot('iframe-content.png')
 ```
 
+## Exportação de Bundle da Página
+
+Salve uma página inteira com todos os seus assets (CSS, JS, imagens, fontes) como um arquivo `.zip` para visualização offline.
+
+### Uso Básico
+
+```python
+import asyncio
+from pydoll.browser.chromium import Chrome
+
+async def save_page():
+    async with Chrome() as browser:
+        tab = await browser.start()
+        await tab.go_to('https://example.com')
+
+        # Salvar página com assets como arquivos separados
+        await tab.save_bundle('page.zip')
+
+asyncio.run(save_page())
+```
+
+O zip resultante contém um `index.html` com todas as URLs reescritas para referenciar arquivos locais no diretório `assets/`.
+
+### Modo Inline
+
+Incorpore tudo diretamente em um único `index.html` usando data URIs, `<style>` e `<script>`:
+
+```python
+# Um único arquivo HTML autocontido dentro do zip
+await tab.save_bundle('page-inline.zip', inline_assets=True)
+```
+
+### Parâmetros
+
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `path` | `str \| Path` | *(obrigatório)* | Caminho de destino. Deve terminar com `.zip`. |
+| `inline_assets` | `bool` | `False` | Incorporar todos os assets inline em vez de salvá-los como arquivos separados. |
+
+!!! info "O Que é Incluído no Bundle"
+    O bundle inclui recursos dos tipos: Document, Stylesheet, Script, Image, Font e Media. Recursos que falharam ao carregar, foram cancelados ou usam URIs `data:` são automaticamente ignorados.
+
 ## Aprenda Mais
 
 Para contexto adicional sobre como screenshots e PDFs se integram com a arquitetura do Pydoll:
