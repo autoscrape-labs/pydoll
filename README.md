@@ -65,10 +65,65 @@ That's it. No `webdrivers`. No external dependencies.
 ## 🆕 What's New
 
 <details>
+<summary><b>HAR Network Recording: Capture & Replay Network Traffic</b></summary>
+<br>
+
+Record all network activity during a browser session and export it as a standard **HAR 1.2** file. Replay recorded requests to reproduce exact API sequences.
+
+```python
+from pydoll.browser.chromium import Chrome
+
+async with Chrome() as browser:
+    tab = await browser.start()
+
+    # Record all network traffic
+    async with tab.request.record() as capture:
+        await tab.go_to('https://example.com')
+
+    capture.save('flow.har')
+    print(f'Captured {len(capture.entries)} requests')
+
+    # Replay later
+    responses = await tab.request.replay('flow.har')
+```
+
+**Filter by resource type** to capture only what you need:
+
+```python
+from pydoll.protocol.network.types import ResourceType
+
+# Record only fetch/XHR requests (skip documents, images, etc.)
+async with tab.request.record(
+    resource_types=[ResourceType.FETCH, ResourceType.XHR]
+) as capture:
+    await tab.go_to('https://example.com')
+```
+
+[**📖 HAR Recording Docs**](https://pydoll.tech/docs/features/network/network-recording/)
+</details>
+
+<details>
+<summary><b>Page Bundles: Save Pages for Offline Viewing</b></summary>
+<br>
+
+Save the current page and all its assets (CSS, JS, images, fonts) as a single `.zip` bundle for offline viewing. Choose between separate asset files or a fully self-contained HTML with everything inlined.
+
+```python
+# Save with separate asset files
+await tab.save_bundle('page.zip')
+
+# Or inline everything into a single HTML
+await tab.save_bundle('page-inline.zip', inline_assets=True)
+```
+
+[**📖 Screenshots, PDFs & Bundles Docs**](https://pydoll.tech/docs/features/automation/screenshots-and-pdfs/)
+</details>
+
+<details>
 <summary><b>Shadow DOM Support: Access Closed Shadow Roots with Zero Effort</b></summary>
 <br>
 
-Pydoll now provides **full Shadow DOM support**, automatically handling both open and closed shadow roots — something traditional automation tools can't do. Because Pydoll operates at the CDP level (below JavaScript), the `closed` mode restriction simply doesn't apply.
+Pydoll provides **full Shadow DOM support**, automatically handling both open and closed shadow roots, something traditional automation tools can't do. Because Pydoll operates at the CDP level (below JavaScript), the `closed` mode restriction simply doesn't apply.
 
 ```python
 # Get the shadow root of a specific element
@@ -86,11 +141,11 @@ for sr in shadow_roots:
 
 **Key highlights:**
 
-- **Closed shadow roots just work** — no workarounds, no hacks
+- **Closed shadow roots just work**: no workarounds, no hacks
 - **`find_shadow_roots()`** discovers every shadow root on the page, even when you don't know the host selector
-- **`timeout` parameter** for polling until shadow roots appear asynchronously — works on both `find_shadow_roots()` and `get_shadow_root()`
-- **`deep=True`** traverses cross-origin iframes (OOPIFs) — essential for widgets like Cloudflare Turnstile captchas
-- **Same familiar API** — use `find()`, `query()`, and `click()` inside shadow roots just like anywhere else
+- **`timeout` parameter** for polling until shadow roots appear asynchronously, works on both `find_shadow_roots()` and `get_shadow_root()`
+- **`deep=True`** traverses cross-origin iframes (OOPIFs), essential for widgets like Cloudflare Turnstile captchas
+- **Same familiar API**: use `find()`, `query()`, and `click()` inside shadow roots just like anywhere else
 
 ```python
 # Real-world example: Cloudflare Turnstile inside a cross-origin iframe
@@ -102,53 +157,6 @@ for sr in shadow_roots:
 ```
 
 [**📖 Shadow DOM Docs**](https://pydoll.tech/docs/deep-dive/architecture/shadow-dom/)
-</details>
-
-<details>
-<summary><b>Humanized Keyboard Input</b></summary>
-<br>
-
-Pydoll's typing engine simulates realistic human typing behavior out of the box:
-
-- **Variable keystroke timing**: 30-120ms between keys (not fixed intervals)
-- **Realistic typos**: ~2% error rate with automatic correction behavior
-
-```python
-# Realistic typing by default
-await element.type_text("hello")
-
-# Opt out when speed is critical
-await element.type_text("hello", humanize=False)
-```
-</details>
-
-<details>
-<summary><b>Humanized Scroll with Physics Engine</b></summary>
-<br>
-
-The scroll API features a **Cubic Bezier curve physics engine** for realistic scrolling:
-
-- **Momentum & friction**: Natural acceleration and deceleration
-- **Micro-pauses**: Brief stops during long scrolls (simulates reading)
-- **Jitter injection**: Small random variations in scroll path
-- **Overshoot correction**: Occasionally scrolls past target and corrects back
-
-```python
-# Humanized by default (physics engine, anti-bot)
-await tab.scroll.by(ScrollPosition.DOWN, 500)
-await tab.scroll.to_bottom()
-
-# CSS smooth scroll (predictable timing)
-await tab.scroll.by(ScrollPosition.DOWN, 500, humanize=False, smooth=True)
-```
-
-| Mode | Parameter | Use Case |
-|------|-----------|----------|
-| **Humanized** | default | **Anti-bot evasion** |
-| **Smooth** | `humanize=False, smooth=True` | General browsing simulation |
-| **Instant** | `humanize=False, smooth=False` | Speed-critical operations |
-
-[**📖 Human-Like Interactions Docs**](https://pydoll.tech/docs/features/automation/human-interactions/)
 </details>
 
 <details>
@@ -413,5 +421,5 @@ If you find Pydoll useful, consider [sponsoring my work on GitHub](https://githu
 Pydoll is licensed under the [MIT License](LICENSE).
 
 <p align="center">
-  <b>Pydoll</b> — Web automation, taken seriously.
+  <b>Pydoll</b>: Web automation, taken seriously.
 </p>
