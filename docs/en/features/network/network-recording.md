@@ -1,6 +1,6 @@
 # HAR Network Recording
 
-Capture all network activity during a browser session and export it as a standard HAR (HTTP Archive) 1.2 file. Perfect for debugging, performance analysis, and request replay.
+Capture all network activity during a browser session and export it as a standard HAR (HTTP Archive) 1.2 file. Perfect for debugging, performance analysis, and test fixtures.
 
 !!! tip "Debug Like a Pro"
     HAR files are the industry standard for recording network traffic. You can import them directly into Chrome DevTools, Charles Proxy, or any HAR viewer for detailed analysis.
@@ -11,7 +11,6 @@ Capture all network activity during a browser session and export it as a standar
 |----------|---------|
 | Debugging failed requests | See exact headers, timing, and response bodies |
 | Performance analysis | Identify slow requests and bottlenecks |
-| Request replay | Reproduce exact request sequences |
 | API documentation | Capture real request/response pairs |
 | Test fixtures | Record real traffic for test mocking |
 
@@ -124,59 +123,7 @@ for entry in capture.entries:
     print(f"{req['method']} {req['url']} -> {resp['status']}")
 ```
 
-## Replaying Requests
-
-Replay a previously recorded HAR file, executing each request sequentially through the browser:
-
-```python
-async def replay_traffic():
-    async with Chrome() as browser:
-        tab = await browser.start()
-
-        # Navigate to set up session context
-        await tab.go_to('https://example.com')
-
-        # Replay all recorded requests
-        responses = await tab.request.replay('flow.har')
-
-        for resp in responses:
-            print(f"Status: {resp.status_code}")
-
-asyncio.run(replay_traffic())
-```
-
-### `tab.request.replay(path)`
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `path` | `str \| Path` | Path to the HAR file to replay |
-
-**Returns:** `list[Response]` -- responses from each replayed request.
-
-**Raises:** `HarReplayError` -- if the HAR file is invalid or unreadable.
-
 ## Advanced Usage
-
-### Record and Replay Workflow
-
-```python
-async def record_and_replay():
-    async with Chrome() as browser:
-        tab = await browser.start()
-
-        # Step 1: Record the original session
-        async with tab.request.record() as capture:
-            await tab.go_to('https://api.example.com')
-            await tab.request.post(
-                'https://api.example.com/data',
-                json={'key': 'value'}
-            )
-
-        capture.save('api_session.har')
-
-        # Step 2: Replay later
-        responses = await tab.request.replay('api_session.har')
-```
 
 ### Filtering Captured Entries
 

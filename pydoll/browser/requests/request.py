@@ -9,7 +9,6 @@ import json as jsonlib
 import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Optional, Union, cast
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
@@ -17,7 +16,7 @@ from pydoll.browser.requests.har_recorder import HarCapture, HarRecorder
 from pydoll.browser.requests.response import Response
 from pydoll.commands.runtime_commands import RuntimeCommands
 from pydoll.constants import Scripts
-from pydoll.exceptions import HarReplayError, HTTPError
+from pydoll.exceptions import HTTPError
 from pydoll.protocol.fetch.types import HeaderEntry
 from pydoll.protocol.network.events import (
     NetworkEvent,
@@ -319,82 +318,6 @@ class Request:
             yield capture
         finally:
             await recorder.stop()
-
-    async def replay(self, path: str | Path) -> list[Response]:
-        """Replay requests from a HAR file.
-
-        Replays each HAR entry sequentially using the browser's fetch API,
-        preserving the original method, URL, headers, and body.
-
-        Args:
-            path: Path to a .har file.
-
-        Returns:
-            List of Response objects from the replayed requests.
-
-        Raises:
-            HarReplayError: If the HAR file is invalid or unreadable.
-        """
-        try:
-            with open(path, encoding='utf-8') as f:
-                har_data = jsonlib.load(f)
-        except (OSError, jsonlib.JSONDecodeError) as exc:
-            raise HarReplayError(f'Failed to read HAR file: {exc}') from exc
-
-        entries = har_data.get('log', {}).get('entries', [])
-        if not isinstance(entries, list):
-            raise HarReplayError('Invalid HAR file: entries is not a list')
-
-        responses: list[Response] = []
-        for idx, entry in enumerate(entries):
-            if not isinstance(entry, dict):
-                raise HarReplayError(f'Entry {idx}: expected dict, got {type(entry).__name__}')
-
-            har_request = entry.get('request')
-            if not isinstance(har_request, dict):
-                raise HarReplayError(f'Entry {idx}: missing or invalid "request" field')
-
-            try:
-                method = har_request.get('method', 'GET')
-                url = har_request.get('url', '')
-
-                if not url:
-                    continue
-
-                headers_list = har_request.get('headers', [])
-                if not isinstance(headers_list, list):
-                    headers_list = []
-                header_entries = [
-                    HeaderEntry(name=h['name'], value=h['value'])
-                    for h in headers_list
-                    if isinstance(h, dict) and 'name' in h and 'value' in h
-                ]
-
-                post_data = har_request.get('postData')
-                body = (
-                    post_data.get('text')
-                    if isinstance(post_data, dict)
-                    else None
-                )
-
-                kwargs: dict[str, Any] = {}
-                if body:
-                    kwargs['data'] = body
-
-                response = await self.request(
-                    method=method,
-                    url=url,
-                    headers=header_entries if header_entries else None,
-                    **kwargs,
-                )
-                responses.append(response)
-            except (TypeError, AttributeError, KeyError) as exc:
-                raise HarReplayError(
-                    f'Entry {idx}: failed to parse request ({type(exc).__name__}: {exc})'
-                ) from exc
-
-        logger.info('HAR replay completed: %d requests replayed', len(responses))
-        return responses
 
     @staticmethod
     def _build_url_with_params(url: str, params: Optional[dict[str, str]]) -> str:

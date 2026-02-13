@@ -1,6 +1,6 @@
 # HAR 网络录制
 
-捕获浏览器会话期间的所有网络活动，并导出为标准 HAR (HTTP Archive) 1.2 文件。非常适合调试、性能分析和请求重放。
+捕获浏览器会话期间的所有网络活动，并导出为标准 HAR (HTTP Archive) 1.2 文件。非常适合调试、性能分析和测试固件。
 
 !!! tip "像专家一样调试"
     HAR 文件是录制网络流量的行业标准。您可以将它们直接导入 Chrome DevTools、Charles Proxy 或任何 HAR 查看器进行详细分析。
@@ -11,7 +11,6 @@
 |---------|------|
 | 调试失败的请求 | 查看确切的 headers、时序和响应体 |
 | 性能分析 | 识别慢速请求和瓶颈 |
-| 请求重放 | 重现精确的请求序列 |
 | API 文档 | 捕获真实的请求/响应对 |
 | 测试固件 | 录制真实流量用于测试模拟 |
 
@@ -124,59 +123,7 @@ for entry in capture.entries:
     print(f"{req['method']} {req['url']} -> {resp['status']}")
 ```
 
-## 重放请求
-
-重放之前录制的 HAR 文件，通过浏览器按顺序执行每个请求：
-
-```python
-async def replay_traffic():
-    async with Chrome() as browser:
-        tab = await browser.start()
-
-        # 导航以设置会话上下文
-        await tab.go_to('https://example.com')
-
-        # 重放所有录制的请求
-        responses = await tab.request.replay('flow.har')
-
-        for resp in responses:
-            print(f"状态: {resp.status_code}")
-
-asyncio.run(replay_traffic())
-```
-
-### `tab.request.replay(path)`
-
-| 参数 | 类型 | 描述 |
-|------|------|------|
-| `path` | `str \| Path` | 要重放的 HAR 文件路径 |
-
-**返回：** `list[Response]` -- 每个重放请求的响应。
-
-**抛出：** `HarReplayError` -- 如果 HAR 文件无效或无法读取。
-
 ## 高级用法
-
-### 录制和重放工作流
-
-```python
-async def record_and_replay():
-    async with Chrome() as browser:
-        tab = await browser.start()
-
-        # 步骤 1：录制原始会话
-        async with tab.request.record() as capture:
-            await tab.go_to('https://api.example.com')
-            await tab.request.post(
-                'https://api.example.com/data',
-                json={'key': 'value'}
-            )
-
-        capture.save('api_session.har')
-
-        # 步骤 2：稍后重放
-        responses = await tab.request.replay('api_session.har')
-```
 
 ### 过滤捕获的条目
 

@@ -1,6 +1,6 @@
 # Gravacao de Rede HAR
 
-Capture toda a atividade de rede durante uma sessao do navegador e exporte como um arquivo HAR (HTTP Archive) 1.2 padrao. Perfeito para depuracao, analise de desempenho e replay de requisicoes.
+Capture toda a atividade de rede durante uma sessao do navegador e exporte como um arquivo HAR (HTTP Archive) 1.2 padrao. Perfeito para depuracao, analise de desempenho e fixtures de teste.
 
 !!! tip "Depure Como um Profissional"
     Arquivos HAR sao o padrao da industria para gravar trafego de rede. Voce pode importa-los diretamente no Chrome DevTools, Charles Proxy ou qualquer visualizador HAR para analise detalhada.
@@ -11,7 +11,6 @@ Capture toda a atividade de rede durante uma sessao do navegador e exporte como 
 |-------------|-----------|
 | Depurar requisicoes com falha | Veja headers exatos, timing e corpos de resposta |
 | Analise de desempenho | Identifique requisicoes lentas e gargalos |
-| Replay de requisicoes | Reproduza sequencias exatas de requisicoes |
 | Documentacao de API | Capture pares reais de requisicao/resposta |
 | Fixtures de teste | Grave trafego real para mocking em testes |
 
@@ -124,59 +123,7 @@ for entry in capture.entries:
     print(f"{req['method']} {req['url']} -> {resp['status']}")
 ```
 
-## Replay de Requisicoes
-
-Reproduza um arquivo HAR previamente gravado, executando cada requisicao sequencialmente pelo navegador:
-
-```python
-async def replay_trafego():
-    async with Chrome() as browser:
-        tab = await browser.start()
-
-        # Navegue para configurar o contexto da sessao
-        await tab.go_to('https://example.com')
-
-        # Reproduza todas as requisicoes gravadas
-        responses = await tab.request.replay('flow.har')
-
-        for resp in responses:
-            print(f"Status: {resp.status_code}")
-
-asyncio.run(replay_trafego())
-```
-
-### `tab.request.replay(path)`
-
-| Parametro | Tipo | Descricao |
-|-----------|------|-----------|
-| `path` | `str \| Path` | Caminho para o arquivo HAR a reproduzir |
-
-**Retorna:** `list[Response]` -- respostas de cada requisicao reproduzida.
-
-**Levanta:** `HarReplayError` -- se o arquivo HAR for invalido ou ilegivel.
-
 ## Uso Avancado
-
-### Fluxo de Gravacao e Replay
-
-```python
-async def gravar_e_reproduzir():
-    async with Chrome() as browser:
-        tab = await browser.start()
-
-        # Passo 1: Gravar a sessao original
-        async with tab.request.record() as capture:
-            await tab.go_to('https://api.example.com')
-            await tab.request.post(
-                'https://api.example.com/data',
-                json={'key': 'value'}
-            )
-
-        capture.save('api_session.har')
-
-        # Passo 2: Reproduzir depois
-        responses = await tab.request.replay('api_session.har')
-```
 
 ### Filtrando Entradas Capturadas
 
