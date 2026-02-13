@@ -192,7 +192,7 @@ O rastreamento de posição é mantido entre cliques em elementos. Clicar no ele
 Todos os parâmetros de humanização são configuráveis via `MouseTimingConfig`:
 
 ```python
-from pydoll.interactions.mouse import Mouse, MouseTimingConfig
+from pydoll.interactions.mouse import MouseTimingConfig
 
 config = MouseTimingConfig(
     fitts_a=0.070,              # Intercepto da Lei de Fitts (segundos)
@@ -206,8 +206,8 @@ config = MouseTimingConfig(
     max_duration=2.5,           # Duração máxima do movimento
 )
 
-# Usar com Tab
-tab._mouse = Mouse(tab, timing=config)
+# Aplicar à instância de mouse do tab
+tab.mouse.timing = config
 ```
 
 Veja o dataclass `MouseTimingConfig` para todos os parâmetros disponíveis.
@@ -240,11 +240,7 @@ Ative o modo debug para visualizar o movimento do mouse na página. Quando ativo
 - **Pontos vermelhos**: posições de clique
 
 ```python
-# Ativar via construtor
-from pydoll.interactions.mouse import Mouse
-tab._mouse = Mouse(tab, debug=True)
-
-# Ou alternar em tempo de execução via propriedade
+# Ativar em tempo de execução via propriedade
 tab.mouse.debug = True
 
 # Agora todos os movimentos desenham pontos coloridos
@@ -262,12 +258,9 @@ Isso é útil para ajustar parâmetros de temporização e verificar que as traj
 
 ```python
 async def click_button_naturally(tab):
+    # element.click() usa automaticamente tab.mouse para movimento humanizado
     button = await tab.find(id='submit')
-    bounds = await button.get_bounds_using_js()
-    center_x = bounds['x'] + bounds['width'] / 2
-    center_y = bounds['y'] + bounds['height'] / 2
-
-    await tab.mouse.click(center_x, center_y)
+    await button.click()
 ```
 
 ### Arrastar um Slider
