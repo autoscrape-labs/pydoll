@@ -310,6 +310,48 @@ async def safe_screenshot():
         await content.take_screenshot('iframe-content.png')
 ```
 
+## 页面打包导出
+
+将整个页面及其所有资源（CSS、JS、图片、字体）保存为 `.zip` 压缩包，支持离线查看。
+
+### 基本用法
+
+```python
+import asyncio
+from pydoll.browser.chromium import Chrome
+
+async def save_page():
+    async with Chrome() as browser:
+        tab = await browser.start()
+        await tab.go_to('https://example.com')
+
+        # 将页面和资源保存为独立文件
+        await tab.save_bundle('page.zip')
+
+asyncio.run(save_page())
+```
+
+生成的 zip 包含一个 `index.html`，所有 URL 已被重写为引用 `assets/` 目录下的本地文件。
+
+### 内联模式
+
+使用 data URI、`<style>` 和 `<script>` 标签将所有内容直接嵌入到单个 `index.html` 中：
+
+```python
+# zip 中只包含一个自包含的 HTML 文件
+await tab.save_bundle('page-inline.zip', inline_assets=True)
+```
+
+### 参数
+
+| 参数 | 类型 | 默认值 | 描述 |
+|------|------|--------|------|
+| `path` | `str \| Path` | *（必填）* | 目标路径，必须以 `.zip` 结尾。 |
+| `inline_assets` | `bool` | `False` | 将所有资源内联嵌入，而非保存为独立文件。 |
+
+!!! info "打包包含的内容"
+    打包包括以下类型的资源：Document、Stylesheet、Script、Image、Font 和 Media。加载失败、已取消或使用 `data:` URI 的资源会被自动跳过。
+
 ## 了解更多
 
 有关截图和PDF如何与Pydoll架构集成的更多信息：
