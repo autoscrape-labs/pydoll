@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HAR Recording Test Page</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        #status { margin-top: 10px; }
+        .result { margin: 5px 0; font-family: monospace; font-size: 13px; }
+    </style>
+</head>
+<body>
+    <h1 id="heading">HAR Recording Test</h1>
+    <div id="status">waiting</div>
+    <div id="results"></div>
+
+    <script>
+        // The base URL is injected via query param: ?base=http://localhost:PORT
+        const params = new URLSearchParams(window.location.search);
+        const base = params.get('base');
+
+        async function runRequests() {
+            const results = document.getElementById('results');
+            const status = document.getElementById('status');
+
+            if (!base) {
+                status.textContent = 'error: no base URL';
+                return;
+            }
+
+            const endpoints = [
+                { path: '/api/users', label: 'GET /api/users' },
+                { path: '/api/data', label: 'GET /api/data' },
+                {
+                    path: '/api/submit',
+                    label: 'POST /api/submit',
+                    options: {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ key: 'value' })
+                    }
+                }
+            ];
+
+            for (const ep of endpoints) {
+                try {
+                    const resp = await fetch(base + ep.path, ep.options || {});
+                    const text = await resp.text();
+                    const div = document.createElement('div');
+                    div.className = 'result';
+                    div.textContent = `${ep.label}: ${resp.status} - ${text.substring(0, 80)}`;
+                    results.appendChild(div);
+                } catch (e) {
+                    const div = document.createElement('div');
+                    div.className = 'result';
+                    div.textContent = `${ep.label}: ERROR - ${e.message}`;
+                    results.appendChild(div);
+                }
+            }
+
+            status.textContent = 'done';
+        }
+
+        window.addEventListener('load', runRequests);
+    </script>
+</body>
+</html>
