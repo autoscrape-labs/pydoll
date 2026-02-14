@@ -13,6 +13,14 @@ class By(str, Enum):
 class PageLoadState(str, Enum):
     COMPLETE = 'complete'
     INTERACTIVE = 'interactive'
+    LOADING = 'loading'
+
+
+class ScrollPosition(str, Enum):
+    UP = 'up'
+    DOWN = 'down'
+    LEFT = 'left'
+    RIGHT = 'right'
 
 
 class Scripts:
@@ -79,10 +87,16 @@ class Scripts:
 
     CLICK_OPTION_TAG = """
     function() {
-    this.selected = true;
-    var select = this.parentElement.closest('select');
-    var event = new Event('change', { bubbles: true });
-    select.dispatchEvent(event);
+        var select = this && this.parentElement ? this.parentElement.closest('select') : null;
+        if (!select) { return false; }
+        for (var i = 0; i < select.options.length; i++) {
+            select.options[i].selected = false;
+        }
+        this.selected = true;
+        select.value = this.value;
+        select.dispatchEvent(new Event('input', { bubbles: true }));
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+        return true;
     }
     """
 
@@ -149,6 +163,26 @@ class Scripts:
         function() {
             return this.querySelectorAll("{selector}");
         }
+    """
+
+    GET_TEXT_BY_XPATH = """
+        (() => {
+            const node = document.evaluate(
+                "{escaped_value}",
+                document,
+                null,
+                XPathResult.FIRST_ORDERED_NODE_TYPE,
+                null
+            ).singleNodeValue;
+            return node ? (node.textContent || "") : "";
+        })()
+    """
+
+    GET_TEXT_BY_CSS = """
+        (() => {
+            const el = document.querySelector("{selector}");
+            return el ? (el.textContent || "") : "";
+        })()
     """
 
     GET_PARENT_NODE = """
@@ -268,6 +302,193 @@ class Scripts:
 }})();
 """
 
+    SCROLL_BY = """
+new Promise((resolve) => {{
+    const behavior = '{behavior}';
+    if (behavior === 'auto') {{
+        window.scrollBy({{
+            {axis}: {distance},
+            behavior: 'auto'
+        }});
+        resolve();
+    }} else {{
+        const onScrollEnd = () => {{
+            window.removeEventListener('scrollend', onScrollEnd);
+            resolve();
+        }};
+        window.addEventListener('scrollend', onScrollEnd);
+        window.scrollBy({{
+            {axis}: {distance},
+            behavior: 'smooth'
+        }});
+        setTimeout(() => {{
+            window.removeEventListener('scrollend', onScrollEnd);
+            resolve();
+        }}, 2000);
+    }}
+}});
+"""
+
+    SCROLL_TO_TOP = """
+new Promise((resolve) => {{
+    const behavior = '{behavior}';
+    if (behavior === 'auto') {{
+        window.scrollTo({{
+            top: 0,
+            behavior: 'auto'
+        }});
+        resolve();
+    }} else {{
+        const onScrollEnd = () => {{
+            window.removeEventListener('scrollend', onScrollEnd);
+            resolve();
+        }};
+        window.addEventListener('scrollend', onScrollEnd);
+        window.scrollTo({{
+            top: 0,
+            behavior: 'smooth'
+        }});
+        setTimeout(() => {{
+            window.removeEventListener('scrollend', onScrollEnd);
+            resolve();
+        }}, 2000);
+    }}
+}});
+"""
+
+    SCROLL_TO_BOTTOM = """
+new Promise((resolve) => {{
+    const behavior = '{behavior}';
+    if (behavior === 'auto') {{
+        window.scrollTo({{
+            top: document.body.scrollHeight,
+            behavior: 'auto'
+        }});
+        resolve();
+    }} else {{
+        const onScrollEnd = () => {{
+            window.removeEventListener('scrollend', onScrollEnd);
+            resolve();
+        }};
+        window.addEventListener('scrollend', onScrollEnd);
+        window.scrollTo({{
+            top: document.body.scrollHeight,
+            behavior: 'smooth'
+        }});
+        setTimeout(() => {{
+            window.removeEventListener('scrollend', onScrollEnd);
+            resolve();
+        }}, 2000);
+    }}
+}});
+"""
+
+    GET_SCROLL_Y = 'window.scrollY || window.pageYOffset || 0'
+
+    GET_REMAINING_SCROLL_TO_BOTTOM = """
+(function() {
+    const scrollHeight = Math.max(
+        document.body.scrollHeight,
+        document.documentElement.scrollHeight
+    );
+    const clientHeight = window.innerHeight;
+    const scrollTop = window.scrollY || window.pageYOffset || 0;
+    return Math.max(0, scrollHeight - clientHeight - scrollTop);
+})()
+"""
+
+    GET_VIEWPORT_CENTER = 'JSON.stringify([window.innerWidth / 2, window.innerHeight / 2])'
+
+    INSERT_TEXT = """
+    function() {
+        const el = this;
+        const text = arguments[0];
+
+        // Standard input/textarea
+        if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+            const start = el.selectionStart || el.value.length;
+            const end = el.selectionEnd || el.value.length;
+            const before = el.value.substring(0, start);
+            const after = el.value.substring(end);
+            el.value = before + text + after;
+            el.selectionStart = el.selectionEnd = start + text.length;
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+            return true;
+        }
+
+        // ContentEditable elements
+        if (el.isContentEditable) {
+            el.focus();
+            const selection = window.getSelection();
+            const range = selection.getRangeAt(0);
+            range.deleteContents();
+            const textNode = document.createTextNode(text);
+            range.insertNode(textNode);
+            range.setStartAfter(textNode);
+            range.setEndAfter(textNode);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            return true;
+        }
+
+        return false;
+    }
+    """
+
+    CLEAR_INPUT = """
+    function() {
+        const el = this;
+
+        // Standard input/textarea
+        if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+            el.value = '';
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+            return true;
+        }
+
+        // ContentEditable elements
+        if (el.isContentEditable) {
+            el.focus();
+            el.innerHTML = '';
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            return true;
+        }
+
+        return false;
+    }
+    """
+
+    IS_EDITABLE = """
+    function() {
+        const el = this;
+
+        // Check standard input elements
+        if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+            return !el.disabled && !el.readOnly;
+        }
+
+        // Check contenteditable (including inherited)
+        let current = el;
+        while (current) {
+            if (current.isContentEditable) {
+                return true;
+            }
+            current = current.parentElement;
+        }
+
+        return false;
+    }
+    """
+
+    IS_OPTION_TAG = """
+    function() {
+        return !!(this && this.tagName && this.tagName.toLowerCase() === 'option');
+    }
+    """
+
 
 class Key(tuple[str, int], Enum):
     BACKSPACE = ('Backspace', 8)
@@ -291,11 +512,64 @@ class Key(tuple[str, int], Enum):
     PRINTSCREEN = ('PrintScreen', 44)
     INSERT = ('Insert', 45)
     DELETE = ('Delete', 46)
+
+    DIGIT0 = ('0', 48)
+    DIGIT1 = ('1', 49)
+    DIGIT2 = ('2', 50)
+    DIGIT3 = ('3', 51)
+    DIGIT4 = ('4', 52)
+    DIGIT5 = ('5', 53)
+    DIGIT6 = ('6', 54)
+    DIGIT7 = ('7', 55)
+    DIGIT8 = ('8', 56)
+    DIGIT9 = ('9', 57)
+
+    A = ('A', 65)
+    B = ('B', 66)
+    C = ('C', 67)
+    D = ('D', 68)
+    E = ('E', 69)
+    F = ('F', 70)
+    G = ('G', 71)
+    H = ('H', 72)
+    I = ('I', 73)  # noqa: E741
+    J = ('J', 74)
+    K = ('K', 75)
+    L = ('L', 76)
+    M = ('M', 77)
+    N = ('N', 78)
+    O = ('O', 79)  # noqa: E741
+    P = ('P', 80)
+    Q = ('Q', 81)
+    R = ('R', 82)
+    S = ('S', 83)
+    T = ('T', 84)
+    U = ('U', 85)
+    V = ('V', 86)
+    W = ('W', 87)
+    X = ('X', 88)
+    Y = ('Y', 89)
+    Z = ('Z', 90)
+
     META = ('Meta', 91)
     METARIGHT = ('MetaRight', 92)
     CONTEXTMENU = ('ContextMenu', 93)
-    NUMLOCK = ('NumLock', 144)
-    SCROLLLOCK = ('ScrollLock', 145)
+
+    NUMPAD0 = ('Numpad0', 96)
+    NUMPAD1 = ('Numpad1', 97)
+    NUMPAD2 = ('Numpad2', 98)
+    NUMPAD3 = ('Numpad3', 99)
+    NUMPAD4 = ('Numpad4', 100)
+    NUMPAD5 = ('Numpad5', 101)
+    NUMPAD6 = ('Numpad6', 102)
+    NUMPAD7 = ('Numpad7', 103)
+    NUMPAD8 = ('Numpad8', 104)
+    NUMPAD9 = ('Numpad9', 105)
+    NUMPADMULTIPLY = ('NumpadMultiply', 106)
+    NUMPADADD = ('NumpadAdd', 107)
+    NUMPADSUBTRACT = ('NumpadSubtract', 109)
+    NUMPADDECIMAL = ('NumpadDecimal', 110)
+    NUMPADDIVIDE = ('NumpadDivide', 111)
 
     F1 = ('F1', 112)
     F2 = ('F2', 113)
@@ -309,6 +583,9 @@ class Key(tuple[str, int], Enum):
     F10 = ('F10', 121)
     F11 = ('F11', 122)
     F12 = ('F12', 123)
+
+    NUMLOCK = ('NumLock', 144)
+    SCROLLLOCK = ('ScrollLock', 145)
 
     SEMICOLON = ('Semicolon', 186)
     EQUALSIGN = ('EqualSign', 187)
@@ -326,3 +603,66 @@ class Key(tuple[str, int], Enum):
 class BrowserType(Enum):
     CHROME = auto()
     EDGE = auto()
+
+
+class TypoType(str, Enum):
+    """Types of realistic typing errors."""
+
+    ADJACENT = 'adjacent'
+    TRANSPOSE = 'transpose'
+    DOUBLE = 'double'
+    SKIP = 'skip'
+    MISSED_SPACE = 'missed_space'
+
+
+DEFAULT_TYPO_PROBABILITY = 0.02
+
+
+QWERTY_NEIGHBORS: dict[str, list[str]] = {
+    '1': ['2', 'q'],
+    '2': ['1', '3', 'q', 'w'],
+    '3': ['2', '4', 'w', 'e'],
+    '4': ['3', '5', 'e', 'r'],
+    '5': ['4', '6', 'r', 't'],
+    '6': ['5', '7', 't', 'y'],
+    '7': ['6', '8', 'y', 'u'],
+    '8': ['7', '9', 'u', 'i'],
+    '9': ['8', '0', 'i', 'o'],
+    '0': ['9', '-', 'o', 'p'],
+    '-': ['0', '=', 'p', '['],
+    '=': ['-', '[', ']'],
+    'q': ['1', '2', 'w', 'a', 's'],
+    'w': ['q', '2', '3', 'e', 'a', 's', 'd'],
+    'e': ['w', '3', '4', 'r', 's', 'd', 'f'],
+    'r': ['e', '4', '5', 't', 'd', 'f', 'g'],
+    't': ['r', '5', '6', 'y', 'f', 'g', 'h'],
+    'y': ['t', '6', '7', 'u', 'g', 'h', 'j'],
+    'u': ['y', '7', '8', 'i', 'h', 'j', 'k'],
+    'i': ['u', '8', '9', 'o', 'j', 'k', 'l'],
+    'o': ['i', '9', '0', 'p', 'k', 'l', ';'],
+    'p': ['o', '0', '-', '[', 'l', ';', "'"],
+    '[': ['p', '-', '=', ']', ';', "'"],
+    ']': ['[', '=', "'"],
+    'a': ['q', 'w', 's', 'z', 'x'],
+    's': ['q', 'w', 'e', 'a', 'd', 'z', 'x', 'c'],
+    'd': ['w', 'e', 'r', 's', 'f', 'x', 'c', 'v'],
+    'f': ['e', 'r', 't', 'd', 'g', 'c', 'v', 'b'],
+    'g': ['r', 't', 'y', 'f', 'h', 'v', 'b', 'n'],
+    'h': ['t', 'y', 'u', 'g', 'j', 'b', 'n', 'm'],
+    'j': ['y', 'u', 'i', 'h', 'k', 'n', 'm', ','],
+    'k': ['u', 'i', 'o', 'j', 'l', 'm', ',', '.'],
+    'l': ['i', 'o', 'p', 'k', ';', ',', '.', '/'],
+    ';': ['o', 'p', '[', 'l', "'", '.', '/'],
+    "'": ['p', '[', ']', ';', '/'],
+    'z': ['a', 's', 'x'],
+    'x': ['z', 'a', 's', 'd', 'c'],
+    'c': ['x', 's', 'd', 'f', 'v'],
+    'v': ['c', 'd', 'f', 'g', 'b'],
+    'b': ['v', 'f', 'g', 'h', 'n'],
+    'n': ['b', 'g', 'h', 'j', 'm'],
+    'm': ['n', 'h', 'j', 'k', ','],
+    ',': ['m', 'j', 'k', 'l', '.'],
+    '.': [',', 'k', 'l', ';', '/'],
+    '/': ['.', 'l', ';', "'"],
+    ' ': ['c', 'v', 'b', 'n', 'm'],
+}

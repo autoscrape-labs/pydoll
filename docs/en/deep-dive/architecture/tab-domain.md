@@ -222,7 +222,7 @@ except KeyError:
     raise TopLevelTargetRequired(...)  # Guide users to WebElement.take_screenshot()
 ```
 
-**Design implication:** IFrame tabs (created via `get_frame()`) inherit all Tab methods but screenshots fail by design. Alternative: `WebElement.take_screenshot()` works for iframe content.
+**Design implication:** Historically, Pydoll created dedicated Tab instances for iframes. The new model keeps iframe interaction inside `WebElement`, so screenshots and other helpers should target elements within the frame (for example, `await iframe_element.find(...).take_screenshot()`).
 
 **PDF Generation:** `Page.printToPDF` returns base64-encoded data. Pydoll abstracts file I/O, but underlying data is always base64 (CDP spec).
 

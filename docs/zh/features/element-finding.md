@@ -585,6 +585,160 @@ async def practical_example():
 asyncio.run(practical_example())
 ```
 
+## Shadow DOM 支持
+
+许多现代 Web 应用程序使用 [Shadow DOM](https://developer.mozilla.org/zh-CN/docs/Web/API/Web_components/Using_shadow_DOM) 来封装组件内部结构。Pydoll 通过 `ShadowRoot` 类提供对 shadow 树内元素的无缝访问。
+
+### Shadow DOM 的工作原理
+
+```mermaid
+graph TB
+    Host["div#my-component (shadow host)"]
+    SR["ShadowRoot (open)"]
+    Internal1["button.internal-btn"]
+    Internal2["input.internal-input"]
+
+    Host --> SR
+    SR --> Internal1
+    SR --> Internal2
+```
+
+shadow root 内的元素对常规 DOM 查询是隐藏的。您需要先访问 shadow root，然后在其中进行搜索。
+
+### 访问 Shadow Root
+
+```python
+import asyncio
+from pydoll.browser.chromium import Chrome
+
+async def shadow_dom_example():
+    async with Chrome() as browser:
+        tab = await browser.start()
+        await tab.go_to('https://example.com/web-components')
+
+        # 查找 shadow host 元素
+        shadow_host = await tab.find(id='my-component')
+
+        # 访问其 shadow root
+        shadow_root = await shadow_host.get_shadow_root()
+
+        # 在 shadow root 内使用 query() 和 CSS 选择器查找元素
+        button = await shadow_root.query('.internal-btn')
+        await button.click()
+
+        input_field = await shadow_root.query('input[type="email"]')
+        await input_field.type_text('user@example.com')
+
+asyncio.run(shadow_dom_example())
+```
+
+### 使用 query() 和 CSS 选择器
+
+`ShadowRoot` 继承自 `FindElementsMixin`，但带有 `_css_only` 限制，这意味着仅支持使用 CSS 选择器的 `query()`。`find()` 方法和使用 XPath 的 `query()` 会抛出 `NotImplementedError`：
+
+```python
+# query() 配合 CSS 选择器 — 推荐方法
+element = await shadow_root.query('#inner-id')
+element = await shadow_root.query('button.primary')
+element = await shadow_root.query('div.container > .content')
+
+# find_all 查找多个元素
+items = await shadow_root.query('.item', find_all=True)
+
+# 带超时的等待
+element = await shadow_root.query('#dynamic', timeout=5)
+```
+
+!!! warning "ShadowRoot 不支持 find() 和 XPath"
+    调用 `shadow_root.find()` 或 `shadow_root.query('//xpath')` 会抛出 `NotImplementedError`。在 shadow root 中请始终使用带 CSS 选择器的 `query()`。
+
+### 嵌套 Shadow Root
+
+Web 组件可以包含拥有自己 shadow root 的其他 Web 组件：
+
+```python
+async def nested_shadow():
+    outer_host = await tab.find(tag_name='outer-component')
+    outer_shadow = await outer_host.get_shadow_root()
+
+    inner_host = await outer_shadow.query('inner-component')
+    inner_shadow = await inner_host.get_shadow_root()
+
+    deep_button = await inner_shadow.query('.deep-btn')
+    await deep_button.click()
+```
+
+### 查找 Shadow Root：find_shadow_roots()
+
+当您需要探索页面上存在哪些 shadow root（对调试或 Cloudflare 挑战等动态页面很有用）时，使用 `find_shadow_roots()`：
+
+```python
+# 查找页面上的所有 shadow root
+shadow_roots = await tab.find_shadow_roots()
+
+for sr in shadow_roots:
+    print(f'模式: {sr.mode}, 宿主: {sr.host_element}')
+    # 在每个 shadow root 内搜索
+    btn = await sr.query('button', raise_exc=False)
+    if btn:
+        await btn.click()
+```
+
+#### 等待 Shadow Root：`timeout`
+
+Shadow 宿主通常是异步注入的（例如 Cloudflare Turnstile 在 OOPIF 中加载）。使用 `timeout` 进行轮询直到 shadow root 出现：
+
+```python
+# 等待最多 10 秒让 shadow root 出现
+shadow_roots = await tab.find_shadow_roots(timeout=10)
+```
+
+元素上的 `get_shadow_root()` 方法也支持 `timeout`：
+
+```python
+# 等待元素的 shadow root 出现
+host = await tab.find(id='my-component', timeout=5)
+shadow = await host.get_shadow_root(timeout=5)
+```
+
+#### 深度遍历：跨域 IFrame（OOPIF）
+
+默认情况下，`find_shadow_roots()` 仅遍历主文档的 DOM 树（包括通过 `contentDocument` 访问的同源 iframe，但**不包括**跨域 iframe）。传入 `deep=True` 以同时发现跨域 iframe（OOPIF）内的 shadow root：
+
+```python
+# 包含跨域 iframe 中的 shadow root（例如 Cloudflare Turnstile）
+shadow_roots = await tab.find_shadow_roots(deep=True, timeout=10)
+
+for sr in shadow_roots:
+    print(f'模式: {sr.mode}, 宿主: {sr.host_element}')
+    # 在这些 shadow root 中找到的元素会自动通过
+    # 正确的 OOPIF 会话路由 CDP 命令
+    btn = await sr.query('input[type="checkbox"]', raise_exc=False)
+    if btn:
+        await btn.click()
+```
+
+!!! tip "何时使用 `deep=True`"
+    在自动化包含跨域嵌入式组件的页面时使用 `deep=True`，例如 Cloudflare Turnstile 验证码、第三方支付表单或社交登录按钮。这些组件通常使用跨域 iframe，其中包含关闭的 shadow root。
+
+### Shadow Root 属性
+
+```python
+shadow_root = await element.get_shadow_root()
+
+# 检查 shadow root 模式（open、closed 或 user-agent）
+print(shadow_root.mode)  # ShadowRootType.OPEN
+
+# 访问 host 元素
+host = shadow_root.host_element
+
+# 获取 shadow root 内部 HTML
+html = await shadow_root.inner_html
+```
+
+!!! note "关闭的 Shadow Root"
+    关闭的 shadow root（`mode='closed'`）可以通过 CDP 访问，因为协议绕过了 JavaScript 限制。但是，某些浏览器内部的 shadow root（user-agent）可能具有有限的可访问性。
+
 ## 使用 iFrame
 
 !!! info "提供完整的 IFrame 指南"
@@ -596,24 +750,13 @@ iFrame 在浏览器自动化中提出了特殊的挑战，因为它们具有单�
 
 ```mermaid
 flowchart TB
-    subgraph MainPage[主页面上下文]
-        MainDOM[主页面 DOM]
-        IFrameTag[iframe 元素]
-        MainDOM --> IFrameTag
-    end
-    
-    subgraph IFrameContext[iFrame - 单独的 DOM]
-        IFrameDOM[iFrame DOM]
-        IFrameElements[iFrame 内的元素]
-        IFrameDOM --> IFrameElements
-    end
-    
-    IFrameTag -.->|get_frame 方法| IFrameContext
-    
-    MainPage --> MainSearch[tab.find - 主 DOM]
-    IFrameContext --> IFrameSearch[frame.find - iFrame DOM]
-```
+    Main[tab]
+    Frame["iframe WebElement"]
+    Content["iframe 内部元素"]
 
+    Main -->|"find('iframe')"| Frame
+    Frame -->|"find('button#submit')"| Content
+```
 ```python
 import asyncio
 from pydoll.browser.chromium import Chrome
@@ -622,29 +765,25 @@ async def iframe_interaction():
     async with Chrome() as browser:
         tab = await browser.start()
         await tab.go_to('https://example.com/page-with-iframe')
-        
-        # 查找 iframe 元素
-        iframe_element = await tab.query("iframe.embedded-content", timeout=10)
-        
-        # 获取 iframe 内容的 Tab 实例
-        frame = await tab.get_frame(iframe_element)
-        
-        # 现在在 iframe 上下文中使用所有 Tab 方法
-        iframe_button = await frame.find(tag_name="button", class_name="submit")
+
+        iframe = await tab.query("iframe.embedded-content", timeout=10)
+
+        # WebElement 辅助方法会自动在 iframe 内执行
+        iframe_button = await iframe.find(tag_name="button", class_name="submit")
         await iframe_button.click()
-        
-        iframe_input = await frame.find(id="captcha-input")
+
+        iframe_input = await iframe.find(id="captcha-input")
         await iframe_input.type_text("verification-code")
-        
-        # 在 iframe 内查询
-        iframe_links = await frame.query("a", find_all=True)
-        print(f"在 iframe 中找到 {len(iframe_links)} 个链接")
+
+        # 如果还有内层 iframe，继续链式查找
+        inner_iframe = await iframe.find(tag_name="iframe")
+        download_link = await inner_iframe.find(text="下载 PDF")
+        await download_link.click()
 
 asyncio.run(iframe_interaction())
 ```
-
-!!! note "iFrame 目标和截图"
-    在 iframe 内工作时，某些方法如 `tab.take_screenshot()` 将不起作用，因为 Chrome 的 CDP 无法直接捕获子目标的截图。请改用 `element.take_screenshot()`，它在 iframe 内工作。
+!!! note "iframe 中的截图"
+    `tab.take_screenshot()` 只能作用于顶层 target。想要截取 iframe 内容，请锁定 iframe 内部的某个元素，使用 `element.take_screenshot()`。
 
 ## 错误处理策略
 

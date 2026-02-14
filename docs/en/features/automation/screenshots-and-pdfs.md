@@ -301,18 +301,56 @@ async def safe_screenshot():
         
         # IFrame screenshot limitation
         iframe_element = await tab.find(tag_name='iframe')
-        frame = await tab.get_frame(iframe_element)
-        
-        try:
-            # Won't work for iframes
-            await frame.take_screenshot('iframe.png')
-        except TopLevelTargetRequired:
-            print("Use element.take_screenshot() for iframe content")
-            
-            # Correct approach
-            content = await frame.find(id='content')
-            await content.take_screenshot('iframe-content.jpeg')
+
+        # This still won't work: top-level screenshots ignore iframe content
+        # await tab.take_screenshot('frame.png')
+
+        # Screenshot an element inside the iframe WebElement
+        content = await iframe_element.find(id='content')
+        await content.take_screenshot('iframe-content.png')
 ```
+
+## Page Bundle Export
+
+Save an entire page with all its assets (CSS, JS, images, fonts) as a `.zip` archive for offline viewing.
+
+### Basic Usage
+
+```python
+import asyncio
+from pydoll.browser.chromium import Chrome
+
+async def save_page():
+    async with Chrome() as browser:
+        tab = await browser.start()
+        await tab.go_to('https://example.com')
+
+        # Save page with assets as separate files
+        await tab.save_bundle('page.zip')
+
+asyncio.run(save_page())
+```
+
+The resulting zip contains an `index.html` with all URLs rewritten to reference local files under an `assets/` directory.
+
+### Inline Mode
+
+Embed everything directly into a single `index.html` using data URIs, `<style>`, and `<script>` tags:
+
+```python
+# Single self-contained HTML file inside the zip
+await tab.save_bundle('page-inline.zip', inline_assets=True)
+```
+
+### Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `path` | `str \| Path` | *(required)* | Destination path. Must end with `.zip`. |
+| `inline_assets` | `bool` | `False` | Embed all assets inline instead of saving as separate files. |
+
+!!! info "What Gets Bundled"
+    The bundle includes resources of type: Document, Stylesheet, Script, Image, Font, and Media. Resources that failed to load, were canceled, or use `data:` URIs are automatically skipped.
 
 ## Learn More
 

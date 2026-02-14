@@ -222,7 +222,7 @@ except KeyError:
     raise TopLevelTargetRequired(...)  # Guia os usuários para WebElement.take_screenshot()
 ```
 
-**Implicação de design:** Abas de Iframe (criadas via `get_frame()`) herdam todos os métodos da Aba (Tab), mas as capturas de tela falham por design. Alternativa: `WebElement.take_screenshot()` funciona para conteúdo de iframe.
+**Implicação de design:** Antes, o Pydoll criava instâncias de Tab dedicadas para iframes. Com o novo modelo, toda interação acontece no próprio `WebElement`, então capturas e outros utilitários devem ser executados nos elementos internos (por exemplo, `await iframe_element.find(...).take_screenshot()`).
 
 **Geração de PDF:** `Page.printToPDF` retorna dados codificados em base64. O Pydoll abstrai a E/S (I/O) de arquivo, mas os dados subjacentes são sempre base64 (especificação CDP).
 

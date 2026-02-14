@@ -15,6 +15,7 @@ nav:
       - Automation:
           - Human-Like Interactions: features/automation/human-interactions.md
           - Keyboard Control: features/automation/keyboard-control.md
+          - Mouse Control: features/automation/mouse-control.md
           - File Operations: features/automation/file-operations.md
           - IFrames: features/automation/iframes.md
           - Screenshots & PDF: features/automation/screenshots-and-pdfs.md
@@ -22,6 +23,7 @@ nav:
           - Network Monitoring: features/network/monitoring.md
           - Request Interception: features/network/interception.md
           - Browser-Context HTTP Requests: features/network/http-requests.md
+          - HAR Network Recording: features/network/network-recording.md
       - Browser Management:
           - Multi-Tab Management: features/browser-management/tabs.md
           - Browser Contexts: features/browser-management/contexts.md
@@ -34,6 +36,7 @@ nav:
           - Behavioral Captcha Bypass: features/advanced/behavioral-captcha-bypass.md
           - Event System: features/advanced/event-system.md
           - Remote Connections: features/advanced/remote-connections.md
+          - Retry Decorator: features/advanced/decorators.md
   - Deep Dive:
       - Overview: deep-dive/index.md
       - Core Fundamentals:
@@ -41,6 +44,7 @@ nav:
           - Chrome DevTools Protocol: deep-dive/fundamentals/cdp.md
           - Connection Layer: deep-dive/fundamentals/connection-layer.md
           - Python Type System: deep-dive/fundamentals/typing-system.md
+          - Iframes & Contexts: deep-dive/fundamentals/iframes-and-contexts.md
       - Internal Architecture:
           - Overview: deep-dive/architecture/index.md
           - Browser Domain: deep-dive/architecture/browser-domain.md
@@ -49,6 +53,7 @@ nav:
           - FindElements Mixin: deep-dive/architecture/find-elements-mixin.md
           - Event Architecture: deep-dive/architecture/event-architecture.md
           - Browser Requests Architecture: deep-dive/architecture/browser-requests-architecture.md
+          - Shadow DOM: deep-dive/architecture/shadow-dom.md
       - Network & Security:
           - Overview: deep-dive/network/index.md
           - Network Fundamentals: deep-dive/network/network-fundamentals.md
@@ -77,6 +82,7 @@ nav:
           - Managers: api/browser/managers.md
       - Elements:
           - WebElement: api/elements/web_element.md
+          - ShadowRoot: api/elements/shadow_root.md
           - Mixins: api/elements/mixins.md
       - Connection:
           - Connection Handler: api/connection/connection.md
@@ -174,6 +180,7 @@ plugins:
             Automation: 自动化
             Human-Like Interactions: 类人交互
             Keyboard Control: 键盘控制
+            Mouse Control: 鼠标控制
             File Operations: 文件操作
             IFrames: IFrame交互
             Screenshots & PDF: 截图与PDF
@@ -181,6 +188,7 @@ plugins:
             Network Monitoring: 网络监控
             Request Interception: 请求拦截
             Browser-Context HTTP Requests: 浏览器上下文HTTP请求
+            HAR Network Recording: HAR网络录制
             Browser Management: 浏览器管理
             Multi-Tab Management: 多标签页管理
             Browser Contexts: 浏览器上下文
@@ -193,6 +201,7 @@ plugins:
             Behavioral Captcha Bypass: 行为验证码绕过
             Event System: 事件系统
             Remote Connections: 远程连接
+            Retry Decorator: Retry 装饰器
             Deep Dive: 深入了解
             Core Fundamentals: 核心基础
             Chrome DevTools Protocol: Chrome DevTools 协议
@@ -205,6 +214,7 @@ plugins:
             FindElements Mixin: 查找元素混合器
             Event Architecture: 事件架构
             Browser Requests Architecture: 浏览器请求架构
+            Shadow DOM: Shadow DOM 架构
             Network & Security: 网络与安全
             Network Fundamentals: 网络基础
             HTTP/HTTPS Proxies: HTTP/HTTPS 代理
@@ -229,6 +239,7 @@ plugins:
             Managers: 管理器
             Elements: 元素
             WebElement: Web元素
+            ShadowRoot: Shadow根
             Mixins: 混合器
             Connection: 连接
             Connection Handler: 连接处理器
@@ -271,6 +282,7 @@ plugins:
             Automation: Automação
             Human-Like Interactions: Interações Humanas
             Keyboard Control: Controle de Teclado
+            Mouse Control: Controle do Mouse
             File Operations: Operações com Arquivos
             IFrames: IFrames
             Screenshots & PDF: Capturas e PDF
@@ -278,6 +290,7 @@ plugins:
             Network Monitoring: Monitoramento de Rede
             Request Interception: Interceptação de Requisições
             Browser-Context HTTP Requests: Requisições HTTP no Contexto do Navegador
+            HAR Network Recording: Gravação de Rede HAR
             Browser Management: Gerenciamento do Navegador
             Multi-Tab Management: Gerenciamento de Abas
             Browser Contexts: Contextos do Navegador
@@ -290,6 +303,7 @@ plugins:
             Behavioral Captcha Bypass: Bypass de Captcha Comportamental
             Event System: Sistema de Eventos
             Remote Connections: Conexões Remotas
+            Retry Decorator: Decorator Retry
             Deep Dive: Análise Profunda
             Core Fundamentals: Fundamentos Centrais
             Chrome DevTools Protocol: Protocolo Chrome DevTools
@@ -302,6 +316,7 @@ plugins:
             FindElements Mixin: Mixin FindElements
             Event Architecture: Arquitetura de Eventos
             Browser Requests Architecture: Arquitetura de Requisições do Navegador
+            Shadow DOM: Arquitetura Shadow DOM
             Network & Security: Rede e Segurança
             Network Fundamentals: Fundamentos de Rede
             HTTP/HTTPS Proxies: Proxies HTTP/HTTPS
@@ -326,6 +341,7 @@ plugins:
             Managers: Gerenciadores
             Elements: Elementos
             WebElement: Elemento Web
+            ShadowRoot: Shadow Root
             Mixins: Mixins
             Connection: Conexão
             Connection Handler: Manipulador de Conexão

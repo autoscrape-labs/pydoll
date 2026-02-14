@@ -279,3 +279,36 @@ def test_set_headless_false_twice():
     options.headless = False
     assert options.headless is False
     assert options.arguments == []
+
+def test_set_webrtc_leak_protection():
+    options = Options()
+    options.webrtc_leak_protection = True
+    assert options.webrtc_leak_protection is True
+    assert options.arguments == ['--force-webrtc-ip-handling-policy=disable_non_proxied_udp']
+
+def test_set_webrtc_leak_protection_false():
+    options = Options()
+    options.webrtc_leak_protection = True
+    assert options.webrtc_leak_protection is True
+    assert options.arguments == ['--force-webrtc-ip-handling-policy=disable_non_proxied_udp']
+    options.webrtc_leak_protection = False
+    assert options.webrtc_leak_protection is False
+    assert options.arguments == []
+
+def test_set_webrtc_leak_protection_true_twice():
+    options = Options()
+    options.webrtc_leak_protection = True
+    assert options.webrtc_leak_protection is True
+    assert options.arguments == ['--force-webrtc-ip-handling-policy=disable_non_proxied_udp']
+    options.webrtc_leak_protection = True
+    assert options.webrtc_leak_protection is True
+    assert options.arguments == ['--force-webrtc-ip-handling-policy=disable_non_proxied_udp']
+
+def test_set_webrtc_leak_protection_false_twice():
+    options = Options()
+    options.webrtc_leak_protection = False
+    assert options.webrtc_leak_protection is False
+    assert options.arguments == []
+    options.webrtc_leak_protection = False
+    assert options.webrtc_leak_protection is False
+    assert options.arguments == []

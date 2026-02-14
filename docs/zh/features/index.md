@@ -28,7 +28,7 @@
 
 **[文件操作](automation/file-operations.md)**：文件处理在浏览器自动化中可能很棘手。Pydoll 为上传和下载提供了强大的解决方案，`expect_download` 上下文管理器提供了优雅的异步下载完成处理。
 
-**[IFrame 交互](automation/iframes.md)**：使用 `get_frame()` 方法无缝处理嵌入式框架。获取 iframe 内容的完整 Tab 接口，使您能够在框架内使用 Pydoll 的所有元素查找和交互功能。
+**[IFrame 交互](automation/iframes.md)**：把 iframe 当成普通元素——定位 iframe 后在其内部继续查找，无需额外 target 或 Tab。
 
 **[截图和 PDF](automation/screenshots-and-pdfs.md)**：从您的自动化会话中捕获视觉内容。无论您需要用于视觉回归测试的整页截图、用于调试的元素特定捕获，还是用于归档的 PDF 导出，Pydoll 都能满足您的需求。
 

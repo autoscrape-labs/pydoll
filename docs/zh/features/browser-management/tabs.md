@@ -81,8 +81,8 @@ async def tab_registry_demonstration():
 asyncio.run(tab_registry_demonstration())
 ```
 
-!!! info "浏览器管理的注册表"
-    Browser 类管理一个以 `target_id` 为键的 `_tabs_opened` 字典。当你请求一个标签页（通过 `new_tab()`、`get_opened_tabs()` 或 `get_frame()`）时，Browser 首先检查此注册表。如果该 `target_id` 已存在 Tab 实例，则返回现有实例；否则，创建新实例并存储在注册表中。
+!!! info "Browser 管理的注册表"
+    Browser 类管理一个以 `target_id` 为键的 `_tabs_opened` 字典。当你请求一个标签页（通过 `new_tab()` 或 `get_opened_tabs()`）时，Browser 会先检查该注册表。如果已经存在对应的 Tab，就复用该实例；否则创建新的并缓存。（IFrame 现在作为普通元素处理，不再注册为独立的 Tab。）
 
 ## 创建和管理标签页
 

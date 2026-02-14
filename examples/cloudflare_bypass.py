@@ -1,7 +1,6 @@
 import asyncio
 
 from pydoll.browser import Chrome
-from pydoll.constants import By
 
 
 async def example_with_context_manager():
@@ -15,9 +14,7 @@ async def example_with_context_manager():
     page = await browser.get_page()
 
     print('Using context manager approach...')
-    async with page.expect_and_bypass_cloudflare_captcha(
-        custom_selector=(By.ID, 'TAYH8'), time_before_click=5
-    ):
+    async with page.expect_and_bypass_cloudflare_captcha():
         await page.go_to('https://www.planetminecraft.com/account/sign_in/')
         print('Page loaded, waiting for captcha to be handled...')
 

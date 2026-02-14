@@ -1,10 +1,14 @@
 # Working with IFrames
 
-IFrames (inline frames) are one of the trickiest aspects of browser automation. Pydoll provides a clean, intuitive API for iframe interaction that abstracts away the complexity of CDP target management.
+Modern web pages embed content from other documents using `<iframe>`. In previous versions of Pydoll you had to convert an iframe into a `Tab` using `tab.get_frame()` and keep track of CDP targets manually. **That is no longer necessary.**  
+An iframe nowadays behaves like any other `WebElement`: you can call `find()`, `query()`, `execute_script()`, `inner_html`, `text`, and all element helpers directly—Pydoll will transparently execute the request inside the correct browsing context.
+
+!!! info "Simpler mental model"
+    Treat an iframe exactly like a div: locate it once and use it as the starting point for new element searches. Pydoll handles cross-origin frames, isolated execution contexts, and nested frames behind the scenes.
 
 ## Quick Start
 
-### Basic IFrame Interaction
+### Interact with the first iframe on the page
 
 ```python
 import asyncio
@@ -14,176 +18,166 @@ async def interact_with_iframe():
     async with Chrome() as browser:
         tab = await browser.start()
         await tab.go_to('https://example.com/page-with-iframe')
-        
-        # Find the iframe element
-        iframe_element = await tab.find(tag_name='iframe', id='content-frame')
-        
-        # Get a Tab instance for the iframe
-        iframe = await tab.get_frame(iframe_element)
-        
-        # Now interact with elements inside the iframe
-        button = await iframe.find(id='submit-button')
-        await button.click()
-        
-        # Find and fill form inside iframe
-        username = await iframe.find(name='username')
+
+        iframe = await tab.find(tag_name='iframe', id='content-frame')
+
+        # These methods execute inside the iframe automatically
+        title = await iframe.find(tag_name='h1')
+        await title.click()
+
+        form = await iframe.find(id='login-form')
+        username = await form.find(name='username')
         await username.type_text('john_doe')
 
 asyncio.run(interact_with_iframe())
 ```
 
-!!! tip "IFrames are Just Tabs"
-    In Pydoll, an iframe returns a `Tab` object. This means **all methods available on Tab work on iframes**: `find()`, `query()`, `execute_script()`, `take_screenshot()`, and more.
+### Nested iframes
 
-## Understanding IFrames
-
-### What is an IFrame?
-
-An `<iframe>` (inline frame) is an HTML element that embeds another HTML document within the current page. Think of it as a "browser window within a browser window."
-
-```html
-<html>
-  <body>
-    <h1>Main Page</h1>
-    <p>This is the main document</p>
-    
-    <!-- This iframe loads a completely separate document -->
-    <iframe src="https://other-site.com/content.html" id="my-frame">
-    </iframe>
-  </body>
-</html>
-```
-
-Each iframe:
-
-- Has its own **separate DOM** (Document Object Model)
-- Loads its own HTML, CSS, and JavaScript
-- Can be from a different domain (cross-origin)
-- Operates in an isolated browsing context
-
-### Why You Can't Interact Directly
-
-This code **won't work** as you might expect:
+Need to reach a frame inside another frame? Chain your searches:
 
 ```python
-# ❌ This will NOT find elements inside the iframe
-button = await tab.find(id='button-inside-iframe')
+outer = await tab.find(id='outer-frame')
+inner = await outer.find(tag_name='iframe')   # Search inside the outer iframe
+
+submit_button = await inner.find(id='submit')
+await submit_button.click()
 ```
 
-**Why?** Because `tab.find()` searches the **main page's DOM**. The iframe has a **completely separate DOM** that isn't accessible from the parent.
+The algorithm is always the same:
 
-Think of it like this:
+1. Find the iframe element.
+2. Use that `WebElement` to continue searching.
+3. Repeat for deeper levels if required.
 
-```
-Main Page DOM                 IFrame DOM (Separate!)
-├── <html>                    ├── <html>
-│   ├── <body>                │   ├── <body>
-│   │   ├── <div>             │   │   ├── <div>
-│   │   └── <iframe>          │   │   └── <button id="inside">
-│   │       (separate world)  │   └── </body>
-│   └── </body>               └── </html>
-└── </html>
-```
+There is no need to cache frame targets or create additional `Tab` instances.
 
-!!! info "Isolated Browsing Contexts"
-    IFrames create what's called an **isolated browsing context**. This isolation is a security feature that prevents malicious iframes from accessing or manipulating the parent page's content.
-
-### How Pydoll Solves This
-
-Under the hood, Pydoll uses Chrome DevTools Protocol (CDP) to:
-
-1. **Identify the iframe target**: Each iframe gets its own CDP target ID
-2. **Create a new Tab instance**: This Tab is scoped to the iframe's DOM
-3. **Provide full access**: All Tab methods work on the iframe's isolated DOM
+### Execute JavaScript in an iframe
 
 ```python
-# This is what happens internally:
-iframe_element = await tab.find(tag_name='iframe')  # Find the <iframe> tag
-frame = await tab.get_frame(iframe_element)         # Get CDP target for iframe
-
-# Now 'frame' is a Tab that operates on the iframe's DOM
-button = await frame.find(id='button-inside-iframe')  # ✅ Works!
+iframe = await tab.find(tag_name='iframe')
+result = await iframe.execute_script('return document.title', return_by_value=True)
+print(result['result']['result']['value'])
 ```
 
-### Technical Deep Dive: CDP Targets
+Pydoll automatically runs the script within the iframe’s isolated execution context (cross-origin and same-origin frames work the same way).
 
-When you call `tab.get_frame()`, Pydoll:
+## Why this is better
 
-1. **Extracts the `src` attribute** from the iframe element
-2. **Queries CDP for all targets** using `Target.getTargets()`
-3. **Matches the iframe URL** to find its corresponding target ID
-4. **Creates a Tab instance** with that target ID
+- **Intuitive:** what you see in the DOM tree is what you code—if you can select the `iframe` element, you can interact with everything inside it.
+- **Cross-origin friendly:** Pydoll spins up an isolated world for you; no more manual target resolution.
+- **Nested by design:** each search is scoped to the element you call it on, so deep hierarchies stay manageable.
+- **No API split:** you do not have to switch between `Tab` and `WebElement` methods—one set of primitives is enough.
 
-Each target has:
+!!! tip "Deprecation notice"
+    `Tab.get_frame()` now emits a `DeprecationWarning` and will be removed in a future release. Update existing snippets to work directly with iframe elements as shown above.
 
-- **Unique Target ID**: Identifies the browsing context
-- **Separate WebSocket connection**: For isolated CDP communication
-- **Own document tree**: Complete independence from parent
+## Frequently used patterns
+
+### Take a screenshot from inside an iframe
 
 ```python
-# Internally in tab.py:
-async def get_frame(self, frame: WebElement) -> Tab:
-    # Get iframe's source URL
-    frame_url = frame.get_attribute('src')
-    
-    # Find the target that matches this URL
-    targets = await self._browser.get_targets()
-    iframe_target = next((t for t in targets if t['url'] == frame_url), None)
-    
-    # Create a Tab for this iframe's target
-    target_id = iframe_target['targetId']
-    tab = Tab(self._browser, target_id=target_id, ...)
-    
-    return tab  # Now you can interact with iframe as a Tab!
+iframe = await tab.find(tag_name='iframe')
+chart = await iframe.find(id='sales-chart')
+await chart.take_screenshot('chart.png')
 ```
 
-!!! warning "IFrame Must Have Valid `src`"
-    The iframe must have a valid `src` attribute for Pydoll to locate its CDP target. IFrames using `srcdoc` or dynamically injected content may not work with `get_frame()`.
 
-## Comparison: Main Page vs IFrame
+## Cross-iframe Selectors
 
-| Aspect | Main Page | IFrame |
-|--------|-----------|--------|
-| **DOM** | Own document tree | Separate document tree |
-| **CDP Target** | One target ID | Different target ID |
-| **Element Search** | `tab.find()` | `iframe.find()` |
-| **JavaScript Context** | `window` of main page | `window` of iframe |
-| **Origin** | Page's origin | Can be cross-origin |
-| **Storage** | Shared with page | Can be isolated |
+Instead of manually finding each iframe and then searching inside it, you can write a **single selector** that crosses iframe boundaries. Pydoll automatically detects `iframe` steps in your XPath or CSS selector, splits them into segments, and walks the iframe chain for you.
 
-## Screenshots in IFrames
+### CSS selectors
 
-!!! info "Screenshot Limitations"
-    `tab.take_screenshot()` only works on **top-level targets**. For iframe screenshots, use `element.take_screenshot()` on elements **inside** the iframe.
+Use any standard combinator (`>`, space) after an `iframe` compound:
 
 ```python
-import asyncio
-from pydoll.browser.chromium import Chrome
+# Single iframe crossing
+button = await tab.query('iframe > .submit-btn')
 
-async def iframe_screenshot():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://example.com/iframe-page')
-        
-        iframe_element = await tab.find(tag_name='iframe')
-        frame = await tab.get_frame(iframe_element)
-        
-        # ❌ This won't work for iframes
-        # await frame.take_screenshot('frame.png')
-        
-        # ✅ Instead, screenshot an element inside the iframe
-        content = await frame.find(id='content')
-        await content.take_screenshot('iframe-content.png')
+# With attribute selectors on the iframe
+button = await tab.query('iframe[src*="checkout"] > #pay-button')
 
-asyncio.run(iframe_screenshot())
+# Nested iframes
+element = await tab.query('iframe.outer > iframe.inner > div.content')
+
+# Multiple steps after the iframe
+link = await tab.query('iframe > nav > a.home-link')
+
+# Iframe inside another element (not at root)
+button = await tab.query('div > iframe > button.submit')
+content = await tab.query('.wrapper iframe > div.content')
 ```
 
-## Learn More
+### XPath expressions
 
-For deeper understanding of iframe mechanics and CDP targets:
+Use `/` after an `iframe` step — Pydoll splits at the iframe node:
 
-- **[Deep Dive: Tab Domain](../../deep-dive/tab-domain.md#iframe-handling)**: Technical details on iframe target resolution
-- **[Deep Dive: Browser Domain](../../deep-dive/browser-domain.md#target-management)**: How CDP manages multiple targets
-- **[Element Finding](../element-finding.md#scoped-search)**: Understanding DOM scope in element searches
+```python
+# Single iframe crossing
+button = await tab.query('//iframe/body/button[@id="submit"]')
 
-IFrames may seem complex, but Pydoll's API makes them as easy to work with as regular page elements. The key is understanding that each iframe is its own isolated Tab with a separate DOM and CDP target.
+# Iframe inside another element (not at root)
+div = await tab.query('//div/iframe/div')
+item = await tab.query('//div[@class="wrapper"]/iframe/body/div')
+
+# With predicates on the iframe
+heading = await tab.query('//iframe[@src*="cloudflare"]//h1')
+
+# Nested iframes
+element = await tab.query('//iframe[@id="outer"]//iframe[@id="inner"]//div')
+```
+
+### How it works
+
+When Pydoll encounters a selector like `iframe[src*="checkout"] > form > button`:
+
+1. **Parses** the selector into segments: `iframe[src*="checkout"]` and `form > button`
+2. **Finds** the iframe element using the first segment
+3. **Searches inside** the iframe using the second segment
+4. For nested iframes, repeats the process at each boundary
+
+This is equivalent to the manual approach but in a single call:
+
+```python
+# Manual (still works)
+iframe = await tab.find(tag_name='iframe', src='*checkout*')
+button = await iframe.query('form > button')
+
+# Automatic (same result, one line)
+button = await tab.query('iframe[src*="checkout"] > form > button')
+```
+
+### When splitting does NOT happen
+
+Selectors are only split when `iframe` appears as a **tag name**. These selectors pass through unchanged:
+
+- `.iframe > body` — class selector, not a tag
+- `#iframe > body` — ID selector
+- `div.iframe > body` — tag is `div`, not `iframe`
+- `[data-type="iframe"] > body` — attribute selector
+- `iframe` or `//iframe` — no content after iframe (nothing to search inside)
+
+### find_all support
+
+The last segment respects `find_all=True`, returning all matching elements inside the final iframe:
+
+```python
+# Get all links inside an iframe
+links = await tab.query('iframe > a', find_all=True)
+```
+
+## Best practices
+
+- **Use the iframe element as scope:** call `find`, `query`, or other helpers on the iframe itself.
+- **Avoid `tab.find` for inner content:** it only sees the top-level document.
+- **Remember partial results:** if you need the same iframe repeatedly, store the `WebElement` reference; Pydoll keeps the underlying context cached.
+- **Keep existing element workflows:** everything that works for a normal element (scrolling, screenshot, scripts, waiting) works for an iframe element too.
+
+## Further reading
+
+- **[Element Finding](../element-finding.md)** – covers scoped searches and chaining.
+- **[Screenshots & PDFs](screenshots-and-pdfs.md)** – details about capturing visual output.
+- **[Event System](../advanced/event-system.md)** – reactively monitor page activity, including frames.
+
+Once you adapt to the new model, iframes become just another part of the DOM tree. Focus on building your automation logic—Pydoll takes care of the frame plumbing for you.

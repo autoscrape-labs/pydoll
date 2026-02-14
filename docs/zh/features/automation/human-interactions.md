@@ -2,19 +2,17 @@
 
 成功自动化与易被识破的机器人之间的关键区别之一在于交互的逼真程度。Pydoll提供精密工具，使您的自动化操作几乎与人类行为无异。
 
-!!! 警告 “未来增强功能”
-    Pydoll正持续提升其类人交互能力。未来版本将包含：
-    
-    - **可变输入速度**：键盘敲击间隔内置随机化，免除手动调整需求
-    - **真实键盘序列**：自动模拟输入错误、退格修正及动态停顿，实现极致逼真
-    - **自动随机点击偏移**：可选参数实现元素内点击位置随机化，免除手动偏移计算
-    - **鼠标移动模拟**：贝塞尔曲线生成真实光标轨迹
-    - **鼠标位移事件**：自然的加速与减速模式
-    - **悬停行为**：悬停时的真实延迟与移动效果
-    - **滚动模式**：拟人化滚动速度与惯性，配备专用`scroll()`方法
-    - **时间变异性**：随机延迟避免可预测模式
-    
-    这些功能通过CDP与JavaScript技术实现极致逼真效果。
+!!! info "功能状态"
+    **已实现:**
+
+    - **人性化键盘**: 可变输入速度，真实错误与自动纠正 (`humanize=True`)
+    - **人性化滚动**: 基于物理的滚动，包含动量、摩擦、抖动和过冲 (`humanize=True`)
+    - **人性化鼠标**: 贝塞尔曲线路径、菲茨定律时序、最小急动速度、手抖和过冲 (`humanize=True`)
+
+    **即将推出:**
+
+    - **自动随机点击偏移**: 可选参数自动随机化元素内点击位置
+    - **悬停行为**: 悬停时的真实延迟与移动效果
 
 ## 拟人化交互为何重要
 
@@ -27,6 +25,37 @@
 - **操作序列**：识别用户行为中的非人类模式
 
 Pydoll通过提供模拟真实用户行为的交互方法，助您规避检测。
+
+## 逼真鼠标移动
+
+鼠标API（`tab.mouse`）提供多层逼真效果的人性化光标控制。启用`humanize=True`时，鼠标移动遵循自然贝塞尔曲线路径，配合菲茨定律时序、最小急动速度曲线、生理性手抖和过冲修正。
+
+```python
+from pydoll.browser.chromium import Chrome
+
+async with Chrome() as browser:
+    tab = await browser.start()
+    await tab.go_to('https://example.com')
+
+    # 以自然曲线路径移动
+    await tab.mouse.move(500, 300, humanize=True)
+
+    # 以逼真的移动、偏移和时序点击
+    await tab.mouse.click(500, 300, humanize=True)
+
+    # 以自然移动拖拽
+    await tab.mouse.drag(100, 200, 500, 400, humanize=True)
+```
+
+人性化鼠标操作中应用的关键技术：
+
+- **贝塞尔曲线路径**：具有非对称控制点的曲线轨迹（移动初期曲率更大）
+- **菲茨定律时序**：移动持续时间随距离缩放：`MT = a + b × log₂(D/W + 1)`
+- **最小急动速度**：钟形速度曲线，起始缓慢、中间达到峰值、结尾缓慢
+- **生理性手抖**：高斯噪声（σ ≈ 1像素）与速度成反比
+- **过冲与修正**：快速移动约70%概率过冲3–12%，然后修正回来
+!!! info "鼠标控制专用文档"
+    有关鼠标控制的完整文档，包括所有方法、自定义时序配置、位置追踪和调试模式，请参阅**[鼠标控制](mouse-control.md)**。
 
 ## 真实点击模拟
 
@@ -161,12 +190,19 @@ asyncio.run(click_methods_comparison())
 
 ## 逼真文本输入
 
-### 带间隔的自然输入
+Pydoll的键盘API提供两种输入模式，平衡速度与隐蔽性。
 
-`type_text()`方法通过发送单个按键模拟人工输入。`interval`参数会在每次按键间添加**固定延迟**。
+!!! info "了解输入模式"
+    | 模式 | 参数 | 行为 | 使用场景 |
+    |------|------|------|----------|
+    | **默认（人性化）** | `humanize=True` | 可变时序，约2%错误率并自动纠正 | **反机器人规避**（默认） |
+    | **快速** | `humanize=False` | 固定50毫秒间隔，无错误 | 速度优先、低风险场景 |
 
-!!! info “当前状态：需手动随机化”
-    当前`interval`参数对所有字符采用**恒定延迟**。为实现最高逼真度，需手动随机化输入速度（如下文高级示例所示）。未来版本将内置随机化功能实现自动可变输入速度。
+    `interval`参数已弃用。使用默认`humanize=True`进行真实输入。
+
+### 人性化自然输入
+
+默认情况下，`type_text()`使用人性化模式，模拟真实人类输入，包含可变速度和自动纠正的偶发错误：
 
 ```python
 import asyncio
@@ -175,17 +211,15 @@ from pydoll.browser.chromium import Chrome
 async def natural_typing():
     async with Chrome() as browser:
         tab = await browser.start()
-        await tab.go_to(‘https://example.com/login’)
+        await tab.go_to('https://example.com/login')
         
-        username_field = await tab.find(id=“username”)
-        password_field = await tab.find(id=“password”)
-        
-        # 固定间隔输入（当前实现）
-        # 人类平均输入速度：每字符0.1-0.3秒
-        await username_field.type_text(“john.doe@example.com”, interval=0.15)
-        
-        # 复杂密码采用慢速输入
-        await password_field.type_text(“MyC0mpl3xP@ssw0rd!”, interval=0.12)
+        username_field = await tab.find(id="username")
+        password_field = await tab.find(id="password")
+
+        # 可变速度：按键间隔30-120毫秒
+        # 约2%错误率，带真实纠正行为
+        await username_field.type_text("john.doe@example.com")  # 默认 humanize=True
+        await password_field.type_text("MyC0mpl3xP@ssw0rd!")
 
 asyncio.run(natural_typing())
 ```
@@ -223,11 +257,221 @@ asyncio.run(fast_vs_realistic_input())
 !!! info “高级键盘控制”
     有关全面的键盘控制文档（包括特殊键、组合键、修饰键及完整键位参考表），请参阅**[键盘控制](keyboard-control.md)**。
 
+## 逼真页面滚动
+
+Pydoll提供专用滚动API，在继续执行前等待滚动完成，使您的自动化更加真实可靠。
+
+!!! info "了解滚动模式"
+    Pydoll的滚动API提供**三种不同模式**：
+
+    | 模式 | 参数 | 行为 | 使用场景 |
+    |------|------|------|----------|
+    | **人性化（默认）** | `humanize=True` | 物理引擎：动量、抖动、过冲 | **反机器人规避**（默认） |
+    | **平滑** | `humanize=False, smooth=True` | CSS动画，可预测 | 一般浏览模拟 |
+    | **即时** | `humanize=False, smooth=False` | 立即传送到目标位置 | 速度优先场景 |
+
+    人性化滚动现在是默认模式。传入`humanize=False`以使用CSS或即时滚动。
+
+### 基础方向滚动
+
+使用`scroll.by()`方法精确控制页面任意方向的滚动：
+
+```python
+import asyncio
+from pydoll.browser.chromium import Chrome
+from pydoll.constants import ScrollPosition
+
+async def basic_scrolling():
+    async with Chrome() as browser:
+        tab = await browser.start()
+        await tab.go_to('https://example.com/long-page')
+        
+        # 人性化（默认）- 贝塞尔曲线物理引擎
+        # 包含：动量、摩擦、抖动、微停顿、过冲
+        await tab.scroll.by(ScrollPosition.DOWN, 500)
+        await tab.scroll.by(ScrollPosition.UP, 300)
+
+        # CSS动画 - 外观平滑但时序可预测
+        await tab.scroll.by(ScrollPosition.DOWN, 500, humanize=False, smooth=True)
+
+        # 即时传送 - 最快但易被检测
+        await tab.scroll.by(ScrollPosition.DOWN, 1000, humanize=False, smooth=False)
+
+asyncio.run(basic_scrolling())
+```
+
+### 滚动至特定位置
+
+导航至页面顶部或底部，可控制逼真程度：
+
+```python
+import asyncio
+from pydoll.browser.chromium import Chrome
+
+async def scroll_to_positions():
+    async with Chrome() as browser:
+        tab = await browser.start()
+        await tab.go_to('https://example.com/article')
+        
+        # 阅读文章开头
+        await asyncio.sleep(2.0)
+        
+        # 人性化滚动（默认 - 物理引擎，反机器人）
+        await tab.scroll.to_bottom()
+        await asyncio.sleep(1.5)
+        await tab.scroll.to_top()
+
+        # CSS平滑滚动（可预测动画）
+        await tab.scroll.to_bottom(humanize=False, smooth=True)
+        await asyncio.sleep(1.5)
+        await tab.scroll.to_top(humanize=False, smooth=True)
+
+asyncio.run(scroll_to_positions())
+```
+
+!!! tip "选择正确的模式"
+    - **默认** (`humanize=True`)：反机器人规避的最佳选择，自动启用
+    - **`humanize=False, smooth=True`**：适用于演示、截图和一般自动化
+    - **`humanize=False, smooth=False`**：隐蔽性不重要时追求最大速度
+
+### 类人滚动模式
+
+Pydoll的滚动引擎使用**三次贝塞尔曲线**模拟人类滚动的物理特性，包括：
+
+- **动量**：初始速度爆发后逐渐减速
+- **摩擦**：基于"物理阻力"的自然减速
+- **微停顿**：长距离滚动时的短暂停顿，模拟阅读或眼球移动
+- **过冲**：偶尔滚动超过目标后回调
+
+使用`humanize=True`时自动启用此行为。
+
+```python
+import asyncio
+import random
+from pydoll.browser.chromium import Chrome
+from pydoll.constants import ScrollPosition
+
+async def human_like_scrolling():
+    """模拟阅读文章时的自然滚动模式。"""
+    async with Chrome() as browser:
+        tab = await browser.start()
+        await tab.go_to('https://example.com/article')
+        
+        # 用户从顶部开始阅读
+        await asyncio.sleep(random.uniform(2.0, 4.0))
+        
+        # 阅读时逐步滚动
+        # 滚动引擎处理物理效果（加速/减速）
+        for _ in range(random.randint(5, 8)):
+            # 变化滚动距离（模拟阅读速度）
+            scroll_distance = random.randint(300, 600)
+            await tab.scroll.by(
+                ScrollPosition.DOWN, 
+                scroll_distance, 
+                humanize=True  # 启用贝塞尔曲线物理
+            )
+            
+            # 停顿"阅读"内容
+            await asyncio.sleep(random.uniform(2.0, 5.0))
+        
+        # 快速滚动查看末尾
+        await tab.scroll.to_bottom(humanize=True)
+        await asyncio.sleep(random.uniform(1.0, 2.0))
+        
+        # 滚回顶部重读某处
+        await tab.scroll.to_top(humanize=True)
+
+asyncio.run(human_like_scrolling())
+```
+
+### 将元素滚动至可见区
+
+使用`scroll_into_view()`确保元素在截取页面屏幕截图前可见：
+
+```python
+import asyncio
+from pydoll.browser.chromium import Chrome
+
+async def scroll_for_screenshots():
+    """截取页面屏幕截图前将元素滚动至可见区。"""
+    async with Chrome() as browser:
+        tab = await browser.start()
+        await tab.go_to('https://example.com/product')
+        
+        # 截取完整页面屏幕截图前滚动至价格部分
+        pricing_section = await tab.find(id="pricing")
+        await pricing_section.scroll_into_view()
+        await tab.take_screenshot(path="page_with_pricing.png")
+        
+        # 截图前滚动至评论区
+        reviews = await tab.find(class_name="reviews")
+        await reviews.scroll_into_view()
+        await tab.take_screenshot(path="page_with_reviews.png")
+        
+        # 滚动至页脚以捕获完整页面状态
+        footer = await tab.find(tag_name="footer")
+        await footer.scroll_into_view()
+        await tab.take_screenshot(path="page_with_footer.png")
+        
+        # 注意：click()已自动滚动，因此无需：
+        # await button.scroll_into_view()  # 多余！
+        # await button.click()  # 此操作已将按钮滚动至可见区
+
+asyncio.run(scroll_for_screenshots())
+```
+
+### 处理无限滚动内容
+
+实现滚动模式加载延迟加载的内容：
+
+```python
+import asyncio
+from pydoll.browser.chromium import Chrome
+from pydoll.constants import ScrollPosition
+
+async def infinite_scroll_loading():
+    """在无限滚动页面上加载内容。"""
+    async with Chrome() as browser:
+        tab = await browser.start()
+        await tab.go_to('https://example.com/feed')
+        
+        items_loaded = 0
+        max_scrolls = 10
+        
+        for scroll_num in range(max_scrolls):
+            # 滚动至底部触发加载
+            await tab.scroll.to_bottom(smooth=True)
+            
+            # 等待内容加载
+            await asyncio.sleep(random.uniform(2.0, 3.0))
+            
+            # 检查是否加载新项目
+            items = await tab.find(class_name="feed-item", find_all=True)
+            new_count = len(items)
+            
+            if new_count == items_loaded:
+                print("无更多内容可加载")
+                break
+            
+            items_loaded = new_count
+            print(f"滚动 {scroll_num + 1}：已加载 {items_loaded} 项")
+            
+            # 小幅向上滚动（人类行为）
+            if random.random() > 0.7:
+                await tab.scroll.by(ScrollPosition.UP, 200, smooth=True)
+                await asyncio.sleep(random.uniform(0.5, 1.0))
+
+asyncio.run(infinite_scroll_loading())
+```
+
+!!! success "自动等待完成"
+    不同于立即返回的`execute_script("window.scrollBy(...)")`，`scroll` API使用CDP的`awaitPromise`参数等待浏览器的`scrollend`事件。这确保后续操作仅在滚动完全完成后执行。
+
 ## 组合技术实现最高逼真度
 
 ### 完整表单填写示例
 
-以下综合示例融合了所有类人交互技术。**这展示了当前手动实现最高逼真度的方案**——未来版本将自动化处理大部分随机化操作：
+以下综合示例融合了所有类人交互技术。**这展示了当前手动实现最高逼真度的方案**。未来版本将自动化处理大部分随机化操作：
 
 
 ```python
@@ -372,9 +616,7 @@ async def natural_user_simulation(tab):
     await asyncio.sleep(random.uniform(1.0, 3.0))
     
     # 用户向下滚动查看更多内容
-    # 当前实现：手动JavaScript滚动（即时完成，不够真实）
-    # 未来规划：专属scroll()方法，具备类人惯性与加速度
-    await tab.execute_script(“window.scrollBy(0, 300)”)
+    await tab.scroll.by(ScrollPosition.DOWN, 300, smooth=True)
     await asyncio.sleep(random.uniform(0.5, 1.5))
     
     # 用户找到并点击按钮

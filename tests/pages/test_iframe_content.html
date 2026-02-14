@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iframe Content</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="iframe-heading">Iframe Content</h1>
+    
+    <div id="iframe-container">
+        <p id="iframe-paragraph">This is content inside the iframe.</p>
+        
+        <form id="iframe-form">
+            <label for="iframe-input">Name:</label>
+            <input id="iframe-input" type="text" name="name" placeholder="Enter your name">
+            
+            <label for="iframe-email">Email:</label>
+            <input id="iframe-email" type="email" name="email" placeholder="Enter your email">
+            
+            <label for="iframe-textarea">Message:</label>
+            <textarea id="iframe-textarea" name="message" rows="4">Default message</textarea>
+            
+            <button id="iframe-submit" type="submit">Submit</button>
+            <button id="iframe-reset" type="reset">Reset</button>
+        </form>
+        
+        <div id="iframe-links">
+            <a href="#link1" id="iframe-link1" class="iframe-link">Link 1</a>
+            <a href="#link2" id="iframe-link2" class="iframe-link">Link 2</a>
+            <a href="#link3" id="iframe-link3" class="iframe-link">Link 3</a>
+        </div>
+        
+        <div id="iframe-buttons">
+            <button id="iframe-button1" class="action-btn">Button 1</button>
+            <button id="iframe-button2" class="action-btn">Button 2</button>
+            <button id="iframe-button3" class="action-btn hidden">Hidden Button</button>
+        </div>
+        
+        <div id="iframe-list">
+            <ul>
+                <li id="item1" class="list-item">Item 1</li>
+                <li id="item2" class="list-item">Item 2</li>
+                <li id="item3" class="list-item">Item 3</li>
+            </ul>
+        </div>
+        
+        <select id="iframe-select">
+            <option value="option1">Option 1</option>
+            <option value="option2" selected>Option 2</option>
+            <option value="option3">Option 3</option>
+        </select>
+        
+        <div id="nested-elements">
+            <div id="level1">
+                <div id="level2">
+                    <div id="level3">
+                        <span id="deep-span">Deep nested element</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Add some interactivity
+        document.getElementById('iframe-submit').addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Form submitted');
+        });
+        
+        document.querySelectorAll('.action-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                console.log('Button clicked:', this.id);
+            });
+        });
+    </script>
+</body>
+</html>
+

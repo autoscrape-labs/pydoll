@@ -81,8 +81,8 @@ async def tab_registry_demonstration():
 asyncio.run(tab_registry_demonstration())
 ```
 
-!!! info "Registro Gerenciado pelo Navegador"
-    A classe Browser gerencia um dicionário `_tabs_opened` indexado por `target_id`. Quando você solicita uma aba (via `new_tab()`, `get_opened_tabs()`, ou `get_frame()`), o Browser verifica este registro primeiro. Se uma instância de Tab já existe para aquele `target_id`, ele retorna a instância existente; caso contrário, cria uma nova e a armazena no registro.
+!!! info "Registro controlado pelo Browser"
+    A classe Browser gerencia um dicionário `_tabs_opened` indexado por `target_id`. Quando você solicita uma aba (via `new_tab()` ou `get_opened_tabs()`), o Browser verifica este registro primeiro. Se uma instância de Tab já existe para aquele `target_id`, ele retorna a instância existente; caso contrário, cria uma nova e a armazena no registro. (Iframes não geram mais abas separadas — interaja com eles como elementos normais.)
 
 ## Criando e Gerenciando Abas
 

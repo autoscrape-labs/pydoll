@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Core Test Page</title>
+    <style>
+        .item { color: #333; }
+        .list-item { margin: 4px 0; }
+        #hidden-button { display: none; }
+        #deep-section { margin-top: 16px; }
+        #click-area { margin: 12px 0; }
+        #btn-1 { padding: 6px 10px; cursor: pointer; }
+        #simple-select { margin-top: 8px; }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function(){
+            // click counter
+            var count = 0;
+            var btn = document.getElementById('btn-1');
+            var counter = document.getElementById('btn-1-count');
+            btn.addEventListener('click', function(){
+                count += 1;
+                counter.textContent = String(count);
+            });
+        });
+    </script>
+    <!-- Ensure ready -->
+</head>
+<body>
+    <h1 id="main-heading">Core Test Page</h1>
+
+    <div id="content">
+        <p id="intro" class="item">This page is used by core integration tests.</p>
+
+        <div id="click-area">
+            <button id="btn-1" name="primary-button" class="action-btn">Click Me</button>
+            <span id="btn-1-count">0</span>
+        </div>
+
+        <form id="form">
+            <input id="text-input" name="username" type="text" placeholder="Type your name">
+            <textarea id="text-area" name="message" placeholder="Type your message"></textarea>
+        </form>
+
+        <div id="list-container">
+            <ul id="list">
+                <li id="li-1" class="list-item item">Item 1</li>
+                <li id="li-2" class="list-item item">Item 2</li>
+                <li id="li-3" class="list-item item">Item 3</li>
+            </ul>
+        </div>
+
+        <div id="deep-section">
+            <div id="level1">
+                <div id="level2">
+                    <div id="level3">
+                        <span id="deep-span">Deep nested element</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="select-container">
+            <label for="simple-select">Choose:</label>
+            <select id="simple-select" name="choices">
+                <option value="alpha">Alpha</option>
+                <option value="beta">Beta</option>
+                <option value="gamma">Gamma</option>
+            </select>
+        </div>
+
+        <button id="hidden-button" class="action-btn">Hidden</button>
+    </div>
+</body>
+</html>
+
+

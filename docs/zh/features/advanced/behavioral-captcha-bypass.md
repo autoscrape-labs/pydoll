@@ -19,7 +19,7 @@ Pydoll 通过执行真实的浏览器点击，为与 Cloudflare Turnstile 验证
     - **浏览器指纹**：您的浏览器看起来合法吗？
     - **行为模式**：您的行为像人类吗？
     
-    当信任分数足够高时，复选框点击被接受。当分数太低时，Turnstile 可能会显示挑战（Pydoll **无法解决**）或完全阻止您。
+    当信任分数足够高时，复选框点击被接受。当分数太低时，Turnstile 可能会显示挑战（Pydoll **无法解决**）或完全阻止您。对于图像或拼图挑战，可以考虑使用 **[CapSolver](https://dashboard.capsolver.com/passport/register?inviteCode=WPhTbOsbXEpc)**。
 
 ## 快速开始
 
@@ -84,55 +84,24 @@ asyncio.run(background_turnstile())
 
 ## 自定义验证码交互
 
-### 自定义选择器
+### 工作原理
 
-某些站点对验证码使用不同的类名或包装器：
-
-```python
-from pydoll.constants import By
-
-async def custom_selector_example():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        
-        # 如果默认选择器不起作用，使用自定义选择器
-        custom_selector = (By.CLASS_NAME, 'custom-captcha-wrapper')
-        
-        async with tab.expect_and_bypass_cloudflare_captcha(
-            custom_selector=custom_selector
-        ):
-            await tab.go_to('https://site-with-custom-turnstile.com')
-        
-        print("自定义选择器使用成功！")
-
-asyncio.run(custom_selector_example())
-```
-
-!!! tip "查找正确的选择器"
-    要查找正确的选择器：
-    
-    1. 在 Chrome DevTools 中打开站点
-    2. 检查验证码 iframe/容器
-    3. 查找唯一的类名或 ID
-    4. 使用 `custom_selector` 参数使用该选择器
-    
-    默认选择器是 `(By.CLASS_NAME, 'cf-turnstile')`，适用于大多数标准的 Cloudflare Turnstile 实现。
+Pydoll 通过遍历页面的 shadow DOM 自动检测 Cloudflare Turnstile。它查找包含 `challenges.cloudflare.com` 的 shadow root，导航到其跨域 iframe，找到内部 shadow root，并点击实际的复选框元素。无需手动配置选择器。
 
 ### 时间配置
 
-验证码复选框并不总是立即出现。调整时间以匹配站点的行为：
+验证码的 shadow root 并不总是立即出现。调整超时以匹配站点的行为：
 
 ```python
 async def timing_configuration_example():
     async with Chrome() as browser:
         tab = await browser.start()
-        
+
         async with tab.expect_and_bypass_cloudflare_captcha(
-            time_before_click=3,      # 点击前等待 3 秒（默认：2）
             time_to_wait_captcha=10   # 等待最多 10 秒让验证码出现（默认：5）
         ):
             await tab.go_to('https://site-with-slow-turnstile.com')
-        
+
         print("使用自定义时间完成验证码交互！")
 
 asyncio.run(timing_configuration_example())
@@ -142,13 +111,10 @@ asyncio.run(timing_configuration_example())
 
 | 参数 | 类型 | 默认值 | 描述 |
 |-----------|------|---------|-------------|
-| `custom_selector` | `Optional[tuple[By, str]]` | `(By.CLASS_NAME, 'cf-turnstile')` | 验证码容器的 CSS 选择器 |
-| `time_before_click` | `int` | `2` | 点击前等待的秒数（模拟人类思考时间） |
-| `time_to_wait_captcha` | `int` | `5` | 等待验证码出现的最大秒数 |
+| `time_to_wait_captcha` | `float` | `5` | 等待验证码出现的最大秒数 |
 
 !!! info "为什么时间很重要"
-    - **`time_before_click`**：模拟人类反应时间。点击太快可能看起来可疑。
-    - **`time_to_wait_captcha`**：某些站点异步加载验证码。如果验证码在此时间内没有出现，交互将被跳过。
+    某些站点异步加载验证码。如果 Cloudflare 的 shadow root 在 `time_to_wait_captcha` 时间内没有出现，交互将被跳过。
 
 ## 其他验证码系统
 
@@ -283,9 +249,8 @@ asyncio.run(realistic_behavior())
 
 **可能的原因：**
 
-1. **选择器错误**：站点使用不同的元素类/ID
-2. **时间太短**：Pydoll 尝试点击时验证码尚未加载
-3. **元素不可见**：验证码被隐藏或以不同方式渲染
+1. **时间太短**：Pydoll 尝试点击时验证码尚未加载
+2. **Shadow root 未找到**：Cloudflare Turnstile 的 shadow root 尚未出现在 DOM 中
 
 **解决方案：**
 
@@ -293,10 +258,9 @@ asyncio.run(realistic_behavior())
 async def troubleshooting_example():
     async with Chrome() as browser:
         tab = await browser.start()
-        
-        # 增加等待时间并使用自定义选择器
+
+        # 增加等待时间
         async with tab.expect_and_bypass_cloudflare_captcha(
-            custom_selector=(By.CLASS_NAME, 'your-selector-here'),
             time_before_click=5,     # 点击前更长的延迟
             time_to_wait_captcha=15  # 更多时间查找验证码
         ):
@@ -316,7 +280,7 @@ asyncio.run(troubleshooting_example())
 - 使用声誉良好的住宅代理
 - 配置真实的浏览器指纹
 - 添加更真实的行为模式（滚动、鼠标移动、延迟）
-- **注意**：Pydoll 无法自行解决挑战
+- **注意**：Pydoll 无法自行解决挑战 — 如果您需要自动验证码解决，请考虑集成 **[CapSolver](https://dashboard.capsolver.com/passport/register?inviteCode=WPhTbOsbXEpc)**
 
 ### "访问被拒绝"或立即阻止
 
@@ -366,9 +330,8 @@ asyncio.run(troubleshooting_example())
 2. **配置隐蔽选项**：移除自动化指示器
 3. **添加行为模式**：点击前滚动、等待、移动鼠标
 4. **调整时间**：在尝试点击之前给验证码加载时间
-5. **使用自定义选择器**：当默认选择器不起作用时
-6. **优雅地处理失败**：当无法通过验证码时有备用逻辑
-7. **测试您的环境**：在自动化前验证 IP 声誉和浏览器指纹
+5. **优雅地处理失败**：当无法通过验证码时有备用逻辑
+6. **测试您的环境**：在自动化前验证 IP 声誉和浏览器指纹
 
 ## 道德准则
 
@@ -398,4 +361,4 @@ asyncio.run(troubleshooting_example())
 
 ---
 
-**记住**：Pydoll 提供点击验证码的机制，但您的环境（IP、指纹、行为）决定成功。这不是魔法解决方案，它是在正确的环境和适当配置下使用的工具。
+**记住**：Pydoll 提供点击验证码的机制，但您的环境（IP、指纹、行为）决定成功。这不是魔法解决方案，它是在正确的环境和适当配置下使用的工具。对于需要图像识别或拼图解决的挑战，可以考虑使用 **[CapSolver](https://dashboard.capsolver.com/passport/register?inviteCode=WPhTbOsbXEpc)** — 使用代码 **PYDOLL** 获得额外 6% 余额奖励。

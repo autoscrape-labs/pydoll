@@ -2,19 +2,17 @@
 
 One of the key differentiators between successful automation and easily-detected bots is how realistic the interactions are. Pydoll provides sophisticated tools to make your automation virtually indistinguishable from human behavior.
 
-!!! warning "Future Enhancements"
-    Pydoll is continuously improving its human-like interaction capabilities. Future versions will include:
-    
-    - **Variable typing speed**: Built-in random intervals between keystrokes to eliminate the need for manual randomization
-    - **Realistic keyboard sequences**: Automatic simulation of typing mistakes, backspacing, corrections, and dynamic pauses for maximum realism
-    - **Automatic random click offsets**: Optional parameter to automatically randomize click positions within elements, eliminating manual offset calculations
-    - **Mouse movement simulation**: Realistic cursor paths with bezier curves
-    - **Mouse delta events**: Natural acceleration and deceleration patterns
-    - **Hover behavior**: Realistic delays and movement when hovering
-    - **Scroll patterns**: Human-like scroll speeds and momentum with a dedicated `scroll()` method
-    - **Timing variations**: Randomized delays to avoid predictable patterns
-    
-    These features leverage CDP and JavaScript capabilities for maximum realism.
+!!! info "Feature Status"
+    **Already Implemented:**
+
+    - **Humanized Keyboard**: Variable typing speed, realistic typos with auto-correction (`humanize=True`)
+    - **Humanized Scroll**: Physics-based scrolling with momentum, friction, jitter, and overshoot (`humanize=True`)
+    - **Humanized Mouse**: Bezier curve paths, Fitts's Law timing, minimum-jerk velocity, tremor, and overshoot (`humanize=True`)
+
+    **Coming Soon:**
+
+    - **Automatic random click offsets**: Optional parameter to automatically randomize click positions within elements
+    - **Hover behavior**: Realistic delays and movement when hovering over elements
 
 ## Why Human-Like Interactions Matter
 
@@ -27,6 +25,37 @@ Modern websites employ sophisticated bot detection techniques:
 - **Action sequences**: Identifying non-human patterns in user behavior
 
 Pydoll helps you avoid detection by providing realistic interaction methods that mimic real user behavior.
+
+## Realistic Mouse Movement
+
+The Mouse API (`tab.mouse`) provides humanized cursor control with multiple layers of realism. When `humanize=True`, mouse movements follow natural Bezier curve paths with Fitts's Law timing, minimum-jerk velocity profiles, physiological tremor, and overshoot correction.
+
+```python
+from pydoll.browser.chromium import Chrome
+
+async with Chrome() as browser:
+    tab = await browser.start()
+    await tab.go_to('https://example.com')
+
+    # Move with natural curved path
+    await tab.mouse.move(500, 300, humanize=True)
+
+    # Click with realistic movement, offset, and timing
+    await tab.mouse.click(500, 300, humanize=True)
+
+    # Drag with natural movement
+    await tab.mouse.drag(100, 200, 500, 400, humanize=True)
+```
+
+Key techniques applied during humanized mouse operations:
+
+- **Bezier curve paths**: Curved trajectories with asymmetric control points (more curvature early in the movement)
+- **Fitts's Law timing**: Movement duration scales with distance: `MT = a + b × log₂(D/W + 1)`
+- **Minimum-jerk velocity**: Bell-shaped speed profile, slow start, peak in the middle, slow end
+- **Physiological tremor**: Gaussian noise (σ ≈ 1px) scaled inversely with velocity
+- **Overshoot and correction**: ~70% chance of overshooting fast movements by 3–12%, then correcting back
+!!! info "Dedicated Mouse Control Documentation"
+    For comprehensive mouse control documentation, including all methods, custom timing configuration, position tracking, and debug mode, see **[Mouse Control](mouse-control.md)**.
 
 ## Realistic Clicking
 
@@ -161,12 +190,19 @@ asyncio.run(click_methods_comparison())
 
 ## Realistic Text Input
 
-### Natural Typing with Intervals
+Pydoll's keyboard API provides two typing modes to balance speed and stealth.
 
-The `type_text()` method simulates human typing by sending individual keystrokes. The `interval` parameter adds a **fixed delay** between each keystroke.
+!!! info "Understanding Typing Modes"
+    | Mode | Parameters | Behavior | Use Case |
+    |------|------------|----------|----------|
+    | **Default (Humanized)** | `humanize=True` | Variable timing, ~2% typo rate with auto-correction | **Anti-bot evasion** (default) |
+    | **Fast** | `humanize=False` | Fixed 50ms intervals, no typos | Speed-critical, low-risk scenarios |
 
-!!! info "Current State: Manual Randomization Required"
-    Currently, the `interval` parameter uses a **constant delay** for all characters. For maximum realism, you need to manually randomize typing speeds (as shown in the advanced examples below). Future versions will include automatic variable typing speed with built-in randomization.
+    The `interval` parameter is deprecated. Use the default `humanize=True` for realistic typing.
+
+### Natural Typing with Humanization
+
+By default, `type_text()` uses humanized mode, simulating realistic human typing with variable speeds and occasional typos that are automatically corrected:
 
 ```python
 import asyncio
@@ -179,13 +215,11 @@ async def natural_typing():
         
         username_field = await tab.find(id="username")
         password_field = await tab.find(id="password")
-        
-        # Type with fixed intervals (currently)
-        # Average human typing: 0.1-0.3 seconds per character
-        await username_field.type_text("john.doe@example.com", interval=0.15)
-        
-        # Slower typing for complex passwords
-        await password_field.type_text("MyC0mpl3xP@ssw0rd!", interval=0.12)
+
+        # Variable speed: 30-120ms between keystrokes
+        # ~2% typo rate with realistic correction behavior
+        await username_field.type_text("john.doe@example.com")  # humanize=True by default
+        await password_field.type_text("MyC0mpl3xP@ssw0rd!")
 
 asyncio.run(natural_typing())
 ```
@@ -203,19 +237,16 @@ async def fast_vs_realistic_input():
         tab = await browser.start()
         await tab.go_to('https://example.com/form')
         
-        # Realistic typing for visible fields
         username = await tab.find(id="username")
         await username.click()
-        await username.type_text("john_doe", interval=0.12)
+        await username.type_text("john_doe")  # humanize=True by default
         
-        # Fast insertion for hidden or backend fields
         hidden_field = await tab.find(id="hidden-token")
         await hidden_field.insert_text("very-long-generated-token-12345678")
         
-        # Realistic typing for fields that matter
         comment = await tab.find(id="comment-box")
         await comment.click()
-        await comment.type_text("This looks like human input!", interval=0.15)
+        await comment.type_text("This looks like human input!")  # humanize=True by default
 
 asyncio.run(fast_vs_realistic_input())
 ```
@@ -223,11 +254,221 @@ asyncio.run(fast_vs_realistic_input())
 !!! info "Advanced Keyboard Control"
     For comprehensive keyboard control documentation, including special keys, key combinations, modifiers, and complete key reference tables, see **[Keyboard Control](keyboard-control.md)**.
 
+## Realistic Page Scrolling
+
+Pydoll provides a dedicated scroll API that waits for scroll completion before proceeding, making your automations more realistic and reliable.
+
+!!! info "Understanding Scroll Modes"
+    Pydoll's scroll API offers **three distinct modes**:
+
+    | Mode | Parameters | Behavior | Use Case |
+    |------|------------|----------|----------|
+    | **Humanized (Default)** | `humanize=True` | Physics engine with momentum, jitter, overshoot | **Anti-bot evasion** (default) |
+    | **Smooth** | `humanize=False, smooth=True` | CSS-based animation, predictable | General browsing simulation |
+    | **Instant** | `humanize=False, smooth=False` | Teleports to position immediately | Speed-critical operations |
+
+    Humanized scrolling is now the default. Pass `humanize=False` to use CSS-based or instant scrolling.
+
+### Basic Directional Scrolling
+
+Use the `scroll.by()` method to scroll the page in any direction with precise control:
+
+```python
+import asyncio
+from pydoll.browser.chromium import Chrome
+from pydoll.constants import ScrollPosition
+
+async def basic_scrolling():
+    async with Chrome() as browser:
+        tab = await browser.start()
+        await tab.go_to('https://example.com/long-page')
+        
+        # Humanized (default) - physics engine with Bezier curves
+        # Includes: momentum, friction, jitter, micro-pauses, overshoot
+        await tab.scroll.by(ScrollPosition.DOWN, 500)
+        await tab.scroll.by(ScrollPosition.UP, 300)
+
+        # CSS-based animation - looks nice but predictable timing
+        await tab.scroll.by(ScrollPosition.DOWN, 500, humanize=False, smooth=True)
+
+        # Teleports instantly - fastest but easily detectable
+        await tab.scroll.by(ScrollPosition.DOWN, 1000, humanize=False, smooth=False)
+
+asyncio.run(basic_scrolling())
+```
+
+### Scrolling to Specific Positions
+
+Navigate to the top or bottom of the page with control over realism:
+
+```python
+import asyncio
+from pydoll.browser.chromium import Chrome
+
+async def scroll_to_positions():
+    async with Chrome() as browser:
+        tab = await browser.start()
+        await tab.go_to('https://example.com/article')
+        
+        # Read the beginning of the article
+        await asyncio.sleep(2.0)
+        
+        # Humanized scroll (default, physics engine, anti-bot evasion)
+        await tab.scroll.to_bottom()
+        await asyncio.sleep(1.5)
+        await tab.scroll.to_top()
+
+        # CSS smooth scroll (predictable animation)
+        await tab.scroll.to_bottom(humanize=False, smooth=True)
+        await asyncio.sleep(1.5)
+        await tab.scroll.to_top(humanize=False, smooth=True)
+
+asyncio.run(scroll_to_positions())
+```
+
+!!! tip "Choosing the Right Mode"
+    - **Default** (`humanize=True`): Best for anti-bot evasion, used automatically
+    - **`humanize=False, smooth=True`**: Good for demos, screenshots, and general automation
+    - **`humanize=False, smooth=False`**: Maximum speed when stealth is not a concern
+
+### Human-Like Scrolling Patterns
+
+Pydoll's scroll engine uses **Cubic Bezier curves** to simulate the physics of human scrolling. This includes:
+
+- **Momentum**: Initial burst of speed followed by gradual deceleration.
+- **Friction**: Natural slowing down based on "physical" resistance.
+- **Micro-pauses**: Brief stops during long scrolls, mimicking reading or eye movement.
+- **Overshoot**: Occasional scrolling past the target and correcting back.
+
+This behavior is automatically enabled when you use `humanize=True`.
+
+```python
+import asyncio
+import random
+from pydoll.browser.chromium import Chrome
+from pydoll.constants import ScrollPosition
+
+async def human_like_scrolling():
+    """Simulate natural scrolling patterns while reading an article."""
+    async with Chrome() as browser:
+        tab = await browser.start()
+        await tab.go_to('https://example.com/article')
+        
+        # User starts reading from top
+        await asyncio.sleep(random.uniform(2.0, 4.0))
+        
+        # Gradually scroll while reading
+        # The scroll engine handles the physics (acceleration/deceleration)
+        for _ in range(random.randint(5, 8)):
+            # Varied scroll distances (simulates reading speed)
+            scroll_distance = random.randint(300, 600)
+            await tab.scroll.by(
+                ScrollPosition.DOWN, 
+                scroll_distance, 
+                humanize=True # Enables Bezier curve physics
+            )
+            
+            # Pause to "read" content
+            await asyncio.sleep(random.uniform(2.0, 5.0))
+        
+        # Quick scroll to check the end
+        await tab.scroll.to_bottom(humanize=True)
+        await asyncio.sleep(random.uniform(1.0, 2.0))
+        
+        # Scroll back to top to re-read something
+        await tab.scroll.to_top(humanize=True)
+
+asyncio.run(human_like_scrolling())
+```
+
+### Scrolling Elements into View
+
+Use `scroll_into_view()` to ensure elements are visible before taking page screenshots:
+
+```python
+import asyncio
+from pydoll.browser.chromium import Chrome
+
+async def scroll_for_screenshots():
+    """Scroll elements into view before capturing page screenshots."""
+    async with Chrome() as browser:
+        tab = await browser.start()
+        await tab.go_to('https://example.com/product')
+        
+        # Scroll to pricing section before taking full page screenshot
+        pricing_section = await tab.find(id="pricing")
+        await pricing_section.scroll_into_view()
+        await tab.take_screenshot(path="page_with_pricing.png")
+        
+        # Scroll to reviews section before screenshot
+        reviews = await tab.find(class_name="reviews")
+        await reviews.scroll_into_view()
+        await tab.take_screenshot(path="page_with_reviews.png")
+        
+        # Scroll to footer to capture complete page state
+        footer = await tab.find(tag_name="footer")
+        await footer.scroll_into_view()
+        await tab.take_screenshot(path="page_with_footer.png")
+        
+        # Note: click() already scrolls automatically, so no need for:
+        # await button.scroll_into_view()  # Unnecessary!
+        # await button.click()  # This already scrolls the button into view
+
+asyncio.run(scroll_for_screenshots())
+```
+
+### Handling Infinite Scroll Content
+
+Implement scrolling patterns to load lazy-loaded content:
+
+```python
+import asyncio
+from pydoll.browser.chromium import Chrome
+from pydoll.constants import ScrollPosition
+
+async def infinite_scroll_loading():
+    """Load content on infinite scroll pages."""
+    async with Chrome() as browser:
+        tab = await browser.start()
+        await tab.go_to('https://example.com/feed')
+        
+        items_loaded = 0
+        max_scrolls = 10
+        
+        for scroll_num in range(max_scrolls):
+            # Scroll to bottom to trigger loading
+            await tab.scroll.to_bottom(smooth=True)
+            
+            # Wait for content to load
+            await asyncio.sleep(random.uniform(2.0, 3.0))
+            
+            # Check if new items were loaded
+            items = await tab.find(class_name="feed-item", find_all=True)
+            new_count = len(items)
+            
+            if new_count == items_loaded:
+                print("No more content to load")
+                break
+            
+            items_loaded = new_count
+            print(f"Scroll {scroll_num + 1}: {items_loaded} items loaded")
+            
+            # Small scroll up (human behavior)
+            if random.random() > 0.7:
+                await tab.scroll.by(ScrollPosition.UP, 200, smooth=True)
+                await asyncio.sleep(random.uniform(0.5, 1.0))
+
+asyncio.run(infinite_scroll_loading())
+```
+
+!!! success "Automatic Completion Waiting"
+    Unlike `execute_script("window.scrollBy(...)")` which returns immediately, the `scroll` API uses CDP's `awaitPromise` parameter to wait for the browser's `scrollend` event. This ensures your subsequent actions only execute after scrolling completely finishes.
+
 ## Combining Techniques for Maximum Realism
 
 ### Complete Form Filling Example
 
-Here's a comprehensive example combining all human-like interaction techniques. **This demonstrates the current manual approach** for achieving maximum realism—future versions will automate much of this randomization:
+Here's a comprehensive example combining all human-like interaction techniques. **This demonstrates the current manual approach** for achieving maximum realism. Future versions will automate much of this randomization:
 
 ```python
 import asyncio
@@ -371,9 +612,7 @@ async def natural_user_simulation(tab):
     await asyncio.sleep(random.uniform(1.0, 3.0))
     
     # User scrolls down to see more
-    # Currently: Manual JavaScript scroll (instant, not realistic)
-    # Future: Dedicated scroll() method with human-like momentum and acceleration
-    await tab.execute_script("window.scrollBy(0, 300)")
+    await tab.scroll.by(ScrollPosition.DOWN, 300, smooth=True)
     await asyncio.sleep(random.uniform(0.5, 1.5))
     
     # User finds and clicks button
@@ -403,11 +642,10 @@ async def advanced_stealth_automation():
         await tab.go_to('https://example.com/sensitive-page')
         await asyncio.sleep(random.uniform(2.0, 4.0))
         
-        # Scroll realistically (current manual approach)
-        # Future versions will have a dedicated scroll() method with momentum
+        # Scroll realistically with the dedicated API
         for _ in range(random.randint(2, 4)):
             scroll_amount = random.randint(200, 500)
-            await tab.execute_script(f"window.scrollBy(0, {scroll_amount})")
+            await tab.scroll.by(ScrollPosition.DOWN, scroll_amount, smooth=True)
             await asyncio.sleep(random.uniform(0.8, 2.0))
         
         # Find element with timeout (simulating user search)

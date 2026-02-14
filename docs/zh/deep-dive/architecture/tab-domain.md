@@ -222,7 +222,7 @@ except KeyError:
     raise TopLevelTargetRequired(...)  # 引导用户使用 WebElement.take_screenshot()
 ```
 
-**设计影响：** IFrame 标签页（通过 `get_frame()` 创建）继承所有 Tab 方法，但屏幕截图按设计失败。替代方案：`WebElement.take_screenshot()` 适用于 iframe 内容。
+**设计影响：** 旧版本会为 iframe 创建独立的 Tab。现在 iframe 直接作为 `WebElement` 处理，因此需要在框内元素上执行操作，例如 `await iframe_element.find(...).take_screenshot()`。
 
 **PDF 生成：** `Page.printToPDF` 返回 base64 编码的数据。Pydoll 抽象文件 I/O，但底层数据始终是 base64（CDP 规范）。
 

@@ -28,7 +28,7 @@ These are the features that bring your automation to life: simulating user inter
 
 **[File Operations](automation/file-operations.md)**: File handling can be tricky in browser automation. Pydoll provides robust solutions for both uploads and downloads, with the `expect_download` context manager offering elegant handling of asynchronous download completion.
 
-**[IFrame Interaction](automation/iframes.md)**: Work seamlessly with embedded frames using the `get_frame()` method. Get a full Tab interface for iframe content, enabling you to use all of Pydoll's element finding and interaction capabilities inside frames.
+**[IFrame Interaction](automation/iframes.md)**: Treat iframes like regular elements—find the iframe and keep searching inside it. No extra targets, no extra tabs.
 
 **[Screenshots & PDF](automation/screenshots-and-pdfs.md)**: Capture visual content from your automation sessions. Whether you need full-page screenshots for visual regression testing, element-specific captures for debugging, or PDF exports for archival, Pydoll has you covered.
 

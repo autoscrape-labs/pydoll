@@ -443,6 +443,146 @@ sequenceDiagram
     
     SOCKS5 tem uma superfície de confiança menor.
 
+## Autenticação SOCKS5 e Chrome
+
+Uma das armadilhas mais comuns ao usar proxies SOCKS5 com automação de navegador é a **autenticação**. O Chrome/Chromium **não** suporta autenticação SOCKS5 por usuário/senha nativamente. Esta é uma limitação conhecida e de longa data, rastreada como [Chromium Issue #40323993](https://issues.chromium.org/issues/40323993).
+
+### Por que o Chrome Ignora Credenciais SOCKS5
+
+Quando você configura o Chrome com `--proxy-server=socks5://user:pass@proxy:1080`, o Chrome **ignora silenciosamente** as credenciais incorporadas. Durante a negociação de método SOCKS5, o Chrome oferece apenas o método `0x00` (sem autenticação necessária) — ele nunca oferece o método `0x02` (usuário/senha).
+
+Isso acontece porque a autenticação SOCKS5 opera em **uma camada de protocolo completamente diferente** da autenticação de proxy HTTP:
+
+**Fluxo de autenticação de proxy HTTP (funciona no Chrome):**
+
+```
+Chrome → HTTP CONNECT → Proxy responde 407 → Chrome fornece credenciais → Proxy conecta
+```
+
+O Chrome lida com isso através do **domínio Fetch** do CDP — o Pydoll intercepta eventos `Fetch.authRequired` e responde automaticamente com as credenciais armazenadas.
+
+**Fluxo de autenticação SOCKS5 (NÃO suportado pelo Chrome):**
+
+```
+Chrome → SOCKS5 Hello [métodos: 0x00] → Proxy seleciona 0x00 ou rejeita → Sem auth possível
+```
+
+O handshake SOCKS5 é uma negociação de **protocolo binário** na camada de sessão. A pilha de rede do Chrome simplesmente não implementa a subnegociação de usuário/senha (RFC 1929). Não há desafio HTTP 407, nenhum evento `Fetch.authRequired`, e nenhuma forma do Pydoll (ou qualquer ferramenta baseada em CDP) injetar credenciais.
+
+### A Solução do Forwarder Local
+
+A solução padrão da indústria é um **proxy forwarder local** — um servidor SOCKS5 local leve que:
+
+1. **Aceita conexões do Chrome** sem autenticação (método `0x00`)
+2. **Conecta ao proxy SOCKS5 remoto** com autenticação completa (método `0x02`, RFC 1929)
+3. **Retransmite dados bidirecionalmente** entre o Chrome e o proxy remoto
+
+```
+┌────────────┐     sem auth     ┌──────────────┐   user/pass    ┌──────────────┐
+│   Chrome   │ ──────────────►  │  SOCKS5 Local │ ────────────► │ SOCKS5 Remoto│
+│            │  socks5://       │  Forwarder    │  socks5://    │    Proxy     │
+│            │  127.0.0.1:1081  │  (localhost)  │  proxy:1080   │  (internet)  │
+└────────────┘                  └──────────────┘                └──────┬───────┘
+                                                                       │
+                                                                       ▼
+                                                                ┌──────────────┐
+                                                                │   Servidor   │
+                                                                │   Destino    │
+                                                                └──────────────┘
+```
+
+**Sequência detalhada do handshake:**
+
+```mermaid
+sequenceDiagram
+    participant Chrome
+    participant Forwarder as Forwarder Local
+    participant Remote as Proxy SOCKS5 Remoto
+    participant Server as Destino
+
+    Note over Chrome,Forwarder: Fase 1: Chrome → Forwarder (sem auth)
+    Chrome->>Forwarder: SOCKS5 Hello [VER=5, METHODS=[0x00]]
+    Forwarder->>Chrome: Método Selecionado [VER=5, METHOD=0x00]
+    Chrome->>Forwarder: CONNECT example.com:443
+
+    Note over Forwarder,Remote: Fase 2: Forwarder → Remoto (com auth)
+    Forwarder->>Remote: SOCKS5 Hello [VER=5, METHODS=[0x02]]
+    Remote->>Forwarder: Método Selecionado [VER=5, METHOD=0x02]
+    Forwarder->>Remote: Auth [VER=1, USER=..., PASS=...]
+    Remote->>Forwarder: Auth OK [VER=1, STATUS=0x00]
+    Forwarder->>Remote: CONNECT example.com:443
+    Remote->>Server: Conexão TCP
+    Remote->>Forwarder: Resposta de Conexão [SUCESSO]
+
+    Note over Chrome,Forwarder: Fase 3: Confirmação de relay
+    Forwarder->>Chrome: Resposta de Conexão [SUCESSO]
+
+    Note over Chrome,Server: Fase 4: Relay bidirecional de dados
+    Chrome->>Forwarder: Dados da Aplicação (TLS)
+    Forwarder->>Remote: Encaminhar Dados
+    Remote->>Server: Encaminhar Dados
+    Server->>Remote: Resposta
+    Remote->>Forwarder: Encaminhar Resposta
+    Forwarder->>Chrome: Encaminhar Resposta
+```
+
+### Usando o Forwarder com Pydoll
+
+O Pydoll fornece um forwarder pronto para uso no módulo `pydoll.utils`:
+
+```python
+import asyncio
+from pydoll.utils import SOCKS5Forwarder
+from pydoll.browser.chromium import Chrome
+from pydoll.browser.options import ChromiumOptions
+
+async def main():
+    forwarder = SOCKS5Forwarder(
+        remote_host='proxy.example.com',
+        remote_port=1080,
+        username='myuser',
+        password='mypass',
+        local_port=1081,  # Use 0 para porta auto-atribuída
+    )
+    async with forwarder:
+        options = ChromiumOptions()
+        options.add_argument(f'--proxy-server=socks5://127.0.0.1:{forwarder.local_port}')
+
+        async with Chrome(options=options) as browser:
+            tab = await browser.start()
+            await tab.go_to('https://httpbin.org/ip')
+
+asyncio.run(main())
+```
+
+O forwarder também pode ser usado como ferramenta CLI standalone:
+
+```bash
+python -m pydoll.utils.socks5_proxy_forwarder \
+    --remote-host proxy.example.com \
+    --remote-port 1080 \
+    --username myuser \
+    --password mypass \
+    --local-port 1081
+```
+
+### Considerações de Segurança
+
+!!! warning "Notas de Segurança"
+    - O forwarder local se vincula a `127.0.0.1` por padrão — acessível apenas da sua máquina
+    - **Nunca** vincule a `0.0.0.0` em produção, pois isso exporia um proxy SOCKS5 sem autenticação para a rede
+    - As credenciais são transmitidas em texto claro durante o handshake SOCKS5 com o proxy remoto (isso é inerente ao SOCKS5 RFC 1929) — use túneis SSH ou VPN para criptografia adicional se necessário
+    - O forwarder adiciona latência mínima (loopback local é sub-milissegundo)
+
+### Limitações de Ambiente
+
+!!! info "Ambientes Restritos"
+    Alguns ambientes (contêineres Docker, plataformas serverless, VMs endurecidas) podem restringir a vinculação a portas locais. Nesses casos:
+
+    - Certifique-se de que seu ambiente permite vincular a `127.0.0.1` em portas arbitrárias
+    - Use `local_port=0` para deixar o SO atribuir uma porta disponível
+    - Se a vinculação local estiver completamente bloqueada, considere usar um proxy HTTP CONNECT, que o Chrome suporta nativamente com autenticação
+
 ## Resumo e Pontos Chave
 
 SOCKS5 representa o **padrão ouro** para proxying consciente da privacidade, oferecendo flexibilidade de protocolo, requisitos de confiança reduzidos e segurança superior em comparação com alternativas da camada de aplicação. Entender a arquitetura SOCKS é essencial para construir sistemas de automação robustos e indetectáveis.
@@ -520,14 +660,13 @@ SOCKS5 representa o **padrão ouro** para proxying consciente da privacidade, of
 
 **Proxy SOCKS5 Básico:**
 ```python
-from pydoll import Chrome, ChromiumOptions
+from pydoll.browser import Chrome
+from pydoll.browser.options import ChromiumOptions
 
 options = ChromiumOptions()
-options.set_proxy({
-    'server': 'socks5://proxy.example.com:1080',
-    'username': 'user',      # Opcional
-    'password': 'pass'       # Opcional
-})
+options.add_argument('--proxy-server=socks5://proxy.example.com:1080')
+# Para proxies autenticados, inclua as credenciais na URL:
+# options.add_argument('--proxy-server=socks5://usuario:senha@proxy.example.com:1080')
 
 async with Chrome(options=options) as browser:
     tab = await browser.start()

@@ -33,6 +33,7 @@ class ChromiumOptions(Options):
         self._start_timeout: int = 10
         self._browser_preferences: dict[str, Any] = {}
         self._headless: bool = False
+        self._webrtc_leak_protection: bool = False
         self._page_load_state: PageLoadState = PageLoadState.COMPLETE
 
     @property
@@ -386,6 +387,20 @@ class ChromiumOptions(Options):
         methods_map = {True: self.add_argument, False: self.remove_argument}
         if headless != has_argument:
             methods_map[headless]('--headless')
+
+    @property
+    def webrtc_leak_protection(self) -> bool:
+        return self._webrtc_leak_protection
+
+    @webrtc_leak_protection.setter
+    def webrtc_leak_protection(self, enabled: bool):
+        self._webrtc_leak_protection = enabled
+        argument = '--force-webrtc-ip-handling-policy=disable_non_proxied_udp'
+        has_argument = argument in self.arguments
+        methods_map = {True: self.add_argument, False: self.remove_argument}
+        if enabled == has_argument:
+            return
+        methods_map[enabled](argument)
 
     @property
     def page_load_state(self) -> PageLoadState:

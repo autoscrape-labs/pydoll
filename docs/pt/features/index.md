@@ -28,7 +28,7 @@ Estas são as funcionalidades que dão vida à sua automação: simular interaç
 
 **[Operações com Arquivos](automation/file-operations.md)**: O manuseio de arquivos pode ser complicado na automação de navegador. O Pydoll fornece soluções robustas tanto para uploads quanto para downloads, com o gerenciador de contexto `expect_download` oferecendo um manuseio elegante da conclusão assíncrona de downloads.
 
-**[Interação com IFrames](automation/iframes.md)**: Trabalhe perfeitamente com frames incorporados usando o método `get_frame()`. Obtenha uma interface Tab completa para o conteúdo do iframe, permitindo que você use todas as capacidades de localização e interação de elementos do Pydoll dentro dos frames.
+**[Interação com IFrames](automation/iframes.md)**: Trate iframes como qualquer elemento—encontre o iframe e continue pesquisando a partir dele. Sem targets extras, sem abas adicionais.
 
 **[Capturas de Tela e PDF](automation/screenshots-and-pdfs.md)**: Capture conteúdo visual de suas sessões de automação. Se você precisa de capturas de tela de página inteira para testes de regressão visual, capturas de elementos específicos para depuração, ou exportações de PDF para arquivamento, o Pydoll tem o que você precisa.
 

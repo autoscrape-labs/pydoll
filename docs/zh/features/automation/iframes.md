@@ -1,10 +1,14 @@
-# 处理IFrame
+# 处理 IFrame
 
-IFrame（内联框架）是浏览器自动化中最棘手的方面之一。Pydoll提供清晰直观的iframe交互API，抽象化了CDP目标管理的复杂性。
+现代网页经常使用 `<iframe>` 嵌入其他文档。旧版本的 Pydoll 需要手动调用 `tab.get_frame()` 把 iframe 转成 `Tab` 并管理 CDP target。**现在不再需要这样做。**  
+iframe 现在和其他 `WebElement` 一样：可以直接调用 `find()`、`query()`、`execute_script()`、`inner_html`、`text` 等方法，Pydoll 会自动在正确的浏览上下文中执行（无论是否跨域）。
+
+!!! info "更轻松的心智模型"
+    把 iframe 当成页面上的普通 `div`。找到它后，就以它为起点继续查找内部元素。Pydoll 会自动创建隔离执行环境，缓存上下文，并处理多层嵌套。
 
 ## 快速入门
 
-### 基础IFrame交互
+### 与页面上的第一个 iframe 交互
 
 ```python
 import asyncio
@@ -14,176 +18,180 @@ async def interact_with_iframe():
     async with Chrome() as browser:
         tab = await browser.start()
         await tab.go_to('https://example.com/page-with-iframe')
-        
-        # 查找iframe元素
-        iframe_element = await tab.find(tag_name='iframe', id='content-frame')
-        
-        # 获取iframe的Tab实例
-        iframe = await tab.get_frame(iframe_element)
-        
-        # 现在可以与iframe内部的元素交互
-        button = await iframe.find(id='submit-button')
-        await button.click()
-        
-        # 查找并填写iframe内的表单
-        username = await iframe.find(name='username')
+
+        iframe = await tab.find(tag_name='iframe', id='content-frame')
+
+        # 以下调用都会在 iframe 内部执行
+        title = await iframe.find(tag_name='h1')
+        await title.click()
+
+        form = await iframe.find(id='login-form')
+        username = await form.find(name='username')
         await username.type_text('john_doe')
 
 asyncio.run(interact_with_iframe())
 ```
 
-!!! tip "IFrame就是Tab"
-    在Pydoll中，iframe返回一个`Tab`对象。这意味着**Tab上所有可用的方法都适用于iframe**：`find()`、`query()`、`execute_script()`、`take_screenshot()`等等。
+### 多层 iframe
 
-## 理解IFrame
-
-### 什么是IFrame？
-
-`<iframe>`（内联框架）是一个HTML元素，可在当前页面内嵌入另一个HTML文档。可以将其视为"浏览器窗口中的浏览器窗口"。
-
-```html
-<html>
-  <body>
-    <h1>主页面</h1>
-    <p>这是主文档</p>
-    
-    <!-- 这个iframe加载一个完全独立的文档 -->
-    <iframe src="https://other-site.com/content.html" id="my-frame">
-    </iframe>
-  </body>
-</html>
-```
-
-每个iframe：
-
-- 拥有自己**独立的DOM**（文档对象模型）
-- 加载自己的HTML、CSS和JavaScript
-- 可以来自不同域（跨域）
-- 在隔离的浏览上下文中运行
-
-### 为什么无法直接交互
-
-这段代码**无法按预期工作**：
+逐层查找即可：
 
 ```python
-# ❌ 这无法找到iframe内部的元素
-button = await tab.find(id='button-inside-iframe')
+outer = await tab.find(id='outer-frame')
+inner = await outer.find(tag_name='iframe')  # 在外层 iframe 内继续查找
+
+submit_button = await inner.find(id='submit')
+await submit_button.click()
 ```
 
-**为什么？** 因为`tab.find()`搜索的是**主页面的DOM**。iframe拥有**完全独立的DOM**，无法从父页面访问。
+流程始终相同：
 
-可以这样理解：
+1. 找到需要的 iframe 元素。
+2. 使用该 `WebElement` 作为新的查找范围。
+3. 如果还有内层 iframe，重复以上步骤。
 
-```
-主页面DOM                      IFrame DOM（独立！）
-├── <html>                    ├── <html>
-│   ├── <body>                │   ├── <body>
-│   │   ├── <div>             │   │   ├── <div>
-│   │   └── <iframe>          │   │   └── <button id="inside">
-│   │       (独立世界)        │   └── </body>
-│   └── </body>               └── </html>
-└── </html>
-```
-
-!!! info "隔离的浏览上下文"
-    IFrame创建了所谓的**隔离浏览上下文**。这种隔离是一项安全功能，防止恶意iframe访问或操纵父页面的内容。
-
-### Pydoll如何解决这个问题
-
-在底层，Pydoll使用Chrome DevTools Protocol（CDP）来：
-
-1. **识别iframe目标**：每个iframe都有自己的CDP目标ID
-2. **创建新的Tab实例**：此Tab作用域限定在iframe的DOM
-3. **提供完全访问**：所有Tab方法都可在iframe的隔离DOM上运行
+### 在 iframe 中执行 JavaScript
 
 ```python
-# 内部发生的过程：
-iframe_element = await tab.find(tag_name='iframe')  # 查找<iframe>标签
-frame = await tab.get_frame(iframe_element)         # 获取iframe的CDP目标
-
-# 现在'frame'是一个操作iframe DOM的Tab
-button = await frame.find(id='button-inside-iframe')  # ✅ 可以运行！
+iframe = await tab.find(tag_name='iframe')
+result = await iframe.execute_script('return document.title', return_by_value=True)
+print(result['result']['result']['value'])
 ```
 
-### 技术深入探讨：CDP目标
+Pydoll 会自动在 iframe 的隔离上下文中执行脚本，同样适用于跨域 iframe。
 
-当您调用`tab.get_frame()`时，Pydoll会：
+## 为什么这样更好？
 
-1. **提取`src`属性**：从iframe元素中提取
-2. **查询CDP获取所有目标**：使用`Target.getTargets()`
-3. **匹配iframe URL**：找到其对应的目标ID
-4. **创建Tab实例**：使用该目标ID
+- **直观：** DOM 树是什么样子，就怎么编写脚本。
+- **无需了解 CDP 细节：** 隔离世界、执行上下文、target 缓存全部由 Pydoll 处理。
+- **天然支持嵌套：** 每次查找都以当前元素为范围，多层结构依然清晰。
+- **统一 API：** 不再需要在 `Tab` 与 `WebElement` 方法之间切换。
 
-每个目标都有：
+!!! tip "`Tab.get_frame()` 将被移除"
+    现在调用 `Tab.get_frame()` 会抛出 `DeprecationWarning`，并将在未来版本删除。请尽快改为直接使用 iframe 元素。
 
-- **唯一的目标ID**：标识浏览上下文
-- **独立的WebSocket连接**：用于隔离的CDP通信
-- **自己的文档树**：完全独立于父页面
+## 常见模式
+
+### 截取 iframe 内部元素的截图
 
 ```python
-# tab.py内部实现：
-async def get_frame(self, frame: WebElement) -> Tab:
-    # 获取iframe的源URL
-    frame_url = frame.get_attribute('src')
-    
-    # 查找匹配此URL的目标
-    targets = await self._browser.get_targets()
-    iframe_target = next((t for t in targets if t['url'] == frame_url), None)
-    
-    # 为此iframe的目标创建Tab
-    target_id = iframe_target['targetId']
-    tab = Tab(self._browser, target_id=target_id, ...)
-    
-    return tab  # 现在可以将iframe作为Tab进行交互！
+iframe = await tab.find(tag_name='iframe')
+chart = await iframe.find(id='sales-chart')
+await chart.take_screenshot('chart.png')
 ```
 
-!!! warning "IFrame必须有有效的`src`"
-    iframe必须具有有效的`src`属性，Pydoll才能定位其CDP目标。使用`srcdoc`或动态注入内容的iframe可能无法与`get_frame()`配合使用。
-
-## 对比：主页面 vs IFrame
-
-| 方面 | 主页面 | IFrame |
-|--------|-----------|--------|
-| **DOM** | 自己的文档树 | 独立的文档树 |
-| **CDP目标** | 一个目标ID | 不同的目标ID |
-| **元素搜索** | `tab.find()` | `iframe.find()` |
-| **JavaScript上下文** | 主页面的`window` | iframe的`window` |
-| **源** | 页面的源 | 可以是跨域 |
-| **存储** | 与页面共享 | 可以是隔离的 |
-
-## IFrame中的截图
-
-!!! info "截图限制"
-    `tab.take_screenshot()`仅适用于**顶级目标**。对于iframe截图，请在iframe**内部**的元素上使用`element.take_screenshot()`。
+### 遍历多个 iframe
 
 ```python
-import asyncio
-from pydoll.browser.chromium import Chrome
-
-async def iframe_screenshot():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://example.com/iframe-page')
-        
-        iframe_element = await tab.find(tag_name='iframe')
-        frame = await tab.get_frame(iframe_element)
-        
-        # ❌ 这对iframe不起作用
-        # await frame.take_screenshot('frame.png')
-        
-        # ✅ 而是对iframe内部的元素截图
-        content = await frame.find(id='content')
-        await content.take_screenshot('iframe-content.png')
-
-asyncio.run(iframe_screenshot())
+iframes = await tab.find(tag_name='iframe', find_all=True)
+for frame in iframes:
+    heading = await frame.find(tag_name='h2')
+    print(await heading.text)
 ```
 
-## 了解更多
+### 等待 iframe 内容加载
 
-要深入了解iframe机制和CDP目标：
+```python
+iframe = await tab.find(tag_name='iframe')
+await iframe.wait_until(is_visible=True, timeout=10)
+banner = await iframe.find(id='promo-banner')
+```
 
-- **[深入探讨：Tab域](../../deep-dive/architecture/tab-domain.md#iframe-handling)**：iframe目标解析的技术细节
-- **[深入探讨：Browser域](../../deep-dive/architecture/browser-domain.md#target-management)**：CDP如何管理多个目标
-- **[元素查找](../element-finding.md#scoped-search)**：理解元素搜索中的DOM作用域
+## 跨 iframe 选择器
 
-IFrame可能看起来很复杂，但Pydoll的API使其像常规页面元素一样容易使用。关键是要理解每个iframe都是其自己的隔离Tab，拥有独立的DOM和CDP目标。
+无需手动逐个查找 iframe 再在其中搜索，您可以编写一个**单一选择器**来跨越 iframe 边界。Pydoll 会自动检测 XPath 或 CSS 选择器中的 `iframe` 步骤，将其拆分为片段，并依次遍历 iframe 链。
+
+### CSS 选择器
+
+在 `iframe` 复合选择器后使用任意标准组合器（`>`、空格）：
+
+```python
+# 单个 iframe 穿越
+button = await tab.query('iframe > .submit-btn')
+
+# iframe 上带属性选择器
+button = await tab.query('iframe[src*="checkout"] > #pay-button')
+
+# 嵌套 iframe
+element = await tab.query('iframe.outer > iframe.inner > div.content')
+
+# iframe 后的多步查找
+link = await tab.query('iframe > nav > a.home-link')
+
+# iframe 在其他元素内部（不在根位置）
+button = await tab.query('div > iframe > button.submit')
+content = await tab.query('.wrapper iframe > div.content')
+```
+
+### XPath 表达式
+
+在 `iframe` 步骤后使用 `/` —— Pydoll 会在 iframe 节点处拆分：
+
+```python
+# 单个 iframe 穿越
+button = await tab.query('//iframe/body/button[@id="submit"]')
+
+# iframe 在其他元素内部（不在根位置）
+div = await tab.query('//div/iframe/div')
+item = await tab.query('//div[@class="wrapper"]/iframe/body/div')
+
+# iframe 上带谓词
+heading = await tab.query('//iframe[@src*="cloudflare"]//h1')
+
+# 嵌套 iframe
+element = await tab.query('//iframe[@id="outer"]//iframe[@id="inner"]//div')
+```
+
+### 工作原理
+
+当 Pydoll 遇到类似 `iframe[src*="checkout"] > form > button` 的选择器时：
+
+1. **解析**选择器为片段：`iframe[src*="checkout"]` 和 `form > button`
+2. 使用第一个片段**查找** iframe 元素
+3. 使用第二个片段**在 iframe 内部搜索**
+4. 对于嵌套 iframe，在每个边界重复此过程
+
+这等同于手动方式，但只需一次调用：
+
+```python
+# 手动方式（仍然有效）
+iframe = await tab.find(tag_name='iframe', src='*checkout*')
+button = await iframe.query('form > button')
+
+# 自动方式（相同结果，一行代码）
+button = await tab.query('iframe[src*="checkout"] > form > button')
+```
+
+### 不进行拆分的情况
+
+只有当 `iframe` 作为**标签名**出现时才会进行拆分。以下选择器保持不变：
+
+- `.iframe > body` —— 类选择器，不是标签
+- `#iframe > body` —— ID 选择器
+- `div.iframe > body` —— 标签是 `div`，不是 `iframe`
+- `[data-type="iframe"] > body` —— 属性选择器
+- `iframe` 或 `//iframe` —— iframe 后无内容（没有需要搜索的内容）
+
+### find_all 支持
+
+最后一个片段支持 `find_all=True`，返回最终 iframe 内所有匹配的元素：
+
+```python
+# 获取 iframe 内的所有链接
+links = await tab.query('iframe > a', find_all=True)
+```
+
+## 最佳实践
+
+- **把 iframe 作为作用域：** 在 iframe `WebElement` 上调用 `find`、`query`、`execute_script` 等方法。
+- **避免 `tab.find` 查找内部元素：** 它只能访问顶级文档。
+- **复用引用：** Pydoll 会缓存 iframe 的上下文，可重复使用。
+- **现有工作流保持一致：** 滚动、截图、等待、脚本执行、读取属性等操作与普通元素完全一致。
+
+## 延伸阅读
+
+- **[元素查找](../element-finding.md)** —— 介绍查找范围与链式查询。
+- **[截图与 PDF](screenshots-and-pdfs.md)** —— 讲解如何获取视觉输出。
+- **[事件系统](../advanced/event-system.md)** —— 以事件驱动方式监听页面变化（包括 iframe）。
+
+在新模型下，iframe 不再是“特殊情况”。把它视为普通 DOM 节点，专注于自动化逻辑，其余复杂度交给 Pydoll 处理。

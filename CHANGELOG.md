@@ -1,3 +1,185 @@
+## 2.20.0 (2026-02-13)
+
+### Feat
+
+- **mouse**: add timing property for runtime configuration
+- **requests**: add record() and replay() to Request class
+- **requests**: add HAR network recorder
+- **protocol**: add HAR 1.2 type definitions
+
+### Fix
+
+- **requests**: use surgical callback removal instead of nuclear clear_callbacks
+
+### Refactor
+
+- **tab**: extract bundle static methods to utils module
+
+## 2.19.0 (2026-02-12)
+
+### Feat
+
+- **interactions**: default humanize=True for keyboard type_text
+- **elements**: integrate Mouse API into WebElement.click()
+- **interactions**: add Mouse API with humanized simulation
+- **browser**: add webrtc_leak_protection property to ChromiumOptions
+- **browser**: add automatic User-Agent consistency override
+
+### Fix
+
+- **utils**: harden SOCKS5 proxy forwarder security and robustness
+
+## 2.18.0 (2026-02-11)
+
+### Feat
+
+- **utils**: add SOCKS5 proxy forwarder and convert utils to package
+- **elements**: add cross-iframe selector support for XPath and CSS
+
+## 2.17.0 (2026-02-08)
+
+### Feat
+
+- **tab**: refactor cloudflare bypass to use shadow root traversal
+- **elements**: add shadow root timeout, CSS restriction and context propagation
+- **tab**: add find_shadow_roots with OOPIF traversal and timeout
+- **elements**: add shadow DOM support
+
+### Fix
+
+- **docs**: replace shadow.find() with query() in all documentation
+- **tests**: replace shadow.find() with query() in integration tests
+- **elements**: use float timeout and add contextual WaitElementTimeout messages
+
+## 2.16.0 (2026-02-06)
+
+### Feat
+
+- add clear method for input and enhance page load state handling
+
+### Fix
+
+- **browser**: support secure websocket connections
+
+## 2.15.1 (2026-01-04)
+
+### Fix
+
+- filter Symbol properties from element query results
+
+## 2.15.0 (2025-12-24)
+
+### Feat
+
+- Implement incognito mode cookie retrieval for `tab.get_cookies()` and update related documentation
+
+### Fix
+
+- inconsistence in type checking
+- Dispatch `KEY_DOWN` and `KEY_UP` events for character typing
+
+## 2.14.0 (2025-12-10)
+
+### Feat
+
+- get_tab_by_target method added
+- get_tab_by_target method added
+
+### Fix
+
+- adding type: ignore in JavascriptDialogOpeningEvent object
+- adding type: ignore in JavascriptDialogOpeningEvent object
+
+## 2.13.1 (2025-12-07)
+
+### Fix
+
+- add stuck scroll detection and minimum flick distance to humanized scroll, and correct scroll distance calculation.
+
+## 2.13.0 (2025-12-07)
+
+### Feat
+
+- Implement humanized keyboard typing and physics-based scroll, and add iframe interaction support.
+
+## 2.12.4 (2025-11-29)
+
+### Fix
+
+- optimize iframe resolution logic by adjusting backend node ID checks and enhancing child frame handling
+- refine OOPIF resolution and frame attachment logic for improved handling of backend node IDs
+- enhance OOPIF target attachment logic for improved session handling
+
+## 2.12.3 (2025-11-27)
+
+### Fix
+
+- improve frame retrieval logic for better session handling
+
+## 2.12.2 (2025-11-19)
+
+### Fix
+
+- adjust find_elements_mixin.py to refine return types and defaults
+
+## 2.12.1 (2025-11-14)
+
+### Fix
+
+- continue cleanup process if temporary directory still exists
+- adjust sleep duration for Windows and enhance temp dir cleanup
+- enhance error handling for locked files on Windows systems
+- remove unnecessary retry_times parameter in file processing
+- ensure temp directory cleanup handles Chromium locked files
+- enhance element selection and text extraction for better stability
+- handle oopif targets
+- change way to interact with iframes
+
+### Refactor
+
+- refactor iframe context handling in FindElementsMixin class
+
+### Perf
+
+- update Chrome options for better memory management and stability
+
+## 2.12.0 (2025-11-04)
+
+### Feat
+
+- **execute_script**: validate element argument usage
+- **tab,element,chrome**: revert arguments and add Chromium paths
+- add a retry decorator for handling function execution failures
+
+### Fix
+
+- import TopLevelTargetRequired in test_browser_tab.py
+- allow one additional retry attempt in the retry decorator
+
+### Refactor
+
+- **tab,element**: simplify execute_script parameters
+- **element**: move and enhance execute_script from tab
+- **tab**: separate execute_script concerns and enhance with comprehensive options
+
+## 2.11.0 (2025-11-02)
+
+### Feat
+
+- add input handling functions and key constants for editing
+- add KeyboardAPI for simulating keyboard input actions
+- add KeyboardAPI integration for enhanced keyboard control
+
+### Fix
+
+- enhance text insertion and deprecate legacy key methods
+
+## 2.10.0 (2025-11-01)
+
+### Feat
+
+- add ScrollAPI for enhanced page scrolling capabilities
+
 ## 2.9.3 (2025-10-30)
 
 ### Refactor

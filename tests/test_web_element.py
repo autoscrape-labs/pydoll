@@ -19,6 +19,7 @@ from pydoll.exceptions import (
     WaitElementTimeout,
 )
 from pydoll.protocol.input.types import KeyModifier
+from pydoll.protocol.runtime.types import CallArgument
 
 
 @pytest_asyncio.fixture
@@ -116,27 +117,18 @@ def disabled_element(mock_connection_handler):
 
 
 @pytest.fixture
-def ci_chrome_options():
-    """Chrome options optimized for CI environments."""
-    options = Options()
-    options.headless = True
-    options.start_timeout = 30
+def iframe_element(mock_connection_handler):
+    """Iframe element fixture for iframe-related tests."""
+    attributes_list = ['id', 'iframe-id', 'tag_name', 'iframe']
+    return WebElement(
+        object_id='iframe-object-id',
+        connection_handler=mock_connection_handler,
+        method='css',
+        selector='iframe#iframe-id',
+        attributes_list=attributes_list,
+    )
 
-    # CI-specific arguments
-    options.add_argument('--no-sandbox')
-    options.add_argument('--disable-dev-shm-usage')
-    options.add_argument('--disable-gpu')
-    options.add_argument('--disable-extensions')
-    options.add_argument('--disable-background-timer-throttling')
-    options.add_argument('--disable-backgrounding-occluded-windows')
-    options.add_argument('--disable-renderer-backgrounding')
-    options.add_argument('--disable-default-apps')
 
-    # Memory optimization
-    options.add_argument('--memory-pressure-off')
-    options.add_argument('--max_old_space_size=4096')
-
-    return options
 
 
 class TestWebElementInitialization:
@@ -261,6 +253,13 @@ class TestWebElementProperties:
         html = await web_element.inner_html
         assert html == expected_html
 
+    @pytest.mark.asyncio
+    async def test_iframe_context_non_iframe_returns_none(self, web_element):
+        """Non-iframe elements should not produce iframe context."""
+        result = await web_element.iframe_context
+        assert result is None
+        web_element._connection_handler.execute_command.assert_not_awaited()
+
 
 class TestWebElementMethods:
     """Test WebElement methods and interactions."""
@@ -302,10 +301,10 @@ class TestWebElementMethods:
         test_text = 'Hi'
         input_element.click = AsyncMock()
         with patch('asyncio.sleep') as mock_sleep:
-            await input_element.type_text(test_text, interval=0.05)
+            await input_element.type_text(test_text, humanize=False, interval=0.05)
 
-        # Should call execute_command for each character
-        assert input_element._connection_handler.execute_command.call_count == len(test_text)
+        # Should call execute_command for each character (KEY_DOWN + KEY_UP)
+        assert input_element._connection_handler.execute_command.call_count == len(test_text) * 2
         assert input_element.click.call_count == 1
 
         # Verify sleep was called between characters
@@ -318,10 +317,211 @@ class TestWebElementMethods:
         test_text = 'A'
         input_element.click = AsyncMock()
         with patch('asyncio.sleep') as mock_sleep:
-            await input_element.type_text(test_text)
+            await input_element.type_text(test_text, humanize=False)
 
-        mock_sleep.assert_called_with(0.1)  # Default interval
+        mock_sleep.assert_called_with(0.05)  # Default interval
         assert input_element.click.call_count == 1
+
+    @pytest.mark.asyncio
+    async def test_clear(self, input_element):
+        """Test clear method resets element value."""
+        input_element._connection_handler.execute_command.return_value = {
+            'result': {'result': {'value': True}}
+        }
+
+        await input_element.clear()
+
+        input_element._connection_handler.execute_command.assert_called_once()
+        assert input_element._attributes['value'] == ''
+
+    @pytest.mark.asyncio
+    async def test_clear_not_interactable(self, input_element):
+        """Test clear raises ElementNotInteractable for non-editable elements."""
+        input_element._connection_handler.execute_command.return_value = {
+            'result': {'result': {'value': False}}
+        }
+
+        with pytest.raises(ElementNotInteractable):
+            await input_element.clear()
+
+
+class TestWebElementIFrame:
+    """Tests for iframe-specific WebElement behaviour."""
+
+    @pytest.mark.asyncio
+    async def test_iframe_context_initialization(self, iframe_element):
+        """Iframe context should be created via CDP commands."""
+
+        async def side_effect(command, timeout=10):
+            method = command['method']
+            if method == 'DOM.describeNode':
+                return {
+                    'result': {
+                        'node': {
+                            'frameId': 'frame-123',
+                            'contentDocument': {
+                                'frameId': 'frame-123',
+                                'documentURL': 'https://example.com/frame.html',
+                                'baseURL': 'https://example.com/frame.html',
+                            },
+                        }
+                    }
+                }
+            if method == 'Page.createIsolatedWorld':
+                return {'result': {'executionContextId': 42}}
+            if method == 'Runtime.evaluate':
+                return {
+                    'result': {
+                        'result': {
+                            'type': 'object',
+                            'objectId': 'document-object-id',
+                        }
+                    }
+                }
+            raise AssertionError(f'Unexpected method {method}')
+
+        iframe_element._connection_handler.execute_command.side_effect = side_effect
+
+        ctx = await iframe_element.iframe_context
+        assert ctx is not None
+        assert ctx.frame_id == 'frame-123'
+        assert ctx.document_url == 'https://example.com/frame.html'
+        assert ctx.execution_context_id == 42
+        assert ctx.document_object_id == 'document-object-id'
+
+        # Subsequent access should not trigger additional CDP calls
+        iframe_element._connection_handler.execute_command.reset_mock()
+        cached_ctx = await iframe_element.iframe_context
+        assert cached_ctx is ctx
+        iframe_element._connection_handler.execute_command.assert_not_awaited()
+
+    @pytest.mark.asyncio
+    async def test_iframe_inner_html_uses_runtime_evaluate(self, iframe_element):
+        """inner_html should read from iframe execution context."""
+        async def side_effect(command, timeout=10):
+            method = command['method']
+            if method == 'DOM.describeNode':
+                return {
+                    'result': {
+                        'node': {
+                            'frameId': 'frame-123',
+                            'contentDocument': {
+                                'frameId': 'frame-123',
+                                'documentURL': 'https://example.com/frame.html',
+                                'baseURL': 'https://example.com/frame.html',
+                            },
+                        }
+                    }
+                }
+            if method == 'Page.createIsolatedWorld':
+                return {'result': {'executionContextId': 77}}
+            if method == 'Runtime.evaluate':
+                expression = command['params']['expression']
+                if expression == 'document.documentElement':
+                    return {
+                        'result': {
+                            'result': {
+                                'type': 'object',
+                                'objectId': 'document-object-id',
+                            }
+                        }
+                    }
+                if expression == 'document.documentElement.outerHTML':
+                    assert command['params']['contextId'] == 77
+                    return {
+                        'result': {
+                            'result': {
+                                'type': 'string',
+                                'value': '<html>iframe content</html>',
+                            }
+                        }
+                    }
+            raise AssertionError(f'Unexpected method {method}')
+
+        iframe_element._connection_handler.execute_command.side_effect = side_effect
+
+        html = await iframe_element.inner_html
+        assert html == '<html>iframe content</html>'
+
+        methods = [
+            call.args[0]['method']
+            for call in iframe_element._connection_handler.execute_command.await_args_list
+        ]
+        assert methods.count('DOM.describeNode') == 1
+        assert methods.count('Page.createIsolatedWorld') == 1
+        assert methods.count('Runtime.evaluate') == 2
+
+    @pytest.mark.asyncio
+    async def test_find_within_iframe_uses_document_context(self, iframe_element):
+        """find() should query against the iframe's document element."""
+
+        async def side_effect(command, timeout=10):
+            method = command['method']
+            if method == 'DOM.describeNode':
+                object_id = command['params'].get('objectId')
+                if object_id == 'iframe-object-id':
+                    return {
+                        'result': {
+                            'node': {
+                                'frameId': 'frame-123',
+                                'contentDocument': {
+                                    'frameId': 'frame-123',
+                                    'documentURL': 'https://example.com/frame.html',
+                                    'baseURL': 'https://example.com/frame.html',
+                                },
+                            }
+                        }
+                    }
+                if object_id == 'element-object-id':
+                    return {
+                        'result': {
+                            'node': {
+                                'nodeName': 'DIV',
+                                'attributes': ['id', 'child', 'data-test', 'value'],
+                            }
+                        }
+                    }
+                raise AssertionError('Unexpected objectId in describeNode')
+            if method == 'Page.createIsolatedWorld':
+                return {'result': {'executionContextId': 88}}
+            if method == 'Runtime.evaluate':
+                expression = command['params']['expression']
+                if expression == 'document.documentElement':
+                    return {
+                        'result': {
+                            'result': {
+                                'type': 'object',
+                                'objectId': 'document-object-id',
+                            }
+                        }
+                    }
+                raise AssertionError(f'Unexpected evaluate expression: {expression}')
+            if method == 'Runtime.callFunctionOn':
+                assert command['params']['objectId'] == 'document-object-id'
+                return {
+                    'result': {
+                        'result': {
+                            'type': 'object',
+                            'objectId': 'element-object-id',
+                        }
+                    }
+                }
+            raise AssertionError(f'Unexpected method {method}')
+
+        iframe_element._connection_handler.execute_command.side_effect = side_effect
+
+        result = await iframe_element.find(tag_name='div')
+
+        assert isinstance(result, WebElement)
+        assert result._object_id == 'element-object-id'
+
+        runtime_calls = [
+            call.args[0]
+            for call in iframe_element._connection_handler.execute_command.await_args_list
+            if call.args[0]['method'] == 'Runtime.callFunctionOn'
+        ]
+        assert runtime_calls, 'Runtime.callFunctionOn should be used for iframe queries'
+        assert runtime_calls[0]['params']['objectId'] == 'document-object-id'
 
     @pytest.mark.asyncio
     async def test_get_parent_element_success(self, web_element):
@@ -586,6 +786,110 @@ class TestWebElementClicking:
 
         # Should execute script with option value
         option_element._connection_handler.execute_command.assert_called_once()
+
+
+class TestWebElementHumanizedClick:
+    """Test WebElement.click() humanized behavior via Mouse API."""
+
+    @pytest.fixture
+    def mouse_mock(self):
+        mock = AsyncMock()
+        mock.click = AsyncMock()
+        return mock
+
+    @pytest.fixture
+    def element_with_mouse(self, mock_connection_handler, mouse_mock):
+        attributes_list = ['id', 'btn-1', 'tag_name', 'button']
+        elem = WebElement(
+            object_id='obj-1',
+            connection_handler=mock_connection_handler,
+            method='css',
+            selector='#btn-1',
+            attributes_list=attributes_list,
+            mouse=mouse_mock,
+        )
+        return elem
+
+    @pytest.mark.asyncio
+    async def test_click_humanized_uses_mouse(self, element_with_mouse, mouse_mock):
+        """When humanize=True and mouse is set, mouse.click() is called."""
+        bounds = [0, 0, 100, 0, 100, 100, 0, 100]
+        element_with_mouse.is_visible = AsyncMock(return_value=True)
+        element_with_mouse.scroll_into_view = AsyncMock()
+        element_with_mouse._connection_handler.execute_command.return_value = {
+            'result': {'model': {'content': bounds}}
+        }
+
+        await element_with_mouse.click()
+
+        mouse_mock.click.assert_called_once_with(50.0, 50.0)
+
+    @pytest.mark.asyncio
+    async def test_click_humanized_with_offset(self, element_with_mouse, mouse_mock):
+        """Offset is applied before passing to mouse.click()."""
+        bounds = [0, 0, 100, 0, 100, 100, 0, 100]
+        element_with_mouse.is_visible = AsyncMock(return_value=True)
+        element_with_mouse.scroll_into_view = AsyncMock()
+        element_with_mouse._connection_handler.execute_command.return_value = {
+            'result': {'model': {'content': bounds}}
+        }
+
+        await element_with_mouse.click(x_offset=10, y_offset=20)
+
+        mouse_mock.click.assert_called_once_with(60.0, 70.0)
+
+    @pytest.mark.asyncio
+    async def test_click_humanize_false_uses_raw_cdp(self, element_with_mouse, mouse_mock):
+        """When humanize=False, raw CDP events are used even if mouse is set."""
+        bounds = [0, 0, 100, 0, 100, 100, 0, 100]
+        element_with_mouse.is_visible = AsyncMock(return_value=True)
+        element_with_mouse.scroll_into_view = AsyncMock()
+        element_with_mouse._connection_handler.execute_command.side_effect = [
+            {'result': {'model': {'content': bounds}}},
+            None,  # mouse press
+            None,  # mouse release
+        ]
+
+        with patch('asyncio.sleep'):
+            await element_with_mouse.click(humanize=False)
+
+        mouse_mock.click.assert_not_called()
+        assert element_with_mouse._connection_handler.execute_command.call_count == 3
+
+    @pytest.mark.asyncio
+    async def test_click_no_mouse_falls_through(self, web_element):
+        """When _mouse is None, raw CDP fallback is used."""
+        assert web_element._mouse is None
+        bounds = [0, 0, 100, 0, 100, 100, 0, 100]
+        web_element.is_visible = AsyncMock(return_value=True)
+        web_element.scroll_into_view = AsyncMock()
+        web_element._connection_handler.execute_command.side_effect = [
+            {'result': {'model': {'content': bounds}}},
+            None,  # mouse press
+            None,  # mouse release
+        ]
+
+        with patch('asyncio.sleep'):
+            await web_element.click()
+
+        assert web_element._connection_handler.execute_command.call_count == 3
+
+    @pytest.mark.asyncio
+    async def test_click_option_element_skips_mouse(self, mouse_mock, mock_connection_handler):
+        """Option elements use JS click path regardless of mouse."""
+        attributes_list = ['tag_name', 'option', 'value', 'opt-1']
+        elem = WebElement(
+            object_id='opt-obj',
+            connection_handler=mock_connection_handler,
+            attributes_list=attributes_list,
+            mouse=mouse_mock,
+        )
+        elem._click_option_tag = AsyncMock()
+
+        await elem.click()
+
+        elem._click_option_tag.assert_called_once()
+        mouse_mock.click.assert_not_called()
 
 
 class TestWebElementFileInput:
@@ -895,8 +1199,8 @@ class TestWebElementUtilityMethods:
         assert element._attributes == {'class_name': 'my-class', 'id': 'my-id'}
 
     @pytest.mark.asyncio
-    async def test_execute_script(self, web_element):
-        """Test _execute_script method."""
+    async def test_execute_script_basic(self, web_element):
+        """Test execute_script basic functionality with return value."""
         script = 'return this.tagName;'
         expected_response = {'result': {'result': {'value': 'DIV'}}}
         web_element._connection_handler.execute_command.return_value = expected_response
@@ -906,11 +1210,224 @@ class TestWebElementUtilityMethods:
         assert result == expected_response
         expected_command = RuntimeCommands.call_function_on(
             object_id='test-object-id',
-            function_declaration=script,
+            function_declaration='function(){ return this.tagName; }',
             return_by_value=True,
         )
         web_element._connection_handler.execute_command.assert_called_once_with(
-            expected_command, timeout=60
+            expected_command, timeout=10
+        )
+
+class TestBuildTextExpression:
+    """Unit tests for FindElementsMixin._build_text_expression."""
+
+    def test_build_text_expression_with_xpath(self):
+        from pydoll.elements.mixins import FindElementsMixin
+        expr = FindElementsMixin._build_text_expression('//p[@id="x"]', 'xpath')
+        assert isinstance(expr, str)
+        assert 'XPathResult.FIRST_ORDERED_NODE_TYPE' in expr
+        assert '@id' in expr
+        assert 'p' in expr
+
+    def test_build_text_expression_with_name(self):
+        from pydoll.elements.mixins import FindElementsMixin
+        expr = FindElementsMixin._build_text_expression('fieldName', 'name')
+        assert isinstance(expr, str)
+        assert '//*[@name="fieldName"]' in expr
+
+    def test_build_text_expression_with_id_css(self):
+        from pydoll.elements.mixins import FindElementsMixin
+        expr = FindElementsMixin._build_text_expression('main', 'id')
+        assert 'document.querySelector' in expr
+        assert '#main' in expr
+
+    def test_build_text_expression_with_class_css(self):
+        from pydoll.elements.mixins import FindElementsMixin
+        expr = FindElementsMixin._build_text_expression('item', 'class_name')
+        assert 'document.querySelector' in expr
+        assert '.item' in expr
+
+    def test_build_text_expression_with_tag_css(self):
+        from pydoll.elements.mixins import FindElementsMixin
+        expr = FindElementsMixin._build_text_expression('button', 'tag_name')
+        assert 'document.querySelector' in expr
+        assert 'button' in expr
+
+class TestIsOptionElementHeuristics:
+    """Unit tests for heuristics inside WebElement._is_option_element."""
+
+    @pytest.mark.asyncio
+    async def test_is_option_element_by_tag_attribute(self, option_element):
+        assert await option_element._is_option_element() is True
+
+    @pytest.mark.asyncio
+    async def test_is_option_element_by_method_and_selector_tag_name(self, mock_connection_handler):
+        dummy = WebElement('dummy', mock_connection_handler, method='tag_name', selector='option', attributes_list=[])
+        assert await dummy._is_option_element() is True
+
+    @pytest.mark.asyncio
+    async def test_is_option_element_by_xpath_selector_contains_option(self, mock_connection_handler):
+        dummy = WebElement('dummy', mock_connection_handler, method='xpath', selector='//OPTION[@value=\"x\"]', attributes_list=[])
+        assert await dummy._is_option_element() is True
+    @pytest.mark.asyncio
+    async def test_execute_script_with_this_syntax(self, web_element):
+        """Test execute_script method with 'this' syntax."""
+        script = 'this.style.border = "2px solid red"'
+        expected_response = {'result': {'result': {'value': None}}}
+        web_element._connection_handler.execute_command.return_value = expected_response
+
+        result = await web_element.execute_script(script)
+
+        assert result == expected_response
+        expected_command = RuntimeCommands.call_function_on(
+            object_id='test-object-id',
+            function_declaration='function(){ this.style.border = "2px solid red" }',
+        )
+        web_element._connection_handler.execute_command.assert_called_once_with(
+            expected_command, timeout=10
+        )
+
+    @pytest.mark.asyncio
+    async def test_execute_script_already_function(self, web_element):
+        """Test execute_script when script is already a function."""
+        script = 'function() { this.style.border = "2px solid red"; }'
+        expected_response = {'result': {'result': {'value': None}}}
+        web_element._connection_handler.execute_command.return_value = expected_response
+
+        result = await web_element.execute_script(script)
+
+        assert result == expected_response
+        expected_command = RuntimeCommands.call_function_on(
+            object_id='test-object-id',
+            function_declaration='function() { this.style.border = "2px solid red"; }',
+        )
+        web_element._connection_handler.execute_command.assert_called_once_with(
+            expected_command, timeout=10
+        )
+
+    @pytest.mark.asyncio
+    async def test_execute_script_with_parameters(self, web_element):
+        """Test execute_script with additional parameters."""
+        script = 'this.value = "test"'
+        expected_response = {'result': {'result': {'value': 'test'}}}
+        web_element._connection_handler.execute_command.return_value = expected_response
+
+        result = await web_element.execute_script(
+            script, 
+            return_by_value=True,
+            user_gesture=True
+        )
+
+        assert result == expected_response
+        expected_command = RuntimeCommands.call_function_on(
+            object_id='test-object-id',
+            function_declaration='function(){ this.value = "test" }',
+            return_by_value=True,
+            user_gesture=True,
+        )
+        web_element._connection_handler.execute_command.assert_called_once_with(
+            expected_command, timeout=10
+        )
+
+    @pytest.mark.asyncio
+    async def test_execute_script_arrow_function(self, web_element):
+        """Test execute_script with arrow function syntax."""
+        script = '() => { this.style.color = "red"; }'
+        expected_response = {'result': {'result': {'value': None}}}
+        web_element._connection_handler.execute_command.return_value = expected_response
+
+        result = await web_element.execute_script(script)
+
+        assert result == expected_response
+        expected_command = RuntimeCommands.call_function_on(
+            object_id='test-object-id',
+            function_declaration='() => { this.style.color = "red"; }',
+        )
+        web_element._connection_handler.execute_command.assert_called_once_with(
+            expected_command, timeout=10
+        )
+
+    @pytest.mark.asyncio
+    async def test_execute_script_multiline(self, web_element):
+        """Test execute_script with multiline script."""
+        script = '''
+            this.style.padding = "10px";
+            this.style.margin = "5px";
+            this.style.borderRadius = "8px";
+        '''
+        expected_response = {'result': {'result': {'value': None}}}
+        web_element._connection_handler.execute_command.return_value = expected_response
+
+        result = await web_element.execute_script(script)
+
+        assert result == expected_response
+        web_element._connection_handler.execute_command.assert_called_once()
+        call_args = web_element._connection_handler.execute_command.call_args[0][0]
+        
+        assert call_args['method'].value == 'Runtime.callFunctionOn'
+        assert call_args['params']['objectId'] == 'test-object-id'
+        
+        func_decl = call_args['params']['functionDeclaration']
+        assert 'function(){' in func_decl
+        assert 'this.style.padding = "10px"' in func_decl
+        assert 'this.style.margin = "5px"' in func_decl
+        assert 'this.style.borderRadius = "8px"' in func_decl
+
+    @pytest.mark.asyncio
+    async def test_execute_script_with_arguments(self, web_element):
+        """Test execute_script with custom arguments."""
+        script = 'this.value = arguments[0];'
+        arguments = [CallArgument(value="test_value")]
+        expected_response = {'result': {'result': {'value': None}}}
+        web_element._connection_handler.execute_command.return_value = expected_response
+
+        result = await web_element.execute_script(script, arguments=arguments)
+
+        assert result == expected_response
+        expected_command = RuntimeCommands.call_function_on(
+            object_id='test-object-id',
+            function_declaration='function(){ this.value = arguments[0]; }',
+            arguments=arguments,
+        )
+        web_element._connection_handler.execute_command.assert_called_once_with(
+            expected_command, timeout=10
+        )
+
+    @pytest.mark.asyncio
+    async def test_execute_script_all_parameters(self, web_element):
+        """Test execute_script with all optional parameters."""
+        script = 'this.click()'
+        expected_response = {'result': {'result': {'value': None}}}
+        web_element._connection_handler.execute_command.return_value = expected_response
+
+        result = await web_element.execute_script(
+            script,
+            silent=True,
+            return_by_value=True,
+            generate_preview=True,
+            user_gesture=True,
+            await_promise=True,
+            execution_context_id=123,
+            object_group="test_group",
+            throw_on_side_effect=True,
+            unique_context_id="unique_123"
+        )
+
+        assert result == expected_response
+        expected_command = RuntimeCommands.call_function_on(
+            object_id='test-object-id',
+            function_declaration='function(){ this.click() }',
+            silent=True,
+            return_by_value=True,
+            generate_preview=True,
+            user_gesture=True,
+            await_promise=True,
+            execution_context_id=123,
+            object_group="test_group",
+            throw_on_side_effect=True,
+            unique_context_id="unique_123",
+        )
+        web_element._connection_handler.execute_command.assert_called_once_with(
+            expected_command, timeout=10
         )
 
     def test_repr(self, web_element):
@@ -967,8 +1484,8 @@ class TestWebElementFindMethods:
         properties_response = {
             'result': {
                 'result': [
-                    {'value': {'type': 'object', 'objectId': 'child-1'}},
-                    {'value': {'type': 'object', 'objectId': 'child-2'}},
+                    {'name': '0', 'value': {'type': 'object', 'objectId': 'child-1'}},
+                    {'name': '1', 'value': {'type': 'object', 'objectId': 'child-2'}},
                 ]
             }
         }
@@ -1129,7 +1646,7 @@ class TestWebElementEdgeCases:
             files=[], object_id='file-input-object-id'
         )
         file_input_element._connection_handler.execute_command.assert_called_once_with(
-            expected_command, timeout=60
+            expected_command, timeout=10
         )
 
 
@@ -1438,3 +1955,195 @@ class TestWebElementGetChildren:
         # Should raise ElementNotFound when script returns no objectId
         with pytest.raises(ElementNotFound):
             await element.get_siblings_elements(raise_exc=True)
+
+
+"""
+Tests for WebElement iframe edge cases and uncovered code paths.
+
+This test suite focuses on covering edge cases in iframe resolution and context handling,
+including:
+- inner_html edge cases for iframes and iframe context elements
+- Frame tree traversal and owner resolution
+- OOPIF resolution scenarios
+- Isolated world creation failures
+- Document object resolution failures
+"""
+
+import pytest
+import pytest_asyncio
+from unittest.mock import AsyncMock, patch
+
+from pydoll.elements.web_element import WebElement
+from pydoll.interactions.iframe import IFrameContext
+from pydoll.connection import ConnectionHandler
+from pydoll.exceptions import InvalidIFrame
+
+
+@pytest_asyncio.fixture
+async def mock_connection_handler():
+    """Mock connection handler for WebElement tests."""
+    with patch('pydoll.connection.ConnectionHandler', autospec=True) as mock:
+        handler = mock.return_value
+        handler.execute_command = AsyncMock()
+        handler._connection_port = 9222
+        yield handler
+
+
+@pytest.fixture
+def iframe_element(mock_connection_handler):
+    """Iframe element fixture for iframe-related tests."""
+    attributes_list = ['id', 'test-iframe', 'tag_name', 'iframe']
+    return WebElement(
+        object_id='iframe-object-id',
+        connection_handler=mock_connection_handler,
+        method='css',
+        selector='iframe#test-iframe',
+        attributes_list=attributes_list,
+    )
+
+
+@pytest.fixture
+def element_in_iframe(mock_connection_handler):
+    """Element inside an iframe (has _iframe_context set)."""
+    attributes_list = ['id', 'button-in-iframe', 'tag_name', 'button']
+    element = WebElement(
+        object_id='button-object-id',
+        connection_handler=mock_connection_handler,
+        method='css',
+        selector='button',
+        attributes_list=attributes_list,
+    )
+    # Set iframe context to simulate element inside iframe
+    element._iframe_context = IFrameContext(
+        frame_id='frame-123',
+        document_url='https://example.com/iframe.html',
+        execution_context_id=42,
+        document_object_id='doc-obj-id',
+    )
+    return element
+
+
+class TestInnerHtmlEdgeCases:
+    """Test inner_html property edge cases for iframe scenarios."""
+
+    @pytest.mark.asyncio
+    async def test_inner_html_iframe_element_with_context(self, iframe_element):
+        """Test inner_html on iframe element uses Runtime.evaluate in iframe context."""
+
+        async def side_effect(command, timeout=10):
+            method = command['method']
+            if method == 'DOM.describeNode':
+                return {
+                    'result': {
+                        'node': {
+                            # Simula um iframe de mesma origem já com frameId
+                            # resolvido; não precisamos de backendNodeId aqui,
+                            # pois não queremos acionar a resolução OOPIF.
+                            'frameId': 'parent-frame',
+                            'contentDocument': {
+                                'frameId': 'iframe-123',
+                                'documentURL': 'https://example.com/frame.html',
+                            },
+                        }
+                    }
+                }
+            if method == 'Page.createIsolatedWorld':
+                return {'result': {'executionContextId': 77}}
+            if method == 'Runtime.evaluate':
+                expression = command['params']['expression']
+                if expression == 'document.documentElement':
+                    return {
+                        'result': {
+                            'result': {
+                                'type': 'object',
+                                'objectId': 'doc-element-id',
+                            }
+                        }
+                    }
+                if expression == 'document.documentElement.outerHTML':
+                    return {
+                        'result': {
+                            'result': {
+                                'type': 'string',
+                                'value': '<html><body>Iframe content</body></html>',
+                            }
+                        }
+                    }
+            raise AssertionError(f'Unexpected method {method}')
+
+        iframe_element._connection_handler.execute_command.side_effect = side_effect
+
+        # Get inner HTML of iframe element
+        html = await iframe_element.inner_html
+
+        # Should return iframe's document HTML
+        assert html == '<html><body>Iframe content</body></html>'
+
+        # Verify Runtime.evaluate was called with correct context
+        evaluate_calls = [
+            call
+            for call in iframe_element._connection_handler.execute_command.await_args_list
+            if call.args[0]['method'] == 'Runtime.evaluate'
+        ]
+        # Should have two calls: one for document.documentElement, one for outerHTML
+        assert len(evaluate_calls) == 2
+        outer_html_call = evaluate_calls[1]
+        assert (
+            outer_html_call.args[0]['params']['expression']
+            == 'document.documentElement.outerHTML'
+        )
+        assert outer_html_call.args[0]['params']['contextId'] == 77
+
+    @pytest.mark.asyncio
+    async def test_inner_html_element_in_iframe_uses_call_function_on(self, element_in_iframe):
+        """Test inner_html on element inside iframe uses Runtime.callFunctionOn."""
+        element_in_iframe._connection_handler.execute_command.return_value = {
+            'result': {
+                'result': {
+                    'type': 'string',
+                    'value': '<button id="button-in-iframe">Click me</button>',
+                }
+            }
+        }
+
+        html = await element_in_iframe.inner_html
+
+        # Should use callFunctionOn with this.outerHTML
+        assert html == '<button id="button-in-iframe">Click me</button>'
+        element_in_iframe._connection_handler.execute_command.assert_called_once()
+        call_args = element_in_iframe._connection_handler.execute_command.call_args[0][0]
+        assert call_args['method'] == 'Runtime.callFunctionOn'
+        assert call_args['params']['objectId'] == 'button-object-id'
+        assert 'this.outerHTML' in call_args['params']['functionDeclaration']
+
+    @pytest.mark.asyncio
+    async def test_inner_html_element_in_iframe_empty_response(self, element_in_iframe):
+        """Test inner_html on element inside iframe when response is empty."""
+        element_in_iframe._connection_handler.execute_command.return_value = {
+            'result': {}  # Empty result
+        }
+
+        html = await element_in_iframe.inner_html
+
+        # Should return empty string when result is missing
+        assert html == ''
+
+    @pytest.mark.asyncio
+    async def test_inner_html_regular_element_fallback(self, mock_connection_handler):
+        """Test inner_html falls back to DOM.getOuterHTML for regular elements."""
+        attributes_list = ['id', 'regular-div', 'tag_name', 'div']
+        element = WebElement(
+            object_id='div-object-id',
+            connection_handler=mock_connection_handler,
+            attributes_list=attributes_list,
+        )
+        mock_connection_handler.execute_command.return_value = {
+            'result': {'outerHTML': '<div id="regular-div">Content</div>'}
+        }
+
+        html = await element.inner_html
+
+        # Should use DOM.getOuterHTML for regular elements
+        assert html == '<div id="regular-div">Content</div>'
+        call_args = mock_connection_handler.execute_command.call_args[0][0]
+        assert call_args['method'] == 'DOM.getOuterHTML'

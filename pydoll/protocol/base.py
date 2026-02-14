@@ -26,11 +26,13 @@ class Command(TypedDict, Generic[T_CommandParams, T_CommandResponse]):
     Attributes:
         method: The command method name
         params: Optional dictionary of parameters for the command
+        sessionId: Optional target session identifier (flattened sessions)
     """
 
     id: NotRequired[int]
     method: str
     params: NotRequired[T_CommandParams]
+    sessionId: NotRequired[str]
 
 
 class Response(TypedDict, Generic[T_CommandResponse]):
@@ -39,10 +41,12 @@ class Response(TypedDict, Generic[T_CommandResponse]):
     Attributes:
         id: The ID that matches the command ID
         result: The result data for the command
+        sessionId: Optional target session identifier (flattened sessions)
     """
 
     id: int
     result: T_CommandResponse
+    sessionId: NotRequired[str]
 
 
 class CDPEvent(TypedDict, Generic[T_EventParams]):
@@ -50,3 +54,4 @@ class CDPEvent(TypedDict, Generic[T_EventParams]):
 
     method: str
     params: NotRequired[T_EventParams]
+    sessionId: NotRequired[str]

@@ -3,6 +3,7 @@ import re
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from pydoll.elements.mixins.find_elements_mixin import FindElementsMixin
+from pydoll.elements.utils import SelectorParser
 from pydoll.constants import By
 from pydoll.exceptions import ElementNotFound, WaitElementTimeout
 
@@ -728,3 +729,510 @@ class TestUnderscoreConversionWithGetByAndValue:
         assert '@id="main-btn"' in value
         assert '@data-testid="submit"' in value
         assert '@aria-label="Submit"' in value
+
+
+class TestFindElementsSymbolFiltering:
+    """Test that Symbol properties are filtered from element query results."""
+
+    def setup_method(self):
+        """Set up test fixtures."""
+        self.mixin = MockFindElementsMixin()
+
+    @pytest.mark.asyncio
+    async def test_find_elements_filters_symbol_properties(self):
+        """Test that Symbol properties are excluded from results."""
+        find_response = {'result': {'result': {'objectId': 'arr'}}}
+        properties_response = {
+            'result': {
+                'result': [
+                    {'name': '0', 'value': {'type': 'object', 'objectId': 'el-1'}},
+                    {'name': '1', 'value': {'type': 'object', 'objectId': 'el-2'}},
+                    {'name': 'Symbol(Symbol.unscopables)', 'value': {'type': 'object', 'objectId': 'sym'}},
+                    {'name': 'length', 'value': {'type': 'number', 'value': 2}},
+                ]
+            }
+        }
+        describe_response = {'result': {'node': {'nodeName': 'A', 'attributes': []}}}
+
+        self.mixin._connection_handler.execute_command.side_effect = [
+            find_response,
+            properties_response,
+            describe_response,
+            describe_response,
+        ]
+
+        elements = await self.mixin._find_elements(By.CSS_SELECTOR, 'a')
+
+        assert len(elements) == 2
+
+
+class TestParseIframeSegmentsXPath:
+    """Test _SelectorParser.parse_iframe_segments_xpath static method — pure sync, no mocks."""
+
+    @pytest.mark.parametrize(
+        'expression, expected_selectors',
+        [
+            # Basic iframe crossing
+            (
+                '//iframe/body',
+                ['//iframe', '//body'],
+            ),
+            # Iframe with attribute predicate
+            (
+                '//iframe[@src*="example.com"]/body',
+                ['//iframe[@src*="example.com"]', '//body'],
+            ),
+            # Iframe with slashes inside quoted attribute
+            (
+                '//iframe[@src="url/with/slashes"]/body',
+                ['//iframe[@src="url/with/slashes"]', '//body'],
+            ),
+            # Iframe not at root — simple
+            (
+                '//div/iframe/div',
+                ['//div/iframe', '//div'],
+            ),
+            # Iframe not at root — with attributes
+            (
+                '//div[@class="wrapper"]/iframe/body',
+                ['//div[@class="wrapper"]/iframe', '//body'],
+            ),
+            # Case insensitive — uppercase
+            (
+                '//IFRAME/body',
+                ['//IFRAME', '//body'],
+            ),
+            # Case insensitive — mixed case
+            (
+                '//IFrame/body',
+                ['//IFrame', '//body'],
+            ),
+            # Nested iframes
+            (
+                '//iframe/iframe/div',
+                ['//iframe', '//iframe', '//div'],
+            ),
+            # Nested iframes with attributes
+            (
+                '//iframe[@src="a"]/div/iframe[@id="inner"]/span',
+                ['//iframe[@src="a"]', '//div/iframe[@id="inner"]', '//span'],
+            ),
+            # Bracket chars inside quoted attribute
+            (
+                '//iframe[@src="a[1]/b"]/body',
+                ['//iframe[@src="a[1]/b"]', '//body'],
+            ),
+            # Multiple steps after iframe
+            (
+                '//iframe[@src*="cloudflare"]/body/div',
+                ['//iframe[@src*="cloudflare"]', '//body/div'],
+            ),
+            # contains() in predicate with "iframe" as string value
+            (
+                '//iframe[contains(@src, "iframe")]/body',
+                ['//iframe[contains(@src, "iframe")]', '//body'],
+            ),
+            # Multiple predicate conditions
+            (
+                '//iframe[@src="a" and @id="b"]/body',
+                ['//iframe[@src="a" and @id="b"]', '//body'],
+            ),
+            # position() predicate
+            (
+                '//iframe[position()=1]/body',
+                ['//iframe[position()=1]', '//body'],
+            ),
+            # not() predicate
+            (
+                '//iframe[not(@disabled)]/body',
+                ['//iframe[not(@disabled)]', '//body'],
+            ),
+            # Grouped expression
+            (
+                '(//iframe)[1]/body',
+                ['(//iframe)[1]', '//body'],
+            ),
+        ],
+    )
+    def test_splits(self, expression, expected_selectors):
+        segments = SelectorParser.parse_iframe_segments_xpath(expression)
+        assert len(segments) == len(expected_selectors)
+        for (by, sel), expected in zip(segments, expected_selectors):
+            assert by == By.XPATH
+            assert sel == expected
+
+    @pytest.mark.parametrize(
+        'expression',
+        [
+            '//iframe',
+            '//iframe[@src="example.com"]',
+            './/iframe',
+            '//div[contains(@class, "iframe")]/p',
+            '//div[@data-iframe="true"]/p',
+            '//body/div/span',
+            '//div[@title="This is an iframe container"]/span',
+        ],
+    )
+    def test_no_split(self, expression):
+        segments = SelectorParser.parse_iframe_segments_xpath(expression)
+        assert len(segments) == 1
+        assert segments[0] == (By.XPATH, expression)
+
+
+class TestParseIframeSegmentsCSS:
+    """Test _SelectorParser.parse_iframe_segments_css static method — pure sync, no mocks."""
+
+    @pytest.mark.parametrize(
+        'expression, expected_selectors',
+        [
+            # Basic > combinator
+            (
+                'iframe > body',
+                ['iframe', 'body'],
+            ),
+            # Iframe with attribute
+            (
+                'iframe[src*="example"] > body',
+                ['iframe[src*="example"]', 'body'],
+            ),
+            # Descendant (space) combinator
+            (
+                'iframe body',
+                ['iframe', 'body'],
+            ),
+            # Descendant with attribute
+            (
+                'iframe[src*="..."] body',
+                ['iframe[src*="..."]', 'body'],
+            ),
+            # Case insensitive — uppercase
+            (
+                'IFRAME > body',
+                ['IFRAME', 'body'],
+            ),
+            # Case insensitive — mixed case
+            (
+                'IFrame > body',
+                ['IFrame', 'body'],
+            ),
+            # Nested iframes
+            (
+                'iframe > iframe > div',
+                ['iframe', 'iframe', 'div'],
+            ),
+            # Pseudo-class on iframe
+            (
+                'iframe:nth-child(2) > body',
+                ['iframe:nth-child(2)', 'body'],
+            ),
+            # > inside quoted attribute value
+            (
+                'iframe[src="value with > arrow"] > body',
+                ['iframe[src="value with > arrow"]', 'body'],
+            ),
+            # Attribute selector before iframe
+            (
+                '[data-iframe] iframe > body',
+                ['[data-iframe] iframe', 'body'],
+            ),
+            # Multiple steps after iframe
+            (
+                'iframe[src*="cloudflare"] > body > div.target',
+                ['iframe[src*="cloudflare"]', 'body > div.target'],
+            ),
+            # Simple prefix — div > iframe > div
+            (
+                'div > iframe > div',
+                ['div > iframe', 'div'],
+            ),
+            # Descendant combinator with prefix
+            (
+                'div iframe > body',
+                ['div iframe', 'body'],
+            ),
+            # Child combinator with prefix
+            (
+                'div > iframe > body',
+                ['div > iframe', 'body'],
+            ),
+            # Nested iframes with attributes
+            (
+                'iframe[src*="a"] > div > iframe[id="inner"] > span',
+                ['iframe[src*="a"]', 'div > iframe[id="inner"]', 'span'],
+            ),
+            # Extra spaces around combinator
+            (
+                'iframe  >  body',
+                ['iframe', 'body'],
+            ),
+        ],
+    )
+    def test_splits(self, expression, expected_selectors):
+        segments = SelectorParser.parse_iframe_segments_css(expression)
+        assert len(segments) == len(expected_selectors)
+        for (by, sel), expected in zip(segments, expected_selectors):
+            assert by == By.CSS_SELECTOR
+            assert sel == expected
+
+    @pytest.mark.parametrize(
+        'expression',
+        [
+            '.iframe > body',
+            '#iframe > body',
+            'div.iframe > body',
+            ':not(iframe) > body',
+            ':is(iframe, div) > body',
+            'iframe[src*="..."]',
+            'iframe',
+            'div > span > p',
+            '[data-type="iframe"] > body',
+        ],
+    )
+    def test_no_split(self, expression):
+        segments = SelectorParser.parse_iframe_segments_css(expression)
+        assert len(segments) == 1
+        assert segments[0] == (By.CSS_SELECTOR, expression)
+
+
+class TestFindAcrossIframes:
+    """Test _find_across_iframes and _attempt_find_across_iframes async methods."""
+
+    def setup_method(self):
+        self.mixin = MockFindElementsMixin()
+
+    @pytest.mark.asyncio
+    async def test_css_single_iframe_crossing(self):
+        """query('iframe > body') — finds iframe, then body inside it."""
+        mock_iframe = MagicMock()
+        mock_iframe.is_iframe = True
+        mock_iframe._find_element = AsyncMock(return_value=MagicMock(name='body'))
+
+        self.mixin._find_element = AsyncMock(return_value=mock_iframe)
+
+        result = await self.mixin.find_or_wait_element(
+            By.CSS_SELECTOR, 'iframe > body', timeout=0
+        )
+
+        # First call: find iframe on the page
+        self.mixin._find_element.assert_called_once_with(
+            By.CSS_SELECTOR, 'iframe', raise_exc=False
+        )
+        # Second call: find body inside iframe
+        mock_iframe._find_element.assert_called_once_with(
+            By.CSS_SELECTOR, 'body', raise_exc=False
+        )
+        assert result is not None
+
+    @pytest.mark.asyncio
+    async def test_xpath_single_iframe_crossing(self):
+        """query('//iframe/body') — finds iframe, then body inside it."""
+        mock_iframe = MagicMock()
+        mock_iframe.is_iframe = True
+        mock_iframe._find_element = AsyncMock(return_value=MagicMock(name='body'))
+
+        self.mixin._find_element = AsyncMock(return_value=mock_iframe)
+
+        result = await self.mixin.find_or_wait_element(
+            By.XPATH, '//iframe/body', timeout=0
+        )
+
+        self.mixin._find_element.assert_called_once_with(
+            By.XPATH, '//iframe', raise_exc=False
+        )
+        mock_iframe._find_element.assert_called_once_with(
+            By.XPATH, '//body', raise_exc=False
+        )
+        assert result is not None
+
+    @pytest.mark.asyncio
+    async def test_nested_iframe_crossing(self):
+        """query('iframe > iframe > div') — 3 segments, 3 find calls."""
+        mock_inner_iframe = MagicMock()
+        mock_inner_iframe.is_iframe = True
+        mock_div = MagicMock(name='div')
+        mock_inner_iframe._find_element = AsyncMock(return_value=mock_div)
+
+        mock_outer_iframe = MagicMock()
+        mock_outer_iframe.is_iframe = True
+        mock_outer_iframe._find_element = AsyncMock(return_value=mock_inner_iframe)
+
+        self.mixin._find_element = AsyncMock(return_value=mock_outer_iframe)
+
+        result = await self.mixin.find_or_wait_element(
+            By.CSS_SELECTOR, 'iframe > iframe > div', timeout=0
+        )
+
+        self.mixin._find_element.assert_called_once_with(
+            By.CSS_SELECTOR, 'iframe', raise_exc=False
+        )
+        mock_outer_iframe._find_element.assert_called_once_with(
+            By.CSS_SELECTOR, 'iframe', raise_exc=False
+        )
+        mock_inner_iframe._find_element.assert_called_once_with(
+            By.CSS_SELECTOR, 'div', raise_exc=False
+        )
+        assert result is mock_div
+
+    @pytest.mark.asyncio
+    async def test_xpath_iframe_not_at_root(self):
+        """query('//div/iframe/div') — iframe is a child of div, not root."""
+        mock_iframe = MagicMock()
+        mock_iframe.is_iframe = True
+        mock_div = MagicMock(name='inner_div')
+        mock_iframe._find_element = AsyncMock(return_value=mock_div)
+
+        self.mixin._find_element = AsyncMock(return_value=mock_iframe)
+
+        result = await self.mixin.find_or_wait_element(
+            By.XPATH, '//div/iframe/div', timeout=0
+        )
+
+        # First segment: //div/iframe (finds the iframe inside a div)
+        self.mixin._find_element.assert_called_once_with(
+            By.XPATH, '//div/iframe', raise_exc=False
+        )
+        # Second segment: //div (finds div inside the iframe)
+        mock_iframe._find_element.assert_called_once_with(
+            By.XPATH, '//div', raise_exc=False
+        )
+        assert result is mock_div
+
+    @pytest.mark.asyncio
+    async def test_css_iframe_not_at_root(self):
+        """query('div > iframe > div') — iframe is a child of div, not root."""
+        mock_iframe = MagicMock()
+        mock_iframe.is_iframe = True
+        mock_div = MagicMock(name='inner_div')
+        mock_iframe._find_element = AsyncMock(return_value=mock_div)
+
+        self.mixin._find_element = AsyncMock(return_value=mock_iframe)
+
+        result = await self.mixin.find_or_wait_element(
+            By.CSS_SELECTOR, 'div > iframe > div', timeout=0
+        )
+
+        # First segment: div > iframe (finds the iframe inside a div)
+        self.mixin._find_element.assert_called_once_with(
+            By.CSS_SELECTOR, 'div > iframe', raise_exc=False
+        )
+        # Second segment: div (finds div inside the iframe)
+        mock_iframe._find_element.assert_called_once_with(
+            By.CSS_SELECTOR, 'div', raise_exc=False
+        )
+        assert result is mock_div
+
+    @pytest.mark.asyncio
+    async def test_find_all_last_segment(self):
+        """query('iframe > .item', find_all=True) — _find_elements for last segment."""
+        mock_iframe = MagicMock()
+        mock_iframe.is_iframe = True
+        mock_items = [MagicMock(), MagicMock()]
+        mock_iframe._find_elements = AsyncMock(return_value=mock_items)
+
+        self.mixin._find_element = AsyncMock(return_value=mock_iframe)
+
+        result = await self.mixin.find_or_wait_element(
+            By.CSS_SELECTOR, 'iframe > .item', timeout=0, find_all=True
+        )
+
+        self.mixin._find_element.assert_called_once_with(
+            By.CSS_SELECTOR, 'iframe', raise_exc=False
+        )
+        mock_iframe._find_elements.assert_called_once_with(
+            By.CSS_SELECTOR, '.item', raise_exc=False
+        )
+        assert result == mock_items
+
+    @pytest.mark.asyncio
+    async def test_timeout_retry_succeeds(self):
+        """First attempt fails (iframe not found), second succeeds."""
+        mock_iframe = MagicMock()
+        mock_iframe.is_iframe = True
+        mock_body = MagicMock(name='body')
+        mock_iframe._find_element = AsyncMock(return_value=mock_body)
+
+        # First call: None (not found), second call: found
+        self.mixin._find_element = AsyncMock(side_effect=[None, mock_iframe])
+
+        with patch('asyncio.sleep') as mock_sleep, \
+             patch('asyncio.get_event_loop') as mock_loop:
+            mock_loop.return_value.time.side_effect = [0, 0.5, 1.0]
+
+            result = await self.mixin.find_or_wait_element(
+                By.CSS_SELECTOR, 'iframe > body', timeout=5
+            )
+
+        assert result is mock_body
+        mock_sleep.assert_called_once_with(0.5)
+
+    @pytest.mark.asyncio
+    async def test_timeout_expires_raises(self):
+        """All attempts fail — WaitElementTimeout raised."""
+        self.mixin._find_element = AsyncMock(return_value=None)
+
+        with patch('asyncio.sleep') as mock_sleep, \
+             patch('asyncio.get_event_loop') as mock_loop:
+            mock_loop.return_value.time.side_effect = [0, 0.5, 1.0, 1.5, 2.1]
+
+            with pytest.raises(WaitElementTimeout, match='across iframes'):
+                await self.mixin.find_or_wait_element(
+                    By.CSS_SELECTOR, 'iframe > body', timeout=2
+                )
+
+    @pytest.mark.asyncio
+    async def test_no_timeout_raises_element_not_found(self):
+        """timeout=0, iframe not found — ElementNotFound."""
+        self.mixin._find_element = AsyncMock(return_value=None)
+
+        with pytest.raises(ElementNotFound, match='across iframes'):
+            await self.mixin.find_or_wait_element(
+                By.CSS_SELECTOR, 'iframe > body', timeout=0
+            )
+
+    @pytest.mark.asyncio
+    async def test_raise_exc_false_returns_none(self):
+        """raise_exc=False, not found — returns None."""
+        self.mixin._find_element = AsyncMock(return_value=None)
+
+        result = await self.mixin.find_or_wait_element(
+            By.CSS_SELECTOR, 'iframe > body', timeout=0, raise_exc=False
+        )
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_raise_exc_false_find_all_returns_empty(self):
+        """raise_exc=False, find_all=True — returns []."""
+        self.mixin._find_element = AsyncMock(return_value=None)
+
+        result = await self.mixin.find_or_wait_element(
+            By.CSS_SELECTOR, 'iframe > body', timeout=0, find_all=True, raise_exc=False
+        )
+        assert result == []
+
+    @pytest.mark.asyncio
+    async def test_intermediate_not_iframe_returns_none_and_raises(self):
+        """Element found but is_iframe=False — treated as not found."""
+        mock_element = MagicMock()
+        mock_element.is_iframe = False
+
+        self.mixin._find_element = AsyncMock(return_value=mock_element)
+
+        with pytest.raises(ElementNotFound):
+            await self.mixin.find_or_wait_element(
+                By.CSS_SELECTOR, 'iframe > body', timeout=0
+            )
+
+    @pytest.mark.asyncio
+    async def test_regular_selector_no_iframe_passthrough(self):
+        """'div > span' — parser returns 1 segment, uses normal path."""
+        mock_element = MagicMock()
+        self.mixin._find_element = AsyncMock(return_value=mock_element)
+
+        result = await self.mixin.find_or_wait_element(
+            By.CSS_SELECTOR, 'div > span', timeout=0
+        )
+
+        # Should call _find_element directly with original selector
+        self.mixin._find_element.assert_called_once_with(
+            By.CSS_SELECTOR, 'div > span', raise_exc=True
+        )

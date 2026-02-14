@@ -445,6 +445,145 @@ sequenceDiagram
     
     SOCKS5 的信任表面积更小。
 
+## SOCKS5 身份验证与 Chrome
+
+在浏览器自动化中使用 SOCKS5 代理时，最常见的陷阱之一就是**身份验证**。Chrome/Chromium **不**原生支持 SOCKS5 用户名/密码身份验证。这是一个已知的、长期存在的限制，跟踪为 [Chromium Issue #40323993](https://issues.chromium.org/issues/40323993)。
+
+### 为什么 Chrome 忽略 SOCKS5 凭据
+
+当您使用 `--proxy-server=socks5://user:pass@proxy:1080` 配置 Chrome 时，Chrome **静默忽略**嵌入的凭据。在 SOCKS5 方法协商期间，Chrome 只提供方法 `0x00`（无需身份验证）— 它从不提供方法 `0x02`（用户名/密码）。
+
+这是因为 SOCKS5 身份验证在**完全不同的协议层**上运行，与 HTTP 代理身份验证不同：
+
+**HTTP 代理身份验证流程（在 Chrome 中有效）：**
+
+```
+Chrome → HTTP CONNECT → 代理返回 407 → Chrome 提供凭据 → 代理连接
+```
+
+Chrome 通过 CDP **Fetch 域**处理此流程 — Pydoll 拦截 `Fetch.authRequired` 事件并自动使用存储的凭据进行响应。
+
+**SOCKS5 身份验证流程（Chrome 不支持）：**
+
+```
+Chrome → SOCKS5 Hello [methods: 0x00] → 代理选择 0x00 或拒绝 → 无法认证
+```
+
+SOCKS5 握手是会话层的**二进制协议**协商。Chrome 的网络堆栈根本没有实现用户名/密码子协商（RFC 1929）。没有 HTTP 407 质询，没有 `Fetch.authRequired` 事件，Pydoll（或任何基于 CDP 的工具）也无法注入凭据。
+
+### 本地转发器解决方案
+
+行业标准的解决方法是**本地代理转发器** — 一个轻量级的本地 SOCKS5 服务器，它：
+
+1. **接受来自 Chrome 的连接**，无需身份验证（方法 `0x00`）
+2. **连接到远程 SOCKS5 代理**，进行完整身份验证（方法 `0x02`，RFC 1929）
+3. 在 Chrome 和远程代理之间**双向中继数据**
+
+```
+┌────────────┐      无认证      ┌──────────────┐    用户/密码   ┌──────────────┐
+│   Chrome   │ ──────────────►  │  本地 SOCKS5  │ ────────────► │ 远程 SOCKS5  │
+│            │  socks5://       │   转发器      │  socks5://    │    代理      │
+│            │  127.0.0.1:1081  │  (localhost)  │  proxy:1080   │  (互联网)    │
+└────────────┘                  └──────────────┘                └──────┬───────┘
+                                                                       │
+                                                                       ▼
+                                                                ┌──────────────┐
+                                                                │   目标服务器  │
+                                                                └──────────────┘
+```
+
+**详细握手序列：**
+
+```mermaid
+sequenceDiagram
+    participant Chrome
+    participant Forwarder as 本地转发器
+    participant Remote as 远程 SOCKS5 代理
+    participant Server as 目标服务器
+
+    Note over Chrome,Forwarder: 阶段 1：Chrome → 转发器（无认证）
+    Chrome->>Forwarder: SOCKS5 Hello [VER=5, METHODS=[0x00]]
+    Forwarder->>Chrome: 方法选定 [VER=5, METHOD=0x00]
+    Chrome->>Forwarder: CONNECT example.com:443
+
+    Note over Forwarder,Remote: 阶段 2：转发器 → 远程（带认证）
+    Forwarder->>Remote: SOCKS5 Hello [VER=5, METHODS=[0x02]]
+    Remote->>Forwarder: 方法选定 [VER=5, METHOD=0x02]
+    Forwarder->>Remote: 认证 [VER=1, USER=..., PASS=...]
+    Remote->>Forwarder: 认证成功 [VER=1, STATUS=0x00]
+    Forwarder->>Remote: CONNECT example.com:443
+    Remote->>Server: TCP 连接
+    Remote->>Forwarder: 连接回复 [成功]
+
+    Note over Chrome,Forwarder: 阶段 3：中继确认
+    Forwarder->>Chrome: 连接回复 [成功]
+
+    Note over Chrome,Server: 阶段 4：双向数据中继
+    Chrome->>Forwarder: 应用数据 (TLS)
+    Forwarder->>Remote: 转发数据
+    Remote->>Server: 转发数据
+    Server->>Remote: 响应
+    Remote->>Forwarder: 转发响应
+    Forwarder->>Chrome: 转发响应
+```
+
+### 在 Pydoll 中使用转发器
+
+Pydoll 在 `pydoll.utils` 模块中提供了一个即用的转发器：
+
+```python
+import asyncio
+from pydoll.utils import SOCKS5Forwarder
+from pydoll.browser.chromium import Chrome
+from pydoll.browser.options import ChromiumOptions
+
+async def main():
+    forwarder = SOCKS5Forwarder(
+        remote_host='proxy.example.com',
+        remote_port=1080,
+        username='myuser',
+        password='mypass',
+        local_port=1081,  # 使用 0 自动分配端口
+    )
+    async with forwarder:
+        options = ChromiumOptions()
+        options.add_argument(f'--proxy-server=socks5://127.0.0.1:{forwarder.local_port}')
+
+        async with Chrome(options=options) as browser:
+            tab = await browser.start()
+            await tab.go_to('https://httpbin.org/ip')
+
+asyncio.run(main())
+```
+
+转发器也可以作为独立的 CLI 工具使用：
+
+```bash
+python -m pydoll.utils.socks5_proxy_forwarder \
+    --remote-host proxy.example.com \
+    --remote-port 1080 \
+    --username myuser \
+    --password mypass \
+    --local-port 1081
+```
+
+### 安全注意事项
+
+!!! warning "安全说明"
+    - 本地转发器默认绑定到 `127.0.0.1` — 仅可从您的机器访问
+    - **切勿**在生产环境中绑定到 `0.0.0.0`，因为这会向网络暴露一个未经身份验证的 SOCKS5 代理
+    - 在与远程代理的 SOCKS5 握手期间，凭据以明文传输（这是 SOCKS5 RFC 1929 固有的）— 如有需要，请使用 SSH 隧道或 VPN 进行额外加密
+    - 转发器添加的延迟极小（本地回环是亚毫秒级的）
+
+### 环境限制
+
+!!! info "受限环境"
+    某些环境（Docker 容器、无服务器平台、加固的虚拟机）可能会限制绑定到本地端口。在这些情况下：
+
+    - 确保您的环境允许在任意端口上绑定到 `127.0.0.1`
+    - 使用 `local_port=0` 让操作系统分配一个可用端口
+    - 如果本地绑定完全被阻止，请考虑使用 HTTP CONNECT 代理，Chrome 原生支持其身份验证
+
 ## 总结和关键要点
 
 SOCKS5 是注重隐私的代理的 **黄金标准**，与应用层替代方案相比，它提供了协议灵活性、更低的信任要求和卓越的安全性。了解 SOCKS 架构对于构建健壮、无法检测的自动化系统至关重要。
@@ -522,14 +661,13 @@ SOCKS5 是注重隐私的代理的 **黄金标准**，与应用层替代方案�
 
 **基本 SOCKS5 代理：**
 ```python
-from pydoll import Chrome, ChromiumOptions
+from pydoll.browser import Chrome
+from pydoll.browser.options import ChromiumOptions
 
 options = ChromiumOptions()
-options.set_proxy({
-    'server': 'socks5://proxy.example.com:1080',
-    'username': 'user',      # 可选
-    'password': 'pass'       # 可选
-})
+options.add_argument('--proxy-server=socks5://proxy.example.com:1080')
+# 对于需要认证的代理，请在 URL 中包含凭证：
+# options.add_argument('--proxy-server=socks5://user:pass@proxy.example.com:1080')
 
 async with Chrome(options=options) as browser:
     tab = await browser.start()

@@ -368,6 +368,9 @@ This three-level interpolation produces the same result but avoids high-power po
     - **[Pyautogui](https://pyautogui.readthedocs.io/)**: Basic tweening (easily detectable)
     - **[Humanize.js](https://github.com/HumanSignal/label-studio-frontend/blob/master/src/utils/utilities.js)**: Advanced composite curves
 
+!!! success "Pydoll Implementation"
+    Pydoll implements **Cubic Bezier curves** for its scroll engine, ensuring that all scroll movements follow natural acceleration and deceleration profiles. This is combined with random jitter, micro-pauses, and overshoot correction to defeat advanced behavioral analysis.
+
 ### Mouse Movement Entropy
 
 **What is Entropy in This Context?**
@@ -708,6 +711,13 @@ def simulate_human_typing(text: str) -> List[Tuple[str, str, float]]:
     
     These studies show keystroke dynamics can achieve **95%+ authentication accuracy** with as few as 50-100 keystrokes.
 
+!!! success "Pydoll Implementation"
+    Pydoll's `type_text(humanize=True)` automatically handles keystroke dynamics by:
+    
+    1.  **Variable Intervals**: Using a bell curve distribution for inter-key timings.
+    2.  **Typo Simulation**: Intentionally making mistakes based on keyboard layout proximity (e.g., pressing 's' instead of 'a').
+    3.  **Correction Logic**: Simulating the backspace sequence to correct typos, adding to the "human" noise.
+
 ### The "Paste Detection" Problem
 
 One of the easiest bot indicators is **text insertion without keyboard events**:
@@ -961,6 +971,14 @@ def simulate_human_scroll(target_distance: int, direction: int = 1) -> List[Tupl
     3. **Micro-adjustments**: Small corrections near target
     
     This is implemented in browsers' smooth scrolling via CSS `scroll-behavior: smooth` using **bezier easing functions**.
+
+!!! success "Pydoll Implementation"
+    Pydoll's scroll engine is built on top of these physics principles. When you use `scroll.by(..., humanize=True)`, it:
+    
+    1.  Calculates a **Cubic Bezier** trajectory for the scroll.
+    2.  Applies **momentum** and **friction** to the velocity profile.
+    3.  Injects **random jitter** to the delta values.
+    4.  Adds **micro-pauses** and **overshoot** behavior to mimic human imperfection.
 
 ## Event Sequence Analysis
 

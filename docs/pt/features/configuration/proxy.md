@@ -167,12 +167,50 @@ asyncio.run(authenticated_proxy_example())
 
 !!! tip "Formato das Credenciais"
     Inclua as credenciais diretamente na URL do proxy:
-    
+
     - HTTP: `http://username:password@host:port`
     - HTTPS: `https://username:password@host:port`
     - SOCKS5: `socks5://username:password@host:port`
-    
+
     O Pydoll extrai e usa automaticamente essas credenciais.
+
+!!! warning "Limitação da Autenticação SOCKS5"
+    **O Chrome não suporta autenticação SOCKS5 nativamente** ([Chromium Issue #40323993](https://issues.chromium.org/issues/40323993)). Credenciais incorporadas em `socks5://user:pass@host:port` são silenciosamente ignoradas — o Chrome envia apenas uma saudação "sem autenticação" para o proxy SOCKS5.
+
+    Isso significa que a autenticação automática de proxy do Pydoll (via `Fetch.authRequired`) **não funciona para SOCKS5**, pois o Chrome nunca emite um desafio HTTP 407 para conexões SOCKS5.
+
+    **Solução — Proxy forwarder local:**
+
+    Execute um proxy SOCKS5 local (sem autenticação) que encaminha para o proxy autenticado remoto. O Pydoll fornece um script pronto para uso:
+
+    ```python
+    import asyncio
+    from pydoll.utils import SOCKS5Forwarder
+    from pydoll.browser.chromium import Chrome
+    from pydoll.browser.options import ChromiumOptions
+
+    async def main():
+        forwarder = SOCKS5Forwarder(
+            remote_host='proxy.example.com',
+            remote_port=1080,
+            username='myuser',
+            password='mypass',
+            local_port=1081,
+        )
+        async with forwarder:
+            options = ChromiumOptions()
+            options.add_argument('--proxy-server=socks5://127.0.0.1:1081')
+
+            async with Chrome(options=options) as browser:
+                tab = await browser.start()
+                await tab.go_to('https://httpbin.org/ip')
+
+    asyncio.run(main())
+    ```
+
+    O forwarder realiza o handshake de usuário/senha com o proxy remoto enquanto o Chrome se conecta ao localhost sem autenticação.
+
+    Para a explicação técnica completa de por que isso acontece, veja **[Análise Profunda da Autenticação SOCKS5](../../deep-dive/network/socks-proxies.md#autenticacao-socks5-e-chrome)**.
 
 ### Detalhes da Implementação da Autenticação
 

@@ -694,14 +694,12 @@ Proxy-Authorization: Negotiate YIIFyQYGKwYBBQUCoIIFvTCCBbmgMDAuBgkqhkiC9xIBAgIGC
 
 **Basic 身份验证：**
 ```python
-from pydoll import Chrome, ChromiumOptions
+from pydoll.browser import Chrome
+from pydoll.browser.options import ChromiumOptions
 
 options = ChromiumOptions()
-options.set_proxy({
-    'server': 'http://proxy.example.com:8080',
-    'username': 'myuser',
-    'password': 'mypass'  # Pydoll 自动处理 Basic auth
-})
+options.add_argument('--proxy-server=http://myuser:mypass@proxy.example.com:8080')
+# Pydoll 会自动处理 Basic/Digest 等身份验证质询
 
 async with Chrome(options=options) as browser:
     tab = await browser.start()

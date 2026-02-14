@@ -82,7 +82,7 @@ asyncio.run(tab_registry_demonstration())
 ```
 
 !!! info "Browser-Managed Registry"
-    The Browser class manages a `_tabs_opened` dictionary keyed by `target_id`. When you request a tab (via `new_tab()`, `get_opened_tabs()`, or `get_frame()`), the Browser checks this registry first. If a Tab instance already exists for that `target_id`, it returns the existing instance; otherwise, it creates a new one and stores it in the registry.
+    The Browser class manages a `_tabs_opened` dictionary keyed by `target_id`. When you request a tab (via `new_tab()` or `get_opened_tabs()`), the Browser checks this registry first. If a Tab instance already exists for that `target_id`, it returns the existing instance; otherwise, it creates a new one and stores it in the registry. (IFrames no longer create Tab entries—interact with them as regular elements.)
 
 ## Creating and Managing Tabs
 

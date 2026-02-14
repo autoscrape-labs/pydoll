@@ -586,6 +586,160 @@ asyncio.run(practical_example())
 ```
 
 
+## Suporte a Shadow DOM
+
+Muitas aplicações web modernas utilizam [Shadow DOM](https://developer.mozilla.org/pt-BR/docs/Web/API/Web_components/Using_shadow_DOM) para encapsular os internos de componentes. O Pydoll fornece acesso transparente a elementos dentro de árvores shadow através da classe `ShadowRoot`.
+
+### Como o Shadow DOM Funciona
+
+```mermaid
+graph TB
+    Host["div#my-component (shadow host)"]
+    SR["ShadowRoot (open)"]
+    Internal1["button.internal-btn"]
+    Internal2["input.internal-input"]
+
+    Host --> SR
+    SR --> Internal1
+    SR --> Internal2
+```
+
+Elementos dentro de um shadow root são ocultos de consultas DOM regulares. Você precisa primeiro acessar o shadow root e então buscar dentro dele.
+
+### Acessando Shadow Roots
+
+```python
+import asyncio
+from pydoll.browser.chromium import Chrome
+
+async def shadow_dom_example():
+    async with Chrome() as browser:
+        tab = await browser.start()
+        await tab.go_to('https://example.com/web-components')
+
+        # Encontrar o elemento shadow host
+        shadow_host = await tab.find(id='my-component')
+
+        # Acessar seu shadow root
+        shadow_root = await shadow_host.get_shadow_root()
+
+        # Encontrar elementos dentro do shadow root usando query() com seletores CSS
+        button = await shadow_root.query('.internal-btn')
+        await button.click()
+
+        input_field = await shadow_root.query('input[type="email"]')
+        await input_field.type_text('user@example.com')
+
+asyncio.run(shadow_dom_example())
+```
+
+### query() com Seletores CSS
+
+`ShadowRoot` herda de `FindElementsMixin` com a restrição `_css_only`, o que significa que apenas `query()` com seletores CSS é suportado. O método `find()` e `query()` com XPath lançam `NotImplementedError`:
+
+```python
+# query() com seletores CSS — abordagem recomendada
+element = await shadow_root.query('#inner-id')
+element = await shadow_root.query('button.primary')
+element = await shadow_root.query('div.container > .content')
+
+# find_all para múltiplos elementos
+items = await shadow_root.query('.item', find_all=True)
+
+# Espera com timeout
+element = await shadow_root.query('#dynamic', timeout=5)
+```
+
+!!! warning "find() e XPath não são suportados em ShadowRoot"
+    Chamar `shadow_root.find()` ou `shadow_root.query('//xpath')` lançará `NotImplementedError`. Sempre use `query()` com seletores CSS ao trabalhar com shadow roots.
+
+### Shadow Roots Aninhados
+
+Web components podem conter outros web components com seus próprios shadow roots:
+
+```python
+async def nested_shadow():
+    outer_host = await tab.find(tag_name='outer-component')
+    outer_shadow = await outer_host.get_shadow_root()
+
+    inner_host = await outer_shadow.query('inner-component')
+    inner_shadow = await inner_host.get_shadow_root()
+
+    deep_button = await inner_shadow.query('.deep-btn')
+    await deep_button.click()
+```
+
+### Buscando Shadow Roots: find_shadow_roots()
+
+Quando você precisa explorar quais shadow roots existem na página (útil para depuração ou páginas dinâmicas como desafios Cloudflare), use `find_shadow_roots()`:
+
+```python
+# Buscar todos os shadow roots na página
+shadow_roots = await tab.find_shadow_roots()
+
+for sr in shadow_roots:
+    print(f'Modo: {sr.mode}, Host: {sr.host_element}')
+    # Buscar dentro de cada shadow root
+    btn = await sr.query('button', raise_exc=False)
+    if btn:
+        await btn.click()
+```
+
+#### Esperando Shadow Roots: `timeout`
+
+Shadow hosts sao frequentemente injetados de forma assincrona (ex: Cloudflare Turnstile carregando dentro de um OOPIF). Use `timeout` para fazer polling ate que os shadow roots aparecam:
+
+```python
+# Esperar ate 10 segundos pelos shadow roots
+shadow_roots = await tab.find_shadow_roots(timeout=10)
+```
+
+O metodo `get_shadow_root()` em elementos tambem suporta `timeout`:
+
+```python
+# Esperar pelo shadow root de um elemento
+host = await tab.find(id='my-component', timeout=5)
+shadow = await host.get_shadow_root(timeout=5)
+```
+
+#### Travessia Profunda: IFrames Cross-Origin (OOPIFs)
+
+Por padrão, `find_shadow_roots()` percorre apenas a árvore DOM do documento principal (que inclui iframes same-origin via `contentDocument`, mas **não** iframes cross-origin). Passe `deep=True` para também descobrir shadow roots dentro de iframes cross-origin (OOPIFs):
+
+```python
+# Incluir shadow roots de iframes cross-origin (ex: Cloudflare Turnstile)
+shadow_roots = await tab.find_shadow_roots(deep=True, timeout=10)
+
+for sr in shadow_roots:
+    print(f'Modo: {sr.mode}, Host: {sr.host_element}')
+    # Elementos encontrados dentro desses shadow roots roteiam
+    # automaticamente comandos CDP pela sessão OOPIF correta
+    btn = await sr.query('input[type="checkbox"]', raise_exc=False)
+    if btn:
+        await btn.click()
+```
+
+!!! tip "Quando usar `deep=True`"
+    Use `deep=True` ao automatizar páginas com widgets embutidos cross-origin, como captchas Cloudflare Turnstile, formulários de pagamento de terceiros ou botões de login social. Esses widgets tipicamente usam iframes cross-origin com shadow roots fechados dentro deles.
+
+### Propriedades do Shadow Root
+
+```python
+shadow_root = await element.get_shadow_root()
+
+# Verificar o modo do shadow root (open, closed ou user-agent)
+print(shadow_root.mode)  # ShadowRootType.OPEN
+
+# Acessar o elemento host
+host = shadow_root.host_element
+
+# Obter o HTML interno do shadow root
+html = await shadow_root.inner_html
+```
+
+!!! note "Shadow Roots Fechados"
+    Shadow roots fechados (`mode='closed'`) são acessíveis via CDP pois o protocolo ignora as restrições do JavaScript. Porém, alguns shadow roots internos do navegador (user-agent) podem ter acessibilidade limitada.
+
 ## Trabalhando com iFrames
 
 !!! info "Guia Completo de IFrame Disponível"
@@ -593,59 +747,42 @@ asyncio.run(practical_example())
 
 iFrames apresentam um desafio especial na automação de navegador porque eles têm contextos DOM separados. O Pydoll torna a interação com iframe transparente:
 
-### Isolamento de Contexto do iFrame
-
 ```mermaid
 flowchart TB
-    subgraph MainPage[Contexto da Pagina Principal]
-        MainDOM[DOM da Pagina Principal]
-        IFrameTag[Elemento iFrame]
-        MainDOM --> IFrameTag
-    end
-    
-    subgraph IFrameContext[iFrame - DOM Separado]
-        IFrameDOM[DOM do iFrame]
-        IFrameElements[Elementos dentro do iFrame]
-        IFrameDOM --> IFrameElements
-    end
-    
-    IFrameTag -.->|Método get_frame| IFrameContext
-    
-    MainPage --> MainSearch[tab.find - DOM Principal]
-    IFrameContext --> IFrameSearch[frame.find - DOM do iFrame]
-```
+    Principal[tab]
+    IFrame["WebElement do iframe"]
+    Conteudo["elementos dentro do iframe"]
 
+    Principal -->|"find('iframe')"| IFrame
+    IFrame -->|"find('button#submit')"| Conteudo
+```
 ```python
 import asyncio
 from pydoll.browser.chromium import Chrome
 
-async def iframe_interaction():
+async def iframe_interacao():
     async with Chrome() as browser:
         tab = await browser.start()
-        await tab.go_to('https://example.com/page-with-iframe')
-        
-        # Encontrar o elemento iframe
-        iframe_element = await tab.query("iframe.embedded-content", timeout=10)
-        
-        # Obter uma instância de Tab para o conteúdo do iframe
-        frame = await tab.get_frame(iframe_element)
-        
-        # Agora use todos os métodos de Tab dentro do contexto do iframe
-        iframe_button = await frame.find(tag_name="button", class_name="submit")
+        await tab.go_to('https://example.com/pagina-com-iframe')
+
+        iframe = await tab.query("iframe.conteudo", timeout=10)
+
+        # Os utilitários de WebElement já executam dentro do iframe
+        iframe_button = await iframe.find(tag_name="button", class_name="submit")
         await iframe_button.click()
-        
-        iframe_input = await frame.find(id="captcha-input")
-        await iframe_input.type_text("verification-code")
-        
-        # Fazer query dentro do iframe
-        iframe_links = await frame.query("a", find_all=True)
-        print(f"Encontrados {len(iframe_links)} links no iframe")
 
-asyncio.run(iframe_interaction())
+        iframe_input = await iframe.find(id="captcha-input")
+        await iframe_input.type_text("codigo-de-verificacao")
+
+        # Iframe aninhado? Continue encadeando
+        inner_iframe = await iframe.find(tag_name="iframe")
+        download_link = await inner_iframe.find(text="Baixar PDF")
+        await download_link.click()
+
+asyncio.run(iframe_interacao())
 ```
-
-!!! note "iFrames, Alvos e Capturas de Tela"
-    Ao trabalhar dentro de um iframe, alguns métodos como `tab.take_screenshot()` não funcionarão porque o CDP do Chrome não pode capturar screenshots de sub-alvos diretamente. Use `element.take_screenshot()` em vez disso, que funciona dentro de iframes.
+!!! note "Screenshots em iframes"
+    `tab.take_screenshot()` funciona apenas no alvo principal. Para capturar o conteúdo de um iframe, selecione um elemento dentro dele e chame `element.take_screenshot()`.
 
 ## Estratégias de Tratamento de Erros
 

@@ -1,4 +1,5 @@
 import logging
+import os
 import shutil
 import time
 from pathlib import Path
@@ -79,17 +80,44 @@ class TempDirectoryManager:
         Note:
             Handles Chromium-specific locked files like CrashpadMetrics.
         """
-        matches = ['CrashpadMetrics-active.pma', 'Cookies', 'Network']
+        matches: list[str] = ['CrashpadMetrics-active.pma']
+        match_substrings: list[str] = ['Safe Browsing', 'Safe Browsing Cookies']
+        # Extra patterns commonly locked on Windows; compare case-insensitively
+        windows_locked_substrings: list[str] = [
+            '\\cache\\',
+            '/cache/',
+            'no_vary_search',
+            'journal.baj',
+            '\\network\\cookies',
+            '/network/cookies',
+            'cookies-journal',
+            '\\local storage\\',
+            '/local storage/',
+            '\\local storage\\leveldb\\',
+            '/local storage/leveldb/',
+            'leveldb',
+            'indexeddb',
+        ]
         exc_type, exc_value, _ = exc_info
 
         if exc_type is PermissionError:
-            if Path(path).name in matches or 'Network' in str(Path(path)):
+            filename = Path(path).name
+            # Known Chromium files that may remain locked briefly on Windows
+            path_lc = path.lower()
+            windows_match = os.name == 'nt' and any(
+                substr in path_lc for substr in windows_locked_substrings
+            )
+            if (
+                filename in matches
+                or any(substr in path for substr in match_substrings)
+                or windows_match
+            ):
                 try:
                     self.retry_process_file(func, path)
                     return
                 except PermissionError:
-                    logger.warning(f'Failed retrying cleanup for locked file: {path}')
-                    raise exc_value
+                    logger.warning(f'Ignoring locked Chrome file during cleanup: {path}')
+                    return
         elif exc_type is OSError:
             return
         raise exc_value
@@ -104,3 +132,23 @@ class TempDirectoryManager:
         for temp_dir in self._temp_dirs:
             logger.info(f'Cleaning up temp directory: {temp_dir.name}')
             shutil.rmtree(temp_dir.name, onerror=self.handle_cleanup_error)
+            remaining = Path(temp_dir.name)
+            if not remaining.exists():
+                continue
+
+            for attempt in range(10):
+                time.sleep(0.2)
+                try:
+                    shutil.rmtree(temp_dir.name, onerror=self.handle_cleanup_error)
+                except Exception:  # noqa: BLE001 - best-effort cleanup
+                    pass
+                if not remaining.exists():
+                    logger.debug(
+                        f'Temp directory removed after retry #{attempt + 1}: {temp_dir.name}'
+                    )
+                    break
+            if remaining.exists():
+                logger.warning(
+                    f'Temp directory still present after retries (leftover files may remain): '
+                    f'{temp_dir.name}'
+                )

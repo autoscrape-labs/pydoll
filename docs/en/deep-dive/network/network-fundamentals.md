@@ -534,11 +534,14 @@ Pydoll provides multiple strategies for preventing WebRTC IP leaks:
 **Method 1: Force WebRTC to Only Use Proxied Routes (Recommended)**
 
 ```python
-from pydoll import Chrome, ChromiumOptions
+from pydoll.browser import Chrome
+from pydoll.browser.options import ChromiumOptions
 
 options = ChromiumOptions()
-options.add_argument('--force-webrtc-ip-handling-policy=disable_non_proxied_udp')
+options.webrtc_leak_protection = True  # Adds --force-webrtc-ip-handling-policy=disable_non_proxied_udp
 ```
+
+Pydoll provides a convenient `webrtc_leak_protection` property that manages the underlying `--force-webrtc-ip-handling-policy=disable_non_proxied_udp` argument for you.
 
 **What this does:**
 
@@ -581,11 +584,9 @@ options.browser_preferences = {
 **Method 4: Use SOCKS5 Proxy with UDP Support**
 
 ```python
-options.set_proxy({
-    'server': 'socks5://proxy.example.com:1080',
-    'username': 'user',
-    'password': 'pass'
-})
+options.add_argument('--proxy-server=socks5://proxy.example.com:1080')
+# For proxies requiring authentication:
+# options.add_argument('--proxy-server=socks5://user:pass@proxy.example.com:1080')
 options.add_argument('--force-webrtc-ip-handling-policy=default_public_interface_only')
 ```
 
@@ -607,11 +608,12 @@ options.add_argument('--force-webrtc-ip-handling-policy=default_public_interface
 
 ```python
 import asyncio
-from pydoll import Chrome, ChromiumOptions
+from pydoll.browser import Chrome
+from pydoll.browser.options import ChromiumOptions
 
 async def test_webrtc_leak():
     options = ChromiumOptions()
-    options.set_proxy({'server': 'http://proxy.example.com:8080'})
+    options.add_argument('--proxy-server=http://proxy.example.com:8080')
     options.add_argument('--force-webrtc-ip-handling-policy=disable_non_proxied_udp')
     
     async with Chrome(options=options) as browser:

@@ -169,13 +169,11 @@ def test_handle_cleanup_error(temp_manager):
     temp_manager.handle_cleanup_error(func_mock, path, (PermissionError, PermissionError(), None))
     temp_manager.retry_process_file.assert_called_once_with(func_mock, path)
 
-    # matched permission error
+    # matched permission error - should not raise, only log and continue
     temp_manager.retry_process_file = Mock()
     temp_manager.retry_process_file.side_effect = PermissionError
     path = "/tmp/CrashpadMetrics-active.pma"
-    
-    with pytest.raises(PermissionError):
-        temp_manager.handle_cleanup_error(func_mock, path, (PermissionError, PermissionError(), None))
+    temp_manager.handle_cleanup_error(func_mock, path, (PermissionError, PermissionError(), None))
 
     # unmatched permission error
     temp_manager.retry_process_file = Mock()

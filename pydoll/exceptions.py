@@ -181,6 +181,12 @@ class ElementNotAFileInput(ElementException):
     message = 'The element is not a file input'
 
 
+class ShadowRootNotFound(ElementException):
+    """Raised when an element does not have an attached shadow root."""
+
+    message = 'No shadow root attached to this element'
+
+
 class TimeoutException(PydollException):
     """Base class for exceptions related to timeouts."""
 
@@ -299,6 +305,12 @@ class HTTPError(RequestException):
     """Exception raised for HTTP error responses (4xx and 5xx status codes)."""
 
     message = 'An HTTP error occurred'
+
+
+class HarRecordingError(RequestException):
+    """Raised when HAR recording fails."""
+
+    message = 'HAR recording error occurred'
 
 
 class ScriptException(PydollException):

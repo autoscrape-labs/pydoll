@@ -1,0 +1,171 @@
+# HAR 网络录制
+
+捕获浏览器会话期间的所有网络活动，并导出为标准 HAR (HTTP Archive) 1.2 文件。非常适合调试、性能分析和测试固件。
+
+!!! tip "像专家一样调试"
+    HAR 文件是录制网络流量的行业标准。您可以将它们直接导入 Chrome DevTools、Charles Proxy 或任何 HAR 查看器进行详细分析。
+
+## 为什么使用 HAR 录制？
+
+| 使用场景 | 优势 |
+|---------|------|
+| 调试失败的请求 | 查看确切的 headers、时序和响应体 |
+| 性能分析 | 识别慢速请求和瓶颈 |
+| API 文档 | 捕获真实的请求/响应对 |
+| 测试固件 | 录制真实流量用于测试模拟 |
+
+## 快速开始
+
+录制页面导航期间的所有网络流量：
+
+```python
+import asyncio
+from pydoll.browser.chromium import Chrome
+
+async def record_traffic():
+    async with Chrome() as browser:
+        tab = await browser.start()
+
+        async with tab.request.record() as capture:
+            await tab.go_to('https://example.com')
+
+        # 保存捕获为 HAR 文件
+        capture.save('flow.har')
+        print(f'捕获了 {len(capture.entries)} 个请求')
+
+asyncio.run(record_traffic())
+```
+
+## 录制 API
+
+### `tab.request.record(resource_types=None)`
+
+上下文管理器，捕获标签页上的网络流量。
+
+| 参数 | 类型 | 描述 |
+|------|------|------|
+| `resource_types` | `list[ResourceType] \| None` | 可选的资源类型列表。当为 `None`（默认）时，捕获所有类型。 |
+
+```python
+async with tab.request.record() as capture:
+    # 此块内的所有网络活动都会被捕获
+    await tab.go_to('https://example.com')
+    await (await tab.find(id='search')).type_text('pydoll')
+    await (await tab.find(type='submit')).click()
+```
+
+`capture` 对象（`HarCapture`）提供：
+
+| 属性/方法 | 描述 |
+|----------|------|
+| `capture.entries` | 捕获的 HAR 条目列表 |
+| `capture.to_dict()` | 完整的 HAR 1.2 字典（用于自定义处理） |
+| `capture.save(path)` | 保存为 HAR JSON 文件 |
+
+### 按资源类型过滤
+
+仅录制特定资源类型而非所有流量：
+
+```python
+from pydoll.protocol.network.types import ResourceType
+
+# 仅录制 fetch/XHR 请求（跳过文档、图像等）
+async with tab.request.record(
+    resource_types=[ResourceType.FETCH, ResourceType.XHR]
+) as capture:
+    await tab.go_to('https://example.com')
+
+# 仅录制文档和样式表请求
+async with tab.request.record(
+    resource_types=[ResourceType.DOCUMENT, ResourceType.STYLESHEET]
+) as capture:
+    await tab.go_to('https://example.com')
+```
+
+可用的 `ResourceType` 值：
+
+| 值 | 描述 |
+|----|------|
+| `ResourceType.DOCUMENT` | HTML 文档 |
+| `ResourceType.STYLESHEET` | CSS 样式表 |
+| `ResourceType.SCRIPT` | JavaScript 文件 |
+| `ResourceType.IMAGE` | 图像 |
+| `ResourceType.FONT` | Web 字体 |
+| `ResourceType.MEDIA` | 音频/视频 |
+| `ResourceType.FETCH` | Fetch API 请求 |
+| `ResourceType.XHR` | XMLHttpRequest 调用 |
+| `ResourceType.WEB_SOCKET` | WebSocket 连接 |
+| `ResourceType.OTHER` | 其他资源类型 |
+
+### 保存捕获
+
+```python
+# 保存为 HAR 文件（可以在 Chrome DevTools 中打开）
+capture.save('flow.har')
+
+# 保存到嵌套目录（自动创建）
+capture.save('recordings/session1/flow.har')
+
+# 访问原始 HAR 字典进行自定义处理
+har_dict = capture.to_dict()
+print(har_dict['log']['version'])  # "1.2"
+```
+
+### 检查条目
+
+```python
+async with tab.request.record() as capture:
+    await tab.go_to('https://example.com')
+
+for entry in capture.entries:
+    req = entry['request']
+    resp = entry['response']
+    print(f"{req['method']} {req['url']} -> {resp['status']}")
+```
+
+## 高级用法
+
+### 过滤捕获的条目
+
+```python
+async with tab.request.record() as capture:
+    await tab.go_to('https://example.com')
+
+# 仅过滤 API 调用
+api_entries = [
+    e for e in capture.entries
+    if '/api/' in e['request']['url']
+]
+
+# 仅过滤失败的请求
+failed = [
+    e for e in capture.entries
+    if e['response']['status'] >= 400
+]
+```
+
+### 自定义 HAR 处理
+
+```python
+har = capture.to_dict()
+
+# 按类型统计请求
+from collections import Counter
+types = Counter(
+    e.get('_resourceType', 'Other')
+    for e in har['log']['entries']
+)
+print(types)  # Counter({'Document': 1, 'Script': 5, 'Stylesheet': 3, ...})
+```
+
+## HAR 文件格式
+
+导出的 HAR 遵循 [HAR 1.2 规范](http://www.softwareishard.com/blog/har-12-spec/)。每个条目包含：
+
+- **Request**：方法、URL、headers、查询参数、POST 数据
+- **Response**：状态、headers、响应体内容（文本或 base64 编码）
+- **Timings**：DNS、连接、SSL、发送、等待（TTFB）、接收
+- **Metadata**：服务器 IP、连接 ID、资源类型
+
+!!! note "响应体"
+    响应体在每个请求完成后自动捕获。二进制内容（图像、字体等）存储为 base64 编码的字符串。

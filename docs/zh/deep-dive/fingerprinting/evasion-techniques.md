@@ -19,116 +19,77 @@ Chrome 开发者工具协议 (CDP) 提供了在深层次修改浏览器行为的
 
 ### User-Agent 不匹配问题
 
-自动化中最 **常见** 的指纹不一致之一是以下两者之间的不匹配：
+自动化中最 **常见** 的指纹不一致之一是以下几者之间的不匹配：
 
-1.  **HTTP `User-Agent` 标头**（随每个请求发送）
-2.  **`navigator.userAgent`** 属性（JavaScript 可访问）
+1. **HTTP `User-Agent` 标头**（随每个请求发送）
+2. **`navigator.userAgent`** 属性（JavaScript 可访问）
+3. **`Sec-CH-UA` Client Hints 标头**（由 Chromium 浏览器发送）
 
-**问题所在：**
+如果不进行适当处理，设置 `--user-agent=...` 只会修改 HTTP 标头，而 `navigator.userAgent` 和 Client Hints 保持不变，形成一个可以被轻易检测到的不匹配。
 
-```python
-# 错误方法：通过命令行参数设置 User-Agent
-options = ChromiumOptions()
-options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64)...')
+### User-Agent 自动一致性
 
-# 结果：
-# HTTP 标头：Mozilla/5.0 (Windows NT 10.0; Win64; x64)... (正确)
-# navigator.userAgent: Chrome/120.0.0.0 (原始值 - 错误！)
-# → 检测到不匹配！
-```
-
-**为什么会这样：**
-
-- `--user-agent` 标志只修改 **HTTP 标头**
-- `navigator.userAgent` 是在页面加载 **之前** 从 Chromium 内部值设置的
-- JavaScript 无法直接看到 HTTP 标头，但服务器可以比较这两个值
-
-**检测技术（服务器端）：**
-
-```python
-def detect_user_agent_mismatch(request):
-    """
-    服务器端检测 User-Agent 不一致性。
-    """
-    # 获取 HTTP 标头
-    http_user_agent = request.headers.get('User-Agent')
-    
-    # 执行 JavaScript 以获取 navigator.userAgent
-    #（通过质询/验证码页面完成）
-    navigator_user_agent = get_client_navigator_ua()
-    
-    if http_user_agent != navigator_user_agent:
-        return 'AUTOMATION_DETECTED'  # 明显不匹配
-    
-    return 'OK'
-```
-
-### 解决方案：CDP 模拟域
-
-设置 User-Agent 的正确方法是通过 CDP 的 **Emulation.setUserAgentOverride** 方法，该方法会同时修改 HTTP 标头和 navigator 属性。在 Pydoll 中，您可以直接执行 CDP 命令：
+Pydoll 在您设置 `--user-agent=` 时 **自动** 同步所有 User-Agent 层。无需手动覆盖：
 
 ```python
 import asyncio
 from pydoll.browser.chromium import Chrome
-from pydoll.commands import PageCommands
-
-
-async def set_user_agent_correctly(tab, user_agent: str, platform: str = 'Win32'):
-    """
-    使用 CDP Emulation 域正确设置 User-Agent。
-    这确保了 HTTP 标头和 navigator 属性之间的一致性。
-    
-    注意：Pydoll 尚未直接公开 Emulation 命令，因此我们暂时使用
-    execute_script 来覆盖 navigator 属性。
-    """
-    # 通过 JavaScript 覆盖 navigator.userAgent
-    override_script = f```
-        Object.defineProperty(Navigator.prototype, 'userAgent', {{
-            get: () => '{user_agent}'
-        }});
-        Object.defineProperty(Navigator.prototype, 'platform', {{
-            get: () => '{platform}'
-        }});
-    ```
-    
-    await tab.execute_script(override_script)
+from pydoll.browser.options import ChromiumOptions
 
 
 async def main():
-    async with Chrome() as browser:
-        # 通过命令行参数设置 User-Agent (影响 HTTP 标头)
-        options = browser.options
-        custom_ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-        options.add_argument(f'--user-agent={custom_ua}')
-        
+    options = ChromiumOptions()
+    options.add_argument(
+        '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+        'AppleWebKit/537.36 (KHTML, like Gecko) '
+        'Chrome/120.0.6099.109 Safari/537.36'
+    )
+
+    async with Chrome(options=options) as browser:
         tab = await browser.start()
-        
-        # 同时通过 JavaScript 覆盖 navigator.userAgent 以保持一致性
-        await set_user_agent_correctly(tab, custom_ua)
-        
-        # 导航 (User-Agent 现已一致)
         await tab.go_to('https://example.com')
-        
-        # 验证一致性
-        result = await tab.execute_script('return navigator.userAgent')
-        nav_ua = result['result']['result']['value']
-        print(f"navigator.userAgent: {nav_ua}")
-        # 两者现在匹配了！
 
 asyncio.run(main())
 ```
 
-!!! warning "客户端提示一致性"
-    设置自定义 User-Agent 时，您 **必须** 同时设置一致的 `userAgentMetadata` (客户端提示)，否则现代 Chromium 将发送 **不一致** 的 `Sec-CH-UA` 标头！
-    
-    **不一致示例：**
-    - User-Agent: "Chrome/120.0.0.0"
-    - Sec-CH-UA: "Chrome/119" (错误的版本!)
-    - → 被检测！
+当 Pydoll 在浏览器参数中检测到 `--user-agent=` 时，会自动：
+
+1. **解析 UA 字符串** 以提取浏览器、版本和操作系统信息
+2. **通过 CDP 发送 `Emulation.setUserAgentOverride`**，包含：
+    - `userAgent`：完整的 UA 字符串（HTTP 标头 + `navigator.userAgent`）
+    - `platform`：正确的 `navigator.platform` 值（如 `Win32`、`MacIntel`、`Linux x86_64`）
+    - `userAgentMetadata`：完整的 Client Hints 数据（`Sec-CH-UA`、`Sec-CH-UA-Platform`、`Sec-CH-UA-Full-Version-List` 等）
+3. **通过 `Page.addScriptToEvaluateOnNewDocument` 注入 JavaScript** 以覆盖：
+    - `navigator.vendor`：从浏览器类型映射（如 `Google Inc.`）
+    - `navigator.appVersion`：从 UA 字符串派生
+
+这确保了 **所有层的完全一致性**：
+
+| 层 | 属性 | 状态 |
+|----|------|------|
+| HTTP | `User-Agent` 标头 | ✅ 一致 |
+| HTTP | `Sec-CH-UA` 标头 | ✅ 一致 |
+| HTTP | `Sec-CH-UA-Platform` 标头 | ✅ 一致 |
+| HTTP | `Sec-CH-UA-Full-Version-List` 标头 | ✅ 一致 |
+| JS | `navigator.userAgent` | ✅ 一致 |
+| JS | `navigator.platform` | ✅ 一致 |
+| JS | `navigator.vendor` | ✅ 一致 |
+| JS | `navigator.appVersion` | ✅ 一致 |
+| JS | `navigator.userAgentData` | ✅ 一致 |
+
+!!! tip "适用于所有标签页"
+    覆盖会自动应用到 `browser.start()` 的初始标签页、`browser.new_tab()` 的新标签页以及通过 `browser.get_opened_tabs()` 发现的所有标签页。
+
+!!! info "支持的浏览器和平台"
+    解析器正确处理：
+
+    - **浏览器**：Google Chrome、Microsoft Edge
+    - **平台**：Windows (NT 6.1–10.0)、macOS、Linux、Android、iOS (iPhone/iPad)、Chrome OS
+    - **Client Hints GREASE**：遵循 Chromium 规范正确生成 GREASE 品牌
 
 ### 指纹修改技术
 
-虽然 Pydoll 没有直接公开所有 CDP Emulation 命令，但您可以使用 JavaScript 覆盖和浏览器选项达到类似的效果：
+除了自动 User-Agent 一致性之外，您还可以使用 JavaScript 覆盖和浏览器选项进一步自定义您的指纹：
 
 #### 1. 时区覆盖 (通过 JavaScript)
 
@@ -651,7 +612,7 @@ for delta, delay in scroll_events:
 ```
 
 !!! warning "行为检测由机器学习驱动"
-    现代反机器人系统使用在数十亿次交互上训练的机器学习。它们不使用简单的规则——它们检测 **统计模式**。专注于：
+    现代反机器人系统使用在数十亿次交互上训练的机器学习。它们不使用简单的规则，它们检测 **统计模式**。专注于：
     
     1.  **可变性**：没有两个动作应该是完全相同的
     2.  **上下文**：动作必须遵循自然的顺序
@@ -696,12 +657,16 @@ REAL_PROFILES = {
 
 ### 3. 使用浏览器偏好设置以实现隐蔽
 
-利用 Pydoll 的浏览器偏好设置 (参见 [浏览器偏好设置](../features/configuration/browser-preferences.md))：
+利用 Pydoll 的浏览器偏好设置和选项 (参见 [浏览器偏好设置](../features/configuration/browser-preferences.md) 和 [浏览器选项](../features/configuration/browser-options.md))：
 
 ```python
 from pydoll.browser.options import ChromiumOptions
 
 options = ChromiumOptions()
+
+# WebRTC IP 泄露保护 (防止真实 IP 暴露)
+options.webrtc_leak_protection = True
+
 options.browser_preferences = {
     # 模拟使用历史
     'profile': {
@@ -709,18 +674,13 @@ options.browser_preferences = {
         'creation_time': str(time.time() - (90 * 24 * 60 * 60)),  # 90 天前
         'exit_type': 'Normal',
     },
-    
+
     # 真实的内容设置
     'profile.default_content_setting_values': {
         'cookies': 1,
         'images': 1,
         'javascript': 1,
         'notifications': 2,  # 询问 (真实)
-    },
-    
-    # WebRTC IP 处理 (防止泄露)
-    'webrtc': {
-        'ip_handling_policy': 'disable_non_proxied_udp',
     },
 }
 ```

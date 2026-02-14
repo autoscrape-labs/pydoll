@@ -253,10 +253,25 @@ bs4 = "^0.0.2"
 
 赞助商的支持对于项目的持续发展至关重要。每一份合作都能帮助我们覆盖基础成本、推动新功能迭代，并保证项目长期维护与更新。非常感谢所有相信并支持 Pydoll 的伙伴！
 
-<a href="https://www.lambdatest.com/?utm_source=pydoll&utm_medium=sponsor" target="_blank" rel="noopener nofollow sponsored">
-  <img src="https://www.lambdatest.com/blue-logo.png" alt="LambdaTest" width="200" height="45" />
-  
-</a>
+<table>
+  <tr>
+    <td>
+      <a href="https://www.thordata.com/?ls=github&lk=pydoll" target="_blank" rel="noopener nofollow sponsored">
+        <img src="../resources/images/Thordata-logo.png" alt="Thordata" width="200" height="45" />
+      </a>
+    </td>
+    <td>
+      <a href="https://www.lambdatest.com/?utm_source=pydoll&utm_medium=sponsor" target="_blank" rel="noopener nofollow sponsored">
+        <img src="https://www.lambdatest.com/blue-logo.png" alt="LambdaTest" width="200" height="45" />
+      </a>
+    </td>
+    <td>
+      <a href="https://dashboard.capsolver.com/passport/register?inviteCode=WPhTbOsbXEpc" target="_blank" rel="noopener nofollow sponsored">
+        <img src="../resources/images/capsolver-logo.png" alt="CapSolver" width="200" height="45" />
+      </a>
+    </td>
+  </tr>
+</table>
 
 <p>
   <a href="https://github.com/sponsors/thalissonvs" target="_blank" rel="noopener" style="display:inline-block;padding:6px 10px;border:1px solid #94a3b8;border-radius:6px;text-decoration:none;color:#e2e8f0;background:#0f172a;">成为赞助商</a>

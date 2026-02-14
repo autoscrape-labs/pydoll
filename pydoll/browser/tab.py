@@ -2,8 +2,11 @@ from __future__ import annotations
 
 import asyncio
 import base64 as _b64
+import io
 import logging
 import shutil
+import warnings
+import zipfile
 from contextlib import asynccontextmanager
 from functools import partial
 from pathlib import Path
@@ -31,11 +34,15 @@ from pydoll.commands import (
     PageCommands,
     RuntimeCommands,
     StorageCommands,
+    TargetCommands,
 )
 from pydoll.connection import ConnectionHandler
-from pydoll.constants import By
+from pydoll.constants import By, PageLoadState
 from pydoll.elements.mixins import FindElementsMixin
+from pydoll.elements.shadow_root import ShadowRoot
+from pydoll.elements.web_element import WebElement
 from pydoll.exceptions import (
+    CommandExecutionTimeout,
     DownloadTimeout,
     IFrameNotFound,
     InvalidFileExtension,
@@ -49,42 +56,74 @@ from pydoll.exceptions import (
     PageLoadTimeout,
     TopLevelTargetRequired,
     WaitElementTimeout,
+    WebSocketConnectionClosed,
 )
+from pydoll.interactions import KeyboardAPI, MouseAPI, ScrollAPI
+from pydoll.interactions.iframe import IFrameContext
 from pydoll.protocol.browser.types import DownloadBehavior, DownloadProgressState
+from pydoll.protocol.dom.types import Node, ShadowRootType
+from pydoll.protocol.network.types import ResourceType
 from pydoll.protocol.page.events import PageEvent
-from pydoll.protocol.page.types import ScreenshotFormat
+from pydoll.protocol.page.types import FrameResourceTree, ScreenshotFormat
+from pydoll.protocol.runtime.methods import (
+    CallFunctionOnResponse,
+    EvaluateResponse,
+    SerializationOptions,
+)
+from pydoll.protocol.runtime.types import CallArgument
+from pydoll.protocol.target.types import TargetInfo
 from pydoll.utils import (
     decode_base64_to_bytes,
     has_return_outside_function,
-    is_script_already_function,
+)
+from pydoll.utils.bundle import (
+    build_asset_filename,
+    collect_frame_resources,
+    filter_fetchable_resources,
+    inline_all_assets,
+    rewrite_html_urls,
 )
 
 if TYPE_CHECKING:
     from pydoll.browser.chromium.base import Browser
-    from pydoll.elements.web_element import WebElement
     from pydoll.protocol.base import EmptyResponse, Response
     from pydoll.protocol.browser.events import (
         DownloadProgressEvent,
         DownloadWillBeginEvent,
     )
+    from pydoll.protocol.dom.methods import (
+        DescribeNodeResponse,
+        GetDocumentResponse,
+        ResolveNodeResponse,
+    )
     from pydoll.protocol.fetch.types import AuthChallengeResponseType, HeaderEntry, RequestStage
     from pydoll.protocol.network.events import RequestWillBeSentEvent
+    from pydoll.protocol.network.methods import GetCookiesResponse as NetworkGetCookiesResponse
     from pydoll.protocol.network.methods import GetResponseBodyResponse
     from pydoll.protocol.network.types import (
         Cookie,
         CookieParam,
         ErrorReason,
         RequestMethod,
-        ResourceType,
     )
     from pydoll.protocol.page.events import FileChooserOpenedEvent
-    from pydoll.protocol.page.methods import CaptureScreenshotResponse, PrintToPDFResponse
+    from pydoll.protocol.page.methods import (
+        CaptureScreenshotResponse,
+        GetResourceContentResponse,
+        GetResourceTreeResponse,
+        PrintToPDFResponse,
+    )
     from pydoll.protocol.runtime.methods import CallFunctionOnResponse, EvaluateResponse
-    from pydoll.protocol.storage.methods import GetCookiesResponse
+    from pydoll.protocol.storage.methods import GetCookiesResponse as StorageGetCookiesResponse
+    from pydoll.protocol.target.methods import AttachToTargetResponse, GetTargetsResponse
 
 logger = logging.getLogger(__name__)
 
 IFrame: TypeAlias = 'Tab'
+
+_CLOUDFLARE_CHALLENGE_DOMAIN = 'challenges.cloudflare.com'
+_CLOUDFLARE_IFRAME_SELECTOR = f'iframe[src*="{_CLOUDFLARE_CHALLENGE_DOMAIN}"]'
+_CLOUDFLARE_CHECKBOX_SELECTOR = 'span.cb-i'
 
 
 class Tab(FindElementsMixin):
@@ -95,6 +134,8 @@ class Tab(FindElementsMixin):
     JavaScript execution, event handling, network monitoring, and specialized tasks
     like Cloudflare bypass.
     """
+
+    _READY_STATE_ORDER = (PageLoadState.LOADING, PageLoadState.INTERACTIVE, PageLoadState.COMPLETE)
 
     def __init__(
         self,
@@ -131,6 +172,9 @@ class Tab(FindElementsMixin):
         self._intercept_file_chooser_dialog_enabled = False
         self._cloudflare_captcha_callback_id: Optional[int] = None
         self._request: Optional[Request] = None
+        self._scroll: Optional[ScrollAPI] = None
+        self._keyboard: Optional[KeyboardAPI] = None
+        self._mouse: MouseAPI = MouseAPI(self)
         logger.debug(
             (
                 f'Tab initialized: target_id={self._target_id}, '
@@ -177,6 +221,40 @@ class Tab(FindElementsMixin):
         return self._request
 
     @property
+    def scroll(self) -> ScrollAPI:
+        """
+        Get the scroll API for controlling page scroll behavior.
+
+        Returns:
+            ScrollAPI: An instance of the ScrollAPI class for scroll operations.
+        """
+        if self._scroll is None:
+            self._scroll = ScrollAPI(self)
+        return self._scroll
+
+    @property
+    def keyboard(self) -> KeyboardAPI:
+        """
+        Get the keyboard API for controlling keyboard input at page level.
+
+        Returns:
+            KeyboardAPI: An instance of the KeyboardAPI class for keyboard operations.
+        """
+        if self._keyboard is None:
+            self._keyboard = KeyboardAPI(self)
+        return self._keyboard
+
+    @property
+    def mouse(self) -> MouseAPI:
+        """
+        Get the mouse API for controlling mouse input.
+
+        Returns:
+            MouseAPI: An instance of the MouseAPI class for mouse operations.
+        """
+        return self._mouse
+
+    @property
     def intercept_file_chooser_dialog_enabled(self) -> bool:
         """Whether file chooser dialog interception is active."""
         return self._intercept_file_chooser_dialog_enabled
@@ -196,6 +274,14 @@ class Tab(FindElementsMixin):
             RuntimeCommands.evaluate('document.documentElement.outerHTML')
         )
         return response['result']['result']['value']
+
+    @property
+    async def title(self) -> str:
+        """Get current page title."""
+        response: EvaluateResponse = await self._execute_command(
+            RuntimeCommands.evaluate('document.title')
+        )
+        return response['result']['result'].get('value', '')
 
     async def enable_page_events(self):
         """Enable CDP Page domain events (load, navigation, dialogs, etc.)."""
@@ -277,25 +363,41 @@ class Tab(FindElementsMixin):
     async def enable_auto_solve_cloudflare_captcha(
         self,
         custom_selector: Optional[tuple[By, str]] = None,
-        time_before_click: int = 5,
-        time_to_wait_captcha: int = 5,
+        time_before_click: Optional[float] = None,
+        time_to_wait_captcha: float = 5,
     ):
         """
         Enable automatic Cloudflare Turnstile captcha bypass.
 
         Args:
-            custom_selector: Custom captcha selector (default: cf-turnstile class).
-            time_before_click: Delay before clicking captcha (default 2s).
+            custom_selector: Deprecated — ignored. Cloudflare Turnstile is now
+                detected automatically via shadow root inspection.
+            time_before_click: Deprecated — ignored. The checkbox is now
+                located via shadow root polling and clicked immediately.
             time_to_wait_captcha: Timeout for captcha detection (default 5s).
         """
+        if custom_selector is not None:
+            warnings.warn(
+                'custom_selector is deprecated and ignored. Cloudflare Turnstile is now '
+                'detected automatically via shadow root inspection.',
+                DeprecationWarning,
+                stacklevel=2,
+            )
+
+        if time_before_click is not None:
+            warnings.warn(
+                'time_before_click is deprecated and ignored. The checkbox is now '
+                'located via shadow root polling and clicked immediately.',
+                DeprecationWarning,
+                stacklevel=2,
+            )
+
         logger.info('Enabling Cloudflare captcha auto-solve')
         if not self.page_events_enabled:
             await self.enable_page_events()
 
         callback = partial(
             self._bypass_cloudflare,
-            custom_selector=custom_selector,
-            time_before_click=time_before_click,
             time_to_wait_captcha=time_to_wait_captcha,
         )
 
@@ -375,6 +477,10 @@ class Tab(FindElementsMixin):
 
     async def get_frame(self, frame: 'WebElement') -> IFrame:
         """
+        .. deprecated:: ?.?.?
+            Use iframe `WebElement` instances directly; this method will be removed in
+            a future version.
+
         Get Tab object for interacting with iframe content.
 
         Args:
@@ -388,6 +494,12 @@ class Tab(FindElementsMixin):
             InvalidIFrame: If iframe lacks valid src attribute.
             IFrameNotFound: If iframe target not found in browser.
         """
+        warnings.warn(
+            'Tab.get_frame() is deprecated and will be removed in a future version. '
+            'Interact with iframe WebElements directly.',
+            DeprecationWarning,
+            stacklevel=2,
+        )
         logger.debug(f'Resolving iframe: tag={frame.tag_name}')
         if not frame.tag_name == 'iframe':
             raise NotAnIFrame
@@ -416,6 +528,278 @@ class Tab(FindElementsMixin):
         logger.debug(f'Iframe tab created and registered: {target_id}')
         return tab
 
+    async def find_shadow_roots(self, deep: bool = False, timeout: float = 0) -> list[ShadowRoot]:
+        """
+        Find all shadow roots in the page.
+
+        Traverses the entire DOM tree (including iframes and nested shadow DOMs)
+        to collect all shadow roots found. This is especially useful when the
+        shadow host element selector is unknown or dynamic (e.g., Cloudflare
+        challenge pages).
+
+        Args:
+            deep: If True, also traverses cross-origin iframes (OOPIFs) to
+                discover shadow roots inside them. The returned ShadowRoot
+                objects will automatically route CDP commands through the
+                correct OOPIF session.
+            timeout: Maximum seconds to wait for shadow roots to appear.
+                When > 0, repeatedly polls the DOM (every 0.5s) until at least
+                one shadow root is found or the timeout expires. Useful when
+                shadow hosts are injected asynchronously (e.g., Cloudflare
+                Turnstile loading inside an OOPIF).
+
+        Returns:
+            List of ShadowRoot instances found in the page.
+
+        Raises:
+            WaitElementTimeout: If timeout > 0 and no shadow roots are found
+                within the specified duration.
+        """
+        logger.debug('Finding all shadow roots in page (timeout=%s)', timeout)
+
+        if not timeout:
+            return await self._collect_all_shadow_roots(deep)
+
+        start_time = asyncio.get_event_loop().time()
+        while True:
+            shadow_roots = await self._collect_all_shadow_roots(deep)
+            if shadow_roots:
+                return shadow_roots
+
+            if asyncio.get_event_loop().time() - start_time > timeout:
+                raise WaitElementTimeout(
+                    f'Timed out after {timeout}s waiting for shadow roots in page'
+                )
+
+            await asyncio.sleep(0.5)
+
+    async def _collect_all_shadow_roots(self, deep: bool) -> list[ShadowRoot]:
+        """Collect shadow roots from the main document and optionally OOPIFs."""
+        response: GetDocumentResponse = await self._execute_command(
+            DomCommands.get_document(depth=-1, pierce=True)
+        )
+        root_node = response.get('result', {}).get('root', {})
+
+        shadow_root_entries: list[tuple[Node, int | None]] = []
+        self._collect_shadow_roots_from_tree(root_node, shadow_root_entries)
+
+        shadow_roots: list[ShadowRoot] = []
+        for shadow_data, host_backend_id in shadow_root_entries:
+            backend_node_id = shadow_data.get('backendNodeId')
+            if not backend_node_id:
+                continue
+
+            try:
+                resolve_response: ResolveNodeResponse = await self._execute_command(
+                    DomCommands.resolve_node(backend_node_id=backend_node_id)
+                )
+                shadow_object_id = resolve_response['result']['object']['objectId']
+            except (CommandExecutionTimeout, WebSocketConnectionClosed, KeyError):
+                logger.debug(f'Failed to resolve shadow root: backend_node_id={backend_node_id}')
+                continue
+
+            try:
+                host_element = await self._resolve_shadow_host(host_backend_id)
+            except (CommandExecutionTimeout, WebSocketConnectionClosed, KeyError):
+                logger.debug(f'Failed to resolve shadow host: backend_node_id={host_backend_id}')
+                host_element = None
+            mode = ShadowRootType(shadow_data.get('shadowRootType', 'open'))
+            shadow_roots.append(
+                ShadowRoot(
+                    object_id=shadow_object_id,
+                    connection_handler=self._connection_handler,
+                    mode=mode,
+                    host_element=host_element,
+                )
+            )
+
+        if deep:
+            oopif_roots = await self._collect_oopif_shadow_roots()
+            shadow_roots.extend(oopif_roots)
+
+        logger.debug(f'Found {len(shadow_roots)} shadow roots')
+        return shadow_roots
+
+    async def _resolve_shadow_host(self, host_backend_id: int | None) -> WebElement | None:
+        """Resolve the host element for a shadow root (best-effort)."""
+        if not host_backend_id:
+            return None
+
+        host_response: ResolveNodeResponse = await self._execute_command(
+            DomCommands.resolve_node(backend_node_id=host_backend_id)
+        )
+        host_object_id = host_response['result']['object']['objectId']
+        host_attrs = await self._get_object_attributes(object_id=host_object_id)
+        return WebElement(
+            host_object_id, self._connection_handler, attributes_list=host_attrs, mouse=self._mouse
+        )
+
+    async def _collect_oopif_shadow_roots(self) -> list[ShadowRoot]:
+        """Discover shadow roots inside cross-origin iframes (OOPIFs)."""
+        browser_handler = ConnectionHandler(connection_port=self._connection_port)
+        targets_response: GetTargetsResponse = await browser_handler.execute_command(
+            TargetCommands.get_targets()
+        )
+
+        target_infos = targets_response.get('result', {}).get('targetInfos', [])
+        iframe_targets = [t for t in target_infos if t.get('type') == 'iframe']
+
+        if not iframe_targets:
+            logger.debug('No OOPIF targets found')
+            return []
+
+        shadow_roots: list[ShadowRoot] = []
+        for target in iframe_targets:
+            roots = await self._collect_shadow_roots_from_oopif_target(target, browser_handler)
+            shadow_roots.extend(roots)
+
+        logger.debug(f'Found {len(shadow_roots)} shadow roots in OOPIFs')
+        return shadow_roots
+
+    async def _collect_shadow_roots_from_oopif_target(
+        self,
+        target: TargetInfo,
+        browser_handler: ConnectionHandler,
+    ) -> list[ShadowRoot]:
+        """Collect shadow roots from a single OOPIF target."""
+        target_id = target.get('targetId', '')
+        try:
+            attach_response: AttachToTargetResponse = await browser_handler.execute_command(
+                TargetCommands.attach_to_target(target_id=target_id, flatten=True)
+            )
+            session_id = attach_response.get('result', {}).get('sessionId')
+            if not session_id:
+                return []
+        except (CommandExecutionTimeout, WebSocketConnectionClosed):
+            logger.debug(f'Failed to attach to OOPIF target: {target_id}')
+            return []
+
+        try:
+            get_doc_command = DomCommands.get_document(depth=-1, pierce=True)
+            get_doc_command['sessionId'] = session_id
+            doc_response: GetDocumentResponse = await browser_handler.execute_command(
+                get_doc_command
+            )
+            root_node = doc_response.get('result', {}).get('root', {})
+        except (CommandExecutionTimeout, WebSocketConnectionClosed):
+            logger.debug(f'Failed to get document from OOPIF target: {target_id}')
+            return []
+
+        entries: list[tuple[Node, int | None]] = []
+        self._collect_shadow_roots_from_tree(root_node, entries)
+
+        iframe_context = IFrameContext(
+            frame_id=target_id,
+            session_handler=browser_handler,
+            session_id=session_id,
+        )
+
+        results: list[ShadowRoot] = []
+        for shadow_data, host_backend_id in entries:
+            sr = await self._resolve_oopif_shadow_entry(
+                shadow_data, host_backend_id, browser_handler, session_id, iframe_context
+            )
+            if sr:
+                results.append(sr)
+        return results
+
+    async def _resolve_oopif_shadow_entry(
+        self,
+        shadow_data: Node,
+        host_backend_id: int | None,
+        browser_handler: ConnectionHandler,
+        session_id: str,
+        iframe_context: IFrameContext,
+    ) -> ShadowRoot | None:
+        """Resolve a single shadow root entry from an OOPIF."""
+        backend_node_id = shadow_data.get('backendNodeId')
+        if not backend_node_id:
+            return None
+
+        try:
+            resolve_command = DomCommands.resolve_node(backend_node_id=backend_node_id)
+            resolve_command['sessionId'] = session_id
+            resolve_response: ResolveNodeResponse = await browser_handler.execute_command(
+                resolve_command
+            )
+            shadow_object_id = resolve_response['result']['object']['objectId']
+        except (CommandExecutionTimeout, WebSocketConnectionClosed, KeyError):
+            logger.debug(f'Failed to resolve OOPIF shadow root: backend_node_id={backend_node_id}')
+            return None
+
+        host_element = await self._resolve_oopif_shadow_host(
+            host_backend_id, browser_handler, session_id
+        )
+
+        if host_element:
+            host_element._iframe_context = iframe_context
+
+        mode = ShadowRootType(shadow_data.get('shadowRootType', 'open'))
+        sr = ShadowRoot(
+            object_id=shadow_object_id,
+            connection_handler=self._connection_handler,
+            mode=mode,
+            host_element=host_element,
+        )
+
+        if not host_element:
+            sr._iframe_context = iframe_context
+
+        return sr
+
+    async def _resolve_oopif_shadow_host(
+        self,
+        host_backend_id: int | None,
+        browser_handler: ConnectionHandler,
+        session_id: str,
+    ) -> WebElement | None:
+        """Resolve the host element for a shadow root inside an OOPIF (best-effort)."""
+        if not host_backend_id:
+            return None
+
+        try:
+            resolve_command = DomCommands.resolve_node(backend_node_id=host_backend_id)
+            resolve_command['sessionId'] = session_id
+            host_response: ResolveNodeResponse = await browser_handler.execute_command(
+                resolve_command
+            )
+            host_object_id = host_response['result']['object']['objectId']
+
+            describe_command = DomCommands.describe_node(object_id=host_object_id)
+            describe_command['sessionId'] = session_id
+            describe_response: DescribeNodeResponse = await browser_handler.execute_command(
+                describe_command
+            )
+            node_info = describe_response.get('result', {}).get('node', {})
+            attributes = node_info.get('attributes', [])
+            tag_name = node_info.get('nodeName', '').lower()
+            attributes.extend(['tag_name', tag_name])
+
+            return WebElement(
+                host_object_id,
+                self._connection_handler,
+                attributes_list=attributes,
+                mouse=self._mouse,
+            )
+        except (CommandExecutionTimeout, WebSocketConnectionClosed, KeyError):
+            logger.debug(f'Failed to resolve OOPIF shadow host: backend_node_id={host_backend_id}')
+            return None
+
+    @staticmethod
+    def _collect_shadow_roots_from_tree(node: Node, results: list[tuple[Node, int | None]]) -> None:
+        """Recursively walk a DOM tree collecting shadow root entries."""
+        host_backend_id = node.get('backendNodeId')
+        for shadow_root in node.get('shadowRoots', []):
+            results.append((shadow_root, host_backend_id))
+            Tab._collect_shadow_roots_from_tree(shadow_root, results)
+
+        for child in node.get('children', []):
+            Tab._collect_shadow_roots_from_tree(child, results)
+
+        content_doc = node.get('contentDocument')
+        if content_doc:
+            Tab._collect_shadow_roots_from_tree(content_doc, results)
+
     async def bring_to_front(self):
         """Brings the page to front."""
         logger.info('Bringing page to front')
@@ -424,10 +808,18 @@ class Tab(FindElementsMixin):
     async def get_cookies(self) -> list[Cookie]:
         """Get all cookies accessible from current page."""
         logger.debug('Fetching cookies for current page')
-        response: GetCookiesResponse = await self._execute_command(
-            StorageCommands.get_cookies(self._browser_context_id)
+        if self._browser_context_id:
+            response_storage: StorageGetCookiesResponse = await self._execute_command(
+                StorageCommands.get_cookies(self._browser_context_id)
+            )
+            cookies = response_storage['result']['cookies']
+            logger.debug(f'Fetched {len(cookies)} cookies')
+            return cookies
+
+        response_network: NetworkGetCookiesResponse = await self._execute_command(
+            NetworkCommands.get_cookies()
         )
-        cookies = response['result']['cookies']
+        cookies = response_network['result']['cookies']
         logger.debug(f'Fetched {len(cookies)} cookies')
         return cookies
 
@@ -687,6 +1079,110 @@ class Tab(FindElementsMixin):
 
         return None
 
+    async def save_bundle(self, path: str | Path, inline_assets: bool = False) -> None:
+        """
+        Save current page and its assets as a .zip bundle for offline viewing.
+
+        Captures the page HTML along with CSS, JS, images, fonts, and media
+        into a single zip archive. The archive contains an ``index.html`` with
+        URLs rewritten to reference local asset files.
+
+        Args:
+            path: Destination path for the ``.zip`` file.
+            inline_assets: When True, embed all assets directly into
+                ``index.html`` using data URIs, ``<style>``, and ``<script>``
+                tags instead of saving them as separate files.
+
+        Raises:
+            InvalidFileExtension: If path does not end with ``.zip``.
+        """
+        path = Path(path)
+        if path.suffix.lower() != '.zip':
+            raise InvalidFileExtension(f'Expected .zip extension, got {path.suffix!r}')
+
+        logger.info(f'Saving page bundle: path={path}, inline={inline_assets}')
+
+        page_was_enabled = self.page_events_enabled
+        if not page_was_enabled:
+            await self.enable_page_events()
+
+        try:
+            tree_response: GetResourceTreeResponse = await self._execute_command(
+                PageCommands.get_resource_tree()
+            )
+            frame_tree: FrameResourceTree = tree_response['result']['frameTree']
+            page_url = frame_tree['frame']['url']
+            html = await self._fetch_document_html(frame_tree)
+            asset_map = await self._fetch_bundle_assets(frame_tree, page_url)
+
+            buf = io.BytesIO()
+            with zipfile.ZipFile(buf, 'w', zipfile.ZIP_DEFLATED) as zf:
+                if inline_assets:
+                    html = inline_all_assets(html, asset_map)
+                else:
+                    html = rewrite_html_urls(html, asset_map)
+                zf.writestr('index.html', html.encode('utf-8'))
+                if not inline_assets:
+                    for _url, (filename, data, _mime, _rtype) in asset_map.items():
+                        zf.writestr(f'assets/{filename}', data)
+
+            async with aiofiles.open(path, 'wb') as f:
+                await f.write(buf.getvalue())
+            logger.info(f'Page bundle saved to: {path}')
+        finally:
+            if not page_was_enabled:
+                await self.disable_page_events()
+
+    async def _fetch_document_html(self, frame_tree: FrameResourceTree) -> str:
+        """Fetch the main document HTML from the frame tree."""
+        frame_id = frame_tree['frame']['id']
+        page_url = frame_tree['frame']['url']
+        try:
+            doc_response: GetResourceContentResponse = await self._execute_command(
+                PageCommands.get_resource_content(frame_id, page_url)
+            )
+            result = doc_response['result']
+            html = result['content']
+            if result.get('base64Encoded'):
+                html = _b64.b64decode(html).decode('utf-8', errors='replace')
+            return html
+        except Exception:
+            logger.debug('getResourceContent failed for document, falling back to JS')
+            response = await self.execute_script('return document.documentElement.outerHTML')
+            return cast(str, response['result']['result']['value'])
+
+    async def _fetch_bundle_assets(
+        self,
+        frame_tree: FrameResourceTree,
+        page_url: str,
+    ) -> dict[str, tuple[str, bytes, str, ResourceType]]:
+        """Fetch all bundleable resources and return an asset map."""
+        all_resources = collect_frame_resources(frame_tree)
+        fetchable = filter_fetchable_resources(all_resources, page_url)
+
+        fetch_tasks: list[Awaitable[GetResourceContentResponse]] = [
+            self._execute_command(PageCommands.get_resource_content(fid, res['url']))
+            for fid, res in fetchable
+        ]
+        results = await asyncio.gather(*fetch_tasks, return_exceptions=True)
+
+        asset_map: dict[str, tuple[str, bytes, str, ResourceType]] = {}
+        for idx, ((_fid, res), result) in enumerate(zip(fetchable, results)):
+            if isinstance(result, BaseException):
+                logger.warning(f'Failed to fetch resource {res["url"]}: {result}')
+                continue
+            response: GetResourceContentResponse = result
+            content_result = response.get('result')
+            if content_result is None:
+                logger.warning(f'No result for resource {res["url"]}: {response.get("error")}')
+                continue
+            raw_content: str = content_result['content']
+            is_base64: bool = content_result.get('base64Encoded', False)
+            data = _b64.b64decode(raw_content) if is_base64 else raw_content.encode('utf-8')
+            filename = build_asset_filename(res['url'], res['mimeType'], idx)
+            asset_map[res['url']] = (filename, data, res['mimeType'], res['type'])
+        return asset_map
+
     async def has_dialog(self) -> bool:
         """
         Check if JavaScript dialog is currently displayed.
@@ -735,37 +1231,174 @@ class Tab(FindElementsMixin):
         )
 
     @overload
-    async def execute_script(self, script: str) -> EvaluateResponse: ...
+    async def execute_script(
+        self,
+        script: str,
+        *,
+        object_group: Optional[str] = None,
+        include_command_line_api: Optional[bool] = None,
+        silent: Optional[bool] = None,
+        context_id: Optional[int] = None,
+        return_by_value: Optional[bool] = None,
+        generate_preview: Optional[bool] = None,
+        user_gesture: Optional[bool] = None,
+        await_promise: Optional[bool] = None,
+        throw_on_side_effect: Optional[bool] = None,
+        timeout: Optional[float] = None,
+        disable_breaks: Optional[bool] = None,
+        repl_mode: Optional[bool] = None,
+        allow_unsafe_eval_blocked_by_csp: Optional[bool] = None,
+        unique_context_id: Optional[str] = None,
+        serialization_options: Optional[SerializationOptions] = None,
+    ) -> EvaluateResponse: ...
 
     @overload
     async def execute_script(
-        self, script: str, element: 'WebElement'
+        self,
+        script: str,
+        element: WebElement,
+        *,
+        arguments: Optional[list[CallArgument]] = None,
+        silent: Optional[bool] = None,
+        return_by_value: Optional[bool] = None,
+        generate_preview: Optional[bool] = None,
+        user_gesture: Optional[bool] = None,
+        await_promise: Optional[bool] = None,
+        execution_context_id: Optional[int] = None,
+        object_group: Optional[str] = None,
+        throw_on_side_effect: Optional[bool] = None,
+        unique_context_id: Optional[str] = None,
+        serialization_options: Optional[SerializationOptions] = None,
     ) -> CallFunctionOnResponse: ...
 
     async def execute_script(
-        self, script: str, element: Optional['WebElement'] = None
+        self,
+        script: str,
+        element: Optional[WebElement] = None,
+        *,
+        arguments: Optional[list[CallArgument]] = None,
+        object_group: Optional[str] = None,
+        include_command_line_api: Optional[bool] = None,
+        silent: Optional[bool] = None,
+        context_id: Optional[int] = None,
+        return_by_value: Optional[bool] = None,
+        generate_preview: Optional[bool] = None,
+        user_gesture: Optional[bool] = None,
+        await_promise: Optional[bool] = None,
+        execution_context_id: Optional[int] = None,
+        throw_on_side_effect: Optional[bool] = None,
+        timeout: Optional[float] = None,
+        disable_breaks: Optional[bool] = None,
+        repl_mode: Optional[bool] = None,
+        allow_unsafe_eval_blocked_by_csp: Optional[bool] = None,
+        unique_context_id: Optional[str] = None,
+        serialization_options: Optional[SerializationOptions] = None,
     ) -> Union[EvaluateResponse, CallFunctionOnResponse]:
         """
         Execute JavaScript in page context.
 
         Args:
-            script: JavaScript code to execute.
-            element: Element context (use 'argument' in script to reference).
+            script (str): JavaScript code to execute.
+            element (Optional[WebElement]): Optional WebElement to execute script on.
+            arguments (Optional[list[CallArgument]]): Arguments to pass to the function.
+            object_group (Optional[str]): Symbolic group name for the result (Runtime.evaluate).
+            include_command_line_api (Optional[bool]): Whether to include command line API
+                (Runtime.evaluate).
+            silent (Optional[bool]): Whether to silence exceptions (Runtime.evaluate).
+            context_id (Optional[int]): ID of the execution context to evaluate in
+                (Runtime.evaluate).
+            return_by_value (Optional[bool]): Whether to return the result by value instead of
+                reference (Runtime.evaluate).
+            generate_preview (Optional[bool]): Whether to generate a preview for the result
+                (Runtime.evaluate).
+            user_gesture (Optional[bool]): Whether to treat evaluation as initiated by user
+                gesture (Runtime.evaluate).
+            await_promise (Optional[bool]): Whether to await promise result (Runtime.evaluate).
+            execution_context_id (Optional[int]): ID of the execution context to call the
+                function in.
+            throw_on_side_effect (Optional[bool]): Whether to throw if side effect cannot be
+                ruled out (Runtime.evaluate).
+            timeout (Optional[float]): Timeout in milliseconds (Runtime.evaluate).
+            disable_breaks (Optional[bool]): Whether to disable breakpoints during evaluation
+                (Runtime.evaluate).
+            repl_mode (Optional[bool]): Whether to execute in REPL mode (Runtime.evaluate).
+            allow_unsafe_eval_blocked_by_csp (Optional[bool]): Allow unsafe evaluation
+                (Runtime.evaluate).
+            unique_context_id (Optional[str]): Unique context ID for evaluation
+                (Runtime.evaluate).
+            serialization_options (Optional[SerializationOptions]): Serialization options for
+                the result (Runtime.evaluate).
 
-        Examples:
-            await page.execute_script('argument.click()', element)
-            await page.execute_script('argument.value = "Hello"', element)
+        Returns:
+            Union[EvaluateResponse, CallFunctionOnResponse]: The result of the script execution.
 
         Raises:
-            InvalidScriptWithElement: If script contains 'argument' but no element is provided.
-        """
-        if 'argument' in script and element is None:
-            raise InvalidScriptWithElement('Script contains "argument" but no element was provided')
+            InvalidScriptWithElement: If script uses 'argument' keyword but no element is provided.
 
+        Examples:
+            # Execute a simple script to log a message
+            await page.execute_script('console.log("Hello World")')
+
+            # Execute a script that returns the page title
+            await page.execute_script('return document.title')
+
+            # Execute a script on an element to click it
+            await page.execute_script('argument.click()', element)
+
+            # Execute a script on an element to set its value
+            await page.execute_script('argument.value = "Hello"', element)
+        """
         logger.debug(f'Executing script: with_element={bool(element)}, length={len(script)}')
-        if element:
-            return await self._execute_script_with_element(script, element)
-        return await self._execute_script_without_element(script)
+        if element is not None:
+            warnings.warn(
+                'Passing a WebElement to Tab.execute_script() is deprecated. '
+                'Use WebElement.execute_script() instead.',
+                DeprecationWarning,
+                stacklevel=2,
+            )
+
+            return await element.execute_script(
+                script,
+                arguments=arguments,
+                silent=silent,
+                return_by_value=return_by_value,
+                generate_preview=generate_preview,
+                user_gesture=user_gesture,
+                await_promise=await_promise,
+                execution_context_id=execution_context_id,
+                object_group=object_group,
+                throw_on_side_effect=throw_on_side_effect,
+                unique_context_id=unique_context_id,
+                serialization_options=serialization_options,
+            )
+
+        if has_return_outside_function(script):
+            script = f'(function(){{ {script} }})()'
+
+        command = self._get_evaluate_command(
+            script,
+            object_group=object_group,
+            include_command_line_api=include_command_line_api,
+            silent=silent,
+            context_id=context_id,
+            return_by_value=return_by_value,
+            generate_preview=generate_preview,
+            user_gesture=user_gesture,
+            await_promise=await_promise,
+            throw_on_side_effect=throw_on_side_effect,
+            timeout=timeout,
+            disable_breaks=disable_breaks,
+            repl_mode=repl_mode,
+            allow_unsafe_eval_blocked_by_csp=allow_unsafe_eval_blocked_by_csp,
+            unique_context_id=unique_context_id,
+            serialization_options=serialization_options,
+        )
+        logger.debug(f'Executing script without element: length={len(script)}')
+        result: Union[EvaluateResponse, CallFunctionOnResponse] = await self._execute_command(
+            command
+        )
+        self._validate_argument_error(result)
+        return result
 
     # TODO: think about how to remove these duplications with the base class
     async def continue_request(
@@ -895,26 +1528,42 @@ class Tab(FindElementsMixin):
     async def expect_and_bypass_cloudflare_captcha(
         self,
         custom_selector: Optional[tuple[By, str]] = None,
-        time_before_click: int = 2,
-        time_to_wait_captcha: int = 5,
+        time_before_click: Optional[float] = None,
+        time_to_wait_captcha: float = 5,
     ) -> AsyncGenerator[None, None]:
         """
         Context manager for automatic Cloudflare captcha bypass.
 
         Args:
-            custom_selector: Custom captcha selector (default: cf-turnstile class).
-            time_before_click: Delay before clicking (default 2s).
+            custom_selector: Deprecated — ignored. Cloudflare Turnstile is now
+                detected automatically via shadow root inspection.
+            time_before_click: Deprecated — ignored. The checkbox is now
+                located via shadow root polling and clicked immediately.
             time_to_wait_captcha: Timeout for captcha detection (default 5s).
         """
+        if custom_selector is not None:
+            warnings.warn(
+                'custom_selector is deprecated and ignored. Cloudflare Turnstile is now '
+                'detected automatically via shadow root inspection.',
+                DeprecationWarning,
+                stacklevel=2,
+            )
+
+        if time_before_click is not None:
+            warnings.warn(
+                'time_before_click is deprecated and ignored. The checkbox is now '
+                'located via shadow root polling and clicked immediately.',
+                DeprecationWarning,
+                stacklevel=2,
+            )
+
         captcha_processed = asyncio.Event()
 
         async def bypass_cloudflare(_: dict):
             try:
                 await self._bypass_cloudflare(
                     _,
-                    custom_selector,
-                    time_before_click,
-                    time_to_wait_captcha,
+                    time_to_wait_captcha=time_to_wait_captcha,
                 )
             finally:
                 captcha_processed.set()
@@ -1141,46 +1790,45 @@ class Tab(FindElementsMixin):
         )
         return ConnectionHandler(self._connection_port, self._target_id)
 
-    async def _execute_script_with_element(self, script: str, element: 'WebElement'):
-        """
-        Execute script with element context.
-
-        Args:
-            script: JavaScript code to execute.
-            element: Element context (use 'argument' in script to reference).
-
-        Returns:
-            The result of the script execution.
-        """
-        if 'argument' not in script:
-            raise InvalidScriptWithElement('Script does not contain "argument"')
-
-        script = script.replace('argument', 'this')
-
-        if not is_script_already_function(script):
-            script = f'function(){{ {script} }}'
-
-        command = RuntimeCommands.call_function_on(
-            object_id=element._object_id, function_declaration=script, return_by_value=True
+    @staticmethod
+    def _get_evaluate_command(
+        script: str,
+        *,
+        object_group: Optional[str] = None,
+        include_command_line_api: Optional[bool] = None,
+        silent: Optional[bool] = None,
+        context_id: Optional[int] = None,
+        return_by_value: Optional[bool] = None,
+        generate_preview: Optional[bool] = None,
+        user_gesture: Optional[bool] = None,
+        await_promise: Optional[bool] = None,
+        throw_on_side_effect: Optional[bool] = None,
+        timeout: Optional[float] = None,
+        disable_breaks: Optional[bool] = None,
+        repl_mode: Optional[bool] = None,
+        allow_unsafe_eval_blocked_by_csp: Optional[bool] = None,
+        unique_context_id: Optional[str] = None,
+        serialization_options: Optional[SerializationOptions] = None,
+    ):
+        """Create an evaluate command with the given parameters."""
+        return RuntimeCommands.evaluate(
+            expression=script,
+            object_group=object_group,
+            include_command_line_api=include_command_line_api,
+            silent=silent,
+            context_id=context_id,
+            return_by_value=return_by_value,
+            generate_preview=generate_preview,
+            user_gesture=user_gesture,
+            await_promise=await_promise,
+            throw_on_side_effect=throw_on_side_effect,
+            timeout=timeout,
+            disable_breaks=disable_breaks,
+            repl_mode=repl_mode,
+            allow_unsafe_eval_blocked_by_csp=allow_unsafe_eval_blocked_by_csp,
+            unique_context_id=unique_context_id,
+            serialization_options=serialization_options,
         )
-        return await self._execute_command(command)
-
-    async def _execute_script_without_element(self, script: str):
-        """
-        Execute script without element context.
-
-        Args:
-            script: JavaScript code to execute.
-
-        Returns:
-            The result of the script execution.
-        """
-        if has_return_outside_function(script):
-            script = f'(function(){{ {script} }})()'
-
-        command = RuntimeCommands.evaluate(expression=script)
-        logger.debug(f'Executing script without element: length={len(script)}')
-        return await self._execute_command(command)
 
     async def _refresh_if_url_not_changed(self, url: str) -> bool:
         """Refresh page if URL hasn't changed."""
@@ -1190,45 +1838,115 @@ class Tab(FindElementsMixin):
             return True
         return False
 
+    @staticmethod
+    def _validate_argument_error(response: EvaluateResponse) -> None:
+        """
+        Validate that script didn't fail with ReferenceError about 'argument' being undefined.
+
+        Raises:
+            InvalidScriptWithElement: If script uses 'argument' keyword but no element was provided.
+        """
+        evaluate_result = response.get('result')
+        if not isinstance(evaluate_result, dict):
+            return
+
+        remote_object = evaluate_result.get('result')
+        if not isinstance(remote_object, dict):
+            return
+
+        if not (
+            remote_object.get('type') == 'object'
+            and remote_object.get('subtype') == 'error'
+            and remote_object.get('className') == 'ReferenceError'
+        ):
+            return
+
+        description = remote_object.get('description', '')
+        if 'argument is not defined' in description:
+            raise InvalidScriptWithElement('Script contains "argument" but no element was provided')
+
     async def _wait_page_load(self, timeout: int = 300):
         """
         Wait for page to finish loading.
 
+        Waits until ``document.readyState`` reaches **at least** the level
+        configured in ``browser.options.page_load_state``.  For example, when
+        the target state is ``interactive``, both ``"interactive"`` and
+        ``"complete"`` satisfy the condition — this prevents an infinite
+        polling loop when the page transitions past ``interactive`` before the
+        first check runs.
+
         Raises:
-            asyncio.TimeoutError: If page doesn't load within timeout.
+            WaitElementTimeout: If page doesn't load within *timeout* seconds.
         """
+        target_state = self._browser.options.page_load_state.value
+        target_index = self._READY_STATE_ORDER.index(target_state)
         start_time = asyncio.get_event_loop().time()
         logger.debug(f'Waiting for page load (timeout={timeout}s)')
         while True:
             response: EvaluateResponse = await self._execute_command(
                 RuntimeCommands.evaluate(expression='document.readyState')
             )
-            if response['result']['result']['value'] == self._browser.options.page_load_state.value:
-                logger.debug(f'Page load state reached: {self._browser.options.page_load_state}')
+            current_state = response['result']['result']['value']
+            current_index = self._READY_STATE_ORDER.index(current_state)
+            if current_index >= target_index:
+                logger.debug(f'Page load state reached: {current_state} (target: {target_state})')
                 break
             if asyncio.get_event_loop().time() - start_time > timeout:
                 raise WaitElementTimeout('Page load timed out')
             await asyncio.sleep(0.5)
 
+    async def _find_cloudflare_shadow_root(self, timeout: float) -> ShadowRoot:
+        """Poll for the Cloudflare Turnstile shadow root.
+
+        Repeatedly calls ``find_shadow_roots(deep=False)`` and checks each
+        shadow root's ``inner_html`` for the Cloudflare challenge domain.
+
+        Args:
+            timeout: Maximum seconds to wait for the shadow root.
+
+        Returns:
+            The first ShadowRoot whose inner HTML contains
+            ``challenges.cloudflare.com``.
+
+        Raises:
+            WaitElementTimeout: If no matching shadow root is found within
+                *timeout* seconds.
+        """
+        start_time = asyncio.get_event_loop().time()
+        while True:
+            shadow_roots = await self.find_shadow_roots(deep=False)
+            for sr in shadow_roots:
+                html = await sr.inner_html
+                if _CLOUDFLARE_CHALLENGE_DOMAIN in html:
+                    return sr
+
+            if asyncio.get_event_loop().time() - start_time > timeout:
+                raise WaitElementTimeout(
+                    f'Timed out after {timeout}s waiting for Cloudflare Turnstile shadow root'
+                )
+            await asyncio.sleep(0.5)
+
     async def _bypass_cloudflare(
         self,
         event: dict,
-        custom_selector: Optional[tuple[By, str]] = None,
-        time_before_click: int = 2,
-        time_to_wait_captcha: int = 5,
-    ):
-        """Attempt to bypass Cloudflare Turnstile captcha when detected."""
+        time_to_wait_captcha: float = 5,
+    ) -> None:
+        """Attempt to bypass Cloudflare Turnstile captcha via shadow root traversal.
+
+        Traverses shadow roots to locate the Cloudflare iframe, navigates into
+        it, and clicks the actual checkbox element (``span.cb-i``).
+        """
         try:
-            selector = custom_selector or (By.CLASS_NAME, 'cf-turnstile')
-            element = await self.find_or_wait_element(
-                *selector, timeout=time_to_wait_captcha, raise_exc=False
+            timeout_int = int(time_to_wait_captcha)
+            shadow_root = await self._find_cloudflare_shadow_root(
+                timeout=time_to_wait_captcha,
             )
-            element = cast('WebElement', element)
-            if element:
-                # adjust the external div size to shadow root width (usually 300px)
-                await self.execute_script('argument.style="width: 300px"', element)
-                await asyncio.sleep(time_before_click)
-                await element.click()
+            iframe = await shadow_root.query(_CLOUDFLARE_IFRAME_SELECTOR, timeout=timeout_int)
+            body = await iframe.find(tag_name='body', timeout=timeout_int)
+            inner_shadow = await body.get_shadow_root(timeout=time_to_wait_captcha)
+            checkbox = await inner_shadow.query(_CLOUDFLARE_CHECKBOX_SELECTOR, timeout=timeout_int)
+            await checkbox.click()
         except Exception as exc:
             logger.error(f'Error in cloudflare bypass: {exc}')
 

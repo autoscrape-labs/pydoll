@@ -3,14 +3,22 @@ import asyncio
 import pytest
 import pytest_asyncio
 import uuid
-from unittest.mock import AsyncMock, MagicMock, patch, ANY
+from unittest.mock import AsyncMock, MagicMock, Mock, patch, ANY
 from pathlib import Path
 
+from pydoll.elements.web_element import WebElement
+from pydoll.protocol.runtime.types import CallArgument, SerializationOptions
 from pydoll.browser.options import ChromiumOptions
+
 from pydoll.protocol.network.types import ResourceType, RequestMethod
 from pydoll.protocol.fetch.types import RequestStage
-from pydoll.constants import By
+from pydoll.constants import By, PageLoadState
 from pydoll.browser.tab import Tab
+from pydoll.utils.bundle import (
+    build_asset_filename,
+    collect_frame_resources,
+    rewrite_css_urls,
+)
 from pydoll.protocol.page.events import PageEvent
 from pydoll.protocol.browser.types import DownloadBehavior
 from pydoll.exceptions import DownloadTimeout, InvalidTabInitialization
@@ -23,8 +31,8 @@ from pydoll.exceptions import (
     InvalidFileExtension,
     WaitElementTimeout,
     NetworkEventsNotEnabled,
-    InvalidScriptWithElement,
     TopLevelTargetRequired,
+    InvalidScriptWithElement,
 )
 
 @pytest_asyncio.fixture
@@ -155,6 +163,28 @@ class TestTabProperties:
         tab._connection_handler.execute_command.assert_called()
         assert tab._connection_handler.execute_command.call_count >= 1
 
+    @pytest.mark.asyncio
+    async def test_title(self, tab):
+        """Test title property."""
+        tab._connection_handler.execute_command.return_value = {
+            'result': {'result': {'value': 'My Page Title'}}
+        }
+
+        title = await tab.title
+        assert title == 'My Page Title'
+        tab._connection_handler.execute_command.assert_called()
+        assert tab._connection_handler.execute_command.call_count >= 1
+
+    @pytest.mark.asyncio
+    async def test_title_empty(self, tab):
+        """Test title property when page has no title."""
+        tab._connection_handler.execute_command.return_value = {
+            'result': {'result': {}}
+        }
+
+        title = await tab.title
+        assert title == ''
+
 
 class TestTabEventManagement:
     """Test Tab event enabling/disabling methods."""
@@ -275,6 +305,64 @@ class TestTabCookieManagement:
         cookies = await tab.get_cookies()
         assert cookies == test_cookies
         assert_mock_called_at_least_once(tab._connection_handler)
+
+    @pytest.mark.asyncio
+    async def test_get_cookies_uses_storage_commands_with_browser_context_id(
+        self, mock_browser, mock_connection_handler
+    ):
+        """Test that get_cookies uses StorageCommands when browser_context_id is set.
+        
+        This ensures proper cookie isolation for explicit browser contexts.
+        """
+        test_cookies = [{'name': 'isolated', 'value': 'cookie', 'domain': 'example.com'}]
+        mock_connection_handler.execute_command.return_value = {
+            'result': {'cookies': test_cookies}
+        }
+        
+        with patch('pydoll.browser.tab.ConnectionHandler', return_value=mock_connection_handler):
+            tab_with_context = Tab(
+                browser=mock_browser,
+                connection_port=9222,
+                target_id='test-target-with-context',
+                browser_context_id='explicit-context-id'
+            )
+        
+        cookies = await tab_with_context.get_cookies()
+        
+        assert cookies == test_cookies
+        # Verify StorageCommands was used (method contains 'Storage.getCookies')
+        call_args = mock_connection_handler.execute_command.call_args[0][0]
+        assert call_args['method'] == 'Storage.getCookies'
+        assert call_args['params']['browserContextId'] == 'explicit-context-id'
+
+    @pytest.mark.asyncio
+    async def test_get_cookies_uses_network_commands_without_browser_context_id(
+        self, mock_browser, mock_connection_handler
+    ):
+        """Test that get_cookies uses NetworkCommands when browser_context_id is None.
+        
+        This is important for incognito mode (--incognito flag) where Storage.getCookies
+        does not work properly, but Network.getCookies does.
+        """
+        test_cookies = [{'name': 'incognito', 'value': 'cookie', 'domain': 'example.com'}]
+        mock_connection_handler.execute_command.return_value = {
+            'result': {'cookies': test_cookies}
+        }
+        
+        with patch('pydoll.browser.tab.ConnectionHandler', return_value=mock_connection_handler):
+            tab_without_context = Tab(
+                browser=mock_browser,
+                connection_port=9222,
+                target_id='test-target-no-context',
+                browser_context_id=None  # No explicit context (incognito/default mode)
+            )
+        
+        cookies = await tab_without_context.get_cookies()
+        
+        assert cookies == test_cookies
+        # Verify NetworkCommands was used (method contains 'Network.getCookies')
+        call_args = mock_connection_handler.execute_command.call_args[0][0]
+        assert call_args['method'] == 'Network.getCookies'
 
     @pytest.mark.asyncio
     async def test_set_cookies(self, tab):
@@ -583,74 +671,6 @@ class TestTabScriptExecution:
         assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
-    async def test_execute_script_with_element(self, tab):
-        """Test execute_script with element context."""
-        # Mock element
-        element = MagicMock()
-        element._object_id = 'test-object-id'
-        
-        tab._connection_handler.execute_command.return_value = {
-            'result': {'result': {'value': 'Element clicked'}}
-        }
-        
-        result = await tab.execute_script('argument.click()', element)
-        
-        assert_mock_called_at_least_once(tab._connection_handler)
-
-    @pytest.mark.asyncio
-    async def test_execute_script_argument_without_element_raises_exception(self, tab):
-        """Test execute_script raises exception when script contains 'argument' but no element provided."""
-        with pytest.raises(InvalidScriptWithElement) as exc_info:
-            await tab.execute_script('argument.click()')
-        
-        assert str(exc_info.value) == 'Script contains "argument" but no element was provided'
-        tab._connection_handler.execute_command.assert_not_called()
-
-    @pytest.mark.asyncio
-    async def test_execute_script_element_without_argument_raises_exception(self, tab):
-        """Test execute_script raises exception when element is provided but script doesn't contain 'argument'."""
-        element = MagicMock()
-        element._object_id = 'test-object-id'
-        
-        with pytest.raises(InvalidScriptWithElement) as exc_info:
-            await tab.execute_script('console.log("test")', element)
-        
-        assert str(exc_info.value) == 'Script does not contain "argument"'
-        tab._connection_handler.execute_command.assert_not_called()
-
-    @pytest.mark.asyncio
-    async def test_execute_script_with_element_already_function(self, tab):
-        """Test execute_script with element when script is already a function."""
-        element = MagicMock()
-        element._object_id = 'test-object-id'
-        
-        tab._connection_handler.execute_command.return_value = {
-            'result': {'result': {'value': 'Function executed'}}
-        }
-        
-        # Script already wrapped in function
-        script = 'function() { argument.click(); return "done"; }'
-        result = await tab.execute_script(script, element)
-        
-        assert_mock_called_at_least_once(tab._connection_handler)
-
-    @pytest.mark.asyncio
-    async def test_execute_script_with_element_arrow_function(self, tab):
-        """Test execute_script with element when script is already an arrow function."""
-        element = MagicMock()
-        element._object_id = 'test-object-id'
-        
-        tab._connection_handler.execute_command.return_value = {
-            'result': {'result': {'value': 'Arrow function executed'}}
-        }
-        
-        # Script already wrapped in arrow function
-        script = '() => { argument.click(); return "done"; }'
-        result = await tab.execute_script(script, element)
-        
-        assert_mock_called_at_least_once(tab._connection_handler)
-
-    @pytest.mark.asyncio
     async def test_execute_script_return_outside_function(self, tab):
         """Test execute_script wraps return statement outside function."""
         tab._connection_handler.execute_command.return_value = {
@@ -722,6 +742,126 @@ class TestTabScriptExecution:
         result = await tab.execute_script(script)
         
         assert_mock_called_at_least_once(tab._connection_handler)
+
+    @pytest.mark.asyncio
+    async def test_execute_script_with_webelement_deprecation_warning(self, tab):
+        """Test execute_script with WebElement triggers deprecation warning."""
+        mock_element = Mock(spec=WebElement)
+        mock_element.execute_script.return_value = {'result': {'value': 'element result'}}
+        
+        with pytest.warns(DeprecationWarning, match="Passing a WebElement to Tab.execute_script\\(\\) is deprecated"):
+            result = await tab.execute_script('return this.tagName', element=mock_element)
+        
+        mock_element.execute_script.assert_called_once_with(
+            'return this.tagName',
+            arguments=None,
+            silent=None,
+            return_by_value=None,
+            generate_preview=None,
+            user_gesture=None,
+            await_promise=None,
+            execution_context_id=None,
+            object_group=None,
+            throw_on_side_effect=None,
+            unique_context_id=None,
+            serialization_options=None,
+        )
+        
+        assert result == {'result': {'value': 'element result'}}
+
+    @pytest.mark.asyncio
+    async def test_execute_script_with_webelement_all_parameters(self, tab):
+        """Test execute_script with WebElement passes all parameters correctly."""
+        mock_element = Mock(spec=WebElement)
+        mock_element.execute_script.return_value = {'result': {'value': 'element result'}}
+        
+        arguments = [CallArgument(value="test")]
+        serialization_options = SerializationOptions(serialization="deep")
+        
+        with pytest.warns(DeprecationWarning):
+            result = await tab.execute_script(
+                'return this.tagName',
+                element=mock_element,
+                arguments=arguments,
+                silent=True,
+                return_by_value=True,
+                generate_preview=True,
+                user_gesture=True,
+                await_promise=True,
+                execution_context_id=123,
+                object_group="test_group",
+                throw_on_side_effect=True,
+                unique_context_id="unique_123",
+                serialization_options=serialization_options,
+            )
+        
+        mock_element.execute_script.assert_called_once_with(
+            'return this.tagName',
+            arguments=arguments,
+            silent=True,
+            return_by_value=True,
+            generate_preview=True,
+            user_gesture=True,
+            await_promise=True,
+            execution_context_id=123,
+            object_group="test_group",
+            throw_on_side_effect=True,
+            unique_context_id="unique_123",
+            serialization_options=serialization_options,
+        )
+        
+        assert result == {'result': {'value': 'element result'}}
+
+    @pytest.mark.parametrize('response', [
+        {},
+        {'result': 'not a dict'},
+        {'result': {}},
+        {'result': {'result': 'not a dict'}},
+        {'result': {'result': {'type': 'string', 'subtype': 'error', 'className': 'ReferenceError', 'description': 'argument is not defined'}}},
+        {'result': {'result': {'type': 'object', 'subtype': 'not_error', 'className': 'ReferenceError', 'description': 'argument is not defined'}}},
+        {'result': {'result': {'type': 'object', 'subtype': 'error', 'className': 'TypeError', 'description': 'argument is not defined'}}},
+        {'result': {'result': {'type': 'object', 'subtype': 'error', 'className': 'ReferenceError', 'description': 'some other error'}}},
+        {'result': {'result': {'type': 'object', 'subtype': 'error', 'className': 'ReferenceError', 'description': ''}}},
+        {'result': {'result': {'type': 'object', 'subtype': 'error', 'className': 'ReferenceError'}}},
+    ])
+    def test_validate_argument_error_early_returns(self, tab, response):
+        """Test _validate_argument_error returns early for invalid responses."""
+        tab._validate_argument_error(response)
+
+    @pytest.mark.parametrize('description', [
+        'argument is not defined',
+        'Error: argument is not defined at line 1',
+    ])
+    def test_validate_argument_error_raises_on_match(self, tab, description):
+        """Test _validate_argument_error raises InvalidScriptWithElement when all conditions match."""
+        response = {
+            'result': {
+                'result': {
+                    'type': 'object',
+                    'subtype': 'error',
+                    'className': 'ReferenceError',
+                    'description': description,
+                }
+            }
+        }
+        with pytest.raises(InvalidScriptWithElement, match='Script contains "argument" but no element was provided'):
+            tab._validate_argument_error(response)
+
+    @pytest.mark.asyncio
+    async def test_execute_script_triggers_validation(self, tab):
+        """Test that execute_script calls _validate_argument_error when script fails with ReferenceError."""
+        tab._connection_handler.execute_command.return_value = {
+            'result': {
+                'result': {
+                    'type': 'object',
+                    'subtype': 'error',
+                    'className': 'ReferenceError',
+                    'description': 'argument is not defined'
+                }
+            }
+        }
+        with pytest.raises(InvalidScriptWithElement, match='Script contains "argument" but no element was provided'):
+            await tab.execute_script('argument.click()')
 
 
 class TestTabEventCallbacks:
@@ -1034,34 +1174,224 @@ class TestTabCloudflareBypass:
         """Test enabling auto-solve Cloudflare captcha."""
         callback_id = 999
         tab._connection_handler.register_callback.return_value = callback_id
-        
+
         mock_enable_page_events = AsyncMock()
         with patch.object(tab, 'enable_page_events', mock_enable_page_events):
             await tab.enable_auto_solve_cloudflare_captcha()
-        
+
         mock_enable_page_events.assert_called_once()
         assert_mock_called_at_least_once(tab._connection_handler, 'register_callback')
         assert tab._cloudflare_captcha_callback_id == callback_id
 
     @pytest.mark.asyncio
     async def test_enable_auto_solve_cloudflare_captcha_with_params(self, tab):
-        """Test enabling auto-solve Cloudflare captcha with custom parameters."""
+        """Test enabling auto-solve Cloudflare captcha with timing parameters."""
         callback_id = 888
         tab._connection_handler.register_callback.return_value = callback_id
-        
-        custom_selector = (By.ID, 'custom-captcha')
-        
+
         mock_enable_page_events = AsyncMock()
         with patch.object(tab, 'enable_page_events', mock_enable_page_events):
             await tab.enable_auto_solve_cloudflare_captcha(
-                custom_selector=custom_selector,
-                time_before_click=3,
-                time_to_wait_captcha=10
+                time_to_wait_captcha=10,
             )
-        
+
         mock_enable_page_events.assert_called_once()
         assert_mock_called_at_least_once(tab._connection_handler, 'register_callback')
         assert tab._cloudflare_captcha_callback_id == callback_id
+
+    @pytest.mark.asyncio
+    async def test_disable_auto_solve_cloudflare_captcha(self, tab):
+        """Test disabling auto-solve Cloudflare captcha."""
+        tab._cloudflare_captcha_callback_id = 777
+        tab._connection_handler.remove_callback.return_value = True
+
+        await tab.disable_auto_solve_cloudflare_captcha()
+
+        tab._connection_handler.remove_callback.assert_called_with(777)
+
+    @pytest.mark.asyncio
+    async def test_expect_and_bypass_cloudflare_captcha(self, tab):
+        """Test expect_and_bypass_cloudflare_captcha context manager."""
+        mock_event = MagicMock()
+        mock_event.wait = AsyncMock()
+
+        callback_id = 666
+        tab._connection_handler.register_callback.return_value = callback_id
+
+        mock_enable_page_events = AsyncMock()
+        mock_disable_page_events = AsyncMock()
+
+        with patch.object(tab, 'enable_page_events', mock_enable_page_events):
+            with patch.object(tab, 'disable_page_events', mock_disable_page_events):
+                with patch('asyncio.Event', return_value=mock_event):
+                    async with tab.expect_and_bypass_cloudflare_captcha():
+                        pass
+
+        mock_enable_page_events.assert_called_once()
+        mock_disable_page_events.assert_called_once()
+        assert_mock_called_at_least_once(tab._connection_handler, 'register_callback')
+        tab._connection_handler.remove_callback.assert_called_with(callback_id)
+
+    @pytest.mark.asyncio
+    async def test_bypass_cloudflare_with_shadow_root_traversal(self, tab):
+        """Test _bypass_cloudflare traverses shadow roots to click checkbox."""
+        mock_checkbox = AsyncMock()
+        mock_inner_shadow = AsyncMock()
+        mock_inner_shadow.query = AsyncMock(return_value=mock_checkbox)
+        mock_body = AsyncMock()
+        mock_body.get_shadow_root = AsyncMock(return_value=mock_inner_shadow)
+        mock_iframe = AsyncMock()
+        mock_iframe.find = AsyncMock(return_value=mock_body)
+        mock_shadow_root = AsyncMock()
+        mock_shadow_root.query = AsyncMock(return_value=mock_iframe)
+
+        mock_find_cf = AsyncMock(return_value=mock_shadow_root)
+
+        with patch.object(tab, '_find_cloudflare_shadow_root', mock_find_cf):
+            await tab._bypass_cloudflare({})
+
+        mock_find_cf.assert_called_once_with(timeout=5)
+        mock_shadow_root.query.assert_called_once()
+        mock_iframe.find.assert_called_once()
+        mock_body.get_shadow_root.assert_called_once()
+        mock_inner_shadow.query.assert_called_once()
+        mock_checkbox.click.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_bypass_cloudflare_no_shadow_root_found(self, tab):
+        """Test _bypass_cloudflare logs error when shadow root not found."""
+        mock_find_cf = AsyncMock(
+            side_effect=WaitElementTimeout('Timed out')
+        )
+
+        with patch.object(tab, '_find_cloudflare_shadow_root', mock_find_cf):
+            # Should not raise — error is caught and logged
+            await tab._bypass_cloudflare({})
+
+        mock_find_cf.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_bypass_cloudflare_custom_selector_emits_deprecation(self, tab):
+        """Test that passing custom_selector emits DeprecationWarning."""
+        callback_id = 111
+        tab._connection_handler.register_callback.return_value = callback_id
+
+        mock_enable_page_events = AsyncMock()
+        with patch.object(tab, 'enable_page_events', mock_enable_page_events):
+            with pytest.warns(DeprecationWarning, match='custom_selector is deprecated'):
+                await tab.enable_auto_solve_cloudflare_captcha(
+                    custom_selector=(By.ID, 'custom-captcha'),
+                )
+
+    @pytest.mark.asyncio
+    async def test_time_before_click_emits_deprecation(self, tab):
+        """Test that passing time_before_click emits DeprecationWarning."""
+        callback_id = 112
+        tab._connection_handler.register_callback.return_value = callback_id
+
+        mock_enable_page_events = AsyncMock()
+        with patch.object(tab, 'enable_page_events', mock_enable_page_events):
+            with pytest.warns(DeprecationWarning, match='time_before_click is deprecated'):
+                await tab.enable_auto_solve_cloudflare_captcha(
+                    time_before_click=3,
+                )
+
+    @pytest.mark.asyncio
+    async def test_expect_bypass_time_before_click_emits_deprecation(self, tab):
+        """Test that expect_and_bypass with time_before_click emits DeprecationWarning."""
+        mock_event = MagicMock()
+        mock_event.wait = AsyncMock()
+
+        tab._connection_handler.register_callback.return_value = 223
+
+        mock_enable_page_events = AsyncMock()
+        mock_disable_page_events = AsyncMock()
+
+        with patch.object(tab, 'enable_page_events', mock_enable_page_events):
+            with patch.object(tab, 'disable_page_events', mock_disable_page_events):
+                with patch('asyncio.Event', return_value=mock_event):
+                    with pytest.warns(DeprecationWarning, match='time_before_click is deprecated'):
+                        async with tab.expect_and_bypass_cloudflare_captcha(
+                            time_before_click=2,
+                        ):
+                            pass
+
+    @pytest.mark.asyncio
+    async def test_expect_bypass_custom_selector_emits_deprecation(self, tab):
+        """Test that expect_and_bypass with custom_selector emits DeprecationWarning."""
+        mock_event = MagicMock()
+        mock_event.wait = AsyncMock()
+
+        tab._connection_handler.register_callback.return_value = 222
+
+        mock_enable_page_events = AsyncMock()
+        mock_disable_page_events = AsyncMock()
+
+        with patch.object(tab, 'enable_page_events', mock_enable_page_events):
+            with patch.object(tab, 'disable_page_events', mock_disable_page_events):
+                with patch('asyncio.Event', return_value=mock_event):
+                    with pytest.warns(DeprecationWarning, match='custom_selector is deprecated'):
+                        async with tab.expect_and_bypass_cloudflare_captcha(
+                            custom_selector=(By.ID, 'old-sel'),
+                        ):
+                            pass
+
+    @pytest.mark.asyncio
+    async def test_find_cloudflare_shadow_root_polls_until_found(self, tab):
+        """Test _find_cloudflare_shadow_root polls until CF shadow root appears."""
+
+        class MockShadowRoot:
+            def __init__(self, html):
+                self._html = html
+
+            @property
+            async def inner_html(self):
+                return self._html
+
+        non_cf_sr = MockShadowRoot('<div>other content</div>')
+        cf_sr = MockShadowRoot(
+            '<iframe src="https://challenges.cloudflare.com/cdn-cgi/"></iframe>'
+        )
+
+        call_count = 0
+
+        async def mock_find_shadow_roots(deep=False):
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                return [non_cf_sr]
+            return [non_cf_sr, cf_sr]
+
+        with patch.object(tab, 'find_shadow_roots', side_effect=mock_find_shadow_roots):
+            with patch('asyncio.sleep', AsyncMock()):
+                result = await tab._find_cloudflare_shadow_root(timeout=10)
+
+        assert result is cf_sr
+        assert call_count == 2
+
+    @pytest.mark.asyncio
+    async def test_find_cloudflare_shadow_root_timeout(self, tab):
+        """Test _find_cloudflare_shadow_root raises WaitElementTimeout on timeout."""
+
+        class MockShadowRoot:
+            @property
+            async def inner_html(self):
+                return '<div>other content</div>'
+
+        non_cf_sr = MockShadowRoot()
+        mock_find = AsyncMock(return_value=[non_cf_sr])
+
+        # Simulate time progressing past the timeout
+        time_values = iter([0, 0.5, 1.0, 100.0])
+
+        mock_loop = MagicMock()
+        mock_loop.time = lambda: next(time_values)
+
+        with patch.object(tab, 'find_shadow_roots', mock_find):
+            with patch('asyncio.get_event_loop', return_value=mock_loop):
+                with patch('asyncio.sleep', AsyncMock()):
+                    with pytest.raises(WaitElementTimeout, match='Timed out'):
+                        await tab._find_cloudflare_shadow_root(timeout=5)
 
 
 class TestTabDownload:
@@ -1316,94 +1646,6 @@ class TestTabDownload:
         enable_page_events.assert_not_awaited()
         disable_page_events.assert_not_awaited()
 
-    @pytest.mark.asyncio
-    async def test_disable_auto_solve_cloudflare_captcha(self, tab):
-        """Test disabling auto-solve Cloudflare captcha."""
-        tab._cloudflare_captcha_callback_id = 777
-        tab._connection_handler.remove_callback.return_value = True
-        
-        await tab.disable_auto_solve_cloudflare_captcha()
-        
-        tab._connection_handler.remove_callback.assert_called_with(777)
-
-    @pytest.mark.asyncio
-    async def test_expect_and_bypass_cloudflare_captcha(self, tab):
-        """Test expect_and_bypass_cloudflare_captcha context manager."""
-        mock_event = AsyncMock()
-        mock_event.set = MagicMock()
-        mock_event.wait = AsyncMock()
-        
-        callback_id = 666
-        tab._connection_handler.register_callback.return_value = callback_id
-        
-        mock_enable_page_events = AsyncMock()
-        mock_disable_page_events = AsyncMock()
-        
-        with patch.object(tab, 'enable_page_events', mock_enable_page_events):
-            with patch.object(tab, 'disable_page_events', mock_disable_page_events):
-                with patch('asyncio.Event', return_value=mock_event):
-                    async with tab.expect_and_bypass_cloudflare_captcha():
-                        pass
-        
-        mock_enable_page_events.assert_called_once()
-        mock_disable_page_events.assert_called_once()
-        assert_mock_called_at_least_once(tab._connection_handler, 'register_callback')
-        tab._connection_handler.remove_callback.assert_called_with(callback_id)
-
-    @pytest.mark.asyncio
-    async def test_bypass_cloudflare_with_element_found(self, tab):
-        """Test _bypass_cloudflare when element is found."""
-        mock_element = AsyncMock()
-        
-        mock_find = AsyncMock(return_value=mock_element)
-        mock_execute_script = AsyncMock()
-        
-        with patch.object(tab, 'find_or_wait_element', mock_find):
-            with patch.object(tab, 'execute_script', mock_execute_script):
-                with patch('asyncio.sleep', AsyncMock()):
-                    await tab._bypass_cloudflare({})
-        
-        mock_find.assert_called_once()
-        mock_execute_script.assert_called_once()
-        mock_element.click.assert_called_once()
-
-    @pytest.mark.asyncio
-    async def test_bypass_cloudflare_no_element_found(self, tab):
-        """Test _bypass_cloudflare when no element is found."""
-        mock_find = AsyncMock(return_value=None)
-        mock_execute_script = AsyncMock()
-        
-        with patch.object(tab, 'find_or_wait_element', mock_find):
-            with patch.object(tab, 'execute_script', mock_execute_script):
-                await tab._bypass_cloudflare({})
-        
-        mock_find.assert_called_once()
-        # execute_script and click should not be called
-        mock_execute_script.assert_not_called()
-
-    @pytest.mark.asyncio
-    async def test_bypass_cloudflare_with_custom_selector(self, tab):
-        """Test _bypass_cloudflare with custom selector."""
-        mock_element = AsyncMock()
-        custom_selector = (By.ID, 'custom-captcha')
-        
-        mock_find = AsyncMock(return_value=mock_element)
-        mock_execute_script = AsyncMock()
-        
-        with patch.object(tab, 'find_or_wait_element', mock_find):
-            with patch.object(tab, 'execute_script', mock_execute_script):
-                with patch('asyncio.sleep', AsyncMock()):
-                    await tab._bypass_cloudflare(
-                        {},
-                        custom_selector=custom_selector,
-                        time_before_click=3,
-                        time_to_wait_captcha=10
-                    )
-        
-        mock_find.assert_called_with(
-            By.ID, 'custom-captcha', timeout=10, raise_exc=False
-        )
-
 
 class TestTabFrameHandling:
     """Test Tab iframe handling methods."""
@@ -1420,7 +1662,8 @@ class TestTabFrameHandling:
             {'targetId': 'iframe-target-id', 'url': 'https://example.com/iframe'}
         ])
 
-        frame = await tab.get_frame(mock_iframe_element)
+        with pytest.warns(DeprecationWarning):
+            frame = await tab.get_frame(mock_iframe_element)
         
         assert isinstance(frame, Tab)
         mock_browser.get_targets.assert_called_once()
@@ -1440,9 +1683,11 @@ class TestTabFrameHandling:
         tab._browser._tabs_opened = {}
 
         with patch('pydoll.browser.tab.ConnectionHandler', autospec=True):
-            frame1 = await tab.get_frame(mock_iframe_element)
+            with pytest.warns(DeprecationWarning):
+                frame1 = await tab.get_frame(mock_iframe_element)
             # Second call should reuse from cache and not create a new Tab
-            frame2 = await tab.get_frame(mock_iframe_element)
+            with pytest.warns(DeprecationWarning):
+                frame2 = await tab.get_frame(mock_iframe_element)
 
         assert isinstance(frame1, Tab)
         assert frame1 is frame2
@@ -1454,8 +1699,9 @@ class TestTabFrameHandling:
         mock_element = MagicMock()
         mock_element.tag_name = 'div'  # Mock the property directly
         
-        with pytest.raises(NotAnIFrame):
-            await tab.get_frame(mock_element)
+        with pytest.warns(DeprecationWarning):
+            with pytest.raises(NotAnIFrame):
+                await tab.get_frame(mock_element)
 
     @pytest.mark.asyncio
     async def test_get_frame_no_frame_id(self, tab, mock_browser):
@@ -1467,8 +1713,9 @@ class TestTabFrameHandling:
 
         mock_browser.get_targets = AsyncMock(return_value=[])
         
-        with pytest.raises(IFrameNotFound):
-            await tab.get_frame(mock_iframe_element)
+        with pytest.warns(DeprecationWarning):
+            with pytest.raises(IFrameNotFound):
+                await tab.get_frame(mock_iframe_element)
 
 
 class TestTabUtilityMethods:
@@ -1502,6 +1749,36 @@ class TestTabUtilityMethods:
         
         await tab._wait_page_load()
         
+        assert_mock_called_at_least_once(tab._connection_handler)
+
+    @pytest.mark.asyncio
+    async def test_wait_page_load_interactive_already_complete(self, tab):
+        """Test _wait_page_load when target is interactive but page already reached complete.
+
+        Regression test: when page_load_state is INTERACTIVE and the page
+        transitions past 'interactive' to 'complete' before the first poll,
+        _wait_page_load must still resolve immediately instead of looping
+        indefinitely.
+        """
+        tab._browser.options.page_load_state = PageLoadState.INTERACTIVE
+        tab._connection_handler.execute_command.return_value = {
+            'result': {'result': {'value': 'complete'}}
+        }
+
+        await tab._wait_page_load()
+
+        assert_mock_called_at_least_once(tab._connection_handler)
+
+    @pytest.mark.asyncio
+    async def test_wait_page_load_interactive_exact(self, tab):
+        """Test _wait_page_load resolves when readyState is exactly 'interactive'."""
+        tab._browser.options.page_load_state = PageLoadState.INTERACTIVE
+        tab._connection_handler.execute_command.return_value = {
+            'result': {'result': {'value': 'interactive'}}
+        }
+
+        await tab._wait_page_load()
+
         assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
@@ -1790,17 +2067,6 @@ class TestTabEdgeCases:
             await tab.print_to_pdf(as_base64=False)
 
     @pytest.mark.asyncio
-    async def test_execute_script_with_none_element(self, tab):
-        """Test execute_script with None element."""
-        tab._connection_handler.execute_command.return_value = {
-            'result': {'result': {'value': 'Test Result'}}
-        }
-        
-        result = await tab.execute_script('return "Test Result"', None)
-        
-        assert_mock_called_at_least_once(tab._connection_handler)
-
-    @pytest.mark.asyncio
     async def test_network_logs_property(self, tab):
         """Test network_logs property access."""
         test_logs = [{'request': {'url': 'https://example.com'}}]
@@ -1977,8 +2243,459 @@ class TestTabNetworkMethods:
             }
         ]
         tab._connection_handler.network_logs = test_logs
-        
+
         result = await tab.get_network_logs(filter='example')
-        
+
         # Should handle missing request data gracefully
         assert result == []
+
+
+class TestTabSaveBundle:
+    """Tests for Tab.save_bundle() page bundle export."""
+
+    @pytest.fixture(autouse=True)
+    def _enable_page_events(self, tab):
+        """Pre-enable page events so save_bundle skips enable/disable calls."""
+        tab._page_events_enabled = True
+
+    def _make_frame_tree(self, frame_id='F1', page_url='https://example.com/',
+                          resources=None, child_frames=None):
+        tree = {
+            'frame': {
+                'id': frame_id,
+                'url': page_url,
+                'loaderId': 'L1',
+                'domainAndRegistry': 'example.com',
+                'securityOrigin': 'https://example.com',
+                'mimeType': 'text/html',
+                'secureContextType': 'Secure',
+                'crossOriginIsolatedContextType': 'NotIsolated',
+                'gatedAPIFeatures': [],
+            },
+            'resources': resources or [],
+        }
+        if child_frames:
+            tree['childFrames'] = child_frames
+        return tree
+
+    def _make_resource(self, url, rtype='Stylesheet', mime='text/css',
+                        failed=False, canceled=False):
+        res = {'url': url, 'type': rtype, 'mimeType': mime}
+        if failed:
+            res['failed'] = True
+        if canceled:
+            res['canceled'] = True
+        return res
+
+    @pytest.mark.asyncio
+    async def test_save_bundle_invalid_extension(self, tab):
+        with pytest.raises(InvalidFileExtension, match=r'\.zip'):
+            await tab.save_bundle('output.tar.gz')
+
+    @pytest.mark.asyncio
+    async def test_save_bundle_separate_assets(self, tab, tmp_path):
+        page_url = 'https://example.com/'
+        css_url = 'https://example.com/style.css'
+        js_url = 'https://example.com/app.js'
+
+        resources = [
+            self._make_resource(css_url, 'Stylesheet', 'text/css'),
+            self._make_resource(js_url, 'Script', 'text/javascript'),
+        ]
+        frame_tree = self._make_frame_tree(resources=resources)
+
+        html_content = (
+            '<html><head>'
+            f'<link rel="stylesheet" href="{css_url}">'
+            f'<script src="{js_url}"></script>'
+            '</head><body>Hello</body></html>'
+        )
+        css_content = 'body { color: red; }'
+        js_content = 'console.log("hi");'
+
+        responses = [
+            {'result': {'frameTree': frame_tree}},
+            {'result': {'content': html_content, 'base64Encoded': False}},
+            {'result': {'content': css_content, 'base64Encoded': False}},
+            {'result': {'content': js_content, 'base64Encoded': False}},
+        ]
+        tab._connection_handler.execute_command = AsyncMock(side_effect=responses)
+
+        zip_path = tmp_path / 'bundle.zip'
+        await tab.save_bundle(str(zip_path))
+
+        assert zip_path.exists()
+        import zipfile
+        with zipfile.ZipFile(zip_path) as zf:
+            names = zf.namelist()
+            assert 'index.html' in names
+            assert any('style.css' in n for n in names)
+            assert any('app.js' in n for n in names)
+            index = zf.read('index.html').decode('utf-8')
+            assert 'assets/' in index
+            assert css_url not in index
+
+    @pytest.mark.asyncio
+    async def test_save_bundle_inline_assets(self, tab, tmp_path):
+        page_url = 'https://example.com/'
+        css_url = 'https://example.com/style.css'
+        js_url = 'https://example.com/app.js'
+        img_url = 'https://example.com/logo.png'
+
+        resources = [
+            self._make_resource(css_url, 'Stylesheet', 'text/css'),
+            self._make_resource(js_url, 'Script', 'text/javascript'),
+            self._make_resource(img_url, 'Image', 'image/png'),
+        ]
+        frame_tree = self._make_frame_tree(resources=resources)
+
+        html_content = (
+            '<html><head>'
+            f'<link rel="stylesheet" href="{css_url}">'
+            f'<script src="{js_url}"></script>'
+            '</head><body>'
+            f'<img src="{img_url}">'
+            '</body></html>'
+        )
+        css_content = 'body { color: red; }'
+        js_content = 'console.log("hi");'
+        img_b64 = base64.b64encode(b'\x89PNG').decode()
+
+        responses = [
+            {'result': {'frameTree': frame_tree}},
+            {'result': {'content': html_content, 'base64Encoded': False}},
+            {'result': {'content': css_content, 'base64Encoded': False}},
+            {'result': {'content': js_content, 'base64Encoded': False}},
+            {'result': {'content': img_b64, 'base64Encoded': True}},
+        ]
+        tab._connection_handler.execute_command = AsyncMock(side_effect=responses)
+
+        zip_path = tmp_path / 'bundle.zip'
+        await tab.save_bundle(str(zip_path), inline_assets=True)
+
+        import zipfile
+        with zipfile.ZipFile(zip_path) as zf:
+            names = zf.namelist()
+            assert names == ['index.html']
+            index = zf.read('index.html').decode('utf-8')
+            assert '<style>' in index
+            assert '<script>' in index
+            assert 'data:image/png;base64,' in index
+
+    @pytest.mark.asyncio
+    async def test_save_bundle_skips_failed_resources(self, tab, tmp_path):
+        page_url = 'https://example.com/'
+        resources = [
+            self._make_resource('https://example.com/ok.css', 'Stylesheet', 'text/css'),
+            self._make_resource('https://example.com/bad.css', 'Stylesheet', 'text/css',
+                                failed=True),
+        ]
+        frame_tree = self._make_frame_tree(resources=resources)
+
+        html = '<html><head></head><body></body></html>'
+        responses = [
+            {'result': {'frameTree': frame_tree}},
+            {'result': {'content': html, 'base64Encoded': False}},
+            {'result': {'content': 'body{}', 'base64Encoded': False}},
+        ]
+        tab._connection_handler.execute_command = AsyncMock(side_effect=responses)
+
+        zip_path = tmp_path / 'bundle.zip'
+        await tab.save_bundle(str(zip_path))
+
+        # Only 3 calls: getResourceTree, getResourceContent(doc), getResourceContent(ok.css)
+        assert tab._connection_handler.execute_command.call_count == 3
+
+    @pytest.mark.asyncio
+    async def test_save_bundle_handles_fetch_exceptions(self, tab, tmp_path):
+        page_url = 'https://example.com/'
+        resources = [
+            self._make_resource('https://example.com/style.css', 'Stylesheet', 'text/css'),
+        ]
+        frame_tree = self._make_frame_tree(resources=resources)
+        html = '<html><body></body></html>'
+
+        responses = [
+            {'result': {'frameTree': frame_tree}},
+            {'result': {'content': html, 'base64Encoded': False}},
+            RuntimeError('fetch failed'),
+        ]
+        tab._connection_handler.execute_command = AsyncMock(side_effect=responses)
+
+        zip_path = tmp_path / 'bundle.zip'
+        await tab.save_bundle(str(zip_path))
+
+        import zipfile
+        with zipfile.ZipFile(zip_path) as zf:
+            assert 'index.html' in zf.namelist()
+            assert not any(n.startswith('assets/') for n in zf.namelist())
+
+    @pytest.mark.asyncio
+    async def test_save_bundle_handles_cdp_error_responses(self, tab, tmp_path):
+        """CDP returns {'error': ...} instead of {'result': ...} for some resources."""
+        resources = [
+            self._make_resource('https://example.com/style.css', 'Stylesheet', 'text/css'),
+        ]
+        frame_tree = self._make_frame_tree(resources=resources)
+        html = '<html><body></body></html>'
+
+        responses = [
+            {'result': {'frameTree': frame_tree}},
+            {'result': {'content': html, 'base64Encoded': False}},
+            {'error': {'code': -32000, 'message': 'No resource with given URL'}},
+        ]
+        tab._connection_handler.execute_command = AsyncMock(side_effect=responses)
+
+        zip_path = tmp_path / 'bundle.zip'
+        await tab.save_bundle(str(zip_path))
+
+        import zipfile
+        with zipfile.ZipFile(zip_path) as zf:
+            assert 'index.html' in zf.namelist()
+            assert not any(n.startswith('assets/') for n in zf.namelist())
+
+    @pytest.mark.asyncio
+    async def test_save_bundle_empty_resources(self, tab, tmp_path):
+        frame_tree = self._make_frame_tree(resources=[])
+        html = '<html><body>Hello</body></html>'
+
+        responses = [
+            {'result': {'frameTree': frame_tree}},
+            {'result': {'content': html, 'base64Encoded': False}},
+        ]
+        tab._connection_handler.execute_command = AsyncMock(side_effect=responses)
+
+        zip_path = tmp_path / 'bundle.zip'
+        await tab.save_bundle(str(zip_path))
+
+        import zipfile
+        with zipfile.ZipFile(zip_path) as zf:
+            assert zf.namelist() == ['index.html']
+            assert zf.read('index.html').decode() == html
+
+    @pytest.mark.asyncio
+    async def test_save_bundle_base64_encoded_resource(self, tab, tmp_path):
+        page_url = 'https://example.com/'
+        img_url = 'https://example.com/image.png'
+        resources = [
+            self._make_resource(img_url, 'Image', 'image/png'),
+        ]
+        frame_tree = self._make_frame_tree(resources=resources)
+        html = f'<html><body><img src="{img_url}"></body></html>'
+        img_bytes = b'\x89PNG\r\n\x1a\n' + b'\x00' * 16
+        img_b64 = base64.b64encode(img_bytes).decode()
+
+        responses = [
+            {'result': {'frameTree': frame_tree}},
+            {'result': {'content': html, 'base64Encoded': False}},
+            {'result': {'content': img_b64, 'base64Encoded': True}},
+        ]
+        tab._connection_handler.execute_command = AsyncMock(side_effect=responses)
+
+        zip_path = tmp_path / 'bundle.zip'
+        await tab.save_bundle(str(zip_path))
+
+        import zipfile
+        with zipfile.ZipFile(zip_path) as zf:
+            asset_names = [n for n in zf.namelist() if n.startswith('assets/')]
+            assert len(asset_names) == 1
+            assert zf.read(asset_names[0]) == img_bytes
+
+    @pytest.mark.asyncio
+    async def test_save_bundle_css_url_rewriting(self, tab, tmp_path):
+        page_url = 'https://example.com/'
+        css_url = 'https://example.com/css/style.css'
+        font_url = 'https://example.com/css/font.woff2'
+
+        resources = [
+            self._make_resource(css_url, 'Stylesheet', 'text/css'),
+            self._make_resource(font_url, 'Font', 'font/woff2'),
+        ]
+        frame_tree = self._make_frame_tree(resources=resources)
+
+        html = f'<html><head><link rel="stylesheet" href="{css_url}"></head><body></body></html>'
+        css_content = 'body { font-family: url("font.woff2"); }'
+        font_bytes = b'woff2data'
+
+        responses = [
+            {'result': {'frameTree': frame_tree}},
+            {'result': {'content': html, 'base64Encoded': False}},
+            {'result': {'content': css_content, 'base64Encoded': False}},
+            {'result': {'content': base64.b64encode(font_bytes).decode(), 'base64Encoded': True}},
+        ]
+        tab._connection_handler.execute_command = AsyncMock(side_effect=responses)
+
+        zip_path = tmp_path / 'bundle.zip'
+        await tab.save_bundle(str(zip_path))
+
+        import zipfile
+        with zipfile.ZipFile(zip_path) as zf:
+            css_files = [n for n in zf.namelist() if n.endswith('.css')]
+            assert len(css_files) == 1
+            css_data = zf.read(css_files[0]).decode('utf-8')
+            # CSS url() should reference the font's local filename
+            assert 'font.woff2' not in css_data or 'assets/' not in css_data
+            # The font.woff2 reference should have been rewritten
+            assert 'url("' in css_data
+
+    @pytest.mark.asyncio
+    async def test_save_bundle_child_frames(self, tab, tmp_path):
+        child_resources = [
+            self._make_resource('https://example.com/child.css', 'Stylesheet', 'text/css'),
+        ]
+        child_frame_tree = self._make_frame_tree(
+            frame_id='F2',
+            page_url='https://example.com/child.html',
+            resources=child_resources,
+        )
+        parent_resources = [
+            self._make_resource('https://example.com/main.css', 'Stylesheet', 'text/css'),
+        ]
+        frame_tree = self._make_frame_tree(
+            resources=parent_resources,
+            child_frames=[child_frame_tree],
+        )
+
+        html = '<html><body></body></html>'
+        responses = [
+            {'result': {'frameTree': frame_tree}},
+            {'result': {'content': html, 'base64Encoded': False}},
+            {'result': {'content': 'body{}', 'base64Encoded': False}},
+            {'result': {'content': 'p{}', 'base64Encoded': False}},
+        ]
+        tab._connection_handler.execute_command = AsyncMock(side_effect=responses)
+
+        zip_path = tmp_path / 'bundle.zip'
+        await tab.save_bundle(str(zip_path))
+
+        import zipfile
+        with zipfile.ZipFile(zip_path) as zf:
+            asset_names = [n for n in zf.namelist() if n.startswith('assets/')]
+            assert len(asset_names) == 2
+
+    @pytest.mark.asyncio
+    async def test_save_bundle_skips_data_urls(self, tab, tmp_path):
+        resources = [
+            self._make_resource('data:image/png;base64,abc', 'Image', 'image/png'),
+            self._make_resource('https://example.com/real.css', 'Stylesheet', 'text/css'),
+        ]
+        frame_tree = self._make_frame_tree(resources=resources)
+        html = '<html><body></body></html>'
+
+        responses = [
+            {'result': {'frameTree': frame_tree}},
+            {'result': {'content': html, 'base64Encoded': False}},
+            {'result': {'content': 'body{}', 'base64Encoded': False}},
+        ]
+        tab._connection_handler.execute_command = AsyncMock(side_effect=responses)
+
+        zip_path = tmp_path / 'bundle.zip'
+        await tab.save_bundle(str(zip_path))
+
+        # Only 3 calls: tree, doc content, real.css — data: URL was skipped
+        assert tab._connection_handler.execute_command.call_count == 3
+
+    def test_collect_frame_resources_recursive(self):
+        child = {
+            'frame': {'id': 'F2', 'url': 'https://example.com/child',
+                       'loaderId': 'L2', 'domainAndRegistry': '', 'securityOrigin': '',
+                       'mimeType': 'text/html', 'secureContextType': 'Secure',
+                       'crossOriginIsolatedContextType': 'NotIsolated',
+                       'gatedAPIFeatures': []},
+            'resources': [
+                {'url': 'https://example.com/c.css', 'type': 'Stylesheet', 'mimeType': 'text/css'},
+            ],
+        }
+        parent = {
+            'frame': {'id': 'F1', 'url': 'https://example.com/',
+                       'loaderId': 'L1', 'domainAndRegistry': '', 'securityOrigin': '',
+                       'mimeType': 'text/html', 'secureContextType': 'Secure',
+                       'crossOriginIsolatedContextType': 'NotIsolated',
+                       'gatedAPIFeatures': []},
+            'resources': [
+                {'url': 'https://example.com/p.css', 'type': 'Stylesheet', 'mimeType': 'text/css'},
+            ],
+            'childFrames': [child],
+        }
+        result = collect_frame_resources(parent)
+        assert len(result) == 2
+        assert result[0][0] == 'F1'
+        assert result[1][0] == 'F2'
+
+    def test_build_asset_filename(self):
+        name = build_asset_filename(
+            'https://example.com/css/style.css', 'text/css', 0
+        )
+        assert name == '0000_style.css'
+
+    def test_build_asset_filename_no_extension(self):
+        name = build_asset_filename(
+            'https://example.com/api/image', 'image/png', 5
+        )
+        assert name == '0005_image.png'
+
+    def test_build_asset_filename_no_path(self):
+        name = build_asset_filename(
+            'https://example.com/', 'text/css', 1
+        )
+        assert name == '0001_resource.css'
+
+    def test_rewrite_css_urls(self):
+        asset_map = {
+            'https://example.com/fonts/bold.woff2': (
+                '0001_bold.woff2', b'data', 'font/woff2', 'Font'
+            ),
+        }
+        css = 'body { font: url("https://example.com/fonts/bold.woff2"); }'
+        result = rewrite_css_urls(
+            css, 'https://example.com/css/style.css', asset_map
+        )
+        assert '0001_bold.woff2' in result
+
+    def test_rewrite_css_urls_relative(self):
+        asset_map = {
+            'https://example.com/css/bg.png': (
+                '0002_bg.png', b'data', 'image/png', 'Image'
+            ),
+        }
+        css = 'div { background: url("bg.png"); }'
+        result = rewrite_css_urls(
+            css, 'https://example.com/css/style.css', asset_map
+        )
+        assert '0002_bg.png' in result
+
+    def test_rewrite_css_urls_skips_data_uris(self):
+        css = 'div { background: url("data:image/png;base64,abc"); }'
+        result = rewrite_css_urls(css, 'https://example.com/style.css', {})
+        assert 'data:image/png;base64,abc' in result
+
+    @pytest.mark.asyncio
+    async def test_save_bundle_js_fallback_when_resource_content_fails(self, tab, tmp_path):
+        """When getResourceContent fails for the document, fall back to JS."""
+        frame_tree = self._make_frame_tree(resources=[])
+        html = '<html><body>Fallback</body></html>'
+
+        call_count = 0
+
+        async def side_effect(*args, **kwargs):
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                # getResourceTree succeeds
+                return {'result': {'frameTree': frame_tree}}
+            if call_count == 2:
+                # getResourceContent for document fails (no 'result' key)
+                return {'error': {'code': -32000, 'message': 'No resource'}}
+            if call_count == 3:
+                # execute_script fallback
+                return {'result': {'result': {'value': html}}}
+            return {}
+
+        tab._connection_handler.execute_command = AsyncMock(side_effect=side_effect)
+
+        zip_path = tmp_path / 'bundle.zip'
+        await tab.save_bundle(str(zip_path))
+
+        import zipfile
+        with zipfile.ZipFile(zip_path) as zf:
+            assert zf.read('index.html').decode() == html
