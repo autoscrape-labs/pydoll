@@ -1,3 +1,9 @@
+## 2.20.1 (2026-02-16)
+
+### Fix
+
+- **tab**: replace readyState polling with CDP events in navigation
+
 ## 2.20.0 (2026-02-13)
 
 ### Feat
