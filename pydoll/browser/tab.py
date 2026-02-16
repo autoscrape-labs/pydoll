@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import base64 as _b64
+import contextlib
 import io
 import logging
 import shutil
@@ -134,8 +135,6 @@ class Tab(FindElementsMixin):
     JavaScript execution, event handling, network monitoring, and specialized tasks
     like Cloudflare bypass.
     """
-
-    _READY_STATE_ORDER = (PageLoadState.LOADING, PageLoadState.INTERACTIVE, PageLoadState.COMPLETE)
 
     def __init__(
         self,
@@ -907,14 +906,9 @@ class Tab(FindElementsMixin):
             logger.debug('URL matches current page; refreshing instead')
             return
 
-        await self._execute_command(PageCommands.navigate(url))
-
-        try:
-            await self._wait_page_load(timeout=timeout)
-            logger.info(f'Navigation complete: {url}')
-        except WaitElementTimeout:
-            logger.error(f'Page load timeout after {timeout}s for URL: {url}')
-            raise PageLoadTimeout()
+        async with self._wait_page_load(timeout=timeout):
+            await self._execute_command(PageCommands.navigate(url))
+        logger.info(f'Navigation complete: {url}')
 
     async def refresh(
         self,
@@ -935,17 +929,14 @@ class Tab(FindElementsMixin):
             f'Reloading page (ignore_cache={ignore_cache}, '
             f'script_on_load={bool(script_to_evaluate_on_load)})'
         )
-        await self._execute_command(
-            PageCommands.reload(
-                ignore_cache=ignore_cache, script_to_evaluate_on_load=script_to_evaluate_on_load
+        async with self._wait_page_load():
+            await self._execute_command(
+                PageCommands.reload(
+                    ignore_cache=ignore_cache,
+                    script_to_evaluate_on_load=script_to_evaluate_on_load,
+                )
             )
-        )
-        try:
-            await self._wait_page_load()
-            logger.info('Page reloaded successfully')
-        except WaitElementTimeout:
-            logger.error('Page reload timed out')
-            raise PageLoadTimeout()
+        logger.info('Page reloaded successfully')
 
     async def take_screenshot(
         self,
@@ -1865,36 +1856,60 @@ class Tab(FindElementsMixin):
         if 'argument is not defined' in description:
             raise InvalidScriptWithElement('Script contains "argument" but no element was provided')
 
-    async def _wait_page_load(self, timeout: int = 300):
-        """
-        Wait for page to finish loading.
+    _PAGE_LOAD_EVENT_MAP = {
+        PageLoadState.INTERACTIVE: PageEvent.DOM_CONTENT_EVENT_FIRED,
+        PageLoadState.COMPLETE: PageEvent.LOAD_EVENT_FIRED,
+    }
 
-        Waits until ``document.readyState`` reaches **at least** the level
-        configured in ``browser.options.page_load_state``.  For example, when
-        the target state is ``interactive``, both ``"interactive"`` and
-        ``"complete"`` satisfy the condition — this prevents an infinite
-        polling loop when the page transitions past ``interactive`` before the
-        first check runs.
+    @asynccontextmanager
+    async def _wait_page_load(self, timeout: int = 300):
+        """Wait for page to reach the configured load state using CDP events.
+
+        Registers a CDP event listener **before** yielding so the navigation
+        command can be issued inside the ``async with`` block without race
+        conditions.  This replaces the former ``document.readyState`` polling
+        loop, eliminating the dependency on ``Runtime.evaluate`` during page
+        load and the risk of inner command timeouts.
+
+        The CDP event used depends on ``browser.options.page_load_state``:
+
+        * ``INTERACTIVE`` — waits for ``Page.domContentEventFired``.
+        * ``COMPLETE`` — waits for ``Page.loadEventFired``.
+
+        Args:
+            timeout: Maximum seconds to wait for the target load state.
 
         Raises:
-            WaitElementTimeout: If page doesn't load within *timeout* seconds.
+            PageLoadTimeout: If the page doesn't reach the target state in time.
         """
-        target_state = self._browser.options.page_load_state.value
-        target_index = self._READY_STATE_ORDER.index(target_state)
-        start_time = asyncio.get_event_loop().time()
-        logger.debug(f'Waiting for page load (timeout={timeout}s)')
-        while True:
-            response: EvaluateResponse = await self._execute_command(
-                RuntimeCommands.evaluate(expression='document.readyState')
-            )
-            current_state = response['result']['result']['value']
-            current_index = self._READY_STATE_ORDER.index(current_state)
-            if current_index >= target_index:
-                logger.debug(f'Page load state reached: {current_state} (target: {target_state})')
-                break
-            if asyncio.get_event_loop().time() - start_time > timeout:
-                raise WaitElementTimeout('Page load timed out')
-            await asyncio.sleep(0.5)
+        target_state = self._browser.options.page_load_state
+
+        page_loaded = asyncio.Event()
+        event_name = self._PAGE_LOAD_EVENT_MAP[target_state]
+        cleanup_page_events = not self._page_events_enabled
+
+        if cleanup_page_events:
+            await self.enable_page_events()
+
+        def on_loaded(_: dict):
+            page_loaded.set()
+
+        callback_id = await self.on(event_name, on_loaded, temporary=True)
+        logger.debug(f'Waiting for page load via {event_name} (timeout={timeout}s)')
+
+        try:
+            yield
+            await asyncio.wait_for(page_loaded.wait(), timeout=timeout)
+            logger.debug(f'Page load event received: {event_name}')
+        except asyncio.TimeoutError:
+            logger.error(f'Page load timeout after {timeout}s waiting for {event_name}')
+            raise PageLoadTimeout()
+        finally:
+            with contextlib.suppress(Exception):
+                await self.remove_callback(callback_id)
+            if cleanup_page_events:
+                with contextlib.suppress(Exception):
+                    await self.disable_page_events()
 
     async def _find_cloudflare_shadow_root(self, timeout: float) -> ShadowRoot:
         """Poll for the Cloudflare Turnstile shadow root.
