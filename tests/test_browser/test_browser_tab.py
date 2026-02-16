@@ -390,72 +390,94 @@ class TestTabNavigation:
         """Test navigating to a new URL."""
         tab._connection_handler.execute_command.side_effect = [
             {'result': {'result': {'value': 'https://old-url.com'}}},  # current_url
+            {'result': {}},  # Page.enable
             {'result': {'frameId': 'frame-id'}},  # navigate command
-            {'result': {'result': {'value': 'complete'}}},  # _wait_page_load
+            {'result': {}},  # Page.disable
         ]
-        
+
+        async def fire_callback(event_name, callback, temporary=False):
+            callback({'method': event_name, 'params': {}})
+            return 1
+
+        tab._connection_handler.register_callback = AsyncMock(side_effect=fire_callback)
+
         await tab.go_to('https://example.com')
-        
-        # Should call current_url, navigate, and _wait_page_load
-        assert tab._connection_handler.execute_command.call_count == 3
+
+        assert tab._connection_handler.execute_command.call_count == 4
 
     @pytest.mark.asyncio
     async def test_go_to_same_url(self, tab):
         """Test navigating to the same URL (should refresh)."""
         tab._connection_handler.execute_command.side_effect = [
             {'result': {'result': {'value': 'https://example.com'}}},  # current_url
+            {'result': {}},  # Page.enable
             {'result': {}},  # refresh command
-            {'result': {'result': {'value': 'complete'}}},  # _wait_page_load
+            {'result': {}},  # Page.disable
         ]
-        
+
+        async def fire_callback(event_name, callback, temporary=False):
+            callback({'method': event_name, 'params': {}})
+            return 1
+
+        tab._connection_handler.register_callback = AsyncMock(side_effect=fire_callback)
+
         await tab.go_to('https://example.com')
-        
-        # Should call current_url, refresh, and _wait_page_load
-        assert tab._connection_handler.execute_command.call_count == 3
+
+        assert tab._connection_handler.execute_command.call_count == 4
 
     @pytest.mark.asyncio
     async def test_go_to_timeout(self, tab):
         """Test navigation timeout."""
-        # Mock current_url to return different URL
         tab._connection_handler.execute_command.side_effect = [
             {'result': {'result': {'value': 'https://old-url.com'}}},  # current_url
+            {'result': {}},  # Page.enable
             {'result': {'frameId': 'frame-id'}},  # navigate command
-            {'result': {'result': {'value': 'loading'}}},  # _wait_page_load (loading state)
-            {'result': {'result': {'value': 'loading'}}},  # _wait_page_load (still loading)
+            {'result': {}},  # Page.disable
         ]
-        
-        # Mock time to simulate timeout
-        with patch('pydoll.browser.tab.asyncio.get_event_loop') as mock_loop:
-            mock_loop.return_value.time.side_effect = [0, 1]  # timeout after 1 second
-            with patch('pydoll.browser.tab.asyncio.sleep', AsyncMock()):
-                with pytest.raises(PageLoadTimeout):
-                    await tab.go_to('https://example.com', timeout=0.5)
+
+        # Don't fire the callback so the wait times out
+        tab._connection_handler.register_callback = AsyncMock(return_value=1)
+
+        with pytest.raises(PageLoadTimeout):
+            await tab.go_to('https://example.com', timeout=0.1)
 
     @pytest.mark.asyncio
     async def test_refresh(self, tab):
         """Test page refresh."""
         tab._connection_handler.execute_command.side_effect = [
+            {'result': {}},  # Page.enable
             {'result': {}},  # refresh command
-            {'result': {'result': {'value': 'complete'}}},  # _wait_page_load
+            {'result': {}},  # Page.disable
         ]
-        
+
+        async def fire_callback(event_name, callback, temporary=False):
+            callback({'method': event_name, 'params': {}})
+            return 1
+
+        tab._connection_handler.register_callback = AsyncMock(side_effect=fire_callback)
+
         await tab.refresh()
-        
-        # Should call refresh and _wait_page_load
-        assert tab._connection_handler.execute_command.call_count == 2
+
+        assert tab._connection_handler.execute_command.call_count == 3
 
     @pytest.mark.asyncio
     async def test_refresh_with_params(self, tab):
         """Test page refresh with parameters."""
         tab._connection_handler.execute_command.side_effect = [
+            {'result': {}},  # Page.enable
             {'result': {}},  # refresh command
-            {'result': {'result': {'value': 'complete'}}},  # _wait_page_load
+            {'result': {}},  # Page.disable
         ]
-        
+
+        async def fire_callback(event_name, callback, temporary=False):
+            callback({'method': event_name, 'params': {}})
+            return 1
+
+        tab._connection_handler.register_callback = AsyncMock(side_effect=fire_callback)
+
         await tab.refresh(ignore_cache=True, script_to_evaluate_on_load='console.log("test")')
-        
-        # Should call refresh and _wait_page_load
-        assert tab._connection_handler.execute_command.call_count == 2
+
+        assert tab._connection_handler.execute_command.call_count == 3
 
 
 class TestTabScreenshotAndPDF:
@@ -1742,75 +1764,89 @@ class TestTabUtilityMethods:
 
     @pytest.mark.asyncio
     async def test_wait_page_load_complete(self, tab):
-        """Test _wait_page_load when page is complete."""
-        tab._connection_handler.execute_command.return_value = {
-            'result': {'result': {'value': 'complete'}}
-        }
-        
-        await tab._wait_page_load()
-        
-        assert_mock_called_at_least_once(tab._connection_handler)
+        """Test _wait_page_load waits for LOAD_EVENT_FIRED via CDP events."""
+        tab._connection_handler.execute_command.return_value = {'result': {}}
+
+        async def fire_callback(event_name, callback, temporary=False):
+            callback({'method': event_name, 'params': {}})
+            return 1
+
+        tab._connection_handler.register_callback = AsyncMock(side_effect=fire_callback)
+
+        async with tab._wait_page_load():
+            pass
+
+        tab._connection_handler.register_callback.assert_called_once()
+        call_args = tab._connection_handler.register_callback.call_args
+        assert call_args[0][0] == PageEvent.LOAD_EVENT_FIRED
 
     @pytest.mark.asyncio
-    async def test_wait_page_load_interactive_already_complete(self, tab):
-        """Test _wait_page_load when target is interactive but page already reached complete.
-
-        Regression test: when page_load_state is INTERACTIVE and the page
-        transitions past 'interactive' to 'complete' before the first poll,
-        _wait_page_load must still resolve immediately instead of looping
-        indefinitely.
-        """
+    async def test_wait_page_load_interactive(self, tab):
+        """Test _wait_page_load waits for DOM_CONTENT_EVENT_FIRED when
+        page_load_state is INTERACTIVE."""
         tab._browser.options.page_load_state = PageLoadState.INTERACTIVE
-        tab._connection_handler.execute_command.return_value = {
-            'result': {'result': {'value': 'complete'}}
-        }
+        tab._connection_handler.execute_command.return_value = {'result': {}}
 
-        await tab._wait_page_load()
+        async def fire_callback(event_name, callback, temporary=False):
+            callback({'method': event_name, 'params': {}})
+            return 1
 
-        assert_mock_called_at_least_once(tab._connection_handler)
+        tab._connection_handler.register_callback = AsyncMock(side_effect=fire_callback)
 
-    @pytest.mark.asyncio
-    async def test_wait_page_load_interactive_exact(self, tab):
-        """Test _wait_page_load resolves when readyState is exactly 'interactive'."""
-        tab._browser.options.page_load_state = PageLoadState.INTERACTIVE
-        tab._connection_handler.execute_command.return_value = {
-            'result': {'result': {'value': 'interactive'}}
-        }
+        async with tab._wait_page_load():
+            pass
 
-        await tab._wait_page_load()
-
-        assert_mock_called_at_least_once(tab._connection_handler)
+        tab._connection_handler.register_callback.assert_called_once()
+        call_args = tab._connection_handler.register_callback.call_args
+        assert call_args[0][0] == PageEvent.DOM_CONTENT_EVENT_FIRED
 
     @pytest.mark.asyncio
     async def test_wait_page_load_timeout(self, tab):
-        """Test _wait_page_load timeout."""
-        # Mock execute_command to always return 'loading' state
-        tab._connection_handler.execute_command.return_value = {
-            'result': {'result': {'value': 'loading'}}
-        }
-        
-        # Mock time to simulate timeout without actually waiting
-        with patch('pydoll.browser.tab.asyncio.get_event_loop') as mock_loop:
-            # First call returns 0, second call returns time > timeout
-            mock_loop.return_value.time.side_effect = [0, 1]  # 1 > 0.5 timeout
-            with patch('pydoll.browser.tab.asyncio.sleep', AsyncMock()):
-                with pytest.raises(WaitElementTimeout, match="Page load timed out"):
-                    await tab._wait_page_load(timeout=0.5)
+        """Test _wait_page_load raises PageLoadTimeout on timeout."""
+        tab._connection_handler.execute_command.return_value = {'result': {}}
+        tab._connection_handler.register_callback = AsyncMock(return_value=1)
+
+        with pytest.raises(PageLoadTimeout):
+            async with tab._wait_page_load(timeout=0.1):
+                pass
+
+    @pytest.mark.asyncio
+    async def test_wait_page_load_cleans_up_page_events(self, tab):
+        """Test _wait_page_load enables/disables page events when needed."""
+        assert tab._page_events_enabled is False
+        tab._connection_handler.execute_command.return_value = {'result': {}}
+
+        async def fire_callback(event_name, callback, temporary=False):
+            callback({'method': event_name, 'params': {}})
+            return 1
+
+        tab._connection_handler.register_callback = AsyncMock(side_effect=fire_callback)
+
+        async with tab._wait_page_load():
+            assert tab._page_events_enabled is True
+
+        assert tab._page_events_enabled is False
 
     @pytest.mark.asyncio
     async def test_refresh_if_url_not_changed_same_url(self, tab):
         """Test _refresh_if_url_not_changed with same URL."""
-        # Mock multiple calls: current_url, refresh, and _wait_page_load
         tab._connection_handler.execute_command.side_effect = [
             {'result': {'result': {'value': 'https://example.com'}}},  # current_url call
+            {'result': {}},  # Page.enable
             {'result': {}},  # refresh call
-            {'result': {'result': {'value': 'complete'}}},  # _wait_page_load call
+            {'result': {}},  # Page.disable
         ]
-        
+
+        async def fire_callback(event_name, callback, temporary=False):
+            callback({'method': event_name, 'params': {}})
+            return 1
+
+        tab._connection_handler.register_callback = AsyncMock(side_effect=fire_callback)
+
         result = await tab._refresh_if_url_not_changed('https://example.com')
-        
+
         assert result is True
-        assert tab._connection_handler.execute_command.call_count == 3
+        assert tab._connection_handler.execute_command.call_count == 4
 
     @pytest.mark.asyncio
     async def test_refresh_if_url_not_changed_different_url(self, tab):
