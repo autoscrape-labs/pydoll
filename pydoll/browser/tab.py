@@ -1893,7 +1893,7 @@ class Tab(FindElementsMixin):
         def on_loaded(_: dict):
             page_loaded.set()
 
-        callback_id = await self.on(event_name, on_loaded, temporary=True)
+        callback_id = await self.on(event_name, on_loaded)
         logger.debug(f'Waiting for page load via {event_name} (timeout={timeout}s)')
 
         try:
