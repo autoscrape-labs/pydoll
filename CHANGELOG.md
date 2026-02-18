@@ -1,3 +1,10 @@
+## 2.20.2 (2026-02-18)
+
+### Fix
+
+- **command**: increase default command timeout from 10s to 60s across multiple components
+- **tab**: remove temporary flag to avoid duplicate callback removal
+
 ## 2.20.1 (2026-02-16)
 
 ### Fix
