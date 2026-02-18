@@ -90,7 +90,7 @@ class ConnectionHandler:
         return False
 
     async def execute_command(
-        self, command: Command[T_CommandParams, T_CommandResponse], timeout: int = 10
+        self, command: Command[T_CommandParams, T_CommandResponse], timeout: int = 60
     ) -> T_CommandResponse:
         """
         Send CDP command and await response.
