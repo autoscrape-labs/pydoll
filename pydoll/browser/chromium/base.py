@@ -881,7 +881,7 @@ class Browser(ABC):  # noqa: PLR0904
         return False
 
     async def _execute_command(
-        self, command: Command[T_CommandParams, T_CommandResponse], timeout: int = 10
+        self, command: Command[T_CommandParams, T_CommandResponse], timeout: int = 60
     ) -> T_CommandResponse:
         """Execute CDP command and return result (core method for browser communication)."""
         logger.debug(f'Executing command: {command.get("method")} (timeout={timeout})')
