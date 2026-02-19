@@ -711,7 +711,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
             interval: Deprecated. Use humanize=True instead.
         """
         logger.info(f'Typing text (length={len(text)}, humanize={humanize})')
-        await self.click()
+        await self.click(humanize=humanize)
         keyboard = self._get_keyboard()
         await keyboard.type_text(text, humanize=humanize, interval=interval)
 
