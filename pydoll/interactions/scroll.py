@@ -67,7 +67,7 @@ class Scroll:
         position: ScrollPosition,
         distance: int | float,
         smooth: bool = True,
-        humanize: bool = True,
+        humanize: bool = False,
     ):
         """
         Scroll the page by a relative distance in the specified direction.
@@ -93,7 +93,7 @@ class Scroll:
 
         await self._execute_script_await_promise(script)
 
-    async def to_top(self, smooth: bool = True, humanize: bool = True):
+    async def to_top(self, smooth: bool = True, humanize: bool = False):
         """
         Scroll to the top of the page (Y=0).
 
@@ -109,7 +109,7 @@ class Scroll:
         script = Scripts.SCROLL_TO_TOP.format(behavior=behavior)
         await self._execute_script_await_promise(script)
 
-    async def to_bottom(self, smooth: bool = True, humanize: bool = True):
+    async def to_bottom(self, smooth: bool = True, humanize: bool = False):
         """
         Scroll to the bottom of the page (Y=document.body.scrollHeight).
 

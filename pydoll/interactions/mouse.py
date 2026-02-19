@@ -149,7 +149,7 @@ class Mouse:
         x: float,
         y: float,
         *,
-        humanize: bool = True,
+        humanize: bool = False,
     ) -> None:
         """
         Move mouse cursor to the specified position.
@@ -172,7 +172,7 @@ class Mouse:
         *,
         button: MouseButton = MouseButton.LEFT,
         click_count: int = 1,
-        humanize: bool = True,
+        humanize: bool = False,
     ) -> None:
         """
         Click at the specified position.
@@ -198,7 +198,7 @@ class Mouse:
         y: float,
         *,
         button: MouseButton = MouseButton.LEFT,
-        humanize: bool = True,
+        humanize: bool = False,
     ) -> None:
         """
         Double-click at the specified position.
@@ -236,7 +236,7 @@ class Mouse:
         end_x: float,
         end_y: float,
         *,
-        humanize: bool = True,
+        humanize: bool = False,
     ) -> None:
         """
         Drag from one position to another.

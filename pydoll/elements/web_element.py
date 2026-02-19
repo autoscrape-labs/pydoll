@@ -550,7 +550,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         x_offset: int = 0,
         y_offset: int = 0,
         hold_time: float = 0.1,
-        humanize: bool = True,
+        humanize: bool = False,
     ):
         """
         Click element using simulated mouse events.
@@ -699,7 +699,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
     async def type_text(
         self,
         text: str,
-        humanize: bool = True,
+        humanize: bool = False,
         interval: Optional[float] = None,
     ):
         """
@@ -707,11 +707,11 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
 
         Args:
             text: Text to type into the element.
-            humanize: When True (default), simulates human-like typing.
+            humanize: When True, simulates human-like typing.
             interval: Deprecated. Use humanize=True instead.
         """
         logger.info(f'Typing text (length={len(text)}, humanize={humanize})')
-        await self.click()
+        await self.click(humanize=humanize)
         keyboard = self._get_keyboard()
         await keyboard.type_text(text, humanize=humanize, interval=interval)
 

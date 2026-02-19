@@ -5,9 +5,9 @@
 !!! info "功能状态"
     **已实现:**
 
-    - **人性化键盘**: 可变输入速度，真实错误与自动纠正 (`humanize=True`)
-    - **人性化滚动**: 基于物理的滚动，包含动量、摩擦、抖动和过冲 (`humanize=True`)
-    - **人性化鼠标**: 贝塞尔曲线路径、菲茨定律时序、最小急动速度、手抖和过冲 (`humanize=True`)
+    - **人性化键盘**: 可变输入速度，真实错误与自动纠正（传入 `humanize=True`）
+    - **人性化滚动**: 基于物理的滚动，包含动量、摩擦、抖动和过冲（传入 `humanize=True`）
+    - **人性化鼠标**: 贝塞尔曲线路径、菲茨定律时序、最小急动速度、手抖和过冲（传入 `humanize=True`）
 
     **即将推出:**
 
@@ -195,14 +195,14 @@ Pydoll的键盘API提供两种输入模式，平衡速度与隐蔽性。
 !!! info "了解输入模式"
     | 模式 | 参数 | 行为 | 使用场景 |
     |------|------|------|----------|
-    | **默认（人性化）** | `humanize=True` | 可变时序，约2%错误率并自动纠正 | **反机器人规避**（默认） |
-    | **快速** | `humanize=False` | 固定50毫秒间隔，无错误 | 速度优先、低风险场景 |
+    | **默认（快速）** | `humanize=False` | 固定50毫秒间隔，无错误 | 速度优先、低风险场景（默认） |
+    | **人性化** | `humanize=True` | 可变时序，约2%错误率并自动纠正 | **反机器人规避** |
 
-    `interval`参数已弃用。使用默认`humanize=True`进行真实输入。
+    `interval`参数已弃用。传入`humanize=True`进行真实输入。
 
 ### 人性化自然输入
 
-默认情况下，`type_text()`使用人性化模式，模拟真实人类输入，包含可变速度和自动纠正的偶发错误：
+当传入`humanize=True`时，`type_text()`使用人性化模式，模拟真实人类输入，包含可变速度和自动纠正的偶发错误：
 
 ```python
 import asyncio
@@ -218,8 +218,8 @@ async def natural_typing():
 
         # 可变速度：按键间隔30-120毫秒
         # 约2%错误率，带真实纠正行为
-        await username_field.type_text("john.doe@example.com")  # 默认 humanize=True
-        await password_field.type_text("MyC0mpl3xP@ssw0rd!")
+        await username_field.type_text("john.doe@example.com", humanize=True)
+        await password_field.type_text("MyC0mpl3xP@ssw0rd!", humanize=True)
 
 asyncio.run(natural_typing())
 ```
@@ -266,11 +266,11 @@ Pydoll提供专用滚动API，在继续执行前等待滚动完成，使您的�
 
     | 模式 | 参数 | 行为 | 使用场景 |
     |------|------|------|----------|
-    | **人性化（默认）** | `humanize=True` | 物理引擎：动量、抖动、过冲 | **反机器人规避**（默认） |
-    | **平滑** | `humanize=False, smooth=True` | CSS动画，可预测 | 一般浏览模拟 |
-    | **即时** | `humanize=False, smooth=False` | 立即传送到目标位置 | 速度优先场景 |
+    | **平滑（默认）** | `smooth=True` | CSS动画，可预测 | 一般浏览模拟（默认） |
+    | **人性化** | `humanize=True` | 物理引擎：动量、抖动、过冲 | **反机器人规避** |
+    | **即时** | `smooth=False` | 立即传送到目标位置 | 速度优先场景 |
 
-    人性化滚动现在是默认模式。传入`humanize=False`以使用CSS或即时滚动。
+    传入`humanize=True`以启用基于物理的人性化滚动来规避机器人检测。
 
 ### 基础方向滚动
 
@@ -286,10 +286,10 @@ async def basic_scrolling():
         tab = await browser.start()
         await tab.go_to('https://example.com/long-page')
         
-        # 人性化（默认）- 贝塞尔曲线物理引擎
+        # 人性化 - 贝塞尔曲线物理引擎
         # 包含：动量、摩擦、抖动、微停顿、过冲
-        await tab.scroll.by(ScrollPosition.DOWN, 500)
-        await tab.scroll.by(ScrollPosition.UP, 300)
+        await tab.scroll.by(ScrollPosition.DOWN, 500, humanize=True)
+        await tab.scroll.by(ScrollPosition.UP, 300, humanize=True)
 
         # CSS动画 - 外观平滑但时序可预测
         await tab.scroll.by(ScrollPosition.DOWN, 500, humanize=False, smooth=True)
@@ -316,10 +316,10 @@ async def scroll_to_positions():
         # 阅读文章开头
         await asyncio.sleep(2.0)
         
-        # 人性化滚动（默认 - 物理引擎，反机器人）
-        await tab.scroll.to_bottom()
+        # 人性化滚动（物理引擎，反机器人）
+        await tab.scroll.to_bottom(humanize=True)
         await asyncio.sleep(1.5)
-        await tab.scroll.to_top()
+        await tab.scroll.to_top(humanize=True)
 
         # CSS平滑滚动（可预测动画）
         await tab.scroll.to_bottom(humanize=False, smooth=True)
@@ -330,9 +330,9 @@ asyncio.run(scroll_to_positions())
 ```
 
 !!! tip "选择正确的模式"
-    - **默认** (`humanize=True`)：反机器人规避的最佳选择，自动启用
-    - **`humanize=False, smooth=True`**：适用于演示、截图和一般自动化
-    - **`humanize=False, smooth=False`**：隐蔽性不重要时追求最大速度
+    - **`humanize=True`**：反机器人规避的最佳选择
+    - **默认** (`smooth=True`)：适用于演示、截图和一般自动化
+    - **`smooth=False`**：隐蔽性不重要时追求最大速度
 
 ### 类人滚动模式
 

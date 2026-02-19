@@ -264,7 +264,7 @@ async def test_get_window_id_for_tab_uses_ws_target_when_no_target_id(mock_brows
     window_id = await mock_browser.get_window_id_for_tab(tab)
     assert window_id == 'win1'
     mock_browser._connection_handler.execute_command.assert_called_with(
-        BrowserCommands.get_window_for_target('targetXYZ'), timeout=10
+        BrowserCommands.get_window_for_target('targetXYZ'), timeout=60
     )
 
 
@@ -273,7 +273,7 @@ async def test_cookie_management(mock_browser):
     cookies = [{'name': 'test', 'value': '123'}]
     await mock_browser.set_cookies(cookies)
     mock_browser._connection_handler.execute_command.assert_any_call(
-        StorageCommands.set_cookies(cookies=cookies, browser_context_id=None), timeout=10
+        StorageCommands.set_cookies(cookies=cookies, browser_context_id=None), timeout=60
     )
 
     mock_browser._connection_handler.execute_command.return_value = {'result': {'cookies': cookies}}
@@ -282,7 +282,7 @@ async def test_cookie_management(mock_browser):
 
     await mock_browser.delete_all_cookies()
     mock_browser._connection_handler.execute_command.assert_any_await(
-        StorageCommands.clear_cookies(), timeout=10
+        StorageCommands.clear_cookies(), timeout=60
     )
 
 
@@ -329,17 +329,17 @@ async def test_window_management(mock_browser):
     bounds = {'width': 800, 'height': 600}
     await mock_browser.set_window_bounds(bounds)
     mock_browser._connection_handler.execute_command.assert_any_await(
-        BrowserCommands.set_window_bounds('window1', bounds), timeout=10
+        BrowserCommands.set_window_bounds('window1', bounds), timeout=60
     )
 
     await mock_browser.set_window_maximized()
     mock_browser._connection_handler.execute_command.assert_any_await(
-        BrowserCommands.set_window_maximized('window1'), timeout=10
+        BrowserCommands.set_window_maximized('window1'), timeout=60
     )
 
     await mock_browser.set_window_minimized()
     mock_browser._connection_handler.execute_command.assert_any_await(
-        BrowserCommands.set_window_minimized('window1'), timeout=10
+        BrowserCommands.set_window_minimized('window1'), timeout=60
     )
 
 
@@ -355,7 +355,7 @@ async def test_get_window_id_for_target(mock_browser):
     window_id = await mock_browser.get_window_id_for_tab(tab)
     assert window_id == 'page1'
     mock_browser._connection_handler.execute_command.assert_called_with(
-        BrowserCommands.get_window_for_target('page1'), timeout=10
+        BrowserCommands.get_window_for_target('page1'), timeout=60
     )
 
 
@@ -417,7 +417,7 @@ async def test_get_window_id(mock_browser):
     window_id = await mock_browser.get_window_id()
     assert window_id == 'window1'
     mock_browser._connection_handler.execute_command.assert_called_with(
-        BrowserCommands.get_window_for_target('target1'), timeout=10
+        BrowserCommands.get_window_for_target('target1'), timeout=60
     )
 
 
@@ -425,7 +425,7 @@ async def test_get_window_id(mock_browser):
 async def test_stop_browser(mock_browser):
     await mock_browser.stop()
     mock_browser._connection_handler.execute_command.assert_any_await(
-        BrowserCommands.close(), timeout=10
+        BrowserCommands.close(), timeout=60
     )
     mock_browser._browser_process_manager.stop_process.assert_called_once()
     mock_browser._temp_directory_manager.cleanup.assert_called_once()
@@ -467,7 +467,7 @@ async def test_disable_events(mock_browser):
 async def test__continue_request_callback(mock_browser):
     await mock_browser._continue_request_callback({'params': {'requestId': 'request1'}})
     mock_browser._connection_handler.execute_command.assert_called_with(
-        FetchCommands.continue_request('request1'), timeout=10
+        FetchCommands.continue_request('request1'), timeout=60
     )
 
 
@@ -481,7 +481,7 @@ async def test__continue_request_auth_required_callback(mock_browser):
 
     mock_browser._connection_handler.execute_command.assert_any_call(
         FetchCommands.continue_request_with_auth('request1', 'ProvideCredentials', 'user', 'pass'),
-        timeout=10,
+        timeout=60,
     )
 
     mock_browser._connection_handler.execute_command.assert_any_call(FetchCommands.disable())
@@ -742,7 +742,7 @@ async def test_set_download_behavior(mock_browser):
             browser_context_id=None,
             events_enabled=True,
         ),
-        timeout=10,
+        timeout=60,
     )
 
 
@@ -769,7 +769,7 @@ async def test_grant_permissions(mock_browser):
         BrowserCommands.grant_permissions(
             permissions=permissions, origin='https://example.com', browser_context_id=None
         ),
-        timeout=10,
+        timeout=60,
     )
 
 
@@ -778,7 +778,7 @@ async def test_reset_permissions(mock_browser):
     await mock_browser.reset_permissions()
 
     mock_browser._connection_handler.execute_command.assert_called_with(
-        BrowserCommands.reset_permissions(browser_context_id=None), timeout=10
+        BrowserCommands.reset_permissions(browser_context_id=None), timeout=60
     )
 
 
@@ -799,7 +799,7 @@ async def test_get_version(mock_browser):
     assert version['product'] == 'Chrome/90.0.4430.93'
 
     mock_browser._connection_handler.execute_command.assert_called_with(
-        BrowserCommands.get_version(), timeout=10
+        BrowserCommands.get_version(), timeout=60
     )
 
 
@@ -941,7 +941,7 @@ async def test_continue_request(mock_browser):
             headers=None,
             intercept_response=None,
         ),
-        timeout=10,
+        timeout=60,
     )
 
 
@@ -973,7 +973,7 @@ async def test_continue_request_with_all_params(mock_browser):
             headers=headers,
             intercept_response=intercept_response,
         ),
-        timeout=10,
+        timeout=60,
     )
 
 
@@ -985,7 +985,7 @@ async def test_fail_request(mock_browser):
     await mock_browser.fail_request(request_id, error_reason)
 
     mock_browser._connection_handler.execute_command.assert_called_with(
-        FetchCommands.fail_request(request_id, error_reason), timeout=10
+        FetchCommands.fail_request(request_id, error_reason), timeout=60
     )
 
 
@@ -1005,7 +1005,7 @@ async def test_fulfill_request(mock_browser):
             body=None,
             response_phrase=None,
         ),
-        timeout=10,
+        timeout=60,
     )
 
 
@@ -1035,7 +1035,7 @@ async def test_fulfill_request_with_all_params(mock_browser):
             body=body,
             response_phrase=response_phrase,
         ),
-        timeout=10,
+        timeout=60,
     )
 
 

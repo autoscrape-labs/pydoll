@@ -231,7 +231,7 @@ class TestMouseDoubleClick:
         with patch.object(mouse, 'click', new_callable=AsyncMock) as mock_click:
             await mouse.double_click(500, 600)
             mock_click.assert_called_once_with(
-                500, 600, button=MouseButton.LEFT, click_count=2, humanize=True
+                500, 600, button=MouseButton.LEFT, click_count=2, humanize=False
             )
 
     @pytest.mark.asyncio
@@ -239,7 +239,7 @@ class TestMouseDoubleClick:
         with patch.object(mouse, 'click', new_callable=AsyncMock) as mock_click:
             await mouse.double_click(500, 600, button=MouseButton.RIGHT)
             mock_click.assert_called_once_with(
-                500, 600, button=MouseButton.RIGHT, click_count=2, humanize=True
+                500, 600, button=MouseButton.RIGHT, click_count=2, humanize=False
             )
 
     @pytest.mark.asyncio
