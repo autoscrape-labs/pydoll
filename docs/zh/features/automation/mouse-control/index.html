@@ -27,7 +27,7 @@
       
       
       <link rel="icon" href="../../../../resources/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
     
     
       
@@ -846,7 +846,7 @@
   <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
       
-        禁用人性化
+        启用人性化
       
     </span>
   </a>
@@ -4556,7 +4556,7 @@
   <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
       
-        禁用人性化
+        启用人性化
       
     </span>
   </a>
@@ -4838,7 +4838,7 @@
 
 
 <h1 id="_1">鼠标控制</h1>
-<p>鼠标API提供页面级别的完整鼠标输入控制，支持模拟逼真的光标移动、点击、双击和拖拽操作。默认情况下，所有鼠标操作使用人性化模拟：路径遵循自然贝塞尔曲线，配合菲茨定律时序、最小急动速度曲线、生理性手抖和过冲修正，使自动化操作几乎无法与人类行为区分。</p>
+<p>鼠标API提供页面级别的完整鼠标输入控制，支持模拟逼真的光标移动、点击、双击和拖拽操作。当传入<code>humanize=True</code>时，鼠标操作使用人性化模拟：路径遵循自然贝塞尔曲线，配合菲茨定律时序、最小急动速度曲线、生理性手抖和过冲修正，使自动化操作几乎无法与人类行为区分。</p>
 <div class="admonition info">
 <p class="admonition-title">集中式鼠标接口</p>
 <p>所有鼠标操作均通过<code>tab.mouse</code>访问，为所有鼠标交互提供简洁统一的API。</p>
@@ -4851,10 +4851,10 @@
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">&#39;https://example.com&#39;</span><span class="p">)</span>
 </span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="c1"># 移动光标到指定位置（默认人性化）</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="c1"># 移动光标到指定位置</span>
 </span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">300</span><span class="p">)</span>
 </span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="c1"># 在指定位置点击（默认人性化）</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="c1"># 在指定位置点击</span>
 </span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">300</span><span class="p">)</span>
 </span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>
 </span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    <span class="c1"># 右键点击</span>
@@ -4869,23 +4869,23 @@
 <h2 id="_3">核心方法</h2>
 <h3 id="move">move: 移动光标</h3>
 <p>将鼠标光标移动到页面上的指定位置：</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># 人性化移动（默认，自然时序的曲线路径）</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># 默认移动（单个CDP事件，无模拟）</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">300</span><span class="p">)</span>
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># 瞬时移动（单个CDP事件，无模拟）</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># 人性化移动（自然时序的曲线路径）</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span></code></pre></div>
 <p><strong>参数：</strong></p>
 <ul>
 <li><code>x</code>：目标X坐标（CSS像素）</li>
 <li><code>y</code>：目标Y坐标（CSS像素）</li>
-<li><code>humanize</code>（仅关键字）：模拟人类般的曲线移动（默认：<code>True</code>）</li>
+<li><code>humanize</code>（仅关键字）：模拟人类般的曲线移动（默认：<code>False</code>）</li>
 </ul>
 <h3 id="click">click: 在指定位置点击</h3>
 <p>移动到指定位置并执行鼠标点击：</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.protocol.input.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">MouseButton</span>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="c1"># 左键点击，包含人性化移动（默认）</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="c1"># 左键点击（默认，瞬时）</span>
 </span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">300</span><span class="p">)</span>
 </span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
 </span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="c1"># 右键点击</span>
@@ -4894,8 +4894,8 @@
 </span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="c1"># 通过click_count实现双击</span>
 </span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="n">click_count</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 </span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>
-</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="c1"># 瞬时点击，不使用人性化</span>
-</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="c1"># 人性化点击，自然移动</span>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span></code></pre></div>
 <p><strong>参数：</strong></p>
 <ul>
@@ -4903,7 +4903,7 @@
 <li><code>y</code>：目标Y坐标</li>
 <li><code>button</code>（仅关键字）：鼠标按钮，可选 <code>LEFT</code>、<code>RIGHT</code>、<code>MIDDLE</code>（默认：<code>LEFT</code>）</li>
 <li><code>click_count</code>（仅关键字）：点击次数（默认：<code>1</code>）</li>
-<li><code>humanize</code>（仅关键字）：模拟人类般的行为（默认：<code>True</code>）</li>
+<li><code>humanize</code>（仅关键字）：模拟人类般的行为（默认：<code>False</code>）</li>
 </ul>
 <h3 id="double_click">double_click: 在指定位置双击</h3>
 <p>等价于<code>click(x, y, click_count=2)</code>的便捷方法：</p>
@@ -4925,32 +4925,32 @@
 <p>这些是底层原语，在当前光标位置操作，没有<code>humanize</code>参数。</p>
 <h3 id="drag">drag: 拖放</h3>
 <p>按住鼠标按钮从起点移动到终点：</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># 人性化拖拽（默认）</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># 默认拖拽（瞬时）</span>
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">drag</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">400</span><span class="p">)</span>
 </span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1"># 瞬时拖拽，不使用人性化</span>
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">drag</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1"># 人性化拖拽，自然移动</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">drag</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span></code></pre></div>
 <p><strong>参数：</strong></p>
 <ul>
 <li><code>start_x</code>、<code>start_y</code>：起始坐标</li>
 <li><code>end_x</code>、<code>end_y</code>：结束坐标</li>
-<li><code>humanize</code>（仅关键字）：模拟人类般的拖拽（默认：<code>True</code>）</li>
+<li><code>humanize</code>（仅关键字）：模拟人类般的拖拽（默认：<code>False</code>）</li>
 </ul>
-<h2 id="_4">禁用人性化</h2>
-<p>所有鼠标方法默认使用<code>humanize=True</code>。要执行瞬时非人性化操作，传入<code>humanize=False</code>：</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># 瞬时移动，单个CDP mouseMoved事件</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<h2 id="_4">启用人性化</h2>
+<p>所有鼠标方法默认使用<code>humanize=False</code>。要启用带有自然贝塞尔曲线路径和真实时序的人性化模拟，传入<code>humanize=True</code>：</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># 人性化移动，菲茨定律时序的自然曲线路径</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="c1"># 瞬时点击：移动+按下+释放，无模拟</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="c1"># 人性化点击：曲线移动+点击前停顿+按下+释放</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="c1"># 瞬时拖拽，无曲线，无停顿</span>
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">drag</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="c1"># 人性化拖拽，自然曲线和停顿</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">drag</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span></code></pre></div>
-<p>这在速度至关重要且不需要规避检测时很有用，例如测试环境或内部工具。</p>
+<p>当规避检测很重要时推荐使用，例如与采用机器人检测的网站交互时。</p>
 <h2 id="_5">人性化模式</h2>
-<p>启用<code>humanize=True</code>时（默认），鼠标模块应用多层逼真效果：</p>
+<p>当传入<code>humanize=True</code>时，鼠标模块应用多层逼真效果：</p>
 <h3 id="_6">贝塞尔曲线路径</h3>
 <p>鼠标沿自然曲线轨迹移动，而非直线。控制点在起点→终点连线的垂直方向上随机偏移，采用非对称放置（移动初期曲率更大，模拟真实的弹道伸展）。</p>
 <h3 id="_7">菲茨定律时序</h3>
@@ -4964,16 +4964,16 @@
 <h3 id="_11">点击前停顿</h3>
 <p>人性化点击包含点击前停顿（50–200毫秒），模拟按下按钮前的自然稳定时间。</p>
 <h2 id="_12">自动人性化元素点击</h2>
-<p>当您使用<code>element.click()</code>时，鼠标API会自动使用，从当前光标位置到元素中心产生逼真的贝塞尔曲线运动后再点击。这意味着每次<code>element.click()</code>调用都会产生自然的鼠标移动，使元素点击与人类行为无法区分。</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># 人性化点击（默认）：贝塞尔曲线运动+点击</span>
+<p>当您使用<code>element.click(humanize=True)</code>时，鼠标API会从当前光标位置到元素中心产生逼真的贝塞尔曲线运动后再点击，使元素点击与人类行为无法区分。</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># 默认点击：原始CDP按下/释放</span>
 </span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">button</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s1">&#39;submit&#39;</span><span class="p">)</span>
 </span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="k">await</span> <span class="n">button</span><span class="o">.</span><span class="n">click</span><span class="p">()</span>
 </span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>
 </span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="c1"># 带中心偏移</span>
 </span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="k">await</span> <span class="n">button</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="n">x_offset</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">y_offset</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 </span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>
-</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="c1"># 禁用人性化：原始CDP按下/释放，无光标移动</span>
-</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="k">await</span> <span class="n">button</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="n">humanize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="c1"># 人性化点击：贝塞尔曲线运动+点击</span>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="k">await</span> <span class="n">button</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span></code></pre></div>
 <p>位置追踪在元素点击之间保持。点击元素A，然后点击元素B，会产生从A到B的自然曲线路径。</p>
 <h2 id="_13">自定义时序配置</h2>

@@ -27,7 +27,7 @@
       
       
       <link rel="icon" href="../../../resources/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
     
     
       
@@ -4909,9 +4909,9 @@
 <p class="admonition-title">Feature Status</p>
 <p><strong>Already Implemented:</strong></p>
 <ul>
-<li><strong>Humanized Keyboard</strong>: Variable typing speed, realistic typos with auto-correction (<code>humanize=True</code>)</li>
-<li><strong>Humanized Scroll</strong>: Physics-based scrolling with momentum, friction, jitter, and overshoot (<code>humanize=True</code>)</li>
-<li><strong>Humanized Mouse</strong>: Bezier curve paths, Fitts's Law timing, minimum-jerk velocity, tremor, and overshoot (<code>humanize=True</code>)</li>
+<li><strong>Humanized Keyboard</strong>: Variable typing speed, realistic typos with auto-correction (pass <code>humanize=True</code>)</li>
+<li><strong>Humanized Scroll</strong>: Physics-based scrolling with momentum, friction, jitter, and overshoot (pass <code>humanize=True</code>)</li>
+<li><strong>Humanized Mouse</strong>: Bezier curve paths, Fitts's Law timing, minimum-jerk velocity, tremor, and overshoot (pass <code>humanize=True</code>)</li>
 </ul>
 <p><strong>Coming Soon:</strong></p>
 <ul>
@@ -5089,23 +5089,23 @@
 </thead>
 <tbody>
 <tr>
-<td><strong>Default (Humanized)</strong></td>
-<td><code>humanize=True</code></td>
-<td>Variable timing, ~2% typo rate with auto-correction</td>
-<td><strong>Anti-bot evasion</strong> (default)</td>
-</tr>
-<tr>
-<td><strong>Fast</strong></td>
+<td><strong>Default (Fast)</strong></td>
 <td><code>humanize=False</code></td>
 <td>Fixed 50ms intervals, no typos</td>
-<td>Speed-critical, low-risk scenarios</td>
+<td>Speed-critical, low-risk scenarios (default)</td>
+</tr>
+<tr>
+<td><strong>Humanized</strong></td>
+<td><code>humanize=True</code></td>
+<td>Variable timing, ~2% typo rate with auto-correction</td>
+<td><strong>Anti-bot evasion</strong></td>
 </tr>
 </tbody>
 </table>
-<p>The <code>interval</code> parameter is deprecated. Use the default <code>humanize=True</code> for realistic typing.</p>
+<p>The <code>interval</code> parameter is deprecated. Pass <code>humanize=True</code> for realistic typing.</p>
 </div>
 <h3 id="natural-typing-with-humanization">Natural Typing with Humanization</h3>
-<p>By default, <code>type_text()</code> uses humanized mode, simulating realistic human typing with variable speeds and occasional typos that are automatically corrected:</p>
+<p>When <code>humanize=True</code> is passed, <code>type_text()</code> uses humanized mode, simulating realistic human typing with variable speeds and occasional typos that are automatically corrected:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.chromium</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
 </span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
@@ -5119,8 +5119,8 @@
 </span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>
 </span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>        <span class="c1"># Variable speed: 30-120ms between keystrokes</span>
 </span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>        <span class="c1"># ~2% typo rate with realistic correction behavior</span>
-</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>        <span class="k">await</span> <span class="n">username_field</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s2">&quot;john.doe@example.com&quot;</span><span class="p">)</span>  <span class="c1"># humanize=True by default</span>
-</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>        <span class="k">await</span> <span class="n">password_field</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s2">&quot;MyC0mpl3xP@ssw0rd!&quot;</span><span class="p">)</span>
+</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>        <span class="k">await</span> <span class="n">username_field</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s2">&quot;john.doe@example.com&quot;</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>        <span class="k">await</span> <span class="n">password_field</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s2">&quot;MyC0mpl3xP@ssw0rd!&quot;</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>
 </span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">natural_typing</span><span class="p">())</span>
 </span></code></pre></div>
@@ -5136,14 +5136,14 @@
 </span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>
 </span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>        <span class="n">username</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s2">&quot;username&quot;</span><span class="p">)</span>
 </span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>        <span class="k">await</span> <span class="n">username</span><span class="o">.</span><span class="n">click</span><span class="p">()</span>
-</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>        <span class="k">await</span> <span class="n">username</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s2">&quot;john_doe&quot;</span><span class="p">)</span>  <span class="c1"># humanize=True by default</span>
+</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>        <span class="k">await</span> <span class="n">username</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s2">&quot;john_doe&quot;</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>
 </span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>        <span class="n">hidden_field</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s2">&quot;hidden-token&quot;</span><span class="p">)</span>
 </span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>        <span class="k">await</span> <span class="n">hidden_field</span><span class="o">.</span><span class="n">insert_text</span><span class="p">(</span><span class="s2">&quot;very-long-generated-token-12345678&quot;</span><span class="p">)</span>
 </span><span id="__span-6-15"><a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a>
 </span><span id="__span-6-16"><a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a>        <span class="n">comment</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s2">&quot;comment-box&quot;</span><span class="p">)</span>
 </span><span id="__span-6-17"><a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a>        <span class="k">await</span> <span class="n">comment</span><span class="o">.</span><span class="n">click</span><span class="p">()</span>
-</span><span id="__span-6-18"><a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a>        <span class="k">await</span> <span class="n">comment</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s2">&quot;This looks like human input!&quot;</span><span class="p">)</span>  <span class="c1"># humanize=True by default</span>
+</span><span id="__span-6-18"><a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a>        <span class="k">await</span> <span class="n">comment</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s2">&quot;This looks like human input!&quot;</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span><span id="__span-6-19"><a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a>
 </span><span id="__span-6-20"><a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">fast_vs_realistic_input</span><span class="p">())</span>
 </span></code></pre></div>
@@ -5167,26 +5167,26 @@
 </thead>
 <tbody>
 <tr>
-<td><strong>Humanized (Default)</strong></td>
-<td><code>humanize=True</code></td>
-<td>Physics engine with momentum, jitter, overshoot</td>
-<td><strong>Anti-bot evasion</strong> (default)</td>
+<td><strong>Smooth (Default)</strong></td>
+<td><code>smooth=True</code></td>
+<td>CSS-based animation, predictable</td>
+<td>General browsing simulation (default)</td>
 </tr>
 <tr>
-<td><strong>Smooth</strong></td>
-<td><code>humanize=False, smooth=True</code></td>
-<td>CSS-based animation, predictable</td>
-<td>General browsing simulation</td>
+<td><strong>Humanized</strong></td>
+<td><code>humanize=True</code></td>
+<td>Physics engine with momentum, jitter, overshoot</td>
+<td><strong>Anti-bot evasion</strong></td>
 </tr>
 <tr>
 <td><strong>Instant</strong></td>
-<td><code>humanize=False, smooth=False</code></td>
+<td><code>smooth=False</code></td>
 <td>Teleports to position immediately</td>
 <td>Speed-critical operations</td>
 </tr>
 </tbody>
 </table>
-<p>Humanized scrolling is now the default. Pass <code>humanize=False</code> to use CSS-based or instant scrolling.</p>
+<p>Pass <code>humanize=True</code> for physics-based humanized scrolling to evade bot detection.</p>
 </div>
 <h3 id="basic-directional-scrolling">Basic Directional Scrolling</h3>
 <p>Use the <code>scroll.by()</code> method to scroll the page in any direction with precise control:</p>
@@ -5199,10 +5199,10 @@
 </span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>        <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 </span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">&#39;https://example.com/long-page&#39;</span><span class="p">)</span>
 </span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>
-</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>        <span class="c1"># Humanized (default) - physics engine with Bezier curves</span>
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>        <span class="c1"># Humanized - physics engine with Bezier curves</span>
 </span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>        <span class="c1"># Includes: momentum, friction, jitter, micro-pauses, overshoot</span>
-</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">scroll</span><span class="o">.</span><span class="n">by</span><span class="p">(</span><span class="n">ScrollPosition</span><span class="o">.</span><span class="n">DOWN</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
-</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">scroll</span><span class="o">.</span><span class="n">by</span><span class="p">(</span><span class="n">ScrollPosition</span><span class="o">.</span><span class="n">UP</span><span class="p">,</span> <span class="mi">300</span><span class="p">)</span>
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">scroll</span><span class="o">.</span><span class="n">by</span><span class="p">(</span><span class="n">ScrollPosition</span><span class="o">.</span><span class="n">DOWN</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">scroll</span><span class="o">.</span><span class="n">by</span><span class="p">(</span><span class="n">ScrollPosition</span><span class="o">.</span><span class="n">UP</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>
 </span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a>        <span class="c1"># CSS-based animation - looks nice but predictable timing</span>
 </span><span id="__span-7-16"><a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">scroll</span><span class="o">.</span><span class="n">by</span><span class="p">(</span><span class="n">ScrollPosition</span><span class="o">.</span><span class="n">DOWN</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">smooth</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -5225,10 +5225,10 @@
 </span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>        <span class="c1"># Read the beginning of the article</span>
 </span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span>
 </span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>
-</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>        <span class="c1"># Humanized scroll (default, physics engine, anti-bot evasion)</span>
-</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">scroll</span><span class="o">.</span><span class="n">to_bottom</span><span class="p">()</span>
+</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>        <span class="c1"># Humanized scroll (physics engine, anti-bot evasion)</span>
+</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">scroll</span><span class="o">.</span><span class="n">to_bottom</span><span class="p">(</span><span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span><span id="__span-8-14"><a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1.5</span><span class="p">)</span>
-</span><span id="__span-8-15"><a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">scroll</span><span class="o">.</span><span class="n">to_top</span><span class="p">()</span>
+</span><span id="__span-8-15"><a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">scroll</span><span class="o">.</span><span class="n">to_top</span><span class="p">(</span><span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span><span id="__span-8-16"><a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>
 </span><span id="__span-8-17"><a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a>        <span class="c1"># CSS smooth scroll (predictable animation)</span>
 </span><span id="__span-8-18"><a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">scroll</span><span class="o">.</span><span class="n">to_bottom</span><span class="p">(</span><span class="n">humanize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">smooth</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -5240,9 +5240,9 @@
 <div class="admonition tip">
 <p class="admonition-title">Choosing the Right Mode</p>
 <ul>
-<li><strong>Default</strong> (<code>humanize=True</code>): Best for anti-bot evasion, used automatically</li>
-<li><strong><code>humanize=False, smooth=True</code></strong>: Good for demos, screenshots, and general automation</li>
-<li><strong><code>humanize=False, smooth=False</code></strong>: Maximum speed when stealth is not a concern</li>
+<li><strong><code>humanize=True</code></strong>: Best for anti-bot evasion</li>
+<li><strong>Default</strong> (<code>smooth=True</code>): Good for demos, screenshots, and general automation</li>
+<li><strong><code>smooth=False</code></strong>: Maximum speed when stealth is not a concern</li>
 </ul>
 </div>
 <h3 id="human-like-scrolling-patterns">Human-Like Scrolling Patterns</h3>

@@ -27,7 +27,7 @@
       
       
       <link rel="icon" href="../../../../resources/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
     
     
       
@@ -4913,9 +4913,9 @@
 <p class="admonition-title">Status das Funcionalidades</p>
 <p><strong>Já Implementado:</strong></p>
 <ul>
-<li><strong>Teclado Humanizado</strong>: Velocidade de digitação variável, erros realistas com correção automática (<code>humanize=True</code>)</li>
-<li><strong>Scroll Humanizado</strong>: Rolagem baseada em física com momentum, fricção, jitter e overshoot (<code>humanize=True</code>)</li>
-<li><strong>Mouse Humanizado</strong>: Trajetórias com curvas de Bezier, temporização pela Lei de Fitts, velocidade minimum-jerk, tremor e overshoot (<code>humanize=True</code>)</li>
+<li><strong>Teclado Humanizado</strong>: Velocidade de digitação variável, erros realistas com correção automática (passe <code>humanize=True</code>)</li>
+<li><strong>Scroll Humanizado</strong>: Rolagem baseada em física com momentum, fricção, jitter e overshoot (passe <code>humanize=True</code>)</li>
+<li><strong>Mouse Humanizado</strong>: Trajetórias com curvas de Bezier, temporização pela Lei de Fitts, velocidade minimum-jerk, tremor e overshoot (passe <code>humanize=True</code>)</li>
 </ul>
 <p><strong>Em Breve:</strong></p>
 <ul>
@@ -5093,23 +5093,23 @@
 </thead>
 <tbody>
 <tr>
-<td><strong>Padrão (Humanizado)</strong></td>
-<td><code>humanize=True</code></td>
-<td>Timing variável, ~2% de taxa de erros com correção automática</td>
-<td><strong>Evasão anti-bot</strong> (padrão)</td>
-</tr>
-<tr>
-<td><strong>Rápido</strong></td>
+<td><strong>Padrão (Rápido)</strong></td>
 <td><code>humanize=False</code></td>
 <td>Intervalos fixos de 50ms, sem erros</td>
-<td>Cenários de velocidade, baixo risco</td>
+<td>Cenários de velocidade, baixo risco (padrão)</td>
+</tr>
+<tr>
+<td><strong>Humanizado</strong></td>
+<td><code>humanize=True</code></td>
+<td>Timing variável, ~2% de taxa de erros com correção automática</td>
+<td><strong>Evasão anti-bot</strong></td>
 </tr>
 </tbody>
 </table>
-<p>O parâmetro <code>interval</code> está obsoleto. Use o padrão <code>humanize=True</code> para digitação realista.</p>
+<p>O parâmetro <code>interval</code> está obsoleto. Passe <code>humanize=True</code> para digitação realista.</p>
 </div>
 <h3 id="digitacao-natural-com-humanizacao">Digitação Natural com Humanização</h3>
-<p>Por padrão, <code>type_text()</code> usa modo humanizado, simulando digitação humana realista com velocidades variáveis e erros ocasionais que são corrigidos automaticamente:</p>
+<p>Quando <code>humanize=True</code> é passado, <code>type_text()</code> usa modo humanizado, simulando digitação humana realista com velocidades variáveis e erros ocasionais que são corrigidos automaticamente:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.chromium</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
 </span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
@@ -5123,8 +5123,8 @@
 </span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>
 </span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>        <span class="c1"># Velocidade variável: 30-120ms entre teclas</span>
 </span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>        <span class="c1"># ~2% de taxa de erros com comportamento de correção realista</span>
-</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>        <span class="k">await</span> <span class="n">username_field</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s2">&quot;john.doe@example.com&quot;</span><span class="p">)</span>  <span class="c1"># humanize=True por padrão</span>
-</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>        <span class="k">await</span> <span class="n">password_field</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s2">&quot;MyC0mpl3xP@ssw0rd!&quot;</span><span class="p">)</span>
+</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>        <span class="k">await</span> <span class="n">username_field</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s2">&quot;john.doe@example.com&quot;</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>        <span class="k">await</span> <span class="n">password_field</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s2">&quot;MyC0mpl3xP@ssw0rd!&quot;</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>
 </span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">natural_typing</span><span class="p">())</span>
 </span></code></pre></div>
@@ -5174,26 +5174,26 @@
 </thead>
 <tbody>
 <tr>
-<td><strong>Humanizado (Padrão)</strong></td>
-<td><code>humanize=True</code></td>
-<td>Motor de física com momentum, jitter, overshoot</td>
-<td><strong>Evasão anti-bot</strong> (padrão)</td>
+<td><strong>Suave (Padrão)</strong></td>
+<td><code>smooth=True</code></td>
+<td>Animação CSS, previsível</td>
+<td>Simulação de navegação geral (padrão)</td>
 </tr>
 <tr>
-<td><strong>Suave</strong></td>
-<td><code>humanize=False, smooth=True</code></td>
-<td>Animação CSS, previsível</td>
-<td>Simulação de navegação geral</td>
+<td><strong>Humanizado</strong></td>
+<td><code>humanize=True</code></td>
+<td>Motor de física com momentum, jitter, overshoot</td>
+<td><strong>Evasão anti-bot</strong></td>
 </tr>
 <tr>
 <td><strong>Instantâneo</strong></td>
-<td><code>humanize=False, smooth=False</code></td>
+<td><code>smooth=False</code></td>
 <td>Teletransporta para a posição imediatamente</td>
 <td>Operações focadas em velocidade</td>
 </tr>
 </tbody>
 </table>
-<p>A rolagem humanizada é agora o padrão. Passe <code>humanize=False</code> para usar rolagem CSS ou instantânea.</p>
+<p>Passe <code>humanize=True</code> para rolagem humanizada baseada em física para evasão anti-bot.</p>
 </div>
 <h3 id="rolagem-basica-por-direcao">Rolagem Básica por Direção</h3>
 <p>Use o método <code>scroll.by()</code> para rolar a página em qualquer direção com controle preciso:</p>
@@ -5206,10 +5206,10 @@
 </span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>        <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 </span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">&#39;https://example.com/long-page&#39;</span><span class="p">)</span>
 </span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>
-</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>        <span class="c1"># Humanizado (padrão) - motor de física com curvas de Bezier</span>
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>        <span class="c1"># Humanizado - motor de física com curvas de Bezier</span>
 </span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>        <span class="c1"># Inclui: momentum, fricção, jitter, micro-pausas, overshoot</span>
-</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">scroll</span><span class="o">.</span><span class="n">by</span><span class="p">(</span><span class="n">ScrollPosition</span><span class="o">.</span><span class="n">DOWN</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
-</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">scroll</span><span class="o">.</span><span class="n">by</span><span class="p">(</span><span class="n">ScrollPosition</span><span class="o">.</span><span class="n">UP</span><span class="p">,</span> <span class="mi">300</span><span class="p">)</span>
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">scroll</span><span class="o">.</span><span class="n">by</span><span class="p">(</span><span class="n">ScrollPosition</span><span class="o">.</span><span class="n">DOWN</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">scroll</span><span class="o">.</span><span class="n">by</span><span class="p">(</span><span class="n">ScrollPosition</span><span class="o">.</span><span class="n">UP</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>
 </span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a>        <span class="c1"># Animação CSS - visual agradável mas timing previsível</span>
 </span><span id="__span-7-16"><a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">scroll</span><span class="o">.</span><span class="n">by</span><span class="p">(</span><span class="n">ScrollPosition</span><span class="o">.</span><span class="n">DOWN</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">smooth</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -5232,10 +5232,10 @@
 </span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>        <span class="c1"># Ler o início do artigo</span>
 </span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span>
 </span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>
-</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>        <span class="c1"># Scroll humanizado (padrão, motor de física, evasão anti-bot)</span>
-</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">scroll</span><span class="o">.</span><span class="n">to_bottom</span><span class="p">()</span>
+</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>        <span class="c1"># Scroll humanizado (motor de física, evasão anti-bot)</span>
+</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">scroll</span><span class="o">.</span><span class="n">to_bottom</span><span class="p">(</span><span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span><span id="__span-8-14"><a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1.5</span><span class="p">)</span>
-</span><span id="__span-8-15"><a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">scroll</span><span class="o">.</span><span class="n">to_top</span><span class="p">()</span>
+</span><span id="__span-8-15"><a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">scroll</span><span class="o">.</span><span class="n">to_top</span><span class="p">(</span><span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span><span id="__span-8-16"><a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>
 </span><span id="__span-8-17"><a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a>        <span class="c1"># Scroll suave CSS (animação previsível)</span>
 </span><span id="__span-8-18"><a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">scroll</span><span class="o">.</span><span class="n">to_bottom</span><span class="p">(</span><span class="n">humanize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">smooth</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -5247,9 +5247,9 @@
 <div class="admonition tip">
 <p class="admonition-title">Escolhendo o Modo Certo</p>
 <ul>
-<li><strong>Padrão</strong> (<code>humanize=True</code>): Melhor para evasão anti-bot, usado automaticamente</li>
-<li><strong><code>humanize=False, smooth=True</code></strong>: Bom para demos, screenshots e automação geral</li>
-<li><strong><code>humanize=False, smooth=False</code></strong>: Velocidade máxima quando a furtividade não é uma preocupação</li>
+<li><strong><code>humanize=True</code></strong>: Melhor para evasão anti-bot</li>
+<li><strong>Padrão</strong> (<code>smooth=True</code>): Bom para demos, screenshots e automação geral</li>
+<li><strong><code>smooth=False</code></strong>: Velocidade máxima quando a furtividade não é uma preocupação</li>
 </ul>
 </div>
 <h3 id="padroes-de-rolagem-semelhantes-a-humanos">Padrões de Rolagem Semelhantes a Humanos</h3>

@@ -27,7 +27,7 @@
       
       
       <link rel="icon" href="../../../../resources/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
     
     
       
@@ -4889,9 +4889,9 @@
 <p class="admonition-title">功能状态</p>
 <p><strong>已实现:</strong></p>
 <ul>
-<li><strong>人性化键盘</strong>: 可变输入速度，真实错误与自动纠正 (<code>humanize=True</code>)</li>
-<li><strong>人性化滚动</strong>: 基于物理的滚动，包含动量、摩擦、抖动和过冲 (<code>humanize=True</code>)</li>
-<li><strong>人性化鼠标</strong>: 贝塞尔曲线路径、菲茨定律时序、最小急动速度、手抖和过冲 (<code>humanize=True</code>)</li>
+<li><strong>人性化键盘</strong>: 可变输入速度，真实错误与自动纠正（传入 <code>humanize=True</code>）</li>
+<li><strong>人性化滚动</strong>: 基于物理的滚动，包含动量、摩擦、抖动和过冲（传入 <code>humanize=True</code>）</li>
+<li><strong>人性化鼠标</strong>: 贝塞尔曲线路径、菲茨定律时序、最小急动速度、手抖和过冲（传入 <code>humanize=True</code>）</li>
 </ul>
 <p><strong>即将推出:</strong></p>
 <ul>
@@ -5065,23 +5065,23 @@
 </thead>
 <tbody>
 <tr>
-<td><strong>默认（人性化）</strong></td>
-<td><code>humanize=True</code></td>
-<td>可变时序，约2%错误率并自动纠正</td>
-<td><strong>反机器人规避</strong>（默认）</td>
-</tr>
-<tr>
-<td><strong>快速</strong></td>
+<td><strong>默认（快速）</strong></td>
 <td><code>humanize=False</code></td>
 <td>固定50毫秒间隔，无错误</td>
-<td>速度优先、低风险场景</td>
+<td>速度优先、低风险场景（默认）</td>
+</tr>
+<tr>
+<td><strong>人性化</strong></td>
+<td><code>humanize=True</code></td>
+<td>可变时序，约2%错误率并自动纠正</td>
+<td><strong>反机器人规避</strong></td>
 </tr>
 </tbody>
 </table>
-<p><code>interval</code>参数已弃用。使用默认<code>humanize=True</code>进行真实输入。</p>
+<p><code>interval</code>参数已弃用。传入<code>humanize=True</code>进行真实输入。</p>
 </div>
 <h3 id="_8">人性化自然输入</h3>
-<p>默认情况下，<code>type_text()</code>使用人性化模式，模拟真实人类输入，包含可变速度和自动纠正的偶发错误：</p>
+<p>当传入<code>humanize=True</code>时，<code>type_text()</code>使用人性化模式，模拟真实人类输入，包含可变速度和自动纠正的偶发错误：</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.chromium</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
 </span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
@@ -5095,8 +5095,8 @@
 </span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>
 </span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>        <span class="c1"># 可变速度：按键间隔30-120毫秒</span>
 </span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>        <span class="c1"># 约2%错误率，带真实纠正行为</span>
-</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>        <span class="k">await</span> <span class="n">username_field</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s2">&quot;john.doe@example.com&quot;</span><span class="p">)</span>  <span class="c1"># 默认 humanize=True</span>
-</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>        <span class="k">await</span> <span class="n">password_field</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s2">&quot;MyC0mpl3xP@ssw0rd!&quot;</span><span class="p">)</span>
+</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>        <span class="k">await</span> <span class="n">username_field</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s2">&quot;john.doe@example.com&quot;</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>        <span class="k">await</span> <span class="n">password_field</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s2">&quot;MyC0mpl3xP@ssw0rd!&quot;</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>
 </span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">natural_typing</span><span class="p">())</span>
 </span></code></pre></div>
@@ -5144,26 +5144,26 @@
 </thead>
 <tbody>
 <tr>
-<td><strong>人性化（默认）</strong></td>
-<td><code>humanize=True</code></td>
-<td>物理引擎：动量、抖动、过冲</td>
-<td><strong>反机器人规避</strong>（默认）</td>
+<td><strong>平滑（默认）</strong></td>
+<td><code>smooth=True</code></td>
+<td>CSS动画，可预测</td>
+<td>一般浏览模拟（默认）</td>
 </tr>
 <tr>
-<td><strong>平滑</strong></td>
-<td><code>humanize=False, smooth=True</code></td>
-<td>CSS动画，可预测</td>
-<td>一般浏览模拟</td>
+<td><strong>人性化</strong></td>
+<td><code>humanize=True</code></td>
+<td>物理引擎：动量、抖动、过冲</td>
+<td><strong>反机器人规避</strong></td>
 </tr>
 <tr>
 <td><strong>即时</strong></td>
-<td><code>humanize=False, smooth=False</code></td>
+<td><code>smooth=False</code></td>
 <td>立即传送到目标位置</td>
 <td>速度优先场景</td>
 </tr>
 </tbody>
 </table>
-<p>人性化滚动现在是默认模式。传入<code>humanize=False</code>以使用CSS或即时滚动。</p>
+<p>传入<code>humanize=True</code>以启用基于物理的人性化滚动来规避机器人检测。</p>
 </div>
 <h3 id="_11">基础方向滚动</h3>
 <p>使用<code>scroll.by()</code>方法精确控制页面任意方向的滚动：</p>
@@ -5176,10 +5176,10 @@
 </span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>        <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 </span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">&#39;https://example.com/long-page&#39;</span><span class="p">)</span>
 </span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>
-</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>        <span class="c1"># 人性化（默认）- 贝塞尔曲线物理引擎</span>
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>        <span class="c1"># 人性化 - 贝塞尔曲线物理引擎</span>
 </span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>        <span class="c1"># 包含：动量、摩擦、抖动、微停顿、过冲</span>
-</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">scroll</span><span class="o">.</span><span class="n">by</span><span class="p">(</span><span class="n">ScrollPosition</span><span class="o">.</span><span class="n">DOWN</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
-</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">scroll</span><span class="o">.</span><span class="n">by</span><span class="p">(</span><span class="n">ScrollPosition</span><span class="o">.</span><span class="n">UP</span><span class="p">,</span> <span class="mi">300</span><span class="p">)</span>
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">scroll</span><span class="o">.</span><span class="n">by</span><span class="p">(</span><span class="n">ScrollPosition</span><span class="o">.</span><span class="n">DOWN</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">scroll</span><span class="o">.</span><span class="n">by</span><span class="p">(</span><span class="n">ScrollPosition</span><span class="o">.</span><span class="n">UP</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>
 </span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a>        <span class="c1"># CSS动画 - 外观平滑但时序可预测</span>
 </span><span id="__span-7-16"><a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">scroll</span><span class="o">.</span><span class="n">by</span><span class="p">(</span><span class="n">ScrollPosition</span><span class="o">.</span><span class="n">DOWN</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">smooth</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -5202,10 +5202,10 @@
 </span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>        <span class="c1"># 阅读文章开头</span>
 </span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span>
 </span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>
-</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>        <span class="c1"># 人性化滚动（默认 - 物理引擎，反机器人）</span>
-</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">scroll</span><span class="o">.</span><span class="n">to_bottom</span><span class="p">()</span>
+</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>        <span class="c1"># 人性化滚动（物理引擎，反机器人）</span>
+</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">scroll</span><span class="o">.</span><span class="n">to_bottom</span><span class="p">(</span><span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span><span id="__span-8-14"><a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1.5</span><span class="p">)</span>
-</span><span id="__span-8-15"><a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">scroll</span><span class="o">.</span><span class="n">to_top</span><span class="p">()</span>
+</span><span id="__span-8-15"><a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">scroll</span><span class="o">.</span><span class="n">to_top</span><span class="p">(</span><span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span><span id="__span-8-16"><a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>
 </span><span id="__span-8-17"><a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a>        <span class="c1"># CSS平滑滚动（可预测动画）</span>
 </span><span id="__span-8-18"><a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">scroll</span><span class="o">.</span><span class="n">to_bottom</span><span class="p">(</span><span class="n">humanize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">smooth</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -5217,9 +5217,9 @@
 <div class="admonition tip">
 <p class="admonition-title">选择正确的模式</p>
 <ul>
-<li><strong>默认</strong> (<code>humanize=True</code>)：反机器人规避的最佳选择，自动启用</li>
-<li><strong><code>humanize=False, smooth=True</code></strong>：适用于演示、截图和一般自动化</li>
-<li><strong><code>humanize=False, smooth=False</code></strong>：隐蔽性不重要时追求最大速度</li>
+<li><strong><code>humanize=True</code></strong>：反机器人规避的最佳选择</li>
+<li><strong>默认</strong> (<code>smooth=True</code>)：适用于演示、截图和一般自动化</li>
+<li><strong><code>smooth=False</code></strong>：隐蔽性不重要时追求最大速度</li>
 </ul>
 </div>
 <h3 id="_13">类人滚动模式</h3>

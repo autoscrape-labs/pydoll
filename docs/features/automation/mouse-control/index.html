@@ -27,7 +27,7 @@
       
       
       <link rel="icon" href="../../../resources/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
     
     
       
@@ -841,10 +841,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#disabling-humanization" class="md-nav__link">
+  <a href="#enabling-humanization" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Disabling Humanization
+        Enabling Humanization
       
     </span>
   </a>
@@ -4551,10 +4551,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#disabling-humanization" class="md-nav__link">
+  <a href="#enabling-humanization" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Disabling Humanization
+        Enabling Humanization
       
     </span>
   </a>
@@ -4836,7 +4836,7 @@
 
 
 <h1 id="mouse-control">Mouse Control</h1>
-<p>The Mouse API provides complete control over mouse input at the page level, enabling you to simulate realistic cursor movement, clicks, double-clicks, and drag operations. By default, all mouse operations use humanized simulation: paths follow natural Bezier curves with Fitts's Law timing, minimum-jerk velocity profiles, physiological tremor, and overshoot correction, making automation virtually indistinguishable from human behavior.</p>
+<p>The Mouse API provides complete control over mouse input at the page level, enabling you to simulate realistic cursor movement, clicks, double-clicks, and drag operations. When <code>humanize=True</code> is passed, mouse operations use humanized simulation: paths follow natural Bezier curves with Fitts's Law timing, minimum-jerk velocity profiles, physiological tremor, and overshoot correction, making automation virtually indistinguishable from human behavior.</p>
 <div class="admonition info">
 <p class="admonition-title">Centralized Mouse Interface</p>
 <p>All mouse operations are accessible via <code>tab.mouse</code>, providing a clean, unified API for all mouse interactions.</p>
@@ -4849,10 +4849,10 @@
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">&#39;https://example.com&#39;</span><span class="p">)</span>
 </span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="c1"># Move cursor to position (humanized by default)</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="c1"># Move cursor to position</span>
 </span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">300</span><span class="p">)</span>
 </span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="c1"># Click at position (humanized by default)</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="c1"># Click at position</span>
 </span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">300</span><span class="p">)</span>
 </span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>
 </span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    <span class="c1"># Right-click</span>
@@ -4867,23 +4867,23 @@
 <h2 id="core-methods">Core Methods</h2>
 <h3 id="move-move-cursor">move: Move Cursor</h3>
 <p>Move the mouse cursor to a specific position on the page:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Humanized move (default, curved path with natural timing)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Default move (single CDP event, no simulation)</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">300</span><span class="p">)</span>
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># Instant move (single CDP event, no simulation)</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># Humanized move (curved path with natural timing)</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span></code></pre></div>
 <p><strong>Parameters:</strong></p>
 <ul>
 <li><code>x</code>: Target X coordinate (CSS pixels)</li>
 <li><code>y</code>: Target Y coordinate (CSS pixels)</li>
-<li><code>humanize</code> (keyword-only): Simulate human-like curved movement (default: <code>True</code>)</li>
+<li><code>humanize</code> (keyword-only): Simulate human-like curved movement (default: <code>False</code>)</li>
 </ul>
 <h3 id="click-click-at-position">click: Click at Position</h3>
 <p>Move to position and perform a mouse click:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.protocol.input.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">MouseButton</span>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="c1"># Left click with humanized movement (default)</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="c1"># Left click (default, instant)</span>
 </span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">300</span><span class="p">)</span>
 </span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
 </span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="c1"># Right click</span>
@@ -4892,8 +4892,8 @@
 </span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="c1"># Double click via click_count</span>
 </span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="n">click_count</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 </span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>
-</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="c1"># Instant click without humanization</span>
-</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="c1"># Humanized click with natural movement</span>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span></code></pre></div>
 <p><strong>Parameters:</strong></p>
 <ul>
@@ -4901,7 +4901,7 @@
 <li><code>y</code>: Target Y coordinate</li>
 <li><code>button</code> (keyword-only): Mouse button, one of <code>LEFT</code>, <code>RIGHT</code>, <code>MIDDLE</code> (default: <code>LEFT</code>)</li>
 <li><code>click_count</code> (keyword-only): Number of clicks (default: <code>1</code>)</li>
-<li><code>humanize</code> (keyword-only): Simulate human-like behavior (default: <code>True</code>)</li>
+<li><code>humanize</code> (keyword-only): Simulate human-like behavior (default: <code>False</code>)</li>
 </ul>
 <h3 id="double_click-double-click-at-position">double_click: Double-Click at Position</h3>
 <p>Convenience method equivalent to <code>click(x, y, click_count=2)</code>:</p>
@@ -4923,32 +4923,32 @@
 <p>These are primitives that operate at the current cursor position and have no <code>humanize</code> parameter.</p>
 <h3 id="drag-drag-and-drop">drag: Drag and Drop</h3>
 <p>Move from start to end while holding the mouse button:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Humanized drag (default)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Default drag (instant)</span>
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">drag</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">400</span><span class="p">)</span>
 </span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1"># Instant drag without humanization</span>
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">drag</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1"># Humanized drag with natural movement</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">drag</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span></code></pre></div>
 <p><strong>Parameters:</strong></p>
 <ul>
 <li><code>start_x</code>, <code>start_y</code>: Start coordinates</li>
 <li><code>end_x</code>, <code>end_y</code>: End coordinates</li>
-<li><code>humanize</code> (keyword-only): Simulate human-like drag (default: <code>True</code>)</li>
+<li><code>humanize</code> (keyword-only): Simulate human-like drag (default: <code>False</code>)</li>
 </ul>
-<h2 id="disabling-humanization">Disabling Humanization</h2>
-<p>All mouse methods default to <code>humanize=True</code>. To perform instant, non-humanized operations, pass <code>humanize=False</code>:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Instant move, single CDP mouseMoved event</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<h2 id="enabling-humanization">Enabling Humanization</h2>
+<p>All mouse methods default to <code>humanize=False</code>. To enable humanized simulation with natural Bezier curve paths and realistic timing, pass <code>humanize=True</code>:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Humanized move, natural curved path with Fitts&#39;s Law timing</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="c1"># Instant click: move + press + release, no simulation</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="c1"># Humanized click: curved movement + pre-click pause + press + release</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="c1"># Instant drag, no curves, no pauses</span>
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">drag</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="c1"># Humanized drag, natural curves and pauses</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">drag</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span></code></pre></div>
-<p>This is useful when speed is critical and detection evasion is not a concern, for example in testing environments or internal tools.</p>
+<p>This is recommended when detection evasion is important, for example when interacting with sites that employ bot detection.</p>
 <h2 id="humanized-mode">Humanized Mode</h2>
-<p>When <code>humanize=True</code> (the default), the mouse module applies multiple layers of realism:</p>
+<p>When <code>humanize=True</code> is passed, the mouse module applies multiple layers of realism:</p>
 <h3 id="bezier-curve-paths">Bezier Curve Paths</h3>
 <p>Mouse follows a natural curved trajectory instead of a straight line. Control points are randomly offset perpendicular to the start→end line, with asymmetric placement (more curvature early in the movement, like a real ballistic reach).</p>
 <h3 id="fittss-law-timing">Fitts's Law Timing</h3>
@@ -4962,16 +4962,16 @@
 <h3 id="pre-click-pause">Pre-Click Pause</h3>
 <p>Humanized clicks include a pre-click pause (50–200ms) that simulates the natural settle time before pressing the button.</p>
 <h2 id="automatic-humanized-element-clicks">Automatic Humanized Element Clicks</h2>
-<p>When you use <code>element.click()</code>, the Mouse API is automatically used to produce a realistic Bezier curve movement from the current cursor position to the element center before clicking. This means every <code>element.click()</code> call generates natural mouse movement, making element clicks indistinguishable from human behavior.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Humanized click (default): Bezier curve movement + click</span>
+<p>When you use <code>element.click(humanize=True)</code>, the Mouse API is used to produce a realistic Bezier curve movement from the current cursor position to the element center before clicking, making element clicks indistinguishable from human behavior.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Default click: raw CDP press/release</span>
 </span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">button</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s1">&#39;submit&#39;</span><span class="p">)</span>
 </span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="k">await</span> <span class="n">button</span><span class="o">.</span><span class="n">click</span><span class="p">()</span>
 </span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>
 </span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="c1"># With offset from center</span>
 </span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="k">await</span> <span class="n">button</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="n">x_offset</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">y_offset</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 </span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>
-</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="c1"># Disable humanization: raw CDP press/release, no cursor movement</span>
-</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="k">await</span> <span class="n">button</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="n">humanize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="c1"># Humanized click: Bezier curve movement + click</span>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="k">await</span> <span class="n">button</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span></code></pre></div>
 <p>Position tracking is maintained across element clicks. Clicking element A, then element B, produces a natural curved path from A's position to B.</p>
 <h2 id="custom-timing-configuration">Custom Timing Configuration</h2>
