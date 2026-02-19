@@ -5,9 +5,9 @@ Um dos principais diferenciais entre uma automação bem-sucedida e bots facilme
 !!! info "Status das Funcionalidades"
     **Já Implementado:**
 
-    - **Teclado Humanizado**: Velocidade de digitação variável, erros realistas com correção automática (`humanize=True`)
-    - **Scroll Humanizado**: Rolagem baseada em física com momentum, fricção, jitter e overshoot (`humanize=True`)
-    - **Mouse Humanizado**: Trajetórias com curvas de Bezier, temporização pela Lei de Fitts, velocidade minimum-jerk, tremor e overshoot (`humanize=True`)
+    - **Teclado Humanizado**: Velocidade de digitação variável, erros realistas com correção automática (passe `humanize=True`)
+    - **Scroll Humanizado**: Rolagem baseada em física com momentum, fricção, jitter e overshoot (passe `humanize=True`)
+    - **Mouse Humanizado**: Trajetórias com curvas de Bezier, temporização pela Lei de Fitts, velocidade minimum-jerk, tremor e overshoot (passe `humanize=True`)
 
     **Em Breve:**
 
@@ -195,14 +195,14 @@ A API de teclado do Pydoll fornece dois modos de digitação para equilibrar vel
 !!! info "Entendendo os Modos de Digitação"
     | Modo | Parâmetros | Comportamento | Caso de Uso |
     |------|------------|---------------|-------------|
-    | **Padrão (Humanizado)** | `humanize=True` | Timing variável, ~2% de taxa de erros com correção automática | **Evasão anti-bot** (padrão) |
-    | **Rápido** | `humanize=False` | Intervalos fixos de 50ms, sem erros | Cenários de velocidade, baixo risco |
+    | **Padrão (Rápido)** | `humanize=False` | Intervalos fixos de 50ms, sem erros | Cenários de velocidade, baixo risco (padrão) |
+    | **Humanizado** | `humanize=True` | Timing variável, ~2% de taxa de erros com correção automática | **Evasão anti-bot** |
 
-    O parâmetro `interval` está obsoleto. Use o padrão `humanize=True` para digitação realista.
+    O parâmetro `interval` está obsoleto. Passe `humanize=True` para digitação realista.
 
 ### Digitação Natural com Humanização
 
-Por padrão, `type_text()` usa modo humanizado, simulando digitação humana realista com velocidades variáveis e erros ocasionais que são corrigidos automaticamente:
+Quando `humanize=True` é passado, `type_text()` usa modo humanizado, simulando digitação humana realista com velocidades variáveis e erros ocasionais que são corrigidos automaticamente:
 
 ```python
 import asyncio
@@ -218,8 +218,8 @@ async def natural_typing():
 
         # Velocidade variável: 30-120ms entre teclas
         # ~2% de taxa de erros com comportamento de correção realista
-        await username_field.type_text("john.doe@example.com")  # humanize=True por padrão
-        await password_field.type_text("MyC0mpl3xP@ssw0rd!")
+        await username_field.type_text("john.doe@example.com", humanize=True)
+        await password_field.type_text("MyC0mpl3xP@ssw0rd!", humanize=True)
 
 asyncio.run(natural_typing())
 ```
@@ -266,11 +266,11 @@ O Pydoll fornece uma API dedicada de scroll que aguarda a conclusão da rolagem 
 
     | Modo | Parâmetros | Comportamento | Caso de Uso |
     |------|------------|---------------|-------------|
-    | **Humanizado (Padrão)** | `humanize=True` | Motor de física com momentum, jitter, overshoot | **Evasão anti-bot** (padrão) |
-    | **Suave** | `humanize=False, smooth=True` | Animação CSS, previsível | Simulação de navegação geral |
-    | **Instantâneo** | `humanize=False, smooth=False` | Teletransporta para a posição imediatamente | Operações focadas em velocidade |
+    | **Suave (Padrão)** | `smooth=True` | Animação CSS, previsível | Simulação de navegação geral (padrão) |
+    | **Humanizado** | `humanize=True` | Motor de física com momentum, jitter, overshoot | **Evasão anti-bot** |
+    | **Instantâneo** | `smooth=False` | Teletransporta para a posição imediatamente | Operações focadas em velocidade |
 
-    A rolagem humanizada é agora o padrão. Passe `humanize=False` para usar rolagem CSS ou instantânea.
+    Passe `humanize=True` para rolagem humanizada baseada em física para evasão anti-bot.
 
 ### Rolagem Básica por Direção
 
@@ -286,10 +286,10 @@ async def basic_scrolling():
         tab = await browser.start()
         await tab.go_to('https://example.com/long-page')
         
-        # Humanizado (padrão) - motor de física com curvas de Bezier
+        # Humanizado - motor de física com curvas de Bezier
         # Inclui: momentum, fricção, jitter, micro-pausas, overshoot
-        await tab.scroll.by(ScrollPosition.DOWN, 500)
-        await tab.scroll.by(ScrollPosition.UP, 300)
+        await tab.scroll.by(ScrollPosition.DOWN, 500, humanize=True)
+        await tab.scroll.by(ScrollPosition.UP, 300, humanize=True)
 
         # Animação CSS - visual agradável mas timing previsível
         await tab.scroll.by(ScrollPosition.DOWN, 500, humanize=False, smooth=True)
@@ -316,10 +316,10 @@ async def scroll_to_positions():
         # Ler o início do artigo
         await asyncio.sleep(2.0)
         
-        # Scroll humanizado (padrão, motor de física, evasão anti-bot)
-        await tab.scroll.to_bottom()
+        # Scroll humanizado (motor de física, evasão anti-bot)
+        await tab.scroll.to_bottom(humanize=True)
         await asyncio.sleep(1.5)
-        await tab.scroll.to_top()
+        await tab.scroll.to_top(humanize=True)
 
         # Scroll suave CSS (animação previsível)
         await tab.scroll.to_bottom(humanize=False, smooth=True)
@@ -330,9 +330,9 @@ asyncio.run(scroll_to_positions())
 ```
 
 !!! tip "Escolhendo o Modo Certo"
-    - **Padrão** (`humanize=True`): Melhor para evasão anti-bot, usado automaticamente
-    - **`humanize=False, smooth=True`**: Bom para demos, screenshots e automação geral
-    - **`humanize=False, smooth=False`**: Velocidade máxima quando a furtividade não é uma preocupação
+    - **`humanize=True`**: Melhor para evasão anti-bot
+    - **Padrão** (`smooth=True`): Bom para demos, screenshots e automação geral
+    - **`smooth=False`**: Velocidade máxima quando a furtividade não é uma preocupação
 
 ### Padrões de Rolagem Semelhantes a Humanos
 

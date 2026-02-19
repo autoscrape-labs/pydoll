@@ -1,6 +1,6 @@
 # 鼠标控制
 
-鼠标API提供页面级别的完整鼠标输入控制，支持模拟逼真的光标移动、点击、双击和拖拽操作。默认情况下，所有鼠标操作使用人性化模拟：路径遵循自然贝塞尔曲线，配合菲茨定律时序、最小急动速度曲线、生理性手抖和过冲修正，使自动化操作几乎无法与人类行为区分。
+鼠标API提供页面级别的完整鼠标输入控制，支持模拟逼真的光标移动、点击、双击和拖拽操作。当传入`humanize=True`时，鼠标操作使用人性化模拟：路径遵循自然贝塞尔曲线，配合菲茨定律时序、最小急动速度曲线、生理性手抖和过冲修正，使自动化操作几乎无法与人类行为区分。
 
 !!! info "集中式鼠标接口"
     所有鼠标操作均通过`tab.mouse`访问，为所有鼠标交互提供简洁统一的API。
@@ -15,10 +15,10 @@ async with Chrome() as browser:
     tab = await browser.start()
     await tab.go_to('https://example.com')
 
-    # 移动光标到指定位置（默认人性化）
+    # 移动光标到指定位置
     await tab.mouse.move(500, 300)
 
-    # 在指定位置点击（默认人性化）
+    # 在指定位置点击
     await tab.mouse.click(500, 300)
 
     # 右键点击
@@ -38,18 +38,18 @@ async with Chrome() as browser:
 将鼠标光标移动到页面上的指定位置：
 
 ```python
-# 人性化移动（默认，自然时序的曲线路径）
+# 默认移动（单个CDP事件，无模拟）
 await tab.mouse.move(500, 300)
 
-# 瞬时移动（单个CDP事件，无模拟）
-await tab.mouse.move(500, 300, humanize=False)
+# 人性化移动（自然时序的曲线路径）
+await tab.mouse.move(500, 300, humanize=True)
 ```
 
 **参数：**
 
 - `x`：目标X坐标（CSS像素）
 - `y`：目标Y坐标（CSS像素）
-- `humanize`（仅关键字）：模拟人类般的曲线移动（默认：`True`）
+- `humanize`（仅关键字）：模拟人类般的曲线移动（默认：`False`）
 
 ### click: 在指定位置点击
 
@@ -58,7 +58,7 @@ await tab.mouse.move(500, 300, humanize=False)
 ```python
 from pydoll.protocol.input.types import MouseButton
 
-# 左键点击，包含人性化移动（默认）
+# 左键点击（默认，瞬时）
 await tab.mouse.click(500, 300)
 
 # 右键点击
@@ -67,8 +67,8 @@ await tab.mouse.click(500, 300, button=MouseButton.RIGHT)
 # 通过click_count实现双击
 await tab.mouse.click(500, 300, click_count=2)
 
-# 瞬时点击，不使用人性化
-await tab.mouse.click(500, 300, humanize=False)
+# 人性化点击，自然移动
+await tab.mouse.click(500, 300, humanize=True)
 ```
 
 **参数：**
@@ -77,7 +77,7 @@ await tab.mouse.click(500, 300, humanize=False)
 - `y`：目标Y坐标
 - `button`（仅关键字）：鼠标按钮，可选 `LEFT`、`RIGHT`、`MIDDLE`（默认：`LEFT`）
 - `click_count`（仅关键字）：点击次数（默认：`1`）
-- `humanize`（仅关键字）：模拟人类般的行为（默认：`True`）
+- `humanize`（仅关键字）：模拟人类般的行为（默认：`False`）
 
 ### double_click: 在指定位置双击
 
@@ -111,39 +111,39 @@ await tab.mouse.up(button=MouseButton.RIGHT)
 按住鼠标按钮从起点移动到终点：
 
 ```python
-# 人性化拖拽（默认）
+# 默认拖拽（瞬时）
 await tab.mouse.drag(100, 200, 500, 400)
 
-# 瞬时拖拽，不使用人性化
-await tab.mouse.drag(100, 200, 500, 400, humanize=False)
+# 人性化拖拽，自然移动
+await tab.mouse.drag(100, 200, 500, 400, humanize=True)
 ```
 
 **参数：**
 
 - `start_x`、`start_y`：起始坐标
 - `end_x`、`end_y`：结束坐标
-- `humanize`（仅关键字）：模拟人类般的拖拽（默认：`True`）
+- `humanize`（仅关键字）：模拟人类般的拖拽（默认：`False`）
 
-## 禁用人性化
+## 启用人性化
 
-所有鼠标方法默认使用`humanize=True`。要执行瞬时非人性化操作，传入`humanize=False`：
+所有鼠标方法默认使用`humanize=False`。要启用带有自然贝塞尔曲线路径和真实时序的人性化模拟，传入`humanize=True`：
 
 ```python
-# 瞬时移动，单个CDP mouseMoved事件
-await tab.mouse.move(500, 300, humanize=False)
+# 人性化移动，菲茨定律时序的自然曲线路径
+await tab.mouse.move(500, 300, humanize=True)
 
-# 瞬时点击：移动+按下+释放，无模拟
-await tab.mouse.click(500, 300, humanize=False)
+# 人性化点击：曲线移动+点击前停顿+按下+释放
+await tab.mouse.click(500, 300, humanize=True)
 
-# 瞬时拖拽，无曲线，无停顿
-await tab.mouse.drag(100, 200, 500, 400, humanize=False)
+# 人性化拖拽，自然曲线和停顿
+await tab.mouse.drag(100, 200, 500, 400, humanize=True)
 ```
 
-这在速度至关重要且不需要规避检测时很有用，例如测试环境或内部工具。
+当规避检测很重要时推荐使用，例如与采用机器人检测的网站交互时。
 
 ## 人性化模式
 
-启用`humanize=True`时（默认），鼠标模块应用多层逼真效果：
+当传入`humanize=True`时，鼠标模块应用多层逼真效果：
 
 ### 贝塞尔曲线路径
 
@@ -171,18 +171,18 @@ await tab.mouse.drag(100, 200, 500, 400, humanize=False)
 
 ## 自动人性化元素点击
 
-当您使用`element.click()`时，鼠标API会自动使用，从当前光标位置到元素中心产生逼真的贝塞尔曲线运动后再点击。这意味着每次`element.click()`调用都会产生自然的鼠标移动，使元素点击与人类行为无法区分。
+当您使用`element.click(humanize=True)`时，鼠标API会从当前光标位置到元素中心产生逼真的贝塞尔曲线运动后再点击，使元素点击与人类行为无法区分。
 
 ```python
-# 人性化点击（默认）：贝塞尔曲线运动+点击
+# 默认点击：原始CDP按下/释放
 button = await tab.find(id='submit')
 await button.click()
 
 # 带中心偏移
 await button.click(x_offset=10, y_offset=5)
 
-# 禁用人性化：原始CDP按下/释放，无光标移动
-await button.click(humanize=False)
+# 人性化点击：贝塞尔曲线运动+点击
+await button.click(humanize=True)
 ```
 
 位置追踪在元素点击之间保持。点击元素A，然后点击元素B，会产生从A到B的自然曲线路径。
