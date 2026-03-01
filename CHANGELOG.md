@@ -1,3 +1,13 @@
+## 2.21.0 (2026-03-01)
+
+### Feat
+
+- **interactions**: change humanize default from True to False
+
+### Fix
+
+- **elements**: forward humanize flag to click in type_text
+
 ## 2.20.2 (2026-02-18)
 
 ### Fix
