@@ -245,6 +245,7 @@ await (await tab.find(id='password')).type_text('pass123')
 await (await tab.find(id='login-btn')).click()
 
 # 2. Now, use the browser's session to hit the API!
+- [Anchor Browser](https://anchorbrowser.io) - Cloud browser infrastructure for AI agents with built-in stealth, proxies, and CDP/Playwright/Puppeteer support
 # This request automatically INHERITS the login cookies
 response = await tab.request.get('https://my-site.com/api/user/profile')
 user_data = response.json()
