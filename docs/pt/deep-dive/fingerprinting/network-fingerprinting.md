@@ -1,987 +1,125 @@
-# Fingerprinting em Nível de Rede
+# Network Fingerprinting
 
-Este documento explora o fingerprinting no nível do protocolo de rede, desde características TCP/IP até padrões de handshake TLS. Entender como os dispositivos são identificados **antes mesmo do navegador carregar** é crucial para evadir sistemas de detecção sofisticados.
+O network fingerprinting identifica clientes analisando características da pilha TCP/IP, handshake TLS e conexão HTTP/2. Esses sinais são definidos pelo kernel do sistema operacional e pela biblioteca TLS, não pelo ambiente JavaScript do navegador, o que os torna mais difíceis de falsificar que fingerprints de nível de navegador. Um proxy ou VPN muda seu endereço IP mas não altera seu tamanho de janela TCP, sua lista de cipher suites TLS ou seu frame HTTP/2 SETTINGS. Sistemas de detecção exploram essa lacuna.
 
 !!! info "Navegação do Módulo"
-    - **[← Visão Geral de Fingerprinting](./index.md)** - Introdução e filosofia do módulo
-    - **[→ Browser Fingerprinting (Fingerprinting de Navegador)](./browser-fingerprinting.md)** - Fingerprinting na camada de aplicação
-    - **[→ Técnicas de Evasão](./evasion-techniques.md)** - Contramedidas práticas
-    
-    Para fundamentos de rede, veja **[Fundamentos de Rede](../network/network-fundamentals.md)** e **[Arquitetura de Proxy](../network/http-proxies.md)**.
+    - [Browser Fingerprinting](./browser-fingerprinting.md): Canvas, WebGL, AudioContext
+    - [Técnicas de Evasão](./evasion-techniques.md): Contramedidas multi-camada
 
-!!! warning "Características em Nível de SO"
-    O fingerprinting de rede opera nas camadas 3-6 do modelo OSI. Diferente das características em nível de navegador (modificáveis com JavaScript), os fingerprints em nível de rede exigem mudanças em **nível de SO** ou **nível de kernel** para serem falsificados (spoofed) eficazmente.
+    Para fundamentos de protocolo, veja [Fundamentos de Rede](../network/network-fundamentals.md). Para contexto de detecção de proxy, veja [Detecção de Proxy](../network/proxy-detection.md).
 
-## Fingerprinting em Nível de Rede
+## TCP/IP Fingerprinting
 
-O fingerprinting de rede opera nas camadas 3-7 do modelo OSI, analisando características de pacotes de rede, protocolos e conexões para identificar o cliente.
+Cada sistema operacional implementa a pilha TCP/IP de forma diferente. O pacote SYN que inicia uma conexão TCP carrega informação suficiente para identificar o SO com alta confiança: o TTL inicial, o tamanho da janela TCP, o Maximum Segment Size e a ordem e seleção de opções TCP. Nenhum desses valores é controlado pelo navegador. Eles vêm do kernel.
 
-### Por que o Fingerprinting de Rede Importa
+### TTL (Time To Live)
 
-Diferente do fingerprinting em nível de navegador (que pode ser modificado com JavaScript), as características em nível de rede são:
+O TTL inicial é um dos identificadores de SO mais simples. Linux e macOS definem como 64, Windows define como 128, e dispositivos de rede (roteadores, firewalls) tipicamente usam 255. Cada salto de roteador decrementa o TTL em um, então um pacote chegando com TTL 118 provavelmente começou em 128 (Windows) e cruzou 10 saltos.
 
-- **Mais difíceis de modificar**: Exigem mudanças em nível de SO ou kernel
-- **Mais persistentes**: Não podem ser limpas como cookies ou localStorage
-- **Transversais a aplicações**: Mesmo fingerprint em todas as aplicações no dispositivo
-- **Resistentes a proxy**: Algumas características sobrevivem ao tunelamento de proxy/VPN
+O valor de fingerprinting do TTL vem da referência cruzada com o User-Agent. Se o navegador alega ser Chrome no Windows mas o pacote chega com TTL próximo de 64, a conexão está ou sendo proxy através de um servidor Linux ou o User-Agent está falsificado. Sistemas de detecção arredondam o TTL observado para cima até o valor inicial conhecido mais próximo (64, 128, 255) e comparam contra o SO declarado.
 
-!!! info "Fingerprinting em Camadas"
-    Sistemas de detecção sofisticados usam **múltiplas camadas** de fingerprinting. Mesmo que você falsifique características em nível de navegador, inconsistências em nível de rede podem revelar a automação.
+Quando o tráfego flui através de um proxy, o TTL reinicia porque o kernel do proxy gera uma nova conexão TCP para o destino. O destino vê o TTL do proxy, não o seu. É por isso que incompatibilidades de TTL são um sinal de detecção de proxy: o User-Agent diz Windows (TTL 128) mas o fingerprint TCP mostra Linux (TTL 64).
 
-### O Modelo OSI e as Camadas de Fingerprinting
+### Tamanho da Janela TCP e Escalonamento
 
-```mermaid
-graph TD
-    L7[Camada 7: Aplicação<br/>Cabeçalhos HTTP, cookies, comportamento do usuário]
-    L6[Camada 6: Apresentação<br/>Suítes de cifras TLS, extensões]
-    L5[Camada 5: Sessão<br/>Padrões de conexão, tempo]
-    L4[Camada 4: Transporte<br/>Opções TCP, tamanho da janela, flags]
-    L3[Camada 3: Rede<br/>IP TTL, fragmentação, ICMP]
-    L2[Camada 2: Enlace de Dados<br/>Endereço MAC, tamanho do frame Ethernet]
-    L1[Camada 1: Física<br/>Características de hardware]
-    
-    L7 --> L6 --> L5 --> L4 --> L3 --> L2 --> L1
-```
+O tamanho inicial da janela TCP no pacote SYN varia por SO e versão do kernel. Kernels Linux modernos (3.x e posteriores) tipicamente enviam uma janela inicial de 29200 bytes, que é `20 * MSS` onde MSS é 1460 para Ethernet padrão. Alguns kernels mais novos (5.x, 6.x) podem usar 64240 dependendo da configuração e ajustes de `initcwnd`. Windows 10 e 11 tipicamente enviam 65535 com escalonamento de janela habilitado, embora o valor exato dependa da configuração de auto-tuning e nível de patch. macOS também usa 65535 como padrão.
 
-**O fingerprinting ocorre em:**
+O fator de escala de janela (uma opção TCP) multiplica o campo de tamanho de janela de 16 bits para suportar janelas de recebimento maiores. Linux comumente usa fator de escala 7 (permitindo janelas de até 8MB), enquanto Windows frequentemente usa 8. Combinado com o tamanho base da janela, o fator de escala cria um fingerprint mais granular do que qualquer valor isolado.
 
-- **Camada 3 (Rede)**: IP TTL, comportamento de fragmentação
-- **Camada 4 (Transporte)**: Opções TCP/UDP, números de sequência iniciais, escalonamento de janela
-- **Camada 6 (Apresentação)**: Handshake TLS, suítes de cifras, extensões
-- **Camada 7 (Aplicação)**: Cabeçalhos HTTP, configurações HTTP/2, comportamento específico do protocolo
+### Ordem de Opções TCP
 
-## Fingerprinting de TCP/IP (Camada 3-4)
+A seleção e ordenação de opções TCP no pacote SYN é altamente distintiva. Cada SO organiza as opções em uma ordem fixa e específica por versão que o kernel não expõe como parâmetro configurável. Linux envia `MSS, SACK_PERM, TIMESTAMP, NOP, WSCALE`. Windows envia `MSS, NOP, WSCALE, NOP, NOP, SACK_PERM` e notavelmente omite a opção TIMESTAMP nas configurações padrão. macOS envia `MSS, NOP, WSCALE, NOP, NOP, TIMESTAMP, SACK_PERM`.
 
-O fingerprinting de TCP/IP analisa características de pacotes TCP e IP para identificar o sistema operacional e a implementação da pilha de rede.
+A presença ou ausência de opções específicas importa tanto quanto a ordem. Windows historicamente omitiu timestamps TCP, que Linux e macOS incluem por padrão. SACK (Selective Acknowledgment) é suportado por todos os sistemas modernos, mas sistemas mais antigos ou embarcados podem não anunciá-lo. A combinação de quais opções aparecem e em que ordem cria uma assinatura que ferramentas como p0f comparam contra um banco de dados de fingerprints de SO conhecidos.
 
-### Estrutura do Pacote TCP
+### p0f
 
-```python
-# Campos do cabeçalho TCP usados para fingerprinting
-{
-    'ip_ttl': 64,                    # Valor TTL inicial (específico do SO)
-    'window_size': 65535,            # Tamanho da janela TCP
-    'window_scaling': 7,             # Fator de escala da janela
-    'mss': 1460,                     # Tamanho Máximo do Segmento
-    'timestamp': True,               # Opção de timestamp TCP
-    'sack': True,                    # Acusação Seletiva (SACK)
-    'options_order': ['MSS', 'SACK_PERM', 'TIMESTAMP', 'NOP', 'WSCALE']
-}
-```
-
-### Características Chave de TCP/IP
-
-#### 1. Time To Live (TTL)
-
-Valores de TTL são específicos do SO e diminuem a cada salto na rede:
-
-| Sistema Operacional | TTL Inicial | Após 10 Saltos |
-|---|---|---|
-| **Linux** | 64 | 54 |
-| **Windows** | 128 | 118 |
-| **macOS** | 64 | 54 |
-| **Cisco/Roteadores** | 255 | 245 |
-
-```python
-# Fingerprinting de TTL
-def detect_os_by_ttl(ttl: int) -> str:
-    """
-    Detecta SO com base no valor TTL.
-    Nota: TTL diminui em 1 para cada salto de roteador.
-    """
-    if ttl <= 64:
-        return 'Linux/macOS (inicial: 64)'
-    elif ttl <= 128:
-        return 'Windows (inicial: 128)'
-    elif ttl <= 255:
-        return 'Dispositivo de rede (inicial: 255)'
-    else:
-        return 'Desconhecido'
-
-# Exemplo: TTL Recebido = 54
-# → TTL Original provável 64 (Linux/macOS)
-# → Pacote viajou por ~10 saltos
-```
-
-!!! warning "TTL e Proxies"
-    Ao usar proxies, o valor TTL é resetado no servidor proxy. No entanto, inconsistências podem revelar o uso de proxy:
-    
-    - User-Agent diz "Windows" → TTL sugere Linux (SO do servidor proxy)
-    - TTL muito baixo para a localização alegada (sugere roteamento VPN/proxy)
-
-#### 2. Tamanho da Janela TCP (Window Size)
-
-O tamanho inicial da janela TCP varia por SO e configuração:
-
-```python
-# Tamanhos de janela comuns por SO
-OS_WINDOW_SIZES = {
-    'Windows 10': 8192,          # Padrão
-    'Windows 11': 65535,         # Mais agressivo
-    'Linux (recente)': 29200,     # Kernels modernos
-    'macOS': 65535,              # Otimista
-    'Android': 65535,            # Otimizado para móvel
-}
-```
-
-#### 3. Opções TCP e Sua Ordem
-
-A presença e a **ordem** das opções TCP criam um fingerprint único:
-
-```python
-# Exemplo de opções TCP em pacote SYN
-{
-    # Ordem típica do Windows 10
-    'windows': ['MSS', 'NOP', 'WSCALE', 'NOP', 'NOP', 'SACK_PERM'],
-    
-    # Ordem típica do Linux  
-    'linux': ['MSS', 'SACK_PERM', 'TIMESTAMP', 'NOP', 'WSCALE'],
-    
-    # Ordem típica do macOS
-    'macos': ['MSS', 'NOP', 'WSCALE', 'NOP', 'NOP', 'TIMESTAMP', 'SACK_PERM', 'EOL']
-}
-```
-
-**Códigos de Opção TCP:**
-
-| Código | Nome | Propósito |
-|---|---|---|
-| 0 | EOL | Fim da Lista de Opções |
-| 1 | NOP | Nenhuma Operação (preenchimento) |
-| 2 | MSS | Tamanho Máximo do Segmento |
-| 3 | WSCALE | Fator de Escala da Janela |
-| 4 | SACK_PERM | SACK Permitido |
-| 8 | TIMESTAMP | Timestamp para cálculo de RTT |
-
-### Fingerprinting Passivo de SO com p0f
-
-[p0f](http://lcamtuf.coredump.cx/p0f3/) é uma poderosa ferramenta passiva de fingerprinting de SO criada por Michal Zalewski que analisa características de pacotes TCP/IP sem enviar qualquer tráfego para o alvo.
-
-```bash
-# Instalar p0f
-sudo apt-get install p0f
-
-# Fingerprinting passivo (lê da interface)
-sudo p0f -i eth0
-
-# Ler de arquivo pcap
-p0f -r capture.pcap
-
-# Exemplo de saída:
-# 192.168.1.100:12345 → 93.184.216.34:443
-#   OS: Linux 3.11 and newer
-#   Signature: 4:64:0:*:mss*20,10:mss,sok,ts,nop,ws:df,id+:0
-```
-
-!!! info "Banco de Dados de Assinaturas do p0f"
-    O p0f mantém um extenso banco de dados de assinaturas (`p0f.fp`) com milhares de fingerprints de SO. A ferramenta é particularmente eficaz porque realiza fingerprinting **passivo**, analisando tráfego sem gerar pacotes que possam alertar sistemas de detecção de intrusão.
-
-**Formato da Assinatura p0f:**
+[p0f](https://lcamtuf.coredump.cx/p0f3/) é a ferramenta padrão para fingerprinting TCP/IP passivo. Ele observa tráfego sem gerar nenhum pacote, analisando pacotes SYN e SYN+ACK contra um banco de dados de assinaturas. Seu formato de assinatura codifica os campos chave de fingerprinting:
 
 ```
 version:ittl:olen:mss:wsize,scale:olayout:quirks:pclass
 ```
 
-- `version`: Versão IP (4 ou 6)
-- `ittl`: TTL Inicial
-- `olen`: Comprimento das opções
-- `mss`: Tamanho Máximo do Segmento
-- `wsize,scale`: Tamanho da janela e escalonamento
-- `olayout`: Layout das opções (ordem e tipos)
-- `quirks`: Comportamentos incomuns (df=não fragmentar, id+=ID de IP não-zero)
-- `pclass`: Classificação do payload
+O `ittl` é o TTL inicial inferido, `mss` é o Maximum Segment Size, `wsize,scale` é o tamanho da janela (que pode ser absoluto, ou relativo ao MSS como `mss*20`), e `olayout` é o layout de opções TCP usando nomes abreviados (`mss`, `nop`, `ws`, `sok`, `sack`, `ts`, `eol+N`). O campo `quirks` captura comportamentos incomuns como a flag Don't Fragment (`df`) ou IP ID não-zero em pacotes DF (`id+`).
 
-### Fingerprinting Ativo de SO com Nmap
+Uma assinatura típica de Linux 4.x+ no p0f se parece com `4:64:0:*:mss*20,7:mss,sok,ts,nop,ws:df,id+:0`. Uma assinatura de Windows 10 pode parecer `4:128:0:*:65535,8:mss,nop,ws,nop,nop,sok:df,id+:0`. Serviços anti-bot mantêm bancos de dados similares internamente, comparando conexões de entrada contra perfis de SO conhecidos e sinalizando incompatibilidades com o User-Agent declarado.
 
-[Nmap](https://nmap.org/) (Network Mapper) é o padrão de facto para fingerprinting ativo de SO, desenvolvido por Gordon Lyon (Fyodor). Ele envia pacotes especialmente criados e analisa as respostas para determinar características do SO.
+## TLS Fingerprinting
 
-```bash
-# Detecção de SO
-nmap -O 93.184.216.34
+A mensagem TLS ClientHello é transmitida antes da criptografia ser estabelecida, então é visível para qualquer observador no caminho de rede. Ela contém a versão TLS, cipher suites suportadas, extensões TLS, curvas elípticas suportadas (named groups) e formatos de ponto EC. Cada navegador e biblioteca TLS produz uma combinação característica desses campos.
 
-# Detecção detalhada de SO com varredura de versão
-nmap -A 93.184.216.34
+### JA3
 
-# Apenas fingerprinting TCP/IP
-nmap -sV --script=banner 93.184.216.34
+JA3, desenvolvido na Salesforce por John Althouse, Jeff Atkinson e Josh Atkins, foi o primeiro método de fingerprinting TLS amplamente adotado. Ele concatena cinco campos do ClientHello (versão TLS, cipher suites, extensões, curvas elípticas, formatos de ponto EC), junta valores dentro de cada campo com hífens, separa os cinco campos com vírgulas e tira o hash MD5 da string resultante.
 
-# Exemplo de saída:
-# OS details: Linux 5.4 - 5.10
-# Network Distance: 11 hops
-# TCP Sequence Prediction: Difficulty=260 (Good luck!)
+```
+String JA3: 771,4865-4866-4867-49195-49199-49196-49200-52393-52392,0-23-65281-10-11-35-16-5-13-18-51-45-43-27-17513,29-23-24,0
+Hash JA3:   cd08e31494b9531f560d64c695473da9
 ```
 
-**Testes de Detecção de SO do Nmap:**
+Uma sutileza: o campo "versão TLS" no JA3 usa `ClientHello.legacy_version`, não a extensão `supported_versions`. Como TLS 1.3 (RFC 8446) requer que clientes definam `legacy_version` como `0x0303` (TLS 1.2) para compatibilidade retroativa, o campo de versão JA3 é quase sempre `771` para clientes modernos, mesmo quando suportam TLS 1.3. A negociação real de TLS 1.3 acontece através da extensão 43 (`supported_versions`), mas o JA3 usa o campo do cabeçalho.
 
-- **Amostragem de ISN TCP**: Analisa a geração do Número de Sequência Inicial
-- **Opções TCP**: Testa tamanho da janela, MSS, SACK e ordem das opções
-- **Respostas ICMP**: Envia requisições echo e analisa TTL, código e payloads
-- **Respostas TCP de porta fechada**: Envia pacotes para portas fechadas e analisa respostas RST
-- **Sequência de ID de IP**: Testa como o SO gera campos de identificação IP
-
-!!! tip "Banco de Dados de Fingerprint do Nmap"
-    O Nmap mantém um dos mais abrangentes bancos de dados de fingerprint de SO do mundo (`nmap-os-db`), atualizado regularmente pela comunidade. Você pode submeter novos fingerprints para melhorar a precisão da detecção.
-
-### Implementação Python: Fingerprinting TCP
-
-A implementação a seguir usa [Scapy](https://scapy.net/), uma poderosa biblioteca Python para manipulação de pacotes e análise de rede criada por Philippe Biondi.
+O JA3 deve filtrar valores GREASE antes do hashing. GREASE (RFC 8701) é um mecanismo onde navegadores inserem valores reservados selecionados aleatoriamente em cipher suites, extensões e outros campos para prevenir ossificação de protocolo. Os valores GREASE válidos são `0x0a0a`, `0x1a1a`, `0x2a2a` e assim por diante até `0xfafa`. Cada valor tem dois bytes idênticos onde o nibble inferior de cada byte é `0x0a`. Um filtro GREASE correto verifica ambas as condições:
 
 ```python
-from scapy.all import IP, TCP, sr1, sniff
-import logging
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-
-class TCPFingerprinter:
-    """
-    Analisa características TCP/IP para aplicar fingerprinting no host remoto.
-    """
-    
-    def __init__(self, target_ip: str, target_port: int = 80):
-        self.target_ip = target_ip
-        self.target_port = target_port
-        self.fingerprint = {}
-    
-    def capture_syn_ack(self) -> dict:
-        """
-        Envia pacote SYN e captura resposta SYN-ACK.
-        """
-        # Cria pacote SYN
-        ip = IP(dst=self.target_ip)
-        syn = TCP(sport=40000, dport=self.target_port, flags='S', seq=1000)
-        
-        # Envia e recebe
-        logger.info(f"Enviando SYN para {self.target_ip}:{self.target_port}")
-        syn_ack = sr1(ip/syn, timeout=2, verbose=0)
-        
-        if not syn_ack or not syn_ack.haslayer(TCP):
-            logger.error("Nenhum SYN-ACK recebido")
-            return {}
-        
-        # Extrai características do fingerprint
-        tcp_layer = syn_ack.getlayer(TCP)
-        ip_layer = syn_ack.getlayer(IP)
-        
-        fingerprint = {
-            'ip_ttl': ip_layer.ttl,
-            'ip_id': ip_layer.id,
-            'ip_flags': ip_layer.flags,
-            'tcp_window': tcp_layer.window,
-            'tcp_flags': tcp_layer.flags,
-            'tcp_options': self._parse_tcp_options(tcp_layer.options),
-            'tcp_options_order': [opt[0] for opt in tcp_layer.options if opt[0] != 'Padding'],
-        }
-        
-        self.fingerprint = fingerprint
-        return fingerprint
-    
-    def _parse_tcp_options(self, options: list) -> dict:
-        """Analisa opções TCP para um formato legível."""
-        parsed = {}
-        
-        for option in options:
-            opt_name = option[0]
-            
-            if opt_name == 'MSS':
-                parsed['mss'] = option[1]
-            elif opt_name == 'WScale':
-                parsed['window_scale'] = option[1]
-            elif opt_name == 'Timestamp':
-                parsed['timestamp'] = option[1]
-            elif opt_name == 'SAckOK':
-                parsed['sack_permitted'] = True
-            elif opt_name == 'NOP':
-                pass  # Preenchimento
-            elif opt_name == 'EOL':
-                break  # Fim das opções
-        
-        return parsed
-    
-    def generate_signature(self) -> str:
-        """
-        Gera string de assinatura similar ao p0f.
-        """
-        if not self.fingerprint:
-            return ''
-        
-        fp = self.fingerprint
-        
-        # Formato: version:ttl:window:options_order
-        version = 4  # IPv4
-        ttl = fp.get('ip_ttl', 0)
-        window = fp.get('tcp_window', 0)
-        
-        # Ordem das opções como string
-        opts = ','.join(fp.get('tcp_options_order', []))
-        
-        signature = f"{version}:{ttl}:{window}:{opts}"
-        return signature
-    
-    def detect_os(self) -> str:
-        """
-        Detecta SO com base no fingerprint coletado.
-        """
-        if not self.fingerprint:
-            return 'Desconhecido (sem dados)'
-        
-        ttl = self.fingerprint.get('ip_ttl', 0)
-        window = self.fingerprint.get('tcp_window', 0)
-        opts_order = self.fingerprint.get('tcp_options_order', [])
-        
-        # Detecção simples baseada em heurística
-        if ttl <= 64:
-            if window == 29200:
-                return 'Linux (kernel recente)'
-            elif window == 65535:
-                if 'Timestamp' in opts_order and 'SAckOK' in opts_order:
-                    return 'Linux 3.x+'
-                else:
-                    return 'macOS'
-            else:
-                return 'Linux/Unix'
-        
-        elif ttl <= 128:
-            if window == 8192:
-                return 'Windows 10'
-            elif window == 65535:
-                return 'Windows 11 ou Windows Server'
-            else:
-                return 'Windows'
-        
-        elif ttl <= 255:
-            return 'Dispositivo de rede (roteador/firewall)'
-        
-        return 'SO Desconhecido'
-    
-    def print_fingerprint(self):
-        """Imprime o fingerprint de forma legível."""
-        if not self.fingerprint:
-            print("Nenhum dado de fingerprint disponível")
-            return
-        
-        print("\n=== Fingerprint TCP/IP ===")
-        print(f"Alvo: {self.target_ip}:{self.target_port}")
-        print(f"\nCamada IP:")
-        print(f"  TTL: {self.fingerprint.get('ip_ttl')}")
-        print(f"  IP ID: {self.fingerprint.get('ip_id')}")
-        print(f"  Flags: {self.fingerprint.get('ip_flags')}")
-        
-        print(f"\nCamada TCP:")
-        print(f"  Tamanho da Janela: {self.fingerprint.get('tcp_window')}")
-        print(f"  Flags: {self.fingerprint.get('tcp_flags')}")
-        
-        print(f"\nOpções TCP:")
-        for opt, value in self.fingerprint.get('tcp_options', {}).items():
-            print(f"  {opt}: {value}")
-        
-        print(f"\nOrdem das Opções: {' → '.join(self.fingerprint.get('tcp_options_order', []))}")
-        print(f"\nAssinatura: {self.generate_signature()}")
-        print(f"SO Detectado: {self.detect_os()}")
-        print("=" * 30)
-
-
-# Exemplo de uso
-def fingerprint_target(ip: str, port: int = 80):
-    """Aplica fingerprinting em um host alvo."""
-    fingerprinter = TCPFingerprinter(ip, port)
-    
-    try:
-        fingerprinter.capture_syn_ack()
-        fingerprinter.print_fingerprint()
-    except PermissionError:
-        print("Erro: Acesso a raw socket requer privilégios de root/admin")
-        print("Execute com: sudo python3 script.py")
-    except Exception as e:
-        print(f"Erro: {e}")
-
-
-# Exemplo de uso (requer root):
-# fingerprint_target('93.184.216.34', 80)  # example.com
+def is_grease(value: int) -> bool:
+    return (value & 0x0f0f) == 0x0a0a and (value >> 8) == (value & 0xff)
 ```
 
-**Exemplo de Saída:**
+!!! warning "Limitações do JA3 com Navegadores Modernos"
+    Desde o Chrome 110 (janeiro 2023) e Firefox 114, navegadores randomizam a ordem das extensões TLS em cada conexão. Isso significa que o mesmo navegador produz hashes JA3 diferentes em cada conexão, tornando o JA3 efetivamente inútil para identificar navegadores modernos. O JA3 permanece útil para fingerprinting de clientes não-navegador (Python `requests`, `curl`, bots personalizados) que não implementam randomização de extensões.
 
-```
-=== Fingerprint TCP/IP ===
-Alvo: 93.184.216.34:80
+### JA4
 
-Camada IP:
-  TTL: 54
-  IP ID: 0
-  Flags: DF (Don't Fragment)
+JA4 é o sucessor do JA3, desenvolvido pelo mesmo autor principal (John Althouse) na FoxIO. Foi projetado especificamente para sobreviver à randomização de extensões TLS ordenando extensões e cipher suites antes do hashing. O formato consiste em três seções separadas por underscores: `a_b_c`.
 
-Camada TCP:
-  Tamanho da Janela: 29200
-  Flags: SA (SYN-ACK)
+Seção `a` é uma string legível de metadados: o protocolo (`t` para TCP, `q` para QUIC), a versão TLS (`12` ou `13`), se SNI está presente (`d` para domínio, `i` para IP), o número de cipher suites (dois dígitos), o número de extensões (dois dígitos) e o primeiro e último valor ALPN (`h2` para HTTP/2, `00` se nenhum). Por exemplo, `t13d1516h2` significa TCP TLS 1.3 com SNI, 15 cipher suites, 16 extensões e HTTP/2 ALPN.
 
-Opções TCP:
-  mss: 1460
-  window_scale: 7
-  sack_permitted: True
-  timestamp: (123456789, 0)
+Seção `b` é um hash SHA-256 truncado das cipher suites ordenadas. Seção `c` é um hash SHA-256 truncado das extensões ordenadas concatenadas com os algoritmos de assinatura. Como ambas as listas são ordenadas antes do hashing, a randomização de extensões não afeta a saída.
 
-Ordem das Opções: MSS → SAckOK → Timestamp → NOP → WScale
+Cloudflare, AWS e outras plataformas principais adotaram o JA4. A suíte completa JA4+ também inclui JA4S (fingerprinting de servidor), JA4H (fingerprinting de cliente HTTP), JA4X (fingerprinting de certificado X.509) e JA4SSH (fingerprinting SSH). A especificação e ferramentas estão disponíveis em [github.com/FoxIO-LLC/ja4](https://github.com/FoxIO-LLC/ja4).
 
-Assinatura: 4:54:29200:MSS,SAckOK,Timestamp,NOP,WScale
-SO Detectado: Linux (kernel recente)
-==============================
-```
+### JA3S (Fingerprinting de Servidor)
 
-### Análise do Número de Sequência Inicial (ISN) TCP
+JA3S aplica o mesmo conceito à mensagem ServerHello, mas o formato é mais simples porque o servidor seleciona uma única cipher suite em vez de oferecer uma lista. A string JA3S é `version,cipher,extensions` e seu hash MD5 identifica a implementação TLS do servidor. Parear JA3 (ou JA4) com JA3S cria um fingerprint bidirecional: um cliente específico conversando com um servidor específico produz um par JA3+JA3S previsível, que é mais distintivo do que qualquer fingerprint isolado.
 
-```python
-def analyze_isn_randomness(target_ip: str, samples: int = 10) -> dict:
-    """
-    Analisa a geração do Número de Sequência Inicial TCP.
-    SOs diferentes usam algoritmos diferentes de geração de ISN.
-    """
-    import statistics
-    
-    sequence_numbers = []
-    
-    for i in range(samples):
-        syn = IP(dst=target_ip)/TCP(sport=40000+i, dport=80, flags='S')
-        syn_ack = sr1(syn, timeout=2, verbose=0)
-        
-        if syn_ack and syn_ack.haslayer(TCP):
-            isn = syn_ack[TCP].seq
-            sequence_numbers.append(isn)
-        
-        # Pequeno atraso entre as sondagens
-        time.sleep(0.1)
-    
-    if len(sequence_numbers) < 2:
-        return {'error': 'Dados insuficientes'}
-    
-    # Calcular estatísticas
-    deltas = [sequence_numbers[i+1] - sequence_numbers[i] 
-              for i in range(len(sequence_numbers)-1)]
-    
-    return {
-        'sample_count': len(sequence_numbers),
-        'isn_values': sequence_numbers,
-        'deltas': deltas,
-        'avg_delta': statistics.mean(deltas),
-        'stdev_delta': statistics.stdev(deltas) if len(deltas) > 1 else 0,
-        'min_delta': min(deltas),
-        'max_delta': max(deltas),
-        'randomness': 'High' if statistics.stdev(deltas) > 100000 else 'Low'
-    }
-```
+### Como Proxies Interagem com Fingerprints TLS
 
-**Geração de ISN por SO:**
+O tipo de proxy determina se o fingerprint TLS é preservado. Proxies SOCKS5 e túneis HTTP CONNECT retransmitem o stream TCP sem encerrar o TLS, então o servidor destino vê o fingerprint TLS original do cliente inalterado. Esta é a principal vantagem desses tipos de proxy para consistência de fingerprint.
 
-| SO | Algoritmo ISN | Previsibilidade |
-|---|---|---|
-| **Linux (moderno)** | [RFC 6528](https://tools.ietf.org/html/rfc6528) (baseado em hash) | Muito aleatório |
-| **Windows** | RFC 6528 | Muito aleatório |
-| **Linux Antigo** | Contador baseado em tempo | Um tanto previsível |
-| **BSD** | [RFC 1948](https://tools.ietf.org/html/rfc1948) (baseado em MD5) | Aleatório |
+Proxies MITM (que encerram o TLS e reestabelecem uma nova conexão para o destino) substituem o fingerprint TLS do cliente pelo seu próprio. O destino vê as cipher suites e extensões do software proxy, não as do navegador. Se o proxy usa uma biblioteca TLS padrão como OpenSSL ou BoringSSL com configurações padrão, o fingerprint não corresponderá a nenhum navegador conhecido, o que é em si um sinal de detecção.
 
-!!! danger "Ataques de Previsão de ISN"
-    Historicamente, ISNs previsíveis permitiram **ataques de sequestro de TCP** (veja [ataque de Mitnick, 1995](https://en.wikipedia.org/wiki/Kevin_Mitnick#Arrest,_conviction,_and_incarceration)). Sistemas modernos implementam a [RFC 6528](https://tools.ietf.org/html/rfc6528) "Defendendo contra Ataques de Número de Sequência" usando geradores de números aleatórios criptograficamente seguros para ISN, tornando a previsão computacionalmente inviável.
+É por isso que a abordagem do Pydoll de usar `--proxy-server` (que cria um túnel CONNECT, preservando o fingerprint TLS do navegador) é preferível a configurações de proxy MITM externo para automação stealth.
 
-## Fingerprinting de TLS/SSL (Camada 6)
+## HTTP/2 Fingerprinting
 
-O fingerprinting de TLS é uma das técnicas mais poderosas para identificar clientes, já que o handshake TLS revela informações detalhadas sobre as capacidades criptográficas e a implementação do cliente.
+Conexões HTTP/2 expõem um conjunto separado de sinais de fingerprinting distintos do TLS. O primeiro frame enviado pelo cliente é um frame SETTINGS contendo parâmetros como `HEADER_TABLE_SIZE`, `ENABLE_PUSH`, `MAX_CONCURRENT_STREAMS`, `INITIAL_WINDOW_SIZE`, `MAX_FRAME_SIZE` e `MAX_HEADER_LIST_SIZE`. Cada navegador usa valores padrão diferentes e inclui subconjuntos diferentes desses parâmetros.
 
-### Visão Geral do Handshake TLS
+Além do SETTINGS, o tamanho do frame WINDOW_UPDATE, a prioridade/peso do stream inicial e a ordem dos pseudo-cabeçalhos HTTP/2 (`:method`, `:authority`, `:scheme`, `:path`) variam entre implementações. Chrome, Firefox e Safari cada um produz uma combinação distintiva desses valores.
 
-```mermaid
-sequenceDiagram
-    participant Client
-    participant Server
-    
-    Note over Client: Cliente prepara ClientHello
-    Client->>Server: ClientHello<br/>[Versão, Aleatório, Suítes de Cifras,<br/>Extensões, Curvas, Formatos]
-    
-    Note over Server: Servidor analisa fingerprint<br/>Hash JA3 calculado
-    Server->>Client: ServerHello<br/>[Cifra Escolhida, Extensões]
-    
-    Server->>Client: Certificado
-    Server->>Client: ServerHelloDone
-    
-    Client->>Server: ClientKeyExchange
-    Client->>Server: ChangeCipherSpec
-    Client->>Server: Finished
-    
-    Server->>Client: ChangeCipherSpec
-    Server->>Client: Finished
-    
-    Note over Client,Server: Dados da Aplicação Criptografados
-```
+A Akamai publicou a pesquisa fundamental sobre fingerprinting HTTP/2 no Black Hat Europe 2017. Seu formato de fingerprint concatena os valores SETTINGS, tamanho do WINDOW_UPDATE, frames PRIORITY e ordem dos pseudo-cabeçalhos. A suíte JA4+ inclui `JA4H` para fingerprinting em nível HTTP, cobrindo ordem e valores de cabeçalhos.
 
-### JA3: Fingerprinting de Cliente TLS
+O fingerprinting HTTP/2 é particularmente eficaz contra ferramentas de automação porque muitos frameworks de bot e bibliotecas HTTP implementam suas próprias pilhas HTTP/2 com parâmetros padrão que não correspondem a nenhum navegador real. Mesmo quando uma ferramenta falsifica corretamente o fingerprint TLS (usando curl-impersonate ou similar), seu frame HTTP/2 SETTINGS pode traí-la.
 
-[JA3](https://github.com/salesforce/ja3) é um método desenvolvido por John Althouse, Jeff Atkinson e Josh Atkins na Salesforce para criar fingerprints de clientes TLS analisando o pacote ClientHello. A técnica se tornou um padrão da indústria para fingerprinting TLS.
+Você pode verificar seu fingerprint HTTP/2 em [browserleaks.com/http2](https://browserleaks.com/http2). Como o Pydoll controla uma instância real do Chrome via CDP, o fingerprint HTTP/2 é sempre autêntico, o que é uma vantagem inerente sobre ferramentas que constroem requisições HTTP programaticamente.
 
-**Componentes JA3:**
+## Implicações para Automação de Navegador
 
-```python
-# Componentes do fingerprint JA3 (em ordem)
-ja3_components = {
-    1: 'Versão TLS',          # ex: 771 = TLS 1.2, 772 = TLS 1.3
-    2: 'Suítes de Cifras',    # ex: '49195,49199,52393'
-    3: 'Extensões',           # ex: '0,10,11,13'  
-    4: 'Curvas Elípticas',    # ex: '23,24,25'
-    5: 'Formatos de Ponto EC', # ex: '0'
-}
+A conclusão prática para automação com o Pydoll é que o network fingerprinting é uma área onde controlar um navegador real fornece uma vantagem significativa. A pilha TCP/IP do Chrome, implementação TLS (BoringSSL) e pilha HTTP/2 produzem fingerprints autênticos por padrão. O principal risco é incompatibilidade ambiental: executar o Chrome em um servidor Linux enquanto o User-Agent alega Windows cria uma inconsistência de fingerprint TCP/IP (TTL 64 ao invés de 128, ordem de opções TCP do Linux ao invés do Windows).
 
-# Formato da string JA3 (separada por vírgulas)
-ja3_string = f"{version},{ciphers},{extensions},{curves},{formats}"
+Para configurações baseadas em proxy, o fluxo de fingerprint é: a pilha TCP/IP da sua máquina gera a conexão para o proxy (que o operador do proxy pode ver mas o destino não), e a pilha TCP/IP do proxy gera a conexão para o destino. O destino vê o TTL e opções TCP do servidor proxy. Se o proxy roda Linux (como a maioria faz), o fingerprint TCP indicará Linux independentemente do User-Agent. Este é um sinal de detecção bem conhecido que proxies residenciais mitigam parcialmente (o endpoint do proxy é a máquina de um usuário real, então seu fingerprint TCP é plausível) mas proxies de datacenter não podem.
 
-# Hash JA3 (MD5 da string)
-ja3_hash = hashlib.md5(ja3_string.encode()).hexdigest()
-```
+Os fingerprints TLS e HTTP/2, por outro lado, passam por túneis SOCKS5 e CONNECT sem modificação. Estes são os fingerprints do navegador, não do proxy. Então com o Pydoll através de um túnel CONNECT, o destino vê fingerprints TLS e HTTP/2 autênticos do Chrome pareados com o fingerprint TCP/IP do proxy. Esta combinação é consistente com um usuário real navegando através de uma VPN ou proxy corporativo, que é um padrão comum e legítimo.
 
-**Exemplo JA3:**
+## Referências
 
-```
-String: 771,49195-49199-52393-49196-49200-52392,0-10-11-13-65281,23-24-25,0
-Hash:   579ccef312d18482fc42e2b822ca2430
-```
-
-### Gerando Fingerprints JA3 com Python
-
-```python
-import hashlib
-import ssl
-import socket
-from typing import Optional, Dict, List
-
-
-class JA3Generator:
-    """
-    Gera fingerprints JA3 de pacotes TLS ClientHello.
-    """
-    
-    # Mapeamentos de Versão TLS
-    TLS_VERSIONS = {
-        0x0301: 'TLS 1.0',
-        0x0302: 'TLS 1.1',
-        0x0303: 'TLS 1.2',
-        0x0304: 'TLS 1.3',
-    }
-    
-    # Suítes de cifras comuns
-    CIPHER_SUITES = {
-        0x002f: 'TLS_RSA_WITH_AES_128_CBC_SHA',
-        0x0035: 'TLS_RSA_WITH_AES_256_CBC_SHA',
-        0xc013: 'TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA',
-        0xc014: 'TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA',
-        0xc02f: 'TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256',
-        0xc02b: 'TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256',
-        0x1301: 'TLS_AES_128_GCM_SHA256',          # TLS 1.3
-        0x1302: 'TLS_AES_256_GCM_SHA384',          # TLS 1.3
-        0x1303: 'TLS_CHACHA20_POLY1305_SHA256',    # TLS 1.3
-    }
-    
-    # Extensões TLS
-    EXTENSIONS = {
-        0: 'server_name',
-        1: 'max_fragment_length',
-        5: 'status_request',
-        10: 'supported_groups',
-        11: 'ec_point_formats',
-        13: 'signature_algorithms',
-        16: 'application_layer_protocol_negotiation',
-        18: 'signed_certificate_timestamp',
-        23: 'extended_master_secret',
-        27: 'compress_certificate',
-        35: 'session_ticket',
-        43: 'supported_versions',
-        45: 'psk_key_exchange_modes',
-        51: 'key_share',
-        65281: 'renegotiation_info',
-    }
-    
-    @staticmethod
-    def parse_client_hello(client_hello_bytes: bytes) -> Dict:
-        """
-        Analisa o pacote ClientHello e extrai componentes JA3.
-        """
-        if len(client_hello_bytes) < 43:
-            raise ValueError("Pacote ClientHello inválido (muito curto)")
-        
-        # Cabeçalho de Registro TLS (5 bytes)
-        # Tipo de Conteúdo (1) | Versão (2) | Comprimento (2)
-        content_type = client_hello_bytes[0]
-        record_version = int.from_bytes(client_hello_bytes[1:3], 'big')
-        
-        # Cabeçalho do Handshake (4 bytes)
-        # Tipo de Handshake (1) | Comprimento (3)
-        handshake_type = client_hello_bytes[5]
-        
-        if handshake_type != 0x01:  # ClientHello
-            raise ValueError("Não é um pacote ClientHello")
-        
-        # Versão do ClientHello (2 bytes no offset 9)
-        client_version = int.from_bytes(client_hello_bytes[9:11], 'big')
-        
-        # Aleatório (32 bytes)
-        offset = 11 + 32  # Pular versão + aleatório
-        
-        # ID da Sessão
-        session_id_length = client_hello_bytes[offset]
-        offset += 1 + session_id_length
-        
-        # Suítes de Cifras
-        cipher_suites_length = int.from_bytes(client_hello_bytes[offset:offset+2], 'big')
-        offset += 2
-        
-        cipher_suites = []
-        for i in range(0, cipher_suites_length, 2):
-            cipher = int.from_bytes(client_hello_bytes[offset+i:offset+i+2], 'big')
-            cipher_suites.append(cipher)
-        
-        offset += cipher_suites_length
-        
-        # Métodos de Compressão
-        compression_length = client_hello_bytes[offset]
-        offset += 1 + compression_length
-        
-        # Extensões
-        extensions = []
-        elliptic_curves = []
-        ec_point_formats = []
-        
-        if offset < len(client_hello_bytes) - 2:
-            extensions_length = int.from_bytes(client_hello_bytes[offset:offset+2], 'big')
-            offset += 2
-            
-            extensions_end = offset + extensions_length
-            
-            while offset < extensions_end:
-                ext_type = int.from_bytes(client_hello_bytes[offset:offset+2], 'big')
-                ext_length = int.from_bytes(client_hello_bytes[offset+2:offset+4], 'big')
-                offset += 4
-                
-                extensions.append(ext_type)
-                
-                # Analisar extensões específicas
-                if ext_type == 10:  # supported_groups
-                    curves_length = int.from_bytes(client_hello_bytes[offset:offset+2], 'big')
-                    for i in range(2, curves_length + 2, 2):
-                        curve = int.from_bytes(client_hello_bytes[offset+i:offset+i+2], 'big')
-                        elliptic_curves.append(curve)
-                
-                elif ext_type == 11:  # ec_point_formats
-                    formats_length = client_hello_bytes[offset]
-                    for i in range(1, formats_length + 1):
-                        fmt = client_hello_bytes[offset + i]
-                        ec_point_formats.append(fmt)
-                
-                offset += ext_length
-        
-        # Filtrar valores GREASE (randomizados por navegadores para prevenir ossificação)
-        # GREASE (RFC 8701): Generate Random Extensions And Sustain Extensibility
-        # Valores GREASE: 0x0a0a, 0x1a1a, 0x2a2a, 0x3a3a, etc.
-        def is_grease(value: int) -> bool:
-            return (value & 0x0f0f) == 0x0a0a
-        
-        cipher_suites = [c for c in cipher_suites if not is_grease(c)]
-        extensions = [e for e in extensions if not is_grease(e)]
-        elliptic_curves = [c for c in elliptic_curves if not is_grease(c)]
-        
-        return {
-            'version': client_version,
-            'cipher_suites': cipher_suites,
-            'extensions': extensions,
-            'elliptic_curves': elliptic_curves,
-            'ec_point_formats': ec_point_formats,
-        }
-    
-    @staticmethod
-    def generate_ja3(parsed_hello: Dict) -> tuple[str, str]:
-        """
-        Gera string JA3 e hash do ClientHello analisado.
-        
-        Nota: Valores GREASE já devem estar filtrados de parsed_hello
-        para garantir fingerprints consistentes entre conexões.
-        """
-        # Juntar componentes com '-'
-        version = str(parsed_hello['version'])
-        ciphers = '-'.join(str(c) for c in parsed_hello['cipher_suites'])
-        extensions = '-'.join(str(e) for e in parsed_hello['extensions'])
-        curves = '-'.join(str(c) for c in parsed_hello['elliptic_curves'])
-        formats = '-'.join(str(f) for f in parsed_hello['ec_point_formats'])
-        
-        # String JA3 (componentes separados por vírgula)
-        ja3_string = f"{version},{ciphers},{extensions},{curves},{formats}"
-        
-        # Hash JA3 (MD5)
-        ja3_hash = hashlib.md5(ja3_string.encode()).hexdigest()
-        
-        return ja3_string, ja3_hash
-    
-    @staticmethod
-    def capture_tls_handshake(hostname: str, port: int = 443) -> Optional[bytes]:
-        """
-        Captura o ClientHello de uma conexão TLS.
-        Nota: Isso é simplificado. Para produção, use scapy ou mitmproxy.
-        """
-        try:
-            # Cria socket mas não completa handshake
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.settimeout(5)
-            sock.connect((hostname, port))
-            
-            # Na prática, você precisaria interceptar os bytes reais enviados
-            # Isso é apenas um placeholder - use ferramentas de captura de pacotes
-            
-            sock.close()
-            return None  # Retornaria bytes do ClientHello capturado
-            
-        except Exception as e:
-            print(f"Erro ao capturar handshake: {e}")
-            return None
-
-
-!!! info "Valores GREASE em TLS"
-    [GREASE (RFC 8701)](https://tools.ietf.org/html/rfc8701) - "Generate Random Extensions And Sustain Extensibility" - é uma técnica usada por navegadores modernos para prevenir a ossificação do protocolo. Navegadores inserem aleatoriamente valores reservados (como 0x0a0a, 0x1a1a, 0x2a2a) em suítes de cifras, extensões e outros campos.
-    
-    **Por que GREASE importa para o fingerprinting:**
-    
-    - Esses valores mudam a cada conexão, tornando handshakes TLS brutos não determinísticos
-    - Implementações JA3 devem **filtrar** valores GREASE para criar fingerprints consistentes
-    - Servidores que rejeitam valores GREASE não estão em conformidade e se revelam
-    - Ausência de GREASE na automação pode ser um sinal de detecção (navegadores reais sempre usam)
-
-
-def analyze_ja3_from_pcap(pcap_file: str):
-    """
-    Analisa fingerprints JA3 de um arquivo pcap.
-    Requer scapy e capacidades de parsing TLS.
-    """
-    from scapy.all import rdpcap, TCP
-    from scapy.layers.tls.record import TLS
-    from scapy.layers.tls.handshake import TLSClientHello
-    
-    packets = rdpcap(pcap_file)
-    ja3_results = []
-    
-    for packet in packets:
-        if packet.haslayer(TLS) and packet.haslayer(TLSClientHello):
-            try:
-                # Extrai camada ClientHello
-                client_hello = packet[TLSClientHello]
-                
-                # Constrói componentes JA3
-                version = client_hello.version
-                ciphers = client_hello.ciphers
-                extensions = [ext.type for ext in client_hello.ext] if hasattr(client_hello, 'ext') else []
-                
-                # Analisa extensões para curvas e formatos
-                curves = []
-                formats = []
-                
-                if hasattr(client_hello, 'ext'):
-                    for ext in client_hello.ext:
-                        if ext.type == 10:  # supported_groups
-                            curves = ext.groups if hasattr(ext, 'groups') else []
-                        elif ext.type == 11:  # ec_point_formats
-                            formats = ext.formats if hasattr(ext, 'formats') else []
-                
-                # Gera JA3
-                ja3_str = f"{version},{'-'.join(map(str, ciphers))},{'-'.join(map(str, extensions))},{'-'.join(map(str, curves))},{'-'.join(map(str, formats))}"
-                ja3_hash = hashlib.md5(ja3_str.encode()).hexdigest()
-                
-                ja3_results.append({
-                    'src_ip': packet[IP].src if packet.haslayer(IP) else 'unknown',
-                    'dst_ip': packet[IP].dst if packet.haslayer(IP) else 'unknown',
-                    'ja3_string': ja3_str,
-                    'ja3_hash': ja3_hash,
-                })
-                
-            except Exception as e:
-                print(f"Erro ao analisar pacote: {e}")
-                continue
-    
-    return ja3_results
-
-
-# Exemplo: Hashes JA3 de navegadores conhecidos
-KNOWN_JA3_FINGERPRINTS = {
-    '579ccef312d18482fc42e2b822ca2430': 'Chrome 90+ no Windows',
-    'cd08e31efaa7a0a82988099039d4a289': 'Firefox 88+ no Windows',
-    'ac1a36f8b3f5e5d4a6e4f0c3e5a5e5e5': 'Safari 14+ no macOS',
-    'b32309a26951912be7dba376398abc3b': 'Biblioteca Python requests',
-    'e7d705a3286e19bd28ca826f69a8b2c9': 'curl 7.88+'
-
-}
-
-
-def identify_client(ja3_hash: str) -> str:
-    """Identifica cliente com base no hash JA3."""
-    return KNOWN_JA3_FINGERPRINTS.get(ja3_hash, 'Cliente desconhecido')
-```
-
-### Ferramentas para Fingerprinting TLS
-
-#### 1. ja3 (Implementação Original)
-
-A [implementação original JA3 da Salesforce](https://github.com/salesforce/ja3) fornece ferramentas para gerar fingerprints de arquivos pcap.
-
-```bash
-# Instalar ja3
-git clone https://github.com/salesforce/ja3.git
-cd ja3/python
-
-# Gerar JA3 do pcap
-python3 ja3.py -a capture.pcap
-
-# Saída:
-# [JA3] 192.168.1.100:12345 → 93.184.216.34:443
-# JA3: 579ccef312d18482fc42e2b822ca2430
-# JA3S: e35df3e00ca4ef31d42b34bebaa2f86e
-```
-
-#### 2. pmercury (Biblioteca Python)
-
-[pmercury](https://pypi.org/project/pmercury/) é uma biblioteca Python da Cisco para fingerprinting de rede, incluindo análise TLS.
-
-```bash
-# Instalar
-pip install pmercury
-
-# Usar em Python
-from pmercury.protocols.tls import TLS
-
-tls = TLS()
-protocol_type, fp_str, approx_str, server_name = tls.fingerprint(data)
-```
-
-#### 3. ts1-signatures (Fingerprinting TLS/HTTP2 Avançado)
-
-[ts1-signatures](https://pypi.org/project/ts1-signatures/) fornece fingerprinting mais detalhado com formato de saída JSON.
-
-```bash
-# Instalar
-pip install ts1-signatures
-
-# Usar em Python
-import ts1
-
-with open("capture.pcap", "rb") as pcap:
-    for tls_client in ts1.tls.process_pcap(pcap):
-        signature = tls_client["signature"]
-        print(f"TLS Fingerprint: {signature.hash().hexdigest()}")
-```
-
-#### 4. tlsfp (Servidor Educacional de Fingerprint TLS)
-
-[tlsfp](https://github.com/elpy1/tlsfp) é um servidor HTTPS Python para fingerprinting TLS, útil para testes e educação.
-
-```bash
-# Instalar
-git clone https://github.com/elpy1/tlsfp.git
-cd tlsfp
-python3 tlsfp.py
-
-# Acesse https://localhost:8443 para ver o fingerprint do seu cliente
-```
-
-#### 5. curl-impersonate
-
-[curl-impersonate](https://github.com/lwthiker/curl-impersonate) permite imitar fingerprints TLS de navegadores, útil para entender técnicas de evasão.
-
-```bash
-# Instalar (exemplo para Chrome)
-wget https://github.com/lwthiker/curl-impersonate/releases/...
-chmod +x curl-impersonate-chrome
-
-# Fazer requisição imitando fingerprint TLS do Chrome
-./curl-impersonate-chrome https://example.com
-```
-
-!!! tip "Wireshark com JA3"
-    O Wireshark pode exibir hashes JA3 com o [plugin JA3](https://github.com/salesforce/ja3/tree/master/wireshark). Isso permite análise de fingerprint em tempo real durante a captura de pacotes.
-
-### JA3S: Fingerprinting de Servidor TLS
-
-JA3S é o equivalente do lado do servidor, aplicando fingerprinting em servidores com base no ServerHello:
-
-```python
-def generate_ja3s(server_hello_bytes: bytes) -> tuple[str, str]:
-    """
-    Gera fingerprint JA3S do ServerHello.
-    Formato: Versão,Cifra,Extensões
-    """
-    # Analisa ServerHello (similar à análise do ClientHello)
-    version = parse_version(server_hello_bytes)
-    cipher = parse_selected_cipher(server_hello_bytes)
-    extensions = parse_extensions(server_hello_bytes)
-    
-    # String JA3S (mais simples que JA3)
-    ja3s_string = f"{version},{cipher},{'-'.join(map(str, extensions))}"
-    ja3s_hash = hashlib.md5(ja3s_string.encode()).hexdigest()
-    
-    return ja3s_string, ja3s_hash
-```
-
-**Casos de Uso JA3S:**
-
-- Identificar software de servidor (nginx, Apache, Cloudflare, etc.)
-- Detectar balanceadores de carga e CDNs
-- Mapear infraestrutura
-- Identificar potenciais vulnerabilidades com base na pilha do servidor
-
-## Leitura Adicional e Referências
-
-### Documentos Técnicos e RFCs
-
-- **[RFC 6528](https://tools.ietf.org/html/rfc6528)**: "Defendendo contra Ataques de Número de Sequência" - Geração moderna de ISN
-- **[RFC 1948](https://tools.ietf.org/html/rfc1948)**: "Defendendo Contra Ataques de Número de Sequência" - ISN original baseado em MD5
-- **[RFC 8701](https://tools.ietf.org/html/rfc8701)**: "Aplicando Generate Random Extensions And Sustain Extensibility (GREASE) ao TLS"
-- **[RFC 5246](https://tools.ietf.org/html/rfc5246)**: "O Protocolo Transport Layer Security (TLS) Versão 1.2"
-- **[RFC 8446](https://tools.ietf.org/html/rfc8446)**: "O Protocolo Transport Layer Security (TLS) Versão 1.3"
-
-### Ferramentas e Bibliotecas
-
-- **[JA3 por Salesforce](https://github.com/salesforce/ja3)**: Implementação original do fingerprinting TLS JA3
-- **[p0f](http://lcamtuf.coredump.cx/p0f3/)**: Ferramenta passiva de fingerprinting de SO por Michal Zalewski
-- **[Nmap](https://nmap.org/)**: Mapeador de rede e ferramenta de fingerprinting de SO por Gordon Lyon
-- **[Scapy](https://scapy.net/)**: Biblioteca Python de manipulação de pacotes por Philippe Biondi
-- **[pmercury](https://pypi.org/project/pmercury/)**: Biblioteca Python para fingerprinting de rede da Cisco
-- **[ts1-signatures](https://pypi.org/project/ts1-signatures/)**: Biblioteca avançada de fingerprinting TLS/HTTP2
-- **[tlsfp](https://github.com/elpy1/tlsfp)**: Servidor educacional de fingerprinting HTTPS TLS
-- **[curl-impersonate](https://github.com/lwthiker/curl-impersonate)**: cURL com imitação de fingerprint TLS de navegador
-
-### Artigos e Postagens de Blog
-
-- **[TLS Fingerprinting: How it works, where it is used and how to control your signature](https://lwthiker.com/networks/2022/06/17/tls-fingerprinting.html)** por lwthiker - Guia abrangente sobre mecanismos de fingerprinting TLS
-- **[TLS Fingerprinting: Advanced Guide for Security Engineers 2025](https://rebrowser.net/blog/tls-fingerprinting-advanced-guide-for-security-engineers)** por Rebrowser - Técnicas modernas de fingerprinting TLS
-- **[Overcoming TLS Fingerprinting in Web Scraping](https://rayobyte.com/blog/tls-fingerprinting/)** por Rayobyte - Perspectiva prática sobre fingerprinting TLS em automação
-- **[JA3: A Method for Profiling SSL/TLS Clients](https://engineering.salesforce.com/tls-fingerprinting-with-ja3-and-ja3s-247362855967)** por Salesforce Engineering - Anúncio original do JA3
-
-### Artigos Acadêmicos e Pesquisa
-
-- **"Remote OS Detection via TCP/IP Stack Fingerprinting"** - Pesquisa inicial sobre técnicas de fingerprinting de SO
-- **"A TCP Initial Sequence Number Attack"** - Artigo histórico sobre vulnerabilidades de ISN
-- **"TLS Fingerprinting: New Techniques for Identifying Applications"** - Pesquisa moderna sobre identificação baseada em TLS
-
-### Recursos de Segurança
-
-- **[Guia de Fingerprinting OWASP](https://owasp.org/)**: Técnicas de fingerprinting de aplicação web
-- **[Parâmetros TLS IANA](https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml)**: Registros oficiais de suítes de cifras e extensões
-- **[Filtros de Exibição Wireshark para TLS](https://wiki.wireshark.org/TLS)**: Guia para analisar tráfego TLS
-
-### Referências Históricas
-
-- **[Ataque de Sequestro TCP de Kevin Mitnick (1995)](https://en.wikipedia.org/wiki/Kevin_Mitnick#Arrest,_conviction,_and_incarceration)**: Exemplo famoso de exploração de previsão de ISN
-- **[Evolução do Fingerprinting TCP/IP](https://lcamtuf.coredump.cx/p0f3/)**: Perspectiva histórica do criador do p0f
-
-!!! tip "Mantenha-se Atualizado"
-    Técnicas de fingerprinting evoluem constantemente à medida que novos protocolos emergem e sistemas se adaptam. Siga blogs de segurança, inscreva-se em RFCs relevantes e monitore repositórios de ferramentas para os últimos desenvolvimentos.
-
-!!! info "Aplicação Prática"
-    Para evasão prática de fingerprinting no Pydoll:
-    
-    - **[Opções do Navegador](../features/configuration/browser-options.md)**: Argumentos de linha de comando para modificar comportamento
-    - **[Preferências do Navegador](../features/configuration/browser-preferences.md)**: Configurações internas para fingerprints realistas
-    - **[Configuração de Proxy](../features/configuration/proxy.md)**: Anonimização em nível de rede
-    - **[Arquitetura de Proxy](./proxy-architecture.md)**: Análise profunda dos fundamentos de rede
-
----
+- Salesforce Engineering: TLS Fingerprinting with JA3 and JA3S - https://engineering.salesforce.com/tls-fingerprinting-with-ja3-and-ja3s-247362855967/
+- FoxIO JA4+ Network Fingerprinting - https://github.com/FoxIO-LLC/ja4
+- Cloudflare: JA4 Signals - https://blog.cloudflare.com/ja4-signals/
+- Akamai: Passive Fingerprinting of HTTP/2 Clients (Black Hat EU 2017) - https://blackhat.com/docs/eu-17/materials/eu-17-Shuster-Passive-Fingerprinting-Of-HTTP2-Clients-wp.pdf
+- p0f v3: Passive OS Fingerprinting - https://lcamtuf.coredump.cx/p0f3/
+- RFC 8446: TLS 1.3 - https://datatracker.ietf.org/doc/html/rfc8446
+- RFC 8701: GREASE for TLS - https://datatracker.ietf.org/doc/html/rfc8701
+- RFC 6528: Defending against Sequence Number Attacks - https://datatracker.ietf.org/doc/html/rfc6528
+- BrowserLeaks HTTP/2 Fingerprint - https://browserleaks.com/http2
+- Stamus Networks: JA3 Fingerprints Fade as Browsers Embrace Extension Randomization - https://www.stamus-networks.com/blog/ja3-fingerprints-fade-browsers-embrace-tls-extension-randomization
