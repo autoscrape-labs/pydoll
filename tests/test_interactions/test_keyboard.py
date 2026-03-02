@@ -2,7 +2,7 @@ import pytest
 import pytest_asyncio
 from unittest.mock import AsyncMock, MagicMock
 
-from pydoll.interactions.keyboard import KeyboardAPI
+from pydoll.interactions.keyboard import Keyboard, KeyboardAPI
 from pydoll.constants import Key
 from pydoll.protocol.input.types import KeyEventType
 
@@ -12,6 +12,7 @@ async def mock_tab():
     """Mock Tab instance for KeyboardAPI tests."""
     tab = MagicMock()
     tab._execute_command = AsyncMock()
+    tab.focus = AsyncMock()
     return tab
 
 
@@ -524,6 +525,31 @@ class TestKeyboardTypeText:
             assert len(w) == 1
             assert issubclass(w[0].category, DeprecationWarning)
             assert "interval" in str(w[0].message)
+
+    @pytest.mark.asyncio
+    async def test_type_char_calls_focus(self, keyboard_api, mock_tab):
+        """_type_char should call focus before dispatching key events."""
+        await keyboard_api._type_char("x")
+
+        mock_tab.focus.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_type_backspace_calls_focus(self, keyboard_api, mock_tab):
+        """_type_backspace should call focus before dispatching key events."""
+        await keyboard_api._type_backspace()
+
+        mock_tab.focus.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_ensure_focus_skipped_without_focus_method(self):
+        """Executor without focus method should not trigger focus calls."""
+        executor = MagicMock(spec=['_execute_command'])
+        executor._execute_command = AsyncMock()
+        keyboard = Keyboard(executor)
+
+        assert keyboard._has_focus is False
+        await keyboard._type_char("a")
+        # No error and no focus call attempted
 
     @pytest.mark.asyncio
     async def test_type_char(self, keyboard_api, mock_tab):
