@@ -1,877 +1,468 @@
-# 构建您自己的代理服务器
+# 构建代理服务器
 
-本文档提供了 HTTP 和 SOCKS5 代理服务器的 **完整、可用于生产的 Python 实现**。从头开始构建代理是终极的学习体验，它揭示了从外部看不到的攻击向量、优化机会和协议的细微差别。
+本文档使用 Python asyncio 从零实现 HTTP 和 SOCKS5 代理服务器。目标不是生产就绪，而是协议理解：观察每个字节如何被解析、安全边界在哪里，以及为什么真实的代理软件中存在某些设计决策。
 
 !!! info "模块导航"
-    - **[← 代理检测](./proxy-detection.md)** - 匿名与规避技术
-    - **[← SOCKS 代理](./socks-proxies.md)** - SOCKS 协议基础
-    - **[← HTTP/HTTPS 代理](./http-proxies.md)** - HTTP 协议基础
-    - **[← 网络与安全概述](./index.md)** - 模块介绍
-    - **[→ 法律与道德](./proxy-legal.md)** - 合规与责任
-    
-    有关实际用法，请参阅 **[代理配置](../../features/configuration/proxy.md)**。
+    - [网络基础](./network-fundamentals.md)：TCP/IP、UDP、WebRTC
+    - [HTTP/HTTPS 代理](./http-proxies.md)：应用层代理
+    - [SOCKS 代理](./socks-proxies.md)：会话层代理
+    - [代理检测](./proxy-detection.md)：检测技术与规避
 
-!!! warning "教育目的"
-    这些实现用于 **学习和测试**。生产环境的代理需要额外的安全加固、性能优化和健壮的错误处理。
+    有关在 Pydoll 中实际使用代理的方法，请参阅[代理配置](../../features/configuration/proxy.md)。
 
-## 构建您自己的代理服务器
+!!! warning "教育用途代码"
+    这些实现以清晰度为优先，而非健壮性。它们缺少连接限制、访问控制列表以及生产代理所需的许多错误恢复路径。请勿将它们暴露于不受信任的网络中。
 
-让我们从头开始构建 HTTP 和 SOCKS5 代理，以了解它们的内部原理。
+## HTTP 代理
 
-### 先决条件
+HTTP 代理以两种模式运行。对于明文 HTTP，它接收完整的请求（带有绝对形式的 URL，例如 `GET http://example.com/path HTTP/1.1`），将请求目标重写为原始形式（`GET /path HTTP/1.1`），连接到目标服务器，转发请求，然后将响应传回。对于 HTTPS，客户端发送 `CONNECT host:port` 请求，代理打开到目标的 TCP 连接，以 `200 Connection Established` 响应，然后在两个方向之间盲目中继字节，不检查加密内容。
+
+下面的实现处理了这两种模式。阅读代码时需要注意几点。`_pipe_data` 方法在一端关闭时调用 `write_eof()`，这会向另一端发送 TCP FIN。如果不这样做，隧道会无限挂起，因为另一端的 `read()` 永远不会返回空字节。HTTP 转发路径使用相同的管道方法而不是单次 `read()` 调用，因为 HTTP 响应可以任意大，固定大小的读取会静默截断它们。请求目标重写保留了查询字符串，仅使用 `urlparse().path` 会丢失它们。
 
 ```python
 import asyncio
 import base64
-import struct
+import contextlib
 import logging
-from typing import Optional, Tuple
+from urllib.parse import urlparse
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-```
 
-### HTTP 代理服务器
 
-```python
 class HTTPProxy:
-    """
-    简单的 HTTP/HTTPS 代理服务器实现。
-    处理 HTTP 请求和 HTTPS CONNECT 隧道。
-    """
-    
+    """带有可选 Basic 认证的异步 HTTP/HTTPS 代理。"""
+
     def __init__(self, host='0.0.0.0', port=8080, username=None, password=None):
         self.host = host
         self.port = port
         self.username = username
         self.password = password
-    
-    async def handle_client(self, reader, writer):
-        """处理客户端连接。"""
+
+    async def start(self):
+        server = await asyncio.start_server(
+            self._handle_client, self.host, self.port
+        )
+        logger.info(f'HTTP proxy listening on {self.host}:{self.port}')
+        async with server:
+            await server.serve_forever()
+
+    async def _handle_client(self, reader, writer):
         try:
-            # 读取 HTTP 请求行
-            request_line = await reader.readline()
+            request_line = await asyncio.wait_for(
+                reader.readline(), timeout=30
+            )
             if not request_line:
                 return
-            
-            request_parts = request_line.decode('utf-8').split()
-            method, url, protocol = request_parts
-            
-            # 读取标头
-            headers = await self._read_headers(reader)
-            
-            # 检查身份验证
-            if not self._check_auth(headers):
-                await self._send_auth_required(writer)
+
+            parts = request_line.decode('latin-1').split()
+            if len(parts) != 3:
+                writer.write(b'HTTP/1.1 400 Bad Request\r\n\r\n')
+                await writer.drain()
                 return
-            
-            # 根据方法处理
+
+            method, url, _ = parts
+            headers = await self._read_headers(reader)
+
+            if not self._check_auth(headers):
+                writer.write(
+                    b'HTTP/1.1 407 Proxy Authentication Required\r\n'
+                    b'Proxy-Authenticate: Basic realm="Proxy"\r\n'
+                    b'Content-Length: 0\r\n\r\n'
+                )
+                await writer.drain()
+                return
+
             if method == 'CONNECT':
-                await self._handle_https_tunnel(url, reader, writer)
+                await self._handle_connect(url, reader, writer)
             else:
-                await self._handle_http_request(method, url, headers, reader, writer)
-                
+                await self._handle_http(method, url, headers, reader, writer)
         except Exception as e:
-            logger.error(f"处理客户端时出错: {e}")
+            logger.error(f'Client handler error: {e}')
         finally:
             writer.close()
             await writer.wait_closed()
-    
-    async def _read_headers(self, reader) -> dict:
-        """解析 HTTP 标头。"""
+
+    async def _read_headers(self, reader):
         headers = {}
         while True:
             line = await reader.readline()
-            if line == b'\r\n':  # 标头结束
+            if line in (b'\r\n', b'\n', b''):
                 break
-            
             if b':' in line:
-                key, value = line.decode('utf-8').split(':', 1)
+                key, value = line.decode('latin-1').split(':', 1)
                 headers[key.strip().lower()] = value.strip()
-        
         return headers
-    
-    def _check_auth(self, headers: dict) -> bool:
-        """验证代理身份验证。"""
+
+    def _check_auth(self, headers):
         if not self.username:
-            return True  # 不需要身份验证
-        
-        auth_header = headers.get('proxy-authorization', '')
-        if not auth_header.startswith('Basic '):
+            return True
+        auth = headers.get('proxy-authorization', '')
+        if not auth.startswith('Basic '):
             return False
-        
-        # 解码 base64 凭据
-        encoded = auth_header[6:]  # 移除 'Basic '
-        decoded = base64.b64decode(encoded).decode('utf-8')
-        username, password = decoded.split(':', 1)
-        
-        return username == self.username and password == self.password
-    
-    async def _send_auth_required(self, writer):
-        """发送 407 Proxy Authentication Required。"""
-        response = (
-            b'HTTP/1.1 407 Proxy Authentication Required\r\n'
-            b'Proxy-Authenticate: Basic realm="Proxy"\r\n'
-            b'Content-Length: 0\r\n'
-            b'\r\n'
-        )
-        writer.write(response)
-        await writer.drain()
-    
-    async def _handle_https_tunnel(self, target_address, client_reader, client_writer):
-        """
-        处理 HTTPS CONNECT 隧道。
-        在客户端和服务器之间创建双向管道。
-        """
-        host, port = target_address.split(':')
-        port = int(port)
-        
         try:
-            # 连接到目标服务器
-            server_reader, server_writer = await asyncio.open_connection(host, port)
-            
-            # 发送成功响应
-            client_writer.write(b'HTTP/1.1 200 Connection Established\r\n\r\n')
+            decoded = base64.b64decode(auth[6:]).decode('utf-8')
+            if ':' not in decoded:
+                return False
+            user, pwd = decoded.split(':', 1)
+            return user == self.username and pwd == self.password
+        except Exception:
+            return False
+
+    async def _handle_connect(self, target, client_reader, client_writer):
+        """为 HTTPS 建立盲 TCP 隧道。"""
+        # 解析 host:port，处理 IPv6 字面量如 [::1]:443
+        if target.startswith('['):
+            bracket_end = target.index(']')
+            host = target[1:bracket_end]
+            port = int(target[bracket_end + 2:])
+        elif ':' in target:
+            host, port_str = target.rsplit(':', 1)
+            port = int(port_str)
+        else:
+            client_writer.write(b'HTTP/1.1 400 Bad Request\r\n\r\n')
             await client_writer.drain()
-            
-            # 创建双向隧道
-            await asyncio.gather(
-                self._pipe_data(client_reader, server_writer, 'client→server'),
-                self._pipe_data(server_reader, client_writer, 'server→client'),
+            return
+
+        try:
+            server_reader, server_writer = await asyncio.open_connection(
+                host, port
             )
-            
-        except Exception as e:
-            logger.error(f"隧道错误: {e}")
+        except OSError as e:
+            logger.error(f'CONNECT failed to {host}:{port}: {e}')
             client_writer.write(b'HTTP/1.1 502 Bad Gateway\r\n\r\n')
             await client_writer.drain()
-    
-    async def _handle_http_request(self, method, url, headers, client_reader, client_writer):
-        """将 HTTP 请求转发到目标服务器。"""
-        # 解析 URL
-        from urllib.parse import urlparse
+            return
+
+        client_writer.write(b'HTTP/1.1 200 Connection Established\r\n\r\n')
+        await client_writer.drain()
+
+        await asyncio.gather(
+            self._pipe(client_reader, server_writer),
+            self._pipe(server_reader, client_writer),
+        )
+
+    async def _handle_http(self, method, url, headers, client_reader, client_writer):
+        """转发明文 HTTP 请求。"""
         parsed = urlparse(url)
         host = parsed.hostname
         port = parsed.port or 80
+
+        # 在请求目标中保留查询字符串
         path = parsed.path or '/'
-        
+        if parsed.query:
+            path += f'?{parsed.query}'
+
         try:
-            # 连接到目标
-            server_reader, server_writer = await asyncio.open_connection(host, port)
-            
-            # 构建请求
-            request = f"{method} {path} HTTP/1.1\r\n"
-            request += f"Host: {host}\r\n"
-            
-            # 转发标头 (代理特定的除外)
-            for key, value in headers.items():
-                if key.lower() not in ['proxy-authorization', 'proxy-connection']:
-                    request += f"{key}: {value}\r\n"
-            
-            request += '\r\n'
-            
-            # 发送请求
-            server_writer.write(request.encode('utf-8'))
-            
-            # 如果存在，则转正文
-            content_length = int(headers.get('content-length', 0))
-            if content_length > 0:
-                body = await client_reader.read(content_length)
-                server_writer.write(body)
-            
-            await server_writer.drain()
-            
-            # 将响应转发回客户端
-            response = await server_reader.read(65536)
-            client_writer.write(response)
+            server_reader, server_writer = await asyncio.open_connection(
+                host, port
+            )
+        except OSError as e:
+            logger.error(f'HTTP forward failed to {host}:{port}: {e}')
+            client_writer.write(b'HTTP/1.1 502 Bad Gateway\r\n\r\n')
             await client_writer.drain()
-            
-        except Exception as e:
-            logger.error(f"HTTP 请求错误: {e}")
-    
-    async def _pipe_data(self, reader, writer, direction):
-        """在读取器和写入器之间传输数据。"""
+            return
+
+        # 将请求目标从绝对形式重写为原始形式
+        request = f'{method} {path} HTTP/1.1\r\n'
+
+        # 如果端口不是标准端口，Host 头必须包含端口号
+        if port != 80:
+            request += f'Host: {host}:{port}\r\n'
+        else:
+            request += f'Host: {host}\r\n'
+
+        # 移除不应转发的 hop-by-hop 头
+        hop_by_hop = {
+            'proxy-authorization', 'proxy-connection',
+            'connection', 'keep-alive', 'te', 'trailer', 'upgrade',
+        }
+        for key, value in headers.items():
+            if key not in hop_by_hop:
+                request += f'{key}: {value}\r\n'
+
+        # 强制 Connection: close，使服务器不保持连接，
+        # 否则响应流不会结束
+        request += 'Connection: close\r\n\r\n'
+
+        server_writer.write(request.encode('latin-1'))
+
+        # 如果存在请求体则转发
+        content_length = int(headers.get('content-length', 0))
+        if content_length > 0:
+            body = await client_reader.readexactly(content_length)
+            server_writer.write(body)
+
+        await server_writer.drain()
+
+        # 将整个响应传回（而不是单次固定大小读取）
+        while True:
+            chunk = await server_reader.read(65536)
+            if not chunk:
+                break
+            client_writer.write(chunk)
+            await client_writer.drain()
+
+        server_writer.close()
+        await server_writer.wait_closed()
+
+    async def _pipe(self, reader, writer):
+        """带有正确半关闭处理的双向数据中继。"""
         try:
             while True:
                 data = await reader.read(8192)
                 if not data:
                     break
-                
                 writer.write(data)
                 await writer.drain()
-        except Exception as e:
-            logger.debug(f"管道 {direction} 已关闭: {e}")
-    
-    async def start(self):
-        """启动代理服务器。"""
-        server = await asyncio.start_server(
-            self.handle_client,
-            self.host,
-            self.port
-        )
-        
-        logger.info(f"HTTP 代理正在监听 {self.host}:{self.port}")
-        
-        async with server:
-            await server.serve_forever()
+        except (ConnectionResetError, BrokenPipeError, OSError):
+            pass
+        finally:
+            with contextlib.suppress(Exception):
+                if writer.can_write_eof():
+                    writer.write_eof()
 ```
 
-### SOCKS5 代理服务器
+有几个值得理解的协议细节。HTTP 头使用 ISO-8859-1（Latin-1）编码，而非 UTF-8。Latin-1 将每个字节值 0-255 映射到一个字符，因此 `decode('latin-1')` 永远不会抛出 `UnicodeDecodeError`，而 `decode('utf-8')` 在某些头部值上会崩溃。`Proxy-Authorization` 头使用 Base64 编码，但 Base64 不是加密：凭据以明文（或者更准确地说，可轻易还原的编码）传输，除非客户端与代理之间的连接本身受到 TLS 保护。hop-by-hop 头（`Connection`、`Keep-Alive`、`TE`、`Trailer`、`Upgrade`、`Proxy-Connection`）是用于两个节点之间直接连接的，不应端到端转发。RFC 9110 第 7.6.1 节要求代理在转发前将其剥离。
+
+!!! warning "SSRF 风险"
+    此实现不验证目标地址。客户端可以请求 `CONNECT 127.0.0.1:6379` 来访问本地 Redis 实例，或请求 `CONNECT 169.254.169.254:80` 来访问云实例元数据（AWS、GCP、Azure）。任何暴露给不受信任客户端的代理都必须针对私有和链路本地地址范围（`127.0.0.0/8`、`10.0.0.0/8`、`172.16.0.0/12`、`192.168.0.0/16`、`169.254.0.0/16`、`::1`、`fc00::/7`）建立拒绝列表来验证目标。
+
+## SOCKS5 代理
+
+SOCKS5 代理在比 HTTP 更低的层级运行。它使用 RFC 1928 中定义的二进制协议，包含三个阶段：方法协商、可选的认证和连接请求。代理完全不解析 HTTP。一旦隧道建立，它只是中继原始字节，不理解流经其中的是什么协议。
+
+SOCKS5 的二进制特性意味着每次读取都必须精确接收预期数量的字节。TCP 是流协议，不保证 `read(4)` 返回 4 个字节：根据网络条件，它可能返回 1、2 或 3 个字节。下面的实现使用 asyncio 的 `readexactly()`，它在内部进行缓冲，直到请求数量的字节到达或连接关闭（抛出 `IncompleteReadError`）。
 
 ```python
+import asyncio
+import contextlib
+import struct
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 class SOCKS5Proxy:
-    """
-    SOCKS5 代理服务器实现 (RFC 1928)。
-    支持身份验证和 TCP 连接。
-    """
-    
-    # SOCKS5 常量
+    """支持 CONNECT 和可选认证的异步 SOCKS5 代理（RFC 1928）。"""
+
     VERSION = 0x05
-    
-    AUTH_METHODS = {
-        0x00: 'NO_AUTH',
-        0x02: 'USERNAME_PASSWORD',
-    }
-    
-    COMMANDS = {
-        0x01: 'CONNECT',
-        0x02: 'BIND',
-        0x03: 'UDP_ASSOCIATE',
-    }
-    
-    ADDRESS_TYPES = {
-        0x01: 'IPv4',
-        0x03: 'DOMAIN',
-        0x04: 'IPv6',
-    }
-    
-    REPLY_CODES = {
-        0x00: 'SUCCESS',
-        0x01: 'GENERAL_FAILURE',
-        0x02: 'NOT_ALLOWED',
-        0x03: 'NETWORK_UNREACHABLE',
-        0x04: 'HOST_UNREACHABLE',
-        0x05: 'CONNECTION_REFUSED',
-        0x06: 'TTL_EXPIRED',
-        0x07: 'COMMAND_NOT_SUPPORTED',
-        0x08: 'ADDRESS_TYPE_NOT_SUPPORTED',
-    }
-    
+
     def __init__(self, host='0.0.0.0', port=1080, username=None, password=None):
         self.host = host
         self.port = port
         self.username = username
         self.password = password
-    
-    async def handle_client(self, reader, writer):
-        """处理 SOCKS5 客户端连接。"""
+
+    async def start(self):
+        server = await asyncio.start_server(
+            self._handle_client, self.host, self.port
+        )
+        logger.info(f'SOCKS5 proxy listening on {self.host}:{self.port}')
+        async with server:
+            await server.serve_forever()
+
+    async def _handle_client(self, reader, writer):
         try:
-            # 阶段 1：方法协商
             if not await self._negotiate_method(reader, writer):
                 return
-            
-            # 阶段 2：身份验证 (如果需要)
             if self.username and not await self._authenticate(reader, writer):
                 return
-            
-            # 阶段 3：请求处理
             await self._handle_request(reader, writer)
-            
+        except (asyncio.IncompleteReadError, ConnectionResetError):
+            pass
         except Exception as e:
-            logger.error(f"SOCKS5 错误: {e}")
+            logger.error(f'SOCKS5 error: {e}')
         finally:
             writer.close()
             await writer.wait_closed()
-    
-    async def _negotiate_method(self, reader, writer) -> bool:
-        """SOCKS5 方法协商。"""
-        # 读取客户端问候
-        version = (await reader.read(1))[0]
+
+    async def _negotiate_method(self, reader, writer):
+        """第一阶段：客户端提供认证方法，服务器选择一个。"""
+        version = (await reader.readexactly(1))[0]
         if version != self.VERSION:
-            logger.error(f"不支持的 SOCKS 版本: {version}")
             return False
-        
-        nmethods = (await reader.read(1))[0]
-        methods = await reader.read(nmethods)
-        
-        # 选择身份验证方法
+
+        nmethods = (await reader.readexactly(1))[0]
+        methods = await reader.readexactly(nmethods)
+
         if self.username:
-            # 需要用户名/密码
             if 0x02 not in methods:
-                writer.write(bytes([self.VERSION, 0xFF]))  # 没有可接受的方法
+                writer.write(bytes([self.VERSION, 0xFF]))
                 await writer.drain()
                 return False
-            selected_method = 0x02
+            selected = 0x02
         else:
-            # 无需身份验证
-            selected_method = 0x00
-        
-        # 发送方法选择
-        writer.write(bytes([self.VERSION, selected_method]))
+            selected = 0x00
+
+        writer.write(bytes([self.VERSION, selected]))
         await writer.drain()
-        
         return True
-    
-    async def _authenticate(self, reader, writer) -> bool:
-        """用户名/密码身份验证 (RFC 1929)。"""
-        # 读取身份验证版本
-        auth_version = (await reader.read(1))[0]
-        if auth_version != 0x01:
+
+    async def _authenticate(self, reader, writer):
+        """第二阶段：用户名/密码子协商（RFC 1929）。"""
+        auth_ver = (await reader.readexactly(1))[0]
+        if auth_ver != 0x01:
             return False
-        
-        # 读取用户名
-        username_len = (await reader.read(1))[0]
-        username = (await reader.read(username_len)).decode('utf-8')
-        
-        # 读取密码
-        password_len = (await reader.read(1))[0]
-        password = (await reader.read(password_len)).decode('utf-8')
-        
-        # 验证凭据
-        success = (username == self.username and password == self.password)
-        
-        # 发送身份验证响应
-        status = 0x00 if success else 0x01
-        writer.write(bytes([0x01, status]))
+
+        ulen = (await reader.readexactly(1))[0]
+        username = (await reader.readexactly(ulen)).decode('utf-8')
+        plen = (await reader.readexactly(1))[0]
+        password = (await reader.readexactly(plen)).decode('utf-8')
+
+        ok = username == self.username and password == self.password
+        writer.write(bytes([0x01, 0x00 if ok else 0x01]))
         await writer.drain()
-        
-        return success
-    
+        return ok
+
     async def _handle_request(self, reader, writer):
-        """处理 SOCKS5 连接请求。"""
-        # 读取请求
-        version = (await reader.read(1))[0]
-        command = (await reader.read(1))[0]
-        reserved = (await reader.read(1))[0]
-        address_type = (await reader.read(1))[0]
-        
-        # 解析目标地址
-        if address_type == 0x01:  # IPv4
-            addr = await reader.read(4)
-            address = '.'.join(str(b) for b in addr)
-        elif address_type == 0x03:  # 域名
-            domain_len = (await reader.read(1))[0]
-            address = (await reader.read(domain_len)).decode('utf-8')
-        elif address_type == 0x04:  # IPv6
-            addr = await reader.read(16)
-            # 格式化 IPv6 地址
-            address = ':'.join(f'{b1:02x}{b2:02x}' for b1, b2 in zip(addr[::2], addr[1::2]))
+        """第三阶段：解析 CONNECT 请求并建立隧道。"""
+        header = await reader.readexactly(4)
+        version, command, _, atyp = header
+
+        # 根据地址类型解析目标地址
+        if atyp == 0x01:  # IPv4
+            raw = await reader.readexactly(4)
+            address = '.'.join(str(b) for b in raw)
+        elif atyp == 0x03:  # Domain name
+            length = (await reader.readexactly(1))[0]
+            address = (await reader.readexactly(length)).decode('ascii')
+        elif atyp == 0x04:  # IPv6
+            raw = await reader.readexactly(16)
+            groups = [f'{raw[i]:02x}{raw[i+1]:02x}' for i in range(0, 16, 2)]
+            address = ':'.join(groups)
         else:
-            await self._send_reply(writer, 0x08)  # 不支持的地址类型
+            await self._reply(writer, 0x08)
             return
-        
-        # 读取端口 (2 字节, 大端)
-        port_bytes = await reader.read(2)
-        port = struct.unpack('!H', port_bytes)[0]
-        
-        logger.info(f"SOCKS5 {self.COMMANDS.get(command)} 到 {address}:{port}")
-        
-        # 处理命令
-        if command == 0x01:  # CONNECT
-            await self._handle_connect(address, port, reader, writer)
-        else:
-            await self._send_reply(writer, 0x07)  # 不支持的命令
-    
-    async def _handle_connect(self, address, port, client_reader, client_writer):
-        """处理 CONNECT 命令。"""
+
+        port = struct.unpack('!H', await reader.readexactly(2))[0]
+        logger.info(f'SOCKS5 CONNECT {address}:{port}')
+
+        if command != 0x01:  # Only CONNECT is implemented
+            await self._reply(writer, 0x07)
+            return
+
         try:
-            # 连接到目标
-            server_reader, server_writer = await asyncio.open_connection(address, port)
-            
-            # 发送成功回复
-            await self._send_reply(client_writer, 0x00)
-            
-            # 创建双向隧道
-            await asyncio.gather(
-                self._pipe_data(client_reader, server_writer, 'client→server'),
-                self._pipe_data(server_reader, client_writer, 'server→client'),
+            server_reader, server_writer = await asyncio.open_connection(
+                address, port
             )
-            
         except ConnectionRefusedError:
-            await self._send_reply(client_writer, 0x05)  # 连接被拒绝
-        except OSError as e:
-            logger.error(f"连接错误: {e}")
-            await self._send_reply(client_writer, 0x04)  # 主机无法访问
-    
-    async def _send_reply(self, writer, reply_code):
-        """发送 SOCKS5 回复。"""
-        # 回复格式：VER REP RSV ATYP BND.ADDR BND.PORT
-        response = bytes([
-            self.VERSION,    # VER
-            reply_code,      # REP
-            0x00,            # RSV
-            0x01,            # ATYP (IPv4)
-            0, 0, 0, 0,      # BND.ADDR (0.0.0.0)
-            0, 0             # BND.PORT (0)
-        ])
-        
-        writer.write(response)
+            await self._reply(writer, 0x05)
+            return
+        except OSError:
+            await self._reply(writer, 0x04)
+            return
+
+        # BND.ADDR 和 BND.PORT 应反映连接成功后的本地套接字地址。
+        # 大多数客户端对 CONNECT 命令忽略这些字段，但正确填充
+        # 满足 RFC 1928 的要求。
+        local = server_writer.get_extra_info('sockname')
+        await self._reply(writer, 0x00, local[0], local[1])
+
+        await asyncio.gather(
+            self._pipe(reader, server_writer),
+            self._pipe(server_reader, writer),
+        )
+
+    async def _reply(self, writer, status, bind_addr='0.0.0.0', bind_port=0):
+        """发送带有指定状态和绑定地址的 SOCKS5 回复。"""
+        import socket
+        try:
+            packed_ip = socket.inet_aton(bind_addr)
+            atyp = 0x01
+        except OSError:
+            packed_ip = socket.inet_aton('0.0.0.0')
+            atyp = 0x01
+
+        writer.write(bytes([
+            self.VERSION, status, 0x00, atyp,
+            *packed_ip,
+            (bind_port >> 8) & 0xFF, bind_port & 0xFF,
+        ]))
         await writer.drain()
-    
-    async def _pipe_data(self, reader, writer, direction):
-        """在读取器和写入器之间传输数据。"""
+
+    async def _pipe(self, reader, writer):
         try:
             while True:
                 data = await reader.read(8192)
                 if not data:
                     break
-                
                 writer.write(data)
                 await writer.drain()
-        except Exception as e:
-            logger.debug(f"管道 {direction} 已关闭: {e}")
-    
-    async def start(self):
-        """启动 SOCKS5 代理服务器。"""
-        server = await asyncio.start_server(
-            self.handle_client,
-            self.host,
-            self.port
-        )
-        
-        logger.info(f"SOCKS5 代理正在监听 {self.host}:{self.port}")
-        
-        async with server:
-            await server.serve_forever()
+        except (ConnectionResetError, BrokenPipeError, OSError):
+            pass
+        finally:
+            with contextlib.suppress(Exception):
+                if writer.can_write_eof():
+                    writer.write_eof()
 ```
 
-### 用法示例
+当地址类型为 `0x03`（域名）时，代理通过 `asyncio.open_connection()` 自行解析 DNS。这是 SOCKS5 代理的核心隐私特性：客户端发送域名而不是在本地解析，从而防止 DNS 查询泄露到客户端的本地网络。这与 Chrome 配置 `--proxy-server=socks5://...` 时的行为相同，如[SOCKS 代理](./socks-proxies.md)中所述。
+
+`_reply` 方法在成功连接后用实际的本地套接字地址填充 `BND.ADDR` 和 `BND.PORT`，这是 RFC 1928 的要求。许多 SOCKS5 实现在这里返回 `0.0.0.0:0`，因为大多数客户端对 CONNECT 命令忽略这些字段，但正确填充它们没有任何代价，还能避免协议违规。
+
+## 同时运行两个代理
 
 ```python
-# 示例：运行代理
 async def main():
-    # 在端口 8080 启动 HTTP 代理
     http_proxy = HTTPProxy(
-        host='0.0.0.0',
-        port=8080,
-        username='user',
-        password='pass'
+        port=8080, username='user', password='pass'
     )
-    
-    # 在端口 1080 启动 SOCKS5 代理
     socks5_proxy = SOCKS5Proxy(
-        host='0.0.0.0',
-        port=1080,
-        username='user',
-        password='pass'
+        port=1080, username='user', password='pass'
     )
-    
-    # 并发运行两个代理
-    await asyncio.gather(
-        http_proxy.start(),
-        socks5_proxy.start()
-    )
+    await asyncio.gather(http_proxy.start(), socks5_proxy.start())
 
-# 运行代理
 # asyncio.run(main())
 ```
 
-!!! warning "生产注意事项"
-    这些实现是教育性的。生产环境的代理需要：
-    
-    - **连接池** (复用目标连接)
-    - **速率限制** (防止滥用)
-    - **访问控制** (IP 白名单, 用户配额)
-    - **日志和监控** (跟踪使用情况, 检测异常)
-    - **错误处理** (优雅降级)
-    - **性能优化** (使用 uvloop, 优化缓冲区大小)
-    - **安全加固** (防止开放代理攻击)
-
-## 高级主题
-
-### 代理链
-
-链接多个代理以增加匿名性：
-
-```
-客户端 → 代理1 (SOCKS5) → 代理2 (HTTP) → 代理3 (SOCKS5) → 服务器
-```
-
-**好处：**
-
-- 每个代理只知道下一跳 (不知道完整路径)
-- 在多个提供商之间分散信任
-- 地理路由 (从特定国家出口)
-
-**缺点：**
-
-- 延迟增加 (每跳都会增加延迟)
-- 速度降低 (带宽受限于最慢的一跳)
-- 成本更高 (需要为多个代理付费)
-- 更多故障点
-
-**性能指标：**
-
-| 配置 | 典型延迟 | 带宽影响 | 故障率 |
-|---|---|---|---|
-| **直连** | 10-50ms | 100% | <0.1% |
-| **单个代理** | 60-150ms (+50-100ms) | 80-95% | 0.5-2% |
-| **2 跳代理链** | 120-300ms (+110-250ms) | 60-80% | 1-4% |
-| **3 跳代理链** | 200-500ms (+190-450ms) | 40-60% | 3-8% |
-
-*数值为近似值，很大程度上取决于代理质量、地理距离和网络条件。*
-
-**真实世界示例 (2023 年测量的延迟)：**
-
-```
-直连:        ~30ms
-→ 单个代理 (美国):      ~85ms  (+55ms 开销)
-→ + 第二个代理 (欧洲):    ~195ms (+110ms 开销)
-→ + 第三个代理 (亚太):   ~380ms (+185ms 开销)
-
-总开销: 350ms (比直连慢 11.6 倍)
-带宽: 直连的 45%
-```
-
-!!! tip "最佳链长度"
-    对于大多数用例，**1-2 个代理** 在匿名性和性能之间提供了最佳平衡。只有在绝对匿名至关重要的高风险场景中，才有理由使用三个或更多代理。
-
-### 旋转代理池
-
-```python
-# 旋转代理池的架构
-class ProxyPool:
-    """
-    管理具有健康检查和轮换功能的代理池。
-    """
-    
-    def __init__(self, proxies: list[str]):
-        self.proxies = proxies
-        self.healthy_proxies = []
-        self.failed_proxies = []
-        self.current_index = 0
-    
-    async def health_check(self, proxy: str) -> bool:
-        """检查代理是否工作。"""
-        try:
-            # 通过代理测试连接
-            # 如果成功返回 True, 否则返回 False
-            pass
-        except:
-            return False
-    
-    async def get_next_proxy(self) -> Optional[str]:
-        """获取下一个健康的代理 (轮询)。"""
-        if not self.healthy_proxies:
-            await self.refresh_health()
-        
-        if not self.healthy_proxies:
-            return None
-        
-        proxy = self.healthy_proxies[self.current_index]
-        self.current_index = (self.current_index + 1) % len(self.healthy_proxies)
-        
-        return proxy
-    
-    async def refresh_health(self):
-        """刷新代理健康状态。"""
-        # 并行测试所有代理
-        results = await asyncio.gather(
-            *[self.health_check(p) for p in self.proxies]
-        )
-        
-        self.healthy_proxies = [p for p, ok in zip(self.proxies, results) if ok]
-        self.failed_proxies = [p for p, ok in zip(self.proxies, results) if not ok]
-```
-
-### 透明代理 vs 显式代理
-
-| 特性 | 透明代理 | 显式代理 |
-|---|---|---|
-| **客户端配置** | 无需配置 | 必须配置代理设置 |
-| **检测** | 客户端不可见 | 客户端知道正在使用代理 |
-| **实现** | 网络级 (路由器/网关) | 应用级 |
-| **控制** | 由网络管理员强制执行 | 用户选择 |
-| **用例** | 企业网络, ISP 过滤 | 个人隐私, 网络抓取 |
-
-**透明代理实现：**
-
-透明代理在网络层运行，通过 iptables/nftables 规则拦截流量：
+可以使用 curl 进行测试：
 
 ```bash
-# 用于透明 HTTP 代理的 Linux iptables 规则
-iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 80 \
-    -j REDIRECT --to-port 8080
+# HTTP proxy
+curl -x http://user:pass@localhost:8080 http://httpbin.org/ip
 
-iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 443 \
-    -j REDIRECT --to-port 8443
+# HTTPS through HTTP proxy (CONNECT tunnel)
+curl -x http://user:pass@localhost:8080 https://httpbin.org/ip
+
+# SOCKS5 proxy
+curl --socks5 localhost:1080 --proxy-user user:pass https://httpbin.org/ip
 ```
 
-**检测：** 客户端可以通过以下方式检测透明代理：
-- 响应中的 `Via` 标头
-- TCP/IP 指纹 (TTL 变化)
-- 计时分析 (增加的延迟)
+## 代码未处理的内容
 
-!!! warning "HTTPS 透明代理"
-    透明 HTTPS 代理需要：
-    - **TLS 拦截** (使用自定义 CA 证书进行 MITM)
-    - 在客户端设备上 **安装证书**
-    - **法律合规** (员工同意, 隐私法)
-    
-    这是高度侵入性的，并引发了严重的隐私问题。
+这些实现省略了生产代理需要处理的若干事项。理解缺少什么与理解已有什么同样具有教育意义。
 
-## 总结和关键要点
+没有连接限制。`asyncio.start_server` 无限制地接受连接，因此单个客户端打开数千个连接会耗尽文件描述符。生产代理使用信号量或连接池来限制并发数。
 
-从头开始构建代理服务器揭示了 HTTP 和 SOCKS5 架构之间的 **根本差异**、它们的安全模型以及实现挑战。了解代理内部原理对于调试、优化和高级规避技术至关重要。
+没有目标验证。两个代理都会连接到客户端请求的任何地址，包括 `127.0.0.1`、`169.254.169.254`（云元数据）和内部网络范围。这是一个服务端请求伪造（SSRF）向量。生产代理维护私有和链路本地地址范围的拒绝列表。
 
-### 涵盖的核心概念
+没有流量日志或指标。生产代理跟踪请求数量、传输字节数、错误率和延迟百分位数，通常导出到 Prometheus 或类似系统。
 
-**1. HTTP 代理架构：**
+HTTP 代理没有添加 `Via` 头。RFC 9110 第 7.6.3 节要求中间节点在转发消息时附加 `Via` 字段。为了简洁起见这里省略了，但符合标准的代理必须包含它。
 
-- **双模式操作**：HTTP 请求转发 vs HTTPS 隧道 (CONNECT)
-- **标头操作**：添加 `Via`、`X-Forwarded-For`，移除 `Proxy-Authorization`
-- **身份验证**：`Proxy-Authorization` 标头中 Base64 编码的用户名/密码
-- **应用感知**：可以读取/修改 HTTP 流量、缓存响应、执行策略
+两个代理都没有实现优雅关闭。当服务器停止时，活跃的隧道会被突然终止，而不是被排空。生产代理跟踪活跃连接并等待它们完成（有截止时间），然后才关闭。
 
-**2. SOCKS5 代理架构：**
+## 代理链
 
-- **三阶段协议**：方法协商 → 身份验证 → 请求处理
-- **二进制协议**：高效的数据包结构 (版本、命令、地址类型)
-- **协议无关**：盲目转发任何 TCP/UDP 流量
-- **身份验证**：用户名/密码 (RFC 1929) 或 GSSAPI (RFC 1961)
+代理链是指将流量依次通过多个代理路由：客户端到代理 A，代理 A 到代理 B，代理 B 到目标服务器。链中的每个代理只知道其直接邻居，而非完整路径。
 
-**3. 实现挑战：**
+主要用例是分散信任。如果你不完全信任任何单一代理提供商，将两个提供商链接在一起意味着没有一个能同时看到你的真实 IP 和你的目标地址。代价是延迟：每一跳都会增加自己的连接建立时间和转发延迟。单个代理通常增加 50 到 100ms 的开销。两个代理大约翻倍，三个代理可以使总开销超过 300ms。
 
-- **双向数据管道**：客户端和服务器之间的异步转发
-- **错误处理**：网络故障、超时、协议违规
-- **资源管理**：连接池、优雅关闭
-- **安全**：防止开放代理滥用、速率限制
-
-**4. 高级概念：**
-
-- **代理链**：多跳路由以增强匿名性 (有延迟权衡)
-- **旋转代理池**：健康检查、负载均衡、故障转移
-- **透明代理**：无需客户端配置的网络级拦截
-
-### HTTP vs SOCKS5 实现复杂性
-
-| 方面 | HTTP 代理 | SOCKS5 代理 |
-|---|---|---|
-| **协议解析** | 复杂 (基于文本的 HTTP) | 简单 (二进制结构) |
-| **身份验证** | HTTP 标头 (Base64) | 二进制握手 |
-| **HTTPS 处理** | CONNECT 隧道 | 原生隧道 |
-| **应用逻辑** | 请求/响应修改 | 盲目转发 |
-| **错误处理** | HTTP 状态码 | 二进制回复码 |
-| **代码行数** | ~200 (简单实现) | ~180 (简单实现) |
-
-**关键见解：** 由于其二进制协议且不关心应用层，SOCKS5 **更容易正确实现**。
-
-### 生产就绪的代理要求
-
-教育性的实现缺乏关键的生产特性：
-
-**1. 性能优化：**
-
-- **连接池**：复用服务器连接，而不是创建新连接
-- **异步 I/O**：使用 `uvloop` 提升 2-4 倍性能
-- **缓冲区调优**：优化 `read()` 缓冲区大小以平衡带宽/延迟
-- **零拷贝转发**：尽可能使用 `sendfile()` 系统调用
-
-**2. 安全加固：**
-
-- **速率限制**：防止滥用 (请求数/秒, 带宽上限)
-- **IP 白名单**：限制对授权客户端的访问
-- **请求验证**：防止标头注入、缓冲区溢出攻击
-- **防止开放代理**：要求身份验证, 限制目标域
-
-**3. 监控和可观测性：**
-
-- **结构化日志**：包含请求 ID、时间戳、指标的 JSON 日志
-- **Prometheus 指标**：请求计数、延迟百分位数、错误率
-- **分布式追踪**：OpenTelemetry 集成以调试链
-- **健康检查**：用于编排的活性和就绪性探针
-
-**4. 可靠性和可用性：**
-
-- **优雅降级**：在部分失败期间继续提供服务
-- **熔断器**：防止对目标服务器的级联故障
-- **重试逻辑**：针对瞬时故障的指数退避
-- **连接限制**：防止资源耗尽
-
-**生产架构示例：**
+超过两跳后，边际隐私收益递减，而延迟和故障概率增加。大多数实际部署使用一到两个代理。Tor 使用三个中继节点（守卫节点、中间节点、出口节点），因为其威胁模型假设某些中继节点已被入侵，但 Tor 将延迟惩罚视为明确的设计权衡。
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│  负载均衡器 (HAProxy, Nginx)                             │
-│  • TLS 终止                                             │
-│  • DDoS 防护 (速率限制)                                 │
-│  • 健康检查                                             │
-└─────────────────┬───────────────────────────────────────┘
-                  │
-      ┌───────────┴───────────┐
-      │                       │
-┌─────▼──────┐         ┌──────▼─────┐
-│ 代理 1     │         │ 代理 2     │
-│ • Python   │         │ • Python   │
-│ • uvloop   │         │ • uvloop   │
-│ • 指标     │         │ • 指标     │
-└─────┬──────┘         └──────┬─────┘
-      │                       │
-      └───────────┬───────────┘
-                  │
-        ┌─────────▼──────────┐
-        │ 目标服务器         │
-        │ • 连接池           │
-        │ • DNS 缓存         │
-        └────────────────────┘
+Client --> Proxy A (SOCKS5) --> Proxy B (SOCKS5) --> Target
+           sees: client IP          sees: Proxy A IP
+           sees: Proxy B addr       sees: target addr
 ```
 
-### 何时构建您自己的代理
+通过另一个 SOCKS5 代理链接 SOCKS5 代理的工作方式是让代理 A 将代理 B 视为目标。客户端连接到代理 A 并发送指向代理 B 地址的 CONNECT 请求。一旦该隧道建立，客户端通过隧道发送第二次 SOCKS5 握手，这次请求真正的目标。代理 A 看到流向代理 B 的流量，但如果内部连接已加密，则无法读取其内容。
 
-**好的理由：**
+## 参考资料
 
-- **学习**：理解协议、网络编程、异步 I/O
-- **自定义逻辑**：专门的路由、请求修改、分析
-- **成本优化**：自托管代理比商业服务便宜 (大规模时)
-- **合规性**：数据主权、法规要求
-- **研究**：安全测试、协议模糊测试、异常检测
-
-**不好的理由：**
-
-- **性能**：生产代理 (Squid, HAProxy, Nginx) 经过高度优化
-- **安全**：成熟的代理已经过广泛的安全审计
-- **功能**：商业代理提供地理路由、验证码解决、住宅 IP
-- **维护**：自托管代理需要监控、更新、事件响应
-
-!!! tip "混合方法"
-    使用 **商业代理** 进行 IP 轮换和地理定位，使用 **自定义代理** 实现特定于应用的逻辑 (例如，请求丰富、分析、缓存)。
-
-### 真实世界性能指标
-
-**基准测试 (在 m5.xlarge AWS EC2 上测试, 2023)：**
-
-| 代理类型 | 请求数/秒 | 延迟 (p50) | 延迟 (p99) | CPU 使用率 |
-|---|---|---|---|---|
-| **直连** | 50,000 | 5ms | 15ms | N/A |
-| **Python HTTP (asyncio)** | 8,000 | 20ms | 80ms | 60% |
-| **Python HTTP (uvloop)** | 15,000 | 15ms | 50ms | 45% |
-| **Squid (C)** | 35,000 | 8ms | 25ms | 30% |
-| **HAProxy (C)** | 45,000 | 6ms | 20ms | 25% |
-
-**关键要点：** Python 代理 **足以应对中等流量** (< 10K req/s)，但高吞吐量的生产环境需要基于 C 的代理。
-
-## 进一步阅读和参考
-
-### 相关文档
-
-**本模块内：**
-- **[HTTP/HTTPS 代理](./http-proxies.md)** - 协议基础和身份验证
-- **[SOCKS 代理](./socks-proxies.md)** - SOCKS5 协议规范
-- **[代理检测](./proxy-detection.md)** - 如何检测和识别代理
-- **[网络基础](./network-fundamentals.md)** - TCP/IP, UDP, WebRTC 基础
-- **[法律与道德](./proxy-legal.md)** - 合规和负责任的代理操作
-
-**实际用法：**
-- **[代理配置 (功能)](../../features/configuration/proxy.md)** - 在 Pydoll 中使用代理
-
-### 外部参考
-
-**官方规范：**
-
-- **RFC 1928** - SOCKS 协议版本 5: https://datatracker.ietf.org/doc/html/rfc1928
-- **RFC 1929** - SOCKS V5 的用户名/密码身份验证: https://datatracker.ietf.org/doc/html/rfc1929
-- **RFC 7230** - HTTP/1.1: 消息语法和路由: https://datatracker.ietf.org/doc/html/rfc7230
-- **RFC 7231** - HTTP/1.1: 语义和内容 (CONNECT 方法): https://datatracker.ietf.org/doc/html/rfc7231
-- **RFC 7235** - HTTP/1.1: 身份验证 (407 状态): https://datatracker.ietf.org/doc/html/rfc7235
-
-**Python 异步 I/O：**
-
-- **asyncio 文档**: https://docs.python.org/3/library/asyncio.html
-- **uvloop**: https://github.com/MagicStack/uvloop (高性能异步 I/O)
-- **async/await 教程**: https://realpython.com/async-io-python/
-
-**生产代理服务器：**
-
-- **Squid**: http://www.squid-cache.org/ (功能丰富的 HTTP 代理)
-- **HAProxy**: http://www.haproxy.org/ (高性能负载均衡器)
-- **Nginx**: https://nginx.org/en/docs/http/ngx_http_proxy_module.html (HTTP 代理模块)
-- **Dante**: https://www.inet.no/dante/ (SOCKS 服务器)
-- **Privoxy**: https://www.privoxy.org/ (注重隐私的代理)
-
-**开源实现：**
-
-- **mitmproxy**: https://mitmproxy.org/ (用于安全测试的拦截式 HTTP/HTTPS 代理)
-  - 基于 Python, 非常适合学习
-  - TLS 拦截, 脚本支持
-- **tinyproxy**: https://tinyproxy.github.io/ (用 C 编写的轻量级 HTTP 代理)
-- **3proxy**: https://github.com/z3APA3A/3proxy (多协议代理服务器)
-- **shadowsocks**: https://shadowsocks.org/ (类似 SOCKS5 的加密协议)
-
-**性能优化：**
-
-- **Python 性能提示**: https://wiki.python.org/moin/PythonSpeed/PerformanceTips
-- **uvloop 基准测试**: https://magic.io/blog/uvloop-blazing-fast-python-networking/
-- **零拷贝 I/O**: `sendfile()` 系统调用文档
-
-**安全最佳实践：**
-
-- **OWASP 代理安全**: https://owasp.org/www-community/controls/Proxy_authentication
-- **防止开放代理滥用**: https://www.us-cert.gov/ncas/alerts/TA15-051A
-- **速率限制算法**: 令牌桶、漏桶实现
-
-**工具和测试：**
-
-- **curl**: 用于测试的命令行 HTTP 客户端
-  ```bash
-  curl -x http://localhost:8080 -U user:pass http://example.com
-  curl --socks5 localhost:1080 --socks5-basic -U user:pass https://example.com
-  ```
-- **Wireshark**: 用于检查代理流量的数据包分析器
-- **mitmproxy**: 用于调试的交互式 HTTPS 代理
-- **netcat (nc)**: 原始 TCP 连接测试
-
-**书籍和教程：**
-
-- **"HTTP: The Definitive Guide"** by David Gourley, Brian Totty (O'Reilly)
-- **"TCP/IP Illustrated"** by W. Richard Stevens (Addison-Wesley)
-- **"Foundations of Python Network Programming"** by Brandon Rhodes, John Goerzen (Apress)
-
-### 高级主题 (超出本文档范围)
-
-**高性能代理：**
-
-- **多进程架构**：使用 `multiprocessing` 跨 CPU 核心扩展
-- **内核旁路**：DPDK, io_uring 用于超低延迟
-- **连接复用**：HTTP/2, QUIC 用于高效资源利用
-
-**安全和隐私：**
-
-- **TLS 拦截**：证书生成、固定检测
-- **流量混淆**：协议伪装 (Shadowsocks, Trojan)
-- **Tor 集成**：通过 Tor 网络运行代理
-
-**高级路由：**
-
-- **地理路由**：从特定国家/城市出口
-- **基于协议的路由**：HTTP vs WebSocket 使用不同后端
-- **基于内容的路由**：根据 URL 模式、标头进行路由
-
-**监控和调试：**
-
-- **分布式追踪**：Jaeger, Zipkin 集成
-- **日志聚合**：ELK 栈, Grafana Loki
-- **性能分析**：`py-spy`, `cProfile` 用于瓶颈识别
-
----
-
-## 最后的思考
-
-从头开始构建代理服务器是一次 **宝贵的学习经历**，它提供了对以下方面的深刻见解：
-
-- **网络协议**：在基础层面理解 HTTP, SOCKS5, TLS
-- **异步编程**：掌握事件循环、协程、并发
-- **安全**：攻击向量、身份验证、访问控制
-- **性能**：瓶颈、优化技术、资源管理
-
-虽然 **生产代理** (Squid, HAProxy, Nginx) 在性能、可靠性和安全性方面更胜一筹，但 **自定义代理** 可以实现专门的用例：
-
-- **自定义路由逻辑** (地理定位, A/B 测试, 金丝雀部署)
-- **请求丰富** (添加标头, 分析, 日志记录)
-- **协议转换** (HTTP → WebSocket, REST → gRPC)
-- **研究和测试** (模糊测试, 异常检测, 安全审计)
-
-**关键要点：** 使用 **生产级代理** 作为基础设施，构建 **自定义代理** 以实现特定于应用的逻辑。
-
-**后续步骤：**
-1. 阅读 **[代理检测](./proxy-detection.md)** 了解如何识别自定义代理
-2. 查看 **[法律与道德](./proxy-legal.md)** 以了解合规性注意事项
-3. 探索 **mitmproxy** 源代码以了解高级 Python 代理实现模式
+- RFC 1928: SOCKS Protocol Version 5 - https://datatracker.ietf.org/doc/html/rfc1928
+- RFC 1929: Username/Password Authentication for SOCKS V5 - https://datatracker.ietf.org/doc/html/rfc1929
+- RFC 9110: HTTP Semantics - https://www.rfc-editor.org/rfc/rfc9110.html
+- RFC 9112: HTTP/1.1 - https://www.rfc-editor.org/rfc/rfc9112.html
+- OWASP SSRF Prevention Cheat Sheet - https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html
+- mitmproxy (Python HTTPS intercepting proxy) - https://mitmproxy.org/

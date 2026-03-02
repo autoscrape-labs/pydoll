@@ -1,880 +1,468 @@
-# Construindo Seu Próprio Servidor Proxy
+# Construindo Servidores Proxy
 
-Este documento fornece implementações **completas** de servidores proxy HTTP e SOCKS5 em Python. Construir proxies do zero é a experiência de aprendizado definitiva, revelando vetores de ataque, oportunidades de otimização e nuances de protocolo invisíveis do exterior.
+Este documento implementa servidores proxy HTTP e SOCKS5 do zero em Python usando asyncio. O objetivo não é prontidão para produção, mas compreensão de protocolo: ver como cada byte é analisado, onde estão os limites de segurança e por que certas decisões de design existem em software proxy real.
 
 !!! info "Navegação do Módulo"
-    - **[← Detecção de Proxy](./proxy-detection.md)** - Técnicas de anonimato e evasão
-    - **[← Proxies SOCKS](./socks-proxies.md)** - Fundamentos do protocolo SOCKS
-    - **[← Proxies HTTP/HTTPS](./http-proxies.md)** - Fundamentos do protocolo HTTP
-    - **[← Visão Geral de Rede e Segurança](./index.md)** - Introdução do módulo
-    - **[→ Legal e Ético](./proxy-legal.md)** - Conformidade e responsabilidade
-    
-    Para uso prático, veja **[Configuração de Proxy](../../features/configuration/proxy.md)**.
+    - [Fundamentos de Rede](./network-fundamentals.md): TCP/IP, UDP, WebRTC
+    - [Proxies HTTP/HTTPS](./http-proxies.md): Proxy na camada de aplicação
+    - [Proxies SOCKS](./socks-proxies.md): Proxy na camada de sessão
+    - [Detecção de Proxy](./proxy-detection.md): Técnicas de detecção e evasão
 
-!!! warning "Propósito Educacional"
-    Estas implementações são para **aprendizado e teste**. Proxies de produção exigem endurecimento (hardening) de segurança adicional, otimização de desempenho e tratamento robusto de erros.
+    Para uso prático de proxy no Pydoll, veja [Configuração de Proxy](../../features/configuration/proxy.md).
 
-## Construindo Seu Próprio Servidor Proxy
+!!! warning "Código Educacional"
+    Estas implementações priorizam clareza sobre robustez. Elas não possuem limites de conexão, listas de controle de acesso e muitos caminhos de recuperação de erro que um proxy de produção requer. Não as exponha a redes não confiáveis.
 
-Vamos construir proxies HTTP e SOCKS5 do zero para entender seus componentes internos.
+## Proxy HTTP
 
-### Pré-requisitos
+Um proxy HTTP opera em dois modos. Para HTTP em texto plano, ele recebe a requisição completa (com uma URL em formato absoluto como `GET http://example.com/path HTTP/1.1`), reescreve o request-target para formato de origem (`GET /path HTTP/1.1`), conecta ao servidor destino, encaminha a requisição e retorna a resposta. Para HTTPS, o cliente envia uma requisição `CONNECT host:port`, o proxy abre uma conexão TCP para o destino, responde com `200 Connection Established`, e então retransmite bytes cegamente em ambas as direções sem inspecionar o conteúdo criptografado.
+
+A implementação abaixo lida com ambos os modos. Algumas coisas para notar enquanto lê. O método `_pipe_data` chama `write_eof()` quando um lado fecha, que envia um TCP FIN para o outro lado. Sem isso, o túnel fica pendurado indefinidamente porque o outro `read()` nunca retorna bytes vazios. O caminho de encaminhamento HTTP usa a mesma abordagem de piping em vez de uma única chamada `read()`, porque respostas HTTP podem ser arbitrariamente grandes e um read de tamanho fixo as truncaria silenciosamente. A reescrita do request-target preserva query strings, que `urlparse().path` sozinho descartaria.
 
 ```python
 import asyncio
 import base64
-import struct
+import contextlib
 import logging
-from typing import Optional, Tuple
+from urllib.parse import urlparse
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-```
 
-### Servidor Proxy HTTP
 
-```python
 class HTTPProxy:
-    """
-    Implementação simples de servidor proxy HTTP/HTTPS.
-    Lida com requisições HTTP e túneis HTTPS CONNECT.
-    """
-    
+    """Proxy HTTP/HTTPS assíncrono com autenticação Basic opcional."""
+
     def __init__(self, host='0.0.0.0', port=8080, username=None, password=None):
         self.host = host
         self.port = port
         self.username = username
         self.password = password
-    
-    async def handle_client(self, reader, writer):
-        """Lida com uma conexão de cliente."""
+
+    async def start(self):
+        server = await asyncio.start_server(
+            self._handle_client, self.host, self.port
+        )
+        logger.info(f'HTTP proxy listening on {self.host}:{self.port}')
+        async with server:
+            await server.serve_forever()
+
+    async def _handle_client(self, reader, writer):
         try:
-            # Ler linha de requisição HTTP
-            request_line = await reader.readline()
+            request_line = await asyncio.wait_for(
+                reader.readline(), timeout=30
+            )
             if not request_line:
                 return
-            
-            request_parts = request_line.decode('utf-8').split()
-            method, url, protocol = request_parts
-            
-            # Ler cabeçalhos
-            headers = await self._read_headers(reader)
-            
-            # Checar autenticação
-            if not self._check_auth(headers):
-                await self._send_auth_required(writer)
+
+            parts = request_line.decode('latin-1').split()
+            if len(parts) != 3:
+                writer.write(b'HTTP/1.1 400 Bad Request\r\n\r\n')
+                await writer.drain()
                 return
-            
-            # Lidar com base no método
+
+            method, url, _ = parts
+            headers = await self._read_headers(reader)
+
+            if not self._check_auth(headers):
+                writer.write(
+                    b'HTTP/1.1 407 Proxy Authentication Required\r\n'
+                    b'Proxy-Authenticate: Basic realm="Proxy"\r\n'
+                    b'Content-Length: 0\r\n\r\n'
+                )
+                await writer.drain()
+                return
+
             if method == 'CONNECT':
-                await self._handle_https_tunnel(url, reader, writer)
+                await self._handle_connect(url, reader, writer)
             else:
-                await self._handle_http_request(method, url, headers, reader, writer)
-                
+                await self._handle_http(method, url, headers, reader, writer)
         except Exception as e:
-            logger.error(f"Erro ao lidar com cliente: {e}")
+            logger.error(f'Client handler error: {e}')
         finally:
             writer.close()
             await writer.wait_closed()
-    
-    async def _read_headers(self, reader) -> dict:
-        """Parseia cabeçalhos HTTP."""
+
+    async def _read_headers(self, reader):
         headers = {}
         while True:
             line = await reader.readline()
-            if line == b'\r\n':  # Fim dos cabeçalhos
+            if line in (b'\r\n', b'\n', b''):
                 break
-            
             if b':' in line:
-                key, value = line.decode('utf-8').split(':', 1)
+                key, value = line.decode('latin-1').split(':', 1)
                 headers[key.strip().lower()] = value.strip()
-        
         return headers
-    
-    def _check_auth(self, headers: dict) -> bool:
-        """Verifica autenticação do proxy."""
+
+    def _check_auth(self, headers):
         if not self.username:
-            return True  # Nenhuma autenticação necessária
-        
-        auth_header = headers.get('proxy-authorization', '')
-        if not auth_header.startswith('Basic '):
+            return True
+        auth = headers.get('proxy-authorization', '')
+        if not auth.startswith('Basic '):
             return False
-        
-        # Decodificar credenciais base64
-        encoded = auth_header[6:]  # Remover 'Basic '
-        decoded = base64.b64decode(encoded).decode('utf-8')
-        username, password = decoded.split(':', 1)
-        
-        return username == self.username and password == self.password
-    
-    async def _send_auth_required(self, writer):
-        """Envia 407 Proxy Authentication Required."""
-        response = (
-            b'HTTP/1.1 407 Proxy Authentication Required\r\n'
-            b'Proxy-Authenticate: Basic realm="Proxy"\r\n'
-            b'Content-Length: 0\r\n'
-            b'\r\n'
-        )
-        writer.write(response)
-        await writer.drain()
-    
-    async def _handle_https_tunnel(self, target_address, client_reader, client_writer):
-        """
-        Lida com túnel HTTPS CONNECT.
-        Cria um pipe bidirecional entre cliente e servidor.
-        """
-        host, port = target_address.split(':')
-        port = int(port)
-        
         try:
-            # Conectar ao servidor alvo
-            server_reader, server_writer = await asyncio.open_connection(host, port)
-            
-            # Enviar resposta de sucesso
-            client_writer.write(b'HTTP/1.1 200 Connection Established\r\n\r\n')
+            decoded = base64.b64decode(auth[6:]).decode('utf-8')
+            if ':' not in decoded:
+                return False
+            user, pwd = decoded.split(':', 1)
+            return user == self.username and pwd == self.password
+        except Exception:
+            return False
+
+    async def _handle_connect(self, target, client_reader, client_writer):
+        """Estabelece um túnel TCP cego para HTTPS."""
+        # Analisa host:port, lidando com literais IPv6 como [::1]:443
+        if target.startswith('['):
+            bracket_end = target.index(']')
+            host = target[1:bracket_end]
+            port = int(target[bracket_end + 2:])
+        elif ':' in target:
+            host, port_str = target.rsplit(':', 1)
+            port = int(port_str)
+        else:
+            client_writer.write(b'HTTP/1.1 400 Bad Request\r\n\r\n')
             await client_writer.drain()
-            
-            # Criar túnel bidirecional
-            await asyncio.gather(
-                self._pipe_data(client_reader, server_writer, 'client→server'),
-                self._pipe_data(server_reader, client_writer, 'server→client'),
+            return
+
+        try:
+            server_reader, server_writer = await asyncio.open_connection(
+                host, port
             )
-            
-        except Exception as e:
-            logger.error(f"Erro de túnel: {e}")
+        except OSError as e:
+            logger.error(f'CONNECT failed to {host}:{port}: {e}')
             client_writer.write(b'HTTP/1.1 502 Bad Gateway\r\n\r\n')
             await client_writer.drain()
-    
-    async def _handle_http_request(self, method, url, headers, client_reader, client_writer):
-        """Encaminha requisição HTTP para servidor alvo."""
-        # Parsear URL
-        from urllib.parse import urlparse
+            return
+
+        client_writer.write(b'HTTP/1.1 200 Connection Established\r\n\r\n')
+        await client_writer.drain()
+
+        await asyncio.gather(
+            self._pipe(client_reader, server_writer),
+            self._pipe(server_reader, client_writer),
+        )
+
+    async def _handle_http(self, method, url, headers, client_reader, client_writer):
+        """Encaminha uma requisição HTTP em texto plano."""
         parsed = urlparse(url)
         host = parsed.hostname
         port = parsed.port or 80
+
+        # Preserva query string no request-target
         path = parsed.path or '/'
-        
+        if parsed.query:
+            path += f'?{parsed.query}'
+
         try:
-            # Conectar ao alvo
-            server_reader, server_writer = await asyncio.open_connection(host, port)
-            
-            # Construir requisição
-            request = f"{method} {path} HTTP/1.1\r\n"
-            request += f"Host: {host}\r\n"
-            
-            # Encaminhar cabeçalhos (exceto os específicos do proxy)
-            for key, value in headers.items():
-                if key.lower() not in ['proxy-authorization', 'proxy-connection']:
-                    request += f"{key}: {value}\r\n"
-            
-            request += '\r\n'
-            
-            # Enviar requisição
-            server_writer.write(request.encode('utf-8'))
-            
-            # Encaminhar corpo se presente
-            content_length = int(headers.get('content-length', 0))
-            if content_length > 0:
-                body = await client_reader.read(content_length)
-                server_writer.write(body)
-            
-            await server_writer.drain()
-            
-            # Encaminhar resposta de volta ao cliente
-            response = await server_reader.read(65536)
-            client_writer.write(response)
+            server_reader, server_writer = await asyncio.open_connection(
+                host, port
+            )
+        except OSError as e:
+            logger.error(f'HTTP forward failed to {host}:{port}: {e}')
+            client_writer.write(b'HTTP/1.1 502 Bad Gateway\r\n\r\n')
             await client_writer.drain()
-            
-        except Exception as e:
-            logger.error(f"Erro na requisição HTTP: {e}")
-    
-    async def _pipe_data(self, reader, writer, direction):
-        """Transporta dados entre reader e writer."""
+            return
+
+        # Reescreve request-target de formato absoluto para formato de origem
+        request = f'{method} {path} HTTP/1.1\r\n'
+
+        # Cabeçalho Host deve incluir a porta se for não-padrão
+        if port != 80:
+            request += f'Host: {host}:{port}\r\n'
+        else:
+            request += f'Host: {host}\r\n'
+
+        # Remove cabeçalhos hop-by-hop que não devem ser encaminhados
+        hop_by_hop = {
+            'proxy-authorization', 'proxy-connection',
+            'connection', 'keep-alive', 'te', 'trailer', 'upgrade',
+        }
+        for key, value in headers.items():
+            if key not in hop_by_hop:
+                request += f'{key}: {value}\r\n'
+
+        # Força Connection: close para que o servidor não mantenha keep-alive,
+        # o que impediria o stream de resposta de terminar
+        request += 'Connection: close\r\n\r\n'
+
+        server_writer.write(request.encode('latin-1'))
+
+        # Encaminha corpo da requisição se presente
+        content_length = int(headers.get('content-length', 0))
+        if content_length > 0:
+            body = await client_reader.readexactly(content_length)
+            server_writer.write(body)
+
+        await server_writer.drain()
+
+        # Retransmite a resposta inteira de volta (não um único read de tamanho fixo)
+        while True:
+            chunk = await server_reader.read(65536)
+            if not chunk:
+                break
+            client_writer.write(chunk)
+            await client_writer.drain()
+
+        server_writer.close()
+        await server_writer.wait_closed()
+
+    async def _pipe(self, reader, writer):
+        """Retransmissão bidirecional de dados com half-close adequado."""
         try:
             while True:
                 data = await reader.read(8192)
                 if not data:
                     break
-                
                 writer.write(data)
                 await writer.drain()
-        except Exception as e:
-            logger.debug(f"Pipe {direction} fechado: {e}")
-    
-    async def start(self):
-        """Inicia o servidor proxy."""
-        server = await asyncio.start_server(
-            self.handle_client,
-            self.host,
-            self.port
-        )
-        
-        logger.info(f"Proxy HTTP escutando em {self.host}:{self.port}")
-        
-        async with server:
-            await server.serve_forever()
+        except (ConnectionResetError, BrokenPipeError, OSError):
+            pass
+        finally:
+            with contextlib.suppress(Exception):
+                if writer.can_write_eof():
+                    writer.write_eof()
 ```
 
-### Servidor Proxy SOCKS5
+Alguns detalhes de protocolo que vale entender. Cabeçalhos HTTP são codificados como ISO-8859-1 (Latin-1), não UTF-8. Latin-1 mapeia cada valor de byte 0-255 para um caractere, então `decode('latin-1')` nunca levanta um `UnicodeDecodeError`, enquanto `decode('utf-8')` quebraria em certos valores de cabeçalho. O cabeçalho `Proxy-Authorization` usa codificação Base64, mas Base64 não é criptografia: as credenciais trafegam em texto claro (ou melhor, codificação trivialmente reversível) a menos que a conexão entre cliente e proxy esteja protegida por TLS. Os cabeçalhos hop-by-hop (`Connection`, `Keep-Alive`, `TE`, `Trailer`, `Upgrade`, `Proxy-Connection`) são destinados à conexão imediata entre dois nós, não para encaminhamento de ponta a ponta. A RFC 9110 Seção 7.6.1 requer que proxies os removam antes de encaminhar.
+
+!!! warning "Risco de SSRF"
+    Esta implementação não valida endereços de destino. Um cliente poderia solicitar `CONNECT 127.0.0.1:6379` para alcançar uma instância Redis local, ou `CONNECT 169.254.169.254:80` para acessar metadados de instância cloud (AWS, GCP, Azure). Qualquer proxy exposto a clientes não confiáveis deve validar destinos contra uma lista de negação de faixas privadas e link-local (`127.0.0.0/8`, `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `169.254.0.0/16`, `::1`, `fc00::/7`).
+
+## Proxy SOCKS5
+
+Um proxy SOCKS5 opera em um nível mais baixo que o HTTP. Ele usa um protocolo binário definido na RFC 1928, consistindo de três fases: negociação de método, autenticação opcional e a requisição de conexão. O proxy não analisa HTTP de forma alguma. Uma vez que o túnel é estabelecido, ele retransmite bytes brutos sem entender qual protocolo flui por ele.
+
+A natureza binária do SOCKS5 significa que cada leitura deve receber exatamente o número esperado de bytes. TCP é um protocolo de stream e não garante que `read(4)` retorne 4 bytes: pode retornar 1, 2 ou 3 bytes dependendo das condições de rede. A implementação abaixo usa `readexactly()` do asyncio, que bufferiza internamente até que o número solicitado de bytes chegue ou a conexão feche (levantando `IncompleteReadError`).
 
 ```python
+import asyncio
+import contextlib
+import struct
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 class SOCKS5Proxy:
-    """
-    Implementação do servidor proxy SOCKS5 (RFC 1928).
-    Suporta autenticação e ambas as conexões TCP.
-    """
-    
-    # Constantes SOCKS5
+    """Proxy SOCKS5 assíncrono com suporte a CONNECT e autenticação opcional (RFC 1928)."""
+
     VERSION = 0x05
-    
-    AUTH_METHODS = {
-        0x00: 'NO_AUTH',
-        0x02: 'USERNAME_PASSWORD',
-    }
-    
-    COMMANDS = {
-        0x01: 'CONNECT',
-        0x02: 'BIND',
-        0x03: 'UDP_ASSOCIATE',
-    }
-    
-    ADDRESS_TYPES = {
-        0x01: 'IPv4',
-        0x03: 'DOMAIN',
-        0x04: 'IPv6',
-    }
-    
-    REPLY_CODES = {
-        0x00: 'SUCCESS',
-        0x01: 'GENERAL_FAILURE',
-        0x02: 'NOT_ALLOWED',
-        0x03: 'NETWORK_UNREACHABLE',
-        0x04: 'HOST_UNREACHABLE',
-        0x05: 'CONNECTION_REFUSED',
-        0x06: 'TTL_EXPIRED',
-        0x07: 'COMMAND_NOT_SUPPORTED',
-        0x08: 'ADDRESS_TYPE_NOT_SUPPORTED',
-    }
-    
+
     def __init__(self, host='0.0.0.0', port=1080, username=None, password=None):
         self.host = host
         self.port = port
         self.username = username
         self.password = password
-    
-    async def handle_client(self, reader, writer):
-        """Lida com conexão de cliente SOCKS5."""
+
+    async def start(self):
+        server = await asyncio.start_server(
+            self._handle_client, self.host, self.port
+        )
+        logger.info(f'SOCKS5 proxy listening on {self.host}:{self.port}')
+        async with server:
+            await server.serve_forever()
+
+    async def _handle_client(self, reader, writer):
         try:
-            # Fase 1: Negociação de método
             if not await self._negotiate_method(reader, writer):
                 return
-            
-            # Fase 2: Autenticação (se necessário)
             if self.username and not await self._authenticate(reader, writer):
                 return
-            
-            # Fase 3: Processamento da requisição
             await self._handle_request(reader, writer)
-            
+        except (asyncio.IncompleteReadError, ConnectionResetError):
+            pass
         except Exception as e:
-            logger.error(f"Erro SOCKS5: {e}")
+            logger.error(f'SOCKS5 error: {e}')
         finally:
             writer.close()
             await writer.wait_closed()
-    
-    async def _negotiate_method(self, reader, writer) -> bool:
-        """Negociação de método SOCKS5."""
-        # Ler saudação do cliente
-        version = (await reader.read(1))[0]
+
+    async def _negotiate_method(self, reader, writer):
+        """Fase 1: cliente oferece métodos de autenticação, servidor escolhe um."""
+        version = (await reader.readexactly(1))[0]
         if version != self.VERSION:
-            logger.error(f"Versão SOCKS não suportada: {version}")
             return False
-        
-        nmethods = (await reader.read(1))[0]
-        methods = await reader.read(nmethods)
-        
-        # Selecionar método de autenticação
+
+        nmethods = (await reader.readexactly(1))[0]
+        methods = await reader.readexactly(nmethods)
+
         if self.username:
-            # Usuário/senha obrigatórios
             if 0x02 not in methods:
-                writer.write(bytes([self.VERSION, 0xFF]))  # Nenhum método aceitável
+                writer.write(bytes([self.VERSION, 0xFF]))
                 await writer.drain()
                 return False
-            selected_method = 0x02
+            selected = 0x02
         else:
-            # Sem autenticação
-            selected_method = 0x00
-        
-        # Enviar seleção de método
-        writer.write(bytes([self.VERSION, selected_method]))
+            selected = 0x00
+
+        writer.write(bytes([self.VERSION, selected]))
         await writer.drain()
-        
         return True
-    
-    async def _authenticate(self, reader, writer) -> bool:
-        """Autenticação por usuário/senha (RFC 1929)."""
-        # Ler versão da autenticação
-        auth_version = (await reader.read(1))[0]
-        if auth_version != 0x01:
+
+    async def _authenticate(self, reader, writer):
+        """Fase 2: sub-negociação de usuário/senha (RFC 1929)."""
+        auth_ver = (await reader.readexactly(1))[0]
+        if auth_ver != 0x01:
             return False
-        
-        # Ler usuário
-        username_len = (await reader.read(1))[0]
-        username = (await reader.read(username_len)).decode('utf-8')
-        
-        # Ler senha
-        password_len = (await reader.read(1))[0]
-        password = (await reader.read(password_len)).decode('utf-8')
-        
-        # Verificar credenciais
-        success = (username == self.username and password == self.password)
-        
-        # Enviar resposta da autenticação
-        status = 0x00 if success else 0x01
-        writer.write(bytes([0x01, status]))
+
+        ulen = (await reader.readexactly(1))[0]
+        username = (await reader.readexactly(ulen)).decode('utf-8')
+        plen = (await reader.readexactly(1))[0]
+        password = (await reader.readexactly(plen)).decode('utf-8')
+
+        ok = username == self.username and password == self.password
+        writer.write(bytes([0x01, 0x00 if ok else 0x01]))
         await writer.drain()
-        
-        return success
-    
+        return ok
+
     async def _handle_request(self, reader, writer):
-        """Lida com requisição de conexão SOCKS5."""
-        # Ler requisição
-        version = (await reader.read(1))[0]
-        command = (await reader.read(1))[0]
-        reserved = (await reader.read(1))[0]
-        address_type = (await reader.read(1))[0]
-        
-        # Parsear endereço de destino
-        if address_type == 0x01:  # IPv4
-            addr = await reader.read(4)
-            address = '.'.join(str(b) for b in addr)
-        elif address_type == 0x03:  # Domínio
-            domain_len = (await reader.read(1))[0]
-            address = (await reader.read(domain_len)).decode('utf-8')
-        elif address_type == 0x04:  # IPv6
-            addr = await reader.read(16)
-            # Formatar endereço IPv6
-            address = ':'.join(f'{b1:02x}{b2:02x}' for b1, b2 in zip(addr[::2], addr[1::2]))
+        """Fase 3: analisa a requisição CONNECT e estabelece o túnel."""
+        header = await reader.readexactly(4)
+        version, command, _, atyp = header
+
+        # Analisa endereço de destino baseado no tipo de endereço
+        if atyp == 0x01:  # IPv4
+            raw = await reader.readexactly(4)
+            address = '.'.join(str(b) for b in raw)
+        elif atyp == 0x03:  # Nome de domínio
+            length = (await reader.readexactly(1))[0]
+            address = (await reader.readexactly(length)).decode('ascii')
+        elif atyp == 0x04:  # IPv6
+            raw = await reader.readexactly(16)
+            groups = [f'{raw[i]:02x}{raw[i+1]:02x}' for i in range(0, 16, 2)]
+            address = ':'.join(groups)
         else:
-            await self._send_reply(writer, 0x08)  # Tipo de endereço não suportado
+            await self._reply(writer, 0x08)
             return
-        
-        # Ler porta (2 bytes, big-endian)
-        port_bytes = await reader.read(2)
-        port = struct.unpack('!H', port_bytes)[0]
-        
-        logger.info(f"SOCKS5 {self.COMMANDS.get(command)} para {address}:{port}")
-        
-        # Lidar com comando
-        if command == 0x01:  # CONNECT
-            await self._handle_connect(address, port, reader, writer)
-        else:
-            await self._send_reply(writer, 0x07)  # Comando não suportado
-    
-    async def _handle_connect(self, address, port, client_reader, client_writer):
-        """Lida com comando CONNECT."""
+
+        port = struct.unpack('!H', await reader.readexactly(2))[0]
+        logger.info(f'SOCKS5 CONNECT {address}:{port}')
+
+        if command != 0x01:  # Apenas CONNECT é implementado
+            await self._reply(writer, 0x07)
+            return
+
         try:
-            # Conectar ao alvo
-            server_reader, server_writer = await asyncio.open_connection(address, port)
-            
-            # Enviar resposta de sucesso
-            await self._send_reply(client_writer, 0x00)
-            
-            # Criar túnel bidirecional
-            await asyncio.gather(
-                self._pipe_data(client_reader, server_writer, 'client→server'),
-                self._pipe_data(server_reader, client_writer, 'server→client'),
+            server_reader, server_writer = await asyncio.open_connection(
+                address, port
             )
-            
         except ConnectionRefusedError:
-            await self._send_reply(client_writer, 0x05)  # Conexão recusada
-        except OSError as e:
-            logger.error(f"Erro de conexão: {e}")
-            await self._send_reply(client_writer, 0x04)  # Host inacessível
-    
-    async def _send_reply(self, writer, reply_code):
-        """Envia resposta SOCKS5."""
-        # Formato da resposta: VER REP RSV ATYP BND.ADDR BND.PORT
-        response = bytes([
-            self.VERSION,    # VER
-            reply_code,      # REP
-            0x00,            # RSV
-            0x01,            # ATYP (IPv4)
-            0, 0, 0, 0,      # BND.ADDR (0.0.0.0)
-            0, 0             # BND.PORT (0)
-        ])
-        
-        writer.write(response)
+            await self._reply(writer, 0x05)
+            return
+        except OSError:
+            await self._reply(writer, 0x04)
+            return
+
+        # BND.ADDR e BND.PORT devem refletir o endereço do socket local.
+        # A maioria dos clientes ignora estes para CONNECT, mas preenchê-los
+        # corretamente satisfaz a RFC 1928.
+        local = server_writer.get_extra_info('sockname')
+        await self._reply(writer, 0x00, local[0], local[1])
+
+        await asyncio.gather(
+            self._pipe(reader, server_writer),
+            self._pipe(server_reader, writer),
+        )
+
+    async def _reply(self, writer, status, bind_addr='0.0.0.0', bind_port=0):
+        """Envia uma resposta SOCKS5 com o status e endereço vinculado dados."""
+        import socket
+        try:
+            packed_ip = socket.inet_aton(bind_addr)
+            atyp = 0x01
+        except OSError:
+            packed_ip = socket.inet_aton('0.0.0.0')
+            atyp = 0x01
+
+        writer.write(bytes([
+            self.VERSION, status, 0x00, atyp,
+            *packed_ip,
+            (bind_port >> 8) & 0xFF, bind_port & 0xFF,
+        ]))
         await writer.drain()
-    
-    async def _pipe_data(self, reader, writer, direction):
-        """Transporta dados entre reader e writer."""
+
+    async def _pipe(self, reader, writer):
         try:
             while True:
                 data = await reader.read(8192)
                 if not data:
                     break
-                
                 writer.write(data)
                 await writer.drain()
-        except Exception as e:
-            logger.debug(f"Pipe {direction} fechado: {e}")
-    
-    async def start(self):
-        """Inicia o servidor proxy SOCKS5."""
-        server = await asyncio.start_server(
-            self.handle_client,
-            self.host,
-            self.port
-        )
-        
-        logger.info(f"Proxy SOCKS5 escutando em {self.host}:{self.port}")
-        
-        async with server:
-            await server.serve_forever()
+        except (ConnectionResetError, BrokenPipeError, OSError):
+            pass
+        finally:
+            with contextlib.suppress(Exception):
+                if writer.can_write_eof():
+                    writer.write_eof()
 ```
 
-### Exemplo de Uso
+Quando o tipo de endereço é `0x03` (nome de domínio), o proxy resolve DNS ele mesmo via `asyncio.open_connection()`. Esta é a propriedade de privacidade definidora do proxy SOCKS5: o cliente envia o nome de domínio em vez de resolvê-lo localmente, o que previne que consultas DNS vazem para a rede local do cliente. Este é o mesmo comportamento em que o Chrome se baseia quando configurado com `--proxy-server=socks5://...`, como discutido em [Proxies SOCKS](./socks-proxies.md).
+
+O método `_reply` preenche `BND.ADDR` e `BND.PORT` com o endereço real do socket local após uma conexão bem-sucedida, como a RFC 1928 requer. Muitas implementações SOCKS5 retornam `0.0.0.0:0` aqui porque a maioria dos clientes ignora esses campos para comandos CONNECT, mas preenchê-los corretamente não custa nada e evita uma violação de protocolo.
+
+## Executando Ambos os Proxies
 
 ```python
-# Exemplo: Rodando os proxies
 async def main():
-    # Inicia proxy HTTP na porta 8080
     http_proxy = HTTPProxy(
-        host='0.0.0.0',
-        port=8080,
-        username='user',
-        password='pass'
+        port=8080, username='user', password='pass'
     )
-    
-    # Inicia proxy SOCKS5 na porta 1080
     socks5_proxy = SOCKS5Proxy(
-        host='0.0.0.0',
-        port=1080,
-        username='user',
-        password='pass'
+        port=1080, username='user', password='pass'
     )
-    
-    # Roda ambos os proxies concorrentemente
-    await asyncio.gather(
-        http_proxy.start(),
-        socks5_proxy.start()
-    )
+    await asyncio.gather(http_proxy.start(), socks5_proxy.start())
 
-# Roda os proxies
 # asyncio.run(main())
 ```
 
-!!! warning "Considerações de Produção"
-    Estas implementações são educacionais. Proxies de produção precisam de:
-    
-    - **Pool de conexões** (reutilizar conexões alvo)
-    - **Limitação de taxa (Rate limiting)** (prevenir abuso)
-    - **Controle de acesso** (lista branca de IPs, cotas de usuário)
-    - **Log e monitoramento** (rastrear uso, detectar anomalias)
-    - **Tratamento de erros** (degradação graciosa)
-    - **Otimização de desempenho** (usar uvloop, otimizar tamanhos de buffer)
-    - **Endurecimento de segurança (Security hardening)** (prevenir ataques de proxy aberto)
-
-## Tópicos Avançados
-
-### Encadeamento de Proxy (Proxy Chaining)
-
-Encadeie múltiplos proxies para anonimato adicional:
-
-```
-Cliente → Proxy1 (SOCKS5) → Proxy2 (HTTP) → Proxy3 (SOCKS5) → Servidor
-```
-
-**Benefícios:**
-
-- Cada proxy conhece apenas o próximo salto (não o caminho completo)
-- Distribui a confiança por múltiplos provedores
-- Roteamento geográfico (sair de um país específico)
-
-**Desvantagens:**
-
-- Latência aumentada (cada salto adiciona atraso)
-- Velocidade reduzida (largura de banda limitada pelo salto mais lento)
-- Custo mais alto (pagar por múltiplos proxies)
-- Mais pontos de falha
-
-**Métricas de Desempenho:**
-
-| Configuração | Latência Típica | Impacto na Banda | Taxa de Falha |
-|---|---|---|---|
-| **Direto** | 10-50ms | 100% | <0.1% |
-| **Proxy Único** | 60-150ms (+50-100ms) | 80-95% | 0.5-2% |
-| **Cadeia de 2 Proxies** | 120-300ms (+110-250ms) | 60-80% | 1-4% |
-| **Cadeia de 3 Proxies** | 200-500ms (+190-450ms) | 40-60% | 3-8% |
-
-*Valores são aproximados e dependem fortemente da qualidade do proxy, distância geográfica e condições de rede.*
-
-**Exemplo do mundo real (latências medidas em 2023):**
-
-```
-Conexão direta:        ~30ms
-→ Proxy único (EUA):      ~85ms  (+55ms de sobrecarga)
-→ + Segundo proxy (UE):    ~195ms (+110ms de sobrecarga)
-→ + Terceiro proxy (APAC):   ~380ms (+185ms de sobrecarga)
-
-Sobrecarga total: 350ms (11.6x mais lento que direto)
-Largura de banda: 45% da conexão direta
-```
-
-!!! tip "Comprimento Ótimo da Cadeia"
-    Para a maioria dos casos de uso, **1-2 proxies** fornecem o melhor equilíbrio entre anonimato e desempenho. Três ou mais proxies são justificados apenas para cenários de alto risco onde o anonimato absoluto é crítico.
-
-### Pools de Proxy Rotativos
-
-```python
-# Arquitetura para pool de proxy rotativo
-class ProxyPool:
-    """
-    Gerencia um pool de proxies com verificação de saúde e rotação.
-    """
-    
-    def __init__(self, proxies: list[str]):
-        self.proxies = proxies
-        self.healthy_proxies = []
-        self.failed_proxies = []
-        self.current_index = 0
-    
-    async def health_check(self, proxy: str) -> bool:
-        """Verifica se o proxy está funcionando."""
-        try:
-            # Testar conexão através do proxy
-            # Retorna True se bem-sucedido, False caso contrário
-            pass
-        except:
-            return False
-    
-    async def get_next_proxy(self) -> Optional[str]:
-        """Obtém o próximo proxy saudável (round-robin)."""
-        if not self.healthy_proxies:
-            await self.refresh_health()
-        
-        if not self.healthy_proxies:
-            return None
-        
-        proxy = self.healthy_proxies[self.current_index]
-        self.current_index = (self.current_index + 1) % len(self.healthy_proxies)
-        
-        return proxy
-    
-    async def refresh_health(self):
-        """Atualiza o status de saúde dos proxies."""
-        # Testa todos os proxies em paralelo
-        results = await asyncio.gather(
-            *[self.health_check(p) for p in self.proxies]
-        )
-        
-        self.healthy_proxies = [p for p, ok in zip(self.proxies, results) if ok]
-        self.failed_proxies = [p for p, ok in zip(self.proxies, results) if not ok]
-```
-
-### Proxies Transparentes vs Explícitos
-
-| Característica | Proxy Transparente | Proxy Explícito |
-|---|---|---|
-| **Configuração do Cliente** | Nenhuma necessária | Deve configurar as config. de proxy |
-| **Detecção** | Invisível para o cliente | Cliente sabe que está usando proxy |
-| **Implementação** | Nível de rede (roteador/gateway) | Nível de aplicação |
-| **Controle** | Imposto pelo admin da rede | Escolha do usuário |
-| **Caso de Uso** | Redes corporativas, filtragem de ISP | Privacidade pessoal, web scraping |
-
-**Implementação de Proxy Transparente:**
-
-Proxies transparentes operam na camada de rede, interceptando tráfego via regras iptables/nftables:
+Você pode testá-los com curl:
 
 ```bash
-# Regras iptables do Linux para proxy HTTP transparente
-iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 80 \
-    -j REDIRECT --to-port 8080
+# Proxy HTTP
+curl -x http://user:pass@localhost:8080 http://httpbin.org/ip
 
-iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 443 \
-    -j REDIRECT --to-port 8443
+# HTTPS através de proxy HTTP (túnel CONNECT)
+curl -x http://user:pass@localhost:8080 https://httpbin.org/ip
+
+# Proxy SOCKS5
+curl --socks5 localhost:1080 --proxy-user user:pass https://httpbin.org/ip
 ```
 
-**Detecção:** Clientes podem detectar proxies transparentes via:
-- Cabeçalhos `Via` nas respostas
-- Fingerprinting de TCP/IP (mudanças de TTL)
-- Análise de tempo (latência adicionada)
+## O que o Código Não Lida
 
-!!! warning "Proxy Transparente de HTTPS"
-    Proxy transparente de HTTPS requer:
+Estas implementações omitem várias coisas que proxies de produção lidam. Entender o que está faltando é tão instrutivo quanto entender o que está presente.
 
-    - **Interceptação TLS** (MITM com certificado CA customizado)
-    - **Instalação de certificado** nos dispositivos cliente
-    - **Conformidade legal** (consentimento de funcionários, leis de privacidade)
-    
-    Isso é altamente invasivo e levanta preocupações significativas de privacidade.
+Não há limites de conexão. `asyncio.start_server` aceita conexões sem limite, então um único cliente abrindo milhares de conexões esgotaria descritores de arquivo. Proxies de produção usam semáforos ou pools de conexão para limitar concorrência.
 
-## Resumo e Pontos Chave
+Não há validação de destino. Ambos os proxies conectam a qualquer endereço que o cliente solicite, incluindo `127.0.0.1`, `169.254.169.254` (metadados cloud) e faixas de rede interna. Este é um vetor de Server-Side Request Forgery (SSRF). Proxies de produção mantêm listas de negação de faixas de endereços privados e link-local.
 
-Construir servidores proxy do zero revela as **diferenças fundamentais** entre as arquiteturas HTTP e SOCKS5, seus modelos de segurança e desafios de implementação. Entender os componentes internos do proxy é essencial para depuração, otimização e técnicas avançadas de evasão.
+Não há logging de tráfego ou métricas. Proxies de produção rastreiam contagem de requisições, bytes transferidos, taxas de erro e percentis de latência, tipicamente exportando para Prometheus ou sistemas similares.
 
-### Conceitos Centrais Cobertos
+O proxy HTTP não adiciona um cabeçalho `Via`. A RFC 9110 Seção 7.6.3 requer que intermediários adicionem um campo `Via` às mensagens encaminhadas. Isso foi omitido por simplicidade, mas um proxy em conformidade com os padrões deve incluí-lo.
 
-**1. Arquitetura de Proxy HTTP:**
+Nenhum dos proxies implementa shutdown gracioso. Quando o servidor para, túneis ativos são terminados abruptamente em vez de serem drenados. Proxies de produção rastreiam conexões ativas e aguardam que completem (com um prazo) antes de encerrar.
 
-- **Operação de modo duplo**: Encaminhamento de requisição HTTP vs tunelamento HTTPS (CONNECT)
-- **Manipulação de cabeçalho**: Adicionando `Via`, `X-Forwarded-For`, removendo `Proxy-Authorization`
-- **Autenticação**: Usuário/senha codificados em Base64 no cabeçalho `Proxy-Authorization`
-- **Consciência da aplicação**: Pode ler/modificar tráfego HTTP, cachear respostas, aplicar políticas
+## Encadeamento de Proxy
 
-**2. Arquitetura de Proxy SOCKS5:**
+Encadear proxies significa rotear tráfego através de múltiplos proxies em sequência: cliente para proxy A, proxy A para proxy B, proxy B para o servidor destino. Cada proxy na cadeia só conhece seus vizinhos imediatos, não o caminho completo.
 
-- **Protocolo de três fases**: Negociação de método → Autenticação → Processamento da requisição
-- **Protocolo binário**: Estruturas de pacote eficientes (versão, comandos, tipos de endereço)
-- **Agnóstico a protocolo**: Encaminhamento cego de qualquer tráfego TCP/UDP
-- **Autenticação**: Usuário/senha (RFC 1929) ou GSSAPI (RFC 1961)
+O principal caso de uso é distribuir confiança. Se você não confia totalmente em nenhum provedor de proxy individual, encadear dois provedores significa que nenhum deles vê tanto seu IP real quanto seu destino. O tradeoff é latência: cada salto adiciona seu próprio tempo de setup de conexão e atraso de encaminhamento. Um único proxy tipicamente adiciona 50 a 100ms de overhead. Dois proxies aproximadamente dobram isso, e três proxies podem empurrar o overhead total além de 300ms.
 
-**3. Desafios de Implementação:**
-
-- **Pipes de dados bidirecionais**: Encaminhamento assíncrono entre cliente e servidor
-- **Tratamento de erros**: Falhas de rede, timeouts, violações de protocolo
-- **Gerenciamento de recursos**: Pool de conexões, desligamento gracioso
-- **Segurança**: Prevenindo abuso de proxy aberto, limitação de taxa
-
-**4. Conceitos Avançados:**
-
-- **Encadeamento de proxy**: Roteamento multi-salto para anonimato aprimorado (com trocas de latência)
-- **Pools de proxy rotativos**: Verificação de saúde, balanceamento de carga, failover
-- **Proxies transparentes**: Interceptação em nível de rede sem configuração do cliente
-
-### Complexidade de Implementação HTTP vs SOCKS5
-
-| Aspecto | Proxy HTTP | Proxy SOCKS5 |
-|---|---|---|
-| **Parse de Protocolo** | Complexo (HTTP baseado em texto) | Simples (estruturas binárias) |
-| **Autenticação** | Cabeçalhos HTTP (Base64) | Handshake binário |
-| **Manuseio de HTTPS** | Túnel CONNECT | Tunelamento nativo |
-| **Lógica de Aplicação** | Modificação de requisição/resposta | Encaminhamento cego |
-| **Tratamento de Erros** | Códigos de status HTTP | Códigos de resposta binários |
-| **Linhas de Código** | ~200 (impl. simples) | ~180 (impl. simples) |
-
-**Insight Chave:** SOCKS5 é **mais simples de implementar corretamente** devido ao seu protocolo binário e falta de preocupações da camada de aplicação.
-
-### Requisitos de Proxy Pronto para Produção
-
-Implementações educacionais carecem de recursos críticos de produção:
-
-**1. Otimização de Desempenho:**
-
-- **Pool de conexões**: Reutilizar conexões do servidor em vez de criar novas
-- **I/O Assíncrono**: Usar `uvloop` para aumento de desempenho de 2-4x
-- **Ajuste de buffer**: Otimizar tamanhos de buffer de `read()` para troca de largura de banda/latência
-- **Encaminhamento zero-copy**: Usar syscall `sendfile()` onde possível
-
-**2. Endurecimento de Segurança:**
-
-- **Limitação de taxa**: Prevenir abuso (requisições/segundo, limites de banda)
-- **Lista branca de IPs**: Restringir acesso a clientes autorizados
-- **Validação de requisição**: Prevenir injeção de cabeçalho, ataques de buffer overflow
-- **Prevenção de proxy aberto**: Exigir autenticação, restringir domínios alvo
-
-**3. Monitoramento e Observabilidade:**
-
-- **Log estruturado**: Logs JSON com IDs de requisição, timestamps, métricas
-- **Métricas Prometheus**: Contagem de requisições, percentis de latência, taxas de erro
-- **Rastreamento distribuído**: Integração OpenTelemetry para depurar cadeias
-- **Verificações de saúde**: Probes Liveness e readiness para orquestração
-
-**4. Confiabilidade e Disponibilidade:**
-
-- **Degradação graciosa**: Continuar servindo requisições durante falhas parciais
-- **Circuit breakers**: Prevenir falhas em cascata para servidores alvo
-- **Lógica de retentativa**: Backoff exponencial para falhas transitórias
-- **Limites de conexão**: Prevenir exaustão de recursos
-
-**Exemplo de Arquitetura de Produção:**
+Além de dois saltos, o ganho marginal de privacidade diminui enquanto latência e probabilidade de falha aumentam. A maioria das configurações práticas usa um ou dois proxies. O Tor usa três relays (guard, middle, exit) porque seu modelo de ameaça assume que alguns relays estão comprometidos, mas o Tor aceita a penalidade de latência como um tradeoff de design explícito.
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│  Balanceador de Carga (HAProxy, Nginx)                  │
-│  • Terminação TLS                                       │
-│  • Proteção DDoS (limitação de taxa)                    │
-│  • Verificações de saúde                                │
-└─────────────────┬───────────────────────────────────────┘
-                  │
-      ┌───────────┴───────────┐
-      │                       │
-┌─────▼──────┐         ┌──────▼─────┐
-│ Proxy 1    │         │ Proxy 2    │
-│ • Python   │         │ • Python   │
-│ • uvloop   │         │ • uvloop   │
-│ • Métricas │         │ • Métricas │
-└─────┬──────┘         └──────┬─────┘
-      │                       │
-      └───────────┬───────────┘
-                  │
-        ┌─────────▼──────────┐
-        │ Servidores Alvo    │
-        │ • Pool de conexões │
-        │ • Cache DNS        │
-        └────────────────────┘
+Client --> Proxy A (SOCKS5) --> Proxy B (SOCKS5) --> Target
+           vê: IP do cliente       vê: IP do Proxy A
+           vê: endereço do Proxy B  vê: endereço do destino
 ```
 
-### Quando Construir Seu Próprio Proxy
+Encadear um proxy SOCKS5 através de outro proxy SOCKS5 funciona fazendo o proxy A tratar o proxy B como o destino. O cliente conecta ao proxy A e envia uma requisição CONNECT para o endereço do proxy B. Uma vez que esse túnel é estabelecido, o cliente envia um segundo handshake SOCKS5 através do túnel, desta vez solicitando o destino real. O proxy A vê tráfego fluindo para o proxy B mas não pode lê-lo se a conexão interna estiver criptografada.
 
-**Boas Razões:**
+## Referências
 
-- **Aprendizado**: Entender protocolos, programação de rede, I/O assíncrono
-- **Lógica customizada**: Roteamento especializado, modificação de requisição, analítica
-- **Otimização de custos**: Proxies auto-hospedados mais baratos que serviços comerciais (em escala)
-- **Conformidade**: Soberania de dados, requisitos regulatórios
-- **Pesquisa**: Testes de segurança, fuzzing de protocolo, detecção de anomalias
-
-**Más Razões:**
-
-- **Desempenho**: Proxies de produção (Squid, HAProxy, Nginx) são altamente otimizados
-- **Segurança**: Proxies maduros passaram por extensas auditorias de segurança
-- **Recursos**: Proxies comerciais oferecem geo-roteamento, resolução de captcha, IPs residenciais
-- **Manutenção**: Proxies auto-hospedados exigem monitoramento, atualizações, resposta a incidentes
-
-!!! tip "Abordagem Híbrida"
-    Use **proxies comerciais** para rotação de IP e geo-targeting, e **proxies customizados** para lógica específica da aplicação (ex: enriquecimento de requisição, analítica, cache).
-
-### Métricas de Desempenho do Mundo Real
-
-**Benchmarks (testado em m5.xlarge AWS EC2, 2023):**
-
-| Tipo de Proxy | Requisições/seg | Latência (p50) | Latência (p99) | Uso de CPU |
-|---|---|---|---|---|
-| **Direto** | 50,000 | 5ms | 15ms | N/A |
-| **Python HTTP (asyncio)** | 8,000 | 20ms | 80ms | 60% |
-| **Python HTTP (uvloop)** | 15,000 | 15ms | 50ms | 45% |
-| **Squid (C)** | 35,000 | 8ms | 25ms | 30% |
-| **HAProxy (C)** | 45,000 | 6ms | 20ms | 25% |
-
-**Ponto Chave:** Proxies Python são **suficientes para tráfego moderado** (< 10K req/s) mas proxies baseados em C são necessários para ambientes de produção de alto throughput.
-
-## Leitura Adicional e Referências
-
-### Documentação Relacionada
-
-**Dentro Deste Módulo:**
-
-- **[Proxies HTTP/HTTPS](./http-proxies.md)** - Fundamentos de protocolo e autenticação
-- **[Proxies SOCKS](./socks-proxies.md)** - Especificação do protocolo SOCKS5
-- **[Detecção de Proxy](./proxy-detection.md)** - Como proxies são detectados e identificados
-- **[Fundamentos de Rede](./network-fundamentals.md)** - Fundações de TCP/IP, UDP, WebRTC
-- **[Legal e Ético](./proxy-legal.md)** - Conformidade e operação responsável de proxy
-
-**Uso Prático:**
-
-- **[Configuração de Proxy (Recursos)](../../features/configuration/proxy.md)** - Usando proxies no Pydoll
-
-### Referências Externas
-
-**Especificações Oficiais:**
-
-- **RFC 1928** - SOCKS Protocol Version 5: https://datatracker.ietf.org/doc/html/rfc1928
-- **RFC 1929** - Username/Password Authentication for SOCKS V5: https://datatracker.ietf.org/doc/html/rfc1929
-- **RFC 7230** - HTTP/1.1: Message Syntax and Routing: https://datatracker.ietf.org/doc/html/rfc7230
-- **RFC 7231** - HTTP/1.1: Semantics and Content (método CONNECT): https://datatracker.ietf.org/doc/html/rfc7231
-- **RFC 7235** - HTTP/1.1: Authentication (status 407): https://datatracker.ietf.org/doc/html/rfc7235
-
-**I/O Assíncrono Python:**
-
-- **Documentação asyncio**: https://docs.python.org/3/library/asyncio.html
-- **uvloop**: https://github.com/MagicStack/uvloop (I/O assíncrono de alta performance)
-- **Tutorial async/await**: https://realpython.com/async-io-python/
-
-**Servidores Proxy de Produção:**
-
-- **Squid**: http://www.squid-cache.org/ (Proxy HTTP rico em recursos)
-- **HAProxy**: http://www.haproxy.org/ (Balanceador de carga de alta performance)
-- **Nginx**: https://nginx.org/en/docs/http/ngx_http_proxy_module.html (Módulo proxy HTTP)
-- **Dante**: https://www.inet.no/dante/ (Servidor SOCKS)
-- **Privoxy**: https://www.privoxy.org/ (Proxy focado em privacidade)
-
-**Implementações Open-Source:**
-
-- **mitmproxy**: https://mitmproxy.org/ (Proxy HTTP/HTTPS interceptador para testes de segurança)
-  - Baseado em Python, excelente para aprendizado
-  - Interceptação TLS, suporte a scripting
-- **tinyproxy**: https://tinyproxy.github.io/ (Proxy HTTP leve em C)
-- **3proxy**: https://github.com/z3APA3A/3proxy (Servidor proxy multiprotocolo)
-- **shadowsocks**: https://shadowsocks.org/ (Protocolo criptografado similar ao SOCKS5)
-
-**Otimização de Desempenho:**
-
-- **Dicas de Desempenho Python**: https://wiki.python.org/moin/PythonSpeed/PerformanceTips
-- **Benchmarks uvloop**: https://magic.io/blog/uvloop-blazing-fast-python-networking/
-- **I/O zero-copy**: Documentação syscall `sendfile()`
-
-**Melhores Práticas de Segurança:**
-
-- **Guia de Segurança de Proxy OWASP**: https://owasp.org/www-community/controls/Proxy_authentication
-- **Prevenindo Abuso de Proxy Aberto**: https://www.us-cert.gov/ncas/alerts/TA15-051A
-- **Algoritmos de Limitação de Taxa**: Implementações Token bucket, leaky bucket
-
-**Ferramentas e Testes:**
-
-- **curl**: Cliente HTTP de linha de comando para testes
-  ```bash
-  curl -x http://localhost:8080 -U user:pass http://example.com
-  curl --socks5 localhost:1080 --socks5-basic -U user:pass https://example.com
-  ```
-- **Wireshark**: Analisador de pacotes para inspecionar tráfego de proxy
-- **mitmproxy**: Proxy HTTPS interativo para depuração
-- **netcat (nc)**: Teste de conexão TCP crua
-
-**Livros e Tutoriais:**
-
-- **"HTTP: The Definitive Guide"** por David Gourley, Brian Totty (O'Reilly)
-- **"TCP/IP Illustrated"** por W. Richard Stevens (Addison-Wesley)
-- **"Foundations of Python Network Programming"** por Brandon Rhodes, John Goerzen (Apress)
-
-### Tópicos Avançados (Além Deste Documento)
-
-**Proxying de Alta Performance:**
-
-- **Arquitetura multi-processo**: Usando `multiprocessing` para escalar entre núcleos de CPU
-- **Bypass de kernel**: DPDK, io_uring para latência ultra-baixa
-- **Multiplexação de conexão**: HTTP/2, QUIC para uso eficiente de recursos
-
-**Segurança e Privacidade:**
-
-- **Interceptação TLS**: Geração de certificado, detecção de pinning
-- **Ofuscação de tráfego**: Mascaramento de protocolo (Shadowsocks, Trojan)
-- **Integração Tor**: Rodando proxies sobre a rede Tor
-
-**Roteamento Avançado:**
-
-- **Roteamento geográfico**: Sair de países/cidades específicas
-- **Roteamento baseado em protocolo**: Backends diferentes para HTTP vs WebSocket
-- **Roteamento baseado em conteúdo**: Rotear com base em padrões de URL, cabeçalhos
-
-**Monitoramento e Depuração:**
-
-- **Rastreamento distribuído**: Integração Jaeger, Zipkin
-- **Agregação de logs**: Stack ELK, Grafana Loki
-- **Profiling de desempenho**: `py-spy`, `cProfile` para identificação de gargalos
-
----
-
-## Pensamentos Finais
-
-Construir servidores proxy do zero é uma **experiência de aprendizado inestimável** que fornece insights profundos sobre:
-
-- **Protocolos de rede**: Entender HTTP, SOCKS5, TLS em um nível fundamental
-- **Programação assíncrona**: Dominar event loops, coroutines, concorrência
-- **Segurança**: Vetores de ataque, autenticação, controle de acesso
-- **Desempenho**: Gargalos, técnicas de otimização, gerenciamento de recursos
-
-Embora **proxies de produção** (Squid, HAProxy, Nginx) sejam superiores em desempenho, confiabilidade e segurança, **proxies customizados** habilitam casos de uso especializados:
-
-- **Lógica de roteamento customizada** (geo-targeting, testes A/B, canary deployments)
-- **Enriquecimento de requisição** (adicionar cabeçalhos, analítica, logging)
-- **Tradução de protocolo** (HTTP → WebSocket, REST → gRPC)
-- **Pesquisa e testes** (fuzzing, detecção de anomalias, auditorias de segurança)
-
-**Ponto Chave:** Use **proxies de nível de produção** para infraestrutura, construa **proxies customizados** para lógica específica da aplicação.
-
-**Próximos Passos:**
-1. Leia **[Detecção de Proxy](./proxy-detection.md)** para entender como proxies customizados podem ser identificados
-2. Revise **[Legal e Ético](./proxy-legal.md)** para considerações de conformidade
-3. Explore o código-fonte do **mitmproxy** para padrões avançados de implementação de proxy em Python
+- RFC 1928: SOCKS Protocol Version 5 - https://datatracker.ietf.org/doc/html/rfc1928
+- RFC 1929: Username/Password Authentication for SOCKS V5 - https://datatracker.ietf.org/doc/html/rfc1929
+- RFC 9110: HTTP Semantics - https://www.rfc-editor.org/rfc/rfc9110.html
+- RFC 9112: HTTP/1.1 - https://www.rfc-editor.org/rfc/rfc9112.html
+- OWASP SSRF Prevention Cheat Sheet - https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html
+- mitmproxy (Python HTTPS intercepting proxy) - https://mitmproxy.org/

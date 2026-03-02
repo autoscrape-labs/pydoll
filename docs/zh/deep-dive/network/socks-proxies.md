@@ -1,535 +1,278 @@
 # SOCKS 协议架构
 
-本文档全面探讨了 SOCKS (SOCKet Secure)，它被广泛认为是注重隐私的网络自动化和安全代理的 **黄金标准**。虽然 HTTP 代理在企业环境中占主导地位，但 SOCKS 代理因其 **协议无关性**、**更低的信任要求** 和 **卓越的安全模型** 而受到安全专业人士、隐私倡导者和高级自动化工程师的青睐。
+SOCKS（SOCKet Secure）是一种运行在网络栈传输层和应用层之间的代理协议（通常被描述为 OSI 模型的第 5 层）。与解析和理解 HTTP 流量的 HTTP 代理不同，SOCKS 代理在不检查内容的情况下转发原始 TCP 和 UDP 连接。这种协议无关的设计使 SOCKS 成为注重隐私的自动化的首选：代理无需解析您的请求、注入标头或终止 TLS 连接。
 
-SOCKS 代理运行在 OSI 模型的 **第 5 层（会话层）**（低于 HTTP 但高于传输层），提供了 HTTP 代理从根本上无法实现的功能：UDP 隧道、协议灵活性、保持端到端加密以及真正的 DNS 隐私。了解 SOCKS 架构对于构建 **无法检测、高性能** 的浏览器自动化系统至关重要。
+本文档涵盖了 SOCKS 在协议层面的工作原理、SOCKS4 与 SOCKS5 的区别、Chrome 中的身份验证处理、DNS 解析行为，以及在 Pydoll 中的实际配置。
 
 !!! info "模块导航"
-    - **[← HTTP/HTTPS 代理](./http-proxies.md)** - 应用层代理的局限性
-    - **[← 网络基础](./network-fundamentals.md)** - TCP/IP, UDP, OSI 模型基础
-    - **[← 网络与安全概述](./index.md)** - 模块介绍和学习路径
-    - **[→ 代理检测](./proxy-detection.md)** - 匿名级别和检测规避
-    - **[→ 构建代理](./build-proxy.md)** - 从头开始完整实现 SOCKS5
-    
-    有关 Pydoll 的实际配置，请参阅 **[代理配置](../../features/configuration/proxy.md)**。
+    - [HTTP/HTTPS 代理](./http-proxies.md)：应用层代理
+    - [网络基础](./network-fundamentals.md)：TCP/IP、UDP、OSI 模型
+    - [网络与安全概述](./index.md)：模块介绍
+    - [代理检测](./proxy-detection.md)：匿名级别和检测规避
+    - [构建代理](./build-proxy.md)：从零开始实现 SOCKS5
 
-!!! tip "为什么 SOCKS5 更适合自动化"
-    SOCKS5 在 **应用层之下** 运行（第 5 层 vs HTTP 的第 7 层）。这个定位意味着：
-    
-    - **无法读取 HTTP 流量** - 只能看到目标 IP 和端口，而不是 URL/标头
-    - **协议无关** - 可代理 HTTP, FTP, SSH, WebSocket, 自定义协议
-    - **保持端到端 TLS** - 没有 MITM（中间人攻击）的可能性（与 HTTP 代理不同）
-    - **远程 DNS 解析** - 防止 DNS 泄露给您的 ISP
-    - **支持 UDP** - 对 WebRTC, DNS, VoIP, 游戏协议至关重要
-    
-    与 HTTP 代理相比，这极大地减少了 **信任表面积**。您只需信任代理能正确转发数据包，而无需信任它处理敏感的应用数据。
+    有关实际配置，请参阅[代理配置](../../features/configuration/proxy.md)。
 
-## 简介：会话层代理
+## SOCKS 与 HTTP 代理的区别
 
-与 HTTP 代理相比，SOCKS (SOCKet Secure) 代表了一种根本不同的代理方法。HTTP 代理是 **应用感知** 的（理解 HTTP 语义、标头、方法），而 SOCKS 代理是 **传输感知** 的（只理解 TCP/UDP 连接、IP 和端口）。
+根本区别在于每种代理能看到和做到什么。HTTP 代理在应用层运行，理解 HTTP：它可以读取 URL、标头、Cookie 和请求体（针对未加密流量），在传输过程中修改它们，缓存响应，并注入自己的标头，如 `Via` 和 `X-Forwarded-For`。这对内容过滤很有用，但意味着您必须信任代理运营商处理您的应用数据。
 
-**历史背景：**
+SOCKS 代理在应用层之下运行。它只能看到目标地址、端口和正在传输的数据量。它不会解析、修改甚至理解通过它流动的是什么协议。HTTP、HTTPS、FTP、SSH、WebSocket 或任何自定义协议对于 SOCKS 代理来说都是一样的：只是在两个端点之间中继的字节流。
 
-SOCKS 是在 20 世纪 90 年代初由 **MIPS 计算机系统公司的 David Koblas 和 Michelle Koblas** 开发的，目的是使防火墙内部的主机能够 **完全访问** 互联网，而无需直接的 IP 连接。最初的动机很简单：公司防火墙阻止了出站连接，但员工需要访问外部资源。SOCKS 通过建立一个穿过防火墙的 **单一受控网关** 提供了解决方案。
+这有一个直接的实际影响。当您通过 SOCKS5 代理发送 HTTPS 请求时，代理看到的是 `example.com:443` 和加密的 TLS 流。它无法读取 URL、标头、Cookie 或响应内容。它不会添加识别性标头。它不需要终止 TLS。加密隧道在您的浏览器和目标服务器之间是端到端的。
 
-**演进时间线：**
+然而，理解 SOCKS 不提供什么同样重要。SOCKS 是一种代理协议，而不是加密协议。"SOCKet Secure"这个名称指的是安全的防火墙穿越，而非密码学安全。如果您通过 SOCKS5 代理发送未加密的 HTTP 流量，即使代理并非设计用来检查流量，代理运营商也能读取通过的字节。要实现真正的加密，您需要在 SOCKS 之上使用 TLS/HTTPS，或者用加密隧道（SSH、VPN）包裹 SOCKS 连接。
 
-- **1992**：SOCKS4 推出（非正式规范，无 RFC）
-- **1996**：SOCKS5 被 IETF 标准化为 **RFC 1928**
-- **1996**：用户名/密码身份验证被标准化为 **RFC 1929**
-- **2003**：GSS-API 身份验证扩展 (**RFC 1961**)
-- **2020s**：现代扩展（Tor SOCKS 扩展, SOCKS6 提案）
+!!! note "信任模型"
+    使用 HTTP 代理时，您信任代理运营商不会记录您的浏览历史、窃取令牌、修改响应或执行 MITM 攻击。使用 SOCKS5 时，您只需信任代理能正确转发数据包且不记录连接元数据。攻击面更小，但并非为零。
 
-**为什么叫 "SOCKet Secure"？**
+## SOCKS4 与 SOCKS5
 
-尽管名为 "Secure"（安全），SOCKS 本身并 **不提供加密**。“安全”指的是它能够安全地穿越防火墙（从访问控制的角度来看），而不是加密安全。要实现加密，您必须在 SOCKS 之上叠加 TLS/SSL，或者在加密隧道（SSH, VPN）中使用它。
-
-!!! warning "SOCKS 不加密"
-    一个常见的误解：**SOCKS ≠ 加密**。SOCKS 是一种 **代理协议**，而不是加密协议。它透明地转发数据包而不做修改，包括未加密的 HTTP 流量。
-    
-    为了安全通信，请将 SOCKS 与以下技术结合使用：
-    - **TLS/HTTPS** 用于 Web 流量
-    - **SSH** 用于隧道加密
-    - **VPN** 用于全流量加密
-    
-    SOCKS 的安全优势是 **架构性** 的（需要更少的信任），而不是加密性的。
-
-## 为什么第 5 层很重要：会话层 vs 应用层
-
-理解 SOCKS 的关键在于理解它在网络堆栈中的 **运行位置**：
-
-```
-┌─────────────────────────────────────────────┐
-│  第 7 层：应用层 (HTTP, FTP, SMTP)           │ ← HTTP 代理在此运行
-│  • 完全的协议可见性                          │   (可以读取 URL, 标头)
-│  • 可以修改请求/响应                         │
-│  • 特定于协议 (仅限 HTTP)                    │
-├─────────────────────────────────────────────┤
-│  第 6 层：表示层 (TLS, 加密)                 │
-├─────────────────────────────────────────────┤
-│  第 5 层：会话层 (SOCKS)                     │ ← SOCKS 代理在此运行
-│  • 只能看到目标 IP:端口                      │   (协议无关)
-│  • 无法检查应用数据                          │
-│  • 适用于任何第 7 层协议                     │
-├─────────────────────────────────────────────┤
-│  第 4 层：传输层 (TCP, UDP)                  │
-│  • 连接管理                                  │
-│  • 端口号, 流量控制                          │
-├─────────────────────────────────────────────┤
-│  第 3 层：网络层 (IP)                        │
-│  • 路由, IP 地址                             │
-├─────────────────────────────────────────────┤
-│  第 2 层：数据链路层 (Ethernet, WiFi)        │
-├─────────────────────────────────────────────┤
-│  第 1 层：物理层 (电缆, 信号)                │
-└─────────────────────────────────────────────┘
-```
-
-**实际含义：**
-
-当您使用 HTTP 代理时：
-```http
-GET http://example.com/secret-api?token=abc123 HTTP/1.1
-Cookie: session=sensitive_data
-Authorization: Bearer secret_token
-```
-
-**HTTP 代理能看到一切** - URL、查询参数、Cookie、授权标头。
-
-当您使用 SOCKS5 代理时：
-```python
-# SOCKS5 握手 (简化)
-CONNECT example.com:443  # 只能看到：目标主机和端口
-[加密的 TLS 数据]     # 无法看到 URL、标头或内容
-```
-
-**SOCKS5 只能看到**：`example.com`、端口 `443` 和数据量。TLS 隧道内的 HTTP 请求对代理来说是 **完全不透明的**。
-
-!!! success "安全差异"
-    使用 HTTP 代理，您必须 **信任代理运营商** 不会：
-
-    - 记录您的浏览历史 (完整的 URL)
-    - 窃取身份验证令牌/Cookie
-    - 修改响应 (注入恶意软件、广告)
-    - 对 HTTPS 进行 MITM 攻击 (通过 CA 证书)
-    
-    使用 SOCKS5，您只需信任代理会：
-
-    - 正确转发数据包
-    - 不记录连接元数据 (IP, 端口, 时间)
-    
-    **攻击面** 大大减小了。
-
-### SOCKS4 vs SOCKS5
+SOCKS 有两个常用版本。SOCKS4 由 NEC 在 20 世纪 90 年代初开发，是一个没有 RFC 的非正式标准。SOCKS5 于 1996 年被标准化为 RFC 1928，以解决 SOCKS4 的局限性。
 
 | 特性 | SOCKS4 | SOCKS5 |
-|---|---|---|
-| **RFC** | 无官方 RFC (90 年代的事实标准) | RFC 1928 (官方标准, 1996) |
-| **身份验证** | 无 (只有用户 ID) | 多种方法 (无认证, 用户名/密码, GSSAPI) |
-| **IP 版本** | 仅 IPv4 | IPv4 和 IPv6 |
-| **UDP 支持** | 否 | 是 |
-| **DNS 解析** | 客户端 | 服务器端 (更匿名) |
-| **协议支持** | 仅 TCP | TCP 和 UDP |
+|---------|--------|--------|
+| 标准 | 无官方 RFC（1992 年的事实标准） | RFC 1928（1996） |
+| 身份验证 | 仅标识（USERID 字段，无密码） | 多种方法（无认证、用户名/密码、GSSAPI） |
+| IP 版本 | 仅 IPv4 | IPv4 和 IPv6 |
+| UDP 支持 | 否 | 是（UDP ASSOCIATE 命令） |
+| DNS 解析 | 客户端（SOCKS4A 扩展添加了服务器端） | 使用域名时由服务器端解析（ATYP=0x03） |
+| 协议支持 | 仅 TCP | TCP 和 UDP |
 
-!!! info "SOCKS4 历史"
-    SOCKS4 是 NEC 在 20 世纪 90 年代初开发的，作为事实标准，没有正式的 RFC 文档。SOCKS5 (RFC 1928) 后来于 1996 年由 IETF 标准化，以解决 SOCKS4 的局限性。
+SOCKS5 在各方面都更优越。仅在代理不支持 SOCKS5 时才使用 SOCKS4。
 
-!!! tip "始终使用 SOCKS5"
-    SOCKS5 在各方面都更胜一筹。SOCKS4 是遗留协议，仅在代理不支持 SOCKS5 时才应使用。
+## SOCKS5 握手
 
-### SOCKS5 握手协议
-
-SOCKS5 连接过程遵循 RFC 1928：
+SOCKS5 连接过程遵循 RFC 1928，由三个阶段组成：方法协商、可选的身份验证和连接请求。
 
 ```mermaid
 sequenceDiagram
     participant Client
-    participant SOCKS5 as SOCKS5 代理
-    participant Server as 目标服务器
-    
-    Note over Client,SOCKS5: 阶段 1：方法协商
-    Client->>SOCKS5: 1. 问候<br/>[VER=5, NMETHODS, METHODS]
-    SOCKS5->>Client: 2. 方法选定<br/>[VER=5, METHOD]
-    
-    Note over Client,SOCKS5: 阶段 2：身份验证 (如果需要)
-    Client->>SOCKS5: 3. 认证请求<br/>[VER=1, ULEN, UNAME, PLEN, PASSWD]
-    SOCKS5->>Client: 4. 认证响应<br/>[VER=1, STATUS]
-    
-    Note over Client,SOCKS5: 阶段 3：连接请求
-    Client->>SOCKS5: 5. 连接请求<br/>[VER=5, CMD, DST.ADDR, DST.PORT]
-    SOCKS5->>Server: 6. 建立 TCP 连接
-    Server-->>SOCKS5: 连接已建立
-    SOCKS5->>Client: 7. 连接回复<br/>[VER=5, REP, BND.ADDR, BND.PORT]
-    
-    Note over Client,Server: 数据传输 (已代理)
-    Client->>SOCKS5: 应用数据
-    SOCKS5->>Server: 转发数据
-    Server->>SOCKS5: 响应数据
-    SOCKS5->>Client: 转发响应
+    participant SOCKS5 as SOCKS5 Proxy
+    participant Server as Target Server
+
+    Note over Client,SOCKS5: Phase 1: Method Negotiation
+    Client->>SOCKS5: Hello [VER=5, NMETHODS, METHODS]
+    SOCKS5->>Client: Method Selected [VER=5, METHOD]
+
+    Note over Client,SOCKS5: Phase 2: Authentication (if required)
+    Client->>SOCKS5: Auth Request [VER=1, ULEN, UNAME, PLEN, PASSWD]
+    SOCKS5->>Client: Auth Response [VER=1, STATUS]
+
+    Note over Client,SOCKS5: Phase 3: Connection Request
+    Client->>SOCKS5: Connect [VER=5, CMD=CONNECT, DST.ADDR, DST.PORT]
+    SOCKS5->>Server: Establish TCP connection
+    Server-->>SOCKS5: Connection established
+    SOCKS5->>Client: Reply [VER=5, REP=SUCCESS, BND.ADDR, BND.PORT]
+
+    Note over Client,Server: Data relay (proxied)
+    Client->>SOCKS5: Application data
+    SOCKS5->>Server: Forward data
+    Server->>SOCKS5: Response data
+    SOCKS5->>Client: Forward response
 ```
 
-### SOCKS5 数据包结构
+### 阶段 1：方法协商
 
-#### 1. 客户端问候
+客户端打开一个到代理的 TCP 连接，发送一个包含协议版本（SOCKS5 始终为 `0x05`）和支持的身份验证方法列表的问候消息。
 
 ```python
-# 字节布局
+# Client Hello
 [
-    0x05,        # VER: 协议版本 (5)
-    0x02,        # NMETHODS: 身份验证方法数量
-    0x00, 0x02   # METHODS: 无认证 (0x00) 和 用户名/密码 (0x02)
+    0x05,        # VER: Protocol version (5)
+    0x02,        # NMETHODS: Number of methods offered
+    0x00, 0x02   # METHODS: No auth (0x00) and Username/Password (0x02)
 ]
 ```
 
-#### 2. 服务器方法选择
+代理回复它选择的方法。如果代理需要身份验证且客户端提供了 `0x02`（用户名/密码），代理就选择它。如果没有提供可接受的方法，代理回复 `0xFF` 并关闭连接。
 
 ```python
+# Server response
 [
-    0x05,        # VER: 协议版本 (5)
-    0x02         # METHOD: 选定的方法 (0x02 = 用户名/密码)
+    0x05,   # VER: Protocol version (5)
+    0x02    # METHOD: Username/Password selected
 ]
 ```
 
-**方法代码：**
-- `0x00`: 无需身份验证
-- `0x01`: GSSAPI
-- `0x02`: 用户名/密码
-- `0xFF`: 没有可接受的方法
+RFC 1928 定义的方法代码：`0x00` = 无身份验证，`0x01` = GSSAPI，`0x02` = 用户名/密码（RFC 1929），`0x03-0x7F` = IANA 分配，`0x80-0xFE` = 保留给私有方法，`0xFF` = 无可接受的方法。
 
-#### 3. 身份验证 (用户名/密码)
+### 阶段 2：身份验证
+
+如果代理选择了方法 `0x02`，客户端按照 RFC 1929 发送凭据。子协商使用自己的版本号（`0x01`，而非 `0x05`）。
 
 ```python
-# 客户端认证请求
+# Client authentication
 [
-    0x01,              # VER: 子协商版本 (1)
-    len(username),     # ULEN: 用户名长度
-    *username_bytes,   # UNAME: 用户名
-    len(password),     # PLEN: 密码长度
-    *password_bytes    # PASSWD: 密码
+    0x01,              # VER: Subnegotiation version (1)
+    len(username),     # ULEN: Username length (max 255)
+    *username_bytes,   # UNAME: Username
+    len(password),     # PLEN: Password length (max 255)
+    *password_bytes    # PASSWD: Password
 ]
 
-# 服务器认证响应
+# Server response
 [
-    0x01,              # VER: 子协商版本 (1)
-    0x00               # STATUS: 0 = 成功, 非零 = 失败
-]
-```
-
-#### 4. 连接请求
-
-```python
-[
-    0x05,              # VER: 协议版本 (5)
-    0x01,              # CMD: 命令 (1=CONNECT, 2=BIND, 3=UDP ASSOCIATE)
-    0x00,              # RSV: 保留
-    0x03,              # ATYP: 地址类型 (1=IPv4, 3=域名, 4=IPv6)
-    len(domain),       # 域名长度
-    *domain_bytes,     # 域名
-    *port_bytes        # 端口 (2 字节, 大端)
+    0x01,   # VER: Subnegotiation version (1)
+    0x00    # STATUS: 0 = success, non-zero = failure
 ]
 ```
 
-#### 5. 连接回复
+在此握手过程中，凭据以明文传输。这是 SOCKS5 协议（RFC 1929）固有的特性。对于敏感环境，请将 SOCKS 连接包裹在 SSH 隧道或 VPN 中。
+
+### 阶段 3：连接请求
+
+身份验证成功后（或者不需要身份验证时），客户端发送一个连接请求，指定命令、目标地址和端口。
 
 ```python
 [
-    0x05,              # VER: 协议版本 (5)
-    0x00,              # REP: 回复 (0=成功, 见下面的错误代码)
-    0x00,              # RSV: 保留
-    0x01,              # ATYP: 地址类型
-    *bind_addr,        # BND.ADDR: 绑定地址
-    *bind_port         # BND.PORT: 绑定端口 (2 字节)
+    0x05,          # VER: Protocol version (5)
+    0x01,          # CMD: 1=CONNECT, 2=BIND, 3=UDP ASSOCIATE
+    0x00,          # RSV: Reserved
+    0x03,          # ATYP: 1=IPv4 (4 bytes), 3=Domain (length+name), 4=IPv6 (16 bytes)
+    len(domain),   # Domain length (only for ATYP=0x03)
+    *domain_bytes, # Domain name
+    *port_bytes    # Port (2 bytes, big-endian)
 ]
 ```
 
-**回复代码：**
+地址类型（ATYP）决定了格式：`0x01` 表示后面跟 4 字节的 IPv4 地址，`0x04` 表示 16 字节的 IPv6 地址，`0x03` 表示一个长度字节后跟域名。当客户端发送域名（ATYP=0x03）时，代理在其侧解析 DNS，这可以防止 DNS 泄露到客户端的本地网络。
 
-- `0x00`: 成功
-- `0x01`: SOCKS 服务器常规故障
-- `0x02`: 规则集不允许连接
-- `0x03`: 网络不可达
-- `0x04`: 主机不可达
-- `0x05`: 连接被拒绝
-- `0x06`: TTL 过期
-- `0x07`: 不支持的命令
-- `0x08`: 不支持的地址类型
+代理连接到目标并回复：
 
-!!! info "SOCKS5 效率"
-    SOCKS5 是二进制协议 (不像 HTTP 那样基于文本)。这使得它：
-    
-    - 更高效 (更小的数据包)
-    - 解析更快
-    - 可读性较差 (需要十六进制转储来进行调试)
+```python
+[
+    0x05,       # VER: Protocol version (5)
+    0x00,       # REP: 0x00=success, 0x01-0x08=various errors
+    0x00,       # RSV: Reserved
+    0x01,       # ATYP: Address type of bound address
+    *bind_addr, # BND.ADDR: Address the proxy bound to
+    *bind_port  # BND.PORT: Port the proxy bound to
+]
+```
 
-### SOCKS5 UDP 支持
+回复代码：`0x00` 成功，`0x01` 一般性故障，`0x02` 不允许连接，`0x03` 网络不可达，`0x04` 主机不可达，`0x05` 连接被拒绝，`0x06` TTL 过期，`0x07` 不支持的命令，`0x08` 不支持的地址类型。
 
-SOCKS5 的独特功能之一是通过 `UDP ASSOCIATE` 命令支持 UDP：
+成功回复后，代理开始双向中继数据。整个 SOCKS5 握手是二进制协议，比基于文本的 HTTP 更高效，但没有十六进制转储就更难调试。
+
+## UDP 支持
+
+SOCKS5 通过 `UDP ASSOCIATE` 命令（CMD=0x03）支持 UDP 代理。其工作方式与 TCP 代理不同：客户端通过 TCP 控制连接发送 UDP ASSOCIATE 请求，代理回复中继地址和端口。然后客户端将 UDP 数据报发送到该中继，代理将其转发到目标。
 
 ```mermaid
 sequenceDiagram
     participant Client
     participant SOCKS5
-    participant UDP_Server as UDP 服务器
-    
-    Note over Client,SOCKS5: 建立 TCP 控制连接
-    Client->>SOCKS5: TCP: CONNECT (身份验证)
-    Client->>SOCKS5: TCP: UDP ASSOCIATE 请求
-    SOCKS5->>Client: TCP: 中继地址和端口
-    
-    Note over Client,SOCKS5: UDP 数据传输
-    Client->>SOCKS5: UDP: 数据报到中继
-    SOCKS5->>UDP_Server: UDP: 转发数据报
-    UDP_Server->>SOCKS5: UDP: 响应数据报
-    SOCKS5->>Client: UDP: 转发响应
-    
-    Note over Client,SOCKS5: TCP 控制连接保持打开
+    participant UDP_Server as UDP Server
+
+    Note over Client,SOCKS5: TCP control connection (handshake + auth)
+    Client->>SOCKS5: UDP ASSOCIATE request (CMD=0x03)
+    SOCKS5->>Client: Relay address and port
+
+    Note over Client,SOCKS5: UDP data transfer
+    Client->>SOCKS5: UDP datagram to relay
+    SOCKS5->>UDP_Server: Forward datagram
+    UDP_Server->>SOCKS5: Response datagram
+    SOCKS5->>Client: Forward response
+
+    Note over Client,SOCKS5: TCP control connection stays open
 ```
 
-**UDP 数据包格式：**
+通过中继发送的每个 UDP 数据报都包含一个带有目标地址和端口的小标头：
 
 ```python
 [
-    0x00, 0x00,        # RSV: 保留
-    0x00,              # FRAG: 分片编号
-    0x01,              # ATYP: 地址类型
-    *dst_addr,         # DST.ADDR: 目标地址
-    *dst_port,         # DST.PORT: 目标端口
-    *data              # DATA: 用户数据
+    0x00, 0x00,    # RSV: Reserved
+    0x00,          # FRAG: Fragment number (0 = no fragmentation)
+    0x01,          # ATYP: Address type
+    *dst_addr,     # DST.ADDR: Destination address
+    *dst_port,     # DST.PORT: Destination port
+    *data          # DATA: Application data
 ]
 ```
 
-!!! warning "UDP 局限性"
-    UDP ASSOCIATE 需要：
-    
-    - 一个持久的 TCP 控制连接
-    - 客户端和服务器维护状态
-    - 额外的中继基础设施
-    
-    许多代理不支持 UDP，而那些支持的通常有限制或额外费用。
+TCP 控制连接在 UDP 关联期间必须保持打开。如果它关闭，代理会丢弃 UDP 中继。
+
+!!! warning "Chrome 中的 UDP"
+    Chrome 不会为任何流量使用 SOCKS5 UDP ASSOCIATE。即使配置了 SOCKS5 代理，Chrome 也只代理 TCP 连接。WebRTC、DNS-over-UDP 和其他 UDP 流量不会通过 SOCKS5 代理路由。这意味着在 Chrome 中使用 SOCKS5 时仍可能存在 WebRTC IP 泄露。使用 `--force-webrtc-ip-handling-policy=disable_non_proxied_udp` 或 Pydoll 的 `webrtc_leak_protection = True` 来缓解此问题。更多详情请参阅 [网络基础：WebRTC 和 IP 泄露](./network-fundamentals.md#webrtc-and-ip-leakage)。
 
 !!! tip "现代 UDP 代理替代方案"
-    对于现代设置中的完整 UDP 支持，请考虑以下替代方案：
-    
-    - **Shadowsocks**：专为 UDP/TCP 代理和加密而设计的现代类 SOCKS5 协议
-    - **WireGuard**：具有原生 UDP 支持和出色性能的 VPN 协议
-    - **V2Ray/VMess**：具有全面 UDP 处理能力的灵活代理协议
-    - **Trojan**：模仿 HTTPS 流量同时支持 UDP 的轻量级协议
-    
-    这些协议对于游戏、VoIP 或视频流等 UDP 性能至关重要的场景特别有用。
+    对于需要超出 Chrome SOCKS5 实现所提供的完整 UDP 支持的场景，可以考虑 Shadowsocks（带有原生 UDP 的加密类 SOCKS 协议）、WireGuard（性能出色的 VPN）或 V2Ray/VMess（具有全面 UDP 处理能力的灵活代理框架）。
 
-## 为什么 SOCKS5 更安全
+## DNS 解析
 
-现在我们已经奠定了基础，让我们来分析为什么 SOCKS5 通常被认为比 HTTP/HTTPS 代理更安全。
+一个常见的误解是 HTTP 代理会泄露 DNS 查询，而 SOCKS5 代理不会。Chrome 中的实际情况更加微妙。
 
-### 协议级比较
+当 Chrome 配置了任何代理（HTTP、HTTPS 或 SOCKS5）时，它会将主机名发送给代理，而不是在本地解析 DNS。对于 HTTP 代理，主机名出现在 `CONNECT host:443` 请求中。对于 SOCKS5，它出现在带有 ATYP=0x03（域名）的连接请求中。在这两种情况下，代理在其侧解析 DNS，Chrome 不会对代理流量进行本地 DNS 查询。
 
-```mermaid
-graph TD
-    subgraph HTTP_Proxy[HTTP 代理 - 第 7 层]
-        A1[客户端应用]
-        A2[HTTP 库]
-        A3[代理拦截 HTTP 请求]
-        A4[代理可以读取标头、Cookie、方法、URL]
-        
-        A1 --> A2 --> A3 --> A4
-    end
-    
-    subgraph SOCKS5_Proxy[SOCKS5 代理 - 第 5 层]
-        B1[客户端应用]
-        B2[任何协议 - HTTP/FTP/SMTP]
-        B3[TCP/UDP 传输]
-        B4[SOCKS5 只能看到：目标 IP、端口、数据包大小]
-        
-        B1 --> B2 --> B3 --> B4
-    end
-```
+两种代理类型之间真正的 DNS 隐私差异不在于谁解析 DNS，而在于代理在应用层能看到什么。HTTP 代理能看到未加密请求的完整 URL 和 CONNECT 请求的主机名。SOCKS5 代理只能看到目标主机名和端口作为不透明的连接参数。
 
-### SOCKS5 的安全优势
+但是，有一个重要的注意事项：即使配置了代理，Chrome 的 DNS 预取器也可能会对页面内容中发现的主机名进行本地 DNS 查询。这可能会将您正在浏览的域名泄露给本地 DNS 解析器。要防止这种情况，请禁用 DNS 预取或使用标志 `--host-resolver-rules="MAP * ~NOTFOUND , EXCLUDE 127.0.0.1"`。
 
-| 方面 | HTTP/HTTPS 代理 | SOCKS5 代理 |
-|---|---|---|
-| **数据可见性** | 可以读取 HTTP 标头、URL、Cookie (HTTP) | 只能看到目标 IP/端口和数据包大小 |
-| **协议支持** | 仅限 HTTP/HTTPS | 任何 TCP/UDP 协议 |
-| **TLS 检查** | 可能通过 MITM 证书 | 不可能 (在 TLS 之下运行) |
-| **DNS 泄露** | 客户端解析 DNS (泄露) | 代理解析 DNS (无泄露) |
-| **应用感知** | 理解 HTTP | 协议无关 |
-| **指纹** | 可以注入标头, 修改请求 | 透明的数据包转发 |
-| **UDP 支持** | 无 | 是 (用于 WebRTC, DNS 等) |
+!!! note "`socks5://` 与 `socks5h://`"
+    Chrome 之外的许多工具区分 `socks5://`（客户端解析 DNS）和 `socks5h://`（代理解析 DNS，"h"代表 hostname）。Chrome 对 SOCKS5 始终在代理侧解析 DNS，无论您使用哪种方案，行为都类似于 `socks5h://`。但如果您在 Pydoll 之外使用 `curl`、Firefox 或 Python 库等工具，这个区别就很重要：请始终使用 `socks5h://` 以防止 DNS 泄露。
 
-### DNS 解析：一个关键区别
+## SOCKS5 与 MITM 抵抗
 
-**HTTP 代理的 DNS 行为：**
+SOCKS5 经常被描述为"抗 MITM"。在特定意义上这是正确的：因为 SOCKS5 不理解或与 TLS 交互，它没有机制来终止 TLS 连接并重新加密。SOCKS5 代理只是原样中继加密的字节。
 
-```mermaid
-sequenceDiagram
-    participant Client
-    participant DNS
-    participant Proxy
-    participant Server
-    
-    Note over Client: 客户端解析 DNS<br/>(使用系统 DNS)
-    Client->>DNS: DNS 查询: example.com?
-    DNS->>Client: DNS 响应: 93.184.216.34
-    Note over Client: DNS 泄露: ISP 看到查询
-    
-    Client->>Proxy: 连接到 93.184.216.34
-    Proxy->>Server: 转发到 93.184.216.34
-```
+相比之下，HTTP 代理可以通过向客户端提供自己的证书来执行 TLS 终止（MITM），解密流量、检查或修改内容，然后重新加密发送给服务器。这需要客户端信任代理的 CA 证书，并且可以通过证书固定和证书透明度日志检测到。HTTP 代理处理 HTTPS 的正常行为（使用 CONNECT）是创建透明隧道而不终止 TLS，但 MITM 的架构可能性是存在的。
 
-**SOCKS5 的 DNS 行为：**
+使用 SOCKS5 时，TLS 终止在协议层面是不可能的。代理无法将自己注入 TLS 握手，因为它不解析流经的应用数据。客户端和服务器之间的端到端加密在设计上得到了保护。
 
-```mermaid
-sequenceDiagram
-    participant Client
-    participant SOCKS5
-    participant DNS
-    participant Server
-    
-    Note over Client: 客户端发送域名<br/>(而不是 IP) 到 SOCKS5
-    Client->>SOCKS5: CONNECT example.com:443<br/>(ATYP=0x03, 域名)
-    
-    Note over SOCKS5: 代理解析 DNS<br/>(使用自己的 DNS)
-    SOCKS5->>DNS: DNS 查询: example.com?
-    DNS->>SOCKS5: DNS 响应: 93.184.216.34
-    Note over SOCKS5: 客户端 ISP 没有 DNS 泄露
-    
-    SOCKS5->>Server: 连接到 93.184.216.34
-```
+值得注意的是，提供实际密码学保护的是 TLS，而不是 SOCKS5 本身。如果您通过 SOCKS5 代理发送未加密的 HTTP，代理运营商可以读取所有内容。SOCKS5 的安全优势是架构性的（它不需要也不启用 TLS 终止），而非密码学意义上的。
 
-!!! tip "远程 DNS 解析"
-    SOCKS5 在代理服务器端执行 DNS 解析的能力对于隐私至关重要。您的 ISP 永远看不到您在查询哪些网站，只知道您连接到了代理。
+## TLS 和通过 SOCKS5 的浏览器 fingerprinting
 
-### 抗中间人攻击 (MITM)
+一个需要理解的重要局限：SOCKS5 不会改变浏览器的 fingerprint。TLS 握手（ClientHello）逐字节通过 SOCKS5 代理传递，这意味着目标服务器能看到浏览器的确切 JA3/JA4 fingerprint。HTTP/2 SETTINGS 帧、浏览器特有的标头排序以及所有其他应用层 fingerprinting 信号同样如此。
 
-**HTTP 代理易受 MITM 攻击：**
+SOCKS5 隐藏了您的 IP 地址并防止代理注入识别性标头。但它对任何形式的浏览器或行为 fingerprinting 都没有帮助。要实现完整的规避策略，您需要在多个层面应对 fingerprinting。详情请参阅[规避技术](../fingerprinting/evasion-techniques.md)。
 
-```mermaid
-sequenceDiagram
-    participant Client
-    participant Malicious_Proxy as 恶意 HTTP 代理
-    participant Server
-    
-    Client->>Malicious_Proxy: HTTPS 请求 (加密)
-    Note over Malicious_Proxy: 代理终止 TLS<br/>(使用伪造证书)
-    
-    Malicious_Proxy->>Malicious_Proxy: 读取/修改内容
-    
-    Malicious_Proxy->>Server: 用真实证书重新加密
-    Server->>Malicious_Proxy: 响应
-    Malicious_Proxy->>Client: 修改后的响应
-    
-    Note over Client: 可能显示证书警告
-```
+## Chrome 中的 SOCKS5 身份验证
 
-**SOCKS5 无法执行 MITM：**
+Chrome 不支持 SOCKS5 用户名/密码身份验证。这是一个长期存在的限制，跟踪为 [Chromium Issue #40323993](https://issues.chromium.org/issues/40323993)。当 Chrome 执行 SOCKS5 方法协商时，它只提供方法 `0x00`（无身份验证）。如果代理需要身份验证，连接会静默失败。
 
-```mermaid
-sequenceDiagram
-    participant Client
-    participant SOCKS5
-    participant Server
-    
-    Client->>SOCKS5: CONNECT server.com:443
-    SOCKS5->>Server: TCP 连接已建立
-    SOCKS5->>Client: 连接准备就绪
-    
-    Note over Client,Server: 端到端 TLS 隧道
-    Client->>Server: TLS 握手 + 加密数据
-    Note over SOCKS5: 无法解密<br/>无法修改<br/>仅转发数据包
-    Server->>Client: 加密的响应
-```
+这与 HTTP 代理身份验证有本质区别。HTTP 代理通过 HTTP 状态码（`407 Proxy Authentication Required`）进行身份验证，Chrome 通过 CDP 中的 Fetch 域来处理。Pydoll 拦截这些 `Fetch.authRequired` 事件并自动使用存储的凭据响应。而 SOCKS5 身份验证发生在会话层的二进制协议握手期间，在任何 HTTP 流量存在之前。没有 HTTP 407，没有 `Fetch.authRequired` 事件，基于 CDP 的工具也无法将凭据注入此过程。
 
-!!! info "信任模型"
-    - **HTTP 代理**：您信任它处理明文 HTTP 数据，并正确隧道化 HTTPS
-    - **SOCKS5 代理**：您只信任它能正确转发数据包
-    
-    SOCKS5 的信任表面积更小。
+配置 `--proxy-server=socks5://user:pass@proxy:1080` 不会生效。Chrome 会静默忽略嵌入的凭据。
 
-## SOCKS5 身份验证与 Chrome
+### Pydoll 的 SOCKS5Forwarder
 
-在浏览器自动化中使用 SOCKS5 代理时，最常见的陷阱之一就是**身份验证**。Chrome/Chromium **不**原生支持 SOCKS5 用户名/密码身份验证。这是一个已知的、长期存在的限制，跟踪为 [Chromium Issue #40323993](https://issues.chromium.org/issues/40323993)。
-
-### 为什么 Chrome 忽略 SOCKS5 凭据
-
-当您使用 `--proxy-server=socks5://user:pass@proxy:1080` 配置 Chrome 时，Chrome **静默忽略**嵌入的凭据。在 SOCKS5 方法协商期间，Chrome 只提供方法 `0x00`（无需身份验证）— 它从不提供方法 `0x02`（用户名/密码）。
-
-这是因为 SOCKS5 身份验证在**完全不同的协议层**上运行，与 HTTP 代理身份验证不同：
-
-**HTTP 代理身份验证流程（在 Chrome 中有效）：**
-
-```
-Chrome → HTTP CONNECT → 代理返回 407 → Chrome 提供凭据 → 代理连接
-```
-
-Chrome 通过 CDP **Fetch 域**处理此流程 — Pydoll 拦截 `Fetch.authRequired` 事件并自动使用存储的凭据进行响应。
-
-**SOCKS5 身份验证流程（Chrome 不支持）：**
-
-```
-Chrome → SOCKS5 Hello [methods: 0x00] → 代理选择 0x00 或拒绝 → 无法认证
-```
-
-SOCKS5 握手是会话层的**二进制协议**协商。Chrome 的网络堆栈根本没有实现用户名/密码子协商（RFC 1929）。没有 HTTP 407 质询，没有 `Fetch.authRequired` 事件，Pydoll（或任何基于 CDP 的工具）也无法注入凭据。
-
-### 本地转发器解决方案
-
-行业标准的解决方法是**本地代理转发器** — 一个轻量级的本地 SOCKS5 服务器，它：
-
-1. **接受来自 Chrome 的连接**，无需身份验证（方法 `0x00`）
-2. **连接到远程 SOCKS5 代理**，进行完整身份验证（方法 `0x02`，RFC 1929）
-3. 在 Chrome 和远程代理之间**双向中继数据**
-
-```
-┌────────────┐      无认证      ┌──────────────┐    用户/密码   ┌──────────────┐
-│   Chrome   │ ──────────────►  │  本地 SOCKS5  │ ────────────► │ 远程 SOCKS5  │
-│            │  socks5://       │   转发器      │  socks5://    │    代理      │
-│            │  127.0.0.1:1081  │  (localhost)  │  proxy:1080   │  (互联网)    │
-└────────────┘                  └──────────────┘                └──────┬───────┘
-                                                                       │
-                                                                       ▼
-                                                                ┌──────────────┐
-                                                                │   目标服务器  │
-                                                                └──────────────┘
-```
-
-**详细握手序列：**
+标准解决方案是本地代理转发器：一个运行在 localhost 上的轻量级 SOCKS5 服务器，接受来自 Chrome 的未认证连接，并将其转发到带有完整身份验证的远程代理。
 
 ```mermaid
 sequenceDiagram
     participant Chrome
-    participant Forwarder as 本地转发器
-    participant Remote as 远程 SOCKS5 代理
-    participant Server as 目标服务器
+    participant Forwarder as Local Forwarder<br/>(127.0.0.1:1081)
+    participant Remote as Remote SOCKS5 Proxy<br/>(proxy:1080)
+    participant Server as Destination Server
 
-    Note over Chrome,Forwarder: 阶段 1：Chrome → 转发器（无认证）
-    Chrome->>Forwarder: SOCKS5 Hello [VER=5, METHODS=[0x00]]
-    Forwarder->>Chrome: 方法选定 [VER=5, METHOD=0x00]
+    Note over Chrome,Forwarder: No authentication
+    Chrome->>Forwarder: SOCKS5 Hello [methods: 0x00]
+    Forwarder->>Chrome: Method selected [0x00]
     Chrome->>Forwarder: CONNECT example.com:443
 
-    Note over Forwarder,Remote: 阶段 2：转发器 → 远程（带认证）
-    Forwarder->>Remote: SOCKS5 Hello [VER=5, METHODS=[0x02]]
-    Remote->>Forwarder: 方法选定 [VER=5, METHOD=0x02]
-    Forwarder->>Remote: 认证 [VER=1, USER=..., PASS=...]
-    Remote->>Forwarder: 认证成功 [VER=1, STATUS=0x00]
+    Note over Forwarder,Remote: With authentication
+    Forwarder->>Remote: SOCKS5 Hello [methods: 0x02]
+    Remote->>Forwarder: Method selected [0x02]
+    Forwarder->>Remote: Auth [username, password]
+    Remote->>Forwarder: Auth OK
     Forwarder->>Remote: CONNECT example.com:443
-    Remote->>Server: TCP 连接
-    Remote->>Forwarder: 连接回复 [成功]
+    Remote->>Server: TCP connection
+    Remote->>Forwarder: Connect OK
 
-    Note over Chrome,Forwarder: 阶段 3：中继确认
-    Forwarder->>Chrome: 连接回复 [成功]
+    Forwarder->>Chrome: Connect OK
 
-    Note over Chrome,Server: 阶段 4：双向数据中继
-    Chrome->>Forwarder: 应用数据 (TLS)
-    Forwarder->>Remote: 转发数据
-    Remote->>Server: 转发数据
-    Server->>Remote: 响应
-    Remote->>Forwarder: 转发响应
-    Forwarder->>Chrome: 转发响应
+    Note over Chrome,Server: Bidirectional data relay
+    Chrome->>Forwarder: TLS + application data
+    Forwarder->>Remote: Forward
+    Remote->>Server: Forward
+    Server->>Remote: Response
+    Remote->>Forwarder: Forward
+    Forwarder->>Chrome: Forward
 ```
 
-### 在 Pydoll 中使用转发器
-
-Pydoll 在 `pydoll.utils` 模块中提供了一个即用的转发器：
+Pydoll 在 `pydoll.utils` 模块中提供了内置的 `SOCKS5Forwarder`。这是一个纯 Python、零依赖的异步实现，处理与远程代理的完整 SOCKS5 握手，包括用户名/密码身份验证（RFC 1929）、IPv4、IPv6 和域名地址类型。
 
 ```python
 import asyncio
@@ -543,7 +286,7 @@ async def main():
         remote_port=1080,
         username='myuser',
         password='mypass',
-        local_port=1081,  # 使用 0 自动分配端口
+        local_port=1081,  # Use 0 for auto-assigned port
     )
     async with forwarder:
         options = ChromiumOptions()
@@ -556,7 +299,7 @@ async def main():
 asyncio.run(main())
 ```
 
-转发器也可以作为独立的 CLI 工具使用：
+转发器也可以作为独立的 CLI 工具运行，用于测试或与其他应用配合使用：
 
 ```bash
 python -m pydoll.utils.socks5_proxy_forwarder \
@@ -567,264 +310,67 @@ python -m pydoll.utils.socks5_proxy_forwarder \
     --local-port 1081
 ```
 
-### 安全注意事项
+转发器默认绑定到 `127.0.0.1`，使其只能从本机访问。切勿在生产环境中绑定到 `0.0.0.0`，因为这会向网络暴露一个未认证的 SOCKS5 代理。凭据永远不会以明文记录到日志中。由于所有通信都通过本地回环接口进行，转发器增加的延迟不到一毫秒。
 
-!!! warning "安全说明"
-    - 本地转发器默认绑定到 `127.0.0.1` — 仅可从您的机器访问
-    - **切勿**在生产环境中绑定到 `0.0.0.0`，因为这会向网络暴露一个未经身份验证的 SOCKS5 代理
-    - 在与远程代理的 SOCKS5 握手期间，凭据以明文传输（这是 SOCKS5 RFC 1929 固有的）— 如有需要，请使用 SSH 隧道或 VPN 进行额外加密
-    - 转发器添加的延迟极小（本地回环是亚毫秒级的）
+!!! tip "受限环境"
+    某些环境（Docker 容器、无服务器平台、加固的虚拟机）可能会限制绑定到本地端口。使用 `local_port=0` 让操作系统分配一个可用端口。如果本地绑定完全被阻止，请考虑使用 HTTP CONNECT 代理，Chrome 通过 Pydoll 的 ProxyManager 原生支持其身份验证。
 
-### 环境限制
+## 实际配置
 
-!!! info "受限环境"
-    某些环境（Docker 容器、无服务器平台、加固的虚拟机）可能会限制绑定到本地端口。在这些情况下：
+**基本 SOCKS5（无身份验证）：**
 
-    - 确保您的环境允许在任意端口上绑定到 `127.0.0.1`
-    - 使用 `local_port=0` 让操作系统分配一个可用端口
-    - 如果本地绑定完全被阻止，请考虑使用 HTTP CONNECT 代理，Chrome 原生支持其身份验证
-
-## 总结和关键要点
-
-SOCKS5 是注重隐私的代理的 **黄金标准**，与应用层替代方案相比，它提供了协议灵活性、更低的信任要求和卓越的安全性。了解 SOCKS 架构对于构建健壮、无法检测的自动化系统至关重要。
-
-### 涵盖的核心概念
-
-**1. 会话层操作：**
-
-- SOCKS 在 **第 5 层 (会话层)** 运行，低于 HTTP 但高于 TCP/UDP
-- **协议无关**：适用于任何应用协议 (HTTP, FTP, SSH, WebSocket, 自定义)
-- **盲目转发**：只能看到目标 IP 和端口，看不到应用数据
-
-**2. SOCKS5 协议特性：**
-
-- **身份验证**：多种方法 (无认证, 用户名/密码, GSSAPI)
-- **IP 版本支持**：同时支持 IPv4 和 IPv6
-- **TCP 和 UDP**：完全支持无连接协议
-- **远程 DNS 解析**：防止 DNS 泄露给客户端 ISP
-- **二进制协议**：高效、低开销的数据包结构
-
-**3. 安全模型：**
-
-- **无法检查应用数据**：在 TLS 加密之下运行
-- **抗 MITM**：无法终止 TLS 连接 (与 HTTP 代理不同)
-- **减少信任表面**：只信任代理转发数据包，不信任其处理敏感数据
-- **DNS 隐私**：代理解析域，向 ISP 隐藏查询
-
-**4. UDP 支持：**
-
-- SOCKS5 的独特功能，支持 WebRTC, DNS-over-UDP, VoIP, 游戏
-- 需要持久的 TCP 控制连接 + UDP 中继
-- 许多代理不支持 UDP (需要额外基础设施)
-
-**5. SOCKS4 vs SOCKS5：**
-
-- SOCKS4：遗留，仅 TCP，无身份验证，仅 IPv4
-- SOCKS5：现代标准 (RFC 1928)，支持 UDP，灵活的身份验证，IPv4/IPv6
-
-### SOCKS5 vs HTTP 代理：决策矩阵
-
-| 需求 | SOCKS5 | HTTP 代理 |
-|---|---|---|
-| **隐私** | **优秀** (盲目转发) | **差** (可见所有 HTTP 流量) |
-| **协议灵活性** | **任何 TCP/UDP** | **仅限 HTTP/HTTPS** |
-| **DNS 隐私** | **远程解析** | **客户端泄露** |
-| **UDP 支持** | **是** | **否** |
-| **TLS 检查** | **不可能 (安全)** | **可能 (MITM 风险)** |
-| **隐蔽性** | **高 (透明)** | **低 (标头注入)** |
-| **设置复杂性** | **中等** | **简单** |
-| **内容过滤** | **否** (盲目) | **是** (应用感知) |
-| **缓存** | **否** | **是** |
-| **企业环境** | **罕见** | **常见** |
-
-**一般建议：**
-- **隐私/自动化**：SOCKS5 (隐蔽, 协议灵活性, 安全)
-- **企业/过滤**：HTTP 代理 (内容控制, 缓存, 策略执行)
-- **最高安全性**：SOCKS5 over SSH 隧道或 VPN
-
-### 何时使用 SOCKS5
-
-**理想用例：**
-- 需要隐蔽性和协议灵活性的 **浏览器自动化**
-- **隐私关键型应用** (记者工具, VPN, Tor)
-- **多协议应用** (FTP, SSH, WebSocket, 自定义协议)
-- **WebRTC 应用** (视频会议, 游戏, 实时通信)
-- **DNS 隐私** (向 ISP 隐藏浏览模式)
-- 在限制性网络中 **绕过深度包检测 (DPI)**
-
-**不佳用例：**
-- **企业内容过滤** (使用带 URL 策略的 HTTP 代理)
-- **用于带宽优化的 HTTP 缓存** (使用 HTTP 代理或 CDN)
-- **隐蔽性不重要的简单纯 HTTP 抓取**
-
-### 实用 Pydoll 配置
-
-**基本 SOCKS5 代理：**
 ```python
-from pydoll.browser import Chrome
+from pydoll.browser.chromium import Chrome
 from pydoll.browser.options import ChromiumOptions
 
 options = ChromiumOptions()
 options.add_argument('--proxy-server=socks5://proxy.example.com:1080')
-# 对于需要认证的代理，请在 URL 中包含凭证：
-# options.add_argument('--proxy-server=socks5://user:pass@proxy.example.com:1080')
 
 async with Chrome(options=options) as browser:
     tab = await browser.start()
     await tab.go_to('https://example.com')
 ```
 
-**带身份验证的 SOCKS5 (通过 Pydoll)：**
-Pydoll 通过 Chrome 的 Fetch 域自动处理 SOCKS5 用户名/密码身份验证。无需手动实现。
+**带身份验证的 SOCKS5（通过 SOCKS5Forwarder）：**
 
-**测试 SOCKS5 代理：**
+请参阅上面的 [SOCKS5Forwarder 章节](#pydolls-socks5forwarder)。
+
+**防止泄露：**
+
+要建立完整的 SOCKS5 配置，您还应该防止 WebRTC 和 DNS 预取泄露：
+
 ```python
-import socket
-import socks
-
-# 手动 SOCKS5 测试 (不使用 Pydoll)
-socks.set_default_proxy(socks.SOCKS5, "proxy.example.com", 1080, 
-                        username="user", password="pass")
-socket.socket = socks.socksocket
-
-# 现在所有套接字连接都使用 SOCKS5
+options = ChromiumOptions()
+options.add_argument('--proxy-server=socks5://proxy.example.com:1080')
+options.webrtc_leak_protection = True  # Prevents WebRTC IP leaks
+options.add_argument('--disable-quic')  # Forces HTTP/2 over TCP through proxy
 ```
 
-!!! tip "SOCKS5 最佳实践"
-    - **使用 SOCKS5, 而不是 SOCKS4** (更好的安全性, 支持 UDP)
-    - **启用远程 DNS 解析** (防止 DNS 泄露)
-    - **使用身份验证** (用户名/密码或 GSSAPI)
-    - **测试 WebRTC 泄露** (即使使用 SOCKS5, WebRTC 也可能泄露真实 IP)
-    - **与 TLS 结合使用** (SOCKS 提供代理, 而不是加密)
-    
-    - **不要假设 SOCKS5 = 加密** (在其上层使用 TLS)
-    - **不要使用 SOCKS4** (遗留, 有安全限制)
-    - **不要依赖 UDP 支持** (许多代理不支持)
+**测试您的配置：**
 
-## 进一步阅读和参考
+始终通过泄露测试验证您的代理配置。访问 [browserleaks.com/ip](https://browserleaks.com/ip) 确认您的 IP，访问 [browserleaks.com/webrtc](https://browserleaks.com/webrtc) 检查 WebRTC 泄露，访问 [dnsleaktest.com](https://dnsleaktest.com/) 验证 DNS 是否泄露。
 
-### 相关文档
+## 总结
 
-**本模块内：**
-- **[HTTP/HTTPS 代理](./http-proxies.md)** - 应用层代理比较
-- **[网络基础](./network-fundamentals.md)** - TCP/IP, UDP, OSI 模型基础
-- **[代理检测](./proxy-detection.md)** - SOCKS5 代理如何仍能被检测到
-- **[构建代理](./build-proxy.md)** - 从头开始完整实现 SOCKS5 服务器
+SOCKS5 提供协议无关的代理，与 HTTP 代理相比具有更小的信任面。它不会解析、修改或向您的流量注入任何内容。在 Chrome 中，DNS 解析在代理侧进行。TLS 加密端到端保持不变。Chrome 中的主要限制是缺乏原生 SOCKS5 身份验证（通过 Pydoll 的 `SOCKS5Forwarder` 解决）以及不支持 UDP 代理（通过禁用 WebRTC 或使用适当的浏览器标志来缓解）。
 
-**实际用法：**
-- **[代理配置 (功能)](../../features/configuration/proxy.md)** - 在 Pydoll 中配置 SOCKS5
-- **[浏览器选项](../../features/configuration/browser-options.md)** - 用于代理优化的 Chrome 标志
-
-**深度探讨：**
-- **[网络指纹](../fingerprinting/network-fingerprinting.md)** - 通过 SOCKS5 泄露的 TCP/IP 特征
-- **[浏览器指纹](../fingerprinting/browser-fingerprinting.md)** - 尽管使用 SOCKS5 仍进行的应用层检测
-- **[规避技术](../fingerprinting/evasion-techniques.md)** - 如何最大限度地提高 SOCKS5 隐蔽性
-
-### 外部参考
-
-**RFC (官方规范)：**
-
-- **RFC 1928** - SOCKS 协议版本 5 (1996 年 3 月)
-  - https://datatracker.ietf.org/doc/html/rfc1928
-  - 官方 SOCKS5 规范
-- **RFC 1929** - SOCKS V5 的用户名/密码身份验证 (1996 年 3 月)
-  - https://datatracker.ietf.org/doc/html/rfc1929
-  - 标准身份验证机制
-- **RFC 1961** - SOCKS 版本 5 的 GSS-API 身份验证方法 (1996 年 6 月)
-  - https://datatracker.ietf.org/doc/html/rfc1961
-  - 企业身份验证 (Kerberos)
-- **RFC 3089** - 基于 SOCKS 的 IPv6/IPv4 网关机制 (2001 年 4 月)
-  - https://datatracker.ietf.org/doc/html/rfc3089
-  - IPv4/IPv6 互操作性
-
-**SOCKS4 (非正式规范)：**
-
-- **SOCKS4 协议**: http://ftp.icm.edu.pl/packages/socks/socks4/SOCKS4.protocol
-- **SOCKS4A 扩展**: http://ftp.icm.edu.pl/packages/socks/socks4/SOCKS4A.protocol
-  - 域名解析扩展
-
-**技术文章和指南：**
-
-- **理解 SOCKS5**: https://securitytrails.com/blog/socks5-proxy
-- **SOCKS5 vs HTTP 代理**: https://www.varonis.com/blog/socks-proxy-primer
-- **构建 SOCKS5 服务器**: GitHub 上的各种实现 (见 build-proxy.md)
-
-**SOCKS 实现：**
-
-- **Dante**: https://www.inet.no/dante/ (生产 SOCKS 服务器)
-- **ss5**: http://ss5.sourceforge.net/ (SOCKS4/SOCKS5 服务器)
-- **PySocks**: https://github.com/Anorov/PySocks (Python SOCKS 客户端)
-- **go-socks5**: https://github.com/armon/go-socks5 (Go SOCKS5 库)
-
-**现代类 SOCKS 协议：**
-
-- **Shadowsocks**: https://shadowsocks.org/ (类似 SOCKS5 的加密协议)
-- **WireGuard**: https://www.wireguard.com/ (具有类 SOCKS 简洁性的 VPN)
-- **V2Ray/VMess**: https://www.v2ray.com/ (灵活的代理框架)
-- **Trojan**: https://trojan-gfw.github.io/trojan/ (模仿 HTTPS 的代理)
-
-**测试工具：**
-
-- **带 SOCKS5 的 curl**:
-  ```bash
-  curl --socks5 proxy:1080 --socks5-basic --user user:pass https://example.com
-  ```
-- **proxychains**: 强制任何应用通过 SOCKS5
-  ```bash
-  proxychains4 firefox
-  ```
-- **Wireshark**: 数据包分析以验证 SOCKS5 握手
-
-**安全和隐私：**
-
-- **DNS 泄露测试**: https://dnsleaktest.com/
-- **WebRTC 泄露测试**: https://browserleaks.com/webrtc
-- **IP 检测**: https://ipleak.net/
-
-### 高级主题 (超出本文档范围)
-
-**SOCKS 扩展：**
-
-- **Tor SOCKS 扩展**: 用于电路隔离的 Tor 特定 SOCKS5 扩展
-- **SOCKS6 提案**: 下一代 SOCKS 协议 (草案阶段)
-- **SOCKS over TLS**: 加密的 SOCKS 通道
-
-**性能优化：**
-
-- **连接池**：复用 SOCKS5 连接
-- **多路复用**：单个 SOCKS 连接上的多个流
-- **UDP 性能**：优化 SOCKS5 UDP 中继
-
-**企业部署：**
-
-- **LDAP 集成**：企业用户身份验证
-- **负载均衡**：在 SOCKS5 代理之间分配流量
-- **高可用性**：故障转移和冗余策略
-
-**协议比较：**
-
-- **SOCKS vs VPN**：何时使用
-- **SOCKS vs SSH 隧道**：隧道 vs 代理
-- **SOCKS vs Tor**：匿名性 vs 性能权衡
-
----
-
-## 最后的思考
-
-SOCKS5 是注重隐私的浏览器自动化的 **首选代理协议**，与 HTTP 代理相比，它提供了根本的架构优势：
-
-- **协议灵活性** 支持代理任何 TCP/UDP 应用
-- **会话层操作** 防止应用数据被检查
-- **远程 DNS 解析** 保护浏览模式
-- **抗 MITM** 保持端到端 TLS 加密
-
-虽然 HTTP 代理因内容过滤功能而在企业环境中占主导地位，但对于需要隐蔽性、安全性和协议灵活性的自动化而言，**SOCKS5 是更优越的选择**。
-
-**关键要点**：使用 SOCKS5 实现隐私和自动化，使用 HTTP 代理进行企业过滤。
+SOCKS5 不会改变浏览器的 TLS fingerprint、HTTP/2 设置或任何应用层特征。要实现完整的规避，请将 SOCKS5 与浏览器 fingerprint 管理和行为模拟相结合。
 
 **后续步骤：**
-1. 阅读 **[代理检测](./proxy-detection.md)** 了解即使是 SOCKS5 也如何被检测到
-2. 学习 **[构建代理](./build-proxy.md)** 以实现您自己的 SOCKS5 服务器
-3. 使用 **[代理配置](../../features/configuration/proxy.md)** 在 Pydoll 中配置 SOCKS5
 
----
+- [代理检测](./proxy-detection.md)：即使 SOCKS5 代理也可能被检测到
+- [构建代理](./build-proxy.md)：实现您自己的 SOCKS5 服务器
+- [代理配置](../../features/configuration/proxy.md)：Pydoll 代理的实际设置
+- [规避技术](../fingerprinting/evasion-techniques.md)：多层规避策略
+
+## 参考资料
+
+- RFC 1928: SOCKS Protocol Version 5 (1996) - https://datatracker.ietf.org/doc/html/rfc1928
+- RFC 1929: Username/Password Authentication for SOCKS V5 (1996) - https://datatracker.ietf.org/doc/html/rfc1929
+- RFC 1961: GSS-API Authentication Method for SOCKS V5 (1996) - https://datatracker.ietf.org/doc/html/rfc1961
+- RFC 3089: SOCKS-based IPv6/IPv4 Gateway Mechanism (2001) - https://datatracker.ietf.org/doc/html/rfc3089
+- Chromium Proxy Documentation - https://chromium.googlesource.com/chromium/src/+/689912289c/net/docs/proxy.md
+- Chromium Issue #40323993: SOCKS5 Authentication - https://issues.chromium.org/issues/40323993
+- BrowserLeaks: WebRTC Leak Test - https://browserleaks.com/webrtc
+- DNS Leak Test - https://dnsleaktest.com/
+- IPLeak: Comprehensive Leak Testing - https://ipleak.net

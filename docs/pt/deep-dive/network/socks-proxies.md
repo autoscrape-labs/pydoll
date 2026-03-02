@@ -1,534 +1,278 @@
 # Arquitetura do Protocolo SOCKS
 
-Este documento fornece uma exploração abrangente do SOCKS (SOCKet Secure), amplamente considerado o **padrão ouro** para automação de rede consciente da privacidade e proxy seguro. Embora os proxies HTTP dominem os ambientes corporativos, os proxies SOCKS são favorecidos por profissionais de segurança, defensores da privacidade e engenheiros de automação avançados por sua **natureza agnóstica a protocolo**, **requisitos de confiança reduzidos** e **modelo de segurança superior**.
+SOCKS (SOCKet Secure) é um protocolo de proxy que opera entre as camadas de transporte e aplicação da pilha de rede (comumente descrito como Camada 5 no modelo OSI). Diferente dos proxies HTTP, que analisam e compreendem o tráfego HTTP, os proxies SOCKS encaminham conexões TCP e UDP brutas sem inspecionar seu conteúdo. Esse design agnóstico a protocolo torna o SOCKS a escolha preferida para automação focada em privacidade: o proxy nunca precisa analisar suas requisições, injetar cabeçalhos ou terminar conexões TLS.
 
-Operando na **Camada 5 (Camada de Sessão)** do modelo OSI (abaixo do HTTP, mas acima do transporte), os proxies SOCKS oferecem capacidades que os proxies HTTP fundamentalmente não podem: tunelamento UDP, flexibilidade de protocolo, preservação da criptografia de ponta a ponta e verdadeira privacidade de DNS. Entender a arquitetura SOCKS é essencial para construir sistemas de automação de navegador **indetectáveis e de alto desempenho**.
+Este documento cobre como o SOCKS funciona no nível do protocolo, as diferenças entre SOCKS4 e SOCKS5, o tratamento de autenticação no Chrome, o comportamento de resolução de DNS e a configuração prática no Pydoll.
 
 !!! info "Navegação do Módulo"
-    - **[← Proxies HTTP/HTTPS](./http-proxies.md)** - Limitações do proxy de camada de aplicação
-    - **[← Fundamentos de Rede](./network-fundamentals.md)** - Fundamentos de TCP/IP, UDP, modelo OSI
-    - **[← Visão Geral de Rede e Segurança](./index.md)** - Introdução do módulo e trilha de aprendizado
-    - **[→ Detecção de Proxy](./proxy-detection.md)** - Níveis de anonimato e evasão de detecção
-    - **[→ Construindo Proxies](./build-proxy.md)** - Implementação completa do SOCKS5 do zero
-    
-    Para configuração prática do Pydoll, veja **[Configuração de Proxy](../../features/configuration/proxy.md)**.
+    - [Proxies HTTP/HTTPS](./http-proxies.md): Proxy na camada de aplicação
+    - [Fundamentos de Rede](./network-fundamentals.md): TCP/IP, UDP, modelo OSI
+    - [Visão Geral de Rede e Segurança](./index.md): Introdução do módulo
+    - [Detecção de Proxy](./proxy-detection.md): Níveis de anonimato e evasão de detecção
+    - [Construindo Proxies](./build-proxy.md): Implementação do SOCKS5 do zero
 
-!!! tip "Por que o SOCKS5 é Superior para Automação"
-    O SOCKS5 opera **abaixo da camada de aplicação** (Camada 5 vs Camada 7 do HTTP). Esse posicionamento significa:
-    
-    - **Não pode ler tráfego HTTP**: Vê apenas IPs e portas de destino, não URLs/cabeçalhos
-    - **Agnóstico a protocolo**: Proxy para HTTP, FTP, SSH, WebSocket, protocolos personalizados
-    - **Preserva TLS ponta-a-ponta**: Sem possibilidade de MITM (diferente dos proxies HTTP)
-    - **Resolução de DNS remota**: Previne vazamentos de DNS para seu ISP
-    - **Suporte a UDP**: Crítico para WebRTC, DNS, VoIP, protocolos de jogos
+    Para configuração prática, veja [Configuração de Proxy](../../features/configuration/proxy.md).
 
-    Isso reduz drasticamente a **superfície de confiança** em comparação com proxies HTTP. Você só confia no proxy para encaminhar pacotes corretamente, não para lidar com dados sensíveis da aplicação.
+## Como o SOCKS Difere dos Proxies HTTP
 
-## Introdução: O Proxy de Camada de Sessão
+A diferença fundamental está no que cada proxy pode ver e fazer. Um proxy HTTP opera na camada de aplicação e compreende HTTP: ele pode ler URLs, cabeçalhos, cookies e corpos de requisição (para tráfego não criptografado), modificá-los em trânsito, armazenar respostas em cache e injetar seus próprios cabeçalhos como `Via` e `X-Forwarded-For`. Isso é poderoso para filtragem de conteúdo, mas significa que você precisa confiar no operador do proxy com os dados da sua aplicação.
 
-SOCKS (SOCKet Secure) representa uma abordagem fundamentalmente diferente de proxying em comparação com proxies HTTP. Enquanto proxies HTTP são **cientes da aplicação** (entendendo semântica HTTP, cabeçalhos, métodos), proxies SOCKS são **cientes do transporte** (entendendo apenas conexões TCP/UDP, IPs e portas).
+Um proxy SOCKS opera abaixo da camada de aplicação. Ele vê apenas o endereço de destino, a porta e o volume de dados sendo transferido. Ele não analisa, modifica ou sequer compreende qual protocolo está fluindo através dele. HTTP, HTTPS, FTP, SSH, WebSocket ou qualquer protocolo customizado parecem todos iguais para um proxy SOCKS: apenas bytes sendo retransmitidos entre dois endpoints.
 
-**Contexto Histórico:**
+Isso tem uma implicação prática direta. Quando você envia uma requisição HTTPS através de um proxy SOCKS5, o proxy vê `example.com:443` e o fluxo TLS criptografado. Ele não consegue ler a URL, os cabeçalhos, os cookies ou o conteúdo da resposta. Ele não adiciona cabeçalhos identificadores. Ele não precisa terminar o TLS. O túnel criptografado funciona de ponta a ponta entre seu navegador e o servidor de destino.
 
-O SOCKS foi desenvolvido no início dos anos 1990 por **David Koblas e Michelle Koblas na MIPS Computer Systems** para permitir que hosts dentro de um firewall obtivessem **acesso total** à Internet sem exigir conectividade IP direta. A motivação original era simples: firewalls corporativos bloqueavam conexões de saída, mas os funcionários precisavam de acesso a recursos externos. O SOCKS forneceu uma solução estabelecendo um **gateway único controlado** através do firewall.
+No entanto, é importante entender o que o SOCKS não fornece. SOCKS é um protocolo de proxy, não um protocolo de criptografia. O nome "SOCKet Secure" refere-se à travessia segura de firewalls, não à segurança criptográfica. Se você enviar tráfego HTTP não criptografado através de um proxy SOCKS5, o operador do proxy pode ler os bytes passando através dele, mesmo que o proxy não tenha sido projetado para inspecioná-los. Para criptografia real, você precisa de TLS/HTTPS sobre SOCKS, ou de um túnel criptografado (SSH, VPN) envolvendo a conexão SOCKS.
 
-**Linha do Tempo da Evolução:**
+!!! note "Modelo de Confiança"
+    Com proxies HTTP, você confia no operador do proxy para não registrar seu histórico de navegação, roubar tokens, modificar respostas ou realizar ataques MITM. Com SOCKS5, você confia no proxy apenas para encaminhar pacotes corretamente e não registrar metadados de conexão. A superfície de ataque é menor, mas não é zero.
 
-- **1992**: SOCKS4 introduzido (especificação informal, sem RFC)
-- **1996**: SOCKS5 padronizado como **RFC 1928** pelo IETF
-- **1996**: Autenticação por Usuário/Senha padronizada como **RFC 1929**
-- **2003**: Extensão de autenticação GSS-API (**RFC 1961**)
-- **2020s**: Extensões modernas (extensões Tor SOCKS, propostas SOCKS6)
+## SOCKS4 vs SOCKS5
 
-**Por que "SOCKet Secure"?**
-
-Apesar do nome, o SOCKS em si **não fornece criptografia**. "Seguro" refere-se à sua capacidade de atravessar firewalls com segurança (de uma perspectiva de controle de acesso), não à segurança criptográfica. Para criptografia, você deve sobrepor TLS/SSL ao SOCKS, ou usá-lo dentro de um túnel criptografado (SSH, VPN).
-
-!!! warning "SOCKS NÃO Criptografa"
-    Um equívoco comum: **SOCKS ≠ Criptografia**. SOCKS é um **protocolo de proxy**, não um protocolo de criptografia. Ele encaminha pacotes transparentemente sem modificação, incluindo tráfego HTTP não criptografado.
-    
-    Para comunicação segura, combine SOCKS com:
-
-    - **TLS/HTTPS** para tráfego web
-    - **SSH** para criptografia de túnel
-    - **VPN** para criptografia total do tráfego
-    
-    A vantagem de segurança do SOCKS é **arquitetônica** (menos confiança necessária), não criptográfica.
-
-## Por que a Camada 5 Importa: Sessão vs Aplicação
-
-A chave para entender o SOCKS é entender **onde ele opera** na pilha de rede:
-
-```
-┌─────────────────────────────────────────────┐
-│  Camada 7: Aplicação (HTTP, FTP, SMTP)      │ ← Proxies HTTP operam aqui
-│  • Visibilidade total do protocolo          │   (pode ler URLs, cabeçalhos)
-│  • Pode modificar requisições/respostas     │
-│  • Específico do protocolo (apenas HTTP)    │
-├─────────────────────────────────────────────┤
-│  Camada 6: Apresentação (TLS, criptografia) │
-├─────────────────────────────────────────────┤
-│  Camada 5: Sessão (SOCKS)                   │ ← Proxies SOCKS operam aqui
-│  • Vê apenas IP:porta de destino           │   (agnóstico a protocolo)
-│  • Não pode inspecionar dados da aplicação  │
-│  • Funciona com qualquer protocolo Camada 7 │
-├─────────────────────────────────────────────┤
-│  Camada 4: Transporte (TCP, UDP)            │
-│  • Gerenciamento de conexão                 │
-│  • Números de porta, controle de fluxo      │
-├─────────────────────────────────────────────┤
-│  Camada 3: Rede (IP)                        │
-│  • Roteamento, endereços IP                 │
-├─────────────────────────────────────────────┤
-│  Camada 2: Enlace de Dados (Ethernet, WiFi) │
-├─────────────────────────────────────────────┤
-│  Camada 1: Física (cabos, sinais)           │
-└─────────────────────────────────────────────┘
-```
-
-**Implicação Prática:**
-
-Quando você usa um proxy HTTP:
-```http
-GET http://example.com/secret-api?token=abc123 HTTP/1.1
-Cookie: session=sensitive_data
-Authorization: Bearer secret_token
-```
-
-**Proxy HTTP vê tudo** - URL, parâmetros de consulta, cookies, cabeçalhos de autorização.
-
-Quando você usa um proxy SOCKS5:
-```python
-# Handshake SOCKS5 (simplificado)
-CONNECT example.com:443  # Vê apenas: host de destino e porta
-[Dados TLS Criptografados]     # Não pode ver URL, cabeçalhos ou conteúdo
-```
-
-**SOCKS5 vê apenas**: `example.com`, porta `443`, e volume de dados. A requisição HTTP dentro do túnel TLS é **completamente opaca** para o proxy.
-
-!!! success "A Diferença de Segurança"
-    Com proxies HTTP, você deve **confiar no operador do proxy** para não:
-
-    - Registrar seu histórico de navegação (URLs completas)
-    - Roubar tokens de autenticação/cookies
-    - Modificar respostas (injetar malware, anúncios)
-    - Realizar ataques MITM em HTTPS (via certificado CA)
-    
-    Com SOCKS5, você confia no proxy apenas para:
-
-    - Encaminhar pacotes corretamente
-    - Não registrar metadados de conexão (IP, porta, tempo)
-    
-    A **superfície de ataque** é drasticamente menor.
-
-### SOCKS4 vs SOCKS5
+O SOCKS possui duas versões de uso comum. O SOCKS4 foi desenvolvido pela NEC no início dos anos 1990 como um padrão informal sem RFC. O SOCKS5 foi padronizado como RFC 1928 em 1996 para resolver as limitações do SOCKS4.
 
 | Característica | SOCKS4 | SOCKS5 |
-|---|---|---|
-| **RFC** | Sem RFC oficial (padrão de facto dos anos 1990) | RFC 1928 (padrão oficial, 1996) |
-| **Autenticação** | Nenhuma (apenas ID de usuário) | Múltiplos métodos (sem auth, usuário/senha, GSSAPI) |
-| **Versão IP** | Apenas IPv4 | IPv4 e IPv6 |
-| **Suporte UDP** | Não | Sim |
-| **Resolução DNS** | Lado do cliente | Lado do servidor (mais anônimo) |
-| **Suporte a Protocolo** | Apenas TCP | TCP e UDP |
+|---------|--------|--------|
+| Padrão | Sem RFC oficial (de facto, 1992) | RFC 1928 (1996) |
+| Autenticação | Apenas identificação (campo USERID, sem senha) | Múltiplos métodos (nenhum, usuário/senha, GSSAPI) |
+| Versão IP | Apenas IPv4 | IPv4 e IPv6 |
+| Suporte UDP | Não | Sim (comando UDP ASSOCIATE) |
+| Resolução DNS | Lado do cliente (extensão SOCKS4A adiciona lado do servidor) | Lado do servidor ao usar nomes de domínio (ATYP=0x03) |
+| Suporte a protocolo | Apenas TCP | TCP e UDP |
 
-!!! info "História do SOCKS4"
-    O SOCKS4 foi desenvolvido pela NEC no início dos anos 1990 como um padrão de facto sem documentação RFC formal. O SOCKS5 (RFC 1928) foi posteriormente padronizado pelo IETF em 1996 para suprir as limitações do SOCKS4.
+O SOCKS5 é superior em todos os aspectos práticos. Use SOCKS4 apenas se o proxy não suportar SOCKS5.
 
-!!! tip "Sempre Use SOCKS5"
-    O SOCKS5 é superior em todos os sentidos. O SOCKS4 é legado e só deve ser usado se o proxy não suportar SOCKS5.
+## O Handshake SOCKS5
 
-### Protocolo de Handshake SOCKS5
-
-O processo de conexão SOCKS5 segue a RFC 1928:
+O processo de conexão SOCKS5 segue a RFC 1928 e consiste em três fases: negociação de método, autenticação opcional e a requisição de conexão.
 
 ```mermaid
 sequenceDiagram
     participant Client
-    participant SOCKS5 as Proxy SOCKS5
-    participant Server as Servidor de Destino
-    
-    Note over Client,SOCKS5: Fase 1: Negociação de Método
-    Client->>SOCKS5: 1. Olá<br/>[VER=5, NMETHODS, METHODS]
-    SOCKS5->>Client: 2. Método Selecionado<br/>[VER=5, METHOD]
-    
-    Note over Client,SOCKS5: Fase 2: Autenticação (se necessário)
-    Client->>SOCKS5: 3. Req. de Autenticação<br/>[VER=1, ULEN, UNAME, PLEN, PASSWD]
-    SOCKS5->>Client: 4. Resp. de Autenticação<br/>[VER=1, STATUS]
-    
-    Note over Client,SOCKS5: Fase 3: Requisição de Conexão
-    Client->>SOCKS5: 5. Req. de Conexão<br/>[VER=5, CMD, DST.ADDR, DST.PORT]
-    SOCKS5->>Server: 6. Estabelecer Conexão TCP
-    Server-->>SOCKS5: Conexão Estabelecida
-    SOCKS5->>Client: 7. Resposta de Conexão<br/>[VER=5, REP, BND.ADDR, BND.PORT]
-    
-    Note over Client,Server: Transferência de dados (via proxy)
-    Client->>SOCKS5: Dados da Aplicação
-    SOCKS5->>Server: Encaminhar Dados
-    Server->>SOCKS5: Dados de Resposta
-    SOCKS5->>Client: Encaminhar Resposta
+    participant SOCKS5 as SOCKS5 Proxy
+    participant Server as Target Server
+
+    Note over Client,SOCKS5: Phase 1: Method Negotiation
+    Client->>SOCKS5: Hello [VER=5, NMETHODS, METHODS]
+    SOCKS5->>Client: Method Selected [VER=5, METHOD]
+
+    Note over Client,SOCKS5: Phase 2: Authentication (if required)
+    Client->>SOCKS5: Auth Request [VER=1, ULEN, UNAME, PLEN, PASSWD]
+    SOCKS5->>Client: Auth Response [VER=1, STATUS]
+
+    Note over Client,SOCKS5: Phase 3: Connection Request
+    Client->>SOCKS5: Connect [VER=5, CMD=CONNECT, DST.ADDR, DST.PORT]
+    SOCKS5->>Server: Establish TCP connection
+    Server-->>SOCKS5: Connection established
+    SOCKS5->>Client: Reply [VER=5, REP=SUCCESS, BND.ADDR, BND.PORT]
+
+    Note over Client,Server: Data relay (proxied)
+    Client->>SOCKS5: Application data
+    SOCKS5->>Server: Forward data
+    Server->>SOCKS5: Response data
+    SOCKS5->>Client: Forward response
 ```
 
-### Estruturas de Pacote SOCKS5
+### Fase 1: Negociação de Método
 
-#### 1. Olá do Cliente (Client Hello)
+O cliente abre uma conexão TCP com o proxy e envia uma saudação contendo a versão do protocolo (sempre `0x05` para SOCKS5) e uma lista de métodos de autenticação que ele suporta.
 
 ```python
-# Layout de bytes
+# Client Hello
 [
-    0x05,        # VER: Versão do protocolo (5)
-    0x02,        # NMETHODS: Número de métodos de autenticação
-    0x00, 0x02   # METHODS: Sem auth (0x00) e Usuário/Senha (0x02)
+    0x05,        # VER: Protocol version (5)
+    0x02,        # NMETHODS: Number of methods offered
+    0x00, 0x02   # METHODS: No auth (0x00) and Username/Password (0x02)
 ]
 ```
 
-#### 2. Seleção de Método do Servidor
+O proxy responde com o método que ele seleciona. Se o proxy exigir autenticação e o cliente tiver oferecido `0x02` (usuário/senha), o proxy o seleciona. Se nenhum método aceitável foi oferecido, o proxy responde com `0xFF` e fecha a conexão.
 
 ```python
+# Server response
 [
-    0x05,        # VER: Versão do protocolo (5)
-    0x02         # METHOD: Método selecionado (0x02 = Usuário/Senha)
+    0x05,   # VER: Protocol version (5)
+    0x02    # METHOD: Username/Password selected
 ]
 ```
 
-**Códigos de método:**
-- `0x00`: Nenhuma autenticação necessária
-- `0x01`: GSSAPI
-- `0x02`: Usuário/Senha
-- `0xFF`: Nenhum método aceitável
+Códigos de método definidos pela RFC 1928: `0x00` = sem autenticação, `0x01` = GSSAPI, `0x02` = usuário/senha (RFC 1929), `0x03-0x7F` = atribuídos pela IANA, `0x80-0xFE` = reservados para métodos privados, `0xFF` = nenhum método aceitável.
 
-#### 3. Autenticação (Usuário/Senha)
+### Fase 2: Autenticação
+
+Se o proxy selecionou o método `0x02`, o cliente envia as credenciais seguindo a RFC 1929. A subnegociação usa seu próprio número de versão (`0x01`, não `0x05`).
 
 ```python
-# Requisição de autenticação do cliente
+# Client authentication
 [
-    0x01,              # VER: Versão da subnegociação (1)
-    len(username),     # ULEN: Comprimento do nome de usuário
-    *username_bytes,   # UNAME: Nome de usuário
-    len(password),     # PLEN: Comprimento da senha
-    *password_bytes    # PASSWD: Senha
+    0x01,              # VER: Subnegotiation version (1)
+    len(username),     # ULEN: Username length (max 255)
+    *username_bytes,   # UNAME: Username
+    len(password),     # PLEN: Password length (max 255)
+    *password_bytes    # PASSWD: Password
 ]
 
-# Resposta de autenticação do servidor
+# Server response
 [
-    0x01,              # VER: Versão da subnegociação (1)
-    0x00               # STATUS: 0 = sucesso, não-zero = falha
-]
-```
-
-#### 4. Requisição de Conexão
-
-```python
-[
-    0x05,              # VER: Versão do protocolo (5)
-    0x01,              # CMD: Comando (1=CONNECT, 2=BIND, 3=UDP ASSOCIATE)
-    0x00,              # RSV: Reservado
-    0x03,              # ATYP: Tipo de endereço (1=IPv4, 3=Domínio, 4=IPv6)
-    len(domain),       # Comprimento do domínio
-    *domain_bytes,     # Nome do domínio
-    *port_bytes        # Porta (2 bytes, big-endian)
+    0x01,   # VER: Subnegotiation version (1)
+    0x00    # STATUS: 0 = success, non-zero = failure
 ]
 ```
 
-#### 5. Resposta de Conexão
+As credenciais são transmitidas em texto claro durante este handshake. Isso é inerente ao protocolo SOCKS5 (RFC 1929). Para ambientes sensíveis, envolva a conexão SOCKS em um túnel SSH ou VPN.
+
+### Fase 3: Requisição de Conexão
+
+Após a autenticação ser bem-sucedida (ou se nenhuma autenticação foi necessária), o cliente envia uma requisição de conexão especificando o comando, o endereço de destino e a porta.
 
 ```python
 [
-    0x05,              # VER: Versão do protocolo (5)
-    0x00,              # REP: Resposta (0=sucesso, veja códigos de erro abaixo)
-    0x00,              # RSV: Reservado
-    0x01,              # ATYP: Tipo de endereço
-    *bind_addr,        # BND.ADDR: Endereço vinculado
-    *bind_port         # BND.PORT: Porta vinculada (2 bytes)
+    0x05,          # VER: Protocol version (5)
+    0x01,          # CMD: 1=CONNECT, 2=BIND, 3=UDP ASSOCIATE
+    0x00,          # RSV: Reserved
+    0x03,          # ATYP: 1=IPv4 (4 bytes), 3=Domain (length+name), 4=IPv6 (16 bytes)
+    len(domain),   # Domain length (only for ATYP=0x03)
+    *domain_bytes, # Domain name
+    *port_bytes    # Port (2 bytes, big-endian)
 ]
 ```
 
-**Códigos de resposta:**
+O tipo de endereço (ATYP) determina o formato: `0x01` significa que 4 bytes de endereço IPv4 seguem, `0x04` significa 16 bytes de IPv6, e `0x03` significa um byte de comprimento seguido pelo nome do domínio. Quando o cliente envia um nome de domínio (ATYP=0x03), o proxy resolve o DNS do seu lado, o que previne vazamentos de DNS para a rede local do cliente.
 
-- `0x00`: Sucesso
-- `0x01`: Falha geral do servidor SOCKS
-- `0x02`: Conexão não permitida pelo conjunto de regras
-- `0x03`: Rede inacessível
-- `0x04`: Host inacessível
-- `0x05`: Conexão recusada
-- `0x06`: TTL expirou
-- `0x07`: Comando não suportado
-- `0x08`: Tipo de endereço não suportado
+O proxy conecta ao destino e responde com uma resposta:
 
-!!! info "Eficiência do SOCKS5"
-    SOCKS5 é um protocolo binário (não baseado em texto como HTTP). Isso o torna:
-    
-    - Mais eficiente (pacotes menores)
-    - Mais rápido de analisar
-    - Menos legível por humanos (requer dump hexadecimal para depurar)
+```python
+[
+    0x05,       # VER: Protocol version (5)
+    0x00,       # REP: 0x00=success, 0x01-0x08=various errors
+    0x00,       # RSV: Reserved
+    0x01,       # ATYP: Address type of bound address
+    *bind_addr, # BND.ADDR: Address the proxy bound to
+    *bind_port  # BND.PORT: Port the proxy bound to
+]
+```
 
-### Suporte UDP SOCKS5
+Códigos de resposta: `0x00` sucesso, `0x01` falha geral, `0x02` conexão não permitida, `0x03` rede inacessível, `0x04` host inacessível, `0x05` conexão recusada, `0x06` TTL expirado, `0x07` comando não suportado, `0x08` tipo de endereço não suportado.
 
-Uma das características únicas do SOCKS5 é o suporte a UDP através do comando `UDP ASSOCIATE`:
+Após uma resposta bem-sucedida, o proxy começa a retransmitir dados bidirecionalmente. Todo o handshake SOCKS5 é um protocolo binário, tornando-o mais eficiente que o HTTP baseado em texto, mas mais difícil de depurar sem dumps hexadecimais.
+
+## Suporte UDP
+
+O SOCKS5 suporta proxy UDP através do comando `UDP ASSOCIATE` (CMD=0x03). Isso funciona de forma diferente do proxy TCP: o cliente envia uma requisição UDP ASSOCIATE pela conexão de controle TCP, e o proxy responde com um endereço e porta de retransmissão. O cliente então envia datagramas UDP para essa retransmissão, e o proxy os encaminha para seus destinos.
 
 ```mermaid
 sequenceDiagram
     participant Client
     participant SOCKS5
-    participant UDP_Server as Servidor UDP
-    
-    Note over Client,SOCKS5: Estabelecer conexão de controle TCP
-    Client->>SOCKS5: TCP: CONNECT (autenticação)
-    Client->>SOCKS5: TCP: Requisição UDP ASSOCIATE
-    SOCKS5->>Client: TCP: Endereço de retransmissão e porta
-    
-    Note over Client,SOCKS5: Transferência de dados UDP
-    Client->>SOCKS5: UDP: Datagrama para retransmissão
-    SOCKS5->>UDP_Server: UDP: Encaminhar datagrama
-    UDP_Server->>SOCKS5: UDP: Datagrama de resposta
-    SOCKS5->>Client: UDP: Encaminhar resposta
-    
-    Note over Client,SOCKS5: Conexão de controle TCP permanece aberta
+    participant UDP_Server as UDP Server
+
+    Note over Client,SOCKS5: TCP control connection (handshake + auth)
+    Client->>SOCKS5: UDP ASSOCIATE request (CMD=0x03)
+    SOCKS5->>Client: Relay address and port
+
+    Note over Client,SOCKS5: UDP data transfer
+    Client->>SOCKS5: UDP datagram to relay
+    SOCKS5->>UDP_Server: Forward datagram
+    UDP_Server->>SOCKS5: Response datagram
+    SOCKS5->>Client: Forward response
+
+    Note over Client,SOCKS5: TCP control connection stays open
 ```
 
-**Formato do pacote UDP:**
+Cada datagrama UDP enviado através da retransmissão inclui um pequeno cabeçalho com o endereço e a porta de destino:
 
 ```python
 [
-    0x00, 0x00,        # RSV: Reservado
-    0x00,              # FRAG: Número do fragmento
-    0x01,              # ATYP: Tipo de endereço
-    *dst_addr,         # DST.ADDR: Endereço de destino
-    *dst_port,         # DST.PORT: Porta de destino
-    *data              # DATA: Dados do usuário
+    0x00, 0x00,    # RSV: Reserved
+    0x00,          # FRAG: Fragment number (0 = no fragmentation)
+    0x01,          # ATYP: Address type
+    *dst_addr,     # DST.ADDR: Destination address
+    *dst_port,     # DST.PORT: Destination port
+    *data          # DATA: Application data
 ]
 ```
 
-!!! warning "Limitações do UDP"
-    UDP ASSOCIATE requer:
-    
-    - Uma conexão de controle TCP persistente
-    - Cliente e servidor para manter estado
-    - Infraestrutura de retransmissão adicional
-    
-    Muitos proxies não suportam UDP, e aqueles que suportam frequentemente têm restrições ou custos adicionais.
+A conexão de controle TCP deve permanecer aberta durante toda a duração da associação UDP. Se ela for fechada, o proxy descarta a retransmissão UDP.
+
+!!! warning "UDP no Chrome"
+    O Chrome não utiliza UDP ASSOCIATE do SOCKS5 para nenhum tráfego. Mesmo quando configurado com um proxy SOCKS5, o Chrome apenas faz proxy de conexões TCP. WebRTC, DNS-sobre-UDP e outros tráfegos UDP não são roteados pelo proxy SOCKS5. Isso significa que vazamentos de IP via WebRTC ainda são possíveis com SOCKS5 no Chrome. Use `--force-webrtc-ip-handling-policy=disable_non_proxied_udp` ou `webrtc_leak_protection = True` do Pydoll para mitigar isso. Para mais detalhes, veja [Fundamentos de Rede: WebRTC e Vazamento de IP](./network-fundamentals.md#webrtc-and-ip-leakage).
 
 !!! tip "Alternativas Modernas de Proxy UDP"
-    Para suporte UDP completo em configurações modernas, considere estas alternativas:
-    
-    - **Shadowsocks**: Protocolo moderno semelhante ao SOCKS5, projetado para proxy UDP/TCP com criptografia
-    - **WireGuard**: Protocolo VPN com suporte UDP nativo e excelente desempenho
-    - **V2Ray/VMess**: Framework de proxy flexível com manuseio UDP abrangente
-    - **Trojan**: Protocolo leve que imita o tráfego HTTPS enquanto suporta UDP
-    
-    Estes protocolos são particularmente úteis para jogos, VoIP ou streaming de vídeo onde o desempenho UDP é crítico.
+    Para cenários que exigem suporte UDP completo além do que a implementação SOCKS5 do Chrome oferece, considere Shadowsocks (protocolo criptografado semelhante ao SOCKS com UDP nativo), WireGuard (VPN com excelente desempenho) ou V2Ray/VMess (framework de proxy flexível com tratamento UDP abrangente).
 
-## Por que SOCKS5 é Mais Seguro
+## Resolução de DNS
 
-Agora que construímos a fundação, vamos analisar por que o SOCKS5 é geralmente considerado mais seguro que os proxies HTTP/HTTPS.
+Um equívoco comum é que proxies HTTP vazam consultas DNS enquanto proxies SOCKS5 não. A realidade no Chrome é mais nuançada.
 
-### Comparação em Nível de Protocolo
+Quando o Chrome é configurado com qualquer proxy (HTTP, HTTPS ou SOCKS5), ele envia nomes de host para o proxy em vez de resolver DNS localmente. Para proxies HTTP, o nome do host aparece na requisição `CONNECT host:443`. Para SOCKS5, ele aparece na requisição de conexão com ATYP=0x03 (nome de domínio). Em ambos os casos, o proxy resolve o DNS do seu lado, e o Chrome não faz consultas DNS locais para tráfego direcionado ao proxy.
 
-**Proxy HTTP (Camada 7):**
+A verdadeira diferença de privacidade de DNS entre os dois tipos de proxy não é quem resolve o DNS, mas o que o proxy vê na camada de aplicação. Um proxy HTTP vê a URL completa para requisições não criptografadas e o nome do host para requisições CONNECT. Um proxy SOCKS5 vê apenas o nome do host de destino e a porta como parâmetros opacos de conexão.
 
-```mermaid
-graph LR
-    A1[Aplicação Cliente] --> A2[Biblioteca HTTP]
-    A2 --> A3[Proxy intercepta requisições HTTP]
-    A3 --> A4[Proxy pode ler Cabeçalhos, Cookies, Métodos, URLs]
-```
+No entanto, existe uma ressalva importante: o prefetcher de DNS do Chrome pode fazer consultas DNS locais para nomes de host encontrados no conteúdo da página, mesmo quando um proxy está configurado. Isso pode vazar os domínios que você está navegando para o seu resolvedor DNS local. Para prevenir isso, desabilite o prefetching de DNS ou use a flag `--host-resolver-rules="MAP * ~NOTFOUND , EXCLUDE 127.0.0.1"`.
 
-**Proxy SOCKS5 (Camada 5):**
+!!! note "`socks5://` vs `socks5h://`"
+    Muitas ferramentas fora do Chrome distinguem entre `socks5://` (cliente resolve DNS) e `socks5h://` (proxy resolve DNS, o "h" significa hostname). O Chrome sempre resolve DNS do lado do proxy para SOCKS5, comportando-se como `socks5h://` independentemente de qual esquema você use. Mas se você usar ferramentas como `curl`, Firefox ou bibliotecas Python junto com o Pydoll, a distinção importa: sempre use `socks5h://` para prevenir vazamentos de DNS.
 
-```mermaid
-graph LR
-    B1[Aplicação Cliente] --> B2[Qualquer Protocolo]
-    B2 --> B3[Transporte TCP/UDP]
-    B3 --> B4[SOCKS5 vê apenas: IP de Destino, Porta, Tamanho do pacote]
-```
+## SOCKS5 e Resistência a MITM
 
-### Vantagens de Segurança do SOCKS5
+O SOCKS5 é frequentemente descrito como "resistente a MITM". Isso é verdade em um sentido específico: como o SOCKS5 não compreende nem interage com TLS, ele não tem mecanismo para terminar uma conexão TLS e recriptografá-la. Um proxy SOCKS5 simplesmente retransmite bytes criptografados sem modificação.
 
-| Aspecto | Proxy HTTP/HTTPS | Proxy SOCKS5 |
-|---|---|---|
-| **Visibilidade dos Dados** | Pode ler cabeçalhos HTTP, URLs, cookies (HTTP) | Vê apenas IP/porta de destino e tamanhos de pacote |
-| **Suporte a Protocolo** | Apenas HTTP/HTTPS | Qualquer protocolo TCP/UDP |
-| **Inspeção TLS** | Possível com certificados MITM | Impossível (opera abaixo do TLS) |
-| **Vazamentos de DNS** | Cliente resolve DNS (vaza) | Proxy resolve DNS (sem vazamento) |
-| **Consciência da Aplicação** | Entende HTTP | Agnóstico a protocolo |
-| **Fingerprinting** | Pode injetar cabeçalhos, modificar requisições | Encaminhamento transparente de pacotes |
-| **Suporte UDP** | Nenhum | Sim (para WebRTC, DNS, etc.) |
+Um proxy HTTP, por outro lado, pode realizar terminação TLS (MITM) apresentando seu próprio certificado ao cliente, descriptografando o tráfego, inspecionando ou modificando-o, e recriptografando-o em direção ao servidor. Isso exige que o cliente confie no certificado CA do proxy, e é detectável através de certificate pinning e logs de Certificate Transparency. O comportamento normal de um proxy HTTP com HTTPS (usando CONNECT) é criar um túnel transparente sem terminação, mas a possibilidade arquitetônica de MITM existe.
 
-### Resolução de DNS: Uma Diferença Crítica
+Com SOCKS5, a terminação TLS não é possível no nível do protocolo. O proxy não consegue se inserir no handshake TLS porque ele não analisa os dados da aplicação fluindo através dele. A criptografia de ponta a ponta entre cliente e servidor é preservada por design.
 
-**Comportamento do DNS no Proxy HTTP:**
+Vale notar que é o TLS que fornece a proteção criptográfica real, não o SOCKS5 em si. Se você enviar HTTP não criptografado através de um proxy SOCKS5, o operador do proxy pode ler tudo. A vantagem de segurança do SOCKS5 é arquitetônica (ele não exige nem permite terminação TLS), não criptográfica.
 
-```mermaid
-sequenceDiagram
-    participant Client
-    participant DNS
-    participant Proxy
-    participant Server
-    
-    Note over Client: Cliente resolve DNS<br/>(usa DNS do sistema)
-    Client->>DNS: Consulta DNS: example.com?
-    DNS->>Client: Resposta DNS: 93.184.216.34
-    Note over Client: Vazamento de DNS: ISP vê a consulta
-    
-    Client->>Proxy: Conectar a 93.184.216.34
-    Proxy->>Server: Encaminhar para 93.184.216.34
-```
+## TLS e Browser Fingerprinting Através do SOCKS5
 
-**Comportamento do DNS no SOCKS5:**
+Uma limitação importante para entender: o SOCKS5 não altera o fingerprint do seu navegador. O handshake TLS (ClientHello) passa pelo proxy SOCKS5 byte por byte, o que significa que o servidor de destino vê o fingerprint JA3/JA4 exato do seu navegador. O mesmo se aplica aos frames HTTP/2 SETTINGS, à ordenação de cabeçalhos específica do navegador e a todos os outros sinais de fingerprinting na camada de aplicação.
 
-```mermaid
-sequenceDiagram
-    participant Client
-    participant SOCKS5
-    participant DNS
-    participant Server
-    
-    Note over Client: Cliente envia nome de domínio<br/>(não IP) para SOCKS5
-    Client->>SOCKS5: CONNECT example.com:443<br/>(ATYP=0x03, nome de domínio)
-    
-    Note over SOCKS5: Proxy resolve DNS<br/>(usando seu próprio DNS)
-    SOCKS5->>DNS: Consulta DNS: example.com?
-    DNS->>SOCKS5: Resposta DNS: 93.184.216.34
-    Note over SOCKS5: Sem vazamento de DNS para o ISP do cliente
-    
-    SOCKS5->>Server: Conectar a 93.184.216.34
-```
+O SOCKS5 oculta seu endereço IP e impede que o proxy injete cabeçalhos identificadores. Ele não ajuda com nenhuma forma de browser fingerprinting ou fingerprinting comportamental. Para uma estratégia completa de evasão, você precisa abordar o fingerprinting em múltiplas camadas. Veja [Técnicas de Evasão](../fingerprinting/evasion-techniques.md) para detalhes.
 
-!!! tip "Resolução de DNS Remota"
-    A capacidade do SOCKS5 de realizar resolução de DNS no servidor proxy é crucial para a privacidade. Seu ISP nunca vê quais sites você está consultando, apenas que você está conectado ao proxy.
+## Autenticação SOCKS5 no Chrome
 
-### Resistência a Man-in-the-Middle (MITM)
+O Chrome não suporta autenticação por usuário/senha do SOCKS5. Esta é uma limitação de longa data rastreada como [Chromium Issue #40323993](https://issues.chromium.org/issues/40323993). Quando o Chrome realiza a negociação de método SOCKS5, ele oferece apenas o método `0x00` (sem autenticação). Se o proxy exigir autenticação, a conexão falha silenciosamente.
 
-**Proxies HTTP são vulneráveis a MITM:**
+Isso é fundamentalmente diferente da autenticação de proxy HTTP. Proxies HTTP autenticam via códigos de status HTTP (`407 Proxy Authentication Required`), que o Chrome trata através do domínio Fetch no CDP. O Pydoll intercepta esses eventos `Fetch.authRequired` e responde com as credenciais armazenadas automaticamente. A autenticação SOCKS5, por outro lado, acontece durante um handshake de protocolo binário na camada de sessão, antes que qualquer tráfego HTTP exista. Não há HTTP 407, nenhum evento `Fetch.authRequired` e nenhuma forma de ferramentas baseadas em CDP injetarem credenciais nesse processo.
 
-```mermaid
-sequenceDiagram
-    participant Client
-    participant Malicious_Proxy as Proxy HTTP Malicioso
-    participant Server
-    
-    Client->>Malicious_Proxy: Requisição HTTPS (criptografada)
-    Note over Malicious_Proxy: Proxy termina o TLS<br/>(usando certificado falso)
-    
-    Malicious_Proxy->>Malicious_Proxy: Lê/modifica conteúdo
-    
-    Malicious_Proxy->>Server: Recriptografa com certificado real
-    Server->>Malicious_Proxy: Resposta
-    Malicious_Proxy->>Client: Resposta modificada
-    
-    Note over Client: Pode mostrar aviso de certificado
-```
+Configurar `--proxy-server=socks5://user:pass@proxy:1080` não funciona. O Chrome ignora silenciosamente as credenciais embutidas.
 
-**SOCKS5 não pode realizar MITM:**
+### SOCKS5Forwarder do Pydoll
 
-```mermaid
-sequenceDiagram
-    participant Client
-    participant SOCKS5
-    participant Server
-    
-    Client->>SOCKS5: CONNECT server.com:443
-    SOCKS5->>Server: Conexão TCP estabelecida
-    SOCKS5->>Client: Conexão pronta
-    
-    Note over Client,Server: Túnel TLS ponta-a-ponta
-    Client->>Server: Handshake TLS + Dados Criptografados
-    Note over SOCKS5: Não pode descriptografar<br/>Não pode modificar<br/>Apenas encaminha pacotes
-    Server->>Client: Resposta Criptografada
-```
-
-!!! info "Modelo de Confiança"
-    - **Proxy HTTP**: Você confia nele com dados HTTP em texto claro e para tunelar HTTPS adequadamente
-    - **Proxy SOCKS5**: Você confia nele apenas para encaminhar pacotes corretamente
-    
-    SOCKS5 tem uma superfície de confiança menor.
-
-## Autenticação SOCKS5 e Chrome
-
-Uma das armadilhas mais comuns ao usar proxies SOCKS5 com automação de navegador é a **autenticação**. O Chrome/Chromium **não** suporta autenticação SOCKS5 por usuário/senha nativamente. Esta é uma limitação conhecida e de longa data, rastreada como [Chromium Issue #40323993](https://issues.chromium.org/issues/40323993).
-
-### Por que o Chrome Ignora Credenciais SOCKS5
-
-Quando você configura o Chrome com `--proxy-server=socks5://user:pass@proxy:1080`, o Chrome **ignora silenciosamente** as credenciais incorporadas. Durante a negociação de método SOCKS5, o Chrome oferece apenas o método `0x00` (sem autenticação necessária) — ele nunca oferece o método `0x02` (usuário/senha).
-
-Isso acontece porque a autenticação SOCKS5 opera em **uma camada de protocolo completamente diferente** da autenticação de proxy HTTP:
-
-**Fluxo de autenticação de proxy HTTP (funciona no Chrome):**
-
-```
-Chrome → HTTP CONNECT → Proxy responde 407 → Chrome fornece credenciais → Proxy conecta
-```
-
-O Chrome lida com isso através do **domínio Fetch** do CDP — o Pydoll intercepta eventos `Fetch.authRequired` e responde automaticamente com as credenciais armazenadas.
-
-**Fluxo de autenticação SOCKS5 (NÃO suportado pelo Chrome):**
-
-```
-Chrome → SOCKS5 Hello [métodos: 0x00] → Proxy seleciona 0x00 ou rejeita → Sem auth possível
-```
-
-O handshake SOCKS5 é uma negociação de **protocolo binário** na camada de sessão. A pilha de rede do Chrome simplesmente não implementa a subnegociação de usuário/senha (RFC 1929). Não há desafio HTTP 407, nenhum evento `Fetch.authRequired`, e nenhuma forma do Pydoll (ou qualquer ferramenta baseada em CDP) injetar credenciais.
-
-### A Solução do Forwarder Local
-
-A solução padrão da indústria é um **proxy forwarder local** — um servidor SOCKS5 local leve que:
-
-1. **Aceita conexões do Chrome** sem autenticação (método `0x00`)
-2. **Conecta ao proxy SOCKS5 remoto** com autenticação completa (método `0x02`, RFC 1929)
-3. **Retransmite dados bidirecionalmente** entre o Chrome e o proxy remoto
-
-```
-┌────────────┐     sem auth     ┌──────────────┐   user/pass    ┌──────────────┐
-│   Chrome   │ ──────────────►  │  SOCKS5 Local │ ────────────► │ SOCKS5 Remoto│
-│            │  socks5://       │  Forwarder    │  socks5://    │    Proxy     │
-│            │  127.0.0.1:1081  │  (localhost)  │  proxy:1080   │  (internet)  │
-└────────────┘                  └──────────────┘                └──────┬───────┘
-                                                                       │
-                                                                       ▼
-                                                                ┌──────────────┐
-                                                                │   Servidor   │
-                                                                │   Destino    │
-                                                                └──────────────┘
-```
-
-**Sequência detalhada do handshake:**
+A solução padrão é um proxy forwarder local: um servidor SOCKS5 leve rodando no localhost que aceita conexões não autenticadas do Chrome e as encaminha para o proxy remoto com autenticação completa.
 
 ```mermaid
 sequenceDiagram
     participant Chrome
-    participant Forwarder as Forwarder Local
-    participant Remote as Proxy SOCKS5 Remoto
-    participant Server as Destino
+    participant Forwarder as Local Forwarder<br/>(127.0.0.1:1081)
+    participant Remote as Remote SOCKS5 Proxy<br/>(proxy:1080)
+    participant Server as Destination Server
 
-    Note over Chrome,Forwarder: Fase 1: Chrome → Forwarder (sem auth)
-    Chrome->>Forwarder: SOCKS5 Hello [VER=5, METHODS=[0x00]]
-    Forwarder->>Chrome: Método Selecionado [VER=5, METHOD=0x00]
+    Note over Chrome,Forwarder: No authentication
+    Chrome->>Forwarder: SOCKS5 Hello [methods: 0x00]
+    Forwarder->>Chrome: Method selected [0x00]
     Chrome->>Forwarder: CONNECT example.com:443
 
-    Note over Forwarder,Remote: Fase 2: Forwarder → Remoto (com auth)
-    Forwarder->>Remote: SOCKS5 Hello [VER=5, METHODS=[0x02]]
-    Remote->>Forwarder: Método Selecionado [VER=5, METHOD=0x02]
-    Forwarder->>Remote: Auth [VER=1, USER=..., PASS=...]
-    Remote->>Forwarder: Auth OK [VER=1, STATUS=0x00]
+    Note over Forwarder,Remote: With authentication
+    Forwarder->>Remote: SOCKS5 Hello [methods: 0x02]
+    Remote->>Forwarder: Method selected [0x02]
+    Forwarder->>Remote: Auth [username, password]
+    Remote->>Forwarder: Auth OK
     Forwarder->>Remote: CONNECT example.com:443
-    Remote->>Server: Conexão TCP
-    Remote->>Forwarder: Resposta de Conexão [SUCESSO]
+    Remote->>Server: TCP connection
+    Remote->>Forwarder: Connect OK
 
-    Note over Chrome,Forwarder: Fase 3: Confirmação de relay
-    Forwarder->>Chrome: Resposta de Conexão [SUCESSO]
+    Forwarder->>Chrome: Connect OK
 
-    Note over Chrome,Server: Fase 4: Relay bidirecional de dados
-    Chrome->>Forwarder: Dados da Aplicação (TLS)
-    Forwarder->>Remote: Encaminhar Dados
-    Remote->>Server: Encaminhar Dados
-    Server->>Remote: Resposta
-    Remote->>Forwarder: Encaminhar Resposta
-    Forwarder->>Chrome: Encaminhar Resposta
+    Note over Chrome,Server: Bidirectional data relay
+    Chrome->>Forwarder: TLS + application data
+    Forwarder->>Remote: Forward
+    Remote->>Server: Forward
+    Server->>Remote: Response
+    Remote->>Forwarder: Forward
+    Forwarder->>Chrome: Forward
 ```
 
-### Usando o Forwarder com Pydoll
-
-O Pydoll fornece um forwarder pronto para uso no módulo `pydoll.utils`:
+O Pydoll fornece um `SOCKS5Forwarder` integrado no módulo `pydoll.utils`. É uma implementação async pura em Python, sem dependências externas, que lida com o handshake SOCKS5 completo com o proxy remoto, incluindo autenticação por usuário/senha (RFC 1929), tipos de endereço IPv4, IPv6 e domínio.
 
 ```python
 import asyncio
@@ -542,7 +286,7 @@ async def main():
         remote_port=1080,
         username='myuser',
         password='mypass',
-        local_port=1081,  # Use 0 para porta auto-atribuída
+        local_port=1081,  # Use 0 for auto-assigned port
     )
     async with forwarder:
         options = ChromiumOptions()
@@ -555,7 +299,7 @@ async def main():
 asyncio.run(main())
 ```
 
-O forwarder também pode ser usado como ferramenta CLI standalone:
+O forwarder também pode ser executado como ferramenta CLI standalone para testes ou uso com outras aplicações:
 
 ```bash
 python -m pydoll.utils.socks5_proxy_forwarder \
@@ -566,267 +310,67 @@ python -m pydoll.utils.socks5_proxy_forwarder \
     --local-port 1081
 ```
 
-### Considerações de Segurança
+O forwarder se vincula a `127.0.0.1` por padrão, tornando-o acessível apenas da sua máquina. Nunca vincule a `0.0.0.0` em produção, pois isso exporia um proxy SOCKS5 sem autenticação para a rede. As credenciais nunca são registradas em texto claro nos logs. O forwarder adiciona latência sub-milissegundo, já que toda a comunicação acontece pela interface de loopback local.
 
-!!! warning "Notas de Segurança"
-    - O forwarder local se vincula a `127.0.0.1` por padrão — acessível apenas da sua máquina
-    - **Nunca** vincule a `0.0.0.0` em produção, pois isso exporia um proxy SOCKS5 sem autenticação para a rede
-    - As credenciais são transmitidas em texto claro durante o handshake SOCKS5 com o proxy remoto (isso é inerente ao SOCKS5 RFC 1929) — use túneis SSH ou VPN para criptografia adicional se necessário
-    - O forwarder adiciona latência mínima (loopback local é sub-milissegundo)
+!!! tip "Ambientes Restritos"
+    Alguns ambientes (contêineres Docker, plataformas serverless, VMs endurecidas) podem restringir a vinculação a portas locais. Use `local_port=0` para deixar o SO atribuir uma porta disponível. Se a vinculação local estiver completamente bloqueada, considere usar um proxy HTTP CONNECT, que o Chrome suporta nativamente com autenticação via ProxyManager do Pydoll.
 
-### Limitações de Ambiente
+## Configuração Prática
 
-!!! info "Ambientes Restritos"
-    Alguns ambientes (contêineres Docker, plataformas serverless, VMs endurecidas) podem restringir a vinculação a portas locais. Nesses casos:
+**SOCKS5 básico (sem autenticação):**
 
-    - Certifique-se de que seu ambiente permite vincular a `127.0.0.1` em portas arbitrárias
-    - Use `local_port=0` para deixar o SO atribuir uma porta disponível
-    - Se a vinculação local estiver completamente bloqueada, considere usar um proxy HTTP CONNECT, que o Chrome suporta nativamente com autenticação
-
-## Resumo e Pontos Chave
-
-SOCKS5 representa o **padrão ouro** para proxying consciente da privacidade, oferecendo flexibilidade de protocolo, requisitos de confiança reduzidos e segurança superior em comparação com alternativas da camada de aplicação. Entender a arquitetura SOCKS é essencial para construir sistemas de automação robustos e indetectáveis.
-
-### Conceitos Centrais Cobertos
-
-**1. Operação na Camada de Sessão:**
-
-- SOCKS opera na **Camada 5 (Camada de Sessão)**, abaixo do HTTP mas acima do TCP/UDP
-- **Agnóstico a protocolo**: Funciona com qualquer protocolo de aplicação (HTTP, FTP, SSH, WebSocket, customizado)
-- **Encaminhamento cego**: Vê apenas IP e porta de destino, não dados da aplicação
-
-**2. Recursos do Protocolo SOCKS5:**
-
-- **Autenticação**: Múltiplos métodos (sem auth, usuário/senha, GSSAPI)
-- **Suporte a Versão IP**: Tanto IPv4 quanto IPv6
-- **TCP e UDP**: Suporte total para protocolos sem conexão
-- **Resolução de DNS Remota**: Previne vazamentos de DNS para o ISP do cliente
-- **Protocolo Binário**: Estruturas de pacote eficientes e de baixa sobrecarga
-
-**3. Modelo de Segurança:**
-
-- **Não pode inspecionar dados da aplicação**: Opera abaixo da criptografia TLS
-- **Resistente a MITM**: Não pode terminar conexões TLS (diferente de proxies HTTP)
-- **Superfície de confiança reduzida**: Confia no proxy apenas para encaminhar pacotes, não para lidar com dados sensíveis
-- **Privacidade de DNS**: Proxy resolve domínios, escondendo consultas do ISP
-
-**4. Suporte UDP:**
-
-- Recurso único do SOCKS5 permitindo WebRTC, DNS-sobre-UDP, VoIP, jogos
-- Requer conexão de controle TCP persistente + retransmissão UDP
-- Muitos proxies não suportam UDP (requer infraestrutura adicional)
-
-**5. SOCKS4 vs SOCKS5:**
-
-- SOCKS4: Legado, apenas TCP, sem autenticação, apenas IPv4
-- SOCKS5: Padrão moderno (RFC 1928), suporte UDP, autenticação flexível, IPv4/IPv6
-
-### Matriz de Decisão: SOCKS5 vs Proxy HTTP
-
-| Requisito | SOCKS5 | Proxy HTTP |
-|---|---|---|
-| **Privacidade** | **Excelente** (encaminhamento cego) | **Ruim** (vê todo o tráfego HTTP) |
-| **Flexibilidade de Protocolo** | **Qualquer TCP/UDP** | **Apenas HTTP/HTTPS** |
-| **Privacidade de DNS** | **Resolução remota** | **Vazamento no cliente** |
-| **Suporte UDP** | **Sim** | **Não** |
-| **Inspeção TLS** | **Impossível (seguro)** | **Possível (risco de MITM)** |
-| **Furtividade (Stealth)** | **Alta (transparente)** | **Baixa (injeção de cabeçalho)** |
-| **Complexidade de Config.** | **Moderada** | **Simples** |
-| **Filtragem de Conteúdo** | **Não** (cego) | **Sim** (consciente da aplicação) |
-| **Cache** | **Não** | **Sim** |
-| **Ambientes Corporativos** | **Raro** | **Comum** |
-
-**Recomendação Geral:**
-- **Privacidade/Automação**: SOCKS5 (furtividade, flexibilidade de protocolo, segurança)
-- **Corporativo/Filtragem**: Proxy HTTP (controle de conteúdo, cache, aplicação de políticas)
-- **Segurança Máxima**: SOCKS5 sobre túnel SSH ou VPN
-
-### Quando Usar SOCKS5
-
-**Casos de Uso Ideais:**
-- **Automação de navegador** exigindo furtividade e flexibilidade de protocolo
-- **Aplicações críticas de privacidade** (ferramentas de jornalismo, VPNs, Tor)
-- **Aplicações multiprotocolo** (FTP, SSH, WebSocket, protocolos customizados)
-- **Aplicações WebRTC** (videoconferência, jogos, comunicação em tempo real)
-- **Privacidade de DNS** (esconder padrões de navegação do ISP)
-- **Contornar inspeção profunda de pacotes (DPI)** em redes restritivas
-
-**Casos de Uso Ruins:**
-- **Filtragem de conteúdo corporativo** (use proxy HTTP com políticas baseadas em URL)
-- **Cache HTTP para otimização de banda** (use proxy HTTP ou CDN)
-- **Scraping simples apenas HTTP onde furtividade não é crítica**
-
-### Configuração Prática no Pydoll
-
-**Proxy SOCKS5 Básico:**
 ```python
-from pydoll.browser import Chrome
+from pydoll.browser.chromium import Chrome
 from pydoll.browser.options import ChromiumOptions
 
 options = ChromiumOptions()
 options.add_argument('--proxy-server=socks5://proxy.example.com:1080')
-# Para proxies autenticados, inclua as credenciais na URL:
-# options.add_argument('--proxy-server=socks5://usuario:senha@proxy.example.com:1080')
 
 async with Chrome(options=options) as browser:
     tab = await browser.start()
     await tab.go_to('https://example.com')
 ```
 
-**SOCKS5 com Autenticação (via Pydoll):**
-O Pydoll lida automaticamente com a autenticação usuário/senha SOCKS5 através do domínio Fetch do Chrome. Nenhuma implementação manual necessária.
+**SOCKS5 com autenticação (via SOCKS5Forwarder):**
 
-**Testando Proxy SOCKS5:**
+Veja a [seção do SOCKS5Forwarder](#socks5forwarder-do-pydoll) acima.
+
+**Prevenindo vazamentos:**
+
+Para uma configuração SOCKS5 completa, você também deve prevenir vazamentos de WebRTC e DNS prefetch:
+
 ```python
-import socket
-import socks
-
-# Teste manual SOCKS5 (sem Pydoll)
-socks.set_default_proxy(socks.SOCKS5, "proxy.example.com", 1080, 
-                        username="user", password="pass")
-socket.socket = socks.socksocket
-
-# Agora todas as conexões de socket usam SOCKS5
+options = ChromiumOptions()
+options.add_argument('--proxy-server=socks5://proxy.example.com:1080')
+options.webrtc_leak_protection = True  # Prevents WebRTC IP leaks
+options.add_argument('--disable-quic')  # Forces HTTP/2 over TCP through proxy
 ```
 
-!!! tip "Melhores Práticas SOCKS5"
-    - **Use SOCKS5, não SOCKS4** (melhor segurança, suporte UDP)
-    - **Habilite resolução de DNS remota** (previne vazamentos de DNS)
-    - **Use autenticação** (usuário/senha ou GSSAPI)
-    - **Teste vazamentos WebRTC** (mesmo com SOCKS5, WebRTC pode vazar IP real)
-    - **Combine com TLS** (SOCKS fornece proxying, não criptografia)
-    
-    - **Não assuma SOCKS5 = criptografia** (coloque TLS por cima)
-    - **Não use SOCKS4** (legado, limitações de segurança)
-    - **Não confie no suporte UDP** (muitos proxies não suportam)
+**Testando sua configuração:**
 
-## Leitura Adicional e Referências
+Sempre verifique sua configuração de proxy com testes de vazamento. Visite [browserleaks.com/ip](https://browserleaks.com/ip) para confirmar seu IP, [browserleaks.com/webrtc](https://browserleaks.com/webrtc) para verificar vazamentos de WebRTC, e [dnsleaktest.com](https://dnsleaktest.com/) para confirmar que o DNS não está vazando.
 
-### Documentação Relacionada
+## Resumo
 
-**Dentro Deste Módulo:**
+O SOCKS5 fornece proxy agnóstico a protocolo com uma superfície de confiança menor que a dos proxies HTTP. Ele não analisa, modifica ou injeta nada no seu tráfego. A resolução de DNS acontece do lado do proxy no Chrome. A criptografia TLS é preservada de ponta a ponta. A principal limitação no Chrome é a falta de autenticação SOCKS5 nativa (resolvida pelo `SOCKS5Forwarder` do Pydoll) e a ausência de proxy UDP (mitigada desabilitando o WebRTC ou usando as flags apropriadas do navegador).
 
-- **[Proxies HTTP/HTTPS](./http-proxies.md)** - Comparação de proxying de camada de aplicação
-- **[Fundamentos de Rede](./network-fundamentals.md)** - Fundamentos de TCP/IP, UDP, modelo OSI
-- **[Detecção de Proxy](./proxy-detection.md)** - Como proxies SOCKS5 ainda podem ser detectados
-- **[Construindo Proxies](./build-proxy.md)** - Implementação completa de servidor SOCKS5 do zero
+O SOCKS5 não altera o fingerprint TLS do seu navegador, as configurações HTTP/2 ou quaisquer características da camada de aplicação. Para evasão completa, combine SOCKS5 com gerenciamento de browser fingerprint e simulação comportamental.
 
-**Uso Prático:**
+**Próximos passos:**
 
-- **[Configuração de Proxy (Recursos)](../../features/configuration/proxy.md)** - Configurando SOCKS5 no Pydoll
-- **[Opções do Navegador](../../features/configuration/browser-options.md)** - Flags do Chrome para otimização de proxy
+- [Detecção de Proxy](./proxy-detection.md): Como até mesmo proxies SOCKS5 podem ser detectados
+- [Construindo Proxies](./build-proxy.md): Implemente seu próprio servidor SOCKS5
+- [Configuração de Proxy](../../features/configuration/proxy.md): Configuração prática de proxy no Pydoll
+- [Técnicas de Evasão](../fingerprinting/evasion-techniques.md): Estratégia de evasão multicamada
 
-**Análises Profundas:**
+## Referências
 
-- **[Network Fingerprinting](../fingerprinting/network-fingerprinting.md)** - Características TCP/IP que vazam através de SOCKS5
-- **[Browser Fingerprinting](../fingerprinting/browser-fingerprinting.md)** - Detecção em nível de aplicação apesar do SOCKS5
-- **[Técnicas de Evasão](../fingerprinting/evasion-techniques.md)** - Como maximizar a furtividade do SOCKS5
-
-### Referências Externas
-
-**RFCs (Especificações Oficiais):**
-
-- **RFC 1928** - SOCKS Protocol Version 5 (Março 1996)
-  - https://datatracker.ietf.org/doc/html/rfc1928
-  - A especificação oficial do SOCKS5
-- **RFC 1929** - Username/Password Authentication for SOCKS V5 (Março 1996)
-  - https://datatracker.ietf.org/doc/html/rfc1929
-  - Mecanismo de autenticação padrão
-- **RFC 1961** - GSS-API Authentication Method for SOCKS Version 5 (Junho 1996)
-  - https://datatracker.ietf.org/doc/html/rfc1961
-  - Autenticação corporativa (Kerberos)
-- **RFC 3089** - A SOCKS-based IPv6/IPv4 Gateway Mechanism (Abril 2001)
-  - https://datatracker.ietf.org/doc/html/rfc3089
-  - Interoperabilidade IPv4/IPv6
-
-**SOCKS4 (Especificação Informal):**
-
-- **Protocolo SOCKS4**: http://ftp.icm.edu.pl/packages/socks/socks4/SOCKS4.protocol
-- **Extensão SOCKS4A**: http://ftp.icm.edu.pl/packages/socks/socks4/SOCKS4A.protocol
-  - Extensão de resolução de nome de domínio
-
-**Artigos Técnicos e Guias:**
-
-- **Understanding SOCKS5**: https://securitytrails.com/blog/socks5-proxy
-- **SOCKS5 vs HTTP Proxies**: https://www.varonis.com/blog/socks-proxy-primer
-- **Building a SOCKS5 Server**: Várias implementações no GitHub (veja build-proxy.md)
-
-**Implementações SOCKS:**
-
-- **Dante**: https://www.inet.no/dante/ (Servidor SOCKS de produção)
-- **ss5**: http://ss5.sourceforge.net/ (Servidor SOCKS4/SOCKS5)
-- **PySocks**: https://github.com/Anorov/PySocks (Cliente SOCKS Python)
-- **go-socks5**: https://github.com/armon/go-socks5 (Biblioteca Go SOCKS5)
-
-**Protocolos Modernos Semelhantes ao SOCKS:**
-
-- **Shadowsocks**: https://shadowsocks.org/ (Protocolo criptografado semelhante ao SOCKS5)
-- **WireGuard**: https://www.wireguard.com/ (VPN com simplicidade semelhante ao SOCKS)
-- **V2Ray/VMess**: https://www.v2ray.com/ (Framework de proxy flexível)
-- **Trojan**: https://trojan-gfw.github.io/trojan/ (Proxy que imita HTTPS)
-
-**Ferramentas de Teste:**
-
-- **curl com SOCKS5**:
-  ```bash
-  curl --socks5 proxy:1080 --socks5-basic --user user:pass https://example.com
-  ```
-- **proxychains**: Força qualquer aplicação a passar pelo SOCKS5
-  ```bash
-  proxychains4 firefox
-  ```
-- **Wireshark**: Análise de pacotes para verificar handshake SOCKS5
-
-**Segurança e Privacidade:**
-
-- **Teste de Vazamento de DNS**: https://dnsleaktest.com/
-- **Teste de Vazamento de WebRTC**: https://browserleaks.com/webrtc
-- **Detecção de IP**: https://ipleak.net/
-
-### Tópicos Avançados (Além Deste Documento)
-
-**Extensões SOCKS:**
-
-- **Extensões Tor SOCKS**: Extensões SOCKS5 específicas do Tor para isolamento de circuito
-- **Propostas SOCKS6**: Protocolo SOCKS de próxima geração (estágio de rascunho)
-- **SOCKS sobre TLS**: Canais SOCKS criptografados
-
-**Otimização de Desempenho:**
-
-- **Pooling de Conexão**: Reutilizando conexões SOCKS5
-- **Multiplexação**: Múltiplos streams sobre uma única conexão SOCKS
-- **Desempenho UDP**: Otimizando retransmissão UDP SOCKS5
-
-**Implantações Corporativas:**
-
-- **Integração LDAP**: Autenticação de usuário corporativo
-- **Balanceamento de Carga**: Distribuindo tráfego entre proxies SOCKS5
-- **Alta Disponibilidade**: Estratégias de failover e redundância
-
-**Comparação de Protocolos:**
-
-- **SOCKS vs VPN**: Quando usar cada um
-- **SOCKS vs Tunelamento SSH**: Tunelamento vs proxying
-- **SOCKS vs Tor**: Anonimato vs trocas de desempenho
-
----
-
-## Pensamentos Finais
-
-SOCKS5 é o **protocolo de proxy preferido** para automação de navegador consciente da privacidade, oferecendo vantagens arquitetônicas fundamentais sobre proxies HTTP:
-
-- **Flexibilidade de protocolo** permite proxyar qualquer aplicação TCP/UDP
-- **Operação na camada de sessão** impede inspeção de dados da aplicação
-- **Resolução de DNS remota** protege padrões de navegação
-- **Resistência a MITM** preserva criptografia TLS ponta-a-ponta
-
-Embora proxies HTTP dominem ambientes corporativos devido a capacidades de filtragem de conteúdo, **SOCKS5 é a escolha superior** para automação que requer furtividade, segurança e flexibilidade de protocolo.
-
-**Ponto Chave**: Use SOCKS5 para privacidade e automação, proxies HTTP para filtragem corporativa.
-
-**Próximos Passos:**
-1. Leia **[Detecção de Proxy](./proxy-detection.md)** para entender como até mesmo o SOCKS5 pode ser detectado
-2. Aprenda **[Construindo Proxies](./build-proxy.md)** para implementar seu próprio servidor SOCKS5
-3. Configure SOCKS5 no Pydoll usando **[Configuração de Proxy](../../features/configuration/proxy.md)**
-
----
+- RFC 1928: SOCKS Protocol Version 5 (1996) - https://datatracker.ietf.org/doc/html/rfc1928
+- RFC 1929: Username/Password Authentication for SOCKS V5 (1996) - https://datatracker.ietf.org/doc/html/rfc1929
+- RFC 1961: GSS-API Authentication Method for SOCKS V5 (1996) - https://datatracker.ietf.org/doc/html/rfc1961
+- RFC 3089: SOCKS-based IPv6/IPv4 Gateway Mechanism (2001) - https://datatracker.ietf.org/doc/html/rfc3089
+- Chromium Proxy Documentation - https://chromium.googlesource.com/chromium/src/+/689912289c/net/docs/proxy.md
+- Chromium Issue #40323993: SOCKS5 Authentication - https://issues.chromium.org/issues/40323993
+- BrowserLeaks: WebRTC Leak Test - https://browserleaks.com/webrtc
+- DNS Leak Test - https://dnsleaktest.com/
+- IPLeak: Comprehensive Leak Testing - https://ipleak.net
