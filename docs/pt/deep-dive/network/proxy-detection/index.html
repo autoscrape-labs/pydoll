@@ -27,7 +27,7 @@
       
       
       <link rel="icon" href="../../../../resources/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.3">
     
     
       
@@ -92,7 +92,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#deteccao-de-proxy-e-anonimato" class="md-skip">
+        <a href="#deteccao-de-proxy" class="md-skip">
           Skip to content
         </a>
       
@@ -2299,22 +2299,44 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#introducao-a-corrida-armamentista-de-deteccao-e-evasao" class="md-nav__link">
+  <a href="#reputacao-de-ip" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Introdução: A Corrida Armamentista de Detecção e Evasão
+        Reputação de IP
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Introdução: A Corrida Armamentista de Detecção e Evasão">
+    <nav class="md-nav" aria-label="Reputação de IP">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#por-que-a-deteccao-importa" class="md-nav__link">
+  <a href="#classificacao-por-asn" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Por que a Detecção Importa
+        Classificação por ASN
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bancos-de-dados-de-proxies-conhecidos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bancos de Dados de Proxies Conhecidos
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#consistencia-de-geolocalizacao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consistência de Geolocalização
       
     </span>
   </a>
@@ -2327,15 +2349,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#deteccao-de-proxy-e-fingerprinting" class="md-nav__link">
+  <a href="#analise-de-cabecalho-http" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Detecção de Proxy e Fingerprinting
+        Análise de Cabeçalho HTTP
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Detecção de Proxy e Fingerprinting">
+    <nav class="md-nav" aria-label="Análise de Cabeçalho HTTP">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2347,75 +2369,30 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Níveis de Anonimato de Proxy">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#exemplo-de-proxy-transparente" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Exemplo de Proxy Transparente
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#exemplo-de-proxy-anonimo" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Exemplo de Proxy Anônimo
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#exemplo-de-proxy-elite" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Exemplo de Proxy Elite
-      
-    </span>
-  </a>
-  
 </li>
         
       </ul>
     </nav>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#tecnicas-de-deteccao" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#network-fingerprinting" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Técnicas de Detecção
+        Network Fingerprinting
       
     </span>
   </a>
   
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#1-reputacao-do-endereco-ip-a-base-da-deteccao" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. Reputação do Endereço IP: A Base da Detecção
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="1. Reputação do Endereço IP: A Base da Detecção">
+    <nav class="md-nav" aria-label="Network Fingerprinting">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#como-funciona-a-reputacao-de-ip" class="md-nav__link">
+  <a href="#fingerprinting-de-tcpip" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Como Funciona a Reputação de IP
+        Fingerprinting de TCP/IP
       
     </span>
   </a>
@@ -2423,10 +2400,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#provedores-comerciais-de-reputacao-de-ip" class="md-nav__link">
+  <a href="#fingerprinting-de-tls-ja3ja4" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Provedores Comerciais de Reputação de IP
+        Fingerprinting de TLS (JA3/JA4)
       
     </span>
   </a>
@@ -2434,10 +2411,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#classificacao-baseada-em-asn" class="md-nav__link">
+  <a href="#fingerprinting-de-http2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Classificação Baseada em ASN
+        Fingerprinting de HTTP/2
       
     </span>
   </a>
@@ -2445,70 +2422,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#bancos-de-dados-de-ip-especificos-de-proxy" class="md-nav__link">
+  <a href="#deteccao-baseada-em-latencia" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Bancos de Dados de IP Específicos de Proxy
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#inconsistencias-de-geolocalizacao" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Inconsistências de Geolocalização
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-analise-de-cabecalho-http" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Análise de Cabeçalho HTTP
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-fingerprinting-de-tcpip" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Fingerprinting de TCP/IP
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#4-fingerprinting-de-tls" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Fingerprinting de TLS
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#5-verificacao-de-consistencia-dns" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Verificação de Consistência DNS
+        Detecção Baseada em Latência
       
     </span>
   </a>
@@ -2521,29 +2438,17 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#resumo-e-pontos-chave" class="md-nav__link">
+  <a href="#deteccao-comportamental" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Resumo e Pontos Chave
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Resumo e Pontos Chave">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#dificuldade-de-deteccao-por-tipo-de-proxy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Dificuldade de Detecção por Tipo de Proxy
+        Detecção Comportamental
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
   <a href="#pontuacao-de-risco-multi-sinal" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2553,70 +2458,37 @@
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#estrategias-de-evasao-alto-nivel" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#deteccao-por-tipo-de-proxy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Estratégias de Evasão (Alto Nível)
+        Detecção por Tipo de Proxy
       
     </span>
   </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#leitura-adicional-e-referencias" class="md-nav__link">
+  <a href="#principios-de-evasao" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Leitura Adicional e Referências
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Leitura Adicional e Referências">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#documentacao-relacionada" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Documentação Relacionada
+        Princípios de Evasão
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#recursos-externos" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#referencias" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Recursos Externos
+        Referências
       
     </span>
   </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#topicos-avancados-alem-deste-documento" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Tópicos Avançados (Além Deste Documento)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -4512,22 +4384,44 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#introducao-a-corrida-armamentista-de-deteccao-e-evasao" class="md-nav__link">
+  <a href="#reputacao-de-ip" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Introdução: A Corrida Armamentista de Detecção e Evasão
+        Reputação de IP
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Introdução: A Corrida Armamentista de Detecção e Evasão">
+    <nav class="md-nav" aria-label="Reputação de IP">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#por-que-a-deteccao-importa" class="md-nav__link">
+  <a href="#classificacao-por-asn" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Por que a Detecção Importa
+        Classificação por ASN
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bancos-de-dados-de-proxies-conhecidos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bancos de Dados de Proxies Conhecidos
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#consistencia-de-geolocalizacao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consistência de Geolocalização
       
     </span>
   </a>
@@ -4540,15 +4434,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#deteccao-de-proxy-e-fingerprinting" class="md-nav__link">
+  <a href="#analise-de-cabecalho-http" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Detecção de Proxy e Fingerprinting
+        Análise de Cabeçalho HTTP
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Detecção de Proxy e Fingerprinting">
+    <nav class="md-nav" aria-label="Análise de Cabeçalho HTTP">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -4560,75 +4454,30 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Níveis de Anonimato de Proxy">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#exemplo-de-proxy-transparente" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Exemplo de Proxy Transparente
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#exemplo-de-proxy-anonimo" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Exemplo de Proxy Anônimo
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#exemplo-de-proxy-elite" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Exemplo de Proxy Elite
-      
-    </span>
-  </a>
-  
 </li>
         
       </ul>
     </nav>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#tecnicas-de-deteccao" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#network-fingerprinting" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Técnicas de Detecção
+        Network Fingerprinting
       
     </span>
   </a>
   
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#1-reputacao-do-endereco-ip-a-base-da-deteccao" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. Reputação do Endereço IP: A Base da Detecção
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="1. Reputação do Endereço IP: A Base da Detecção">
+    <nav class="md-nav" aria-label="Network Fingerprinting">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#como-funciona-a-reputacao-de-ip" class="md-nav__link">
+  <a href="#fingerprinting-de-tcpip" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Como Funciona a Reputação de IP
+        Fingerprinting de TCP/IP
       
     </span>
   </a>
@@ -4636,10 +4485,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#provedores-comerciais-de-reputacao-de-ip" class="md-nav__link">
+  <a href="#fingerprinting-de-tls-ja3ja4" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Provedores Comerciais de Reputação de IP
+        Fingerprinting de TLS (JA3/JA4)
       
     </span>
   </a>
@@ -4647,10 +4496,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#classificacao-baseada-em-asn" class="md-nav__link">
+  <a href="#fingerprinting-de-http2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Classificação Baseada em ASN
+        Fingerprinting de HTTP/2
       
     </span>
   </a>
@@ -4658,70 +4507,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#bancos-de-dados-de-ip-especificos-de-proxy" class="md-nav__link">
+  <a href="#deteccao-baseada-em-latencia" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Bancos de Dados de IP Específicos de Proxy
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#inconsistencias-de-geolocalizacao" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Inconsistências de Geolocalização
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-analise-de-cabecalho-http" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Análise de Cabeçalho HTTP
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-fingerprinting-de-tcpip" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Fingerprinting de TCP/IP
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#4-fingerprinting-de-tls" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Fingerprinting de TLS
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#5-verificacao-de-consistencia-dns" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Verificação de Consistência DNS
+        Detecção Baseada em Latência
       
     </span>
   </a>
@@ -4734,29 +4523,17 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#resumo-e-pontos-chave" class="md-nav__link">
+  <a href="#deteccao-comportamental" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Resumo e Pontos Chave
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Resumo e Pontos Chave">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#dificuldade-de-deteccao-por-tipo-de-proxy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Dificuldade de Detecção por Tipo de Proxy
+        Detecção Comportamental
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
   <a href="#pontuacao-de-risco-multi-sinal" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4766,70 +4543,37 @@
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#estrategias-de-evasao-alto-nivel" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#deteccao-por-tipo-de-proxy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Estratégias de Evasão (Alto Nível)
+        Detecção por Tipo de Proxy
       
     </span>
   </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#leitura-adicional-e-referencias" class="md-nav__link">
+  <a href="#principios-de-evasao" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Leitura Adicional e Referências
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Leitura Adicional e Referências">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#documentacao-relacionada" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Documentação Relacionada
+        Princípios de Evasão
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#recursos-externos" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#referencias" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Recursos Externos
+        Referências
       
     </span>
   </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#topicos-avancados-alem-deste-documento" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Tópicos Avançados (Além Deste Documento)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -4919,661 +4663,175 @@
   
 
 
-<h1 id="deteccao-de-proxy-e-anonimato">Detecção de Proxy e Anonimato</h1>
-<h2 id="introducao-a-corrida-armamentista-de-deteccao-e-evasao">Introdução: A Corrida Armamentista de Detecção e Evasão</h2>
-<p>A detecção de proxy é um <strong>sistema adversário</strong> sofisticado onde sites implementam técnicas cada vez mais avançadas para identificar usuários de proxy, enquanto usuários e provedores de proxy desenvolvem contramedidas para evadir a detecção. Entender essa corrida armamentista é essencial para qualquer um trabalhando com automação de navegador, web scraping ou aplicações focadas em privacidade.</p>
-<p>Este documento revela os mecanismos técnicos que os sites usam para detectar o uso de proxy, desde simples análises de cabeçalho HTTP até reconhecimento complexo de padrões comportamentais. Exploraremos:</p>
-<ul>
-<li><strong>Detecção baseada em IP</strong> (bancos de dados de reputação, análise de ASN, inconsistências de geolocalização)</li>
-<li><strong>Fingerprinting de camada de rede</strong> (características da pilha TCP/IP, padrões de TLS ClientHello)</li>
-<li><strong>Análise de camada de aplicação</strong> (cabeçalhos HTTP, downgrades de protocolo, padrões de conexão)</li>
-<li><strong>Detecção comportamental</strong> (análise de tempo, movimento do mouse, padrões de navegação)</li>
-<li><strong>Verificações de consistência</strong> (resolução DNS, desencontros de fuso horário/localidade)</li>
-</ul>
+<h1 id="deteccao-de-proxy">Detecção de Proxy</h1>
+<p>A detecção de proxy é um processo probabilístico. Sites combinam dezenas de sinais para avaliar se uma conexão está sendo proxyada, desde simples consultas de reputação de IP até análise da pilha TCP/IP e perfil comportamental. Nenhum sinal isolado fornece prova definitiva, mas combinar sinais fracos suficientes produz decisões de alta confiança.</p>
+<p>Este documento cobre as principais técnicas de detecção, como elas funcionam em nível técnico e o que significam para automação de navegador com o Pydoll.</p>
 <div class="admonition info">
 <p class="admonition-title">Navegação do Módulo</p>
 <ul>
-<li><strong><a href="../socks-proxies/">← Proxies SOCKS</a></strong> - Fundamentos de proxy de camada de sessão</li>
-<li><strong><a href="../http-proxies/">← Proxies HTTP/HTTPS</a></strong> - Fundamentos de proxy de camada de aplicação</li>
-<li><strong><a href="../">← Visão Geral de Rede e Segurança</a></strong> - Introdução do módulo</li>
-<li><strong><a href="../build-proxy/">→ Construindo Proxies</a></strong> - Implementação e tópicos avançados</li>
+<li><a href="../socks-proxies/">Proxies SOCKS</a>: Proxying na camada de sessão</li>
+<li><a href="../http-proxies/">Proxies HTTP/HTTPS</a>: Proxying na camada de aplicação</li>
+<li><a href="../network-fundamentals/">Fundamentos de Rede</a>: TCP/IP, UDP, WebRTC</li>
 </ul>
-<p>Para técnicas aprofundadas de fingerprinting, veja <strong><a href="../../fingerprinting/network-fingerprinting/">Network Fingerprinting (Fingerprinting de Rede)</a></strong> e <strong><a href="../../fingerprinting/browser-fingerprinting/">Browser Fingerprinting (Fingerprinting de Navegador)</a></strong>.</p>
+<p>Para detalhes sobre fingerprinting, veja <a href="../../fingerprinting/network-fingerprinting/">Network Fingerprinting</a> e <a href="../../fingerprinting/browser-fingerprinting/">Browser Fingerprinting</a>.</p>
 </div>
-<h3 id="por-que-a-deteccao-importa">Por que a Detecção Importa</h3>
-<p>Sites detectam proxies por várias razões legítimas e de negócios:</p>
-<ol>
-<li><strong>Prevenção a Fraudes</strong>: Impedir tomada de contas, credential stuffing, fraudes de pagamento</li>
-<li><strong>Licenciamento de Conteúdo</strong>: Aplicar restrições geográficas para conteúdo licenciado (Netflix, Hulu, streaming de esportes)</li>
-<li><strong>Discriminação de Preço</strong>: Impedir arbitragem através de diferenças regionais de preços</li>
-<li><strong>Mitigação de Bots</strong>: Bloquear scraping automatizado, coleta de dados, bots cambistas (scalping)</li>
-<li><strong>Segurança</strong>: Bloquear tráfego de infraestruturas de proxy maliciosas conhecidas</li>
-<li><strong>Aplicação dos Termos de Serviço</strong>: Impedir evasão de banimento, múltiplas contas</li>
-</ol>
-<p><strong>A Economia:</strong></p>
-<ul>
-<li><strong>Para sites</strong>: Detecção previne perda de receita (estimada em $100B+ anuais por tráfego de bots)</li>
-<li><strong>Para usuários de proxy</strong>: Evasão permite casos de uso legítimos (privacidade, testes, scraping)</li>
-<li><strong>Para provedores de proxy</strong>: IPs residenciais custam 10-100x mais que IPs de datacenter</li>
-</ul>
-<div class="admonition danger">
-<p class="admonition-title">Nenhum Proxy é Verdadeiramente Indetectável</p>
-<p>Até mesmo <strong>proxies residenciais de elite</strong> podem ser detectados através de análise multi-sinal sofisticada:</p>
-<ul>
-<li>Bancos de dados de reputação de IP agora rastreiam pools de proxies residenciais</li>
-<li>Análise de tempo detecta inconsistências de latência de rede</li>
-<li>Análise comportamental identifica padrões não humanos</li>
-<li>Fingerprinting de navegador revela frameworks de automação</li>
-</ul>
-<p>O objetivo é tornar a detecção <strong>difícil e cara</strong>, não impossível. Um adversário determinado com recursos suficientes pode detectar quase qualquer proxy com alta confiança.</p>
+<h2 id="reputacao-de-ip">Reputação de IP</h2>
+<p>A análise de reputação de IP é a técnica de detecção de proxy mais amplamente implantada. Ela combina dados publicamente disponíveis (registros ASN, WHOIS, bancos de dados de geolocalização) com inteligência proprietária para classificar endereços IP em categorias de risco.</p>
+<h3 id="classificacao-por-asn">Classificação por ASN</h3>
+<p>Todo endereço IP pertence a um Sistema Autônomo (AS), identificado por um ASN. O tipo de AS que possui um IP é o indicador individual mais forte de que ele é um proxy.</p>
+<p>IPs pertencentes a provedores de nuvem e hospedagem (AWS, DigitalOcean, OVH, Hetzner) são sinalizados como alto risco porque usuários reais não navegam na web a partir de servidores de datacenter. IPs de ISPs residenciais (Comcast, Deutsche Telekom, BT) são baixo risco porque parecem conexões domésticas normais. IPs de operadoras móveis (Verizon Wireless, AT&amp;T Mobility) são o risco mais baixo porque são os mais difíceis de distinguir de usuários móveis reais.</p>
+<p>Alguns ASNs estão associados a infraestrutura conhecida de proxy, embora isso seja mais nuançado do que possa parecer. Grandes provedores de proxy residencial como BrightData ou Smartproxy não operam seus próprios ASNs; eles roteiam tráfego através de IPs residenciais reais pertencentes a ASNs de ISPs. Isso é precisamente o que torna proxies residenciais mais difíceis de detectar do que proxies de datacenter.</p>
+<p>Sistemas de detecção consultam bancos de dados de ASN (Team Cymru, RIPE NCC, ARIN) e APIs comerciais de inteligência de IP para classificar cada IP conectando. IPs de datacenter são detectados com aproximadamente 95%+ de precisão porque a classificação por ASN é inequívoca. A detecção de proxy residencial é muito mais difícil (aproximadamente 40-70% de precisão) porque os IPs genuinamente pertencem a ISPs. A detecção de proxy móvel é a mais difícil (aproximadamente 20-40%) porque o NAT de operadoras móveis faz muitos usuários reais compartilharem IPs.</p>
+<p>Esse gradiente de precisão é o motivo pelo qual proxies residenciais e móveis custam de 10 a 100 vezes o preço dos proxies de datacenter.</p>
+<h3 id="bancos-de-dados-de-proxies-conhecidos">Bancos de Dados de Proxies Conhecidos</h3>
+<p>Além da classificação por ASN, bancos de dados especializados rastreiam IPs que foram observados participando de redes de proxy. Serviços como IPQualityScore, proxycheck.io e Spur.us mantêm bancos de dados em tempo real de IPs conhecidos de proxy, VPN e nós de saída Tor. A lista de nós de saída Tor está disponível publicamente em <a href="https://check.torproject.org/torbulkexitlist">check.torproject.org</a>.</p>
+<p>Esses bancos de dados também rastreiam sinais comportamentais: IPs que rotacionam frequentemente (típico de pools de proxy), IPs com contagens anormalmente altas de sessões concorrentes (um IP residencial normalmente tem 1-5 conexões concorrentes, não 100+) e IPs previamente associados a atividade semelhante a bot.</p>
+<h3 id="consistencia-de-geolocalizacao">Consistência de Geolocalização</h3>
+<p>Proxies frequentemente se revelam através de inconsistências geográficas. O endereço IP aponta para uma localização, mas os sinais reportados pelo navegador apontam para outra.</p>
+<p>Os desencontros mais comuns são entre a geolocalização do IP e o fuso horário do navegador (coletado via <code>Intl.DateTimeFormat().resolvedOptions().timeZone</code> do JavaScript), entre o país do IP e o cabeçalho <code>Accept-Language</code>, e entre a localização da sessão atual e a localização de uma sessão anterior. Um usuário aparecendo em Los Angeles com fuso horário do navegador <code>Europe/Berlin</code> é suspeito. Um usuário aparecendo em Tóquio 10 minutos após sua última sessão ter sido em Nova York é fisicamente impossível.</p>
+<p>Sistemas de detecção também verificam se a geolocalização do IP corresponde à configuração de localidade do navegador. Um IP de datacenter dos EUA com <code>Accept-Language: zh-CN</code> e fuso horário <code>Asia/Shanghai</code> sugere fortemente um usuário chinês roteando através de um proxy nos EUA.</p>
+<div class="admonition note">
+<p class="admonition-title">Falsos Positivos</p>
+<p>Cenários legítimos disparam alarmes de geolocalização: viajantes usando VPNs, expatriados com configurações de navegador do país de origem, usuários corporativos conectando através de VPNs da empresa e usuários multilíngues com preferências de idioma não padrão. Sistemas sofisticados usam pontuação de risco em vez de bloqueio binário para lidar com esses casos.</p>
 </div>
-<h2 id="deteccao-de-proxy-e-fingerprinting">Detecção de Proxy e Fingerprinting</h2>
-<p>Sites podem detectar o uso de proxy através de várias técnicas. Entender os níveis de anonimato de proxy é crucial para avaliar o risco de detecção.</p>
+<h2 id="analise-de-cabecalho-http">Análise de Cabeçalho HTTP</h2>
+<p>Cabeçalhos HTTP são o vetor de detecção mais simples. Proxies transparentes e anônimos adicionam cabeçalhos como <code>Via</code>, <code>X-Forwarded-For</code>, <code>X-Real-IP</code> e <code>Forwarded</code> (RFC 7239) que revelam diretamente o uso de proxy. Proxies elite removem esses cabeçalhos, mas sua ausência por si só não é prova de uma conexão direta.</p>
+<p>A detecção vai além de procurar cabeçalhos específicos de proxy. Cabeçalhos ausentes que navegadores reais sempre enviam (como <code>Accept-Language</code>, <code>Accept-Encoding</code> ou um <code>User-Agent</code> realista) são suspeitos. A ordem dos cabeçalhos também importa: navegadores enviam cabeçalhos em uma ordem consistente e específica da versão, e proxies ou ferramentas de automação que constroem cabeçalhos manualmente frequentemente erram a ordem.</p>
+<p>O cabeçalho legado <code>Proxy-Connection: keep-alive</code>, enviado por alguns clientes mais antigos ao rotear através de um proxy, é outro sinal clássico de detecção.</p>
 <h3 id="niveis-de-anonimato-de-proxy">Níveis de Anonimato de Proxy</h3>
-<p>Nem todos os proxies fornecem o mesmo nível de anonimato. Eles são classificados em três categorias com base em quais informações revelam:</p>
+<p>Proxies são tradicionalmente classificados em três níveis de anonimato com base em seu comportamento de cabeçalhos:</p>
 <table>
 <thead>
 <tr>
 <th>Nível</th>
-<th>Descrição</th>
-<th>Cabeçalhos Enviados</th>
-<th>Detectável</th>
-<th>Caso de Uso</th>
+<th>Comportamento</th>
+<th>Detecção</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>Transparente</strong></td>
-<td>Revela IP do cliente e uso de proxy</td>
-<td><code>X-Forwarded-For: IP_DO_CLIENTE</code><br/><code>Via: PROXY</code></td>
-<td>Facilmente detectado</td>
-<td>Filtragem de conteúdo, cache (não privacidade)</td>
+<td>Transparente</td>
+<td>Encaminha seu IP real em <code>X-Forwarded-For</code>, adiciona cabeçalho <code>Via</code></td>
+<td>Trivial</td>
 </tr>
 <tr>
-<td><strong>Anônimo</strong></td>
-<td>Esconde IP do cliente mas revela uso de proxy</td>
-<td><code>X-Forwarded-For: IP_DO_PROXY</code><br/><code>Via: PROXY</code></td>
-<td>Proxy detectável, IP oculto</td>
-<td>Privacidade básica, contornar geo-bloqueios</td>
+<td>Anônimo</td>
+<td>Esconde seu IP mas adiciona <code>Via</code> ou outros cabeçalhos de proxy</td>
+<td>Fácil</td>
 </tr>
 <tr>
-<td><strong>Elite (Alta Anonimidade)</strong></td>
-<td>Esconde tanto IP do cliente quanto uso de proxy</td>
-<td>Nenhum cabeçalho relacionado a proxy</td>
-<td>Difícil de detectar</td>
-<td>Privacidade máxima, scraping, tarefas sensíveis</td>
+<td>Elite</td>
+<td>Remove todos os cabeçalhos identificadores de proxy</td>
+<td>Requer análise mais profunda</td>
 </tr>
 </tbody>
 </table>
-<h4 id="exemplo-de-proxy-transparente">Exemplo de Proxy Transparente</h4>
-<div class="language-http highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">GET</span> <span class="nn">/api/data</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="na">Host</span><span class="o">:</span> <span class="l">example.com</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="na">X-Forwarded-For</span><span class="o">:</span> <span class="l">203.0.113.45        ← Seu IP real vazou!</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="na">X-Real-IP</span><span class="o">:</span> <span class="l">203.0.113.45               ← Também revela IP real</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="na">Via</span><span class="o">:</span> <span class="l">1.1 proxy.example.com            ← Revela servidor proxy</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="na">Forwarded</span><span class="o">:</span> <span class="l">for=203.0.113.45;by=proxy  ← Formato RFC 7239</span>
-</span></code></pre></div>
-<p><strong>Detecção:</strong>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">is_transparent_proxy</span><span class="p">(</span><span class="n">headers</span><span class="p">):</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Site pode ver seu IP real apesar do proxy.&quot;&quot;&quot;</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="k">return</span> <span class="p">(</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>        <span class="s1">&#39;X-Forwarded-For&#39;</span> <span class="ow">in</span> <span class="n">headers</span> <span class="ow">or</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>        <span class="s1">&#39;X-Real-IP&#39;</span> <span class="ow">in</span> <span class="n">headers</span> <span class="ow">or</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>        <span class="s1">&#39;Via&#39;</span> <span class="ow">in</span> <span class="n">headers</span> <span class="ow">or</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>        <span class="s1">&#39;Forwarded&#39;</span> <span class="ow">in</span> <span class="n">headers</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="p">)</span>
-</span></code></pre></div></p>
-<h4 id="exemplo-de-proxy-anonimo">Exemplo de Proxy Anônimo</h4>
-<div class="language-http highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nf">GET</span> <span class="nn">/api/data</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="na">Host</span><span class="o">:</span> <span class="l">example.com</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="na">X-Forwarded-For</span><span class="o">:</span> <span class="l">198.51.100.10       ← IP do Proxy, não o seu</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="na">Via</span><span class="o">:</span> <span class="l">1.1 anonymous-proxy              ← Revela uso de proxy</span>
-</span></code></pre></div>
-<p><strong>Detecção:</strong>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">is_anonymous_proxy</span><span class="p">(</span><span class="n">headers</span><span class="p">):</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Site sabe que você está usando um proxy, mas não vê seu IP real.&quot;&quot;&quot;</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="k">return</span> <span class="s1">&#39;Via&#39;</span> <span class="ow">in</span> <span class="n">headers</span> <span class="ow">or</span> <span class="n">check_ip_in_proxy_database</span><span class="p">(</span><span class="n">client_ip</span><span class="p">)</span>
-</span></code></pre></div></p>
-<h4 id="exemplo-de-proxy-elite">Exemplo de Proxy Elite</h4>
-<div class="language-http highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nf">GET</span> <span class="nn">/api/data</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="na">Host</span><span class="o">:</span> <span class="l">example.com</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="na">User-Agent</span><span class="o">:</span> <span class="l">Mozilla/5.0 ...</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="na">Accept</span><span class="o">:</span> <span class="l">text/html,application/xhtml+xml</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="na">Accept-Language</span><span class="o">:</span> <span class="l">en-US,en;q=0.9</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>                                      <span class="l">← Nenhum cabeçalho relacionado a proxy</span>
-</span></code></pre></div>
-<p><strong>Detecção:</strong>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">is_elite_proxy</span><span class="p">(</span><span class="n">headers</span><span class="p">,</span> <span class="n">client_ip</span><span class="p">):</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="sd">    Nenhum cabeçalho óbvio de proxy, mas ainda pode ser detectado através de:</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="sd">    - Bancos de dados de reputação de IP</span>
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="sd">    - Fingerprinting de TCP/IP</span>
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="sd">    - Fingerprinting de TLS</span>
-</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="sd">    - Análise comportamental</span>
-</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>    <span class="k">return</span> <span class="p">(</span>
-</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>        <span class="n">ip_in_datacenter</span><span class="p">(</span><span class="n">client_ip</span><span class="p">)</span> <span class="ow">or</span>
-</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>        <span class="n">tcp_fingerprint_mismatch</span><span class="p">(</span><span class="n">headers</span><span class="p">)</span> <span class="ow">or</span>
-</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>        <span class="n">suspicious_connection_pattern</span><span class="p">()</span>
-</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>    <span class="p">)</span>
-</span></code></pre></div></p>
-<div class="admonition info">
-<p class="admonition-title">Nível de Anonimato na Prática</p>
-<ul>
-<li><strong>Proxies transparentes</strong> são usados para filtragem corporativa, não privacidade</li>
-<li><strong>Proxies anônimos</strong> protegem seu IP, mas os sites sabem que você está usando um proxy</li>
-<li><strong>Proxies elite</strong> são os mais difíceis de detectar, mas não impossíveis (veja técnicas de detecção abaixo)</li>
-</ul>
-<p>A maioria dos serviços de proxy comercial oferece proxies anônimos ou elite. Proxies gratuitos são frequentemente transparentes.</p>
-</div>
-<h3 id="tecnicas-de-deteccao">Técnicas de Detecção</h3>
-<p>Sites empregam vários métodos para detectar o uso de proxy, independentemente do nível de anonimato:</p>
-<h3 id="1-reputacao-do-endereco-ip-a-base-da-deteccao">1. Reputação do Endereço IP: A Base da Detecção</h3>
-<p>A análise de reputação de IP é a técnica de detecção de proxy <strong>mais eficaz e amplamente implantada</strong>. Ela utiliza dados publicamente disponíveis (registros ASN, WHOIS, bancos de dados de geolocalização) e inteligência proprietária para categorizar endereços IP.</p>
-<h4 id="como-funciona-a-reputacao-de-ip">Como Funciona a Reputação de IP</h4>
-<p>Sites consultam <strong>bancos de dados de reputação de IP</strong> para classificar o tráfego de entrada:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Sistema simplificado de reputação de IP</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">comprehensive_ip_check</span><span class="p">(</span><span class="n">ip_address</span><span class="p">):</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="sd">    Análise de reputação de IP multicamada combinando múltiplos sinais.</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="n">signals</span> <span class="o">=</span> <span class="p">{}</span>
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>    <span class="c1"># 1. Análise de ASN (Número do Sistema Autônomo)</span>
-</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>    <span class="n">asn_info</span> <span class="o">=</span> <span class="n">query_asn_database</span><span class="p">(</span><span class="n">ip_address</span><span class="p">)</span>
-</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>    <span class="n">signals</span><span class="p">[</span><span class="s1">&#39;asn&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">asn_info</span><span class="p">[</span><span class="s1">&#39;number&#39;</span><span class="p">]</span>  <span class="c1"># ex: AS14061 (DigitalOcean)</span>
-</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>    <span class="n">signals</span><span class="p">[</span><span class="s1">&#39;as_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">asn_info</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
-</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>    <span class="n">signals</span><span class="p">[</span><span class="s1">&#39;as_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">classify_asn_type</span><span class="p">(</span><span class="n">asn_info</span><span class="p">)</span>
-</span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>
-</span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>    <span class="c1"># 2. Classificação do Tipo de IP</span>
-</span><span id="__span-6-15"><a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a>    <span class="k">if</span> <span class="n">signals</span><span class="p">[</span><span class="s1">&#39;as_type&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;hosting&#39;</span><span class="p">,</span> <span class="s1">&#39;datacenter&#39;</span><span class="p">,</span> <span class="s1">&#39;cloud&#39;</span><span class="p">]:</span>
-</span><span id="__span-6-16"><a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a>        <span class="n">signals</span><span class="p">[</span><span class="s1">&#39;ip_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;DATACENTER&#39;</span>
-</span><span id="__span-6-17"><a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a>        <span class="n">signals</span><span class="p">[</span><span class="s1">&#39;risk_score&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">90</span>  <span class="c1"># Alto risco</span>
-</span><span id="__span-6-18"><a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a>    <span class="k">elif</span> <span class="n">signals</span><span class="p">[</span><span class="s1">&#39;as_type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;isp&#39;</span><span class="p">:</span>
-</span><span id="__span-6-19"><a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a>        <span class="n">signals</span><span class="p">[</span><span class="s1">&#39;ip_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;RESIDENTIAL&#39;</span>
-</span><span id="__span-6-20"><a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a>        <span class="n">signals</span><span class="p">[</span><span class="s1">&#39;risk_score&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">20</span>  <span class="c1"># Risco mais baixo</span>
-</span><span id="__span-6-21"><a id="__codelineno-6-21" name="__codelineno-6-21" href="#__codelineno-6-21"></a>    <span class="k">elif</span> <span class="n">signals</span><span class="p">[</span><span class="s1">&#39;as_type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;mobile&#39;</span><span class="p">:</span>
-</span><span id="__span-6-22"><a id="__codelineno-6-22" name="__codelineno-6-22" href="#__codelineno-6-22"></a>        <span class="n">signals</span><span class="p">[</span><span class="s1">&#39;ip_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;MOBILE&#39;</span>
-</span><span id="__span-6-23"><a id="__codelineno-6-23" name="__codelineno-6-23" href="#__codelineno-6-23"></a>        <span class="n">signals</span><span class="p">[</span><span class="s1">&#39;risk_score&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">15</span>  <span class="c1"># Risco mais baixo</span>
-</span><span id="__span-6-24"><a id="__codelineno-6-24" name="__codelineno-6-24" href="#__codelineno-6-24"></a>
-</span><span id="__span-6-25"><a id="__codelineno-6-25" name="__codelineno-6-25" href="#__codelineno-6-25"></a>    <span class="c1"># 3. Verificação em Banco de Dados de Proxies Conhecidos</span>
-</span><span id="__span-6-26"><a id="__codelineno-6-26" name="__codelineno-6-26" href="#__codelineno-6-26"></a>    <span class="k">if</span> <span class="n">ip_in_proxy_database</span><span class="p">(</span><span class="n">ip_address</span><span class="p">):</span>
-</span><span id="__span-6-27"><a id="__codelineno-6-27" name="__codelineno-6-27" href="#__codelineno-6-27"></a>        <span class="n">signals</span><span class="p">[</span><span class="s1">&#39;known_proxy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-</span><span id="__span-6-28"><a id="__codelineno-6-28" name="__codelineno-6-28" href="#__codelineno-6-28"></a>        <span class="n">signals</span><span class="p">[</span><span class="s1">&#39;proxy_provider&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_proxy_provider</span><span class="p">(</span><span class="n">ip_address</span><span class="p">)</span>
-</span><span id="__span-6-29"><a id="__codelineno-6-29" name="__codelineno-6-29" href="#__codelineno-6-29"></a>        <span class="n">signals</span><span class="p">[</span><span class="s1">&#39;risk_score&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># Bloqueio instantâneo</span>
-</span><span id="__span-6-30"><a id="__codelineno-6-30" name="__codelineno-6-30" href="#__codelineno-6-30"></a>
-</span><span id="__span-6-31"><a id="__codelineno-6-31" name="__codelineno-6-31" href="#__codelineno-6-31"></a>    <span class="c1"># 4. Consistência de Geolocalização</span>
-</span><span id="__span-6-32"><a id="__codelineno-6-32" name="__codelineno-6-32" href="#__codelineno-6-32"></a>    <span class="n">geo</span> <span class="o">=</span> <span class="n">query_geolocation</span><span class="p">(</span><span class="n">ip_address</span><span class="p">)</span>
-</span><span id="__span-6-33"><a id="__codelineno-6-33" name="__codelineno-6-33" href="#__codelineno-6-33"></a>    <span class="n">signals</span><span class="p">[</span><span class="s1">&#39;country&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">geo</span><span class="p">[</span><span class="s1">&#39;country_code&#39;</span><span class="p">]</span>
-</span><span id="__span-6-34"><a id="__codelineno-6-34" name="__codelineno-6-34" href="#__codelineno-6-34"></a>    <span class="n">signals</span><span class="p">[</span><span class="s1">&#39;city&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">geo</span><span class="p">[</span><span class="s1">&#39;city&#39;</span><span class="p">]</span>
-</span><span id="__span-6-35"><a id="__codelineno-6-35" name="__codelineno-6-35" href="#__codelineno-6-35"></a>    <span class="n">signals</span><span class="p">[</span><span class="s1">&#39;lat_long&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">geo</span><span class="p">[</span><span class="s1">&#39;latitude&#39;</span><span class="p">],</span> <span class="n">geo</span><span class="p">[</span><span class="s1">&#39;longitude&#39;</span><span class="p">])</span>
-</span><span id="__span-6-36"><a id="__codelineno-6-36" name="__codelineno-6-36" href="#__codelineno-6-36"></a>
-</span><span id="__span-6-37"><a id="__codelineno-6-37" name="__codelineno-6-37" href="#__codelineno-6-37"></a>    <span class="c1"># 5. Dados Históricos de Abuso</span>
-</span><span id="__span-6-38"><a id="__codelineno-6-38" name="__codelineno-6-38" href="#__codelineno-6-38"></a>    <span class="n">abuse_score</span> <span class="o">=</span> <span class="n">query_abuse_database</span><span class="p">(</span><span class="n">ip_address</span><span class="p">)</span>
-</span><span id="__span-6-39"><a id="__codelineno-6-39" name="__codelineno-6-39" href="#__codelineno-6-39"></a>    <span class="n">signals</span><span class="p">[</span><span class="s1">&#39;abuse_score&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">abuse_score</span>  <span class="c1"># 0-100</span>
-</span><span id="__span-6-40"><a id="__codelineno-6-40" name="__codelineno-6-40" href="#__codelineno-6-40"></a>    <span class="n">signals</span><span class="p">[</span><span class="s1">&#39;risk_score&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">abuse_score</span> <span class="o">*</span> <span class="mf">0.5</span>
-</span><span id="__span-6-41"><a id="__codelineno-6-41" name="__codelineno-6-41" href="#__codelineno-6-41"></a>
-</span><span id="__span-6-42"><a id="__codelineno-6-42" name="__codelineno-6-42" href="#__codelineno-6-42"></a>    <span class="c1"># 6. Contagem de Conexões (Quantos usuários compartilham este IP?)</span>
-</span><span id="__span-6-43"><a id="__codelineno-6-43" name="__codelineno-6-43" href="#__codelineno-6-43"></a>    <span class="n">connection_count</span> <span class="o">=</span> <span class="n">get_concurrent_connections</span><span class="p">(</span><span class="n">ip_address</span><span class="p">)</span>
-</span><span id="__span-6-44"><a id="__codelineno-6-44" name="__codelineno-6-44" href="#__codelineno-6-44"></a>    <span class="k">if</span> <span class="n">connection_count</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">:</span>  <span class="c1"># Residencial típico: 1-5</span>
-</span><span id="__span-6-45"><a id="__codelineno-6-45" name="__codelineno-6-45" href="#__codelineno-6-45"></a>        <span class="n">signals</span><span class="p">[</span><span class="s1">&#39;suspicious_connection_count&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-</span><span id="__span-6-46"><a id="__codelineno-6-46" name="__codelineno-6-46" href="#__codelineno-6-46"></a>        <span class="n">signals</span><span class="p">[</span><span class="s1">&#39;risk_score&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">30</span>
-</span><span id="__span-6-47"><a id="__codelineno-6-47" name="__codelineno-6-47" href="#__codelineno-6-47"></a>
-</span><span id="__span-6-48"><a id="__codelineno-6-48" name="__codelineno-6-48" href="#__codelineno-6-48"></a>    <span class="k">return</span> <span class="n">signals</span>
-</span></code></pre></div>
-<h4 id="provedores-comerciais-de-reputacao-de-ip">Provedores Comerciais de Reputação de IP</h4>
-<p>Principais serviços anti-fraude e de detecção de proxy:</p>
-<table>
-<thead>
-<tr>
-<th>Provedor</th>
-<th>Cobertura</th>
-<th>Taxa de Detecção</th>
-<th>Casos de Uso</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>MaxMind GeoIP2</strong></td>
-<td>4B+ IPs, 99% cobertura</td>
-<td>~85% detecção datacenter</td>
-<td>Geolocalização, identificação ISP, tipo de proxy</td>
-</tr>
-<tr>
-<td><strong>IPQualityScore</strong></td>
-<td>Pontuação em tempo real</td>
-<td>~95% detecção proxy</td>
-<td>Prevenção a fraudes, bloqueio VPN/proxy</td>
-</tr>
-<tr>
-<td><strong>IP2Location</strong></td>
-<td>240+ países</td>
-<td>~80% detecção proxy</td>
-<td>Licenciamento de conteúdo, geo-bloqueio</td>
-</tr>
-<tr>
-<td><strong>IPQS Proxy Detection</strong></td>
-<td>10M+ proxies conhecidos</td>
-<td>~99% detecção proxy conhecido</td>
-<td>Bloqueio agressivo de proxy</td>
-</tr>
-<tr>
-<td><strong>Spur.us</strong></td>
-<td>Foco em IPs anônimos</td>
-<td>~90% detecção VPN/proxy</td>
-<td>Segurança, inteligência de ameaças</td>
-</tr>
-<tr>
-<td><strong>Shodan/Censys</strong></td>
-<td>Dados de varredura de porta</td>
-<td>N/A (inteligência de infra)</td>
-<td>Identificando servidores proxy por portas abertas</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Estrutura de Custos:</strong></p>
-<ul>
-<li><strong>Nível gratuito</strong>: MaxMind GeoLite2 (menos preciso, atualizações atrasadas)</li>
-<li><strong>Nível pago</strong>: $50-500/mês para consultas em tempo real</li>
-<li><strong>Empresarial</strong>: $5,000+/mês para análise multi-sinal de alto volume</li>
-</ul>
-<div class="admonition info">
-<p class="admonition-title">Precisão da Detecção</p>
-<p><strong>Detecção de IP Datacenter</strong>: ~95%+ de precisão (ASNs bem conhecidos, fácil de classificar)
-<strong>Detecção de proxy Residencial</strong>: ~40-70% de precisão (mais difícil de distinguir de usuários legítimos)
-<strong>Detecção de proxy Móvel</strong>: ~20-40% de precisão (frequentemente indistinguível de usuários móveis reais)</p>
-<p>É por isso que proxies residenciais e móveis têm preços premium.</p>
-</div>
-<h4 id="classificacao-baseada-em-asn">Classificação Baseada em ASN</h4>
-<p><strong>Números de Sistema Autônomo (ASNs)</strong> são o identificador primário para propriedade de IP:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Exemplos de classificação de ASN</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">ASN_CLASSIFICATIONS</span> <span class="o">=</span> <span class="p">{</span>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>    <span class="c1"># Nuvem/Hospedagem (Alto Risco)</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span class="s1">&#39;AS16509&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Amazon AWS&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;cloud&#39;</span><span class="p">,</span> <span class="s1">&#39;risk&#39;</span><span class="p">:</span> <span class="mi">95</span><span class="p">},</span>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    <span class="s1">&#39;AS14061&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;DigitalOcean&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;hosting&#39;</span><span class="p">,</span> <span class="s1">&#39;risk&#39;</span><span class="p">:</span> <span class="mi">95</span><span class="p">},</span>
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>    <span class="s1">&#39;AS16276&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;OVH&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;hosting&#39;</span><span class="p">,</span> <span class="s1">&#39;risk&#39;</span><span class="p">:</span> <span class="mi">95</span><span class="p">},</span>
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>    <span class="s1">&#39;AS24940&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Hetzner&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;hosting&#39;</span><span class="p">,</span> <span class="s1">&#39;risk&#39;</span><span class="p">:</span> <span class="mi">95</span><span class="p">},</span>
-</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>
-</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>    <span class="c1"># Provedores de Proxy (Bloqueio Instantâneo)</span>
-</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>    <span class="s1">&#39;AS200000&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;BrightData (Luminati)&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;proxy&#39;</span><span class="p">,</span> <span class="s1">&#39;risk&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">},</span>
-</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>    <span class="s1">&#39;AS62240&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Smartproxy&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;proxy&#39;</span><span class="p">,</span> <span class="s1">&#39;risk&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">},</span>
-</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>    <span class="s1">&#39;AS63023&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;GTHost (proxy infrastructure)&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;proxy&#39;</span><span class="p">,</span> <span class="s1">&#39;risk&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">},</span>
-</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>
-</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>    <span class="c1"># ISPs Residenciais (Baixo Risco)</span>
-</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a>    <span class="s1">&#39;AS7922&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Comcast&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;isp&#39;</span><span class="p">,</span> <span class="s1">&#39;risk&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>
-</span><span id="__span-7-16"><a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a>    <span class="s1">&#39;AS209&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;CenturyLink&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;isp&#39;</span><span class="p">,</span> <span class="s1">&#39;risk&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>
-</span><span id="__span-7-17"><a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a>    <span class="s1">&#39;AS3320&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Deutsche Telekom&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;isp&#39;</span><span class="p">,</span> <span class="s1">&#39;risk&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>
-</span><span id="__span-7-18"><a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a>
-</span><span id="__span-7-19"><a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a>    <span class="c1"># Operadoras Móveis (Risco Muito Baixo)</span>
-</span><span id="__span-7-20"><a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a>    <span class="s1">&#39;AS22394&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Cellco Partnership (Verizon Wireless)&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;mobile&#39;</span><span class="p">,</span> <span class="s1">&#39;risk&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">},</span>
-</span><span id="__span-7-21"><a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a>    <span class="s1">&#39;AS20057&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;AT&amp;T Mobility&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;mobile&#39;</span><span class="p">,</span> <span class="s1">&#39;risk&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">},</span>
-</span><span id="__span-7-22"><a id="__codelineno-7-22" name="__codelineno-7-22" href="#__codelineno-7-22"></a><span class="p">}</span>
-</span><span id="__span-7-23"><a id="__codelineno-7-23" name="__codelineno-7-23" href="#__codelineno-7-23"></a>
-</span><span id="__span-7-24"><a id="__codelineno-7-24" name="__codelineno-7-24" href="#__codelineno-7-24"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_risk_from_asn</span><span class="p">(</span><span class="n">asn</span><span class="p">):</span>
-</span><span id="__span-7-25"><a id="__codelineno-7-25" name="__codelineno-7-25" href="#__codelineno-7-25"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Consulta banco de dados ASN e retorna avaliação de risco.&quot;&quot;&quot;</span>
-</span><span id="__span-7-26"><a id="__codelineno-7-26" name="__codelineno-7-26" href="#__codelineno-7-26"></a>    <span class="n">asn_data</span> <span class="o">=</span> <span class="n">ASN_CLASSIFICATIONS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">asn</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;unknown&#39;</span><span class="p">,</span> <span class="s1">&#39;risk&#39;</span><span class="p">:</span> <span class="mi">50</span><span class="p">})</span>
-</span><span id="__span-7-27"><a id="__codelineno-7-27" name="__codelineno-7-27" href="#__codelineno-7-27"></a>    <span class="k">return</span> <span class="n">asn_data</span>
-</span></code></pre></div>
-<p><strong>Ferramentas para consultar ASN:</strong></p>
-<ul>
-<li><strong>Comando <code>whois</code></strong>: <code>whois -h whois.cymru.com " -v 8.8.8.8"</code></li>
-<li><strong>Bibliotecas Python</strong>: <code>ipwhois</code>, <code>pyasn</code></li>
-<li><strong>APIs</strong>: IPInfo.io, IPAPI, AbuseIPDB</li>
-</ul>
-<h4 id="bancos-de-dados-de-ip-especificos-de-proxy">Bancos de Dados de IP Específicos de Proxy</h4>
-<p>Bancos de dados especializados rastreiam <strong>infraestrutura de proxy conhecida</strong>:</p>
-<ol>
-<li>
-<p><strong>APIs de Detecção de Proxy:</strong></p>
-<ul>
-<li><strong>getipintel.net</strong>: API gratuita, banco de dados de proxy crowdsourced</li>
-<li><strong>proxycheck.io</strong>: Detecção de proxy em tempo real com SLA de 99.9% de uptime</li>
-<li><strong>ipqs.io</strong>: Suíte de detecção de fraudes incluindo pontuação de proxy</li>
-</ul>
-</li>
-<li>
-<p><strong>Listas Open-Source:</strong></p>
-<ul>
-<li><strong>Nós de saída Tor</strong>: Listados publicamente (https://check.torproject.org/torbulkexitlist)</li>
-<li><strong>Listas públicas de proxy</strong>: Raspadas de fóruns, sites (proxies de baixa qualidade)</li>
-<li><strong>Faixas de IP de VPN</strong>: Compiladas de provedores de VPN conhecidos</li>
-</ul>
-</li>
-<li>
-<p><strong>Rastreamento Comportamental:</strong></p>
-<ul>
-<li>IPs que rotacionam frequentemente (típico de pools de proxy)</li>
-<li>IPs com padrões de conexão anormais (100+ sessões concorrentes)</li>
-<li>IPs associados a comportamento semelhante a bot</li>
-</ul>
-</li>
-</ol>
-<h4 id="inconsistencias-de-geolocalizacao">Inconsistências de Geolocalização</h4>
-<p>Proxies frequentemente se revelam através de <strong>impossibilidades geográficas</strong>:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">check_geolocation_consistency</span><span class="p">(</span><span class="n">ip_address</span><span class="p">,</span> <span class="n">headers</span><span class="p">,</span> <span class="n">session_data</span><span class="p">):</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="sd">    Detecta desencontros de geolocalização que indicam proxy.</span>
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    <span class="n">inconsistencies</span> <span class="o">=</span> <span class="p">[]</span>
-</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
-</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    <span class="c1"># Geolocalização baseada em IP</span>
-</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    <span class="n">ip_geo</span> <span class="o">=</span> <span class="n">geolocate_ip</span><span class="p">(</span><span class="n">ip_address</span><span class="p">)</span>  <span class="c1"># → &quot;US, California, Los Angeles&quot;</span>
-</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>
-</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>    <span class="c1"># Fuso horário reportado pelo navegador</span>
-</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>    <span class="n">browser_tz</span> <span class="o">=</span> <span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Timezone&#39;</span><span class="p">)</span>  <span class="c1"># → &quot;Europe/Berlin&quot; (do JavaScript)</span>
-</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>    <span class="n">expected_tz</span> <span class="o">=</span> <span class="n">get_timezone_for_location</span><span class="p">(</span><span class="n">ip_geo</span><span class="p">)</span>
-</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>    <span class="k">if</span> <span class="n">browser_tz</span> <span class="o">!=</span> <span class="n">expected_tz</span><span class="p">:</span>
-</span><span id="__span-8-14"><a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>        <span class="n">inconsistencies</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
-</span><span id="__span-8-15"><a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;TIMEZONE_MISMATCH&#39;</span><span class="p">,</span>
-</span><span id="__span-8-16"><a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>            <span class="s1">&#39;ip_tz&#39;</span><span class="p">:</span> <span class="n">expected_tz</span><span class="p">,</span>
-</span><span id="__span-8-17"><a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a>            <span class="s1">&#39;browser_tz&#39;</span><span class="p">:</span> <span class="n">browser_tz</span><span class="p">,</span>
-</span><span id="__span-8-18"><a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a>            <span class="s1">&#39;severity&#39;</span><span class="p">:</span> <span class="s1">&#39;HIGH&#39;</span>
-</span><span id="__span-8-19"><a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a>        <span class="p">})</span>
-</span><span id="__span-8-20"><a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a>
-</span><span id="__span-8-21"><a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a>    <span class="c1"># Idioma reportado pelo navegador</span>
-</span><span id="__span-8-22"><a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a>    <span class="n">accept_language</span> <span class="o">=</span> <span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Accept-Language&#39;</span><span class="p">)</span>  <span class="c1"># → &quot;de-DE,de;q=0.9&quot;</span>
-</span><span id="__span-8-23"><a id="__codelineno-8-23" name="__codelineno-8-23" href="#__codelineno-8-23"></a>    <span class="n">expected_lang</span> <span class="o">=</span> <span class="n">get_common_language</span><span class="p">(</span><span class="n">ip_geo</span><span class="p">)</span>  <span class="c1"># → &quot;en-US&quot;</span>
-</span><span id="__span-8-24"><a id="__codelineno-8-24" name="__codelineno-8-24" href="#__codelineno-8-24"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">accept_language</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">expected_lang</span><span class="p">[:</span><span class="mi">2</span><span class="p">]):</span>
-</span><span id="__span-8-25"><a id="__codelineno-8-25" name="__codelineno-8-25" href="#__codelineno-8-25"></a>        <span class="n">inconsistencies</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
-</span><span id="__span-8-26"><a id="__codelineno-8-26" name="__codelineno-8-26" href="#__codelineno-8-26"></a>            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;LANGUAGE_MISMATCH&#39;</span><span class="p">,</span>
-</span><span id="__span-8-27"><a id="__codelineno-8-27" name="__codelineno-8-27" href="#__codelineno-8-27"></a>            <span class="s1">&#39;ip_lang&#39;</span><span class="p">:</span> <span class="n">expected_lang</span><span class="p">,</span>
-</span><span id="__span-8-28"><a id="__codelineno-8-28" name="__codelineno-8-28" href="#__codelineno-8-28"></a>            <span class="s1">&#39;browser_lang&#39;</span><span class="p">:</span> <span class="n">accept_language</span><span class="p">,</span>
-</span><span id="__span-8-29"><a id="__codelineno-8-29" name="__codelineno-8-29" href="#__codelineno-8-29"></a>            <span class="s1">&#39;severity&#39;</span><span class="p">:</span> <span class="s1">&#39;MEDIUM&#39;</span>
-</span><span id="__span-8-30"><a id="__codelineno-8-30" name="__codelineno-8-30" href="#__codelineno-8-30"></a>        <span class="p">})</span>
-</span><span id="__span-8-31"><a id="__codelineno-8-31" name="__codelineno-8-31" href="#__codelineno-8-31"></a>
-</span><span id="__span-8-32"><a id="__codelineno-8-32" name="__codelineno-8-32" href="#__codelineno-8-32"></a>    <span class="c1"># Localização da sessão anterior (se usuário tem cookies)</span>
-</span><span id="__span-8-33"><a id="__codelineno-8-33" name="__codelineno-8-33" href="#__codelineno-8-33"></a>    <span class="k">if</span> <span class="n">session_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;last_known_country&#39;</span><span class="p">):</span>
-</span><span id="__span-8-34"><a id="__codelineno-8-34" name="__codelineno-8-34" href="#__codelineno-8-34"></a>        <span class="n">prev_country</span> <span class="o">=</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;last_known_country&#39;</span><span class="p">]</span>
-</span><span id="__span-8-35"><a id="__codelineno-8-35" name="__codelineno-8-35" href="#__codelineno-8-35"></a>        <span class="n">curr_country</span> <span class="o">=</span> <span class="n">ip_geo</span><span class="p">[</span><span class="s1">&#39;country&#39;</span><span class="p">]</span>
-</span><span id="__span-8-36"><a id="__codelineno-8-36" name="__codelineno-8-36" href="#__codelineno-8-36"></a>        <span class="n">time_diff</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">session_data</span><span class="p">[</span><span class="s1">&#39;last_seen&#39;</span><span class="p">]</span>
-</span><span id="__span-8-37"><a id="__codelineno-8-37" name="__codelineno-8-37" href="#__codelineno-8-37"></a>
-</span><span id="__span-8-38"><a id="__codelineno-8-38" name="__codelineno-8-38" href="#__codelineno-8-38"></a>        <span class="c1"># Viagem impossível: EUA → China em 10 minutos</span>
-</span><span id="__span-8-39"><a id="__codelineno-8-39" name="__codelineno-8-39" href="#__codelineno-8-39"></a>        <span class="k">if</span> <span class="n">prev_country</span> <span class="o">!=</span> <span class="n">curr_country</span> <span class="ow">and</span> <span class="n">time_diff</span> <span class="o">&lt;</span> <span class="mi">3600</span><span class="p">:</span>
-</span><span id="__span-8-40"><a id="__codelineno-8-40" name="__codelineno-8-40" href="#__codelineno-8-40"></a>            <span class="n">distance_km</span> <span class="o">=</span> <span class="n">calculate_distance</span><span class="p">(</span><span class="n">prev_country</span><span class="p">,</span> <span class="n">curr_country</span><span class="p">)</span>
-</span><span id="__span-8-41"><a id="__codelineno-8-41" name="__codelineno-8-41" href="#__codelineno-8-41"></a>            <span class="n">max_possible_speed</span> <span class="o">=</span> <span class="n">distance_km</span> <span class="o">/</span> <span class="p">(</span><span class="n">time_diff</span> <span class="o">/</span> <span class="mi">3600</span><span class="p">)</span>  <span class="c1"># km/h</span>
-</span><span id="__span-8-42"><a id="__codelineno-8-42" name="__codelineno-8-42" href="#__codelineno-8-42"></a>
-</span><span id="__span-8-43"><a id="__codelineno-8-43" name="__codelineno-8-43" href="#__codelineno-8-43"></a>            <span class="k">if</span> <span class="n">max_possible_speed</span> <span class="o">&gt;</span> <span class="mi">1000</span><span class="p">:</span>  <span class="c1"># Mais rápido que voo comercial</span>
-</span><span id="__span-8-44"><a id="__codelineno-8-44" name="__codelineno-8-44" href="#__codelineno-8-44"></a>                <span class="n">inconsistencies</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
-</span><span id="__span-8-45"><a id="__codelineno-8-45" name="__codelineno-8-45" href="#__codelineno-8-45"></a>                    <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;IMPOSSIBLE_TRAVEL&#39;</span><span class="p">,</span>
-</span><span id="__span-8-46"><a id="__codelineno-8-46" name="__codelineno-8-46" href="#__codelineno-8-46"></a>                    <span class="s1">&#39;distance_km&#39;</span><span class="p">:</span> <span class="n">distance_km</span><span class="p">,</span>
-</span><span id="__span-8-47"><a id="__codelineno-8-47" name="__codelineno-8-47" href="#__codelineno-8-47"></a>                    <span class="s1">&#39;time_minutes&#39;</span><span class="p">:</span> <span class="n">time_diff</span> <span class="o">/</span> <span class="mi">60</span><span class="p">,</span>
-</span><span id="__span-8-48"><a id="__codelineno-8-48" name="__codelineno-8-48" href="#__codelineno-8-48"></a>                    <span class="s1">&#39;speed_kmh&#39;</span><span class="p">:</span> <span class="n">max_possible_speed</span><span class="p">,</span>
-</span><span id="__span-8-49"><a id="__codelineno-8-49" name="__codelineno-8-49" href="#__codelineno-8-49"></a>                    <span class="s1">&#39;severity&#39;</span><span class="p">:</span> <span class="s1">&#39;CRITICAL&#39;</span>
-</span><span id="__span-8-50"><a id="__codelineno-8-50" name="__codelineno-8-50" href="#__codelineno-8-50"></a>                <span class="p">})</span>
-</span><span id="__span-8-51"><a id="__codelineno-8-51" name="__codelineno-8-51" href="#__codelineno-8-51"></a>
-</span><span id="__span-8-52"><a id="__codelineno-8-52" name="__codelineno-8-52" href="#__codelineno-8-52"></a>    <span class="k">return</span> <span class="n">inconsistencies</span>
-</span></code></pre></div>
-<p><strong>Indícios comuns de geolocalização:</strong></p>
-<ul>
-<li>IP dos EUA + <code>Accept-Language: zh-CN</code> (idioma chinês)</li>
-<li>IP da Europa + fuso horário: <code>America/Los_Angeles</code></li>
-<li>IP no Brasil + sessão anterior do Japão (2 minutos atrás)</li>
-</ul>
-<div class="admonition warning">
-<p class="admonition-title">Falsos Positivos</p>
-<p>Cenários legítimos que disparam alarmes de geolocalização:</p>
-<ul>
-<li><strong>Viajantes</strong>: Usuário no aeroporto conectando por VPN</li>
-<li><strong>Expatriados</strong>: Expatriado chinês nos EUA usando navegador chinês</li>
-<li><strong>Usuários de VPN</strong>: Usuários conscientes da privacidade com VPN legítima</li>
-<li><strong>Corporativo</strong>: Funcionário acessando através da VPN da empresa</li>
-</ul>
-<p>Sistemas sofisticados usam <strong>pontuação de risco</strong> (risk scoring) em vez de bloqueio binário.</p>
-</div>
-<h3 id="2-analise-de-cabecalho-http">2. Análise de Cabeçalho HTTP</h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># Cabeçalhos que revelam uso de proxy</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="n">suspicious_headers</span> <span class="o">=</span> <span class="p">{</span>
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>    <span class="s1">&#39;X-Forwarded-For&#39;</span><span class="p">:</span> <span class="s1">&#39;Indica que requisição passou por proxy&#39;</span><span class="p">,</span>
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>    <span class="s1">&#39;X-Real-IP&#39;</span><span class="p">:</span> <span class="s1">&#39;IP real antes do proxy&#39;</span><span class="p">,</span>
-</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>    <span class="s1">&#39;Via&#39;</span><span class="p">:</span> <span class="s1">&#39;Identidade do servidor proxy&#39;</span><span class="p">,</span>
-</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>    <span class="s1">&#39;Forwarded&#39;</span><span class="p">:</span> <span class="s1">&#39;Cabeçalho de proxy padronizado (RFC 7239)&#39;</span><span class="p">,</span>
-</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>    <span class="s1">&#39;X-Proxy-ID&#39;</span><span class="p">:</span> <span class="s1">&#39;Alguns proxies adicionam isso&#39;</span><span class="p">,</span>
-</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="p">}</span>
-</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>
-</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="c1"># Cabeçalhos ausentes também são suspeitos</span>
-</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="n">expected_headers</span> <span class="o">=</span> <span class="p">[</span>
-</span><span id="__span-9-12"><a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>    <span class="s1">&#39;Accept-Language&#39;</span><span class="p">,</span>  <span class="c1"># Navegadores reais enviam isso</span>
-</span><span id="__span-9-13"><a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a>    <span class="s1">&#39;Accept-Encoding&#39;</span><span class="p">,</span>  <span class="c1"># Navegadores reais suportam gzip/deflate</span>
-</span><span id="__span-9-14"><a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a>    <span class="s1">&#39;User-Agent&#39;</span><span class="p">,</span>       <span class="c1"># Deve ser realista</span>
-</span><span id="__span-9-15"><a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a><span class="p">]</span>
-</span></code></pre></div>
-<h3 id="3-fingerprinting-de-tcpip">3. Fingerprinting de TCP/IP</h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># Opções TCP podem revelar proxy</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">analyze_tcp_fingerprint</span><span class="p">(</span><span class="n">packet</span><span class="p">):</span>
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="sd">    SOs diferentes têm implementações de pilha TCP diferentes.</span>
-</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="sd">    Se o fingerprint TCP não bate com o User-Agent, é suspeito.</span>
-</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>    <span class="n">tcp_options</span> <span class="o">=</span> <span class="p">{</span>
-</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>        <span class="s1">&#39;window_size&#39;</span><span class="p">:</span> <span class="n">packet</span><span class="o">.</span><span class="n">tcp</span><span class="o">.</span><span class="n">window</span><span class="p">,</span>
-</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>        <span class="s1">&#39;mss&#39;</span><span class="p">:</span> <span class="n">packet</span><span class="o">.</span><span class="n">tcp</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">mss</span><span class="p">,</span>
-</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>        <span class="s1">&#39;window_scale&#39;</span><span class="p">:</span> <span class="n">packet</span><span class="o">.</span><span class="n">tcp</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">window_scale</span><span class="p">,</span>
-</span><span id="__span-10-11"><a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>        <span class="s1">&#39;timestamps&#39;</span><span class="p">:</span> <span class="n">packet</span><span class="o">.</span><span class="n">tcp</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">timestamp</span><span class="p">,</span>
-</span><span id="__span-10-12"><a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a>        <span class="s1">&#39;ttl&#39;</span><span class="p">:</span> <span class="n">packet</span><span class="o">.</span><span class="n">ip</span><span class="o">.</span><span class="n">ttl</span><span class="p">,</span>
-</span><span id="__span-10-13"><a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a>    <span class="p">}</span>
-</span><span id="__span-10-14"><a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a>
-</span><span id="__span-10-15"><a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a>    <span class="c1"># Windows 10 Chrome: TTL esperado ~64, Tamanho Janela 8192</span>
-</span><span id="__span-10-16"><a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a>    <span class="c1"># Mas pacote mostra TTL ~50, Tamanho Janela 65535</span>
-</span><span id="__span-10-17"><a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a>    <span class="c1"># → Provavelmente proxyado (TTL diminuiu com saltos)</span>
-</span></code></pre></div>
-<h3 id="4-fingerprinting-de-tls">4. Fingerprinting de TLS</h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># Fingerprinting de TLS ClientHello (ja3)</span>
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">generate_ja3</span><span class="p">(</span><span class="n">client_hello</span><span class="p">):</span>
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="sd">    ja3 aplica fingerprinting no handshake TLS.</span>
-</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="sd">    Proxies podem alterar suítes de cifras ou extensões.</span>
-</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>    <span class="n">ja3_string</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">ciphers</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">extensions</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">curves</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">formats</span><span class="si">}</span><span class="s2">&quot;</span>
-</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>    <span class="n">ja3_hash</span> <span class="o">=</span> <span class="n">md5</span><span class="p">(</span><span class="n">ja3_string</span><span class="p">)</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
-</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>
-</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>    <span class="c1"># Comparar contra fingerprints de navegadores conhecidos</span>
-</span><span id="__span-11-11"><a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>    <span class="k">if</span> <span class="n">ja3_hash</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">known_browser_fingerprints</span><span class="p">:</span>
-</span><span id="__span-11-12"><a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a>        <span class="k">return</span> <span class="s1">&#39;SUSPICIOUS_TLS&#39;</span>
-</span></code></pre></div>
-<h3 id="5-verificacao-de-consistencia-dns">5. Verificação de Consistência DNS</h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># Verificar se Host HTTP bate com DNS reverso</span>
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">check_dns_consistency</span><span class="p">(</span><span class="n">connection</span><span class="p">):</span>
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="sd">    Servidor pode checar se IP de conexão resolve de volta</span>
-</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="sd">    para o domínio esperado. Proxies frequentemente falham nessa checagem.</span>
-</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>    <span class="n">connecting_ip</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">remote_ip</span>
-</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>    <span class="n">http_host</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;Host&#39;</span><span class="p">]</span>
-</span><span id="__span-12-9"><a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>
-</span><span id="__span-12-10"><a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>    <span class="c1"># Pesquisa direta</span>
-</span><span id="__span-12-11"><a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>    <span class="n">forward</span> <span class="o">=</span> <span class="n">dns</span><span class="o">.</span><span class="n">resolve</span><span class="p">(</span><span class="n">http_host</span><span class="p">)</span>  <span class="c1"># → 93.184.216.34</span>
-</span><span id="__span-12-12"><a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a>
-</span><span id="__span-12-13"><a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>    <span class="c1"># Pesquisa reversa</span>
-</span><span id="__span-12-14"><a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a>    <span class="n">reverse</span> <span class="o">=</span> <span class="n">dns</span><span class="o">.</span><span class="n">reverse</span><span class="p">(</span><span class="n">connecting_ip</span><span class="p">)</span>  <span class="c1"># → proxy123.example.com</span>
-</span><span id="__span-12-15"><a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a>
-</span><span id="__span-12-16"><a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a>    <span class="k">if</span> <span class="n">forward</span> <span class="o">!=</span> <span class="n">connecting_ip</span><span class="p">:</span>
-</span><span id="__span-12-17"><a id="__codelineno-12-17" name="__codelineno-12-17" href="#__codelineno-12-17"></a>        <span class="k">return</span> <span class="s1">&#39;IP_MISMATCH&#39;</span>  <span class="c1"># Provavelmente proxy</span>
-</span></code></pre></div>
-<h2 id="resumo-e-pontos-chave">Resumo e Pontos Chave</h2>
-<p>Detecção de proxy é um <strong>processo probabilístico e multicamada</strong> que combina dúzias de sinais para avaliar a probabilidade de uma conexão ser proxyada. Nenhuma técnica única fornece detecção perfeita, mas combinar múltiplos métodos cria uma defesa robusta.</p>
-<h3 id="dificuldade-de-deteccao-por-tipo-de-proxy">Dificuldade de Detecção por Tipo de Proxy</h3>
+<p>Essa classificação data de uma era em que a análise de cabeçalhos era o método primário de detecção. Sistemas modernos de detecção usam reputação de IP, fingerprinting e análise comportamental, tornando a distinção transparente/anônimo/elite menos significativa. Um proxy elite com IP de datacenter é detectado instantaneamente através de consulta ASN. Um proxy transparente em um IP residencial ainda pode passar despercebido em sites menos sofisticados.</p>
+<h2 id="network-fingerprinting">Network Fingerprinting</h2>
+<p>O fingerprinting na camada de rede opera abaixo da camada de proxy, o que significa que pode detectar proxies mesmo quando o proxy em si está configurado perfeitamente.</p>
+<h3 id="fingerprinting-de-tcpip">Fingerprinting de TCP/IP</h3>
+<p>Cada sistema operacional tem uma implementação única da pilha TCP que se revela durante o handshake TCP. O tamanho inicial da janela, a ordem das opções TCP, o TTL (Time To Live) e o fator de escala de janela são todos definidos pelo kernel, não pelo navegador, e não podem ser alterados por um proxy.</p>
+<p>Sistemas de detecção comparam essas características TCP com o cabeçalho <code>User-Agent</code>. Se o User-Agent alega Windows 10 mas o fingerprint TCP mostra características de Linux (TTL de 64, tamanho de janela de 29200), o desencontro é um forte indicador de proxy. O Windows usa um TTL padrão de 128 e versões modernas tipicamente mostram um tamanho de janela de 65535, enquanto o Linux usa TTL 64 e tamanhos de janela em torno de 29200.</p>
+<p>A análise de TTL adiciona outra camada. O TTL diminui em 1 a cada salto de rede. Se uma conexão Windows chega com TTL de 128, o cliente provavelmente está na mesma rede. Se chega com TTL de 115, cruzou aproximadamente 13 saltos. Se o valor do TTL não se alinha com a contagem esperada de saltos para a localização geográfica do IP, roteamento por proxy é provável.</p>
+<p>Para valores detalhados de fingerprint TCP e suas implicações, veja <a href="../../fingerprinting/network-fingerprinting/">Network Fingerprinting</a>.</p>
+<h3 id="fingerprinting-de-tls-ja3ja4">Fingerprinting de TLS (JA3/JA4)</h3>
+<p>A mensagem TLS ClientHello é transmitida em texto plano e contém parâmetros suficientes para identificar unicamente a aplicação cliente: versão TLS, conjuntos de cifras suportados, extensões, curvas elípticas e algoritmos de assinatura. O fingerprint JA3 é um hash MD5 desses parâmetros concatenados em uma ordem específica. JA4 é uma alternativa mais recente e mais granular.</p>
+<p>Cada versão de navegador produz um fingerprint JA3/JA4 distinto. Sistemas de detecção mantêm bancos de dados de fingerprints conhecidos para Chrome, Firefox, Safari e outros navegadores. Se o fingerprint JA3 não corresponde a nenhum navegador conhecido, ou não corresponde ao navegador alegado no User-Agent, a conexão é sinalizada.</p>
+<p>Uma nuance importante: proxies SOCKS5 e túneis HTTP CONNECT passam o TLS ClientHello sem modificação, então o servidor destino vê o fingerprint real do navegador. O proxy não altera os parâmetros TLS nessas configurações. Apenas proxies MITM (que terminam e reestabelecem TLS) mudam o fingerprint, e nesse caso o fingerprint pertence ao software do proxy, não a um navegador real, o que por si só é um sinal de detecção.</p>
+<h3 id="fingerprinting-de-http2">Fingerprinting de HTTP/2</h3>
+<p>Conexões HTTP/2 expõem sinais de fingerprinting que são distintos do TLS. O frame SETTINGS enviado no início de uma conexão HTTP/2 contém parâmetros como <code>HEADER_TABLE_SIZE</code>, <code>MAX_CONCURRENT_STREAMS</code>, <code>INITIAL_WINDOW_SIZE</code> e <code>MAX_HEADER_LIST_SIZE</code>. Cada navegador usa valores padrão diferentes para essas configurações.</p>
+<p>A ordem e prioridade dos pseudo-cabeçalhos (<code>:method</code>, <code>:authority</code>, <code>:scheme</code>, <code>:path</code>), o comportamento de compressão HPACK e os pesos de prioridade de stream também variam entre navegadores. Ferramentas como <a href="https://browserleaks.com/http2">browserleaks.com/http2</a> mostram como é o seu fingerprint HTTP/2.</p>
+<p>Frameworks de automação e software de proxy que implementam suas próprias pilhas HTTP/2 frequentemente produzem fingerprints que não correspondem a nenhum navegador real, tornando isso um vetor eficaz de detecção.</p>
+<h3 id="deteccao-baseada-em-latencia">Detecção Baseada em Latência</h3>
+<p>A latência de rede entre um cliente e um servidor revela informações sobre o caminho físico da rede. Se o IP geolocaliza em Nova York mas o tempo de ida e volta sugere um caminho pela Ásia, a conexão provavelmente está sendo proxyada.</p>
+<p>Sistemas de detecção medem o RTT (round-trip time) durante o handshake TCP e comparam com latências esperadas para a localização geográfica do IP. Eles também podem emitir desafios de temporização baseados em JavaScript que medem a latência da perspectiva do navegador, e então comparar com a latência observada pelo servidor. Uma discrepância significativa entre as duas sugere um intermediário (proxy) no caminho.</p>
+<p>A análise de desvio de relógio adiciona outra dimensão: ao medir o deslocamento do relógio do cliente via JavaScript (<code>Date.now()</code>) ou cabeçalhos HTTP <code>Date</code>, sistemas de detecção podem inferir o fuso horário real do cliente e compará-lo com o fuso horário esperado do IP.</p>
+<h2 id="deteccao-comportamental">Detecção Comportamental</h2>
+<p>Os sistemas de detecção mais avançados vão além da análise de rede e protocolo para examinar o comportamento do usuário. Isso inclui temporização de requisições (as requisições estão espaçadas uniformemente, sugerindo automação?), padrões de movimento do mouse (analisados via listeners de eventos JavaScript), comportamento de rolagem, cadência de entrada do teclado e padrões gerais de navegação.</p>
+<p>Modelos de machine learning treinados em milhões de sessões de usuários reais podem distinguir comportamento humano de automação com alta precisão. Esses modelos tipicamente combinam 50+ características incluindo padrões de navegação, distribuição de duração de sessão, posições de clique, temporização de interação com formulários e características de execução de JavaScript.</p>
+<p>As interações humanizadas do Pydoll (movimento do mouse com curva de Bézier, temporização pela Lei de Fitts, digitação realista) são projetadas especificamente para passar na análise comportamental. Veja <a href="../../fingerprinting/evasion-techniques/">Técnicas de Evasão</a> para a estratégia completa de evasão multicamada.</p>
+<h2 id="pontuacao-de-risco-multi-sinal">Pontuação de Risco Multi-Sinal</h2>
+<p>Sistemas modernos de detecção não dependem de nenhuma técnica isolada. Eles combinam todos os sinais disponíveis em uma pontuação de risco, tipicamente de 0 a 100, e aplicam limiares que variam por indústria e contexto.</p>
+<p>O peso de cada categoria de sinal varia, mas uma aproximação grosseira é que a reputação de IP representa a maior parcela (é o sinal mais barato e confiável), seguida por network fingerprinting (TCP/IP, TLS, HTTP/2), análise de cabeçalhos e protocolo, pontuação comportamental e verificações de consistência (geolocalização, fuso horário, idioma).</p>
+<p>Os limiares dependem do contexto de negócio. Sites bancários bloqueiam agressivamente (pontuação de risco acima de 50), sites de e-commerce apresentam CAPTCHAs em pontuações moderadas (acima de 70), e sites de conteúdo tendem a ser mais permissivos (bloqueando apenas acima de 80) pois dependem de impressões de anúncios.</p>
+<p>A implicação para automação é que passar em uma camada de detecção não é suficiente. Um IP residencial (boa reputação de IP) com um fingerprint TCP incompatível e comportamento robótico ainda será sinalizado. Evasão eficaz requer consistência em todas as camadas.</p>
+<h2 id="deteccao-por-tipo-de-proxy">Detecção por Tipo de Proxy</h2>
 <table>
 <thead>
 <tr>
 <th>Tipo de Proxy</th>
 <th>Dificuldade de Detecção</th>
 <th>Métodos Primários de Detecção</th>
-<th>Caso de Uso Típico</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>HTTP Transparente</strong></td>
+<td>HTTP Transparente</td>
 <td>Trivial</td>
 <td>Cabeçalhos HTTP (<code>Via</code>, <code>X-Forwarded-For</code>)</td>
-<td>Filtragem corporativa</td>
 </tr>
 <tr>
-<td><strong>HTTP Anônimo</strong></td>
+<td>HTTP Anônimo</td>
 <td>Fácil</td>
 <td>Cabeçalhos HTTP + Reputação de IP</td>
-<td>Privacidade básica</td>
 </tr>
 <tr>
-<td><strong>HTTP Elite</strong></td>
-<td>Médio</td>
-<td>Reputação de IP + Fingerprinting TCP/IP</td>
-<td>Usuários conscientes da privacidade</td>
-</tr>
-<tr>
-<td><strong>SOCKS5 Datacenter</strong></td>
+<td>HTTP Elite (datacenter)</td>
 <td>Médio</td>
 <td>Reputação de IP (análise de ASN)</td>
-<td>Operadores de bot</td>
 </tr>
 <tr>
-<td><strong>Proxies Residenciais</strong></td>
+<td>SOCKS5 Datacenter</td>
+<td>Médio</td>
+<td>Reputação de IP (análise de ASN)</td>
+</tr>
+<tr>
+<td>Proxies residenciais</td>
 <td>Difícil</td>
-<td>Análise comportamental + padrões de conexão</td>
-<td>Scraping profissional</td>
+<td>Análise comportamental, padrões de conexão, latência</td>
 </tr>
 <tr>
-<td><strong>Proxies Móveis</strong></td>
-<td>Muito Difícil</td>
-<td>Sinais limitados, principalmente comportamentais</td>
-<td>Furtividade premium</td>
+<td>Proxies móveis</td>
+<td>Muito difícil</td>
+<td>Principalmente comportamental, sinais de rede limitados</td>
 </tr>
 <tr>
-<td><strong>Proxies Rotativos</strong></td>
+<td>Proxies rotativos</td>
 <td>Difícil</td>
-<td>Inconsistências de sessão</td>
-<td>Scraping em larga escala</td>
+<td>Inconsistências de sessão, padrões de rotação de IP</td>
 </tr>
 </tbody>
 </table>
-<h3 id="pontuacao-de-risco-multi-sinal">Pontuação de Risco Multi-Sinal</h3>
-<p>Sistemas de detecção modernos atribuem <strong>pontuações de risco</strong> (0-100) em vez de bloquear/permitir binariamente:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>Pontuação de Risco = 
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>    (Reputação_IP × 0.4) +
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>    (Análise_Cabeçalho × 0.2) +
-</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>    (Fingerprint_Rede × 0.2) +
-</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>    (Pontuação_Comportamental × 0.15) +
-</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>    (Verificações_Consistência × 0.05)
-</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>
-</span><span id="__span-13-8"><a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>if Pontuação_Risco &gt; 80: BLOQUEAR
-</span><span id="__span-13-9"><a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a>elif Pontuação_Risco &gt; 60: CAPTCHA
-</span><span id="__span-13-10"><a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a>elif Pontuação_Risco &gt; 40: LIMITAR_TAXA
-</span><span id="__span-13-11"><a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a>else: PERMITIR
-</span></code></pre></div>
-<p><strong>Limiares variam por indústria:</strong></p>
-<ul>
-<li><strong>Bancos</strong>: Bloquear em 50+ (muito agressivo)</li>
-<li><strong>E-commerce</strong>: CAPTCHA em 70+ (moderado)</li>
-<li><strong>Sites de conteúdo</strong>: Permitir até 80+ (permissivo, depende de anúncios)</li>
-</ul>
-<h3 id="estrategias-de-evasao-alto-nivel">Estratégias de Evasão (Alto Nível)</h3>
-<p>Para minimizar o risco de detecção:</p>
-<ol>
-<li><strong>Use IPs Residenciais/Móveis</strong>: Mais difíceis de detectar, valem o premium</li>
-<li><strong>Combine Geolocalização</strong>: Garanta que fuso horário, idioma, localidade estejam alinhados com a localização do IP</li>
-<li><strong>Randomize Fingerprints</strong>: Varie parâmetros TCP/IP e TLS (veja módulos de fingerprinting)</li>
-<li><strong>Realismo Comportamental</strong>: Tempo de digitação humano, movimento do mouse (veja <strong><a href="../../../features/advanced/behavioral-captcha-bypass/">Contorno de Captcha Comportamental</a></strong>)</li>
-<li><strong>Persistência de Sessão</strong>: Não rotacione IPs no meio da sessão (levanta suspeita)</li>
-<li><strong>Cabeçalhos HTTP Limpos</strong>: Remova cabeçalhos identificadores de proxy, use <code>User-Agent</code> realista</li>
-<li><strong>Monitore Vazamentos</strong>: Teste vazamentos WebRTC, DNS, fuso horário</li>
-</ol>
-<div class="admonition danger">
-<p class="admonition-title">Detecção é Inevitável</p>
-<p>Com recursos suficientes, <strong>qualquer proxy pode ser detectado</strong>. O objetivo é:</p>
-<ul>
-<li>Tornar a detecção <strong>cara</strong> (forçar adversário a usar múltiplos sinais)</li>
-<li>Tornar a detecção <strong>lenta</strong> (evitar bloqueios instantâneos, misturar-se ao tráfego legítimo)</li>
-<li>Tornar a detecção <strong>incerta</strong> (criar negação plausível)</li>
-</ul>
-<p>Mesmo proxies residenciais de primeira linha alcançam apenas ~70-90% de taxa de sucesso contra sistemas anti-bot sofisticados.</p>
+<h2 id="principios-de-evasao">Princípios de Evasão</h2>
+<p>Evasão eficaz é sobre consistência em todas as camadas de detecção, não sobre aperfeiçoar nenhuma camada individualmente.</p>
+<p>Use IPs residenciais ou móveis quando a furtividade importar. Eles são mais difíceis de detectar porque os IPs genuinamente pertencem a ISPs, e o custo premium reflete essa vantagem. Alinhe os sinais de geolocalização do navegador (fuso horário, idioma, localidade) com a localização do IP do proxy. Mantenha persistência de sessão não rotacionando IPs no meio da sessão, o que cria descontinuidades detectáveis. Garanta que seu fingerprint TCP/IP corresponda à alegação do seu User-Agent executando automação no mesmo SO que você está imitando. Use as interações humanizadas do Pydoll para passar na análise comportamental. E sempre teste por vazamentos (WebRTC, DNS, fuso horário) antes de executar automação em escala.</p>
+<p>O objetivo não é tornar a detecção impossível, mas sim torná-la cara e incerta. Force o sistema de detecção a usar múltiplos sinais correlacionados, misture-se com padrões de tráfego legítimo e crie negação plausível.</p>
+<div class="admonition warning">
+<p class="admonition-title">Nenhum Proxy é Indetectável</p>
+<p>Com recursos suficientes, qualquer proxy pode ser detectado. Mesmo proxies residenciais de primeira linha alcançam aproximadamente 70-90% de taxa de sucesso contra sistemas anti-bot sofisticados como Akamai, Cloudflare Enterprise e DataDome. A questão prática é se a detecção é economicamente viável para o site alvo.</p>
 </div>
-<h2 id="leitura-adicional-e-referencias">Leitura Adicional e Referências</h2>
-<h3 id="documentacao-relacionada">Documentação Relacionada</h3>
-<p><strong>Dentro Deste Módulo:</strong></p>
+<p><strong>Próximos passos:</strong></p>
 <ul>
-<li><strong><a href="../http-proxies/">Proxies HTTP/HTTPS</a></strong> - Como proxies HTTP vazam informação por cabeçalhos</li>
-<li><strong><a href="../socks-proxies/">Proxies SOCKS</a></strong> - Por que SOCKS5 é mais furtivo que proxies HTTP</li>
-<li><strong><a href="../network-fundamentals/">Fundamentos de Rede</a></strong> - Conceitos de TCP/IP, TLS, WebRTC</li>
+<li><a href="../../fingerprinting/network-fingerprinting/">Network Fingerprinting</a>: Fingerprinting de TCP/IP e TLS em detalhes</li>
+<li><a href="../../fingerprinting/browser-fingerprinting/">Browser Fingerprinting</a>: Fingerprinting de Canvas, WebGL, HTTP/2</li>
+<li><a href="../../fingerprinting/evasion-techniques/">Técnicas de Evasão</a>: Estratégia de evasão multicamada</li>
+<li><a href="../../../features/configuration/proxy/">Configuração de Proxy</a>: Configuração prática de proxy no Pydoll</li>
 </ul>
-<p><strong>Análises Profundas de Fingerprinting:</strong></p>
+<h2 id="referencias">Referências</h2>
 <ul>
-<li><strong><a href="../../fingerprinting/network-fingerprinting/">Network Fingerprinting</a></strong> - Técnicas de detecção TCP/IP e TLS</li>
-<li><strong><a href="../../fingerprinting/browser-fingerprinting/">Browser Fingerprinting</a></strong> - Fingerprinting de HTTP/2, Canvas, WebGL</li>
-<li><strong><a href="../../fingerprinting/evasion-techniques/">Técnicas de Evasão</a></strong> - Como falsificar fingerprints</li>
+<li>MaxMind GeoIP2: https://www.maxmind.com/en/geoip2-services-and-databases</li>
+<li>IPQualityScore Proxy Detection: https://www.ipqualityscore.com/proxy-vpn-tor-detection-service</li>
+<li>Spur.us (Anonymous IP Detection): https://spur.us/</li>
+<li>Team Cymru IP to ASN Mapping: https://www.team-cymru.com/ip-asn-mapping</li>
+<li>Salesforce Engineering: TLS Fingerprinting with JA3 and JA3S - https://engineering.salesforce.com/tls-fingerprinting-with-ja3-and-ja3s-247362855967/</li>
+<li>Akamai: Passive Fingerprinting of HTTP/2 Clients (Black Hat EU 2017) - https://blackhat.com/docs/eu-17/materials/eu-17-Shuster-Passive-Fingerprinting-Of-HTTP2-Clients-wp.pdf</li>
+<li>Incolumitas: TCP/IP Fingerprinting for VPN and Proxy Detection - https://incolumitas.com/2021/03/13/tcp-ip-fingerprinting-for-vpn-and-proxy-detection/</li>
+<li>Incolumitas: Detecting Proxies and VPNs with Latencies - https://incolumitas.com/2021/06/07/detecting-proxies-and-vpn-with-latencies/</li>
+<li>BrowserLeaks HTTP/2 Fingerprint: https://browserleaks.com/http2</li>
+<li>BrowserLeaks IP: https://browserleaks.com/ip</li>
+<li>RFC 7239: Forwarded HTTP Extension - https://www.rfc-editor.org/rfc/rfc7239.html</li>
+<li>RFC 9110: HTTP Semantics - https://www.rfc-editor.org/rfc/rfc9110.html</li>
 </ul>
-<p><strong>Guias Práticos:</strong></p>
-<ul>
-<li><strong><a href="../../../features/configuration/proxy/">Configuração de Proxy</a></strong> - Configurando proxies no Pydoll</li>
-<li><strong><a href="../../../features/advanced/behavioral-captcha-bypass/">Contorno de Captcha Comportamental</a></strong> - Evadindo detecção comportamental</li>
-<li><strong><a href="../../../features/configuration/browser-options/">Opções do Navegador</a></strong> - Flags e preferências de furtividade</li>
-</ul>
-<h3 id="recursos-externos">Recursos Externos</h3>
-<p><strong>Reputação de IP e Geolocalização:</strong></p>
-<ul>
-<li><strong>MaxMind GeoIP2</strong>: https://www.maxmind.com/en/geoip2-services-and-databases</li>
-<li><strong>IPQualityScore Proxy Detection</strong>: https://www.ipqualityscore.com/proxy-vpn-tor-detection-service</li>
-<li><strong>IP2Location</strong>: https://www.ip2location.com/</li>
-<li><strong>Spur.us (Anonymous IP Detection)</strong>: https://spur.us/</li>
-<li><strong>AbuseIPDB</strong>: https://www.abuseipdb.com/ (Reputação de IP crowdsourced)</li>
-</ul>
-<p><strong>Bancos de Dados ASN:</strong></p>
-<ul>
-<li><strong>Team Cymru IP to ASN Mapping</strong>: https://www.team-cymru.com/ip-asn-mapping</li>
-<li><strong>RIPE NCC (Registro ASN Europeu)</strong>: https://www.ripe.net/</li>
-<li><strong>ARIN (Registro ASN Norte-Americano)</strong>: https://www.arin.net/</li>
-</ul>
-<p><strong>Serviços de Detecção de Proxy:</strong></p>
-<ul>
-<li><strong>proxycheck.io</strong>: https://proxycheck.io/ (API de detecção de proxy em tempo real)</li>
-<li><strong>getipintel.net</strong>: http://getipintel.net/ (Detecção de proxy gratuita)</li>
-<li><strong>IP2Proxy</strong>: https://www.ip2location.com/proxy-detection (Banco de dados comercial de proxy)</li>
-</ul>
-<p><strong>Padrões e RFCs:</strong></p>
-<ul>
-<li><strong>RFC 7239</strong>: Forwarded HTTP Extension (cabeçalhos de proxy padronizados)</li>
-<li><strong>RFC 7231</strong>: HTTP/1.1 - Método CONNECT (tunelamento de proxy)</li>
-<li><strong>RFC 9000</strong>: QUIC Transport Protocol (impacta proxying HTTP/3)</li>
-</ul>
-<p><strong>Artigos de Pesquisa:</strong></p>
-<ul>
-<li>"Detecting Proxies in HTTP Traffic" - Vários artigos acadêmicos sobre detecção baseada em ML</li>
-<li>"TCP Fingerprinting for Network Security" - Técnicas usadas para detecção de proxy</li>
-<li>"TLS Fingerprinting at Scale" - Como JA3/JA3S revelam proxies</li>
-</ul>
-<p><strong>Ferramentas para Teste:</strong></p>
-<ul>
-<li><strong>Wireshark</strong>: Análise de pacotes para ver o que proxies revelam</li>
-<li><strong>https://browserleaks.com/ip</strong>: Teste compreensivo de vazamento de proxy</li>
-<li><strong>https://whoer.net/</strong>: Verificador de anonimato (detecta uso de proxy)</li>
-<li><strong>https://ipleak.net/</strong>: Testa vazamentos WebRTC, DNS</li>
-<li><strong>https://check.torproject.org/</strong>: Detecção de Tor (pode testar qualquer proxy)</li>
-</ul>
-<h3 id="topicos-avancados-alem-deste-documento">Tópicos Avançados (Além Deste Documento)</h3>
-<p><strong>Detecção por Machine Learning:</strong></p>
-<ul>
-<li>Reconhecimento de padrões comportamentais (movimento do mouse, cadência de digitação)</li>
-<li>Análise de tráfego (tempo de requisição, volume, padrões)</li>
-<li>Modelos ensemble combinando 50+ características</li>
-</ul>
-<p><strong>Detecção Baseada em Tempo:</strong></p>
-<ul>
-<li>Análise de Round-trip time (RTT)</li>
-<li>Fingerprinting de desvio de relógio (clock skew)</li>
-<li>Distribuição de latência da rede</li>
-</ul>
-<p><strong>Análise Comportamental Avançada:</strong></p>
-<ul>
-<li>Consistência de renderização Canvas/WebGL</li>
-<li>Tempo de execução de JavaScript</li>
-<li>Padrões de uso de API do navegador</li>
-</ul>
-<p><strong>Técnicas Emergentes:</strong></p>
-<ul>
-<li>Fingerprinting baseado em HTTP/3 e QUIC</li>
-<li>Análise de logs de Certificate Transparency</li>
-<li>Reputação de IP baseada em Blockchain</li>
-</ul>
-<hr />
 
 
 

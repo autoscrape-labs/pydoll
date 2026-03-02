@@ -27,7 +27,7 @@
       
       
       <link rel="icon" href="../../../../resources/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.3">
     
     
       
@@ -2216,31 +2216,30 @@
   <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        简介：网络堆栈
+        网络堆栈
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="简介：网络堆栈">
+    <nav class="md-nav" aria-label="网络堆栈">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#osi" class="md-nav__link">
     <span class="md-ellipsis">
       
-        OSI 模型背景
+        OSI 模型
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="OSI 模型背景">
-      <ul class="md-nav__list">
+</li>
         
           <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       
-        逐层分解
+        层级位置如何影响代理
       
     </span>
   </a>
@@ -2251,18 +2250,7 @@
   <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
       
-        为什么分层位置对代理很重要
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        实际含义：“层泄露”问题
+        层泄露问题
       
     </span>
   </a>
@@ -2273,46 +2261,46 @@
     </nav>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
   <a href="#tcp-vs-udp" class="md-nav__link">
     <span class="md-ellipsis">
       
-        TCP vs UDP：传输层协议
+        TCP vs UDP
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="TCP vs UDP：传输层协议">
+    <nav class="md-nav" aria-label="TCP vs UDP">
       <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#_6" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        根本区别
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_7" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        为什么这对代理和自动化很重要
-      
-    </span>
-  </a>
-  
-</li>
         
           <li class="md-nav__item">
   <a href="#tcp" class="md-nav__link">
     <span class="md-ellipsis">
       
-        TCP 三次握手：建立连接
+        TCP 与代理
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tcp_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TCP 三次握手
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tcp-fingerprinting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TCP Fingerprinting
       
     </span>
   </a>
@@ -2323,15 +2311,21 @@
   <a href="#udp" class="md-nav__link">
     <span class="md-ellipsis">
       
-        UDP 特性：速度至上，无需保证
+        UDP
       
     </span>
   </a>
   
 </li>
         
-      </ul>
-    </nav>
+          <li class="md-nav__item">
+  <a href="#quic-http3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        QUIC 与 HTTP/3
+      
+    </span>
+  </a>
   
 </li>
         
@@ -2344,30 +2338,19 @@
   <a href="#webrtc-ip" class="md-nav__link">
     <span class="md-ellipsis">
       
-        WebRTC 和 IP 泄露
+        WebRTC 与 IP 泄露
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="WebRTC 和 IP 泄露">
+    <nav class="md-nav" aria-label="WebRTC 与 IP 泄露">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#webrtc-ip_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        为什么 WebRTC 会泄露您的 IP
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#webrtc-ice" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        WebRTC 如何建立连接：ICE 过程
+        WebRTC 如何泄露您的 IP
       
     </span>
   </a>
@@ -2378,7 +2361,7 @@
   <a href="#ice" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ICE 候选者类型：泄露了什么
+        ICE 过程
       
     </span>
   </a>
@@ -2386,10 +2369,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#stun-ip" class="md-nav__link">
+  <a href="#ice_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        STUN 协议：IP 发现机制
+        ICE 候选者类型
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stun" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        STUN 协议
       
     </span>
   </a>
@@ -2433,7 +2427,7 @@
   <a href="#webrtc_2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        高级：网站如何检测 WebRTC 泄露
+        网站如何利用 WebRTC 泄露
       
     </span>
   </a>
@@ -2446,10 +2440,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_8" class="md-nav__link">
+  <a href="#_5" class="md-nav__link">
     <span class="md-ellipsis">
       
-        总结和进一步阅读
+        总结
       
     </span>
   </a>
@@ -2457,7 +2451,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_9" class="md-nav__link">
+  <a href="#_6" class="md-nav__link">
     <span class="md-ellipsis">
       
         参考资料
@@ -4446,31 +4440,30 @@
   <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        简介：网络堆栈
+        网络堆栈
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="简介：网络堆栈">
+    <nav class="md-nav" aria-label="网络堆栈">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#osi" class="md-nav__link">
     <span class="md-ellipsis">
       
-        OSI 模型背景
+        OSI 模型
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="OSI 模型背景">
-      <ul class="md-nav__list">
+</li>
         
           <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       
-        逐层分解
+        层级位置如何影响代理
       
     </span>
   </a>
@@ -4481,18 +4474,7 @@
   <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
       
-        为什么分层位置对代理很重要
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        实际含义：“层泄露”问题
+        层泄露问题
       
     </span>
   </a>
@@ -4503,46 +4485,46 @@
     </nav>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
   <a href="#tcp-vs-udp" class="md-nav__link">
     <span class="md-ellipsis">
       
-        TCP vs UDP：传输层协议
+        TCP vs UDP
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="TCP vs UDP：传输层协议">
+    <nav class="md-nav" aria-label="TCP vs UDP">
       <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#_6" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        根本区别
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_7" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        为什么这对代理和自动化很重要
-      
-    </span>
-  </a>
-  
-</li>
         
           <li class="md-nav__item">
   <a href="#tcp" class="md-nav__link">
     <span class="md-ellipsis">
       
-        TCP 三次握手：建立连接
+        TCP 与代理
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tcp_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TCP 三次握手
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tcp-fingerprinting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TCP Fingerprinting
       
     </span>
   </a>
@@ -4553,15 +4535,21 @@
   <a href="#udp" class="md-nav__link">
     <span class="md-ellipsis">
       
-        UDP 特性：速度至上，无需保证
+        UDP
       
     </span>
   </a>
   
 </li>
         
-      </ul>
-    </nav>
+          <li class="md-nav__item">
+  <a href="#quic-http3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        QUIC 与 HTTP/3
+      
+    </span>
+  </a>
   
 </li>
         
@@ -4574,30 +4562,19 @@
   <a href="#webrtc-ip" class="md-nav__link">
     <span class="md-ellipsis">
       
-        WebRTC 和 IP 泄露
+        WebRTC 与 IP 泄露
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="WebRTC 和 IP 泄露">
+    <nav class="md-nav" aria-label="WebRTC 与 IP 泄露">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#webrtc-ip_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        为什么 WebRTC 会泄露您的 IP
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#webrtc-ice" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        WebRTC 如何建立连接：ICE 过程
+        WebRTC 如何泄露您的 IP
       
     </span>
   </a>
@@ -4608,7 +4585,7 @@
   <a href="#ice" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ICE 候选者类型：泄露了什么
+        ICE 过程
       
     </span>
   </a>
@@ -4616,10 +4593,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#stun-ip" class="md-nav__link">
+  <a href="#ice_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        STUN 协议：IP 发现机制
+        ICE 候选者类型
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stun" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        STUN 协议
       
     </span>
   </a>
@@ -4663,7 +4651,7 @@
   <a href="#webrtc_2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        高级：网站如何检测 WebRTC 泄露
+        网站如何利用 WebRTC 泄露
       
     </span>
   </a>
@@ -4676,10 +4664,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_8" class="md-nav__link">
+  <a href="#_5" class="md-nav__link">
     <span class="md-ellipsis">
       
-        总结和进一步阅读
+        总结
       
     </span>
   </a>
@@ -4687,7 +4675,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_9" class="md-nav__link">
+  <a href="#_6" class="md-nav__link">
     <span class="md-ellipsis">
       
         参考资料
@@ -4784,94 +4772,55 @@
 
 
 <h1 id="_1">网络基础</h1>
-<p>本文档涵盖了驱动互联网的基础网络协议，以及它们如何在自动化场景中暴露或保护您的身份。在深入研究代理协议之前，理解 TCP、UDP、OSI 模型和 WebRTC 是 <strong>至关重要</strong> 的。</p>
+<p>本文档涵盖了驱动互联网的基础网络协议，以及它们如何在自动化场景中暴露或保护您的身份。充分理解 TCP、UDP、OSI 模型和 WebRTC，将使代理配置不再神秘，并且更加有效。</p>
 <div class="admonition info">
 <p class="admonition-title">模块导航</p>
 <ul>
-<li><strong><a href="../">← 网络与安全概述</a></strong> - 模块介绍和学习路径</li>
-<li><strong><a href="../http-proxies/">→ HTTP/HTTPS 代理</a></strong> - 应用层代理</li>
-<li><strong><a href="../socks-proxies/">→ SOCKS 代理</a></strong> - 会话层代理</li>
+<li><a href="../">网络与安全概述</a>：模块介绍和学习路径</li>
+<li><a href="../http-proxies/">HTTP/HTTPS 代理</a>：应用层代理</li>
+<li><a href="../socks-proxies/">SOCKS 代理</a>：会话层代理</li>
 </ul>
-<p>有关 Pydoll 的实际用法，请参阅 <strong><a href="../../../features/configuration/proxy/">代理配置</a></strong> 和 <strong><a href="../../../features/configuration/browser-options/">浏览器选项</a></strong>。</p>
+<p>有关 Pydoll 的实际用法，请参阅<a href="../../../features/configuration/proxy/">代理配置</a>和<a href="../../../features/configuration/browser-options/">浏览器选项</a>。</p>
 </div>
-<div class="admonition warning">
-<p class="admonition-title">基础先行</p>
-<p>这是理解代理协议的 <strong>先决知识</strong>。不掌握这些基础知识，代理配置就会变成“试错式”的猜测。</p>
-</div>
-<h2 id="_2">简介：网络堆栈</h2>
-<p>您的浏览器发出的每一个 HTTP 请求（每一次代理连接，每一条 WebSocket 消息）都会经过一个 <strong>分层的网络堆栈</strong>。每一层都有特定的职责、协议和安全影响。</p>
-<p><strong>为什么这对自动化很重要：</strong></p>
-<ul>
-<li>代理在 <strong>不同的层级</strong> 运行，各自具有不同的能力</li>
-<li>底层网络特征可以 <strong>指纹识别</strong> 您的真实系统（即使通过代理）</li>
-<li>理解协议栈可以揭示 <strong>身份泄露发生在哪里</strong> 以及如何防止它们</li>
-</ul>
-<p>在深入研究代理之前，我们需要了解它们运行所在的网络堆栈。这不是抽象的理论。这里的每一个概念都对浏览器自动化的隐蔽性、性能和可靠性有着 <strong>直接的影响</strong>。</p>
-<h3 id="osi">OSI 模型背景</h3>
-<p>OSI（开放系统互连）模型由国际标准化组织（ISO）于 1984 年制定，它提供了一个 <strong>概念框架</strong> 来理解网络协议是如何交互的。虽然现实世界的网络主要使用 TCP/IP 模型（早于 OSI），但理解 OSI 分层有助于概念化 <strong>代理在何处运行</strong> 以及 <strong>它们能检查或修改什么</strong>。</p>
+<h2 id="_2">网络堆栈</h2>
+<p>浏览器发出的每一个 HTTP 请求都会经过一个分层的网络堆栈。每一层都有特定的职责、协议和安全影响。代理在不同的层运行，运行的层决定了代理能看到、修改和隐藏什么。低层的网络特征即使通过代理也能对您的真实系统进行 fingerprinting，因此理解协议栈有助于了解身份泄露发生在哪里，以及如何防止它们。</p>
+<h3 id="osi">OSI 模型</h3>
+<p>OSI（开放系统互连）模型由 ISO 于 1984 年制定，提供了一个概念框架来理解网络协议是如何交互的。现实世界的网络使用 TCP/IP 模型（早于 OSI，只有 4 层），但 OSI 术语仍然是描述代理运行位置及其可访问内容的标准方式。</p>
 <pre class="mermaid"><code>graph TD
-    L7[第 7 层：应用层 - HTTP, FTP, SMTP]
-    L6[第 6 层：表示层 - SSL/TLS, 加密]
-    L5[第 5 层：会话层 - SOCKS]
-    L4[第 4 层：传输层 - TCP, UDP]
-    L3[第 3 层：网络层 - IP, ICMP]
-    L2[第 2 层：数据链路层 - Ethernet, WiFi]
-    L1[第 1 层：物理层 - 电缆, 无线电波]
+    L7[Layer 7: Application - HTTP, FTP, SMTP, DNS]
+    L6[Layer 6: Presentation - Encryption, Compression]
+    L5[Layer 5: Session - SOCKS]
+    L4[Layer 4: Transport - TCP, UDP]
+    L3[Layer 3: Network - IP, ICMP]
+    L2[Layer 2: Data Link - Ethernet, WiFi]
+    L1[Layer 1: Physical - Cables, Radio Waves]
 
     L7 --&gt; L6 --&gt; L5 --&gt; L4 --&gt; L3 --&gt; L2 --&gt; L1</code></pre>
-<h4 id="_3">逐层分解</h4>
-<p><strong>第 7 层 (应用层)</strong>：面向用户的协议所在层。HTTP、HTTPS、FTP、SMTP、DNS 都在这里运行。这一层包含您的应用程序关心的 <strong>实际数据</strong>：HTML 文档、JSON 响应、文件传输。HTTP 代理在这一层运行，使其对请求/响应内容具有 <strong>完全的可见性</strong>。</p>
-<p><strong>第 6 层 (表示层)</strong>：处理数据格式转换、加密和压缩。SSL/TLS 加密发生在这里（尽管 TLS 通常被认为跨越了第 5-6 层）。<strong>HTTPS 加密</strong> 发生在这里，它在将第 7 层数据传递到第 5 层之前对其进行加密。</p>
-<p><strong>第 5 层 (会话层)</strong>：管理应用程序之间的连接。SOCKS 代理在这一层运行，低于应用层但高于传输层。这个位置使得 SOCKS <strong>与协议无关</strong>，它可以代理任何第 7 层协议（HTTP、FTP、SMTP、SSH），而无需理解它们的具体内容。</p>
-<p><strong>第 4 层 (传输层)</strong>：提供端到端的数据传输。TCP（面向连接、可靠）和 UDP（无连接、快速）是主要的协议。这一层处理 <strong>端口号</strong>、<strong>流量控制</strong> 和 <strong>错误纠正</strong>。所有代理最终都依赖第 4 层进行实际的数据传输。</p>
-<p><strong>第 3 层 (网络层)</strong>：处理网络间的路由和寻址。IP（互联网协议）在这一层运行，管理 <strong>IP 地址</strong> 和 <strong>路由决策</strong>。这是您 <strong>真实 IP 地址</strong> 所在的地方，也是代理试图替换它的地方。</p>
-<p><strong>第 2 层 (数据链路层)</strong>：管理同一物理网段上的通信。以太网、Wi-Fi 和 PPP 在此运行，处理 <strong>MAC 地址</strong> 和 <strong>帧传输</strong>。这一层的网络指纹可以揭示 <strong>物理网络特征</strong>。</p>
-<p><strong>第 1 层 (物理层)</strong>：实际的硬件（电缆、无线电波、电压水平）。虽然与软件很少相关，但物理层特征可以被测量（信号时序、电气特性）以进行 <strong>高级指纹识别</strong>。</p>
+<p>第 7 层（应用层）是面向用户的协议所在层：HTTP、HTTPS、FTP、SMTP 和 DNS 都在这里运行。这一层包含应用程序关心的实际数据，如 HTML 文档、JSON 响应和文件传输。HTTP 代理在这一层运行，因此对请求和响应内容具有完全的可见性。</p>
+<p>第 6 层（表示层）处理数据格式转换、加密和压缩。SSL/TLS 通常与这一层关联，因为它承担加密职责，但实际上 TLS 横跨第 4 层到第 6 层，无法干净地映射到单个 OSI 层。对自动化来说重要的是，HTTPS 加密发生在这里，在数据传递到下层之前对第 7 层数据进行加密。</p>
+<p>第 5 层（会话层）管理应用程序之间的连接。SOCKS 代理在这一层运行，低于应用层但高于传输层。这个位置使得 SOCKS 与协议无关：它可以代理任何第 7 层协议（HTTP、FTP、SMTP、SSH），而无需理解它们的具体内容。</p>
+<p>第 4 层（传输层）提供端到端的数据传输。TCP（面向连接、可靠）和 UDP（无连接、快速）是这一层的主要协议。这一层处理端口号、流量控制和错误纠正。所有代理最终都依赖第 4 层进行实际的数据传输。</p>
+<p>第 3 层（网络层）处理网络之间的路由和寻址。IP（互联网协议）在这一层运行，管理 IP 地址和路由决策。您的真实 IP 地址就在这一层，也是代理试图替换它的地方。</p>
+<p>第 2 层（数据链路层）管理同一物理网段上的通信。以太网、Wi-Fi 和 PPP 在这里运行，处理 MAC 地址和帧传输。MAC 地址仅在本地网段可见，远程服务器无法直接访问，但它们可能通过 IPv6 SLAAC（将 MAC 嵌入地址中）等协议暴露。</p>
+<p>第 1 层（物理层）是实际的硬件：电缆、无线电波和电压水平。与软件自动化几乎无关。</p>
 <div class="admonition tip">
-<p class="admonition-title">OSI vs TCP/IP 模型</p>
-<p><strong>TCP/IP 模型</strong>（4 层：链路层、互联网层、传输层、应用层）是网络实际使用的模型。OSI（7 层）是一个 <strong>教学工具</strong> 和参考模型。当人们说“第 7 层代理”时，他们使用的是 OSI 术语，但实际实现使用的是 TCP/IP。</p>
+<p class="admonition-title">OSI vs TCP/IP</p>
+<p>TCP/IP 模型（4 层：链路层、互联网层、传输层、应用层）是网络实际使用的模型。OSI（7 层）是教学工具和参考模型。当人们说"第 7 层代理"时，他们使用的是 OSI 术语，但实际实现运行在 TCP/IP 上。</p>
 </div>
-<h4 id="_4">为什么分层位置对代理很重要</h4>
-<p>代理运行的层级决定了它的 <strong>能力</strong> 和 <strong>局限性</strong>：</p>
-<p><strong>HTTP/HTTPS 代理 (第 7 层 - 应用层)</strong>：</p>
-<ul>
-<li><strong>完全的 HTTP 可见性</strong>：可以读取/修改 URL、标头、Cookie、请求正文</li>
-<li><strong>智能缓存</strong>：可以根据 HTTP 语义缓存响应</li>
-<li><strong>内容过滤</strong>：可以拦截特定的 URL 或关键字</li>
-<li><strong>身份验证集成</strong>：可以添加身份验证标头</li>
-<li><strong>仅限 HTTP 的局限性</strong>：无法代理 FTP、SMTP、SSH 或其他协议</li>
-<li><strong>需要 TLS 终止</strong>：必须解密 HTTPS 才能检查内容</li>
-</ul>
-<p><strong>SOCKS 代理 (第 5 层 - 会话层)</strong>：</p>
-<ul>
-<li><strong>协议无关</strong>：可以代理任何第 7 层协议 (HTTP, FTP, SSH 等)</li>
-<li><strong>无需 TLS 终止</strong>：HTTPS 以加密方式通过 (端到端安全)</li>
-<li><strong>支持 UDP</strong> (SOCKS5)：可以代理 DNS、VoIP、游戏协议</li>
-<li><strong>无内容可见性</strong>：无法检查或修改应用层数据</li>
-<li><strong>无智能缓存</strong>：不理解 HTTP 语义</li>
-<li><strong>无基于 URL 的过滤</strong>：无法拦截特定 URL，只能拦截 IP:端口 组合</li>
-</ul>
-<div class="admonition warning">
+<h3 id="_3">层级位置如何影响代理</h3>
+<p>代理运行的层级决定了它能做什么和不能做什么。</p>
+<p>HTTP/HTTPS 代理运行在第 7 层（应用层）。因为它们理解 HTTP，所以可以读取和修改 URL、标头、Cookie 和请求正文。它们可以根据 HTTP 语义智能缓存响应，按 URL 或关键字过滤内容，以及注入身份验证标头。代价是它们只理解 HTTP。它们无法代理 FTP、SMTP、SSH 或其他协议，而且检查 HTTPS 内容需要 TLS 终止，即解密然后重新加密流量。</p>
+<p>SOCKS 代理运行在第 5 层（会话层）。因为它们位于应用层之下，所以与协议无关，可以在不修改的情况下代理任何第 7 层协议。HTTPS 流量以端到端加密方式通过，因为 SOCKS 代理无需对其解密。SOCKS5 还支持 UDP，使其能够代理 DNS 查询、VoIP 和其他基于 UDP 的协议。代价是 SOCKS 代理对应用层数据没有可见性：它们无法缓存、按 URL 过滤或检查内容。它们只能按 IP 和端口进行过滤。</p>
+<div class="admonition note">
 <p class="admonition-title">根本性的权衡</p>
-<p><strong>更高层</strong> (第 7 层) = 更多控制, 更少灵活性
-<strong>更低层</strong> (第 5 层) = 更少控制, 更多灵活性</p>
-<p>根据您的需求进行选择：HTTP 代理用于 <strong>内容控制</strong>，SOCKS 代理用于 <strong>协议灵活性</strong> 和 <strong>端到端加密</strong>。</p>
+<p>更高层（第 7 层）给您更多控制，但灵活性更低。更低层（第 5 层）给您更少控制，但灵活性更高。需要内容控制时选择 HTTP 代理，需要协议灵活性或端到端加密时选择 SOCKS 代理。</p>
 </div>
-<h4 id="_5">实际含义：“层泄露”问题</h4>
-<p>理解分层揭示了一个关键的安全问题：<strong>特征会跨层泄露</strong>。</p>
-<p>即使有完美的第 7 层代理 (HTTP)，更低层的特征也会暴露您的真实身份：</p>
-<ul>
-<li><strong>第 4 层 (TCP)</strong>：您操作系统的 TCP 堆栈具有独特的“指纹”（窗口大小、选项、TTL）</li>
-<li><strong>第 3 层 (网络层)</strong>：IP 标头字段（TTL、分片）揭示了操作系统和网络拓扑</li>
-<li><strong>第 2 层 (数据链路层)</strong>：MAC 地址供应商揭示了硬件制造商</li>
-</ul>
-<p><strong>示例</strong>：您配置了一个代理来显示 "Windows 10" 的 User-Agent，但是您 <strong>实际 Linux 系统的 TCP 指纹</strong> (第 4 层) 与此相矛盾。机器人检测立即可辨。</p>
-<p>这就是为什么 <strong>网络级指纹识别</strong>（在 <a href="../../fingerprinting/network-fingerprinting/">网络指纹</a> 中涵盖）如此危险：它在 <strong>代理层之下</strong> 运行，即使应用层代理完美无缺，也会暴露您的真实系统。</p>
-<h3 id="tcp-vs-udp">TCP vs UDP：传输层协议</h3>
-<p>在第 4 层 (传输层)，两种根本不同的协议主导着互联网通信：<strong>TCP (传输控制协议)</strong> 和 <strong>UDP (用户数据报协议)</strong>。它们代表了相反的设计理念：可靠性 vs 速度，开销 vs 效率。</p>
-<h4 id="_6">根本区别</h4>
-<p><strong>TCP</strong> 就像打电话：您建立连接，确认对方正在收听，可靠地交换数据，然后挂断。每个字节都会被确认、排序，并保证到达。</p>
-<p><strong>UDP</strong> 就像在拥挤的房间里大喊：您发送消息，希望它能到达。没有保证，没有确认，没有连接设置。只有原始的速度。</p>
+<h3 id="_4">层泄露问题</h3>
+<p>即使有完美的第 7 层代理，低层的特征也能暴露您的真实身份。您操作系统的 TCP 堆栈在第 4 层有独特的 fingerprint，由窗口大小、选项顺序和 TTL 值定义。第 3 层的 IP 标头字段（如 TTL 和分片行为）会揭示您的操作系统和网络拓扑。</p>
+<p>例如，如果您配置代理来显示 "Windows 10" 的 User-Agent，但您实际 Linux 系统的 TCP fingerprint 在第 4 层与此相矛盾，复杂的检测系统就能将这种不一致标记为强烈的机器人指标。这就是网络级 fingerprinting（在<a href="../../fingerprinting/network-fingerprinting/">网络指纹</a>中介绍）如此危险的原因：它运行在代理层之下，即使应用层代理完美无缺，也会暴露您的真实系统。</p>
+<h2 id="tcp-vs-udp">TCP vs UDP</h2>
+<p>在第 4 层（传输层），两种根本不同的协议主导着互联网通信。它们代表了相反的设计理念：可靠性与速度。</p>
+<p>TCP 是面向连接的。可以把它想象成打电话：您建立连接，确认对方正在收听，可靠地交换数据，然后挂断。每个字节都会被确认、排序，并保证到达。UDP 是无连接的。您发送数据，希望它能到达。没有 handshake，没有确认，没有保证。只有原始的速度和最小的开销。</p>
 <table>
 <thead>
 <tr>
@@ -4882,212 +4831,116 @@
 </thead>
 <tbody>
 <tr>
-<td><strong>连接</strong></td>
-<td>面向连接 (需要握手)</td>
-<td>无连接 (无需握手)</td>
+<td>连接</td>
+<td>面向连接（需要 handshake）</td>
+<td>无连接（无需 handshake）</td>
 </tr>
 <tr>
-<td><strong>可靠性</strong></td>
-<td>保证交付, 有序数据包</td>
-<td>尽力而为交付, 数据包可能丢失</td>
+<td>可靠性</td>
+<td>保证交付，有序数据包</td>
+<td>尽力而为交付，数据包可能丢失</td>
 </tr>
 <tr>
-<td><strong>速度</strong></td>
-<td>较慢 (可靠性机制带来开销)</td>
-<td>较快 (最小开销)</td>
+<td>速度</td>
+<td>较慢（可靠性机制带来开销）</td>
+<td>较快（最小开销）</td>
 </tr>
 <tr>
-<td><strong>用例</strong></td>
-<td>网页浏览, 文件传输, 电子邮件</td>
-<td>视频流, DNS 查询, 游戏</td>
+<td>用例</td>
+<td>网页浏览、文件传输、电子邮件</td>
+<td>视频流、DNS 查询、游戏</td>
 </tr>
 <tr>
-<td><strong>标头大小</strong></td>
-<td>最小 20 字节 (带选项时可达 60)</td>
+<td>标头大小</td>
+<td>最小 20 字节（带选项时可达 60）</td>
 <td>固定 8 字节</td>
 </tr>
 <tr>
-<td><strong>流量控制</strong></td>
-<td>有 (滑动窗口, 接收方驱动)</td>
-<td>无 (发送方随意传输)</td>
+<td>流量控制</td>
+<td>有（滑动窗口，接收方驱动）</td>
+<td>无（发送方随意传输）</td>
 </tr>
 <tr>
-<td><strong>拥塞控制</strong></td>
-<td>有 (网络拥塞时减速)</td>
-<td>无 (应用程序的责任)</td>
+<td>拥塞控制</td>
+<td>有（网络拥塞时减速）</td>
+<td>无（应用程序的责任）</td>
 </tr>
 <tr>
-<td><strong>错误检查</strong></td>
-<td>广泛 (校验和 + 确认)</td>
-<td>基本 (仅校验和, 可选丢弃)</td>
+<td>错误检查</td>
+<td>广泛（校验和 + 确认）</td>
+<td>基本（仅校验和；在 IPv4 中可选，在 IPv6 中强制）</td>
 </tr>
 <tr>
-<td><strong>排序</strong></td>
-<td>如果接收顺序混乱，则重新排序数据包</td>
-<td>无排序, 按接收顺序交付数据包</td>
+<td>排序</td>
+<td>乱序接收时重新排序数据包</td>
+<td>无排序，按接收顺序交付</td>
 </tr>
 <tr>
-<td><strong>重传</strong></td>
-<td>自动 (丢失的数据包会重传)</td>
-<td>无 (应用程序必须处理)</td>
+<td>重传</td>
+<td>自动（丢失的数据包会重传）</td>
+<td>无（应用程序必须处理）</td>
 </tr>
 </tbody>
 </table>
-<h4 id="_7">为什么这对代理和自动化很重要</h4>
-<p><strong>所有代理协议都使用 TCP</strong>。HTTP 代理、HTTPS 代理、SOCKS4 和 SOCKS5 都依赖 TCP 来进行其控制通道，因为：</p>
-<ol>
-<li><strong>可靠性</strong>：代理身份验证和命令交换需要保证交付</li>
-<li><strong>顺序性</strong>：代理协议有严格的命令序列 (握手 → 认证 → 数据)</li>
-<li><strong>连接状态</strong>：代理需要持久连接来跟踪客户端</li>
-</ol>
-<p>然而，<strong>SOCKS5 可以代理 UDP 流量</strong> (与 SOCKS4 或 HTTP 代理不同)，这使其对于以下方面至关重要：</p>
-<ul>
-<li><strong>DNS 查询</strong>：无需 TCP 开销的快速域名解析</li>
-<li><strong>WebRTC</strong>：实时音频/视频 (使用 UDP 以实现低延迟)</li>
-<li><strong>VoIP</strong>：语音通信需要速度而非可靠性</li>
-<li><strong>游戏协议</strong>：低延迟的游戏状态更新</li>
-</ul>
+<h3 id="tcp">TCP 与代理</h3>
+<p>所有代理协议（HTTP、HTTPS、SOCKS4、SOCKS5）都使用 TCP 作为其控制通道。这是因为代理身份验证和命令交换需要保证交付，代理协议有严格的命令序列（handshake，然后认证，然后数据），代理需要持久连接来跟踪客户端状态。</p>
+<p>然而，SOCKS5 还可以代理 UDP 流量，这与 SOCKS4 或 HTTP 代理不同。这使得 SOCKS5 对于代理 DNS 查询、WebRTC 音频/视频、VoIP 和游戏协议至关重要。</p>
 <div class="admonition danger">
-<p class="admonition-title">UDP = IP 泄露风险</p>
-<p>大多数浏览器连接使用 TCP (HTTP, WebSocket 等)。但是 WebRTC 直接使用 <strong>UDP</strong>，绕过了浏览器的网络堆栈和代理配置。这是代理浏览器自动化中 <strong>IP 泄露的头号原因</strong>。当 TCP 流量通过代理时，您的真实 IP 通过 UDP 泄露出去。</p>
+<p class="admonition-title">UDP 与 IP 泄露</p>
+<p>大多数浏览器连接使用 TCP（HTTP、WebSocket 等），但 WebRTC 直接使用 UDP，绕过了浏览器的代理配置。这是代理浏览器自动化中 IP 泄露的最常见原因：您的 TCP 流量通过代理传输，而 UDP 流量却泄露了您的真实 IP。</p>
 </div>
-<h4 id="tcp">TCP 三次握手：建立连接</h4>
-<p>在传输任何数据之前，TCP 需要 <strong>三次握手</strong> 来建立连接。这个协商过程同步序列号，商定窗口大小，并在两端建立连接状态。</p>
+<h3 id="tcp_1">TCP 三次握手</h3>
+<p>在传输任何数据之前，TCP 需要三次 handshake 来建立连接。这个协商过程同步序列号，商定窗口大小，并在两端建立连接状态。</p>
 <pre class="mermaid"><code>sequenceDiagram
     participant Client
     participant Server
 
-    Client-&gt;&gt;Server: SYN (同步, seq=x)
-    Note over Client,Server: 客户端请求连接
+    Client-&gt;&gt;Server: SYN (Synchronize, seq=x)
+    Note over Client,Server: Client requests connection
 
     Server-&gt;&gt;Client: SYN-ACK (seq=y, ack=x+1)
-    Note over Client,Server: 服务器确认并发送自己的 SYN
+    Note over Client,Server: Server acknowledges and sends its own SYN
 
     Client-&gt;&gt;Server: ACK (ack=y+1)
-    Note over Client,Server: 连接已建立
-
-    Note over Client,Server: 数据传输开始</code></pre>
-<p><strong>步骤分解：</strong></p>
-<p><strong>1. SYN (同步)</strong>：客户端发起连接</p>
-<ul>
-<li>客户端选择一个 <strong>随机的初始序列号 (ISN)</strong> (例如, <code>seq=1000</code>)</li>
-<li>向服务器发送带有此 ISN 的 SYN 包</li>
-<li>协商 TCP 选项：窗口大小、最大分段大小 (MSS)、时间戳、SACK 支持</li>
-</ul>
-<p><strong>2. SYN-ACK (同步-确认)</strong>：服务器响应</p>
-<ul>
-<li>服务器选择自己的 <strong>随机 ISN</strong> (例如, <code>seq=5000</code>)</li>
-<li>确认客户端的 ISN：<code>ack=1001</code> (客户端的 ISN + 1)</li>
-<li>同时发送 SYN (以建立服务器→客户端方向) 和 ACK (以确认客户端→服务器方向)</li>
-<li>返回自己的 TCP 选项</li>
-</ul>
-<p><strong>3. ACK (确认)</strong>：客户端确认</p>
-<ul>
-<li>客户端确认服务器的 ISN：<code>ack=5001</code> (服务器的 ISN + 1)</li>
-<li>现在连接在两个方向上都 <strong>已建立</strong></li>
-<li>数据传输可以开始</li>
-</ul>
-<div class="admonition tip">
-<p class="admonition-title">为什么 ISN 是随机的？</p>
-<p>ISN 是随机化的 (不从 0 开始) 以防止 <strong>TCP 劫持攻击</strong>。如果 ISN 是可预测的，攻击者可以通过猜测序列号将数据包注入到现有连接中。现代系统使用加密随机性来选择 ISN (RFC 6528)。</p>
-</div>
-<p><strong>安全含义：TCP 指纹</strong></p>
-<p>TCP 握手揭示了许多 <strong>指纹识别您的操作系统</strong> 的特征：</p>
-<ul>
-<li><strong>初始窗口大小</strong>：不同操作系统的默认值不同 (Windows: 8192, Linux: 5840, macOS: 65535)</li>
-<li><strong>TCP 选项</strong>：选项的顺序和存在因操作系统而异 (MSS, SACK, Timestamps, Window Scale)</li>
-<li><strong>TTL (生存时间)</strong>：默认值不同 (Windows: 128, Linux: 64, macOS: 64)</li>
-<li><strong>窗口缩放因子</strong>：揭示缓冲区大小偏好</li>
-<li><strong>时间戳值</strong>：时序模式揭示系统正常运行时间和时钟分辨率</li>
-</ul>
-<p><strong>TCP 握手指纹示例 (用 Wireshark 捕获)</strong>：</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Windows 10:
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    Window Size: 8192
+    Note over Client,Server: Connection established, data transfer begins</code></pre>
+<p>该过程从客户端发送 SYN（同步）包开始，其中包含一个随机的初始序列号（ISN），例如 <code>seq=1000</code>。除了 ISN 之外，还会协商 TCP 选项：窗口大小、最大分段大小（MSS）、时间戳和 SACK 支持。</p>
+<p>服务器以 SYN-ACK 响应：它选择自己的随机 ISN（例如 <code>seq=5000</code>），并通过设置 <code>ack=1001</code>（客户端的 ISN + 1）来确认客户端的 ISN。这个单一的包既建立了服务器到客户端的方向（SYN），又确认了客户端到服务器的方向（ACK）。服务器还会返回自己的 TCP 选项。</p>
+<p>然后客户端发送最终的 ACK，确认服务器的 ISN（<code>ack=5001</code>）。此时连接在两个方向上都已完全建立，数据传输可以开始。</p>
+<p>ISN 是随机化的而非从零开始，以防止 TCP 劫持攻击。如果 ISN 是可预测的，攻击者可以通过猜测序列号将数据包注入到现有连接中。现代系统使用加密随机性来选择 ISN（RFC 6528）。</p>
+<h3 id="tcp-fingerprinting">TCP Fingerprinting</h3>
+<p>TCP handshake 揭示了能够 fingerprint 您操作系统的特征。不同操作系统对初始窗口大小、TCP 选项顺序、TTL（生存时间）、窗口缩放因子和时间戳行为使用不同的默认值。这些值由内核设置，而不是浏览器，因此代理无法更改它们。</p>
+<p>以下是现代操作系统的示例值。请注意，实际值因操作系统版本、内核配置和网络调优而异：</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Windows 10/11 (modern builds):
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    Window Size: 65535
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    MSS: 1460
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    Options: MSS, NOP, WS, NOP, NOP, SACK_PERM
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    TTL: 128
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>Linux (Ubuntu):
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>Linux (kernel 5.x+, Ubuntu 20.04+):
 </span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    Window Size: 29200
 </span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    MSS: 1460
 </span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    Options: MSS, SACK_PERM, TS, NOP, WS
 </span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    TTL: 64
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>macOS (Monterey+):
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    Window Size: 65535
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>    TTL: 64
 </span></code></pre></div>
-<p>这些差异 <strong>烙印在内核中</strong>。代理无法更改它们，因为它们是由您的 <strong>操作系统</strong> 而不是浏览器设置的。这就是为什么复杂的检测系统 <strong>即使通过代理</strong> 也能识别您的原因。</p>
+<p>这些差异烙印在内核中。代理无法更改它们，因为它们是由您的操作系统而不是浏览器设置的。这就是复杂的检测系统即使通过代理也能识别您的原因。</p>
 <div class="admonition warning">
 <p class="admonition-title">代理的局限性</p>
-<p>HTTP 和 SOCKS 代理运行在 <strong>TCP 层之上</strong>。它们无法修改 TCP 握手特征。您操作系统的 TCP 指纹 <strong>始终暴露</strong> 给代理服务器 (以及任何网络观察者)。只有 <strong>VPN 级别的解决方案</strong> 或 <strong>操作系统级的 TCP 堆栈欺骗</strong> 才能解决这个问题。</p>
+<p>HTTP 和 SOCKS 代理运行在 TCP 层之上。它们无法修改 TCP handshake 特征。您操作系统的 TCP fingerprint 始终暴露给代理服务器以及您和代理之间的任何网络观察者。只有 VPN 级别的解决方案或操作系统级的 TCP 堆栈配置才能解决这个问题。</p>
 </div>
-<p><strong>为什么 TCP 对代理很重要：</strong></p>
-<ul>
-<li><strong>可靠的代理身份验证</strong>：通过 TCP 发送的凭据不会丢失</li>
-<li><strong>持久连接</strong>：单个 TCP 连接可以处理多个 HTTP 请求 (HTTP/1.1 keep-alive, HTTP/2)</li>
-<li><strong>有序交付</strong>：代理命令按顺序执行 (对于身份验证流程至关重要)</li>
-<li><strong>指纹暴露</strong>：TCP 握手特征揭示了您的真实操作系统</li>
-</ul>
-<h4 id="udp">UDP 特性：速度至上，无需保证</h4>
-<p>与 TCP 可靠、面向连接的方法不同，UDP 是一种 <strong>“发射后不管”</strong> 的协议。它以可靠性换取 <strong>最小的延迟和开销</strong>，使其成为实时应用的理想选择，因为在这些应用中，速度比完美交付更重要。</p>
-<p><strong>UDP 数据报结构 (RFC 768)</strong>：</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># UDP 数据报结构 (实际标头格式)</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="p">{</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="s1">&#39;source_port&#39;</span><span class="p">:</span> <span class="mi">12345</span><span class="p">,</span>        <span class="c1"># 16 位 - 可选 (0 = 不期望响应)</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="s1">&#39;destination_port&#39;</span><span class="p">:</span> <span class="mi">53</span><span class="p">,</span>       <span class="c1"># 16 位 - 必需 (应用程序标识符)</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="s1">&#39;length&#39;</span><span class="p">:</span> <span class="mi">42</span><span class="p">,</span>                 <span class="c1"># 16 位 - 数据报大小 (标头 + 数据)</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="s1">&#39;checksum&#39;</span><span class="p">:</span> <span class="mh">0x1234</span><span class="p">,</span>          <span class="c1"># 16 位 - 在 IPv4 中可选, 在 IPv6 中必需</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="sa">b</span><span class="s1">&#39;...&#39;</span>               <span class="c1"># 变量 - 应用程序数据</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="p">}</span>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="c1"># 总标头: 8 字节 (而 TCP 为 20-60 字节)</span>
-</span></code></pre></div>
-<p><strong>关键 UDP 特性：</strong></p>
-<ol>
-<li><strong>无连接建立</strong>：没有握手，没有状态。只需发送数据包，希望它能到达。</li>
-<li><strong>不可靠</strong>：数据包可能丢失、重复或乱序到达。应用程序必须处理这些情况。</li>
-<li><strong>无流量控制</strong>：发送方随心所欲地快速传输。没有机制来适应接收方的容量。</li>
-<li><strong>无拥塞控制</strong>：UDP 不会检测或响应网络拥塞。可能会压垮网络。</li>
-<li><strong>最小标头</strong>：只有 8 字节，而 TCP 为 20-60 字节。更低的开销意味着更多带宽用于数据。</li>
-<li><strong>基于端口的多路复用</strong>：像 TCP 一样，使用端口号来识别应用程序 (DNS=53, WebRTC=动态)</li>
-</ol>
-<p><strong>何时使用 UDP：</strong></p>
-<p><strong>好的用例：</strong>
-- <strong>实时通信</strong>：语音/视频通话 (WebRTC, VoIP)，其中旧数据无用
-- <strong>游戏</strong>：速度 &gt; 准确性的低延迟游戏状态更新
-- <strong>流媒体</strong>：视频/音频，其中偶尔的帧丢失是可以接受的
-- <strong>DNS 查询</strong>：小的请求/响应，其中重传由应用程序处理
-- <strong>网络发现</strong>：广播/多播协议 (DHCP, mDNS)</p>
-<p><strong>坏的用例：</strong>
-- <strong>文件传输</strong>：需要应用层可靠性 (所以只管用 TCP)
-- <strong>网页浏览</strong>：需要有序、可靠的交付 (HTTP/3 over QUIC 是例外)
-- <strong>电子邮件, 数据库</strong>：绝对需要可靠性</p>
-<p><strong>UDP 和 DNS：一个关键示例</strong></p>
-<p>DNS (域名系统) 使用 UDP 是因为：</p>
-<ul>
-<li><strong>消息小</strong>：DNS 查询和响应通常适合单个数据包 (&lt;512 字节)</li>
-<li><strong>解析快</strong>：没有握手开销意味着更快的查找</li>
-<li><strong>应用层重试</strong>：如果超时未收到响应，DNS 客户端会重试</li>
-<li><strong>广泛使用</strong>：全球每秒数十亿次 DNS 查询</li>
-</ul>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># 典型的基于 UDP 的 DNS 查询</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">Source</span> <span class="n">Port</span><span class="p">:</span> <span class="mi">54321</span> <span class="p">(</span><span class="n">随机临时端口</span><span class="p">)</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">Destination</span> <span class="n">Port</span><span class="p">:</span> <span class="mi">53</span> <span class="p">(</span><span class="n">DNS</span> <span class="n">标准端口</span><span class="p">)</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">Length</span><span class="p">:</span> <span class="mi">29</span> <span class="n">字节</span> <span class="p">(</span><span class="mi">8</span> <span class="n">字节标头</span> <span class="o">+</span> <span class="mi">21</span> <span class="n">字节查询</span><span class="p">)</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="n">Checksum</span><span class="p">:</span> <span class="mh">0x1a2b</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="n">Data</span><span class="p">:</span> <span class="s2">&quot;google.com A?&quot;</span> <span class="p">(</span><span class="n">查询</span> <span class="n">A</span> <span class="n">记录</span><span class="p">)</span>
-</span></code></pre></div>
-<p><strong>为什么 UDP 对浏览器自动化很重要：</strong></p>
-<ul>
-<li><strong>WebRTC 使用 UDP</strong> 进行实时音频/视频 (无法通过 HTTP 代理)</li>
-<li><strong>DNS 查询使用 UDP</strong> (如果不通过代理，可能会泄露 DNS 请求)</li>
-<li><strong>SOCKS5 支持 UDP</strong> (与 SOCKS4 或 HTTP 代理不同)</li>
-<li><strong>UDP 会绕过代理</strong>，除非明确配置</li>
-<li><strong>没有序列号</strong> 意味着无法通过 ISN 进行指纹识别 (与 TCP 不同)</li>
-</ul>
-<div class="admonition danger">
-<p class="admonition-title">WebRTC UDP 泄露</p>
-<p>这是个关键问题：您的浏览器通过 <strong>UDP 进行 DNS 查询</strong>，并通过 <strong>UDP 建立 WebRTC 连接</strong>。大多数代理配置只覆盖 <strong>TCP 流量</strong> (HTTP, HTTPS, WebSocket)。</p>
-<p>结果：您的 TCP 流量 (网页, API 调用) 通过代理使用代理的 IP，但您的 <strong>UDP 流量直接泄露了您的真实 IP</strong>。</p>
-<p>这就是为什么即使使用了代理，网站仍然可以通过 WebRTC 发现您的真实 IP。它正在 <strong>直接使用 UDP</strong>，完全绕过了您的代理。</p>
+<div class="admonition note">
+<p class="admonition-title">TCP Fingerprinting 之外</p>
+<p>TCP handshake 只是第一个 fingerprinting 机会。紧接着，TLS handshake 会揭示另一个独特的 fingerprint，即 JA3/JA4。详情请参阅<a href="../../fingerprinting/network-fingerprinting/">网络指纹</a>。</p>
 </div>
-<p><strong>按协议划分的 UDP 代理支持：</strong></p>
+<h3 id="udp">UDP</h3>
+<p>与 TCP 可靠、面向连接的方法不同，UDP 是一种"发射后不管"的协议。它以可靠性换取最小的延迟和开销，使其成为实时应用的理想选择，因为在这些应用中速度比完美交付更重要。</p>
+<p>UDP 数据报只有 8 字节标头（相比 TCP 的 20-60 字节），包含源端口、目标端口、长度和校验和。没有连接建立，没有可靠性保证，没有流量控制，没有拥塞控制。如果数据包丢失，应用程序必须自行决定是否以及如何处理。</p>
+<p>UDP 适用于实时通信（通过 WebRTC 和 VoIP 进行的语音/视频通话）、游戏（低延迟的状态更新）、流媒体（偶尔的帧丢失可以接受）和 DNS 查询（小型请求/响应对，应用程序处理重试）。它不适合文件传输、网页浏览、电子邮件或数据库，这些都需要可靠、有序的交付。</p>
+<p>DNS 在自动化上下文中是一个特别重要的例子。DNS 使用 UDP 是因为查询通常很小，并且受益于 UDP 零 handshake 的开销优势。虽然 EDNS0（RFC 6891）将最大 UDP DNS 负载增加到了原始 512 字节限制之上，但大多数查询仍然很紧凑。如果响应未在超时时间内到达，DNS 客户端会在应用层处理重试。</p>
+<p>对于浏览器自动化，UDP 的关键问题是 WebRTC 使用它进行实时音频和视频，DNS 查询使用它进行域名解析，而大多数代理（HTTP、HTTPS、SOCKS4）只处理 TCP。除非您显式配置 UDP 代理，否则这些流量会绕过您的代理并泄露您的真实 IP。</p>
 <table>
 <thead>
 <tr>
@@ -5120,339 +4973,194 @@
 <tr>
 <td>VPN</td>
 <td>是</td>
-<td>隧道传输所有 IP 流量 (TCP 和 UDP)</td>
+<td>隧道传输所有 IP 流量（TCP 和 UDP）</td>
 </tr>
 </tbody>
 </table>
-<p><strong>实际含义：</strong></p>
-<p>为了在浏览器自动化中实现 <strong>真正的匿名</strong>，您需要 <strong>以下之一</strong>：
-1.  <strong>SOCKS5 代理</strong> (以代理 UDP) + 将 WebRTC 配置为使用 SOCKS5
-2.  <strong>完全禁用 WebRTC</strong> (防止 UDP 泄露，但会破坏视频会议)
-3.  <strong>VPN</strong> (隧道传输所有流量, TCP 和 UDP)
-4.  <strong>浏览器标志</strong>：<code>--force-webrtc-ip-handling-policy=disable_non_proxied_udp</code></p>
-<div class="admonition tip">
-<p class="admonition-title">UDP 指纹</p>
-<p>与 TCP 不同，UDP 没有握手，标头字段也最少，使其 <strong>更难被指纹识别</strong>。然而，<strong>时序特征</strong> (数据包间隔、抖动) 和 <strong>负载模式</strong> 仍然可以揭示应用程序行为。</p>
-</div>
-<h2 id="webrtc-ip">WebRTC 和 IP 泄露</h2>
-<p>WebRTC (Web 实时通信) 是 W3C 标准化的浏览器 API，支持浏览器之间直接进行 <strong>点对点</strong> 的音频、视频和数据通信，无需插件或中介服务器。虽然 WebRTC 对实时应用功能强大，但它也是代理浏览器自动化中 <strong>最大的 IP 泄露源</strong>。</p>
-<h3 id="webrtc-ip_1">为什么 WebRTC 会泄露您的 IP</h3>
-<p>WebRTC 专为 <strong>直接的点对点连接</strong> 而设计，优先考虑低延迟而非隐私。为了建立 P2P 连接，WebRTC 必须发现您的 <strong>真实公共 IP 地址</strong> 并与远程对等方共享，即使您的浏览器配置为使用代理。</p>
-<p><strong>根本问题：</strong>
-1.  您的浏览器使用代理处理 HTTP/HTTPS (TCP 流量)
-2.  WebRTC 使用 <strong>STUN 服务器</strong> 来发现您的真实公共 IP (UDP 流量)
-3.  STUN 查询 <strong>绕过了代理</strong> (因为它们是 UDP，而大多数代理只处理 TCP)
-4.  您的真实 IP 被发现并 <strong>与远程对等方共享</strong>
-5.  JavaScript 可以读取这些 "ICE 候选者" 并 <strong>将您的真实 IP 泄露给网站</strong></p>
+<p>为了在浏览器自动化中实现真正的匿名，您需要：支持 UDP 的 SOCKS5 代理并将 WebRTC 配置为使用它、完全禁用 WebRTC（这会破坏视频会议）、隧道传输所有流量的 VPN，或者浏览器标志 <code>--force-webrtc-ip-handling-policy=disable_non_proxied_udp</code>。</p>
+<h3 id="quic-http3">QUIC 与 HTTP/3</h3>
+<p>现代浏览器越来越多地使用 QUIC（RFC 9000），这是一种基于 UDP 的传输协议，为 HTTP/3 提供支持。由于 QUIC 运行在 UDP 上，它与 WebRTC 和 DNS 存在相同的代理绕过问题：大多数 HTTP 代理无法处理 QUIC 流量，它可能会泄露到您的代理配置之外。</p>
+<p>在自动化场景中，考虑使用 <code>--disable-quic</code> Chrome 标志禁用 QUIC，以强制使用基于 TCP 的 HTTP/2，确保所有网页流量通过您的代理。QUIC 还有自己的 fingerprinting 特征，类似于 TLS 的 JA3，增加了另一个检测向量。</p>
+<h2 id="webrtc-ip">WebRTC 与 IP 泄露</h2>
+<p>WebRTC（Web 实时通信）是 W3C 标准化的浏览器 API，支持浏览器之间直接进行点对点的音频、视频和数据通信，无需插件或中介服务器。虽然 WebRTC 对实时应用功能强大，但它是代理浏览器自动化中最大的 IP 泄露源。</p>
+<h3 id="webrtc-ip_1">WebRTC 如何泄露您的 IP</h3>
+<p>WebRTC 专为直接的点对点连接设计，优先考虑低延迟而非隐私。为了建立 P2P 连接，WebRTC 必须发现您的真实公共 IP 地址并与远程对等方共享，即使您的浏览器配置为使用代理。</p>
+<p>问题是这样展开的：您的浏览器使用代理处理 HTTP/HTTPS 流量（即 TCP），但 WebRTC 使用 STUN 服务器通过 UDP 发现您的真实公共 IP。STUN 查询绕过代理，因为大多数代理只处理 TCP。您的真实 IP 被发现并作为连接协商的一部分与远程对等方共享。页面上的 JavaScript 可以读取这些"ICE 候选者"并将您的真实 IP 发送到网站的服务器。</p>
 <div class="admonition danger">
 <p class="admonition-title">WebRTC 泄露的严重性</p>
-<p>即使：</p>
-<ul>
-<li>正确配置了 HTTP 代理</li>
-<li>HTTPS 代理工作正常</li>
-<li>DNS 查询被代理</li>
-<li>User-Agent 被伪造</li>
-<li>Canvas 指纹被缓解</li>
-</ul>
-<p><strong>WebRTC 仍然可以在毫秒内泄露您的真实 IP</strong>。这是因为 WebRTC 在 <strong>浏览器的代理层之下</strong> 运行，直接与操作系统的网络堆栈交互。</p>
+<p>即使正确配置了 HTTP 代理、HTTPS 代理工作正常、DNS 查询被代理、User-Agent 被伪造、canvas fingerprinting 被缓解，WebRTC 仍然可以在毫秒内泄露您的真实 IP。这是因为 WebRTC 运行在浏览器的代理层之下，直接与操作系统的网络堆栈交互。</p>
 </div>
-<h3 id="webrtc-ice">WebRTC 如何建立连接：ICE 过程</h3>
-<p>WebRTC 使用 <strong>ICE (交互式连接建立)</strong>，在 RFC 8445 中定义，以发现可能的连接路径并选择最佳路径。这个过程本身就会揭示您的网络拓扑。</p>
+<h3 id="ice">ICE 过程</h3>
+<p>WebRTC 使用 ICE（交互式连接建立，RFC 8445）来发现可能的连接路径并选择最佳路径。这个过程本身就会揭示您的网络拓扑，它收集三种类型的候选者。</p>
 <pre class="mermaid"><code>sequenceDiagram
     participant Browser
-    participant STUN as STUN 服务器
-    participant TURN as TURN 中继
-    participant Peer as 远程对等方
+    participant STUN as STUN Server
+    participant TURN as TURN Relay
+    participant Peer as Remote Peer
 
-    Note over Browser: WebRTC 连接已启动
+    Note over Browser: WebRTC connection initiated
 
-    Browser-&gt;&gt;Browser: 收集本地 IP 地址&lt;br/&gt;(局域网接口)
-    Note over Browser: 本地候选者:&lt;br/&gt;192.168.1.100:54321
+    Browser-&gt;&gt;Browser: Gather local IP addresses&lt;br/&gt;(LAN interfaces)
+    Note over Browser: Local candidate:&lt;br/&gt;192.168.1.100:54321
 
-    Browser-&gt;&gt;STUN: STUN 绑定请求 (通过 UDP)
-    Note over STUN: STUN 服务器发现公共 IP&lt;br/&gt;(绕过代理！)
-    STUN-&gt;&gt;Browser: STUN 响应 (带真实公共 IP)
-    Note over Browser: 服务器自反候选者:&lt;br/&gt;203.0.113.45:54321
+    Browser-&gt;&gt;STUN: STUN Binding Request (over UDP)
+    Note over STUN: STUN server discovers public IP&lt;br/&gt;(bypasses proxy!)
+    STUN-&gt;&gt;Browser: STUN Response with real public IP
+    Note over Browser: Server reflexive candidate:&lt;br/&gt;203.0.113.45:54321
 
-    Browser-&gt;&gt;TURN: 分配中继 (如果需要)
-    TURN-&gt;&gt;Browser: 中继地址已分配
-    Note over Browser: 中继候选者:&lt;br/&gt;198.51.100.10:61234
+    Browser-&gt;&gt;TURN: Allocate relay (if needed)
+    TURN-&gt;&gt;Browser: Relay address assigned
+    Note over Browser: Relay candidate:&lt;br/&gt;198.51.100.10:61234
 
-    Browser-&gt;&gt;Peer: 发送所有 ICE 候选者&lt;br/&gt;(本地 + 公共 + 中继)
-    Note over Peer: 现在知道了您的：&lt;br/&gt;- 局域网 IP&lt;br/&gt;- 真实公共 IP&lt;br/&gt;- 中继地址
+    Browser-&gt;&gt;Peer: Send all ICE candidates&lt;br/&gt;(local + public + relay)
+    Note over Peer: Now knows your:&lt;br/&gt;- LAN IP&lt;br/&gt;- Real public IP&lt;br/&gt;- Relay address
 
-    Peer-&gt;&gt;Browser: 发送 ICE 候选者
+    Peer-&gt;&gt;Browser: Send ICE candidates
 
-    Note over Browser,Peer: ICE 协商：首先尝试直接 P2P
+    Note over Browser,Peer: ICE negotiation: try direct P2P first
 
-    alt 直接 P2P 成功
-        Browser&lt;&lt;-&gt;&gt;Peer: 直接连接 (完全绕过代理！)
-    else 直接 P2P 失败 (防火墙/NAT)
-        Browser-&gt;&gt;TURN: 使用 TURN 中继
-        TURN&lt;&lt;-&gt;&gt;Peer: 中继连接
-        Note over Browser,Peer: 延迟更高，但可行
+    alt Direct P2P succeeds
+        Browser&lt;&lt;-&gt;&gt;Peer: Direct connection (bypasses proxy entirely!)
+    else Direct P2P fails (firewall/NAT)
+        Browser-&gt;&gt;TURN: Use TURN relay
+        TURN&lt;&lt;-&gt;&gt;Peer: Relayed connection
+        Note over Browser,Peer: Higher latency, but works
     end</code></pre>
-<h3 id="ice">ICE 候选者类型：泄露了什么</h3>
-<p>ICE 会发现三种类型的“候选者”(可能的连接端点)：</p>
-<p><strong>1. 主机候选者 (本地 LAN IP 地址)</strong></p>
-<p>您的浏览器会枚举所有本地网络接口，并为每个接口创建候选者：</p>
-<div class="language-javascript highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1">// WebRTC 揭示的主机候选者示例</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nx">candidate</span><span class="o">:</span><span class="mf">1</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="nx">UDP</span><span class="w"> </span><span class="mf">2130706431</span><span class="w"> </span><span class="mf">192.168.1.100</span><span class="w"> </span><span class="mf">54321</span><span class="w"> </span><span class="nx">typ</span><span class="w"> </span><span class="nx">host</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="nx">candidate</span><span class="o">:</span><span class="mf">2</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="nx">UDP</span><span class="w"> </span><span class="mf">2130706431</span><span class="w"> </span><span class="mf">10.0.0.5</span><span class="w"> </span><span class="mf">54322</span><span class="w"> </span><span class="nx">typ</span><span class="w"> </span><span class="nx">host</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="nx">candidate</span><span class="o">:</span><span class="mf">3</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="nx">UDP</span><span class="w"> </span><span class="mf">2130706431</span><span class="w"> </span><span class="mf">172.16.0.10</span><span class="w"> </span><span class="mf">54323</span><span class="w"> </span><span class="nx">typ</span><span class="w"> </span><span class="nx">host</span>
+<h3 id="ice_1">ICE 候选者类型</h3>
+<p>ICE 发现三种类型的候选者（可能的连接端点），每种类型揭示关于您网络的不同信息。</p>
+<p><strong>主机候选者</strong>是您的本地局域网 IP 地址。浏览器枚举所有本地网络接口，并为每个接口创建候选者。这会揭示您在专用网络上的本地 IP 地址、网络拓扑（是否存在 VPN 接口、虚拟机网桥）以及网络接口的数量。</p>
+<div class="language-javascript highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1">// Example host candidates</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nx">candidate</span><span class="o">:</span><span class="mf">1</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="nx">UDP</span><span class="w"> </span><span class="mf">2130706431</span><span class="w"> </span><span class="mf">192.168.1.100</span><span class="w"> </span><span class="mf">54321</span><span class="w"> </span><span class="nx">typ</span><span class="w"> </span><span class="nx">host</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="nx">candidate</span><span class="o">:</span><span class="mf">2</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="nx">UDP</span><span class="w"> </span><span class="mf">2130706431</span><span class="w"> </span><span class="mf">10.0.0.5</span><span class="w"> </span><span class="mf">54322</span><span class="w"> </span><span class="nx">typ</span><span class="w"> </span><span class="nx">host</span>
 </span></code></pre></div>
-<p><strong>这揭示了什么：</strong></p>
-<ul>
-<li>您在专用网络上的 <strong>本地 IP 地址</strong></li>
-<li>您的 <strong>网络拓扑</strong> (是否存在 VPN 接口、VM 网桥等)</li>
-<li><strong>网络接口的数量</strong> (单个 Wi-Fi vs 多个以太网/VPN)</li>
-</ul>
-<p>即使您在 NAT 之后，这也会揭示您的 <strong>内部网络结构</strong>。</p>
-<p><strong>2. 服务器自反候选者 (通过 STUN 获得的公共 IP)</strong></p>
-<p>浏览器向公共 STUN 服务器发送 STUN 请求，后者回复您从互联网上看到的 <strong>公共 IP 地址</strong>：</p>
-<div class="language-javascript highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1">// 服务器自反候选者 (您的真实公共 IP！)</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nx">candidate</span><span class="o">:</span><span class="mf">4</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="nx">UDP</span><span class="w"> </span><span class="mf">1694498815</span><span class="w"> </span><span class="mf">203.0.113.45</span><span class="w"> </span><span class="mf">54321</span><span class="w"> </span><span class="nx">typ</span><span class="w"> </span><span class="nx">srflx</span><span class="w"> </span><span class="nx">raddr</span><span class="w"> </span><span class="mf">192.168.1.100</span><span class="w"> </span><span class="nx">rport</span><span class="w"> </span><span class="mf">54321</span>
+<p>现代浏览器（Chrome 75+、Firefox 78+、Safari）通过在未授予媒体权限（摄像头/麦克风）时将本地 IP 地址替换为临时的 mDNS 名称（例如 <code>a1b2c3d4.local</code>）来缓解主机候选者泄露。然而，无论 mDNS 如何，服务器自反候选者（您的公共 IP）仍然会暴露。</p>
+<p><strong>服务器自反候选者</strong>是 STUN 服务器看到的您的公共 IP。浏览器向公共 STUN 服务器发送请求，后者回复您的公共 IP 地址。这就是人们常说的泄露：您的代理显示一个 IP，但 WebRTC 揭示了您的真实 IP，连同您的 NAT 类型、外部端口映射和 ISP 信息。</p>
+<div class="language-javascript highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1">// Server reflexive candidate (your real public IP)</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="nx">candidate</span><span class="o">:</span><span class="mf">4</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="nx">UDP</span><span class="w"> </span><span class="mf">1694498815</span><span class="w"> </span><span class="mf">203.0.113.45</span><span class="w"> </span><span class="mf">54321</span><span class="w"> </span><span class="nx">typ</span><span class="w"> </span><span class="nx">srflx</span><span class="w"> </span><span class="nx">raddr</span><span class="w"> </span><span class="mf">192.168.1.100</span><span class="w"> </span><span class="nx">rport</span><span class="w"> </span><span class="mf">54321</span>
 </span></code></pre></div>
-<p><strong>这揭示了什么：</strong></p>
-<ul>
-<li>您的 <strong>真实公共 IP 地址</strong> (您试图用代理隐藏的那个！)</li>
-<li>您的 <strong>NAT 类型</strong> 和外部端口映射</li>
-<li>您的 <strong>ISP</strong> (通过 IP 地理定位/WHOIS)</li>
-</ul>
-<p><strong>这就是</strong> 人们所说的泄露：您的代理显示 <code>198.51.100.5</code>，但 WebRTC 揭示了 <code>203.0.113.45</code> (您的真实 IP)。</p>
-<p><strong>3. 中继候选者 (TURN 中继地址)</strong></p>
-<p>如果直接 P2P 失败，浏览器会从 TURN 服务器分配一个中继地址：</p>
-<div class="language-javascript highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1">// 中继候选者 (TURN 服务器地址)</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="nx">candidate</span><span class="o">:</span><span class="mf">5</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="nx">UDP</span><span class="w"> </span><span class="mf">16777215</span><span class="w"> </span><span class="mf">198.51.100.10</span><span class="w"> </span><span class="mf">61234</span><span class="w"> </span><span class="nx">typ</span><span class="w"> </span><span class="nx">relay</span><span class="w"> </span><span class="nx">raddr</span><span class="w"> </span><span class="mf">203.0.113.45</span><span class="w"> </span><span class="nx">rport</span><span class="w"> </span><span class="mf">54321</span>
+<p><strong>中继候选者</strong>是在直接 P2P 失败时用作后备的 TURN 服务器地址。根据 TURN 服务器实现的不同，中继候选者的 <code>raddr</code>（远程地址）字段中可能仍然包含您的真实 IP。</p>
+<div class="language-javascript highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1">// Relay candidate (TURN server address)</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nx">candidate</span><span class="o">:</span><span class="mf">5</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="nx">UDP</span><span class="w"> </span><span class="mf">16777215</span><span class="w"> </span><span class="mf">198.51.100.10</span><span class="w"> </span><span class="mf">61234</span><span class="w"> </span><span class="nx">typ</span><span class="w"> </span><span class="nx">relay</span><span class="w"> </span><span class="nx">raddr</span><span class="w"> </span><span class="mf">203.0.113.45</span><span class="w"> </span><span class="nx">rport</span><span class="w"> </span><span class="mf">54321</span>
 </span></code></pre></div>
-<p><strong>这揭示了什么：</strong></p>
-<ul>
-<li>正在使用的 <strong>TURN 服务器</strong> (可能揭示您的 VoIP 提供商等)</li>
-<li>在 <code>raddr</code> (远程地址) 字段中 <strong>仍然包含您的真实 IP</strong></li>
-</ul>
-<h3 id="stun-ip">STUN 协议：IP 发现机制</h3>
-<p>STUN (NAT 会话穿透实用工具)，在 RFC 5389 中定义，是一个简单的基于 UDP 的请求-响应协议，它通过询问服务器“您看到的我是什么 IP？”来发现您的公共 IP 地址。</p>
-<p><strong>STUN 消息结构</strong>：</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># STUN 绑定请求 (简化)</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="p">{</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="s1">&#39;message_type&#39;</span><span class="p">:</span> <span class="mh">0x0001</span><span class="p">,</span>  <span class="c1"># 绑定请求</span>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="s1">&#39;message_length&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>      <span class="c1"># 无附加属性</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="s1">&#39;magic_cookie&#39;</span><span class="p">:</span> <span class="mh">0x2112A442</span><span class="p">,</span>  <span class="c1"># 固定值 (RFC 5389)</span>
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="s1">&#39;transaction_id&#39;</span><span class="p">:</span> <span class="sa">b</span><span class="s1">&#39;</span><span class="se">\x01\x02\x03</span><span class="s1">...</span><span class="se">\x0c</span><span class="s1">&#39;</span>  <span class="c1"># 随机 12 字节</span>
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="p">}</span>
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>
-</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="c1"># 通过 UDP 发送到 STUN 服务器 (例如, stun.l.google.com:19302)</span>
-</span></code></pre></div>
-<p><strong>STUN 绑定响应</strong>：</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># STUN 绑定成功响应</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="p">{</span>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>    <span class="s1">&#39;message_type&#39;</span><span class="p">:</span> <span class="mh">0x0101</span><span class="p">,</span>  <span class="c1"># 绑定成功响应</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span class="s1">&#39;message_length&#39;</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span>     <span class="c1"># XOR-MAPPED-ADDRESS 属性</span>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    <span class="s1">&#39;magic_cookie&#39;</span><span class="p">:</span> <span class="mh">0x2112A442</span><span class="p">,</span>
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>    <span class="s1">&#39;transaction_id&#39;</span><span class="p">:</span> <span class="sa">b</span><span class="s1">&#39;</span><span class="se">\x01\x02\x03</span><span class="s1">...</span><span class="se">\x0c</span><span class="s1">&#39;</span><span class="p">,</span>  <span class="c1"># 与请求相同</span>
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>    <span class="s1">&#39;attributes&#39;</span><span class="p">:</span> <span class="p">{</span>
-</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>        <span class="s1">&#39;XOR-MAPPED-ADDRESS&#39;</span><span class="p">:</span> <span class="p">{</span>
-</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>            <span class="s1">&#39;family&#39;</span><span class="p">:</span> <span class="s1">&#39;IPv4&#39;</span><span class="p">,</span>
-</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>            <span class="s1">&#39;port&#39;</span><span class="p">:</span> <span class="mi">54321</span><span class="p">,</span>
-</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>            <span class="s1">&#39;address&#39;</span><span class="p">:</span> <span class="s1">&#39;203.0.113.45&#39;</span>  <span class="c1"># 您的真实公共 IP！</span>
-</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>        <span class="p">}</span>
-</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>    <span class="p">}</span>
-</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="p">}</span>
-</span></code></pre></div>
-<p><strong>为什么是 XOR-MAPPED-ADDRESS？</strong>
-IP 地址与魔法 Cookie 和事务 ID 进行异或 (XOR) 操作，以实现 <strong>NAT 兼容性</strong>。一些 NAT 设备会错误地修改数据包有效负载中的 IP 地址，从而破坏 STUN。异或操作混淆了 IP，防止 NAT 干扰。</p>
-<p><strong>公共 STUN 服务器</strong> (浏览器常用)：</p>
-<ul>
-<li><code>stun.l.google.com:19302</code> (Google)</li>
-<li><code>stun1.l.google.com:19302</code> (Google)</li>
-<li><code>stun.services.mozilla.com</code> (Mozilla)</li>
-<li><code>stun.stunprotocol.org:3478</code> (开放 STUN 服务器)</li>
-</ul>
+<h3 id="stun">STUN 协议</h3>
+<p>STUN（NAT 会话穿透实用工具，RFC 8489）是一个简单的基于 UDP 的请求-响应协议。它的工作很直接：客户端询问"您看到的我是什么 IP？"，服务器回复客户端的公共 IP 和端口。</p>
+<p>客户端发送一个绑定请求，其中包含一个魔法 Cookie（<code>0x2112A442</code>，RFC 定义的固定值）和一个随机的 12 字节事务 ID。服务器响应一个绑定成功响应，其中包含一个 <code>XOR-MAPPED-ADDRESS</code> 属性，包含从服务器角度看到的客户端公共 IP 和端口。</p>
+<p>响应中的 IP 地址与魔法 Cookie 和事务 ID 进行了异或运算。这不是为了安全，而是为了 NAT 兼容性：一些 NAT 设备会错误地修改数据包负载中的 IP 地址，异或运算混淆了地址以防止这种干扰。</p>
+<p>浏览器常用的公共 STUN 服务器包括 <code>stun.l.google.com:19302</code>（Google）、<code>stun1.l.google.com:19302</code>（Google）、<code>stun.services.mozilla.com</code>（Mozilla）和 <code>stun.stunprotocol.org:3478</code>。</p>
 <h3 id="webrtc">为什么代理无法阻止 WebRTC 泄露</h3>
-<p><strong>1. UDP 协议</strong>：WebRTC 使用 <strong>UDP</strong>，大多数代理只处理 <strong>TCP</strong></p>
-<ul>
-<li>HTTP 代理：仅 TCP</li>
-<li>HTTPS CONNECT：仅 TCP 隧道</li>
-<li>SOCKS4：仅 TCP</li>
-<li>只有 <strong>SOCKS5</strong> 支持 UDP (但必须配置浏览器才能使用它)</li>
-</ul>
-<p><strong>2. 浏览器级实现</strong>：WebRTC 是一个 <strong>浏览器 API</strong>，不是 HTTP 功能</p>
-<ul>
-<li>在 HTTP 层之下运行</li>
-<li>直接访问操作系统网络堆栈</li>
-<li>绕过为 HTTP/HTTPS 配置的代理设置</li>
-</ul>
-<p><strong>3. 直接访问操作系统网络</strong>：STUN 查询 <strong>直接进入网络接口</strong></p>
-<ul>
-<li>浏览器的代理设置不适用于 STUN</li>
-<li>操作系统路由表决定路径 (而不是浏览器代理配置)</li>
-<li>只有 VPN 级别的路由才能拦截</li>
-</ul>
-<p><strong>4. 多接口枚举</strong>：WebRTC 枚举 <strong>所有</strong> 网络接口</p>
-<ul>
-<li>物理以太网、Wi-Fi、VPN 适配器、VM 网桥</li>
-<li>即使是未用于浏览的接口</li>
-<li>泄露内部网络拓扑</li>
-</ul>
-<p><strong>5. JavaScript 可访问性</strong>：网页可以通过 JavaScript <strong>读取 ICE 候选者</strong></p>
-<ul>
-<li><code>RTCPeerConnection.onicecandidate</code> 事件</li>
-<li>从候选者字符串中提取 IP 地址</li>
-<li>将您的真实 IP 发送到他们的服务器</li>
-</ul>
+<p>WebRTC 泄露发生有几个相互强化的原因。首先，WebRTC 使用 UDP，而大多数代理（HTTP、HTTPS CONNECT、SOCKS4）只处理 TCP。只有 SOCKS5 支持 UDP，即便如此，浏览器也必须显式配置为通过它路由 WebRTC。</p>
+<p>其次，WebRTC 是一个运行在 HTTP 层之下的浏览器 API。它直接访问操作系统网络堆栈，绕过为 HTTP/HTTPS 配置的代理设置。STUN 查询直接进入网络接口，操作系统路由表决定它们的路径，而不是浏览器的代理配置。只有 VPN 级别的路由才能拦截它们。</p>
+<p>第三，WebRTC 枚举所有网络接口（物理以太网、Wi-Fi、VPN 适配器、虚拟机网桥），包括未用于常规浏览的接口。这会泄露您的内部网络拓扑。</p>
+<p>最后，网页可以通过 JavaScript 使用 <code>RTCPeerConnection.onicecandidate</code> 事件读取 ICE 候选者，用简单的正则表达式从候选者字符串中提取 IP 地址，并将您的真实 IP 发送到他们的跟踪服务器。</p>
 <h3 id="pydoll-webrtc">在 Pydoll 中防止 WebRTC 泄露</h3>
-<p>Pydoll 提供了多种策略来防止 WebRTC IP 泄露：</p>
-<p><strong>方法 1：强制 WebRTC 仅使用代理路由 (推荐)</strong></p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChromiumOptions</span>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="n">options</span><span class="o">.</span><span class="n">webrtc_leak_protection</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># 添加 --force-webrtc-ip-handling-policy=disable_non_proxied_udp</span>
+<p>Pydoll 提供了多种策略来防止 WebRTC IP 泄露。</p>
+<p><strong>方法 1：强制 WebRTC 仅使用代理路由（推荐）</strong></p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChromiumOptions</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="n">options</span><span class="o">.</span><span class="n">webrtc_leak_protection</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># Adds --force-webrtc-ip-handling-policy=disable_non_proxied_udp</span>
 </span></code></pre></div>
-<p>Pydoll 提供了一个便捷的 <code>webrtc_leak_protection</code> 属性，自动管理底层的 <code>--force-webrtc-ip-handling-policy=disable_non_proxied_udp</code> 参数。</p>
-<p><strong>这会做什么：</strong></p>
-<ul>
-<li>如果没有代理支持 UDP，则禁用 UDP</li>
-<li>强制 WebRTC <strong>仅使用 TURN 中继</strong> (没有直接 P2P)</li>
-<li>阻止对公共服务器的 STUN 查询</li>
-<li><strong>权衡</strong>：破坏直接 P2P (视频通话延迟更高)</li>
-</ul>
+<p>Pydoll 提供了一个便捷的 <code>webrtc_leak_protection</code> 属性来管理底层的 Chrome 标志。这会在没有代理支持 UDP 时禁用 UDP，强制 WebRTC 仅使用 TURN 中继（不使用直接 P2P），并阻止对公共服务器的 STUN 查询。代价是视频通话的延迟更高，因为直接 P2P 连接被禁用。</p>
 <p><strong>方法 2：完全禁用 WebRTC</strong></p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--disable-features=WebRTC&#39;</span><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--disable-features=WebRTC&#39;</span><span class="p">)</span>
 </span></code></pre></div>
-<p><strong>这会做什么：</strong></p>
-<ul>
-<li>完全禁用 WebRTC API</li>
-<li>不可能发生 IP 泄露</li>
-<li><strong>权衡</strong>：破坏所有依赖 WebRTC 的网站 (视频会议、语音通话)</li>
-</ul>
+<p>这会完全禁用 WebRTC API，消除通过此向量发生 IP 泄露的任何可能性。代价是所有依赖 WebRTC 的网站（视频会议、语音通话）将无法工作。请注意，此标志应在您的特定 Chrome 版本上测试，因为功能标志名称可能因版本而异。</p>
 <p><strong>方法 3：通过浏览器首选项限制 WebRTC</strong></p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">options</span><span class="o">.</span><span class="n">browser_preferences</span> <span class="o">=</span> <span class="p">{</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>    <span class="s1">&#39;webrtc&#39;</span><span class="p">:</span> <span class="p">{</span>
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>        <span class="s1">&#39;ip_handling_policy&#39;</span><span class="p">:</span> <span class="s1">&#39;disable_non_proxied_udp&#39;</span><span class="p">,</span>
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>        <span class="s1">&#39;multiple_routes_enabled&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
-</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>        <span class="s1">&#39;nonproxied_udp_enabled&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
-</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>        <span class="s1">&#39;allow_legacy_tls_protocols&#39;</span><span class="p">:</span> <span class="kc">False</span>
-</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>    <span class="p">}</span>
-</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="p">}</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">options</span><span class="o">.</span><span class="n">browser_preferences</span> <span class="o">=</span> <span class="p">{</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="s1">&#39;webrtc&#39;</span><span class="p">:</span> <span class="p">{</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>        <span class="s1">&#39;ip_handling_policy&#39;</span><span class="p">:</span> <span class="s1">&#39;disable_non_proxied_udp&#39;</span><span class="p">,</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>        <span class="s1">&#39;multiple_routes_enabled&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>        <span class="s1">&#39;nonproxied_udp_enabled&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>        <span class="s1">&#39;allow_legacy_tls_protocols&#39;</span><span class="p">:</span> <span class="kc">False</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="p">}</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="p">}</span>
 </span></code></pre></div>
-<p><strong>这会做什么：</strong></p>
-<ul>
-<li><code>ip_handling_policy</code>：与方法 1 相同，但通过首选项设置</li>
-<li><code>multiple_routes_enabled</code>：防止使用多个网络路径</li>
-<li><code>nonproxied_udp_enabled</code>：阻止不通过代理的 UDP</li>
-</ul>
+<p>这与方法 1 效果相同，但通过首选项而非命令行标志实现。<code>multiple_routes_enabled</code> 防止使用多个网络路径，<code>nonproxied_udp_enabled</code> 阻止不通过代理的 UDP。</p>
 <p><strong>方法 4：使用支持 UDP 的 SOCKS5 代理</strong></p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--proxy-server=socks5://proxy.example.com:1080&#39;</span><span class="p">)</span>
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="c1"># 如果代理需要认证，请在 URL 中包含凭证：</span>
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="c1"># options.add_argument(&#39;--proxy-server=socks5://user:pass@proxy.example.com:1080&#39;)</span>
-</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--force-webrtc-ip-handling-policy=default_public_interface_only&#39;</span><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--proxy-server=socks5://proxy.example.com:1080&#39;</span><span class="p">)</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--force-webrtc-ip-handling-policy=default_public_interface_only&#39;</span><span class="p">)</span>
 </span></code></pre></div>
-<p><strong>这会做什么：</strong></p>
-<ul>
-<li>SOCKS5 可以代理 UDP (通过 <code>UDP ASSOCIATE</code> 命令)</li>
-<li>WebRTC 使用代理进行 STUN 查询</li>
-<li><strong>要求</strong>：代理必须支持 UDP (并非所有 SOCKS5 代理都支持)</li>
-</ul>
+<p>SOCKS5 可以通过其 <code>UDP ASSOCIATE</code> 命令代理 UDP，允许 WebRTC 的 STUN 查询通过代理。这需要实际支持 UDP 中继的 SOCKS5 代理，而并非所有代理都支持。</p>
+<div class="admonition warning">
+<p class="admonition-title">SOCKS5 身份验证</p>
+<p>Chrome 不支持通过 <code>--proxy-server</code> 标志内联 SOCKS5 身份验证（例如 <code>socks5://user:pass@host:port</code>）。Pydoll 提供了内置的 <code>SOCKS5Forwarder</code> 来解决此限制，它运行一个本地无需身份验证的 SOCKS5 代理，将流量转发到远程经过身份验证的代理，代替 Chrome 处理用户名/密码 handshake。详情请参阅<a href="../../../features/configuration/proxy/">代理配置</a>。</p>
+</div>
 <h3 id="webrtc_1">测试 WebRTC 泄露</h3>
-<p><strong>手动测试：</strong></p>
-<ol>
-<li>访问 <strong>https://browserleaks.com/webrtc</strong></li>
-<li>检查 "Public IP Address" 部分</li>
-<li>如果您看到 <strong>您的真实 IP</strong> (而不是代理 IP)，那么您就泄露了</li>
-</ol>
-<p><strong>使用 Pydoll 自动测试：</strong></p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChromiumOptions</span>
-</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>
-</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">test_webrtc_leak</span><span class="p">():</span>
-</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>    <span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
-</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>    <span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--proxy-server=http://proxy.example.com:8080&#39;</span><span class="p">)</span>
-</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>    <span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--force-webrtc-ip-handling-policy=disable_non_proxied_udp&#39;</span><span class="p">)</span>
-</span><span id="__span-12-9"><a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>
-</span><span id="__span-12-10"><a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>    <span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">(</span><span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
-</span><span id="__span-12-11"><a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>        <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-</span><span id="__span-12-12"><a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">&#39;https://browserleaks.com/webrtc&#39;</span><span class="p">)</span>
-</span><span id="__span-12-13"><a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>
-</span><span id="__span-12-14"><a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a>        <span class="c1"># 等待结果加载</span>
-</span><span id="__span-12-15"><a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a>        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
-</span><span id="__span-12-16"><a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a>
-</span><span id="__span-12-17"><a id="__codelineno-12-17" name="__codelineno-12-17" href="#__codelineno-12-17"></a>        <span class="c1"># 提取检测到的 IP</span>
-</span><span id="__span-12-18"><a id="__codelineno-12-18" name="__codelineno-12-18" href="#__codelineno-12-18"></a>        <span class="n">ips</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">execute_script</span><span class="p">(</span><span class="err">```</span>
-</span><span id="__span-12-19"><a id="__codelineno-12-19" name="__codelineno-12-19" href="#__codelineno-12-19"></a>            <span class="k">return</span> <span class="n">Array</span><span class="o">.</span><span class="n">from</span><span class="p">(</span><span class="n">document</span><span class="o">.</span><span class="n">querySelectorAll</span><span class="p">(</span><span class="s1">&#39;.ip-address&#39;</span><span class="p">))</span>
-</span><span id="__span-12-20"><a id="__codelineno-12-20" name="__codelineno-12-20" href="#__codelineno-12-20"></a>                <span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">el</span> <span class="o">=&gt;</span> <span class="n">el</span><span class="o">.</span><span class="n">textContent</span><span class="o">.</span><span class="n">trim</span><span class="p">());</span>
-</span><span id="__span-12-21"><a id="__codelineno-12-21" name="__codelineno-12-21" href="#__codelineno-12-21"></a>        <span class="err">```</span><span class="p">)</span>
-</span><span id="__span-12-22"><a id="__codelineno-12-22" name="__codelineno-12-22" href="#__codelineno-12-22"></a>
-</span><span id="__span-12-23"><a id="__codelineno-12-23" name="__codelineno-12-23" href="#__codelineno-12-23"></a>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;检测到的 IP:&quot;</span><span class="p">,</span> <span class="n">ips</span><span class="p">)</span>
-</span><span id="__span-12-24"><a id="__codelineno-12-24" name="__codelineno-12-24" href="#__codelineno-12-24"></a>        <span class="c1"># 应该只显示代理 IP, 而不是您的真实 IP</span>
-</span><span id="__span-12-25"><a id="__codelineno-12-25" name="__codelineno-12-25" href="#__codelineno-12-25"></a>
-</span><span id="__span-12-26"><a id="__codelineno-12-26" name="__codelineno-12-26" href="#__codelineno-12-26"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">test_webrtc_leak</span><span class="p">())</span>
+<p>您可以通过访问 <a href="https://browserleaks.com/webrtc">browserleaks.com/webrtc</a> 并检查"Public IP Address"部分来手动测试。如果您看到的是您的真实 IP 而不是代理 IP，则说明存在泄露。</p>
+<p>使用 Pydoll 进行自动化测试：</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChromiumOptions</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">test_webrtc_leak</span><span class="p">():</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    <span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    <span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--proxy-server=http://proxy.example.com:8080&#39;</span><span class="p">)</span>
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    <span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--force-webrtc-ip-handling-policy=disable_non_proxied_udp&#39;</span><span class="p">)</span>
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>    <span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">(</span><span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
+</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>        <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">&#39;https://browserleaks.com/webrtc&#39;</span><span class="p">)</span>
+</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>
+</span><span id="__span-8-14"><a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</span><span id="__span-8-15"><a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>
+</span><span id="__span-8-16"><a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>        <span class="n">ips</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">execute_script</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;</span>
+</span><span id="__span-8-17"><a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a><span class="s1">            return Array.from(document.querySelectorAll(&#39;.ip-address&#39;))</span>
+</span><span id="__span-8-18"><a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a><span class="s1">                .map(el =&gt; el.textContent.trim());</span>
+</span><span id="__span-8-19"><a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a><span class="s1">        &#39;&#39;&#39;</span><span class="p">)</span>
+</span><span id="__span-8-20"><a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a>
+</span><span id="__span-8-21"><a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Detected IPs:&quot;</span><span class="p">,</span> <span class="n">ips</span><span class="p">)</span>
+</span><span id="__span-8-22"><a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a>        <span class="c1"># Should only show proxy IP, not your real IP</span>
+</span><span id="__span-8-23"><a id="__codelineno-8-23" name="__codelineno-8-23" href="#__codelineno-8-23"></a>
+</span><span id="__span-8-24"><a id="__codelineno-8-24" name="__codelineno-8-24" href="#__codelineno-8-24"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">test_webrtc_leak</span><span class="p">())</span>
 </span></code></pre></div>
 <div class="admonition danger">
 <p class="admonition-title">务必测试 WebRTC 泄露</p>
-<p><strong>切勿假设</strong> 您的代理配置能阻止 WebRTC 泄露。始终使用 https://browserleaks.com/webrtc 或 https://ipleak.net 进行测试，以验证您的真实 IP 没有暴露。</p>
-<p>即使是单个 WebRTC 泄露也会立即 <strong>危及您的整个代理设置</strong>。网站现在知道了您的真实位置、ISP 和网络拓扑。</p>
+<p>切勿假设您的代理配置能阻止 WebRTC 泄露。始终使用 <a href="https://browserleaks.com/webrtc">browserleaks.com/webrtc</a> 或 <a href="https://ipleak.net">ipleak.net</a> 进行验证。即使是单个 WebRTC 泄露也会立即危及您的整个代理设置，因为网站现在知道了您的真实位置、ISP 和网络拓扑。</p>
 </div>
-<h3 id="webrtc_2">高级：网站如何检测 WebRTC 泄露</h3>
-<p>网站使用 JavaScript 有意触发 WebRTC 并提取您的真实 IP：</p>
-<div class="language-javascript highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="c1">// 恶意网站通过 WebRTC 提取真实 IP 的代码</span>
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="kd">const</span><span class="w"> </span><span class="nx">pc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">RTCPeerConnection</span><span class="p">({</span>
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">    </span><span class="nx">iceServers</span><span class="o">:</span><span class="w"> </span><span class="p">[{</span><span class="nx">urls</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;stun:stun.l.google.com:19302&#39;</span><span class="p">}]</span>
-</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="p">});</span>
-</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>
-</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="nx">pc</span><span class="p">.</span><span class="nx">createDataChannel</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">);</span><span class="w">  </span><span class="c1">// 创建虚拟数据通道</span>
-</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="nx">pc</span><span class="p">.</span><span class="nx">createOffer</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="nx">offer</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">pc</span><span class="p">.</span><span class="nx">setLocalDescription</span><span class="p">(</span><span class="nx">offer</span><span class="p">));</span>
-</span><span id="__span-13-8"><a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>
-</span><span id="__span-13-9"><a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a><span class="nx">pc</span><span class="p">.</span><span class="nx">onicecandidate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nx">event</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-13-10"><a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">event</span><span class="p">.</span><span class="nx">candidate</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-13-11"><a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a><span class="w">        </span><span class="kd">const</span><span class="w"> </span><span class="nx">ipRegex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sr">/([0-9]{1,3}(\.[0-9]{1,3}){3})/</span><span class="p">;</span>
-</span><span id="__span-13-12"><a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a><span class="w">        </span><span class="kd">const</span><span class="w"> </span><span class="nx">ipMatch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">event</span><span class="p">.</span><span class="nx">candidate</span><span class="p">.</span><span class="nx">candidate</span><span class="p">.</span><span class="nx">match</span><span class="p">(</span><span class="nx">ipRegex</span><span class="p">);</span>
-</span><span id="__span-13-13"><a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a>
-</span><span id="__span-13-14"><a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">ipMatch</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-13-15"><a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a><span class="w">            </span><span class="kd">const</span><span class="w"> </span><span class="nx">realIP</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">ipMatch</span><span class="p">[</span><span class="mf">1</span><span class="p">];</span>
-</span><span id="__span-13-16"><a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a><span class="w">            </span><span class="c1">// 将真实 IP 发送到服务器</span>
-</span><span id="__span-13-17"><a id="__codelineno-13-17" name="__codelineno-13-17" href="#__codelineno-13-17"></a><span class="w">            </span><span class="nx">fetch</span><span class="p">(</span><span class="sb">`/track?real_ip=</span><span class="si">${</span><span class="nx">realIP</span><span class="si">}</span><span class="sb">&amp;proxy_ip=</span><span class="si">${</span><span class="nb">window</span><span class="p">.</span><span class="nx">clientIP</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
-</span><span id="__span-13-18"><a id="__codelineno-13-18" name="__codelineno-13-18" href="#__codelineno-13-18"></a><span class="w">        </span><span class="p">}</span>
-</span><span id="__span-13-19"><a id="__codelineno-13-19" name="__codelineno-13-19" href="#__codelineno-13-19"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-13-20"><a id="__codelineno-13-20" name="__codelineno-13-20" href="#__codelineno-13-20"></a><span class="p">};</span>
+<h3 id="webrtc_2">网站如何利用 WebRTC 泄露</h3>
+<p>网站可以用几行 JavaScript 有意触发 WebRTC 来提取您的真实 IP：</p>
+<div class="language-javascript highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kd">const</span><span class="w"> </span><span class="nx">pc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">RTCPeerConnection</span><span class="p">({</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">    </span><span class="nx">iceServers</span><span class="o">:</span><span class="w"> </span><span class="p">[{</span><span class="nx">urls</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;stun:stun.l.google.com:19302&#39;</span><span class="p">}]</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="p">});</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="nx">pc</span><span class="p">.</span><span class="nx">createDataChannel</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">);</span>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="nx">pc</span><span class="p">.</span><span class="nx">createOffer</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="nx">offer</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">pc</span><span class="p">.</span><span class="nx">setLocalDescription</span><span class="p">(</span><span class="nx">offer</span><span class="p">));</span>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="nx">pc</span><span class="p">.</span><span class="nx">onicecandidate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nx">event</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">event</span><span class="p">.</span><span class="nx">candidate</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="w">        </span><span class="kd">const</span><span class="w"> </span><span class="nx">ipRegex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sr">/([0-9]{1,3}(\.[0-9]{1,3}){3})/</span><span class="p">;</span>
+</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="w">        </span><span class="kd">const</span><span class="w"> </span><span class="nx">ipMatch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">event</span><span class="p">.</span><span class="nx">candidate</span><span class="p">.</span><span class="nx">candidate</span><span class="p">.</span><span class="nx">match</span><span class="p">(</span><span class="nx">ipRegex</span><span class="p">);</span>
+</span><span id="__span-9-12"><a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>
+</span><span id="__span-9-13"><a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">ipMatch</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-9-14"><a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a><span class="w">            </span><span class="kd">const</span><span class="w"> </span><span class="nx">realIP</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">ipMatch</span><span class="p">[</span><span class="mf">1</span><span class="p">];</span>
+</span><span id="__span-9-15"><a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a><span class="w">            </span><span class="nx">fetch</span><span class="p">(</span><span class="sb">`/track?real_ip=</span><span class="si">${</span><span class="nx">realIP</span><span class="si">}</span><span class="sb">&amp;proxy_ip=</span><span class="si">${</span><span class="nb">window</span><span class="p">.</span><span class="nx">clientIP</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
+</span><span id="__span-9-16"><a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a><span class="w">        </span><span class="p">}</span>
+</span><span id="__span-9-17"><a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-9-18"><a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a><span class="p">};</span>
 </span></code></pre></div>
-<p>这段代码：</p>
-<ol>
-<li>创建一个 RTCPeerConnection (WebRTC 连接对象)</li>
-<li>触发 ICE 候选者收集 (联系 STUN 服务器)</li>
-<li>使用正则表达式从候选者中提取 IP 地址</li>
-<li>将您的真实 IP 发送到他们的跟踪服务器</li>
-</ol>
-<p><strong>您的防御：</strong> 禁用 WebRTC 或强制仅使用代理路由，如上所示。</p>
-<h2 id="_8">总结和进一步阅读</h2>
-<p>理解网络基础知识 (OSI 分层、TCP/UDP 特性以及 WebRTC 的点对点架构) 对于实现有效的基于代理的匿名 <strong>至关重要</strong>。</p>
-<p><strong>关键要点：</strong></p>
-<ul>
-<li>代理在 <strong>特定层</strong> 运行 (HTTP 在第 7 层, SOCKS 在第 5 层)，这决定了它们的能力</li>
-<li><strong>TCP 指纹</strong> (窗口大小、选项、TTL) 从较低层泄露，揭示您的真实操作系统</li>
-<li><strong>UDP 流量</strong> (WebRTC, DNS) 除非明确配置，否则通常会绕过代理</li>
-<li><strong>WebRTC</strong> 是 IP 泄露的头号来源。始终使用 browserleaks.com 进行测试</li>
-<li>只有 <strong>SOCKS5</strong> 或 <strong>VPN</strong> 才能有效代理 UDP 流量</li>
-</ul>
+<p>这段代码创建一个 RTCPeerConnection，触发 ICE 候选者收集（联系 STUN 服务器），用正则表达式从候选者中提取 IP 地址，并将您的真实 IP 发送到跟踪服务器。按照上述方法禁用 WebRTC 或强制仅使用代理路由可以防止这种情况。</p>
+<h2 id="_5">总结</h2>
+<p>代理运行在网络堆栈的特定层：HTTP 在第 7 层，SOCKS 在第 5 层。层级决定了代理能看到、修改和隐藏什么。TCP fingerprint（窗口大小、选项、TTL）从低层泄露，即使通过代理也会揭示您的真实操作系统。UDP 流量（包括 WebRTC 和 DNS）除非显式配置，否则通常会绕过代理。WebRTC 是 IP 泄露最常见的来源，只有 SOCKS5 或 VPN 才能有效代理 UDP 流量。现代浏览器还使用 QUIC（基于 UDP 的 HTTP/3），增加了另一个潜在的绕过向量。</p>
 <p><strong>后续步骤：</strong></p>
 <ul>
-<li><strong><a href="../http-proxies/">HTTP/HTTPS 代理</a></strong> - 深入了解应用层代理</li>
-<li><strong><a href="../socks-proxies/">SOCKS 代理</a></strong> - 学习会话层、协议无关的代理</li>
-<li><strong><a href="../../fingerprinting/network-fingerprinting/">网络指纹</a></strong> - TCP/IP 指纹技术</li>
-<li><strong><a href="../../../features/configuration/proxy/">代理配置</a></strong> - 实用 Pydoll 代理设置</li>
+<li><a href="../http-proxies/">HTTP/HTTPS 代理</a>：应用层代理</li>
+<li><a href="../socks-proxies/">SOCKS 代理</a>：会话层、协议无关的代理</li>
+<li><a href="../../fingerprinting/network-fingerprinting/">网络指纹</a>：TCP/IP 和 TLS fingerprinting 技术</li>
+<li><a href="../../../features/configuration/proxy/">代理配置</a>：实用 Pydoll 代理设置</li>
 </ul>
-<h2 id="_9">参考资料</h2>
+<h2 id="_6">参考资料</h2>
 <ul>
-<li><strong>RFC 793</strong>: 传输控制协议 (TCP) - https://tools.ietf.org/html/rfc793</li>
-<li><strong>RFC 768</strong>: 用户数据报协议 (UDP) - https://tools.ietf.org/html/rfc768</li>
-<li><strong>RFC 5389</strong>: NAT 会话穿透实用工具 (STUN) - https://tools.ietf.org/html/rfc5389</li>
-<li><strong>RFC 8445</strong>: 交互式连接建立 (ICE) - https://tools.ietf.org/html/rfc8445</li>
-<li><strong>RFC 5766</strong>: NAT 中继穿透 (TURN) - https://tools.ietf.org/html/rfc5766</li>
-<li><strong>RFC 6528</strong>: 防御序列号攻击 - https://tools.ietf.org/html/rfc6528</li>
-<li><strong>W3C WebRTC 1.0</strong>: 浏览器之间的实时通信 - https://www.w3.org/TR/webrtc/</li>
-<li><strong>BrowserLeaks</strong>: WebRTC 泄露测试 - https://browserleaks.com/webrtc</li>
-<li><strong>IPLeak</strong>: 全面泄露测试 - https://ipleak.net</li>
+<li>RFC 793: Transmission Control Protocol (TCP) - https://tools.ietf.org/html/rfc793</li>
+<li>RFC 768: User Datagram Protocol (UDP) - https://tools.ietf.org/html/rfc768</li>
+<li>RFC 8489: Session Traversal Utilities for NAT (STUN) - https://tools.ietf.org/html/rfc8489</li>
+<li>RFC 8445: Interactive Connectivity Establishment (ICE) - https://tools.ietf.org/html/rfc8445</li>
+<li>RFC 8656: Traversal Using Relays around NAT (TURN) - https://tools.ietf.org/html/rfc8656</li>
+<li>RFC 6528: Defending Against Sequence Number Attacks - https://tools.ietf.org/html/rfc6528</li>
+<li>RFC 9000: QUIC: A UDP-Based Multiplexed and Secure Transport - https://tools.ietf.org/html/rfc9000</li>
+<li>W3C WebRTC 1.0: Real-Time Communication Between Browsers - https://www.w3.org/TR/webrtc/</li>
+<li>BrowserLeaks: WebRTC Leak Test - https://browserleaks.com/webrtc</li>
+<li>IPLeak: Comprehensive Leak Testing - https://ipleak.net</li>
 </ul>
 
 

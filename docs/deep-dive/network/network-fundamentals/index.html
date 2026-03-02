@@ -27,7 +27,7 @@
       
       
       <link rel="icon" href="../../../resources/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.3">
     
     
       
@@ -2211,34 +2211,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#introduction-the-network-stack" class="md-nav__link">
+  <a href="#the-network-stack" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Introduction: The Network Stack
+        The Network Stack
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Introduction: The Network Stack">
+    <nav class="md-nav" aria-label="The Network Stack">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#the-osi-model-context" class="md-nav__link">
+  <a href="#the-osi-model" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The OSI Model Context
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="The OSI Model Context">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#layer-by-layer-breakdown" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Layer-by-Layer Breakdown
+        The OSI Model
       
     </span>
   </a>
@@ -2246,10 +2234,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#why-layer-positioning-matters-for-proxies" class="md-nav__link">
+  <a href="#how-layer-positioning-affects-proxies" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Why Layer Positioning Matters for Proxies
+        How Layer Positioning Affects Proxies
       
     </span>
   </a>
@@ -2257,10 +2245,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#practical-implication-the-layer-leak-problem" class="md-nav__link">
+  <a href="#the-layer-leak-problem" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Practical Implication: The "Layer Leak" Problem
+        The Layer Leak Problem
       
     </span>
   </a>
@@ -2271,24 +2259,24 @@
     </nav>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#tcp-vs-udp-transport-layer-protocols" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#tcp-vs-udp" class="md-nav__link">
     <span class="md-ellipsis">
       
-        TCP vs UDP: Transport Layer Protocols
+        TCP vs UDP
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="TCP vs UDP: Transport Layer Protocols">
+    <nav class="md-nav" aria-label="TCP vs UDP">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#the-fundamental-difference" class="md-nav__link">
+  <a href="#tcp-and-proxies" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The Fundamental Difference
+        TCP and Proxies
       
     </span>
   </a>
@@ -2296,10 +2284,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#why-this-matters-for-proxies-and-automation" class="md-nav__link">
+  <a href="#the-tcp-three-way-handshake" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Why This Matters for Proxies and Automation
+        The TCP Three-Way Handshake
       
     </span>
   </a>
@@ -2307,10 +2295,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#tcp-three-way-handshake-establishing-connections" class="md-nav__link">
+  <a href="#tcp-fingerprinting" class="md-nav__link">
     <span class="md-ellipsis">
       
-        TCP Three-Way Handshake: Establishing Connections
+        TCP Fingerprinting
       
     </span>
   </a>
@@ -2318,18 +2306,24 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#udp-characteristics-speed-without-guarantees" class="md-nav__link">
+  <a href="#udp" class="md-nav__link">
     <span class="md-ellipsis">
       
-        UDP Characteristics: Speed Without Guarantees
+        UDP
       
     </span>
   </a>
   
 </li>
         
-      </ul>
-    </nav>
+          <li class="md-nav__item">
+  <a href="#quic-and-http3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        QUIC and HTTP/3
+      
+    </span>
+  </a>
   
 </li>
         
@@ -2351,10 +2345,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#why-webrtc-leaks-your-ip" class="md-nav__link">
+  <a href="#how-webrtc-leaks-your-ip" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Why WebRTC Leaks Your IP
+        How WebRTC Leaks Your IP
       
     </span>
   </a>
@@ -2362,10 +2356,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#how-webrtc-establishes-connections-the-ice-process" class="md-nav__link">
+  <a href="#the-ice-process" class="md-nav__link">
     <span class="md-ellipsis">
       
-        How WebRTC Establishes Connections: The ICE Process
+        The ICE Process
       
     </span>
   </a>
@@ -2373,10 +2367,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#ice-candidate-types-what-gets-leaked" class="md-nav__link">
+  <a href="#ice-candidate-types" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ICE Candidate Types: What Gets Leaked
+        ICE Candidate Types
       
     </span>
   </a>
@@ -2384,10 +2378,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#stun-protocol-the-ip-discovery-mechanism" class="md-nav__link">
+  <a href="#the-stun-protocol" class="md-nav__link">
     <span class="md-ellipsis">
       
-        STUN Protocol: The IP Discovery Mechanism
+        The STUN Protocol
       
     </span>
   </a>
@@ -2395,10 +2389,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#why-proxies-cant-stop-webrtc-leaks" class="md-nav__link">
+  <a href="#why-proxies-cannot-stop-webrtc-leaks" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Why Proxies Can't Stop WebRTC Leaks
+        Why Proxies Cannot Stop WebRTC Leaks
       
     </span>
   </a>
@@ -2428,10 +2422,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#advanced-webrtc-leak-detection-by-websites" class="md-nav__link">
+  <a href="#how-websites-exploit-webrtc-leaks" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Advanced: WebRTC Leak Detection by Websites
+        How Websites Exploit WebRTC Leaks
       
     </span>
   </a>
@@ -2444,10 +2438,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#summary-and-further-reading" class="md-nav__link">
+  <a href="#summary" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Summary and Further Reading
+        Summary
       
     </span>
   </a>
@@ -4441,34 +4435,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#introduction-the-network-stack" class="md-nav__link">
+  <a href="#the-network-stack" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Introduction: The Network Stack
+        The Network Stack
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Introduction: The Network Stack">
+    <nav class="md-nav" aria-label="The Network Stack">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#the-osi-model-context" class="md-nav__link">
+  <a href="#the-osi-model" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The OSI Model Context
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="The OSI Model Context">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#layer-by-layer-breakdown" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Layer-by-Layer Breakdown
+        The OSI Model
       
     </span>
   </a>
@@ -4476,10 +4458,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#why-layer-positioning-matters-for-proxies" class="md-nav__link">
+  <a href="#how-layer-positioning-affects-proxies" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Why Layer Positioning Matters for Proxies
+        How Layer Positioning Affects Proxies
       
     </span>
   </a>
@@ -4487,10 +4469,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#practical-implication-the-layer-leak-problem" class="md-nav__link">
+  <a href="#the-layer-leak-problem" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Practical Implication: The "Layer Leak" Problem
+        The Layer Leak Problem
       
     </span>
   </a>
@@ -4501,24 +4483,24 @@
     </nav>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#tcp-vs-udp-transport-layer-protocols" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#tcp-vs-udp" class="md-nav__link">
     <span class="md-ellipsis">
       
-        TCP vs UDP: Transport Layer Protocols
+        TCP vs UDP
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="TCP vs UDP: Transport Layer Protocols">
+    <nav class="md-nav" aria-label="TCP vs UDP">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#the-fundamental-difference" class="md-nav__link">
+  <a href="#tcp-and-proxies" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The Fundamental Difference
+        TCP and Proxies
       
     </span>
   </a>
@@ -4526,10 +4508,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#why-this-matters-for-proxies-and-automation" class="md-nav__link">
+  <a href="#the-tcp-three-way-handshake" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Why This Matters for Proxies and Automation
+        The TCP Three-Way Handshake
       
     </span>
   </a>
@@ -4537,10 +4519,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#tcp-three-way-handshake-establishing-connections" class="md-nav__link">
+  <a href="#tcp-fingerprinting" class="md-nav__link">
     <span class="md-ellipsis">
       
-        TCP Three-Way Handshake: Establishing Connections
+        TCP Fingerprinting
       
     </span>
   </a>
@@ -4548,18 +4530,24 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#udp-characteristics-speed-without-guarantees" class="md-nav__link">
+  <a href="#udp" class="md-nav__link">
     <span class="md-ellipsis">
       
-        UDP Characteristics: Speed Without Guarantees
+        UDP
       
     </span>
   </a>
   
 </li>
         
-      </ul>
-    </nav>
+          <li class="md-nav__item">
+  <a href="#quic-and-http3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        QUIC and HTTP/3
+      
+    </span>
+  </a>
   
 </li>
         
@@ -4581,10 +4569,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#why-webrtc-leaks-your-ip" class="md-nav__link">
+  <a href="#how-webrtc-leaks-your-ip" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Why WebRTC Leaks Your IP
+        How WebRTC Leaks Your IP
       
     </span>
   </a>
@@ -4592,10 +4580,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#how-webrtc-establishes-connections-the-ice-process" class="md-nav__link">
+  <a href="#the-ice-process" class="md-nav__link">
     <span class="md-ellipsis">
       
-        How WebRTC Establishes Connections: The ICE Process
+        The ICE Process
       
     </span>
   </a>
@@ -4603,10 +4591,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#ice-candidate-types-what-gets-leaked" class="md-nav__link">
+  <a href="#ice-candidate-types" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ICE Candidate Types: What Gets Leaked
+        ICE Candidate Types
       
     </span>
   </a>
@@ -4614,10 +4602,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#stun-protocol-the-ip-discovery-mechanism" class="md-nav__link">
+  <a href="#the-stun-protocol" class="md-nav__link">
     <span class="md-ellipsis">
       
-        STUN Protocol: The IP Discovery Mechanism
+        The STUN Protocol
       
     </span>
   </a>
@@ -4625,10 +4613,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#why-proxies-cant-stop-webrtc-leaks" class="md-nav__link">
+  <a href="#why-proxies-cannot-stop-webrtc-leaks" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Why Proxies Can't Stop WebRTC Leaks
+        Why Proxies Cannot Stop WebRTC Leaks
       
     </span>
   </a>
@@ -4658,10 +4646,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#advanced-webrtc-leak-detection-by-websites" class="md-nav__link">
+  <a href="#how-websites-exploit-webrtc-leaks" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Advanced: WebRTC Leak Detection by Websites
+        How Websites Exploit WebRTC Leaks
       
     </span>
   </a>
@@ -4674,10 +4662,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#summary-and-further-reading" class="md-nav__link">
+  <a href="#summary" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Summary and Further Reading
+        Summary
       
     </span>
   </a>
@@ -4782,34 +4770,23 @@
 
 
 <h1 id="network-fundamentals">Network Fundamentals</h1>
-<p>This document covers the foundational network protocols that power the internet and how they expose or protect your identity in automation scenarios. Understanding TCP, UDP, the OSI model, and WebRTC is <strong>essential</strong> before diving into proxy protocols.</p>
+<p>This document covers the foundational network protocols that power the internet and how they can expose or protect your identity in automation scenarios. A working understanding of TCP, UDP, the OSI model, and WebRTC will make proxy configuration far less mysterious and far more effective.</p>
 <div class="admonition info">
 <p class="admonition-title">Module Navigation</p>
 <ul>
-<li><strong><a href="../">← Network &amp; Security Overview</a></strong> - Module introduction and learning path</li>
-<li><strong><a href="../http-proxies/">→ HTTP/HTTPS Proxies</a></strong> - Application-layer proxying</li>
-<li><strong><a href="../socks-proxies/">→ SOCKS Proxies</a></strong> - Session-layer proxying</li>
+<li><a href="../">Network &amp; Security Overview</a>: Module introduction and learning path</li>
+<li><a href="../http-proxies/">HTTP/HTTPS Proxies</a>: Application-layer proxying</li>
+<li><a href="../socks-proxies/">SOCKS Proxies</a>: Session-layer proxying</li>
 </ul>
-<p>For practical Pydoll usage, see <strong><a href="../../../features/configuration/proxy/">Proxy Configuration</a></strong> and <strong><a href="../../../features/configuration/browser-options/">Browser Options</a></strong>.</p>
+<p>For practical Pydoll usage, see <a href="../../../features/configuration/proxy/">Proxy Configuration</a> and <a href="../../../features/configuration/browser-options/">Browser Options</a>.</p>
 </div>
-<div class="admonition warning">
-<p class="admonition-title">Foundation First</p>
-<p>This is <strong>prerequisite knowledge</strong> for understanding proxy protocols. Without grasping these fundamentals, proxy configuration becomes trial-and-error guesswork.</p>
-</div>
-<h2 id="introduction-the-network-stack">Introduction: The Network Stack</h2>
-<p>Every HTTP request your browser makes (every proxy connection, every WebSocket message) travels through a <strong>layered network stack</strong>. Each layer has specific responsibilities, protocols, and security implications.</p>
-<p><strong>Why this matters for automation:</strong></p>
-<ul>
-<li>Proxies operate at <strong>different layers</strong>, each with different capabilities</li>
-<li>Network characteristics at lower layers can <strong>fingerprint</strong> your real system (even through proxies)</li>
-<li>Understanding the stack reveals <strong>where identity leaks occur</strong> and how to prevent them</li>
-</ul>
-<p>Before diving into proxies, we need to understand the network stack they operate within. This isn't abstract theory. Every concept here has <strong>direct implications</strong> for stealth, performance, and reliability in browser automation.</p>
-<h3 id="the-osi-model-context">The OSI Model Context</h3>
-<p>The OSI (Open Systems Interconnection) model, developed by the International Organization for Standardization (ISO) in 1984, provides a <strong>conceptual framework</strong> for understanding how network protocols interact. While real-world networks primarily use the TCP/IP model (which predates OSI), understanding OSI layers helps conceptualize <strong>where proxies operate</strong> and <strong>what they can inspect or modify</strong>.</p>
+<h2 id="the-network-stack">The Network Stack</h2>
+<p>Every HTTP request your browser makes travels through a layered network stack. Each layer has specific responsibilities, protocols, and security implications. Proxies operate at different layers, and the layer determines what the proxy can see, modify, and hide. Network characteristics at lower layers can fingerprint your real system even through proxies, so understanding the stack helps you see where identity leaks happen and how to prevent them.</p>
+<h3 id="the-osi-model">The OSI Model</h3>
+<p>The OSI (Open Systems Interconnection) model, developed by ISO in 1984, provides a conceptual framework for understanding how network protocols interact. Real-world networks use the TCP/IP model (which predates OSI and has only 4 layers), but OSI terminology remains the standard way to describe where proxies operate and what they can access.</p>
 <pre class="mermaid"><code>graph TD
-    L7[Layer 7: Application - HTTP, FTP, SMTP]
-    L6[Layer 6: Presentation - SSL/TLS, Encryption]
+    L7[Layer 7: Application - HTTP, FTP, SMTP, DNS]
+    L6[Layer 6: Presentation - Encryption, Compression]
     L5[Layer 5: Session - SOCKS]
     L4[Layer 4: Transport - TCP, UDP]
     L3[Layer 3: Network - IP, ICMP]
@@ -4817,59 +4794,31 @@
     L1[Layer 1: Physical - Cables, Radio Waves]
 
     L7 --&gt; L6 --&gt; L5 --&gt; L4 --&gt; L3 --&gt; L2 --&gt; L1</code></pre>
-<h4 id="layer-by-layer-breakdown">Layer-by-Layer Breakdown</h4>
-<p><strong>Layer 7 (Application)</strong>: Where user-facing protocols live. HTTP, HTTPS, FTP, SMTP, DNS all operate here. This layer contains the <strong>actual data</strong> your application cares about: HTML documents, JSON responses, file transfers. HTTP proxies operate at this layer, giving them <strong>full visibility</strong> into request/response content.</p>
-<p><strong>Layer 6 (Presentation)</strong>: Handles data format translation, encryption, and compression. SSL/TLS encryption occurs here (though TLS is often considered to straddle Layers 5-6). This is where <strong>HTTPS encryption</strong> happens, encrypting Layer 7 data before passing it down to Layer 5.</p>
-<p><strong>Layer 5 (Session)</strong>: Manages connections between applications. SOCKS proxies operate here, below the application layer but above transport. This position makes SOCKS <strong>protocol-agnostic</strong>, it can proxy any Layer 7 protocol (HTTP, FTP, SMTP, SSH) without understanding their specifics.</p>
-<p><strong>Layer 4 (Transport)</strong>: Provides end-to-end data delivery. TCP (connection-oriented, reliable) and UDP (connectionless, fast) are the dominant protocols. This layer handles <strong>port numbers</strong>, <strong>flow control</strong>, and <strong>error correction</strong>. All proxies ultimately rely on Layer 4 for actual data transmission.</p>
-<p><strong>Layer 3 (Network)</strong>: Handles routing and addressing between networks. IP (Internet Protocol) operates here, managing <strong>IP addresses</strong> and <strong>routing decisions</strong>. This is where your <strong>real IP address</strong> lives, and where proxies aim to substitute it.</p>
-<p><strong>Layer 2 (Data Link)</strong>: Manages communication on the same physical network segment. Ethernet, Wi-Fi, and PPP operate here, handling <strong>MAC addresses</strong> and <strong>frame transmission</strong>. Network fingerprinting at this layer can reveal <strong>physical network characteristics</strong>.</p>
-<p><strong>Layer 1 (Physical)</strong>: The actual hardware (cables, radio waves, voltage levels). While rarely relevant to software, physical-layer characteristics can be measured (signal timing, electrical properties) for <strong>advanced fingerprinting</strong>.</p>
+<p>Layer 7 (Application) is where user-facing protocols live: HTTP, HTTPS, FTP, SMTP, and DNS all operate here. This layer contains the actual data your application cares about, such as HTML documents, JSON responses, and file transfers. HTTP proxies operate at this layer, which gives them full visibility into request and response content.</p>
+<p>Layer 6 (Presentation) handles data format translation, encryption, and compression. SSL/TLS is commonly associated with this layer for its encryption role, though in practice TLS straddles Layers 4 through 6 and does not map cleanly to any single OSI layer. What matters for automation is that HTTPS encryption happens here, encrypting Layer 7 data before it moves down the stack.</p>
+<p>Layer 5 (Session) manages connections between applications. SOCKS proxies operate here, below the application layer but above transport. This position makes SOCKS protocol-agnostic: it can proxy any Layer 7 protocol (HTTP, FTP, SMTP, SSH) without needing to understand their specifics.</p>
+<p>Layer 4 (Transport) provides end-to-end data delivery. TCP (connection-oriented, reliable) and UDP (connectionless, fast) are the dominant protocols here. This layer handles port numbers, flow control, and error correction. All proxies ultimately rely on Layer 4 for actual data transmission.</p>
+<p>Layer 3 (Network) handles routing and addressing between networks. IP (Internet Protocol) operates here, managing IP addresses and routing decisions. This is where your real IP address lives, and where proxies aim to substitute it.</p>
+<p>Layer 2 (Data Link) manages communication on the same physical network segment. Ethernet, Wi-Fi, and PPP operate here, handling MAC addresses and frame transmission. MAC addresses are only visible on the local network segment and are not directly accessible by remote servers, though they can be exposed through protocols like IPv6 SLAAC (which embeds the MAC in the address).</p>
+<p>Layer 1 (Physical) is the actual hardware: cables, radio waves, and voltage levels. Rarely relevant to software automation.</p>
 <div class="admonition tip">
-<p class="admonition-title">OSI vs TCP/IP Models</p>
-<p>The <strong>TCP/IP model</strong> (4 layers: Link, Internet, Transport, Application) is what networks actually use. OSI (7 layers) is a <strong>teaching tool</strong> and reference model. When people say "Layer 7 proxy," they're using OSI terminology, but the actual implementation uses TCP/IP.</p>
+<p class="admonition-title">OSI vs TCP/IP</p>
+<p>The TCP/IP model (4 layers: Link, Internet, Transport, Application) is what networks actually use. OSI (7 layers) is a teaching tool and reference model. When people say "Layer 7 proxy," they are using OSI terminology, but the actual implementation runs on TCP/IP.</p>
 </div>
-<h4 id="why-layer-positioning-matters-for-proxies">Why Layer Positioning Matters for Proxies</h4>
-<p>The layer where a proxy operates determines its <strong>capabilities</strong> and <strong>limitations</strong>:</p>
-<p><strong>HTTP/HTTPS Proxies (Layer 7 - Application)</strong>:</p>
-<ul>
-<li><strong>Full HTTP visibility</strong>: Can read/modify URLs, headers, cookies, request bodies</li>
-<li><strong>Intelligent caching</strong>: Can cache responses based on HTTP semantics</li>
-<li><strong>Content filtering</strong>: Can block specific URLs or keywords</li>
-<li><strong>Authentication integration</strong>: Can add authentication headers</li>
-<li><strong>HTTP-only limitation</strong>: Cannot proxy FTP, SMTP, SSH, or other protocols</li>
-<li><strong>TLS termination required</strong>: Must decrypt HTTPS to inspect content</li>
-</ul>
-<p><strong>SOCKS Proxies (Layer 5 - Session)</strong>:</p>
-<ul>
-<li><strong>Protocol-agnostic</strong>: Can proxy any Layer 7 protocol (HTTP, FTP, SSH, etc.)</li>
-<li><strong>No TLS termination</strong>: HTTPS passes through encrypted (end-to-end security)</li>
-<li><strong>UDP support</strong> (SOCKS5): Can proxy DNS, VoIP, gaming protocols</li>
-<li><strong>No content visibility</strong>: Cannot inspect or modify application-layer data</li>
-<li><strong>No intelligent caching</strong>: Doesn't understand HTTP semantics</li>
-<li><strong>No URL-based filtering</strong>: Cannot block specific URLs, only IP:port combinations</li>
-</ul>
-<div class="admonition warning">
+<h3 id="how-layer-positioning-affects-proxies">How Layer Positioning Affects Proxies</h3>
+<p>The layer where a proxy operates determines what it can and cannot do.</p>
+<p>HTTP/HTTPS proxies operate at Layer 7 (Application). Because they understand HTTP, they can read and modify URLs, headers, cookies, and request bodies. They can cache responses intelligently based on HTTP semantics, filter content by URL or keyword, and inject authentication headers. The trade-off is that they only understand HTTP. They cannot proxy FTP, SMTP, SSH, or other protocols, and inspecting HTTPS content requires TLS termination, which means decrypting and re-encrypting the traffic.</p>
+<p>SOCKS proxies operate at Layer 5 (Session). Because they sit below the application layer, they are protocol-agnostic and can proxy any Layer 7 protocol without modification. HTTPS traffic passes through encrypted end-to-end, since the SOCKS proxy never needs to decrypt it. SOCKS5 also supports UDP, enabling it to proxy DNS queries, VoIP, and other UDP-based protocols. The trade-off is that SOCKS proxies have no visibility into application-layer data: they cannot cache, filter by URL, or inspect content. They can only filter by IP and port.</p>
+<div class="admonition note">
 <p class="admonition-title">The Fundamental Tradeoff</p>
-<p><strong>Higher layers</strong> (Layer 7) = More control, less flexibility
-<strong>Lower layers</strong> (Layer 5) = Less control, more flexibility</p>
-<p>Choose based on your needs: HTTP proxy for <strong>content control</strong>, SOCKS proxy for <strong>protocol flexibility</strong> and <strong>end-to-end encryption</strong>.</p>
+<p>Higher layers (Layer 7) give you more control but less flexibility. Lower layers (Layer 5) give you less control but more flexibility. Choose HTTP proxies when you need content control, and SOCKS proxies when you need protocol flexibility or end-to-end encryption.</p>
 </div>
-<h4 id="practical-implication-the-layer-leak-problem">Practical Implication: The "Layer Leak" Problem</h4>
-<p>Understanding layers reveals a critical security issue: <strong>characteristics leak across layers</strong>.</p>
-<p>Even with a perfect Layer 7 proxy (HTTP), lower-layer characteristics can expose your real identity:</p>
-<ul>
-<li><strong>Layer 4 (TCP)</strong>: Your OS's TCP stack has a unique "fingerprint" (window size, options, TTL)</li>
-<li><strong>Layer 3 (Network)</strong>: IP header fields (TTL, fragmentation) reveal OS and network topology</li>
-<li><strong>Layer 2 (Data Link)</strong>: MAC address vendor reveals hardware manufacturer</li>
-</ul>
-<p><strong>Example</strong>: You configure a proxy to show "Windows 10" User-Agent, but your <strong>actual Linux system's TCP fingerprint</strong> (Layer 4) contradicts this. Instant bot detection.</p>
-<p>This is why <strong>network-level fingerprinting</strong> (covered in <a href="../../fingerprinting/network-fingerprinting/">Network Fingerprinting</a>) is so dangerous: it operates <strong>below the proxy layer</strong>, exposing your real system even when application-layer proxying is perfect.</p>
-<h3 id="tcp-vs-udp-transport-layer-protocols">TCP vs UDP: Transport Layer Protocols</h3>
-<p>At Layer 4 (Transport), two fundamentally different protocols dominate internet communication: <strong>TCP (Transmission Control Protocol)</strong> and <strong>UDP (User Datagram Protocol)</strong>. They represent opposite design philosophies: reliability vs speed, overhead vs efficiency.</p>
-<h4 id="the-fundamental-difference">The Fundamental Difference</h4>
-<p><strong>TCP</strong> is like a phone call: you establish a connection, verify the other party is listening, exchange data reliably, then hang up. Every byte is acknowledged, ordered, and guaranteed to arrive.</p>
-<p><strong>UDP</strong> is like shouting across a crowded room: you send your message and hope it arrives. No guarantees, no acknowledgments, no connection setup. Just raw speed.</p>
+<h3 id="the-layer-leak-problem">The Layer Leak Problem</h3>
+<p>Even with a perfect Layer 7 proxy, lower-layer characteristics can expose your real identity. Your operating system's TCP stack at Layer 4 has a unique fingerprint defined by window size, options order, and TTL values. IP header fields at Layer 3 such as TTL and fragmentation behavior reveal your OS and network topology.</p>
+<p>For example, if you configure a proxy to present a "Windows 10" User-Agent but your actual Linux system's TCP fingerprint contradicts this at Layer 4, sophisticated detection systems can flag this inconsistency as a strong bot indicator. This is why network-level fingerprinting (covered in <a href="../../fingerprinting/network-fingerprinting/">Network Fingerprinting</a>) is so dangerous: it operates below the proxy layer, exposing your real system even when application-layer proxying is flawless.</p>
+<h2 id="tcp-vs-udp">TCP vs UDP</h2>
+<p>At Layer 4 (Transport), two fundamentally different protocols dominate internet communication. They represent opposite design philosophies: reliability versus speed.</p>
+<p>TCP is connection-oriented. Think of it like a phone call: you establish a connection, verify the other party is listening, exchange data reliably, then hang up. Every byte is acknowledged, ordered, and guaranteed to arrive. UDP is connectionless. You send your data and hope it arrives. No handshake, no acknowledgments, no guarantees. Just raw speed with minimal overhead.</p>
 <table>
 <thead>
 <tr>
@@ -4880,77 +4829,66 @@
 </thead>
 <tbody>
 <tr>
-<td><strong>Connection</strong></td>
+<td>Connection</td>
 <td>Connection-oriented (handshake required)</td>
 <td>Connectionless (no handshake)</td>
 </tr>
 <tr>
-<td><strong>Reliability</strong></td>
+<td>Reliability</td>
 <td>Guaranteed delivery, ordered packets</td>
 <td>Best-effort delivery, packets may be lost</td>
 </tr>
 <tr>
-<td><strong>Speed</strong></td>
+<td>Speed</td>
 <td>Slower (overhead from reliability mechanisms)</td>
 <td>Faster (minimal overhead)</td>
 </tr>
 <tr>
-<td><strong>Use Cases</strong></td>
+<td>Use Cases</td>
 <td>Web browsing, file transfer, email</td>
 <td>Video streaming, DNS queries, gaming</td>
 </tr>
 <tr>
-<td><strong>Header Size</strong></td>
+<td>Header Size</td>
 <td>20 bytes minimum (up to 60 with options)</td>
 <td>8 bytes fixed</td>
 </tr>
 <tr>
-<td><strong>Flow Control</strong></td>
+<td>Flow Control</td>
 <td>Yes (sliding window, receiver-driven)</td>
 <td>No (sender transmits at will)</td>
 </tr>
 <tr>
-<td><strong>Congestion Control</strong></td>
+<td>Congestion Control</td>
 <td>Yes (slows down when network is congested)</td>
 <td>No (application's responsibility)</td>
 </tr>
 <tr>
-<td><strong>Error Checking</strong></td>
+<td>Error Checking</td>
 <td>Extensive (checksum + acknowledgments)</td>
-<td>Basic (checksum only, optional discard)</td>
+<td>Basic (checksum only; optional in IPv4, mandatory in IPv6)</td>
 </tr>
 <tr>
-<td><strong>Ordering</strong></td>
+<td>Ordering</td>
 <td>Packets reordered if received out-of-sequence</td>
 <td>No ordering, packets delivered as received</td>
 </tr>
 <tr>
-<td><strong>Retransmission</strong></td>
+<td>Retransmission</td>
 <td>Automatic (lost packets retransmitted)</td>
 <td>None (application must handle)</td>
 </tr>
 </tbody>
 </table>
-<h4 id="why-this-matters-for-proxies-and-automation">Why This Matters for Proxies and Automation</h4>
-<p><strong>All proxy protocols use TCP</strong>. HTTP proxies, HTTPS proxies, SOCKS4, and SOCKS5 all rely on TCP for their control channel because:</p>
-<ol>
-<li><strong>Reliability</strong>: Proxy authentication and command exchange require guaranteed delivery</li>
-<li><strong>Ordering</strong>: Proxy protocols have strict command sequences (handshake → auth → data)</li>
-<li><strong>Connection state</strong>: Proxies need persistent connections to track clients</li>
-</ol>
-<p>However, <strong>SOCKS5 can proxy UDP traffic</strong> (unlike SOCKS4 or HTTP proxies), making it essential for:</p>
-<ul>
-<li><strong>DNS queries</strong>: Fast domain resolution without TCP overhead</li>
-<li><strong>WebRTC</strong>: Real-time audio/video (which uses UDP for low latency)</li>
-<li><strong>VoIP</strong>: Voice communication requires speed over reliability</li>
-<li><strong>Gaming protocols</strong>: Low-latency game state updates</li>
-</ul>
+<h3 id="tcp-and-proxies">TCP and Proxies</h3>
+<p>All proxy protocols (HTTP, HTTPS, SOCKS4, SOCKS5) use TCP for their control channel. This is because proxy authentication and command exchange require guaranteed delivery, proxy protocols have strict command sequences (handshake, then auth, then data), and proxies need persistent connections to track client state.</p>
+<p>However, SOCKS5 can also proxy UDP traffic, unlike SOCKS4 or HTTP proxies. This makes SOCKS5 essential for proxying DNS queries, WebRTC audio/video, VoIP, and gaming protocols.</p>
 <div class="admonition danger">
-<p class="admonition-title">UDP = IP Leakage Risk</p>
-<p>Most browser connections use TCP (HTTP, WebSocket, etc.). But WebRTC uses <strong>UDP directly</strong>, bypassing the browser's network stack and proxy configuration. This is the <strong>#1 cause of IP leakage</strong> in proxied browser automation. Your real IP leaks through UDP while TCP traffic goes through the proxy.</p>
+<p class="admonition-title">UDP and IP Leakage</p>
+<p>Most browser connections use TCP (HTTP, WebSocket, etc.), but WebRTC uses UDP directly, bypassing the browser's proxy configuration. This is the most common cause of IP leakage in proxied browser automation: your TCP traffic goes through the proxy while your UDP traffic leaks your real IP.</p>
 </div>
-<h4 id="tcp-three-way-handshake-establishing-connections">TCP Three-Way Handshake: Establishing Connections</h4>
-<p>Before any data can be transmitted, TCP requires a <strong>three-way handshake</strong> to establish a connection. This negotiation synchronizes sequence numbers, agrees on window sizes, and establishes connection state on both ends.</p>
+<h3 id="the-tcp-three-way-handshake">The TCP Three-Way Handshake</h3>
+<p>Before any data can be transmitted, TCP requires a three-way handshake to establish a connection. This negotiation synchronizes sequence numbers, agrees on window sizes, and establishes connection state on both ends.</p>
 <pre class="mermaid"><code>sequenceDiagram
     participant Client
     participant Server
@@ -4962,142 +4900,45 @@
     Note over Client,Server: Server acknowledges and sends its own SYN
 
     Client-&gt;&gt;Server: ACK (ack=y+1)
-    Note over Client,Server: Connection established
-
-    Note over Client,Server: Data transfer begins</code></pre>
-<p><strong>Step-by-step breakdown:</strong></p>
-<p><strong>1. SYN (Synchronize)</strong>: Client initiates connection</p>
-<ul>
-<li>Client selects a <strong>random Initial Sequence Number (ISN)</strong> (e.g., <code>seq=1000</code>)</li>
-<li>Sends SYN packet with this ISN to server</li>
-<li>TCP options negotiated: window size, Maximum Segment Size (MSS), timestamps, SACK support</li>
-</ul>
-<p><strong>2. SYN-ACK (Synchronize-Acknowledge)</strong>: Server responds</p>
-<ul>
-<li>Server selects its own <strong>random ISN</strong> (e.g., <code>seq=5000</code>)</li>
-<li>Acknowledges client's ISN: <code>ack=1001</code> (client's ISN + 1)</li>
-<li>Sends both SYN (to establish server→client direction) and ACK (to confirm client→server direction)</li>
-<li>Returns its own TCP options</li>
-</ul>
-<p><strong>3. ACK (Acknowledge)</strong>: Client confirms</p>
-<ul>
-<li>Client acknowledges server's ISN: <code>ack=5001</code> (server's ISN + 1)</li>
-<li>Connection now <strong>established</strong> in both directions</li>
-<li>Data transmission can begin</li>
-</ul>
-<div class="admonition tip">
-<p class="admonition-title">Why Random ISN?</p>
-<p>The ISN is randomized (not starting from 0) to prevent <strong>TCP hijacking attacks</strong>. If ISNs were predictable, an attacker could inject packets into an existing connection by guessing the sequence numbers. Modern systems use cryptographic randomness for ISN selection (RFC 6528).</p>
-</div>
-<p><strong>Security Implication: TCP Fingerprinting</strong></p>
-<p>The TCP handshake reveals numerous characteristics that <strong>fingerprint your operating system</strong>:</p>
-<ul>
-<li><strong>Initial Window Size</strong>: Different OSes use different default values (Windows: 8192, Linux: 5840, macOS: 65535)</li>
-<li><strong>TCP Options</strong>: Order and presence of options vary by OS (MSS, SACK, Timestamps, Window Scale)</li>
-<li><strong>TTL (Time To Live)</strong>: Default values differ (Windows: 128, Linux: 64, macOS: 64)</li>
-<li><strong>Window Scale Factor</strong>: Reveals buffer size preferences</li>
-<li><strong>Timestamp Value</strong>: Timing patterns reveal system uptime and clock resolution</li>
-</ul>
-<p><strong>Example TCP handshake fingerprint (captured with Wireshark)</strong>:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Windows 10:
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    Window Size: 8192
+    Note over Client,Server: Connection established, data transfer begins</code></pre>
+<p>The process starts when the client sends a SYN (Synchronize) packet containing a random Initial Sequence Number (ISN), for example <code>seq=1000</code>. Along with the ISN, TCP options are negotiated: window size, Maximum Segment Size (MSS), timestamps, and SACK support.</p>
+<p>The server responds with a SYN-ACK: it picks its own random ISN (e.g., <code>seq=5000</code>) and acknowledges the client's ISN by setting <code>ack=1001</code> (client's ISN + 1). This single packet both establishes the server-to-client direction (SYN) and confirms the client-to-server direction (ACK). The server also returns its own TCP options.</p>
+<p>The client then sends a final ACK, acknowledging the server's ISN (<code>ack=5001</code>). At this point the connection is fully established in both directions and data transmission can begin.</p>
+<p>The ISN is randomized rather than starting from zero to prevent TCP hijacking attacks. If ISNs were predictable, an attacker could inject packets into an existing connection by guessing the sequence numbers. Modern systems use cryptographic randomness for ISN selection (RFC 6528).</p>
+<h3 id="tcp-fingerprinting">TCP Fingerprinting</h3>
+<p>The TCP handshake reveals characteristics that fingerprint your operating system. Different OSes use different default values for the initial window size, TCP options order, TTL (Time To Live), window scale factor, and timestamp behavior. These values are set by the kernel, not the browser, so a proxy cannot change them.</p>
+<p>Here are illustrative examples for modern operating systems. Note that actual values vary across OS versions, kernel configurations, and network tuning:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Windows 10/11 (modern builds):
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    Window Size: 65535
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    MSS: 1460
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    Options: MSS, NOP, WS, NOP, NOP, SACK_PERM
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    TTL: 128
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>Linux (Ubuntu):
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>Linux (kernel 5.x+, Ubuntu 20.04+):
 </span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    Window Size: 29200
 </span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    MSS: 1460
 </span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    Options: MSS, SACK_PERM, TS, NOP, WS
 </span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    TTL: 64
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>macOS (Monterey+):
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    Window Size: 65535
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>    TTL: 64
 </span></code></pre></div>
-<p>These differences are <strong>burned into the kernel</strong>. A proxy cannot change them because they're set by your <strong>operating system</strong>, not your browser. This is how sophisticated detection systems identify you <strong>even through proxies</strong>.</p>
+<p>These differences are burned into the kernel. A proxy cannot change them because they are set by your operating system, not your browser. This is how sophisticated detection systems can identify you even through proxies.</p>
 <div class="admonition warning">
 <p class="admonition-title">Proxy Limitation</p>
-<p>HTTP and SOCKS proxies operate <strong>above the TCP layer</strong>. They cannot modify TCP handshake characteristics. Your OS's TCP fingerprint is <strong>always exposed</strong> to the proxy server (and any network observers). Only <strong>VPN-level solutions</strong> or <strong>OS-level TCP stack spoofing</strong> can address this.</p>
+<p>HTTP and SOCKS proxies operate above the TCP layer. They cannot modify TCP handshake characteristics. Your OS's TCP fingerprint is always exposed to the proxy server and any network observers between you and the proxy. Only VPN-level solutions or OS-level TCP stack configuration can address this.</p>
 </div>
-<p><strong>Why TCP matters for proxies:</strong></p>
-<ul>
-<li><strong>Reliable proxy authentication</strong>: Credentials sent over TCP won't be lost</li>
-<li><strong>Persistent connections</strong>: Single TCP connection can handle multiple HTTP requests (HTTP/1.1 keep-alive, HTTP/2)</li>
-<li><strong>Ordered delivery</strong>: Proxy commands execute in sequence (crucial for authentication flows)</li>
-<li><strong>Fingerprinting exposure</strong>: TCP handshake characteristics reveal your real OS</li>
-</ul>
-<h4 id="udp-characteristics-speed-without-guarantees">UDP Characteristics: Speed Without Guarantees</h4>
-<p>Unlike TCP's reliable, connection-oriented approach, UDP is a <strong>"fire-and-forget" protocol</strong>. It trades reliability for <strong>minimal latency and overhead</strong>, making it ideal for real-time applications where speed matters more than perfect delivery.</p>
-<p><strong>UDP Packet Structure (RFC 768)</strong>:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># UDP datagram structure (actual header format)</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="p">{</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="s1">&#39;source_port&#39;</span><span class="p">:</span> <span class="mi">12345</span><span class="p">,</span>        <span class="c1"># 16 bits - optional (0 = no response expected)</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="s1">&#39;destination_port&#39;</span><span class="p">:</span> <span class="mi">53</span><span class="p">,</span>       <span class="c1"># 16 bits - required (application identifier)</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="s1">&#39;length&#39;</span><span class="p">:</span> <span class="mi">42</span><span class="p">,</span>                 <span class="c1"># 16 bits - datagram size (header + data)</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="s1">&#39;checksum&#39;</span><span class="p">:</span> <span class="mh">0x1234</span><span class="p">,</span>          <span class="c1"># 16 bits - optional in IPv4, mandatory in IPv6</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="sa">b</span><span class="s1">&#39;...&#39;</span>               <span class="c1"># Variable - application data</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="p">}</span>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="c1"># Total header: 8 bytes (vs TCP&#39;s 20-60 bytes)</span>
-</span></code></pre></div>
-<p><strong>Key UDP Characteristics:</strong></p>
-<ol>
-<li>
-<p><strong>No Connection Establishment</strong>: No handshake, no state. Just send the packet and hope it arrives.</p>
-</li>
-<li>
-<p><strong>No Reliability</strong>: Packets can be lost, duplicated, or arrive out of order. Application must handle these scenarios.</p>
-</li>
-<li>
-<p><strong>No Flow Control</strong>: Sender transmits as fast as it wants. No mechanism to slow down for receiver capacity.</p>
-</li>
-<li>
-<p><strong>No Congestion Control</strong>: UDP doesn't detect or respond to network congestion. Can overwhelm networks.</p>
-</li>
-<li>
-<p><strong>Minimal Header</strong>: Only 8 bytes vs TCP's 20-60 bytes. Lower overhead means more bandwidth for data.</p>
-</li>
-<li>
-<p><strong>Port-Based Multiplexing</strong>: Like TCP, uses port numbers to identify applications (DNS=53, WebRTC=dynamic)</p>
-</li>
-</ol>
-<p><strong>When to Use UDP:</strong></p>
-<p><strong>Good use cases:</strong>
-- <strong>Real-time communication</strong>: Voice/video calls (WebRTC, VoIP) where old data is useless
-- <strong>Gaming</strong>: Low-latency game state updates where speed &gt; accuracy
-- <strong>Streaming</strong>: Video/audio where occasional frame loss is acceptable
-- <strong>DNS queries</strong>: Small request/response where retransmission is handled by application
-- <strong>Network discovery</strong>: Broadcast/multicast protocols (DHCP, mDNS)</p>
-<p><strong>Poor use cases:</strong>
-- <strong>File transfer</strong>: Would require application-level reliability (so just use TCP)
-- <strong>Web browsing</strong>: Needs ordered, reliable delivery (HTTP/3 over QUIC is exception)
-- <strong>Email, databases</strong>: Absolutely require reliability</p>
-<p><strong>UDP and DNS: A Critical Example</strong></p>
-<p>DNS (Domain Name System) uses UDP because:</p>
-<ul>
-<li><strong>Small messages</strong>: DNS queries and responses typically fit in a single packet (&lt;512 bytes)</li>
-<li><strong>Fast resolution</strong>: No handshake overhead means faster lookups</li>
-<li><strong>Application-level retry</strong>: DNS client retries if no response within timeout</li>
-<li><strong>Widespread</strong>: Billions of DNS queries per second worldwide</li>
-</ul>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Typical DNS query over UDP</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">Source</span> <span class="n">Port</span><span class="p">:</span> <span class="mi">54321</span> <span class="p">(</span><span class="n">random</span> <span class="n">ephemeral</span> <span class="n">port</span><span class="p">)</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">Destination</span> <span class="n">Port</span><span class="p">:</span> <span class="mi">53</span> <span class="p">(</span><span class="n">DNS</span> <span class="n">standard</span> <span class="n">port</span><span class="p">)</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">Length</span><span class="p">:</span> <span class="mi">29</span> <span class="nb">bytes</span> <span class="p">(</span><span class="mi">8</span><span class="o">-</span><span class="n">byte</span> <span class="n">header</span> <span class="o">+</span> <span class="mi">21</span><span class="o">-</span><span class="n">byte</span> <span class="n">query</span><span class="p">)</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="n">Checksum</span><span class="p">:</span> <span class="mh">0x1a2b</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="n">Data</span><span class="p">:</span> <span class="s2">&quot;google.com A?&quot;</span> <span class="p">(</span><span class="n">Query</span> <span class="k">for</span> <span class="n">A</span> <span class="n">record</span><span class="p">)</span>
-</span></code></pre></div>
-<p><strong>Why UDP matters for browser automation:</strong></p>
-<ul>
-<li><strong>WebRTC uses UDP</strong> for real-time audio/video (can't be proxied by HTTP proxies)</li>
-<li><strong>DNS queries use UDP</strong> (can leak DNS requests if not proxied)</li>
-<li><strong>SOCKS5 supports UDP</strong> (unlike SOCKS4 or HTTP proxies)</li>
-<li><strong>UDP bypasses proxies</strong> unless explicitly configured</li>
-<li><strong>No sequence numbers</strong> means no fingerprinting via ISN (unlike TCP)</li>
-</ul>
-<div class="admonition danger">
-<p class="admonition-title">The WebRTC UDP Leak</p>
-<p>Here's the critical problem: Your browser makes <strong>DNS queries over UDP</strong> and <strong>WebRTC connections over UDP</strong>. Most proxy configurations only cover <strong>TCP traffic</strong> (HTTP, HTTPS, WebSocket).</p>
-<p>Result: Your TCP traffic (web pages, API calls) goes through the proxy with the proxy's IP, but your <strong>UDP traffic leaks your real IP directly</strong>.</p>
-<p>This is why even with a proxy, websites can discover your real IP via WebRTC. It's using <strong>UDP directly</strong>, bypassing your proxy entirely.</p>
+<div class="admonition note">
+<p class="admonition-title">Beyond TCP Fingerprinting</p>
+<p>The TCP handshake is just the first fingerprinting opportunity. Immediately after, the TLS handshake reveals another unique fingerprint known as JA3/JA4. See <a href="../../fingerprinting/network-fingerprinting/">Network Fingerprinting</a> for details on TLS and HTTP/2 fingerprinting.</p>
 </div>
-<p><strong>UDP Proxy Support by Protocol:</strong></p>
+<h3 id="udp">UDP</h3>
+<p>Unlike TCP's reliable, connection-oriented approach, UDP is a fire-and-forget protocol. It trades reliability for minimal latency and overhead, making it ideal for real-time applications where speed matters more than perfect delivery.</p>
+<p>A UDP datagram has only an 8-byte header (compared to TCP's 20-60 bytes), containing source port, destination port, length, and a checksum. There is no connection establishment, no reliability guarantee, no flow control, and no congestion control. If a packet is lost, the application must decide whether and how to handle it.</p>
+<p>UDP is the right choice for real-time communication (voice/video calls via WebRTC and VoIP), gaming (low-latency state updates), streaming (where occasional frame loss is acceptable), and DNS queries (small request/response pairs where the application handles retries). It is a poor choice for file transfers, web browsing, email, or databases, all of which need reliable, ordered delivery.</p>
+<p>DNS is a particularly important example in the context of automation. DNS uses UDP because queries are typically small and benefit from UDP's zero-handshake overhead. While EDNS0 (RFC 6891) increased the maximum UDP DNS payload beyond the original 512-byte limit, most queries remain compact. The DNS client handles retries at the application level if a response does not arrive within a timeout.</p>
+<p>For browser automation, the key concern with UDP is that WebRTC uses it for real-time audio and video, DNS queries use it for domain resolution, and most proxies (HTTP, HTTPS, SOCKS4) only handle TCP. Unless you explicitly configure UDP proxying, this traffic bypasses your proxy and leaks your real IP.</p>
 <table>
 <thead>
 <tr>
@@ -5115,7 +4956,7 @@
 <tr>
 <td>HTTPS Proxy (CONNECT)</td>
 <td>No</td>
-<td>CONNECT method only establishes TCP tunnel</td>
+<td>CONNECT method only establishes TCP tunnels</td>
 </tr>
 <tr>
 <td>SOCKS4</td>
@@ -5134,40 +4975,21 @@
 </tr>
 </tbody>
 </table>
-<p><strong>Practical Implication:</strong></p>
-<p>For <strong>true anonymity</strong> in browser automation, you need <strong>either</strong>:
-1. <strong>SOCKS5 proxy</strong> (to proxy UDP) + WebRTC configured to use SOCKS5
-2. <strong>Disable WebRTC entirely</strong> (prevents UDP leaks but breaks video conferencing)
-3. <strong>VPN</strong> (tunnels all traffic, TCP and UDP)
-4. <strong>Browser flags</strong>: <code>--force-webrtc-ip-handling-policy=disable_non_proxied_udp</code></p>
-<div class="admonition tip">
-<p class="admonition-title">UDP Fingerprinting</p>
-<p>Unlike TCP, UDP has no handshake and minimal header fields, making it <strong>harder to fingerprint</strong>. However, <strong>timing characteristics</strong> (packet intervals, jitter) and <strong>payload patterns</strong> can still reveal application behavior.</p>
-</div>
+<p>For true anonymity in browser automation, you need either a SOCKS5 proxy with UDP support and WebRTC configured to use it, WebRTC disabled entirely (which breaks video conferencing), a VPN that tunnels all traffic, or the browser flag <code>--force-webrtc-ip-handling-policy=disable_non_proxied_udp</code>.</p>
+<h3 id="quic-and-http3">QUIC and HTTP/3</h3>
+<p>Modern browsers increasingly use QUIC (RFC 9000), a UDP-based transport protocol that powers HTTP/3. Since QUIC runs over UDP, it shares the same proxy bypass issues as WebRTC and DNS: most HTTP proxies cannot handle QUIC traffic, and it may leak outside your proxy configuration.</p>
+<p>In automation scenarios, consider disabling QUIC with the <code>--disable-quic</code> Chrome flag to force HTTP/2 over TCP, ensuring all web traffic passes through your proxy. QUIC also has its own fingerprinting characteristics, similar to JA3 for TLS, which adds another vector for detection.</p>
 <h2 id="webrtc-and-ip-leakage">WebRTC and IP Leakage</h2>
-<p>WebRTC (Web Real-Time Communication) is a browser API standardized by the W3C that enables <strong>peer-to-peer</strong> audio, video, and data communication directly between browsers, without requiring plugins or intermediary servers. While powerful for real-time applications, WebRTC is the <strong>single biggest source of IP leakage</strong> in proxied browser automation.</p>
-<h3 id="why-webrtc-leaks-your-ip">Why WebRTC Leaks Your IP</h3>
-<p>WebRTC was designed for <strong>direct peer-to-peer connections</strong>, optimizing for low latency over privacy. To establish P2P connections, WebRTC must discover your <strong>real public IP address</strong> and share it with the remote peer, even if your browser is configured to use a proxy.</p>
-<p><strong>The fundamental problem:</strong>
-1. Your browser uses a proxy for HTTP/HTTPS (TCP traffic)
-2. WebRTC uses <strong>STUN servers</strong> to discover your real public IP (UDP traffic)
-3. STUN queries <strong>bypass the proxy</strong> (because they're UDP and most proxies only handle TCP)
-4. Your real IP is discovered and <strong>shared with remote peers</strong>
-5. JavaScript can read these "ICE candidates" and <strong>leak your real IP to websites</strong></p>
+<p>WebRTC (Web Real-Time Communication) is a browser API standardized by the W3C that enables peer-to-peer audio, video, and data communication directly between browsers without plugins or intermediary servers. While powerful for real-time applications, WebRTC is the single biggest source of IP leakage in proxied browser automation.</p>
+<h3 id="how-webrtc-leaks-your-ip">How WebRTC Leaks Your IP</h3>
+<p>WebRTC was designed for direct peer-to-peer connections, optimizing for low latency over privacy. To establish P2P connections, WebRTC must discover your real public IP address and share it with the remote peer, even if your browser is configured to use a proxy.</p>
+<p>The problem unfolds like this: your browser uses a proxy for HTTP/HTTPS traffic (which is TCP), but WebRTC uses STUN servers to discover your real public IP over UDP. STUN queries bypass the proxy because most proxies only handle TCP. Your real IP is discovered and shared with remote peers as part of the connection negotiation. JavaScript on the page can read these "ICE candidates" and send your real IP to the website's server.</p>
 <div class="admonition danger">
 <p class="admonition-title">Severity of WebRTC Leaks</p>
-<p>Even with:</p>
-<ul>
-<li>HTTP proxy configured correctly</li>
-<li>HTTPS proxy working</li>
-<li>DNS queries proxied</li>
-<li>User-Agent spoofed</li>
-<li>Canvas fingerprinting mitigated</li>
-</ul>
-<p><strong>WebRTC can still leak your real IP in milliseconds</strong>. This is because WebRTC operates <strong>below the browser's proxy layer</strong>, directly interfacing with the OS network stack.</p>
+<p>Even with an HTTP proxy configured correctly, HTTPS proxy working, DNS queries proxied, User-Agent spoofed, and canvas fingerprinting mitigated, WebRTC can still leak your real IP in milliseconds. This is because WebRTC operates below the browser's proxy layer, directly interfacing with the OS network stack.</p>
 </div>
-<h3 id="how-webrtc-establishes-connections-the-ice-process">How WebRTC Establishes Connections: The ICE Process</h3>
-<p>WebRTC uses <strong>ICE (Interactive Connectivity Establishment)</strong>, defined in RFC 8445, to discover possible connection paths and select the best one. This process inherently reveals your network topology.</p>
+<h3 id="the-ice-process">The ICE Process</h3>
+<p>WebRTC uses ICE (Interactive Connectivity Establishment, RFC 8445) to discover possible connection paths and select the best one. This process inherently reveals your network topology by gathering three types of candidates.</p>
 <pre class="mermaid"><code>sequenceDiagram
     participant Browser
     participant STUN as STUN Server
@@ -5202,277 +5024,141 @@
         TURN&lt;&lt;-&gt;&gt;Peer: Relayed connection
         Note over Browser,Peer: Higher latency, but works
     end</code></pre>
-<h3 id="ice-candidate-types-what-gets-leaked">ICE Candidate Types: What Gets Leaked</h3>
-<p>ICE discovers three types of "candidates" (possible connection endpoints):</p>
-<p><strong>1. Host Candidates (Local LAN IP addresses)</strong></p>
-<p>Your browser enumerates all local network interfaces and creates candidates for each:</p>
-<div class="language-javascript highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1">// Example host candidates revealed by WebRTC</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nx">candidate</span><span class="o">:</span><span class="mf">1</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="nx">UDP</span><span class="w"> </span><span class="mf">2130706431</span><span class="w"> </span><span class="mf">192.168.1.100</span><span class="w"> </span><span class="mf">54321</span><span class="w"> </span><span class="nx">typ</span><span class="w"> </span><span class="nx">host</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="nx">candidate</span><span class="o">:</span><span class="mf">2</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="nx">UDP</span><span class="w"> </span><span class="mf">2130706431</span><span class="w"> </span><span class="mf">10.0.0.5</span><span class="w"> </span><span class="mf">54322</span><span class="w"> </span><span class="nx">typ</span><span class="w"> </span><span class="nx">host</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="nx">candidate</span><span class="o">:</span><span class="mf">3</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="nx">UDP</span><span class="w"> </span><span class="mf">2130706431</span><span class="w"> </span><span class="mf">172.16.0.10</span><span class="w"> </span><span class="mf">54323</span><span class="w"> </span><span class="nx">typ</span><span class="w"> </span><span class="nx">host</span>
+<h3 id="ice-candidate-types">ICE Candidate Types</h3>
+<p>ICE discovers three types of candidates (possible connection endpoints), each revealing different information about your network.</p>
+<p><strong>Host candidates</strong> are your local LAN IP addresses. The browser enumerates all local network interfaces and creates candidates for each. This reveals your local IP addresses on private networks, your network topology (presence of VPN interfaces, VM bridges), and the number of network interfaces.</p>
+<div class="language-javascript highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1">// Example host candidates</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nx">candidate</span><span class="o">:</span><span class="mf">1</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="nx">UDP</span><span class="w"> </span><span class="mf">2130706431</span><span class="w"> </span><span class="mf">192.168.1.100</span><span class="w"> </span><span class="mf">54321</span><span class="w"> </span><span class="nx">typ</span><span class="w"> </span><span class="nx">host</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="nx">candidate</span><span class="o">:</span><span class="mf">2</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="nx">UDP</span><span class="w"> </span><span class="mf">2130706431</span><span class="w"> </span><span class="mf">10.0.0.5</span><span class="w"> </span><span class="mf">54322</span><span class="w"> </span><span class="nx">typ</span><span class="w"> </span><span class="nx">host</span>
 </span></code></pre></div>
-<p><strong>What this reveals:</strong></p>
-<ul>
-<li>Your <strong>local IP address(es)</strong> on private networks</li>
-<li>Your <strong>network topology</strong> (presence of VPN interfaces, VM bridges, etc.)</li>
-<li><strong>Number of network interfaces</strong> (single Wi-Fi vs multiple ethernet/VPN)</li>
-</ul>
-<p>Even if you're behind NAT, this reveals your <strong>internal network structure</strong>.</p>
-<p><strong>2. Server Reflexive Candidates (Public IP via STUN)</strong></p>
-<p>Browser sends STUN request to public STUN server, which replies with your <strong>public IP address</strong> as seen from the internet:</p>
-<div class="language-javascript highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1">// Server reflexive candidate (YOUR REAL PUBLIC IP!)</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nx">candidate</span><span class="o">:</span><span class="mf">4</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="nx">UDP</span><span class="w"> </span><span class="mf">1694498815</span><span class="w"> </span><span class="mf">203.0.113.45</span><span class="w"> </span><span class="mf">54321</span><span class="w"> </span><span class="nx">typ</span><span class="w"> </span><span class="nx">srflx</span><span class="w"> </span><span class="nx">raddr</span><span class="w"> </span><span class="mf">192.168.1.100</span><span class="w"> </span><span class="nx">rport</span><span class="w"> </span><span class="mf">54321</span>
+<p>Modern browsers (Chrome 75+, Firefox 78+, Safari) mitigate host candidate leaks by replacing local IP addresses with ephemeral mDNS names (e.g., <code>a1b2c3d4.local</code>) when media permissions (camera/microphone) have not been granted. However, server reflexive candidates (your public IP) remain exposed regardless of mDNS.</p>
+<p><strong>Server reflexive candidates</strong> are your public IP as seen by a STUN server. The browser sends a STUN request to a public server, which replies with your public IP address. This is the leak everyone talks about: your proxy shows one IP but WebRTC reveals your real one, along with your NAT type, external port mapping, and ISP information.</p>
+<div class="language-javascript highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1">// Server reflexive candidate (your real public IP)</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="nx">candidate</span><span class="o">:</span><span class="mf">4</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="nx">UDP</span><span class="w"> </span><span class="mf">1694498815</span><span class="w"> </span><span class="mf">203.0.113.45</span><span class="w"> </span><span class="mf">54321</span><span class="w"> </span><span class="nx">typ</span><span class="w"> </span><span class="nx">srflx</span><span class="w"> </span><span class="nx">raddr</span><span class="w"> </span><span class="mf">192.168.1.100</span><span class="w"> </span><span class="nx">rport</span><span class="w"> </span><span class="mf">54321</span>
 </span></code></pre></div>
-<p><strong>What this reveals:</strong></p>
-<ul>
-<li>Your <strong>real public IP address</strong> (the one you're trying to hide with a proxy!)</li>
-<li>Your <strong>NAT type</strong> and external port mapping</li>
-<li>Your <strong>ISP</strong> (via IP geolocation/WHOIS)</li>
-</ul>
-<p><strong>This is the leak</strong> everyone talks about: your proxy shows <code>198.51.100.5</code> but WebRTC reveals <code>203.0.113.45</code> (your real IP).</p>
-<p><strong>3. Relay Candidates (TURN relay addresses)</strong></p>
-<p>If direct P2P fails, browser allocates a relay address from a TURN server:</p>
-<div class="language-javascript highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1">// Relay candidate (TURN server address)</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="nx">candidate</span><span class="o">:</span><span class="mf">5</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="nx">UDP</span><span class="w"> </span><span class="mf">16777215</span><span class="w"> </span><span class="mf">198.51.100.10</span><span class="w"> </span><span class="mf">61234</span><span class="w"> </span><span class="nx">typ</span><span class="w"> </span><span class="nx">relay</span><span class="w"> </span><span class="nx">raddr</span><span class="w"> </span><span class="mf">203.0.113.45</span><span class="w"> </span><span class="nx">rport</span><span class="w"> </span><span class="mf">54321</span>
+<p><strong>Relay candidates</strong> are TURN server addresses used as fallback when direct P2P fails. The relay candidate may still contain your real IP in the <code>raddr</code> (remote address) field, depending on the TURN server implementation.</p>
+<div class="language-javascript highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1">// Relay candidate (TURN server address)</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nx">candidate</span><span class="o">:</span><span class="mf">5</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="nx">UDP</span><span class="w"> </span><span class="mf">16777215</span><span class="w"> </span><span class="mf">198.51.100.10</span><span class="w"> </span><span class="mf">61234</span><span class="w"> </span><span class="nx">typ</span><span class="w"> </span><span class="nx">relay</span><span class="w"> </span><span class="nx">raddr</span><span class="w"> </span><span class="mf">203.0.113.45</span><span class="w"> </span><span class="nx">rport</span><span class="w"> </span><span class="mf">54321</span>
 </span></code></pre></div>
-<p><strong>What this reveals:</strong></p>
-<ul>
-<li><strong>TURN server</strong> being used (may reveal your VoIP provider, etc.)</li>
-<li><strong>Still contains your real IP</strong> in <code>raddr</code> (remote address) field</li>
-</ul>
-<h3 id="stun-protocol-the-ip-discovery-mechanism">STUN Protocol: The IP Discovery Mechanism</h3>
-<p>STUN (Session Traversal Utilities for NAT), defined in RFC 5389, is a simple request-response protocol over UDP that discovers your public IP address by asking a server "what IP do you see me as?"</p>
-<p><strong>STUN Message Structure</strong>:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># STUN Binding Request (simplified)</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="p">{</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="s1">&#39;message_type&#39;</span><span class="p">:</span> <span class="mh">0x0001</span><span class="p">,</span>  <span class="c1"># Binding Request</span>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="s1">&#39;message_length&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>      <span class="c1"># No additional attributes</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="s1">&#39;magic_cookie&#39;</span><span class="p">:</span> <span class="mh">0x2112A442</span><span class="p">,</span>  <span class="c1"># Fixed value (RFC 5389)</span>
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="s1">&#39;transaction_id&#39;</span><span class="p">:</span> <span class="sa">b</span><span class="s1">&#39;</span><span class="se">\x01\x02\x03</span><span class="s1">...</span><span class="se">\x0c</span><span class="s1">&#39;</span>  <span class="c1"># Random 12 bytes</span>
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="p">}</span>
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>
-</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="c1"># Sent via UDP to STUN server (e.g., stun.l.google.com:19302)</span>
-</span></code></pre></div>
-<p><strong>STUN Binding Response</strong>:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># STUN Binding Success Response</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="p">{</span>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>    <span class="s1">&#39;message_type&#39;</span><span class="p">:</span> <span class="mh">0x0101</span><span class="p">,</span>  <span class="c1"># Binding Success Response</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span class="s1">&#39;message_length&#39;</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span>     <span class="c1"># XOR-MAPPED-ADDRESS attribute</span>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    <span class="s1">&#39;magic_cookie&#39;</span><span class="p">:</span> <span class="mh">0x2112A442</span><span class="p">,</span>
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>    <span class="s1">&#39;transaction_id&#39;</span><span class="p">:</span> <span class="sa">b</span><span class="s1">&#39;</span><span class="se">\x01\x02\x03</span><span class="s1">...</span><span class="se">\x0c</span><span class="s1">&#39;</span><span class="p">,</span>  <span class="c1"># Same as request</span>
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>    <span class="s1">&#39;attributes&#39;</span><span class="p">:</span> <span class="p">{</span>
-</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>        <span class="s1">&#39;XOR-MAPPED-ADDRESS&#39;</span><span class="p">:</span> <span class="p">{</span>
-</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>            <span class="s1">&#39;family&#39;</span><span class="p">:</span> <span class="s1">&#39;IPv4&#39;</span><span class="p">,</span>
-</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>            <span class="s1">&#39;port&#39;</span><span class="p">:</span> <span class="mi">54321</span><span class="p">,</span>
-</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>            <span class="s1">&#39;address&#39;</span><span class="p">:</span> <span class="s1">&#39;203.0.113.45&#39;</span>  <span class="c1"># YOUR REAL PUBLIC IP!</span>
-</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>        <span class="p">}</span>
-</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>    <span class="p">}</span>
-</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="p">}</span>
-</span></code></pre></div>
-<p><strong>Why XOR-MAPPED-ADDRESS?</strong>
-The IP address is XOR'ed with the magic cookie and transaction ID for <strong>NAT compatibility</strong>. Some NAT devices incorrectly modify IP addresses in packet payloads, breaking STUN. XOR'ing obfuscates the IP, preventing NAT interference.</p>
-<p><strong>Public STUN Servers</strong> (commonly used by browsers):</p>
-<ul>
-<li><code>stun.l.google.com:19302</code> (Google)</li>
-<li><code>stun1.l.google.com:19302</code> (Google)</li>
-<li><code>stun.services.mozilla.com</code> (Mozilla)</li>
-<li><code>stun.stunprotocol.org:3478</code> (Open STUN server)</li>
-</ul>
-<h3 id="why-proxies-cant-stop-webrtc-leaks">Why Proxies Can't Stop WebRTC Leaks</h3>
-<p><strong>1. UDP Protocol</strong>: WebRTC uses <strong>UDP</strong>, most proxies only handle <strong>TCP</strong></p>
-<ul>
-<li>HTTP proxies: TCP-only</li>
-<li>HTTPS CONNECT: TCP-only tunnel</li>
-<li>SOCKS4: TCP-only</li>
-<li>Only <strong>SOCKS5</strong> supports UDP (but browser must be configured to use it)</li>
-</ul>
-<p><strong>2. Browser-Level Implementation</strong>: WebRTC is a <strong>browser API</strong>, not an HTTP feature</p>
-<ul>
-<li>Operates below HTTP layer</li>
-<li>Directly accesses OS network stack</li>
-<li>Bypasses proxy settings configured for HTTP/HTTPS</li>
-</ul>
-<p><strong>3. Direct OS Network Access</strong>: STUN queries go <strong>directly to the network interface</strong></p>
-<ul>
-<li>Browser's proxy settings don't apply to STUN</li>
-<li>OS routing table determines path (not browser proxy config)</li>
-<li>Only VPN-level routing can intercept</li>
-</ul>
-<p><strong>4. Multiple Interface Enumeration</strong>: WebRTC enumerates <strong>all</strong> network interfaces</p>
-<ul>
-<li>Physical ethernet, Wi-Fi, VPN adapters, VM bridges</li>
-<li>Even interfaces not used for browsing</li>
-<li>Leaks internal network topology</li>
-</ul>
-<p><strong>5. JavaScript Accessibility</strong>: Web pages can <strong>read ICE candidates</strong> via JavaScript</p>
-<ul>
-<li><code>RTCPeerConnection.onicecandidate</code> event</li>
-<li>Extracts IP addresses from candidate strings</li>
-<li>Sends your real IP to their server</li>
-</ul>
+<h3 id="the-stun-protocol">The STUN Protocol</h3>
+<p>STUN (Session Traversal Utilities for NAT, RFC 8489) is a simple request-response protocol over UDP. Its job is straightforward: the client asks "what IP do you see me as?" and the server replies with the client's public IP and port.</p>
+<p>The client sends a Binding Request containing a magic cookie (<code>0x2112A442</code>, a fixed value defined by the RFC) and a random 12-byte transaction ID. The server responds with a Binding Success Response that includes an <code>XOR-MAPPED-ADDRESS</code> attribute containing the client's public IP and port as seen from the server's perspective.</p>
+<p>The IP address in the response is XOR'ed with the magic cookie and transaction ID. This is not for security but for NAT compatibility: some NAT devices incorrectly modify IP addresses in packet payloads, and XOR'ing obfuscates the address to prevent this interference.</p>
+<p>Common public STUN servers used by browsers include <code>stun.l.google.com:19302</code> (Google), <code>stun1.l.google.com:19302</code> (Google), <code>stun.services.mozilla.com</code> (Mozilla), and <code>stun.stunprotocol.org:3478</code>.</p>
+<h3 id="why-proxies-cannot-stop-webrtc-leaks">Why Proxies Cannot Stop WebRTC Leaks</h3>
+<p>WebRTC leaks happen for several reinforcing reasons. First, WebRTC uses UDP, and most proxies (HTTP, HTTPS CONNECT, SOCKS4) only handle TCP. Only SOCKS5 supports UDP, and even then the browser must be explicitly configured to route WebRTC through it.</p>
+<p>Second, WebRTC is a browser API that operates below the HTTP layer. It directly accesses the OS network stack, bypassing proxy settings configured for HTTP/HTTPS. STUN queries go directly to the network interface, and the OS routing table determines their path, not the browser's proxy configuration. Only VPN-level routing can intercept them.</p>
+<p>Third, WebRTC enumerates all network interfaces (physical ethernet, Wi-Fi, VPN adapters, VM bridges), including interfaces not used for regular browsing. This leaks your internal network topology.</p>
+<p>Finally, web pages can read ICE candidates via JavaScript using the <code>RTCPeerConnection.onicecandidate</code> event, extract IP addresses from candidate strings with a simple regex, and send your real IP to their tracking server.</p>
 <h3 id="preventing-webrtc-leaks-in-pydoll">Preventing WebRTC Leaks in Pydoll</h3>
-<p>Pydoll provides multiple strategies for preventing WebRTC IP leaks:</p>
-<p><strong>Method 1: Force WebRTC to Only Use Proxied Routes (Recommended)</strong></p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChromiumOptions</span>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="n">options</span><span class="o">.</span><span class="n">webrtc_leak_protection</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># Adds --force-webrtc-ip-handling-policy=disable_non_proxied_udp</span>
+<p>Pydoll provides multiple strategies for preventing WebRTC IP leaks.</p>
+<p><strong>Method 1: Force WebRTC to only use proxied routes (recommended)</strong></p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChromiumOptions</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="n">options</span><span class="o">.</span><span class="n">webrtc_leak_protection</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># Adds --force-webrtc-ip-handling-policy=disable_non_proxied_udp</span>
 </span></code></pre></div>
-<p>Pydoll provides a convenient <code>webrtc_leak_protection</code> property that manages the underlying <code>--force-webrtc-ip-handling-policy=disable_non_proxied_udp</code> argument for you.</p>
-<p><strong>What this does:</strong></p>
-<ul>
-<li>Disables UDP if no proxy supports it</li>
-<li>Forces WebRTC to use <strong>TURN relays only</strong> (no direct P2P)</li>
-<li>Prevents STUN queries to public servers</li>
-<li><strong>Trade-off</strong>: Breaks direct P2P (higher latency for video calls)</li>
-</ul>
-<p><strong>Method 2: Disable WebRTC Entirely</strong></p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--disable-features=WebRTC&#39;</span><span class="p">)</span>
+<p>Pydoll provides a convenient <code>webrtc_leak_protection</code> property that manages the underlying Chrome flag for you. This disables UDP if no proxy supports it, forces WebRTC to use TURN relays only (no direct P2P), and prevents STUN queries to public servers. The trade-off is higher latency for video calls since direct P2P connections are disabled.</p>
+<p><strong>Method 2: Disable WebRTC entirely</strong></p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--disable-features=WebRTC&#39;</span><span class="p">)</span>
 </span></code></pre></div>
-<p><strong>What this does:</strong></p>
-<ul>
-<li>Completely disables WebRTC API</li>
-<li>No IP leaks possible</li>
-<li><strong>Trade-off</strong>: Breaks all WebRTC-dependent sites (video conferencing, voice calls)</li>
-</ul>
-<p><strong>Method 3: Restrict WebRTC via Browser Preferences</strong></p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">options</span><span class="o">.</span><span class="n">browser_preferences</span> <span class="o">=</span> <span class="p">{</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>    <span class="s1">&#39;webrtc&#39;</span><span class="p">:</span> <span class="p">{</span>
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>        <span class="s1">&#39;ip_handling_policy&#39;</span><span class="p">:</span> <span class="s1">&#39;disable_non_proxied_udp&#39;</span><span class="p">,</span>
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>        <span class="s1">&#39;multiple_routes_enabled&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
-</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>        <span class="s1">&#39;nonproxied_udp_enabled&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
-</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>        <span class="s1">&#39;allow_legacy_tls_protocols&#39;</span><span class="p">:</span> <span class="kc">False</span>
-</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>    <span class="p">}</span>
-</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="p">}</span>
+<p>This completely disables the WebRTC API, eliminating any possibility of IP leaks through this vector. The trade-off is that all WebRTC-dependent sites (video conferencing, voice calls) will break. Note that this flag should be tested with your specific Chrome version, as feature flag names can vary between releases.</p>
+<p><strong>Method 3: Restrict WebRTC via browser preferences</strong></p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">options</span><span class="o">.</span><span class="n">browser_preferences</span> <span class="o">=</span> <span class="p">{</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="s1">&#39;webrtc&#39;</span><span class="p">:</span> <span class="p">{</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>        <span class="s1">&#39;ip_handling_policy&#39;</span><span class="p">:</span> <span class="s1">&#39;disable_non_proxied_udp&#39;</span><span class="p">,</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>        <span class="s1">&#39;multiple_routes_enabled&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>        <span class="s1">&#39;nonproxied_udp_enabled&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>        <span class="s1">&#39;allow_legacy_tls_protocols&#39;</span><span class="p">:</span> <span class="kc">False</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="p">}</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="p">}</span>
 </span></code></pre></div>
-<p><strong>What this does:</strong></p>
-<ul>
-<li><code>ip_handling_policy</code>: Same as Method 1, but via preferences</li>
-<li><code>multiple_routes_enabled</code>: Prevents using multiple network paths</li>
-<li><code>nonproxied_udp_enabled</code>: Blocks UDP that doesn't go through proxy</li>
-</ul>
-<p><strong>Method 4: Use SOCKS5 Proxy with UDP Support</strong></p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--proxy-server=socks5://proxy.example.com:1080&#39;</span><span class="p">)</span>
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="c1"># For proxies requiring authentication:</span>
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="c1"># options.add_argument(&#39;--proxy-server=socks5://user:pass@proxy.example.com:1080&#39;)</span>
-</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--force-webrtc-ip-handling-policy=default_public_interface_only&#39;</span><span class="p">)</span>
+<p>This achieves the same effect as Method 1 but through preferences rather than command-line flags. <code>multiple_routes_enabled</code> prevents using multiple network paths, and <code>nonproxied_udp_enabled</code> blocks UDP that does not go through the proxy.</p>
+<p><strong>Method 4: Use a SOCKS5 proxy with UDP support</strong></p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--proxy-server=socks5://proxy.example.com:1080&#39;</span><span class="p">)</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--force-webrtc-ip-handling-policy=default_public_interface_only&#39;</span><span class="p">)</span>
 </span></code></pre></div>
-<p><strong>What this does:</strong></p>
-<ul>
-<li>SOCKS5 can proxy UDP (via <code>UDP ASSOCIATE</code> command)</li>
-<li>WebRTC uses proxy for STUN queries</li>
-<li><strong>Requires</strong>: Proxy must support UDP (not all SOCKS5 proxies do)</li>
-</ul>
+<p>SOCKS5 can proxy UDP via its <code>UDP ASSOCIATE</code> command, allowing WebRTC's STUN queries to go through the proxy. This requires a SOCKS5 proxy that actually supports UDP relay, which not all do.</p>
+<div class="admonition warning">
+<p class="admonition-title">SOCKS5 Authentication</p>
+<p>Chrome does not support SOCKS5 authentication inline (e.g., <code>socks5://user:pass@host:port</code>) via the <code>--proxy-server</code> flag. Pydoll provides a built-in <code>SOCKS5Forwarder</code> that works around this limitation by running a local unauthenticated SOCKS5 proxy that forwards traffic to the remote authenticated proxy, handling the username/password handshake on Chrome's behalf. See <a href="../../../features/configuration/proxy/">Proxy Configuration</a> for usage details.</p>
+</div>
 <h3 id="testing-for-webrtc-leaks">Testing for WebRTC Leaks</h3>
-<p><strong>Manual Testing:</strong></p>
-<ol>
-<li>Visit <strong>https://browserleaks.com/webrtc</strong></li>
-<li>Check "Public IP Address" section</li>
-<li>If you see <strong>your real IP</strong> (not proxy IP), you're leaking</li>
-</ol>
-<p><strong>Automated Testing with Pydoll:</strong></p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChromiumOptions</span>
-</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>
-</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">test_webrtc_leak</span><span class="p">():</span>
-</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>    <span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
-</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>    <span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--proxy-server=http://proxy.example.com:8080&#39;</span><span class="p">)</span>
-</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>    <span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--force-webrtc-ip-handling-policy=disable_non_proxied_udp&#39;</span><span class="p">)</span>
-</span><span id="__span-12-9"><a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>
-</span><span id="__span-12-10"><a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>    <span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">(</span><span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
-</span><span id="__span-12-11"><a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>        <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-</span><span id="__span-12-12"><a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">&#39;https://browserleaks.com/webrtc&#39;</span><span class="p">)</span>
-</span><span id="__span-12-13"><a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>
-</span><span id="__span-12-14"><a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a>        <span class="c1"># Wait for results to load</span>
-</span><span id="__span-12-15"><a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a>        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
-</span><span id="__span-12-16"><a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a>
-</span><span id="__span-12-17"><a id="__codelineno-12-17" name="__codelineno-12-17" href="#__codelineno-12-17"></a>        <span class="c1"># Extract detected IPs</span>
-</span><span id="__span-12-18"><a id="__codelineno-12-18" name="__codelineno-12-18" href="#__codelineno-12-18"></a>        <span class="n">ips</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">execute_script</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;</span>
-</span><span id="__span-12-19"><a id="__codelineno-12-19" name="__codelineno-12-19" href="#__codelineno-12-19"></a><span class="s1">            return Array.from(document.querySelectorAll(&#39;.ip-address&#39;))</span>
-</span><span id="__span-12-20"><a id="__codelineno-12-20" name="__codelineno-12-20" href="#__codelineno-12-20"></a><span class="s1">                .map(el =&gt; el.textContent.trim());</span>
-</span><span id="__span-12-21"><a id="__codelineno-12-21" name="__codelineno-12-21" href="#__codelineno-12-21"></a><span class="s1">        &#39;&#39;&#39;</span><span class="p">)</span>
-</span><span id="__span-12-22"><a id="__codelineno-12-22" name="__codelineno-12-22" href="#__codelineno-12-22"></a>
-</span><span id="__span-12-23"><a id="__codelineno-12-23" name="__codelineno-12-23" href="#__codelineno-12-23"></a>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Detected IPs:&quot;</span><span class="p">,</span> <span class="n">ips</span><span class="p">)</span>
-</span><span id="__span-12-24"><a id="__codelineno-12-24" name="__codelineno-12-24" href="#__codelineno-12-24"></a>        <span class="c1"># Should only show proxy IP, not your real IP</span>
-</span><span id="__span-12-25"><a id="__codelineno-12-25" name="__codelineno-12-25" href="#__codelineno-12-25"></a>
-</span><span id="__span-12-26"><a id="__codelineno-12-26" name="__codelineno-12-26" href="#__codelineno-12-26"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">test_webrtc_leak</span><span class="p">())</span>
+<p>You can test manually by visiting <a href="https://browserleaks.com/webrtc">browserleaks.com/webrtc</a> and checking whether your real IP appears in the "Public IP Address" section. If you see your real IP instead of your proxy IP, you are leaking.</p>
+<p>For automated testing with Pydoll:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChromiumOptions</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">test_webrtc_leak</span><span class="p">():</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    <span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    <span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--proxy-server=http://proxy.example.com:8080&#39;</span><span class="p">)</span>
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    <span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--force-webrtc-ip-handling-policy=disable_non_proxied_udp&#39;</span><span class="p">)</span>
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>    <span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">(</span><span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
+</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>        <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">&#39;https://browserleaks.com/webrtc&#39;</span><span class="p">)</span>
+</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>
+</span><span id="__span-8-14"><a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</span><span id="__span-8-15"><a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>
+</span><span id="__span-8-16"><a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>        <span class="n">ips</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">execute_script</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;</span>
+</span><span id="__span-8-17"><a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a><span class="s1">            return Array.from(document.querySelectorAll(&#39;.ip-address&#39;))</span>
+</span><span id="__span-8-18"><a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a><span class="s1">                .map(el =&gt; el.textContent.trim());</span>
+</span><span id="__span-8-19"><a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a><span class="s1">        &#39;&#39;&#39;</span><span class="p">)</span>
+</span><span id="__span-8-20"><a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a>
+</span><span id="__span-8-21"><a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Detected IPs:&quot;</span><span class="p">,</span> <span class="n">ips</span><span class="p">)</span>
+</span><span id="__span-8-22"><a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a>        <span class="c1"># Should only show proxy IP, not your real IP</span>
+</span><span id="__span-8-23"><a id="__codelineno-8-23" name="__codelineno-8-23" href="#__codelineno-8-23"></a>
+</span><span id="__span-8-24"><a id="__codelineno-8-24" name="__codelineno-8-24" href="#__codelineno-8-24"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">test_webrtc_leak</span><span class="p">())</span>
 </span></code></pre></div>
 <div class="admonition danger">
 <p class="admonition-title">Always Test WebRTC Leaks</p>
-<p><strong>Never assume</strong> your proxy configuration prevents WebRTC leaks. Always test with https://browserleaks.com/webrtc or https://ipleak.net to verify your real IP is not exposed.</p>
-<p>Even a single WebRTC leak instantly <strong>compromises your entire proxy setup</strong>. Websites now know your real location, ISP, and network topology.</p>
+<p>Never assume your proxy configuration prevents WebRTC leaks. Always verify with <a href="https://browserleaks.com/webrtc">browserleaks.com/webrtc</a> or <a href="https://ipleak.net">ipleak.net</a>. Even a single WebRTC leak instantly compromises your entire proxy setup, since the website now knows your real location, ISP, and network topology.</p>
 </div>
-<h3 id="advanced-webrtc-leak-detection-by-websites">Advanced: WebRTC Leak Detection by Websites</h3>
-<p>Websites use JavaScript to intentionally trigger WebRTC and extract your real IP:</p>
-<div class="language-javascript highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="c1">// Malicious website code to extract real IP via WebRTC</span>
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="kd">const</span><span class="w"> </span><span class="nx">pc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">RTCPeerConnection</span><span class="p">({</span>
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">    </span><span class="nx">iceServers</span><span class="o">:</span><span class="w"> </span><span class="p">[{</span><span class="nx">urls</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;stun:stun.l.google.com:19302&#39;</span><span class="p">}]</span>
-</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="p">});</span>
-</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>
-</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="nx">pc</span><span class="p">.</span><span class="nx">createDataChannel</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">);</span><span class="w">  </span><span class="c1">// Create dummy data channel</span>
-</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="nx">pc</span><span class="p">.</span><span class="nx">createOffer</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="nx">offer</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">pc</span><span class="p">.</span><span class="nx">setLocalDescription</span><span class="p">(</span><span class="nx">offer</span><span class="p">));</span>
-</span><span id="__span-13-8"><a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>
-</span><span id="__span-13-9"><a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a><span class="nx">pc</span><span class="p">.</span><span class="nx">onicecandidate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nx">event</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-13-10"><a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">event</span><span class="p">.</span><span class="nx">candidate</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-13-11"><a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a><span class="w">        </span><span class="kd">const</span><span class="w"> </span><span class="nx">ipRegex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sr">/([0-9]{1,3}(\.[0-9]{1,3}){3})/</span><span class="p">;</span>
-</span><span id="__span-13-12"><a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a><span class="w">        </span><span class="kd">const</span><span class="w"> </span><span class="nx">ipMatch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">event</span><span class="p">.</span><span class="nx">candidate</span><span class="p">.</span><span class="nx">candidate</span><span class="p">.</span><span class="nx">match</span><span class="p">(</span><span class="nx">ipRegex</span><span class="p">);</span>
-</span><span id="__span-13-13"><a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a>
-</span><span id="__span-13-14"><a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">ipMatch</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-13-15"><a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a><span class="w">            </span><span class="kd">const</span><span class="w"> </span><span class="nx">realIP</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">ipMatch</span><span class="p">[</span><span class="mf">1</span><span class="p">];</span>
-</span><span id="__span-13-16"><a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a><span class="w">            </span><span class="c1">// Send real IP to server</span>
-</span><span id="__span-13-17"><a id="__codelineno-13-17" name="__codelineno-13-17" href="#__codelineno-13-17"></a><span class="w">            </span><span class="nx">fetch</span><span class="p">(</span><span class="sb">`/track?real_ip=</span><span class="si">${</span><span class="nx">realIP</span><span class="si">}</span><span class="sb">&amp;proxy_ip=</span><span class="si">${</span><span class="nb">window</span><span class="p">.</span><span class="nx">clientIP</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
-</span><span id="__span-13-18"><a id="__codelineno-13-18" name="__codelineno-13-18" href="#__codelineno-13-18"></a><span class="w">        </span><span class="p">}</span>
-</span><span id="__span-13-19"><a id="__codelineno-13-19" name="__codelineno-13-19" href="#__codelineno-13-19"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-13-20"><a id="__codelineno-13-20" name="__codelineno-13-20" href="#__codelineno-13-20"></a><span class="p">};</span>
+<h3 id="how-websites-exploit-webrtc-leaks">How Websites Exploit WebRTC Leaks</h3>
+<p>Websites can intentionally trigger WebRTC to extract your real IP using a few lines of JavaScript:</p>
+<div class="language-javascript highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kd">const</span><span class="w"> </span><span class="nx">pc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">RTCPeerConnection</span><span class="p">({</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">    </span><span class="nx">iceServers</span><span class="o">:</span><span class="w"> </span><span class="p">[{</span><span class="nx">urls</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;stun:stun.l.google.com:19302&#39;</span><span class="p">}]</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="p">});</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="nx">pc</span><span class="p">.</span><span class="nx">createDataChannel</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">);</span>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="nx">pc</span><span class="p">.</span><span class="nx">createOffer</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="nx">offer</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">pc</span><span class="p">.</span><span class="nx">setLocalDescription</span><span class="p">(</span><span class="nx">offer</span><span class="p">));</span>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="nx">pc</span><span class="p">.</span><span class="nx">onicecandidate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nx">event</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">event</span><span class="p">.</span><span class="nx">candidate</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="w">        </span><span class="kd">const</span><span class="w"> </span><span class="nx">ipRegex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sr">/([0-9]{1,3}(\.[0-9]{1,3}){3})/</span><span class="p">;</span>
+</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="w">        </span><span class="kd">const</span><span class="w"> </span><span class="nx">ipMatch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">event</span><span class="p">.</span><span class="nx">candidate</span><span class="p">.</span><span class="nx">candidate</span><span class="p">.</span><span class="nx">match</span><span class="p">(</span><span class="nx">ipRegex</span><span class="p">);</span>
+</span><span id="__span-9-12"><a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>
+</span><span id="__span-9-13"><a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">ipMatch</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-9-14"><a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a><span class="w">            </span><span class="kd">const</span><span class="w"> </span><span class="nx">realIP</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">ipMatch</span><span class="p">[</span><span class="mf">1</span><span class="p">];</span>
+</span><span id="__span-9-15"><a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a><span class="w">            </span><span class="nx">fetch</span><span class="p">(</span><span class="sb">`/track?real_ip=</span><span class="si">${</span><span class="nx">realIP</span><span class="si">}</span><span class="sb">&amp;proxy_ip=</span><span class="si">${</span><span class="nb">window</span><span class="p">.</span><span class="nx">clientIP</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
+</span><span id="__span-9-16"><a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a><span class="w">        </span><span class="p">}</span>
+</span><span id="__span-9-17"><a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-9-18"><a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a><span class="p">};</span>
 </span></code></pre></div>
-<p>This code:</p>
-<ol>
-<li>Creates an RTCPeerConnection (WebRTC connection object)</li>
-<li>Triggers ICE candidate gathering (contacts STUN servers)</li>
-<li>Extracts IP addresses from candidates with regex</li>
-<li>Sends your real IP to their tracking server</li>
-</ol>
-<p><strong>Your defense:</strong> Disable WebRTC or force proxied-only routes as shown above.</p>
-<h2 id="summary-and-further-reading">Summary and Further Reading</h2>
-<p>Understanding network fundamentals (OSI layers, TCP/UDP characteristics, and WebRTC's peer-to-peer architecture) is <strong>essential</strong> for implementing effective proxy-based anonymity.</p>
-<p><strong>Key Takeaways:</strong></p>
+<p>This code creates an RTCPeerConnection, triggers ICE candidate gathering (which contacts STUN servers), extracts IP addresses from the candidates with a regex, and sends your real IP to a tracking server. Disabling WebRTC or forcing proxied-only routes as described above prevents this.</p>
+<h2 id="summary">Summary</h2>
+<p>Proxies operate at specific layers of the network stack: HTTP at Layer 7, SOCKS at Layer 5. The layer determines what the proxy can see, modify, and hide. TCP fingerprints (window size, options, TTL) leak from lower layers and reveal your real OS even through a proxy. UDP traffic, including WebRTC and DNS, often bypasses proxies unless explicitly configured. WebRTC is the most common source of IP leakage, and only SOCKS5 or a VPN can proxy UDP traffic effectively. Modern browsers also use QUIC (HTTP/3 over UDP), which adds another potential bypass vector.</p>
+<p><strong>Next steps:</strong></p>
 <ul>
-<li>
-<p>Proxies operate at <strong>specific layers</strong> (HTTP at Layer 7, SOCKS at Layer 5), determining their capabilities</p>
-</li>
-<li>
-<p><strong>TCP fingerprints</strong> (window size, options, TTL) leak from lower layers, revealing your real OS</p>
-</li>
-<li>
-<p><strong>UDP traffic</strong> (WebRTC, DNS) often bypasses proxies unless explicitly configured</p>
-</li>
-<li>
-<p><strong>WebRTC</strong> is the #1 source of IP leakage. Always test with browserleaks.com</p>
-</li>
-<li>
-<p>Only <strong>SOCKS5</strong> or <strong>VPN</strong> can proxy UDP traffic effectively</p>
-</li>
-</ul>
-<p><strong>Next Steps:</strong></p>
-<ul>
-<li><strong><a href="../http-proxies/">HTTP/HTTPS Proxies</a></strong> - Dive into application-layer proxying</li>
-<li><strong><a href="../socks-proxies/">SOCKS Proxies</a></strong> - Learn session-layer, protocol-agnostic proxying</li>
-<li><strong><a href="../../fingerprinting/network-fingerprinting/">Network Fingerprinting</a></strong> - TCP/IP fingerprinting techniques</li>
-<li><strong><a href="../../../features/configuration/proxy/">Proxy Configuration</a></strong> - Practical Pydoll proxy setup</li>
+<li><a href="../http-proxies/">HTTP/HTTPS Proxies</a>: Application-layer proxying</li>
+<li><a href="../socks-proxies/">SOCKS Proxies</a>: Session-layer, protocol-agnostic proxying</li>
+<li><a href="../../fingerprinting/network-fingerprinting/">Network Fingerprinting</a>: TCP/IP and TLS fingerprinting techniques</li>
+<li><a href="../../../features/configuration/proxy/">Proxy Configuration</a>: Practical Pydoll proxy setup</li>
 </ul>
 <h2 id="references">References</h2>
 <ul>
-<li><strong>RFC 793</strong>: Transmission Control Protocol (TCP) - https://tools.ietf.org/html/rfc793</li>
-<li><strong>RFC 768</strong>: User Datagram Protocol (UDP) - https://tools.ietf.org/html/rfc768</li>
-<li><strong>RFC 5389</strong>: Session Traversal Utilities for NAT (STUN) - https://tools.ietf.org/html/rfc5389</li>
-<li><strong>RFC 8445</strong>: Interactive Connectivity Establishment (ICE) - https://tools.ietf.org/html/rfc8445</li>
-<li><strong>RFC 5766</strong>: Traversal Using Relays around NAT (TURN) - https://tools.ietf.org/html/rfc5766</li>
-<li><strong>RFC 6528</strong>: Defending Against Sequence Number Attacks - https://tools.ietf.org/html/rfc6528</li>
-<li><strong>W3C WebRTC 1.0</strong>: Real-Time Communication Between Browsers - https://www.w3.org/TR/webrtc/</li>
-<li><strong>BrowserLeaks</strong>: WebRTC Leak Test - https://browserleaks.com/webrtc</li>
-<li><strong>IPLeak</strong>: Comprehensive Leak Testing - https://ipleak.net</li>
+<li>RFC 793: Transmission Control Protocol (TCP) - https://tools.ietf.org/html/rfc793</li>
+<li>RFC 768: User Datagram Protocol (UDP) - https://tools.ietf.org/html/rfc768</li>
+<li>RFC 8489: Session Traversal Utilities for NAT (STUN) - https://tools.ietf.org/html/rfc8489</li>
+<li>RFC 8445: Interactive Connectivity Establishment (ICE) - https://tools.ietf.org/html/rfc8445</li>
+<li>RFC 8656: Traversal Using Relays around NAT (TURN) - https://tools.ietf.org/html/rfc8656</li>
+<li>RFC 6528: Defending Against Sequence Number Attacks - https://tools.ietf.org/html/rfc6528</li>
+<li>RFC 9000: QUIC: A UDP-Based Multiplexed and Secure Transport - https://tools.ietf.org/html/rfc9000</li>
+<li>W3C WebRTC 1.0: Real-Time Communication Between Browsers - https://www.w3.org/TR/webrtc/</li>
+<li>BrowserLeaks: WebRTC Leak Test - https://browserleaks.com/webrtc</li>
+<li>IPLeak: Comprehensive Leak Testing - https://ipleak.net</li>
 </ul>
 
 

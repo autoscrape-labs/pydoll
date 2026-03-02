@@ -27,7 +27,7 @@
       
       
       <link rel="icon" href="../../../../resources/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.3">
     
     
       
@@ -90,7 +90,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#httphttps-socks" class="md-skip">
+        <a href="#httphttps-proxy" class="md-skip">
           Skip to content
         </a>
       
@@ -2241,44 +2241,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#7" class="md-nav__link">
+  <a href="#http-proxy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        简介：第 7 层代理
+        HTTP Proxy 的工作原理
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#http" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        HTTP 代理操作：请求转发
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="HTTP 代理操作：请求转发">
+    <nav class="md-nav" aria-label="HTTP Proxy 的工作原理">
       <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#http_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        HTTP 代理请求流程
-      
-    </span>
-  </a>
-  
-</li>
         
           <li class="md-nav__item">
   <a href="#_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        关键能力与限制
+        请求流程
       
     </span>
   </a>
@@ -2286,22 +2264,49 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#http-connect-https" class="md-nav__link">
+  <a href="#proxy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        HTTP CONNECT 方法：HTTPS 隧道
+        Proxy 标头与隐私
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="HTTP CONNECT 方法：HTTPS 隧道">
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        能力与限制
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connect-https" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CONNECT 方法：HTTPS 隧道
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CONNECT 方法：HTTPS 隧道">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#connect" class="md-nav__link">
     <span class="md-ellipsis">
       
-        CONNECT 请求格式
+        CONNECT 请求
       
     </span>
   </a>
@@ -2312,7 +2317,7 @@
   <a href="#connect_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        CONNECT 响应格式
+        CONNECT 之后的可见性
       
     </span>
   </a>
@@ -2320,43 +2325,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#connect_2" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        CONNECT 成功后会发生什么
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#connect-vs-http" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        CONNECT vs 直接 HTTP 代理
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#connect_3" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        CONNECT 的安全影响
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#connect-https" class="md-nav__link">
+  <a href="#connect-https_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         CONNECT 用于非 HTTPS 协议
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#https" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HTTPS 困境
       
     </span>
   </a>
@@ -2367,79 +2350,35 @@
     </nav>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#http_2" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#https-proxy-proxy-tls" class="md-nav__link">
     <span class="md-ellipsis">
       
-        HTTP 代理身份验证：访问控制
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="HTTP 代理身份验证：访问控制">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        身份验证流程
+        HTTPS Proxy（到 Proxy 的 TLS）
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       
-        身份验证方案：详细比较
+        身份验证
       
     </span>
   </a>
   
-</li>
+    <nav class="md-nav" aria-label="身份验证">
+      <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#basic" class="md-nav__link">
+  <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Basic 身份验证：最简单 (也最弱)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#digest-" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Digest 身份验证：挑战-响应
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#ntlmwindows" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        NTLM：Windows 集成身份验证
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#negotiate-kerberos-sso" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Negotiate (Kerberos)：企业 SSO
+        身份验证方案
       
     </span>
   </a>
@@ -2450,62 +2389,7 @@
   <a href="#pydoll" class="md-nav__link">
     <span class="md-ellipsis">
       
-        实用 Pydoll 配置
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#http_3" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        现代 HTTP 协议与代理
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="现代 HTTP 协议与代理">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#http2" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        HTTP/2 代理
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#http3-quic" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        HTTP/3 (QUIC) 代理
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        协议协商和降级攻击
+        Pydoll 中的身份验证
       
     </span>
   </a>
@@ -2521,113 +2405,58 @@
   <a href="#_5" class="md-nav__link">
     <span class="md-ellipsis">
       
-        总结和关键要点
+        现代协议与代理
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="总结和关键要点">
+    <nav class="md-nav" aria-label="现代协议与代理">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#http2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HTTP/2
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#http3-quic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HTTP/3 与 QUIC
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#_6" class="md-nav__link">
     <span class="md-ellipsis">
       
-        涵盖的核心概念
+        总结
       
     </span>
   </a>
   
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_7" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        安全影响
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#http_4" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        何时使用 HTTP 代理
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#http-vs-socks5" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        HTTP 代理 vs SOCKS5：快速决策矩阵
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#_8" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        进一步阅读和后续步骤
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="进一步阅读和后续步骤">
+    <nav class="md-nav" aria-label="总结">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#_9" class="md-nav__link">
+  <a href="#http-proxy-socks5" class="md-nav__link">
     <span class="md-ellipsis">
       
-        相关文档
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_10" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        外部参考
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_11" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        实用测试工具
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_12" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        高级主题 (超出本文档范围)
+        HTTP Proxy 与 SOCKS5 对比
       
     </span>
   </a>
@@ -2640,10 +2469,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_13" class="md-nav__link">
+  <a href="#_7" class="md-nav__link">
     <span class="md-ellipsis">
       
-        最后的思考
+        参考文献
       
     </span>
   </a>
@@ -4598,44 +4427,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#7" class="md-nav__link">
+  <a href="#http-proxy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        简介：第 7 层代理
+        HTTP Proxy 的工作原理
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#http" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        HTTP 代理操作：请求转发
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="HTTP 代理操作：请求转发">
+    <nav class="md-nav" aria-label="HTTP Proxy 的工作原理">
       <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#http_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        HTTP 代理请求流程
-      
-    </span>
-  </a>
-  
-</li>
         
           <li class="md-nav__item">
   <a href="#_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        关键能力与限制
+        请求流程
       
     </span>
   </a>
@@ -4643,22 +4450,49 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#http-connect-https" class="md-nav__link">
+  <a href="#proxy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        HTTP CONNECT 方法：HTTPS 隧道
+        Proxy 标头与隐私
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="HTTP CONNECT 方法：HTTPS 隧道">
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        能力与限制
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connect-https" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CONNECT 方法：HTTPS 隧道
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CONNECT 方法：HTTPS 隧道">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#connect" class="md-nav__link">
     <span class="md-ellipsis">
       
-        CONNECT 请求格式
+        CONNECT 请求
       
     </span>
   </a>
@@ -4669,7 +4503,7 @@
   <a href="#connect_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        CONNECT 响应格式
+        CONNECT 之后的可见性
       
     </span>
   </a>
@@ -4677,43 +4511,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#connect_2" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        CONNECT 成功后会发生什么
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#connect-vs-http" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        CONNECT vs 直接 HTTP 代理
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#connect_3" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        CONNECT 的安全影响
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#connect-https" class="md-nav__link">
+  <a href="#connect-https_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         CONNECT 用于非 HTTPS 协议
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#https" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HTTPS 困境
       
     </span>
   </a>
@@ -4724,79 +4536,35 @@
     </nav>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#http_2" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#https-proxy-proxy-tls" class="md-nav__link">
     <span class="md-ellipsis">
       
-        HTTP 代理身份验证：访问控制
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="HTTP 代理身份验证：访问控制">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        身份验证流程
+        HTTPS Proxy（到 Proxy 的 TLS）
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       
-        身份验证方案：详细比较
+        身份验证
       
     </span>
   </a>
   
-</li>
+    <nav class="md-nav" aria-label="身份验证">
+      <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#basic" class="md-nav__link">
+  <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Basic 身份验证：最简单 (也最弱)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#digest-" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Digest 身份验证：挑战-响应
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#ntlmwindows" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        NTLM：Windows 集成身份验证
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#negotiate-kerberos-sso" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Negotiate (Kerberos)：企业 SSO
+        身份验证方案
       
     </span>
   </a>
@@ -4807,62 +4575,7 @@
   <a href="#pydoll" class="md-nav__link">
     <span class="md-ellipsis">
       
-        实用 Pydoll 配置
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#http_3" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        现代 HTTP 协议与代理
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="现代 HTTP 协议与代理">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#http2" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        HTTP/2 代理
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#http3-quic" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        HTTP/3 (QUIC) 代理
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        协议协商和降级攻击
+        Pydoll 中的身份验证
       
     </span>
   </a>
@@ -4878,113 +4591,58 @@
   <a href="#_5" class="md-nav__link">
     <span class="md-ellipsis">
       
-        总结和关键要点
+        现代协议与代理
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="总结和关键要点">
+    <nav class="md-nav" aria-label="现代协议与代理">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#http2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HTTP/2
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#http3-quic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HTTP/3 与 QUIC
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#_6" class="md-nav__link">
     <span class="md-ellipsis">
       
-        涵盖的核心概念
+        总结
       
     </span>
   </a>
   
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_7" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        安全影响
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#http_4" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        何时使用 HTTP 代理
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#http-vs-socks5" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        HTTP 代理 vs SOCKS5：快速决策矩阵
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#_8" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        进一步阅读和后续步骤
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="进一步阅读和后续步骤">
+    <nav class="md-nav" aria-label="总结">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#_9" class="md-nav__link">
+  <a href="#http-proxy-socks5" class="md-nav__link">
     <span class="md-ellipsis">
       
-        相关文档
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_10" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        外部参考
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_11" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        实用测试工具
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_12" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        高级主题 (超出本文档范围)
+        HTTP Proxy 与 SOCKS5 对比
       
     </span>
   </a>
@@ -4997,10 +4655,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_13" class="md-nav__link">
+  <a href="#_7" class="md-nav__link">
     <span class="md-ellipsis">
       
-        最后的思考
+        参考文献
       
     </span>
   </a>
@@ -5093,741 +4751,213 @@
   
 
 
-<h1 id="httphttps-socks">HTTP/HTTPS SOCKS 代理</h1>
-<p>本文档深入探讨了 HTTP 和 HTTPS 代理，这是最常见但也是最 <strong>受限</strong> 的代理协议。尽管它们无处不在（几乎每个企业网络都在使用），但 HTTP 代理在安全性和架构上存在根本限制，使其不适用于许多对隐私至关重要的用例。</p>
-<p>了解它们在协议层面的工作原理、其安全影响、标头操纵、缓存语义以及现代协议变体（HTTP/2, HTTP/3），对于明智的代理选择和有效的浏览器自动化至关重要。</p>
+<h1 id="httphttps-proxy">HTTP/HTTPS Proxy 架构</h1>
+<p>HTTP proxy 是互联网上最常见的代理协议。几乎每个企业网络都在使用它们，大多数商业代理服务也将其作为默认选项。它们在 OSI 模型的第 7 层（应用层）运行，这意味着它们能够理解 HTTP，并可以解析、修改、缓存和过滤流量。然而，这种与协议的深度集成也是它们最大的局限：它们只能处理 HTTP 流量，会通过可识别的标头暴露代理的使用，并且无法代理 UDP，导致 WebRTC 和 DNS 容易泄露。</p>
+<p>本文档涵盖 HTTP proxy 在协议层面的工作原理、用于 HTTPS 隧道的 CONNECT 方法、身份验证机制，以及 HTTP/2 和 HTTP/3 等现代协议的影响。</p>
 <div class="admonition info">
 <p class="admonition-title">模块导航</p>
 <ul>
-<li><strong><a href="../network-fundamentals/">← 网络基础</a></strong> - TCP/IP, UDP, OSI 模型</li>
-<li><strong><a href="../">← 网络与安全概述</a></strong> - 模块介绍</li>
-<li><strong><a href="../socks-proxies/">→ SOCKS 代理</a></strong> - 更安全的选择</li>
-<li><strong><a href="../proxy-detection/">→ 代理检测</a></strong> - 如何避免被检测</li>
+<li><a href="../network-fundamentals/">网络基础</a>：TCP/IP、UDP、OSI 模型</li>
+<li><a href="../">网络与安全概述</a>：模块介绍</li>
+<li><a href="../socks-proxies/">SOCKS Proxy</a>：协议无关的替代方案</li>
+<li><a href="../proxy-detection/">Proxy 检测</a>：如何避免被检测</li>
 </ul>
-<p>有关实际配置，请参阅 <strong><a href="../../../features/configuration/proxy/">代理配置</a></strong>。</p>
+<p>有关实际配置，请参阅 <a href="../../../features/configuration/proxy/">Proxy 配置</a>。</p>
 </div>
-<div class="admonition warning">
-<p class="admonition-title">安全限制</p>
-<p>HTTP 代理在 <strong>OSI 模型的第 7 层（应用层）</strong> 运行。这个定位使其具有：</p>
-<ul>
-<li>对未加密 HTTP 流量（URL、标头、正文）的 <strong>完全可见性</strong></li>
-<li><strong>修改能力</strong>（可以在传输过程中更改请求/响应）</li>
-<li><strong>智能缓存</strong>（理解 HTTP 语义）</li>
-</ul>
-<p>但这也意味着它们：</p>
-<ul>
-<li><strong>可以读取、记录和修改</strong> 所有未加密的 HTTP 流量</li>
-<li><strong>无法代理非 HTTP 协议</strong>（FTP, SSH, SMTP, 自定义协议）</li>
-<li><strong>必须终止 TLS</strong> 才能检查 HTTPS（破坏端到端加密）</li>
-</ul>
-<p>要获得真正的隐私，请使用 <strong>SOCKS5</strong> 或确保端到端 TLS 加密保持完整。</p>
-</div>
-<h2 id="7">简介：第 7 层代理</h2>
-<p>HTTP 代理是 <strong>应用层代理</strong>，在 <strong>OSI 模型的第 7 层</strong> 运行。与 SOCKS 代理（第 5 层）盲目转发字节不同，HTTP 代理 <strong>理解 HTTP 协议语义</strong>。它们解析请求、解释标头、应用缓存逻辑，并能根据 HTTP 规则修改流量。</p>
-<p><strong>历史背景：</strong></p>
-<p>HTTP 代理出现于 20 世纪 90 年代中期，随着企业网络的发展，组织需要：</p>
-<ol>
-<li><strong>内容过滤</strong> - 拦截不当网站</li>
-<li><strong>带宽优化</strong> - 缓存频繁访问的资源</li>
-<li><strong>访问控制</strong> - 强制执行使用策略</li>
-<li><strong>安全</strong> - 检查流量中的恶意软件</li>
-</ol>
-<p>HTTP/1.0 规范（RFC 1945, 1996）正式定义了代理行为，而 HTTP/1.1（RFC 2616, 1999, 后由 RFC 7230-7237 更新）对其进行了重大改进。这些 RFC 定义了代理应如何处理缓存、持久连接和转发语义。</p>
-<p><strong>为什么应用层定位很重要：</strong></p>
-<p>在第 7 层运行意味着 HTTP 代理：</p>
-<ul>
-<li><strong>能看到完整的 HTTP 请求</strong> - 方法、URL、标头、正文（如果未加密）</li>
-<li><strong>能做出智能决策</strong> - 基于 <code>Cache-Control</code> 进行缓存、重写 URL、压缩响应</li>
-<li><strong>会留下指纹</strong> - 添加 <code>Via</code>、<code>X-Forwarded-For</code> 等标头，暴露代理的使用</li>
-<li><strong>特定于协议</strong> - 只能代理 HTTP/HTTPS，不能代理其他协议</li>
-</ul>
-<p>这种与 HTTP 的深度集既是它们的 <strong>优势</strong>（功能丰富），也是它们的 <strong>弱点</strong>（范围受限、隐私问题）。</p>
-<h2 id="http">HTTP 代理操作：请求转发</h2>
-<p>HTTP 代理拦截来自客户端的 HTTP 请求，处理它们，然后将其转发到目标服务器。代理同时充当 <strong>服务器</strong>（对客户端而言）和 <strong>客户端</strong>（对目标服务器而言），维持两个独立的 TCP 连接。</p>
-<h3 id="http_1">HTTP 代理请求流程</h3>
+<h2 id="http-proxy">HTTP Proxy 的工作原理</h2>
+<p>HTTP proxy 位于客户端和目标服务器之间，维护两个独立的 TCP 连接：一个从客户端到 proxy，另一个从 proxy 到目标服务器。由于 proxy 理解 HTTP，它可以对经过的流量做出智能决策。</p>
+<h3 id="_1">请求流程</h3>
+<p>当客户端配置为使用 HTTP proxy 时，它会将完整的 HTTP 请求发送到 proxy，而不是直接发送到目标服务器。与直接请求的关键区别在于，请求行包含绝对 URI，而不仅仅是路径。例如，客户端发送的不是 <code>GET /page HTTP/1.1</code>，而是 <code>GET http://example.com/page HTTP/1.1</code>。这告诉 proxy 应将请求转发到哪里。</p>
 <pre class="mermaid"><code>sequenceDiagram
-    participant Client as 客户端浏览器
-    participant Proxy as HTTP 代理
-    participant Server as 目标服务器
-
-    Note over Client: 客户端配置为使用代理&lt;br/&gt;(显式代理设置)
+    participant Client as Client Browser
+    participant Proxy as HTTP Proxy
+    participant Server as Target Server
 
     Client-&gt;&gt;Proxy: GET http://example.com/page HTTP/1.1&lt;br/&gt;Host: example.com&lt;br/&gt;User-Agent: Mozilla/5.0
-    Note over Client,Proxy: TCP 连接 #1:&lt;br/&gt;客户端 ⟷ 代理
+    Note over Client,Proxy: TCP connection #1
 
-    Note over Proxy: 代理接收完整的 HTTP 请求&lt;br/&gt;解析方法、URL、标头、正文
-
-    Note over Proxy: 代理处理：&lt;br/&gt;1. 验证身份&lt;br/&gt;2. 检查缓存 (如果是 GET)&lt;br/&gt;3. 应用访问控制&lt;br/&gt;4. 修改标头
-
-    Proxy-&gt;&gt;Proxy: 添加代理标头：&lt;br/&gt;Via: 1.1 proxy.example.com&lt;br/&gt;X-Forwarded-For: 192.168.1.100&lt;br/&gt;X-Real-IP: 192.168.1.100
+    Note over Proxy: Parse request, check auth,&lt;br/&gt;check cache, apply rules
 
     Proxy-&gt;&gt;Server: GET /page HTTP/1.1&lt;br/&gt;Host: example.com&lt;br/&gt;Via: 1.1 proxy.example.com&lt;br/&gt;X-Forwarded-For: 192.168.1.100
-    Note over Proxy,Server: TCP 连接 #2:&lt;br/&gt;代理 ⟷ 服务器
+    Note over Proxy,Server: TCP connection #2
 
-    Server-&gt;&gt;Proxy: HTTP/1.1 200 OK&lt;br/&gt;Content-Type: text/html&lt;br/&gt;Cache-Control: max-age=3600&lt;br/&gt;[响应正文]
+    Server-&gt;&gt;Proxy: HTTP/1.1 200 OK&lt;br/&gt;[response body]
 
-    Note over Proxy: 代理处理：&lt;br/&gt;1. 缓存响应 (如果可缓存)&lt;br/&gt;2. 过滤内容 (恶意软件、广告)&lt;br/&gt;3. 压缩 (如果 Accept-Encoding)&lt;br/&gt;4. 记录事务
+    Note over Proxy: Cache response if allowed,&lt;br/&gt;filter content, log transaction
 
-    Proxy-&gt;&gt;Client: HTTP/1.1 200 OK&lt;br/&gt;Content-Type: text/html&lt;br/&gt;Via: 1.1 proxy.example.com&lt;br/&gt;X-Cache: HIT&lt;br/&gt;[可能修改过的正文]
-
-    Note over Client: 客户端看到响应&lt;br/&gt;可能包含代理标头</code></pre>
-<p><strong>详细分解：</strong></p>
-<p><strong>1. 请求发起 (客户端 → 代理)</strong></p>
-<p>客户端向代理发送一个 <strong>完整的 HTTP 请求</strong>，包含 <strong>绝对 URI</strong>（而不仅仅是路径）：</p>
-<div class="language-http highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">GET</span> <span class="nn">http://example.com/page</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="na">Host</span><span class="o">:</span> <span class="l">example.com</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="na">User-Agent</span><span class="o">:</span> <span class="l">Mozilla/5.0 (Windows NT 10.0; Win64; x64)</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="na">Accept</span><span class="o">:</span> <span class="l">text/html,application/xhtml+xml</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="na">Accept-Encoding</span><span class="o">:</span> <span class="l">gzip, deflate</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="na">Connection</span><span class="o">:</span> <span class="l">keep-alive</span>
-</span></code></pre></div>
-<p><strong>与直接请求的关键区别：</strong> <code>GET</code> 行包含 <strong>完整的 URL</strong> (<code>http://example.com/page</code>)，而不仅仅是路径 (<code>/page</code>)。这告诉代理要将请求转发到哪里。仅靠 <code>Host</code> 标头是不够的，因为代理可能正在转发到多个域。</p>
-<div class="admonition tip">
-<p class="admonition-title">绝对 URI vs 相对 URI</p>
-<p><strong>直接到服务器</strong>：<code>GET /page HTTP/1.1</code>
-<strong>通过代理</strong>：<code>GET http://example.com/page HTTP/1.1</code></p>
-<p>这个区别是代理知道目的地的方式。</p>
-</div>
-<p><strong>2. 代理处理 - 请求分析</strong></p>
-<p>代理 <strong>解析整个 HTTP 请求</strong> 并做出决策：</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># 简化的代理处理逻辑</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">process_request</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="c1"># 1. 身份验证检查</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">authenticate_user</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Proxy-Authorization&#39;</span><span class="p">)):</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>        <span class="k">return</span> <span class="n">HTTP_407_PROXY_AUTH_REQUIRED</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="c1"># 2. 访问控制</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="k">if</span> <span class="n">is_blocked</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">url</span><span class="p">):</span>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>        <span class="k">return</span> <span class="n">HTTP_403_FORBIDDEN</span>
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="c1"># 3. 缓存检查 (针对 GET 请求)</span>
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;GET&#39;</span><span class="p">:</span>
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>        <span class="n">cached</span> <span class="o">=</span> <span class="n">check_cache</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
-</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>        <span class="k">if</span> <span class="n">cached</span> <span class="ow">and</span> <span class="n">not_expired</span><span class="p">(</span><span class="n">cached</span><span class="p">):</span>
-</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>            <span class="k">return</span> <span class="n">cached</span>  <span class="c1"># 缓存命中 - 无需服务器请求</span>
-</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>
-</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>    <span class="c1"># 4. 标头修改</span>
-</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>    <span class="n">request</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;Via&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;1.1 proxy.example.com&#39;</span>
-</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>    <span class="n">request</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;X-Forwarded-For&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">client_ip</span>
-</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>    <span class="n">request</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;X-Real-IP&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">client_ip</span>
-</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>
-</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>    <span class="c1"># 5. 转发到服务器</span>
-</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>    <span class="k">return</span> <span class="n">forward_to_server</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
-</span></code></pre></div>
-<p><strong>3. 请求转发 (代理 → 服务器)</strong></p>
-<p>代理与目标服务器建立一个 <strong>独立的 TCP 连接</strong> 并转发请求。代理可能会修改标头：</p>
-<p><strong>代理添加的标头：</strong></p>
-<ul>
-<li><code>Via: 1.1 proxy.example.com</code> - 标识链中的代理 (RFC 7230)</li>
-<li><code>X-Forwarded-For: 192.168.1.100</code> - 原始客户端 IP (事实标准)</li>
-<li><code>X-Real-IP: 192.168.1.100</code> - 原始客户端 IP (备选标头)</li>
-<li><code>X-Forwarded-Proto: http</code> - 原始协议 (http vs https)</li>
-<li><code>X-Forwarded-Host: example.com</code> - 原始 <code>Host</code> 标头</li>
-</ul>
+    Proxy-&gt;&gt;Client: HTTP/1.1 200 OK&lt;br/&gt;Via: 1.1 proxy.example.com&lt;br/&gt;[possibly modified body]</code></pre>
+<p>Proxy 接收到完整的 HTTP 请求后，会解析方法、URL 和标头，然后决定如何处理。它可能会检查身份验证凭据、根据访问控制列表验证 URL、查找资源的缓存副本，并在转发前修改标头。然后它会打开一个到目标服务器的独立 TCP 连接并发送请求，可能带有修改过的标头。</p>
+<p>当响应到达时，proxy 可以根据 HTTP 语义（<code>Cache-Control</code>、<code>ETag</code>）缓存响应，过滤恶意软件或被拦截的关键词，在客户端支持时进行压缩，并在将响应转发回客户端之前记录事务。</p>
+<h3 id="proxy">Proxy 标头与隐私</h3>
+<p>HTTP proxy 通常会添加标头来暴露它们的存在以及客户端的真实 IP 地址。<code>Via</code> 标头（RFC 9110）标识请求链中的 proxy。<code>X-Forwarded-For</code> 标头包含原始客户端 IP，如果涉及多个 proxy 则会形成链。<code>X-Forwarded-Proto</code> 标头指示原始请求是 HTTP 还是 HTTPS。一些 proxy 还会添加 <code>X-Real-IP</code> 作为 <code>X-Forwarded-For</code> 的简化替代。</p>
+<p>还有一个标准化的 <code>Forwarded</code> 标头（RFC 7239），将所有这些信息整合到一个字段中，例如 <code>Forwarded: for=192.168.1.100;proto=http;by=proxy.example.com</code>。实际上，大多数 proxy 仍然使用 <code>X-Forwarded-*</code> 变体，因为它们有更广泛的支持。</p>
+<p>旧版客户端和一些老旧浏览器在通过 proxy 路由时，可能还会发送 <code>Proxy-Connection: keep-alive</code> 标头而非 <code>Connection: keep-alive</code>。这个标头是一个众所周知的 proxy 使用指标，也是经典的检测信号。</p>
 <div class="admonition danger">
-<p class="admonition-title">通过代理标头泄露隐私</p>
-<p><strong>这些标头会暴露您正在使用代理！</strong> 检测系统会寻找：
-- 存在 <code>Via</code> 标头 → 确认使用代理
-- <code>X-Forwarded-For</code> 有多个 IP → 代理链
-- <code>X-Real-IP</code> 与连接 IP 不匹配 → 确认使用代理</p>
-<p>复杂的代理可以 <strong>剥离这些标头</strong>，但许多默认情况下不会。</p>
+<p class="admonition-title">标头检测</p>
+<p>检测系统会查找 <code>Via</code>、<code>X-Forwarded-For</code> 或 <code>Forwarded</code> 标头的存在来确认 proxy 的使用。如果 <code>X-Real-IP</code> 与连接 IP 不匹配，则可以确认使用了 proxy。高级 proxy 可以剥离这些标头，但许多商业 proxy 服务默认会保留它们。请务必使用 <a href="https://browserleaks.com/ip">browserleaks.com/ip</a> 等工具验证你的 proxy 行为。</p>
 </div>
-<p><strong>4. 服务器响应 (服务器 → 代理)</strong></p>
-<p>服务器向代理响应：</p>
-<div class="language-http highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="na">Date</span><span class="o">:</span> <span class="l">Mon, 01 Jan 2024 12:00:00 GMT</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="na">Server</span><span class="o">:</span> <span class="l">nginx/1.18.0</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/html; charset=UTF-8</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="na">Content-Length</span><span class="o">:</span> <span class="l">1234</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="na">Cache-Control</span><span class="o">:</span> <span class="l">public, max-age=3600</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="na">ETag</span><span class="o">:</span> <span class="l">&quot;abc123&quot;</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="cp">&lt;!DOCTYPE html&gt;</span>
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="p">&lt;</span><span class="nt">html</span><span class="p">&gt;</span>...
-</span></code></pre></div>
-<p><strong>5. 代理处理 - 响应处理</strong></p>
-<p>代理可以对响应执行各种操作：</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">process_response</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="c1"># 1. 缓存决策</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="k">if</span> <span class="n">should_cache</span><span class="p">(</span><span class="n">response</span><span class="p">):</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>        <span class="n">cache_entry</span> <span class="o">=</span> <span class="p">{</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>            <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="n">request</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>            <span class="s1">&#39;response&#39;</span><span class="p">:</span> <span class="n">response</span><span class="p">,</span>
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>            <span class="s1">&#39;expires&#39;</span><span class="p">:</span> <span class="n">now</span><span class="p">()</span> <span class="o">+</span> <span class="n">parse_cache_control</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;Cache-Control&#39;</span><span class="p">])</span>
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>        <span class="p">}</span>
-</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>        <span class="n">save_to_cache</span><span class="p">(</span><span class="n">cache_entry</span><span class="p">)</span>
-</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>
-</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span class="c1"># 2. 内容过滤</span>
-</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>    <span class="k">if</span> <span class="n">contains_malware</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">body</span><span class="p">):</span>
-</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>        <span class="k">return</span> <span class="n">HTTP_403_FORBIDDEN</span>
-</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>
-</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>    <span class="c1"># 3. 压缩 (如果客户端支持)</span>
-</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>    <span class="k">if</span> <span class="s1">&#39;gzip&#39;</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Accept-Encoding&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">):</span>
-</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>        <span class="n">response</span><span class="o">.</span><span class="n">body</span> <span class="o">=</span> <span class="n">gzip_compress</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">body</span><span class="p">)</span>
-</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>        <span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;Content-Encoding&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;gzip&#39;</span>
-</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>
-</span><span id="__span-3-20"><a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>    <span class="c1"># 4. 标头修改</span>
-</span><span id="__span-3-21"><a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>    <span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;Via&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;1.1 proxy.example.com&#39;</span>
-</span><span id="__span-3-22"><a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>    <span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;X-Cache&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;HIT&#39;</span> <span class="k">if</span> <span class="n">from_cache</span> <span class="k">else</span> <span class="s1">&#39;MISS&#39;</span>
-</span><span id="__span-3-23"><a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a>
-</span><span id="__span-3-24"><a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a>    <span class="c1"># 5. 日志记录</span>
-</span><span id="__span-3-25"><a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a>    <span class="n">log_transaction</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span>
-</span><span id="__span-3-26"><a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a>
-</span><span id="__span-3-27"><a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a>    <span class="k">return</span> <span class="n">response</span>
-</span></code></pre></div>
-<p><strong>6. 响应交付 (代理 → 客户端)</strong></p>
-<p>代理将（可能修改过的）响应发送回客户端：</p>
-<div class="language-http highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="na">Date</span><span class="o">:</span> <span class="l">Mon, 01 Jan 2024 12:00:00 GMT</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="na">Content-Type</span><span class="o">:</span> <span class="l">text/html; charset=UTF-8</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="na">Content-Encoding</span><span class="o">:</span> <span class="l">gzip</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="na">Via</span><span class="o">:</span> <span class="l">1.1 proxy.example.com</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="na">X-Cache</span><span class="o">:</span> <span class="l">HIT</span>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="na">Age</span><span class="o">:</span> <span class="l">120</span>
-</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>
-</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>[压缩后的响应正文]
-</span></code></pre></div>
-<h3 id="_1">关键能力与限制</h3>
-<p><strong>HTTP 代理能做什么：</strong></p>
-<ul>
-<li><strong>读取整个 HTTP 请求/响应</strong>（如果未加密）</li>
-<li><strong>修改标头</strong>（添加 <code>Via</code>、<code>X-Forwarded-For</code>，移除敏感标头）</li>
-<li>基于 HTTP 语义（<code>Cache-Control</code>, <code>ETag</code>）<strong>缓存响应</strong></li>
-<li><strong>压缩/解压</strong> 内容（gzip, deflate, br）</li>
-<li><strong>过滤内容</strong>（拦截 URL、扫描恶意软件、移除广告）</li>
-<li><strong>验证用户身份</strong>（通过 <code>Proxy-Authorization</code> 标头）</li>
-<li><strong>记录所有流量</strong>（访问的 URL、传输的数据、时间）</li>
-<li><strong>重写 URL</strong>（重定向、规范化）</li>
-<li><strong>注入内容</strong>（广告、跟踪脚本、警告）</li>
-</ul>
-<p><strong>HTTP 代理不能做什么：</strong></p>
-<ul>
-<li><strong>代理非 HTTP 协议</strong>（FTP, SSH, SMTP, WebSocket 升级, 自定义协议）</li>
-<li><strong>检查 HTTPS 内容</strong> 而不进行 TLS 终止（破坏端到端加密）</li>
-<li><strong>隐藏您正在使用代理</strong>（除非精心剥离了标头）</li>
-<li><strong>代理 UDP 流量</strong>（WebRTC, DNS, QUIC）</li>
-<li>在检查内容的同时 <strong>保持端到端 TLS</strong>（根本上不兼容）</li>
-</ul>
-<div class="admonition warning">
-<p class="admonition-title">HTTPS 的根本困境</p>
-<p>HTTP 代理在处理 HTTPS 时面临一个无法解决的选择：</p>
-<p><strong>选项 A：盲隧道（CONNECT 方法）</strong>
-- 代理无法读取/缓存/过滤 HTTPS 内容
-- 保持端到端加密
-- 代理只能看到目标 IP:端口，而不是 URL</p>
-<p><strong>选项 B：TLS 终止（MITM，中间人攻击）</strong>
-- 代理解密 HTTPS，检查内容，然后重新加密
-- 破坏端到端加密
-- 需要在客户端上安装代理的 CA 证书
-- 可通过证书固定、CT 日志检测</p>
-<p>大多数企业代理选择选项 B（TLS 终止）以进行内容过滤。大多数注重隐私的代理选择选项 A（盲隧道）。</p>
-</div>
-<h3 id="http-connect-https">HTTP CONNECT 方法：HTTPS 隧道</h3>
-<p><code>CONNECT</code> 方法（在 RFC 7231 第 4.3.6 节中定义）解决了 HTTPS 问题：HTTP 代理如何转发它无法读取的加密流量？答案是：<strong>成为一个盲目的 TCP 隧道</strong>。</p>
-<p>当客户端希望通过代理访问 HTTPS 站点时，它使用 <code>CONNECT</code> 请求代理建立一个到目标的 <strong>原始 TCP 隧道</strong>。隧道建立后，代理只是双向转发字节，而不解释它们。它变成了第 4 层（传输层）而不是第 7 层（应用层）。</p>
+<h3 id="_2">能力与限制</h3>
+<p>由于 HTTP proxy 能够解析和理解 HTTP 协议，它们可以读取和修改未加密 HTTP 请求和响应的每个部分：URL、标头、Cookie 和正文。这使它们能够智能缓存响应、按 URL 或关键词过滤内容、注入或剥离标头、验证用户身份，以及详细记录所有流量。</p>
+<p>代价是与 HTTP 的深度耦合意味着 proxy 仅限于 HTTP 流量。它无法原生代理 FTP、SSH、SMTP 或自定义协议（尽管下面描述的 CONNECT 方法为任何基于 TCP 的协议提供了隧道解决方案）。它不支持 UDP，这意味着 WebRTC、DNS 查询和 QUIC/HTTP/3 流量会完全绕过它。而检查 HTTPS 内容需要 TLS 终止，这会破坏端到端加密。</p>
+<h2 id="connect-https">CONNECT 方法：HTTPS 隧道</h2>
+<p>CONNECT 方法（RFC 9110，第 9.3.6 节）解决了一个根本问题：HTTP proxy 如何转发它无法读取的加密流量？答案是成为一个盲目的 TCP 隧道。</p>
+<p>当客户端想要通过 proxy 访问 HTTPS 站点时，它会发送一个 <code>CONNECT</code> 请求，要求 proxy 建立到目标的原始 TCP 连接。一旦 proxy 确认隧道已建立，它就不再是 HTTP proxy，而是变成第 4 层的透明 TCP 中继，在两个方向上转发字节而不解释它们。</p>
 <pre class="mermaid"><code>sequenceDiagram
     participant Client
     participant Proxy
     participant Server
 
-    Note over Client: 客户端想要访问 https://example.com
-
     Client-&gt;&gt;Proxy: CONNECT example.com:443 HTTP/1.1&lt;br/&gt;Host: example.com:443&lt;br/&gt;Proxy-Authorization: Basic dXNlcjpwYXNz
-    Note over Client,Proxy: HTTP 请求 (未加密)
+    Note over Client,Proxy: Unencrypted HTTP request
 
-    Note over Proxy: 代理验证凭据&lt;br/&gt;检查对 example.com:443 的访问控制
+    Proxy-&gt;&gt;Server: TCP three-way handshake
+    Note over Proxy,Server: TCP connection established
 
-    Proxy-&gt;&gt;Server: TCP SYN (三次握手)
-    Server-&gt;&gt;Proxy: TCP SYN-ACK
-    Proxy-&gt;&gt;Server: TCP ACK
-    Note over Proxy,Server: TCP 连接建立
+    Proxy-&gt;&gt;Client: HTTP/1.1 200 Connection Established
 
-    Proxy-&gt;&gt;Client: HTTP/1.1 200 Connection Established&lt;br/&gt;&lt;br/&gt;(空行 = 隧道准备就绪)
+    Note right of Proxy: Proxy is now a transparent&lt;br/&gt;TCP relay (Layer 4)
 
-    Note right of Proxy: 从此刻起，代理是一个&lt;br/&gt;透明的 TCP 中继 (第 4 层)
+    Client-&gt;&gt;Server: TLS ClientHello
+    Note over Client,Server: TLS handshake (proxy sees&lt;br/&gt;this in plaintext)
+    Server-&gt;&gt;Client: TLS ServerHello, Certificate
 
-    Client-&gt;&gt;Server: TLS ClientHello (加密握手)
-    Note over Client,Server: TLS 1.3 握手
-    Server-&gt;&gt;Client: TLS ServerHello, 证书等
+    Client-&gt;&gt;Server: Encrypted HTTP/2 request
+    Server-&gt;&gt;Client: Encrypted HTTP/2 response
 
-    Note over Proxy: 代理看到加密的字节，&lt;br/&gt;无法解密或检查
-
-    Client-&gt;&gt;Server: HTTP/2 GET /page&lt;br/&gt;(在 TLS 内部加密)
-    Server-&gt;&gt;Client: HTTP/2 200 OK&lt;br/&gt;(在 TLS 内部加密)
-
-    Note over Proxy: 代理盲目转发&lt;br/&gt;所有加密数据</code></pre>
-<h4 id="connect">CONNECT 请求格式</h4>
-<div class="language-http highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nf">CONNECT</span> <span class="nn">example.com:443</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="na">Host</span><span class="o">:</span> <span class="l">example.com:443</span>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="na">Proxy-Authorization</span><span class="o">:</span> <span class="l">Basic dXNlcjpwYXNz</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="na">User-Agent</span><span class="o">:</span> <span class="l">Mozilla/5.0 (Windows NT 10.0; Win64; x64)</span>
-</span></code></pre></div>
-<p><strong>关键特征：</strong></p>
-<ol>
-<li><strong>方法</strong>：<code>CONNECT</code> (不是 GET/POST)</li>
-<li><strong>请求-URI</strong>：<code>host:port</code> (不是像 <code>/page</code> 这样的路径)</li>
-<li><strong>需要端口</strong>：通常是 HTTPS 的 <code>443</code>，但任何端口都有效</li>
-<li><strong>身份验证</strong>：如果代理需要，则使用 <code>Proxy-Authorization</code></li>
-<li><strong>无请求体</strong>：CONNECT 请求没有正文</li>
-</ol>
-<h4 id="connect_1">CONNECT 响应格式</h4>
-<p><strong>成功（隧道已建立）：</strong></p>
-<div class="language-http highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">Connection Established</span>
-</span></code></pre></div>
-<p><strong>就是这样！</strong> 只有状态行和一个空行。空行之后，HTTP 对话结束，代理变成一个 <strong>透明的 TCP 隧道</strong>。</p>
-<p><strong>失败响应：</strong></p>
-<div class="language-http highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">407</span> <span class="ne">Proxy Authentication Required</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="na">Proxy-Authenticate</span><span class="o">:</span> <span class="l">Basic realm=&quot;proxy&quot;</span>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>HTTP/1.1 403 Forbidden
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>Content-Type: text/plain
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>Access to example.com:443 is blocked by policy.
-</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>
-</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>HTTP/1.1 502 Bad Gateway
-</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>Content-Type: text/plain
-</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>
-</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>Cannot establish connection to example.com:443
-</span></code></pre></div>
-<h4 id="connect_2">CONNECT 成功后会发生什么</h4>
-<p>一旦代理发送 <code>200 Connection Established</code>，它就 <strong>不再是 HTTP 代理</strong>，而是变成一个 <strong>第 4 层的 TCP 中继</strong>。客户端和服务器直接建立 TLS，代理盲目地转发字节：</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># 简化的代理隧道实现</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">handle_connect</span><span class="p">(</span><span class="n">client_socket</span><span class="p">,</span> <span class="n">target_host</span><span class="p">,</span> <span class="n">target_port</span><span class="p">):</span>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    <span class="c1"># 1. 建立到目标的 TCP 连接</span>
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="n">server_socket</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">create_connection</span><span class="p">((</span><span class="n">target_host</span><span class="p">,</span> <span class="n">target_port</span><span class="p">))</span>
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>
-</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    <span class="c1"># 2. 向客户端发送 200</span>
-</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    <span class="n">client_socket</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;HTTP/1.1 200 Connection Established</span><span class="se">\r\n\r\n</span><span class="s1">&#39;</span><span class="p">)</span>
-</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>
-</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>    <span class="c1"># 3. 成为透明中继 (双向转发)</span>
-</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>        <span class="c1"># 等待任意一方的数据</span>
-</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>        <span class="n">readable</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">select</span><span class="o">.</span><span class="n">select</span><span class="p">([</span><span class="n">client_socket</span><span class="p">,</span> <span class="n">server_socket</span><span class="p">],</span> <span class="p">[],</span> <span class="p">[])</span>
-</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>
-</span><span id="__span-8-14"><a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>        <span class="k">for</span> <span class="n">sock</span> <span class="ow">in</span> <span class="n">readable</span><span class="p">:</span>
-</span><span id="__span-8-15"><a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>            <span class="n">data</span> <span class="o">=</span> <span class="n">sock</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">8192</span><span class="p">)</span>
-</span><span id="__span-8-16"><a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>            <span class="k">if</span> <span class="ow">not</span> <span class="n">data</span><span class="p">:</span>
-</span><span id="__span-8-17"><a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a>                <span class="c1"># 连接关闭</span>
-</span><span id="__span-8-18"><a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a>                <span class="k">return</span>
-</span><span id="__span-8-19"><a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a>
-</span><span id="__span-8-20"><a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a>            <span class="c1"># 将数据转发到另一方</span>
-</span><span id="__span-8-21"><a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a>            <span class="k">if</span> <span class="n">sock</span> <span class="ow">is</span> <span class="n">client_socket</span><span class="p">:</span>
-</span><span id="__span-8-22"><a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a>                <span class="n">server_socket</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>  <span class="c1"># 客户端 → 服务器</span>
-</span><span id="__span-8-23"><a id="__codelineno-8-23" name="__codelineno-8-23" href="#__codelineno-8-23"></a>            <span class="k">else</span><span class="p">:</span>
-</span><span id="__span-8-24"><a id="__codelineno-8-24" name="__codelineno-8-24" href="#__codelineno-8-24"></a>                <span class="n">client_socket</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>  <span class="c1"># 服务器 → 客户端</span>
-</span></code></pre></div>
-<p><strong>代理能看到什么：</strong></p>
-<ul>
-<li><strong>目标主机名和端口</strong> - 来自 CONNECT 请求</li>
-<li><strong>连接时间</strong> - 何时建立，开放多久</li>
-<li><strong>数据量</strong> - 每个方向传输的总字节数</li>
-<li><strong>连接关闭</strong> - 任意一方终止时</li>
-</ul>
-<p><strong>代理看不到什么：</strong></p>
-<ul>
-<li><strong>TLS 握手详情</strong> - 已加密，但存在可观察的模式</li>
-<li><strong>HTTP 方法/URL</strong> - 在 TLS 内部加密</li>
-<li><strong>请求/响应标头</strong> - 在 TLS 内部加密</li>
-<li><strong>响应内容</strong> - 在 TLS 内部加密</li>
-<li><strong>Cookie, 会话令牌</strong> - 在 TLS 内部加密</li>
-</ul>
-<div class="admonition tip">
-<p class="admonition-title">TLS 握手指纹</p>
-<p>虽然代理无法解密 TLS 握手，但它可以 <strong>观察其结构</strong>。<code>CONNECT</code> 之后的最初几个数据包揭示了：
-- TLS 版本 (1.2 vs 1.3)
-- ClientHello 大小和时序
-- 密码套件顺序 (通过数据包大小)
-- 使用的扩展 (通过数据包模式)</p>
-<p>这使得即使通过 CONNECT 隧道也能进行 <strong>被动 TLS 指纹识别</strong> (JA3)。详情请参阅 <a href="../../fingerprinting/network-fingerprinting/">网络指纹</a>。</p>
+    Note over Proxy: Proxy blindly forwards&lt;br/&gt;all encrypted data</code></pre>
+<h3 id="connect">CONNECT 请求</h3>
+<p>CONNECT 请求非常简洁。方法是 <code>CONNECT</code>，请求 URI 是目标的 <code>host:port</code>（而不是路径），如果 proxy 需要则包含身份验证。没有请求体。Proxy 验证凭据，检查访问控制规则，然后打开到指定主机和端口的 TCP 连接。如果一切成功，它会返回 <code>HTTP/1.1 200 Connection Established</code>，后跟一个空行。在该空行之后，HTTP 对话结束，proxy 变成透明中继。</p>
+<h3 id="connect_1">CONNECT 之后的可见性</h3>
+<p>一旦隧道建立，proxy 的可见性就很有限了。它知道来自 CONNECT 请求的目标主机名和端口。它可以观察连接时间（何时建立以及持续多久）、每个方向传输的数据量，以及任一方终止连接的时刻。它还可以观察随后的 TLS 握手，这一点特别值得关注。</p>
+<p>TLS ClientHello 消息在隧道建立后立即发送，且以明文传输。Proxy（以及任何网络观察者）可以直接读取 TLS 版本、完整的支持密码套件列表、扩展及其参数、提供的椭圆曲线，以及包含目标主机名的 SNI（Server Name Indication）扩展。这正是用于 TLS 指纹识别（JA3/JA4）的信息。详情请参阅<a href="../../fingerprinting/network-fingerprinting/">网络指纹</a>。</p>
+<p>Proxy 无法看到的是加密的应用数据：HTTP 方法、URL、请求和响应标头、Cookie、会话令牌和响应内容都在 TLS 隧道内加密。</p>
+<div class="admonition note">
+<p class="admonition-title">SNI 与 Encrypted Client Hello (ECH)</p>
+<p>ClientHello 中的 SNI 扩展以明文暴露目标主机名，这在 proxy 场景中与 CONNECT 请求是冗余的，但对其他网络观察者来说很有意义。Encrypted Client Hello (ECH) 目前正在部署中，旨在加密 SNI 来解决这一泄露问题。不过，ECH 的采用仍然有限，需要客户端和服务器双方的支持。</p>
 </div>
-<h4 id="connect-vs-http">CONNECT vs 直接 HTTP 代理</h4>
+<h3 id="connect-https_1">CONNECT 用于非 HTTPS 协议</h3>
+<p>虽然 CONNECT 主要用于 HTTPS，但它可以隧道传输任何基于 TCP 的协议。到端口 993 的 IMAPS 连接、到端口 22 的 SSH 连接，或到端口 990 的 FTP-over-TLS 都可以通过 CONNECT 隧道工作。Proxy 不需要理解这些协议，因为隧道建立后它只是简单地中继字节。</p>
+<p>实际上，许多企业 proxy 会将 CONNECT 限制在端口 443（HTTPS），以防止滥用。尝试 <code>CONNECT example.com:22</code> 进行 SSH 连接通常会返回 <code>403 Forbidden</code>。</p>
+<h3 id="https">HTTPS 困境</h3>
+<p>HTTP proxy 在处理加密流量时面临一个根本性的选择。使用 CONNECT 隧道方式，端到端加密得以保留，客户端直接验证服务器证书，证书固定正常工作。但 proxy 无法检查、缓存或过滤加密内容。</p>
+<p>另一种方式是 TLS 终止（MITM），proxy 解密 HTTPS 流量、检查内容，然后重新加密后转发。这需要在客户端上安装 proxy 的 CA 证书，会破坏端到端加密，并且可以通过证书固定和证书透明度日志检测到。大多数企业 proxy 使用这种方式进行内容过滤和安全扫描，而注重隐私的 proxy 则使用盲目 CONNECT 隧道。</p>
+<p>对于网页抓取和自动化来说，这一区别对 TLS 指纹识别很重要。如果 proxy 执行 TLS 终止，目标服务器看到的 TLS 指纹属于 proxy，而非你的浏览器。如果你使用的是 CONNECT 隧道，指纹则是端到端保留的。根据你的规避策略，其中一种方式可能比另一种更合适。</p>
 <table>
 <thead>
 <tr>
 <th>方面</th>
-<th>HTTP (无 CONNECT)</th>
-<th>HTTPS (CONNECT 隧道)</th>
+<th>HTTP（无 CONNECT）</th>
+<th>HTTPS（CONNECT 隧道）</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>代理可见性</strong></td>
+<td>Proxy 可见性</td>
 <td>完整的 HTTP 请求/响应</td>
-<td>仅目标 host:port</td>
+<td>仅目标 host:port + TLS ClientHello</td>
 </tr>
 <tr>
-<td><strong>加密</strong></td>
-<td>否 (除非 TLS 终止)</td>
-<td>端到端 TLS (客户端 ⟷ 服务器)</td>
+<td>加密</td>
+<td>无（除非 TLS 终止）</td>
+<td>端到端 TLS</td>
 </tr>
 <tr>
-<td><strong>缓存</strong></td>
-<td>是, 基于 HTTP 语义</td>
-<td>否 (加密内容)</td>
+<td>缓存</td>
+<td>是，基于 HTTP 语义</td>
+<td>否（加密内容）</td>
 </tr>
 <tr>
-<td><strong>内容过滤</strong></td>
-<td>是 (可检查/拦截内容)</td>
-<td>否 (只能基于主机名拦截)</td>
+<td>内容过滤</td>
+<td>是</td>
+<td>否（仅基于主机名拦截）</td>
 </tr>
 <tr>
-<td><strong>标头修改</strong></td>
-<td>是 (可添加/删除标头)</td>
-<td>否 (加密标头)</td>
+<td>标头修改</td>
+<td>是</td>
+<td>否（加密标头）</td>
 </tr>
 <tr>
-<td><strong>URL 可见性</strong></td>
-<td>完整 URL 可见</td>
-<td>仅主机名可见</td>
+<td>URL 可见性</td>
+<td>完整 URL</td>
+<td>仅主机名（通过 CONNECT 和 SNI）</td>
 </tr>
 <tr>
-<td><strong>协议</strong></td>
+<td>协议支持</td>
 <td>仅 HTTP</td>
-<td>任何基于 TCP 的协议 (HTTPS, SSH, FTP-over-TLS)</td>
+<td>任何基于 TCP 的协议</td>
 </tr>
 </tbody>
 </table>
-<h4 id="connect_3">CONNECT 的安全影响</h4>
-<p><strong>对隐私 (好)：</strong></p>
-<ul>
-<li><strong>保持端到端 TLS</strong> - 客户端直接验证服务器证书</li>
-<li><strong>不可能进行 MITM</strong> (除非客户端信任代理的 CA)</li>
-<li><strong>证书固定有效</strong> - 客户端看到真实的服务器证书</li>
-</ul>
-<p><strong>对隐私 (坏)：</strong></p>
-<ul>
-<li><strong>泄露主机名</strong> - 代理知道您访问了 <code>example.com:443</code></li>
-<li><strong>可能进行计时分析</strong> - 可观察到流量模式</li>
-<li><strong>TLS 指纹</strong> - 对 ClientHello 的被动分析</li>
-</ul>
-<p><strong>对企业安全 (坏)：</strong></p>
-<ul>
-<li><strong>无法检查内容</strong> - 无法扫描恶意软件、数据丢失</li>
-<li><strong>对威胁视而不见</strong> - 加密的 C2 流量、数据泄露不可见</li>
-<li><strong>绕过策略</strong> - 用户可以隧道传输任意协议</li>
-</ul>
-<p><strong>这就是为什么企业代理经常使用 TLS 终止 (MITM) 而不是 CONNECT 隧道的原因。</strong></p>
-<h4 id="connect-https">CONNECT 用于非 HTTPS 协议</h4>
-<p>虽然 <code>CONNECT</code> 主要用于 HTTPS，但它可以隧道传输 <strong>任何基于 TCP 的协议</strong>：</p>
-<div class="language-http highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="nf">CONNECT</span> <span class="nn">mail.example.com:993</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="na">Host</span><span class="o">:</span> <span class="l">mail.example.com:993</span>
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>[隧道建立，IMAPS 流量开始流动]
-</span></code></pre></div>
-<div class="language-http highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nf">CONNECT</span> <span class="nn">ssh.example.com:22</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="na">Host</span><span class="o">:</span> <span class="l">ssh.example.com:22</span>
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>[隧道建立，SSH 流量开始流动]
-</span></code></pre></div>
-<p>这使得支持 <code>CONNECT</code> 的 HTTP 代理 <strong>功能惊人地多样化</strong>。它们可以代理 SSH、FTP-over-TLS、IMAPS、SMTPS 和其他加密协议，而不仅仅是 HTTPS。</p>
-<div class="admonition danger">
-<p class="admonition-title">CONNECT 滥用和限制</p>
-<p>因为 <code>CONNECT</code> 能够隧道传输任意 TCP 连接，许多代理会：</p>
-<ul>
-<li><strong>限制允许的端口</strong> (通常只有 HTTPS 的 443)</li>
-<li><strong>拦截可疑主机</strong> (已知的恶意软件 C2、Tor 节点)</li>
-<li><strong>记录所有 CONNECT 尝试</strong> (用于安全审计)</li>
-<li><strong>要求身份验证</strong> (以跟踪用户)</li>
-</ul>
-<p>如果您尝试 <code>CONNECT example.com:22</code> (SSH)，许多企业代理将返回 <code>403 Forbidden</code>。</p>
-</div>
-<h3 id="http_2">HTTP 代理身份验证：访问控制</h3>
-<p>与 SOCKS 代理（支持在协议握手中进行身份验证）不同，HTTP 代理使用 <strong>HTTP 身份验证标头</strong> 来控制访问。这意味着身份验证是 <strong>在应用层</strong> 使用标准 HTTP 状态码和标头进行的。</p>
-<p>身份验证流程遵循 <strong>RFC 7235 (HTTP 身份验证)</strong>，使用 <code>407 Proxy Authentication Required</code> 状态码（类似于服务器的 <code>401 Unauthorized</code>）和 <code>Proxy-Authorization</code> 请求标头（类似于 <code>Authorization</code>）。</p>
-<h4 id="_2">身份验证流程</h4>
-<pre class="mermaid"><code>sequenceDiagram
-    participant Client
-    participant Proxy
-    participant Server
-
-    Note over Client: 客户端尝试请求&lt;br/&gt;(尚无凭据)
-
-    Client-&gt;&gt;Proxy: GET http://example.com/ HTTP/1.1&lt;br/&gt;Host: example.com
-
-    Note over Proxy: 代理要求身份验证
-
-    Proxy-&gt;&gt;Client: HTTP/1.1 407 Proxy Authentication Required&lt;br/&gt;Proxy-Authenticate: Basic realm="Corporate Proxy"&lt;br/&gt;Proxy-Authenticate: Digest realm="proxy", nonce="abc123"
-
-    Note over Client: 客户端选择身份验证方法&lt;br/&gt;编码凭据&lt;br/&gt;(浏览器可能提示用户)
-
-    Client-&gt;&gt;Proxy: GET http://example.com/ HTTP/1.1&lt;br/&gt;Host: example.com&lt;br/&gt;Proxy-Authorization: Basic dXNlcjpwYXNz
-
-    Note over Proxy: 验证凭据&lt;br/&gt;(检查用户名/密码)
-
-    alt 身份验证成功
-        Proxy-&gt;&gt;Server: GET / HTTP/1.1&lt;br/&gt;Host: example.com&lt;br/&gt;(转发原始请求)
-        Server-&gt;&gt;Proxy: HTTP/1.1 200 OK&lt;br/&gt;[响应正文]
-        Proxy-&gt;&gt;Client: HTTP/1.1 200 OK&lt;br/&gt;[响应正文]
-    else 身份验证失败
-        Proxy-&gt;&gt;Client: HTTP/1.1 407 Proxy Authentication Required&lt;br/&gt;(如果凭据无效，则为 403 Forbidden)
-    end</code></pre>
-<h4 id="_3">身份验证方案：详细比较</h4>
-<p>HTTP 支持多种身份验证方案，每种方案具有不同的安全特性：</p>
+<h2 id="https-proxy-proxy-tls">HTTPS Proxy（到 Proxy 的 TLS）</h2>
+<p>有一个值得澄清的区别：代理 HTTPS 流量与通过 HTTPS 连接到 proxy 本身是不同的。当你配置 <code>--proxy-server=https://proxy:port</code> 而非 <code>http://proxy:port</code> 时，你的浏览器与 proxy 之间的连接是通过 TLS 加密的。这可以保护你的 proxy 身份验证凭据不被本地网络嗅探，并且对本地观察者隐藏 CONNECT 主机名，因为它被封装在到 proxy 的 TLS 连接内。</p>
+<p>Chrome 通过 <code>--proxy-server</code> 中的 <code>https://</code> 方案支持此功能。当在不受信任的网络（公共 Wi-Fi、共享主机）上使用 proxy 时，这一点尤其重要，因为你与 proxy 之间的连接是最薄弱的环节。</p>
+<h2 id="_3">身份验证</h2>
+<p>HTTP proxy 身份验证使用标准 HTTP 状态码和标头，遵循 RFC 9110。当 proxy 需要身份验证时，它会返回 <code>407 Proxy Authentication Required</code> 以及一个 <code>Proxy-Authenticate</code> 标头，指示它支持哪些身份验证方案。然后客户端使用包含凭据的 <code>Proxy-Authorization</code> 标头重新传输请求。</p>
+<h3 id="_4">身份验证方案</h3>
+<p>有多种身份验证方案，每种都有不同的安全特性。</p>
+<p><strong>Basic</strong>（RFC 7617）是最简单的。客户端发送 <code>Proxy-Authorization: Basic &lt;base64(username:password)&gt;</code>。Base64 是一种编码而非加密，因此凭据可以被轻易还原。任何拦截到该标头的人都可以立即解码并无限期地重用，因为没有重放保护。Basic 身份验证应仅通过 TLS 加密的连接使用。</p>
+<p><strong>Digest</strong>（RFC 7616）使用挑战-响应机制。Proxy 发送一个随机 nonce，客户端计算用户名、密码、nonce 和请求 URI 的哈希值。密码永不传输，nonce 提供重放保护。原始版本使用 MD5，其速度足以被高效暴力破解，不过 RFC 7616 增加了 SHA-256 支持。Digest 身份验证很少被现代 proxy 服务实现。</p>
+<p><strong>NTLM</strong> 是微软专有的挑战-响应协议，常见于 Windows 企业环境。它使用三步协商（Type 1 协商、Type 2 挑战、Type 3 认证），并与 Active Directory 集成实现单点登录。NTLMv1 使用 DES（已被攻破），NTLMv2 使用 HMAC-MD5（按现代标准被认为较弱）。微软建议在新部署中使用 Kerberos 替代 NTLM。NTLM 是绑定连接的，这意味着它在 HTTP/2 多路复用下会出问题。</p>
+<p><strong>Negotiate</strong>（RFC 4559）使用 SPNEGO 在 Kerberos 和 NTLM 之间选择，优先使用 Kerberos。Kerberos 提供最强的安全性（AES 加密、相互身份验证、有时间限制的票据），但需要 Active Directory 基础设施、加入域的机器和精确的时钟同步。在浏览器自动化中，Kerberos 难以通过编程方式配置。</p>
 <table>
 <thead>
 <tr>
 <th>方案</th>
-<th>RFC</th>
-<th>安全级别</th>
+<th>安全性</th>
 <th>机制</th>
-<th>优点</th>
-<th>缺点</th>
+<th>实用说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>Basic</strong></td>
-<td>RFC 7617</td>
+<td>Basic</td>
 <td>低</td>
-<td>Base64 编码的 <code>username:password</code></td>
-<td>简单, 通用支持</td>
-<td><strong>明文</strong> (易于解码), 无重放保护</td>
+<td>Base64 编码的凭据</td>
+<td>通用支持。仅通过 TLS 使用。</td>
 </tr>
 <tr>
-<td><strong>Digest</strong></td>
-<td>RFC 7616</td>
+<td>Digest</td>
 <td>中</td>
 <td>使用 MD5/SHA-256 的挑战-响应</td>
-<td>防止明文传输, 重放保护</td>
-<td>易受彩虹表攻击, 很少实现</td>
+<td>通过 nonce 提供重放保护。很少被实现。</td>
 </tr>
 <tr>
-<td><strong>NTLM</strong></td>
-<td>专有 (微软)</td>
+<td>NTLM</td>
 <td>中</td>
-<td>挑战-响应 (NT 哈希)</td>
-<td>Windows 集成, SSO</td>
-<td>专有, 复杂, 已知漏洞</td>
+<td>挑战-响应（NT 哈希）</td>
+<td>Windows SSO。专有，存在已知漏洞。</td>
 </tr>
 <tr>
-<td><strong>Negotiate</strong></td>
-<td>RFC 4559</td>
+<td>Negotiate</td>
 <td>高</td>
 <td>Kerberos/SPNEGO</td>
-<td>强加密, SSO, 相互身份验证</td>
-<td>设置复杂, 依赖 Active Directory</td>
-</tr>
-<tr>
-<td><strong>Bearer</strong></td>
-<td>RFC 6750</td>
-<td>高 (如果令牌安全)</td>
-<td>OAuth 2.0 令牌</td>
-<td>API 友好, 可撤销令牌</td>
-<td>令牌被盗 = 完全访问, 需要令牌基础设施</td>
+<td>最强。需要 Active Directory。</td>
 </tr>
 </tbody>
 </table>
-<h4 id="basic">Basic 身份验证：最简单 (也最弱)</h4>
-<p><strong>格式：</strong>
-<div class="language-http highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="err">Proxy-Authorization: Basic base64(username:password)</span>
-</span></code></pre></div></p>
-<p><strong>示例：</strong>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># 用户名: &quot;user&quot;, 密码: &quot;pass&quot;</span>
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="n">credentials</span> <span class="o">=</span> <span class="s2">&quot;user:pass&quot;</span>
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="n">encoded</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">credentials</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
-</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="c1"># 结果: &quot;dXNlcjpwYXNz&quot;</span>
-</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>
-</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="c1"># 在 HTTP 标头中:</span>
-</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="n">Proxy</span><span class="o">-</span><span class="n">Authorization</span><span class="p">:</span> <span class="n">Basic</span> <span class="n">dXNlcjpwYXNz</span>
-</span></code></pre></div></p>
-<p><strong>安全问题：</strong></p>
-<ol>
-<li>
-<p><strong>Base64 不是加密</strong> - 解码非常简单：
-    <div class="language-python highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="kn">import</span><span class="w"> </span><span class="nn">base64</span>
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64decode</span><span class="p">(</span><span class="s1">&#39;dXNlcjpwYXNz&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="s1">&#39;user:pass&#39;</span>  <span class="c1"># 凭据暴露！</span>
-</span></code></pre></div></p>
-</li>
-<li>
-<p><strong>在日志中可见</strong> - 代理日志通常包含标头，泄露凭据</p>
-</li>
-<li>
-<p><strong>可重放</strong> - 任何拦截到标头的人都可以无限期地重用它</p>
-</li>
-<li>
-<p><strong>无完整性保护</strong> - 可以在传输过程中被修改</p>
-</li>
-</ol>
-<div class="admonition danger">
-<p class="admonition-title">在未加密连接上使用 Basic Auth</p>
-<p>通过 HTTP (而不是 HTTPS) 发送 <code>Proxy-Authorization: Basic</code> 是 <strong>极其不安全的</strong>：</p>
-<ul>
-<li>凭据以明文传输 (base64 不是加密！)</li>
-<li>对任何网络观察者可见 (ISP、WiFi 嗅探者、MITM 攻击者)</li>
-<li>被中间代理和服务器记录</li>
-</ul>
-<p><strong>始终通过 TLS/HTTPS 使用 Basic Auth</strong>，或使用更安全的方案，如 Digest 或 Negotiate。</p>
-</div>
-<p><strong>何时使用 Basic：</strong></p>
-<ul>
-<li>代理连接通过 TLS 加密 (HTTPS 到代理)</li>
-<li>快速测试/开发 (绝不用于生产！)</li>
-<li>没有其他选择的旧系统</li>
-</ul>
-<h4 id="digest-">Digest 身份验证：挑战-响应</h4>
-<p><strong>格式：</strong>
-<div class="language-http highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="err"># 服务器挑战</span>
-</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="err">Proxy-Authenticate: Digest realm=&quot;proxy&quot;,</span>
-</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="err">                          qop=&quot;auth&quot;,</span>
-</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="err">                          nonce=&quot;dcd98b7102dd2f0e8b11d0f600bfb0c093&quot;,</span>
-</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="err">                          opaque=&quot;5ccc069c403ebaf9f0171e9517f40e41&quot;</span>
-</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>
-</span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="err"># 客户端响应</span>
-</span><span id="__span-14-8"><a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a><span class="err">Proxy-Authorization: Digest username=&quot;user&quot;,</span>
-</span><span id="__span-14-9"><a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a><span class="err">                            realm=&quot;proxy&quot;,</span>
-</span><span id="__span-14-10"><a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a><span class="err">                            nonce=&quot;dcd98b7102dd2f0e8b11d0f600bfb0c093&quot;,</span>
-</span><span id="__span-14-11"><a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a><span class="err">                            uri=&quot;http://example.com/&quot;,</span>
-</span><span id="__span-14-12"><a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a><span class="err">                            qop=auth,</span>
-</span><span id="__span-14-13"><a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a><span class="err">                            nc=00000001,</span>
-</span><span id="__span-14-14"><a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a><span class="err">                            cnonce=&quot;0a4f113b&quot;,</span>
-</span><span id="__span-14-15"><a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a><span class="err">                            response=&quot;6629fae49393a05397450978507c4ef1&quot;,</span>
-</span><span id="__span-14-16"><a id="__codelineno-14-16" name="__codelineno-14-16" href="#__codelineno-14-16"></a><span class="err">                            opaque=&quot;5ccc069c403ebaf9f0171e9517f40e41&quot;</span>
-</span></code></pre></div></p>
-<p><strong>工作原理：</strong></p>
-<ol>
-<li><strong>代理发送挑战</strong> 带有随机 <code>nonce</code> (一次性数字)</li>
-<li><strong>客户端计算哈希</strong>：
-    <div class="language-python highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">HA1</span> <span class="o">=</span> <span class="n">MD5</span><span class="p">(</span><span class="n">username</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">realm</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">password</span><span class="p">)</span>
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="n">HA2</span> <span class="o">=</span> <span class="n">MD5</span><span class="p">(</span><span class="n">method</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">uri</span><span class="p">)</span>
-</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="n">response</span> <span class="o">=</span> <span class="n">MD5</span><span class="p">(</span><span class="n">HA1</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">nonce</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">nc</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">cnonce</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">qop</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">HA2</span><span class="p">)</span>
-</span></code></pre></div></li>
-<li><strong>代理通过计算相同的哈希并比较</strong> 来验证</li>
-</ol>
-<p><strong>相比 Basic 的安全改进：</strong>
-- 密码永不传输 (只有哈希)
-- 重放保护 (<code>nonce</code> 每次挑战都会改变)
-- 完整性保护 (哈希包含方法和 URI)</p>
-<p><strong>遗留问题：</strong>
-- MD5 在密码学上很弱 (彩虹表攻击)
-- 没有加密 (如果不使用 TLS，内容仍然可见)
-- 正确实现起来很复杂</p>
-<div class="admonition tip">
-<p class="admonition-title">使用 SHA-256 的 Digest</p>
-<p>RFC 7616 (2015) 更新了 Digest，以支持 SHA-256 代替 MD5，解决了加密弱点。然而，支持仍然有限。许多代理只实现 MD5。</p>
-</div>
-<h4 id="ntlmwindows">NTLM：Windows 集成身份验证</h4>
-<p>NTLM (NT LAN Manager) 是微软专有的挑战-响应协议，常用于 Windows 企业环境。</p>
-<p><strong>身份验证流程：</strong></p>
-<ol>
-<li><strong>Type 1 (协商)</strong>：客户端宣布能力</li>
-<li><strong>Type 2 (挑战)</strong>：服务器发送 8 字节挑战</li>
-<li><strong>Type 3 (认证)</strong>：客户端发送 NT 哈希响应</li>
-</ol>
-<p><strong>示例 (简化)：</strong>
-<div class="language-http highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="err"># 步骤 1: 协商</span>
-</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="err">Proxy-Authorization: NTLM TlRMTVNTUAABAAAAB4IIogAAAAAAAAAAAAAAAAAAAAAFASgKAAAADw==</span>
-</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>
-</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="err"># 步骤 2: 挑战</span>
-</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="err">Proxy-Authenticate: NTLM TlRMTVNTUAACAAAADAAMADgAAAAFgooCBqqVKFrKPCMAAAAAAAAAAAAAAAAAAP8=</span>
-</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>
-</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="err"># 步骤 3: 认证</span>
-</span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span class="err">Proxy-Authorization: NTLM TlRMTVNTUAADAAAAGAAYAEgAAAAYABgAYAAAAAwADAB4AAAACAAIAIQAAAAAAAAAAAAAABVCSUCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==</span>
-</span></code></pre></div></p>
-<p><strong>优点：</strong></p>
-<ul>
-<li>无缝的 Windows 集成 (与 Active Directory 的 SSO)</li>
-<li>不传输密码</li>
-<li>支持域身份验证</li>
-</ul>
-<p><strong>缺点：</strong></p>
-<ul>
-<li>专有 (逆向工程，未标准化)</li>
-<li>已知的加密弱点 (NTLMv1 已被破解, NTLMv2 易受攻击)</li>
-<li>协议复杂 (多次往返)</li>
-<li>绑定连接 (在 HTTP/2 多路复用下会中断)</li>
-</ul>
-<div class="admonition warning">
-<p class="admonition-title">NTLM 安全问题</p>
-<p>NTLM 有已知的漏洞：
-- <strong>哈希传递攻击</strong>：窃取的哈希可以在不知道密码的情况下进行身份验证
-- <strong>中继攻击</strong>：攻击者将身份验证中继到另一台服务器
-- <strong>弱加密</strong>：NTLMv1 使用 DES (已破解), NTLMv2 使用 MD5 (弱)</p>
-<p>微软建议在新部署中使用 <strong>Kerberos</strong> (通过 Negotiate) 代替 NTLM。</p>
-</div>
-<h4 id="negotiate-kerberos-sso">Negotiate (Kerberos)：企业 SSO</h4>
-<p><strong>Negotiate</strong> (RFC 4559) 使用 SPNEGO (简单且受保护的 GSSAPI 协商机制) 在 Kerberos 和 NTLM 之间进行选择，优先使用 Kerberos。</p>
-<p><strong>Kerberos 流程：</strong></p>
-<ol>
-<li>客户端从密钥分发中心 (KDC) 请求 <strong>票据授予票据 (TGT)</strong></li>
-<li>客户端为代理服务请求 <strong>服务票据</strong></li>
-<li>客户端向代理出示服务票据</li>
-<li>代理使用 KDC 验证票据</li>
-</ol>
-<p><strong>示例：</strong>
-<div class="language-http highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="err">Proxy-Authorization: Negotiate YIIFyQYGKwYBBQUCoIIFvTCCBbmgMDAuBgkqhkiC9xIBAgIGCSqGSIb3EgECAgYKKwYBBAGCNwICHgYKKwYBBAGCNwICCqKCBYMEggV/...</span>
-</span></code></pre></div></p>
-<p><strong>优点：</strong>
-- <strong>最强的安全性</strong>：AES 加密, 相互身份验证
-- <strong>真正的 SSO</strong>：域用户无需输入密码
-- <strong>票据过期</strong>：有时间限制的身份验证
-- <strong>审计</strong>：集中的 KDC 日志记录</p>
-<p><strong>缺点：</strong>
-- <strong>设置复杂</strong>：需要 Active Directory 基础设施
-- <strong>跨平台支持有限</strong>：在 Windows 上最好, macOS/Linux 支持有限
-- <strong>时间同步</strong>：需要准确的时钟 (Kerberos 票据对时间敏感)</p>
-<div class="admonition info">
-<p class="admonition-title">浏览器自动化中的 Kerberos</p>
-<p>Pydoll (以及大多数无头浏览器) 对 <strong>Kerberos 的支持有限</strong>，因为：
-- 需要操作系统级别的集成 (票据缓存, keytab)
-- 需要加入域的机器
-- 以编程方式配置很复杂</p>
-<p>对于 Kerberos 环境中的自动化测试，请考虑使用具有 Basic/Digest 身份验证的 <strong>服务帐户</strong> 代替。</p>
-</div>
-<h4 id="pydoll">实用 Pydoll 配置</h4>
-<p><strong>Basic 身份验证：</strong>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
-</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChromiumOptions</span>
-</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>
-</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
-</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--proxy-server=http://myuser:mypass@proxy.example.com:8080&#39;</span><span class="p">)</span>
-</span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="c1"># Pydoll 会自动处理 Basic/Digest 等身份验证质询</span>
-</span><span id="__span-18-7"><a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>
-</span><span id="__span-18-8"><a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a><span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">(</span><span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
-</span><span id="__span-18-9"><a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a>    <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-</span><span id="__span-18-10"><a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a>    <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">&#39;http://example.com&#39;</span><span class="p">)</span>
-</span></code></pre></div></p>
-<p><strong>通过 Fetch 域进行身份验证 (高级)：</strong></p>
-<p>Pydoll 使用 Chrome 的 <strong>Fetch 域</strong> 来自动处理浏览器支持的任何方案 (Basic, Digest, NTLM, Negotiate) 的代理身份验证：</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="c1"># Pydoll 内部实现 (简化)</span>
-</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">handle_auth_required</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
-</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>    <span class="c1"># 浏览器检测到 407 Proxy Authentication Required</span>
-</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>    <span class="n">auth_challenge_id</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s1">&#39;requestId&#39;</span><span class="p">]</span>
-</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>
-</span><span id="__span-19-6"><a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>    <span class="c1"># 响应凭据</span>
-</span><span id="__span-19-7"><a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a>    <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_command</span><span class="p">(</span><span class="s1">&#39;Fetch.continueWithAuth&#39;</span><span class="p">,</span> <span class="p">{</span>
-</span><span id="__span-19-8"><a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a>        <span class="s1">&#39;requestId&#39;</span><span class="p">:</span> <span class="n">auth_challenge_id</span><span class="p">,</span>
-</span><span id="__span-19-9"><a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a>        <span class="s1">&#39;authChallengeResponse&#39;</span><span class="p">:</span> <span class="p">{</span>
-</span><span id="__span-19-10"><a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a>            <span class="s1">&#39;response&#39;</span><span class="p">:</span> <span class="s1">&#39;ProvideCredentials&#39;</span><span class="p">,</span>
-</span><span id="__span-19-11"><a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a>            <span class="s1">&#39;username&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy_username</span><span class="p">,</span>
-</span><span id="__span-19-12"><a id="__codelineno-19-12" name="__codelineno-19-12" href="#__codelineno-19-12"></a>            <span class="s1">&#39;password&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxy_password</span>
-</span><span id="__span-19-13"><a id="__codelineno-19-13" name="__codelineno-19-13" href="#__codelineno-19-13"></a>        <span class="p">}</span>
-</span><span id="__span-19-14"><a id="__codelineno-19-14" name="__codelineno-19-14" href="#__codelineno-19-14"></a>    <span class="p">})</span>
+<h3 id="pydoll">Pydoll 中的身份验证</h3>
+<p>Chrome 不支持在 <code>--proxy-server</code> 标志中内联 proxy 凭据。写 <code>--proxy-server=http://user:pass@proxy:port</code> 不会生效：Chrome 会静默忽略 <code>user:pass</code> 部分并在不进行身份验证的情况下连接。</p>
+<p>Pydoll 通过其 <code>ProxyManager</code> 透明地解决了这个问题。当你提供带有内嵌凭据的 proxy URL 时，Pydoll 会提取用户名和密码，在传递给 Chrome 之前从 URL 中剥离它们，然后使用 CDP Fetch 域拦截 <code>407 Proxy Authentication Required</code> 响应，并通过 <code>Fetch.continueWithAuth</code> 自动提供凭据。这种方式适用于 Chrome 支持的所有身份验证方案（Basic、Digest、NTLM、Negotiate），而无需 Pydoll 实现特定于协议的逻辑。</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChromiumOptions</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="c1"># Pydoll extracts credentials, cleans the URL, and handles 407 via CDP</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--proxy-server=http://user:pass@proxy.example.com:8080&#39;</span><span class="p">)</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">(</span><span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">&#39;https://example.com&#39;</span><span class="p">)</span>
 </span></code></pre></div>
-<p>这种方法适用于 <strong>所有身份验证方案</strong>，而 Pydoll 无需实现特定于协议的逻辑。Chrome 会在内部处理 Digest/NTLM/Negotiate。</p>
 <div class="admonition tip">
 <p class="admonition-title">身份验证最佳实践</p>
-<ul>
-<li><strong>使用 TLS 加密的代理连接</strong> (HTTPS 代理或 SSH 隧道)</li>
-<li>API 代理 <strong>首选 Bearer 令牌</strong> (可撤销, 有时限)</li>
-<li>如果 TLS 不可用，<strong>使用 Digest</strong> 而不是 Basic</li>
-<li>定期 <strong>轮换凭据</strong></li>
-<li>
-<p><strong>监控身份验证失败</strong> (可能表明凭据被盗)</p>
-</li>
-<li>
-<p><strong>切勿通过 HTTP (未加密连接) 使用 Basic auth</strong></p>
-</li>
-<li><strong>不要硬编码凭据</strong> (使用环境变量)</li>
-<li><strong>不要在代理之间重用凭据</strong></li>
-<li><strong>不要记录 Proxy-Authorization 标头</strong></li>
-</ul>
+<p>始终使用 TLS 加密的 proxy 连接（HTTPS proxy 或 SSH 隧道）来保护传输中的凭据。对于 API proxy，优先使用 Bearer 令牌，因为它们可撤销且有时间限制。切勿通过未加密的 HTTP 连接使用 Basic 身份验证。不要在源代码中硬编码凭据，请使用环境变量。</p>
 </div>
-<h2 id="http_3">现代 HTTP 协议与代理</h2>
-<p>传统的 HTTP/1.1 代理已广为人知，但现代协议引入了新的考量。</p>
-<h3 id="http2">HTTP/2 代理</h3>
-<p>HTTP/2 引入了多路复用，这从根本上改变了代理处理连接的方式：</p>
-<p><strong>关键差异：</strong></p>
+<h2 id="_5">现代协议与代理</h2>
+<h3 id="http2">HTTP/2</h3>
+<p>HTTP/2 引入了多路复用、二进制分帧和 HPACK 标头压缩，从根本上改变了 proxy 处理连接的方式。在 HTTP/1.1 中，每个请求按顺序占用一个连接（虽然存在流水线但实际上已被禁用，因此浏览器通过为每个主机打开六个并行连接来解决这个问题）。在 HTTP/2 中，单个 TCP 连接承载多个并发流，每个流都有自己的请求和响应。</p>
+<p>对于 proxy 来说，这意味着需要在连接的两端管理流 ID、优先级和流控窗口。Proxy 必须在客户端侧和服务器侧之间转换流 ID、维护优先级树，并对每个流进行流量控制。这比 HTTP/1.1 简单的请求-响应转发要复杂得多。</p>
+<p>从指纹识别的角度来看，HTTP/2 流元数据（窗口大小、优先级设置、HPACK 内的标头排序）可以对单个客户端进行指纹识别，即使多个用户共享同一个 proxy。</p>
 <table>
 <thead>
 <tr>
@@ -5838,382 +4968,147 @@
 </thead>
 <tbody>
 <tr>
-<td><strong>连接</strong></td>
-<td>每个连接一个请求 (或顺序)</td>
-<td>单个连接上的多个请求</td>
+<td>连接</td>
+<td>每个连接按顺序处理（浏览器并行打开 6 个）</td>
+<td>单个连接上的多个并发流</td>
 </tr>
 <tr>
-<td><strong>多路复用</strong></td>
-<td>否 (队头阻塞)</td>
-<td>是 (并发流)</td>
+<td>多路复用</td>
+<td>否（队头阻塞）</td>
+<td>是（仅流级别）</td>
 </tr>
 <tr>
-<td><strong>标头压缩</strong></td>
+<td>标头压缩</td>
 <td>无</td>
-<td>HPACK 压缩</td>
+<td>HPACK</td>
 </tr>
 <tr>
-<td><strong>服务器推送</strong></td>
-<td>不支持</td>
-<td>服务器可以推送资源</td>
-</tr>
-<tr>
-<td><strong>代理复杂性</strong></td>
+<td>Proxy 复杂度</td>
 <td>简单的请求/响应转发</td>
-<td>必须管理流优先级</td>
+<td>流 ID 映射、优先级管理</td>
 </tr>
 </tbody>
 </table>
-<p><strong>对代理的影响：</strong></p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="c1"># HTTP/1.1 代理：简单的一对一映射</span>
-</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="n">client_conn_1</span> <span class="err">→</span> <span class="n">proxy</span> <span class="err">→</span> <span class="n">server_conn_1</span>  <span class="c1"># 请求 A</span>
-</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="n">client_conn_2</span> <span class="err">→</span> <span class="n">proxy</span> <span class="err">→</span> <span class="n">server_conn_2</span>  <span class="c1"># 请求 B</span>
-</span><span id="__span-20-4"><a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>
-</span><span id="__span-20-5"><a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a><span class="c1"># HTTP/2 代理：复杂的流管理</span>
-</span><span id="__span-20-6"><a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a><span class="n">client_conn</span> <span class="p">(</span><span class="n">流</span> <span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">)</span> <span class="err">→</span> <span class="n">proxy</span> <span class="err">→</span> <span class="n">server_conn</span> <span class="p">(</span><span class="n">流</span> <span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">6</span><span class="p">)</span>
-</span><span id="__span-20-7"><a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a><span class="c1">#     ↓ 必须维护流 ID 和优先级</span>
-</span></code></pre></div>
-<p><strong>性能影响：</strong></p>
-<ul>
-<li><strong>积极</strong>：减少连接开销, 更好的带宽利用率</li>
-<li><strong>消极</strong>：代理必须解析二进制分帧, 管理流状态</li>
-<li><strong>泄露风险</strong>：流 ID 和优先级可以对客户端行为进行指纹识别</li>
-</ul>
-<div class="admonition info">
-<p class="admonition-title">HTTP/2 代理检测</p>
-<p>HTTP/2 多路复用使得在多个用户共享代理时更难将请求与客户端关联，但流元数据（窗口大小、优先级设置）仍可对单个客户端进行指纹识别。</p>
-</div>
-<h3 id="http3-quic">HTTP/3 (QUIC) 代理</h3>
-<p>HTTP/3 运行在 QUIC (基于 UDP) 而不是 TCP 之上，带来了新的挑战：</p>
-<p><strong>QUIC 特性：</strong></p>
+<p>在 HTTP/2 中，CONNECT 方法通过 RFC 8441 进行了扩展，支持 <code>:protocol</code> 伪标头，使 WebSocket 隧道和其他协议升级可以直接在 HTTP/2 流中进行，而无需单独的连接。</p>
+<h3 id="http3-quic">HTTP/3 与 QUIC</h3>
+<p>HTTP/3 运行在 QUIC（RFC 9000）之上，这是一种基于 UDP 的传输协议。这给 HTTP proxy 带来了根本性的挑战。传统 HTTP proxy 运行在 TCP 之上，无法处理 QUIC 的 UDP 流量。QUIC 连接可以在 IP 变化后继续存活（连接迁移），使 proxy 会话管理变得复杂。而且 QUIC 几乎加密了所有内容，包括之前可见的传输层元数据。</p>
+<p>代理 QUIC 需要 CONNECT-UDP（RFC 9298），这是一种通过 HTTP proxy 建立 UDP 隧道的新方法。大多数传统 proxy，包括许多商业服务，尚不支持此功能。当 proxy 不支持 QUIC 时，浏览器会回退到基于 TCP 的 HTTP/2，这意味着如果你依赖 HTTP/3 的加密传输，实际泄露的元数据可能比预期更多。</p>
+<p>在自动化场景中，考虑使用 <code>--disable-quic</code> Chrome 标志禁用 QUIC，以强制使用基于 TCP 的 HTTP/2。这可以确保所有流量都通过你的 proxy，并消除 QUIC 导致的 UDP 泄露风险。</p>
 <table>
 <thead>
 <tr>
 <th>方面</th>
-<th>TCP + TLS</th>
-<th>QUIC (UDP)</th>
+<th>TCP + TLS（HTTP/1.1、HTTP/2）</th>
+<th>QUIC/UDP（HTTP/3）</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>传输</strong></td>
-<td>TCP (面向连接)</td>
-<td>UDP (无连接)</td>
+<td>传输</td>
+<td>TCP（面向连接）</td>
+<td>UDP（无连接）</td>
 </tr>
 <tr>
-<td><strong>握手</strong></td>
-<td>单独的 TCP + TLS (2 RTT)</td>
-<td>组合 (0-1 RTT)</td>
+<td>握手</td>
+<td>分离的 TCP + TLS（2 RTT）</td>
+<td>合并（0-1 RTT）</td>
 </tr>
 <tr>
-<td><strong>队头阻塞</strong></td>
-<td>是 (TCP 级别)</td>
-<td>否 (仅流级别)</td>
+<td>队头阻塞</td>
+<td>是（TCP 级别）</td>
+<td>否（仅流级别）</td>
 </tr>
 <tr>
-<td><strong>连接迁移</strong></td>
+<td>连接迁移</td>
 <td>不支持</td>
-<td>支持 (IP 更改后仍可存活)</td>
+<td>支持（可在 IP 变化后存活）</td>
 </tr>
 <tr>
-<td><strong>代理兼容性</strong></td>
+<td>Proxy 兼容性</td>
 <td>极好</td>
-<td>有限 (需要 UDP 支持)</td>
+<td>有限（需要 UDP 中继支持）</td>
 </tr>
 </tbody>
 </table>
-<p><strong>对代理的影响：</strong></p>
-<ol>
-<li><strong>UDP 要求</strong>：传统的 HTTP 代理 (仅 TCP) 无法处理 HTTP/3</li>
-<li><strong>连接迁移</strong>：QUIC 连接可以在 IP 更改后存活，使代理会话管理复杂化</li>
-<li><strong>加密传输</strong>：QUIC 几乎加密了所有内容，包括连接元数据</li>
-<li><strong>CONNECT-UDP</strong>：需要新方法 (RFC 9298) 来代理 QUIC</li>
-</ol>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="c1"># 传统代理链</span>
-</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="n">客户端</span> <span class="o">--</span><span class="n">TCP</span><span class="o">--&gt;</span> <span class="n">HTTP</span> <span class="n">代理</span> <span class="o">--</span><span class="n">TCP</span><span class="o">--&gt;</span> <span class="n">服务器</span>
-</span><span id="__span-21-3"><a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a>
-</span><span id="__span-21-4"><a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="c1"># HTTP/3 代理链 (需要 CONNECT-UDP)</span>
-</span><span id="__span-21-5"><a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="n">客户端</span> <span class="o">--</span><span class="n">UDP</span><span class="o">/</span><span class="n">QUIC</span><span class="o">--&gt;</span> <span class="n">代理</span> <span class="o">--</span><span class="n">UDP</span><span class="o">/</span><span class="n">QUIC</span><span class="o">--&gt;</span> <span class="n">服务器</span>
-</span><span id="__span-21-6"><a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a>       <span class="p">(</span><span class="n">或</span><span class="p">)</span>
-</span><span id="__span-21-7"><a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a><span class="n">客户端</span> <span class="o">--</span><span class="n">TCP</span><span class="o">/</span><span class="n">CONNECT</span><span class="o">-</span><span class="n">UDP</span><span class="o">--&gt;</span> <span class="n">代理</span> <span class="o">--</span><span class="n">UDP</span><span class="o">/</span><span class="n">QUIC</span><span class="o">--&gt;</span> <span class="n">服务器</span>
-</span></code></pre></div>
 <div class="admonition warning">
-<p class="admonition-title">HTTP/3 代理支持</p>
-<p>大多数传统代理 (包括许多商业服务) 不支持 HTTP/3。当代理不支持 QUIC 时，浏览器通常会回退到 HTTP/2 或 HTTP/1.1。</p>
-<p>这种回退可能是一个 <strong>隐私问题</strong>：如果您期望 HTTP/3 的加密元数据，但回退到 HTTP/1.1，则可能会通过代理泄露更多信息。</p>
+<p class="admonition-title">协议降级</p>
+<p>当 proxy 不支持 HTTP/3 时，浏览器会静默回退到 HTTP/2 或 HTTP/1.1。这种降级可能暴露 HTTP/3 本会加密的元数据（标头、时序模式）。请监控你的流量以了解实际的协议版本，并注意 HTTP/3 的采用率因地区和 CDN 而异。</p>
 </div>
-<h3 id="_4">协议协商和降级攻击</h3>
-<pre class="mermaid"><code>sequenceDiagram
-    participant Client
-    participant Proxy
-    participant Server
-
-    Client-&gt;&gt;Proxy: 通过 QUIC 发送 HTTP/3 请求
-    Note over Proxy: 代理不支持 UDP/QUIC
-    Proxy-&gt;&gt;Client: 连接失败
-
-    Client-&gt;&gt;Proxy: 回退到 TCP 上的 HTTP/2
-    Note over Proxy: 代理支持 HTTP/2
-    Proxy-&gt;&gt;Server: 转发为 HTTP/1.1
-    Note over Proxy: 服务器元数据对代理可见
-
-    Server-&gt;&gt;Proxy: HTTP/1.1 响应
-    Proxy-&gt;&gt;Client: 升级为 HTTP/2 响应</code></pre>
-<p><strong>安全注意事项：</strong></p>
-<ul>
-<li><strong>降级攻击</strong>：攻击者强制回退到不太安全的协议</li>
-<li><strong>元数据泄露</strong>：HTTP/1.1 暴露了 HTTP/3 会加密的标头</li>
-<li><strong>性能下降</strong>：降级中失去多路复用的好处</li>
-</ul>
-<div class="admonition tip">
-<p class="admonition-title">现代协议最佳实践</p>
-<ul>
-<li>使用 HTTP/2 和 HTTP/3 测试您的代理，以了解回退行为</li>
-<li>监控意外的协议降级 (可能表示 MITM)</li>
-<li>如果使用现代 Web 应用，请考虑支持 QUIC 的代理</li>
-<li>请注意 HTTP/3 的采用因地区和 CDN 而异</li>
-</ul>
-</div>
-<h2 id="_5">总结和关键要点</h2>
-<p>HTTP 和 HTTPS 代理是 <strong>最常见</strong> 但也是最 <strong>受限</strong> 的代理协议。了解它们的架构、功能和根本的安全限制，对于在浏览器自动化中做出明智决策至关重要。</p>
-<h3 id="_6">涵盖的核心概念</h3>
-<p><strong>1. 第 7 层操作：</strong></p>
-<ul>
-<li>HTTP 代理在 <strong>应用层</strong> 运行，使其对 HTTP 流量具有完全可见性</li>
-<li>可以读取/修改 URL、标头、Cookie、请求正文 (对于未加密的 HTTP)</li>
-<li>特定于协议：<strong>仅适用于 HTTP/HTTPS</strong>，不适用于 FTP/SSH/SMTP/自定义协议</li>
-</ul>
-<p><strong>2. CONNECT 方法：</strong></p>
-<ul>
-<li>通过 CONNECT 进行的 <strong>HTTPS 隧道</strong> 将代理转变为 <strong>盲目的 TCP 中继</strong></li>
-<li>发送 <code>200 Connection Established</code> 后，代理变为第 4 层 (无法检查加密流量)</li>
-<li>在客户端和服务器之间保持 <strong>端到端 TLS</strong></li>
-<li>向代理泄露 <strong>主机名和端口</strong>，但不泄露 URL 或内容</li>
-</ul>
-<p><strong>3. 请求/响应代理：</strong></p>
-<ul>
-<li>HTTP 代理在请求中使用 <strong>绝对 URI</strong> (<code>GET http://example.com/page</code>)</li>
-<li>维护 <strong>两个 TCP 连接</strong>：客户端↔代理 和 代理↔服务器</li>
-<li>可以添加标头 (<code>Via</code>, <code>X-Forwarded-For</code>, <code>X-Real-IP</code>) 暴露代理的使用</li>
-<li>支持基于 HTTP 语义 (<code>Cache-Control</code>, <code>ETag</code>) 的 <strong>缓存</strong></li>
-</ul>
-<p><strong>4. 身份验证：</strong></p>
-<ul>
-<li>使用 HTTP 状态码 <strong>407</strong> 和 <code>Proxy-Authorization</code> 标头</li>
-<li><strong>Basic</strong>：简单但不安全 (base64 编码, 未加密)</li>
-<li><strong>Digest</strong>：使用哈希的挑战-响应 (更好, 但 MD5 弱)</li>
-<li><strong>NTLM</strong>：Windows 集成 (复杂, 专有)</li>
-<li><strong>Negotiate/Kerberos</strong>：最强 (企业 SSO, Active Directory)</li>
-</ul>
-<p><strong>5. 现代协议：</strong></p>
-<ul>
-<li><strong>HTTP/2</strong>：多路复用、二进制分帧、HPACK 压缩</li>
-<li><strong>HTTP/3/QUIC</strong>：基于 UDP、0-RTT、连接迁移</li>
-<li>大多数代理 <strong>不支持 HTTP/3</strong> (需要 UDP 中继支持)</li>
-<li>如果代理缺少 QUIC 支持，浏览器会 <strong>回退</strong> 到 HTTP/2 或 HTTP/1.1</li>
-</ul>
-<h3 id="_7">安全影响</h3>
-<p><strong>优势：</strong></p>
-<ul>
-<li><strong>成熟的协议</strong>，广泛支持</li>
-<li><strong>智能缓存</strong> 减少带宽和延迟</li>
-<li><strong>内容过滤</strong> 支持恶意软件扫描、广告拦截</li>
-<li><strong>CONNECT 隧道</strong> 保持 HTTPS 的端到端 TLS</li>
-</ul>
-<p><strong>弱点：</strong></p>
-<ul>
-<li><strong>可以读取所有未加密的 HTTP 流量</strong>（URL、标头、正文）</li>
-<li><strong>添加识别标头</strong> (<code>Via</code>, <code>X-Forwarded-For</code>) 暴露代理使用</li>
-<li><strong>无法代理非 HTTP 协议</strong> (FTP, SSH, 自定义)</li>
-<li><strong>不支持 UDP</strong> (WebRTC 泄露真实 IP)</li>
-<li><strong>用于检查的 TLS 终止</strong> 破坏端到端加密</li>
-</ul>
-<h3 id="http_4">何时使用 HTTP 代理</h3>
-<p><strong>好的用例：</strong></p>
-<ul>
-<li>需要内容过滤和监控的 <strong>企业网络</strong></li>
-<li>用于带宽优化的 <strong>缓存代理</strong></li>
-<li>隐蔽性不重要的 <strong>简单网页抓取</strong></li>
-<li>仅支持 HTTP 代理的 <strong>旧系统</strong></li>
-<li><strong>基于 URL 的访问控制</strong> (拦截特定域)</li>
-</ul>
-<p><strong>坏的用例：</strong></p>
-<ul>
-<li><strong>对隐私要求严格的自动化</strong> (请改用 SOCKS5)</li>
-<li><strong>非 HTTP 协议</strong> (FTP, SSH, 自定义 → 使用 SOCKS5)</li>
-<li><strong>WebRTC 应用</strong> (不支持 UDP → 使用 SOCKS5 或 VPN)</li>
-<li><strong>证书固定</strong> 环境 (CONNECT 会破坏 MITM)</li>
-<li><strong>隐形自动化</strong> (标头泄露代理使用)</li>
-</ul>
-<h3 id="http-vs-socks5">HTTP 代理 vs SOCKS5：快速决策矩阵</h3>
+<h2 id="_6">总结</h2>
+<p>HTTP proxy 提供了丰富的功能，但代价是范围有限和隐私问题。它们可以检查、缓存和过滤 HTTP 流量，但无法处理非 HTTP 协议、UDP 流量或 HTTPS 内容（除非破坏加密）。除非明确剥离，否则它们的存在会通过可识别的标头暴露。</p>
+<p>对于自动化来说，CONNECT 隧道是最相关的功能：它在保留端到端 TLS 加密的同时，仅让 proxy 获得主机名级别的可见性。Pydoll 通过 CDP Fetch 域透明地处理 proxy 身份验证，支持 Chrome 实现的所有方案。</p>
+<h3 id="http-proxy-socks5">HTTP Proxy 与 SOCKS5 对比</h3>
 <table>
 <thead>
 <tr>
 <th>需求</th>
-<th>HTTP 代理</th>
+<th>HTTP Proxy</th>
 <th>SOCKS5</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>内容过滤</strong></td>
-<td><strong>是</strong></td>
-<td><strong>否</strong></td>
+<td>内容过滤</td>
+<td>是</td>
+<td>否</td>
 </tr>
 <tr>
-<td><strong>基于 URL 拦截</strong></td>
-<td><strong>是</strong></td>
-<td><strong>否</strong> (仅 IP:port)</td>
+<td>基于 URL 拦截</td>
+<td>是</td>
+<td>否（仅 IP:port）</td>
 </tr>
 <tr>
-<td><strong>缓存</strong></td>
-<td><strong>是</strong></td>
-<td><strong>否</strong></td>
+<td>缓存</td>
+<td>是</td>
+<td>否</td>
 </tr>
 <tr>
-<td><strong>UDP 支持</strong></td>
-<td><strong>否</strong></td>
-<td><strong>是</strong> (SOCKS5)</td>
+<td>UDP 支持</td>
+<td>否</td>
+<td>是</td>
 </tr>
 <tr>
-<td><strong>协议灵活性</strong></td>
-<td><strong>仅 HTTP</strong></td>
-<td><strong>任何 TCP/UDP</strong></td>
+<td>协议灵活性</td>
+<td>仅 HTTP（CONNECT 可用于 TCP 隧道）</td>
+<td>任何 TCP/UDP</td>
 </tr>
 <tr>
-<td><strong>隐私</strong></td>
-<td><strong>低</strong> (可见 HTTP)</td>
-<td><strong>高</strong> (盲目转发)</td>
+<td>隐私</td>
+<td>低（解析 HTTP，添加暴露性标头）</td>
+<td>中（不解析或修改流量，但未加密内容对运营商仍然可见）</td>
 </tr>
 <tr>
-<td><strong>隐蔽性</strong></td>
-<td><strong>低</strong> (标头泄露)</td>
-<td><strong>高</strong> (透明)</td>
-</tr>
-<tr>
-<td><strong>DNS 隐私</strong></td>
-<td><strong>客户端解析</strong></td>
-<td><strong>远程解析</strong></td>
-</tr>
-<tr>
-<td><strong>复杂性</strong></td>
-<td><strong>简单</strong></td>
-<td><strong>中等</strong></td>
+<td>DNS 解析</td>
+<td>Proxy 解析（远程）</td>
+<td>取决于配置（SOCKS5：通常客户端解析，SOCKS5h：proxy 解析。Chrome 对 SOCKS5 始终使用远程解析。）</td>
 </tr>
 </tbody>
 </table>
-<p><strong>一般建议：</strong>
-- <strong>企业/公司</strong>：HTTP 代理 (内容控制, 缓存)
-- <strong>隐私/自动化</strong>：SOCKS5 (隐蔽, 协议灵活性)
-- <strong>最高安全性</strong>：SOCKS5 over SSH 隧道或 VPN</p>
-<h2 id="_8">进一步阅读和后续步骤</h2>
-<h3 id="_9">相关文档</h3>
-<p><strong>本模块内：</strong>
-- <strong><a href="../socks-proxies/">SOCKS 代理</a></strong> - 协议无关、更安全的 HTTP 代理替代方案
-- <strong><a href="../network-fundamentals/">网络基础</a></strong> - TCP/IP, UDP, WebRTC 理解
-- <strong><a href="../proxy-detection/">代理检测</a></strong> - 如何检测代理以及如何避免
-- <strong><a href="../build-proxy/">构建代理服务器</a></strong> - 从头开始实现 HTTP 和 SOCKS5 代理</p>
-<p><strong>实际用法：</strong>
-- <strong><a href="../../../features/configuration/proxy/">代理配置 (功能)</a></strong> - 如何在 Pydoll 中配置代理
-- <strong><a href="../../../features/configuration/browser-options/">浏览器选项</a></strong> - 与代理使用相关的浏览器标志</p>
-<p><strong>深度探讨：</strong>
-- <strong><a href="../../fingerprinting/network-fingerprinting/">网络指纹</a></strong> - TCP/IP 特征如何通过代理泄露
-- <strong><a href="../../fingerprinting/browser-fingerprinting/">浏览器指纹</a></strong> - 尽管有代理，仍进行应用层检测</p>
-<h3 id="_10">外部参考</h3>
-<p><strong>RFC (官方规范)：</strong></p>
-<ul>
-<li><strong>RFC 7230-7237</strong> - HTTP/1.1 规范套件 (2014)</li>
-<li>RFC 7230: 消息语法和路由 (定义代理行为)</li>
-<li>RFC 7231: 语义和内容 (定义 CONNECT 方法)</li>
-<li>RFC 7235: 身份验证 (定义 407 和 Proxy-Authorization)</li>
-<li><strong>RFC 7617</strong> - Basic 身份验证 (2015)</li>
-<li><strong>RFC 7616</strong> - Digest 身份验证 (2015)</li>
-<li><strong>RFC 4559</strong> - Negotiate 身份验证 (2006)</li>
-<li><strong>RFC 7540</strong> - HTTP/2 (2015)</li>
-<li><strong>RFC 9000</strong> - QUIC 传输协议 (2021)</li>
-<li><strong>RFC 9114</strong> - HTTP/3 (2022)</li>
-<li><strong>RFC 9298</strong> - 在 HTTP 中代理 UDP (CONNECT-UDP, 2022)</li>
-</ul>
-<p><strong>标准机构：</strong></p>
-<ul>
-<li><strong>IETF (互联网工程任务组)</strong>: https://www.ietf.org/</li>
-<li><strong>W3C (万维网联盟)</strong>: https://www.w3.org/</li>
-</ul>
-<p><strong>技术资源：</strong></p>
-<ul>
-<li><strong>MDN Web Docs - 代理服务器和隧道</strong>: https://developer.mozilla.org/en-US/docs/Web/HTTP/Proxy_servers_and_tunneling</li>
-<li><strong>Chrome DevTools Protocol - Network 域</strong>: https://chromedevtools.github.io/devtools-protocol/tot/Network/</li>
-<li><strong>Chrome DevTools Protocol - Fetch 域</strong>: https://chromedevtools.github.io/devtools-protocol/tot/Fetch/</li>
-</ul>
-<p><strong>安全研究：</strong></p>
-<ul>
-<li><strong>HTTP/2 Rapid Reset 攻击 (CVE-2023-44487)</strong>：HTTP/2 多路复用漏洞示例</li>
-<li><strong>NTLM 中继攻击</strong>：微软关于 NTLM 漏洞的安全通告</li>
-<li><strong>TLS 拦截研究</strong>：关于企业代理 MITM 实践的研究</li>
-</ul>
-<h3 id="_11">实用测试工具</h3>
-<p><strong>代理测试：</strong></p>
-<ul>
-<li><strong>curl</strong>: 支持代理的命令行 HTTP 客户端
-  <div class="language-bash highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>curl<span class="w"> </span>-x<span class="w"> </span>http://proxy:8080<span class="w"> </span>-U<span class="w"> </span>user:pass<span class="w"> </span>http://example.com
-</span></code></pre></div></li>
-<li><strong>Burp Suite</strong>: 用于安全测试的拦截式 HTTP 代理</li>
-<li><strong>mitmproxy</strong>: 用于分析的交互式 HTTP/HTTPS 代理</li>
-</ul>
-<p><strong>网络分析：</strong></p>
-<ul>
-<li><strong>Wireshark</strong>: 用于观察 HTTP 代理流量的数据包分析器</li>
-<li><strong>tcpdump</strong>: 命令行数据包捕获</li>
-<li><strong>Chrome DevTools</strong>: 网络选项卡显示代理标头 (Via, X-Forwarded-For)</li>
-</ul>
-<p><strong>代理检测测试：</strong></p>
-<ul>
-<li><strong>https://browserleaks.com/ip</strong>: 显示您的 IP 和代理标头</li>
-<li><strong>https://whoer.net/</strong>: 全面的代理检测测试</li>
-<li><strong>https://ipleak.net/</strong>: 测试 DNS 泄露、WebRTC 泄露</li>
-</ul>
-<h3 id="_12">高级主题 (超出本文档范围)</h3>
-<p><strong>代理链：</strong></p>
-<ul>
-<li>按顺序使用多个代理以增加匿名性</li>
-<li>性能和延迟的影响</li>
-<li>Tor 网络作为极端示例</li>
-</ul>
-<p><strong>透明代理：</strong></p>
-<ul>
-<li>操作系统级代理配置 (无应用感知)</li>
-<li>WPAD (Web 代理自动发现协议)</li>
-<li>PAC (代理自动配置) 文件</li>
-</ul>
-<p><strong>反向代理：</strong></p>
-<ul>
-<li>代表服务器 (而非客户端) 行事的代理</li>
-<li>负载均衡, CDN, 缓存</li>
-<li>Nginx, HAProxy, Cloudflare 作为示例</li>
-</ul>
-<p><strong>TLS 拦截：</strong></p>
-<ul>
-<li>带有自定义 CA 证书的企业代理 MITM</li>
-<li>证书透明度日志检测拦截</li>
-<li>证书固定作为对策</li>
-</ul>
-<hr />
-<h2 id="_13">最后的思考</h2>
-<p>HTTP 代理是一把 <strong>双刃剑</strong>：在内容控制和缓存方面功能强大，但由于其应用层定位，从根本上 <strong>与强隐私不兼容</strong>。</p>
-<p>对于需要隐蔽性和灵活性的 <strong>浏览器自动化</strong>，<strong>SOCKS5 几乎总是更好的选择</strong>。仅在以下情况下才应使用 HTTP 代理：</p>
-<ul>
-<li>您控制代理 (企业环境)</li>
-<li>您需要 HTTP 特定的功能 (缓存, URL 过滤)</li>
-<li>SOCKS5 不可用</li>
-</ul>
-<p>了解 HTTP 代理架构（其功能、限制和安全模型）使您能够 <strong>做出明智的决策</strong>，而不是盲目地复制代理配置。</p>
+<p>对于需要内容控制和缓存的企业环境，HTTP proxy 是正确的选择。对于注重隐私的自动化，SOCKS5 提供更好的隐蔽性和协议灵活性。要获得最高安全性，请使用 SOCKS5 over SSH 隧道或 VPN。</p>
 <p><strong>后续步骤：</strong></p>
-<ol>
-<li>阅读 <strong><a href="../socks-proxies/">SOCKS 代理</a></strong> 了解更优越的替代方案</li>
-<li>学习 <strong><a href="../proxy-detection/">代理检测</a></strong> 技术以避免泄露代理使用</li>
-<li>使用 <strong><a href="../../../features/configuration/proxy/">代理配置</a></strong> 在 Pydoll 中配置代理</li>
-</ol>
-<hr />
+<ul>
+<li><a href="../socks-proxies/">SOCKS Proxy</a>：协议无关的会话层代理</li>
+<li><a href="../network-fundamentals/">网络基础</a>：TCP/IP、UDP、WebRTC</li>
+<li><a href="../proxy-detection/">Proxy 检测</a>：如何检测 proxy 以及如何避免</li>
+<li><a href="../../../features/configuration/proxy/">Proxy 配置</a>：Pydoll 实际 proxy 设置</li>
+<li><a href="../../fingerprinting/network-fingerprinting/">网络指纹</a>：TCP/IP 和 TLS 指纹识别</li>
+</ul>
+<h2 id="_7">参考文献</h2>
+<ul>
+<li>RFC 9110: HTTP Semantics (2022, replaces RFC 7230-7237) - https://www.rfc-editor.org/rfc/rfc9110.html</li>
+<li>RFC 9112: HTTP/1.1 (2022) - https://www.rfc-editor.org/rfc/rfc9112.html</li>
+<li>RFC 9113: HTTP/2 (2022, replaces RFC 7540) - https://www.rfc-editor.org/rfc/rfc9113.html</li>
+<li>RFC 9114: HTTP/3 (2022) - https://www.rfc-editor.org/rfc/rfc9114.html</li>
+<li>RFC 9000: QUIC Transport Protocol (2021) - https://www.rfc-editor.org/rfc/rfc9000.html</li>
+<li>RFC 9298: Proxying UDP in HTTP (CONNECT-UDP, 2022) - https://www.rfc-editor.org/rfc/rfc9298.html</li>
+<li>RFC 8441: Bootstrapping WebSockets with HTTP/2 (2018) - https://www.rfc-editor.org/rfc/rfc8441.html</li>
+<li>RFC 7617: Basic Authentication (2015) - https://www.rfc-editor.org/rfc/rfc7617.html</li>
+<li>RFC 7616: Digest Authentication (2015) - https://www.rfc-editor.org/rfc/rfc7616.html</li>
+<li>RFC 7239: Forwarded HTTP Extension (2014) - https://www.rfc-editor.org/rfc/rfc7239.html</li>
+<li>RFC 4559: Negotiate Authentication (2006) - https://www.rfc-editor.org/rfc/rfc4559.html</li>
+<li>MDN Web Docs: Proxy servers and tunneling - https://developer.mozilla.org/en-US/docs/Web/HTTP/Proxy_servers_and_tunneling</li>
+<li>Chrome DevTools Protocol: Fetch domain - https://chromedevtools.github.io/devtools-protocol/tot/Fetch/</li>
+</ul>
 
 
 

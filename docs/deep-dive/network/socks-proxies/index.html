@@ -27,7 +27,7 @@
       
       
       <link rel="icon" href="../../../resources/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.3">
     
     
       
@@ -2267,10 +2267,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#introduction-the-session-layer-proxy" class="md-nav__link">
+  <a href="#how-socks-differs-from-http-proxies" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Introduction: The Session-Layer Proxy
+        How SOCKS Differs from HTTP Proxies
       
     </span>
   </a>
@@ -2278,18 +2278,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#why-layer-5-matters-session-vs-application" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Why Layer 5 Matters: Session vs Application
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Why Layer 5 Matters: Session vs Application">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
   <a href="#socks4-vs-socks5" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2299,35 +2287,24 @@
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#socks5-handshake-protocol" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#the-socks5-handshake" class="md-nav__link">
     <span class="md-ellipsis">
       
-        SOCKS5 Handshake Protocol
+        The SOCKS5 Handshake
       
     </span>
   </a>
   
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#socks5-packet-structures" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        SOCKS5 Packet Structures
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="SOCKS5 Packet Structures">
+    <nav class="md-nav" aria-label="The SOCKS5 Handshake">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1-client-hello" class="md-nav__link">
+  <a href="#phase-1-method-negotiation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Client Hello
+        Phase 1: Method Negotiation
       
     </span>
   </a>
@@ -2335,10 +2312,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#2-server-method-selection" class="md-nav__link">
+  <a href="#phase-2-authentication" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Server Method Selection
+        Phase 2: Authentication
       
     </span>
   </a>
@@ -2346,48 +2323,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#3-authentication-usernamepassword" class="md-nav__link">
+  <a href="#phase-3-connection-request" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Authentication (Username/Password)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#4-connection-request" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Connection Request
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#5-connection-reply" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Connection Reply
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#socks5-udp-support" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        SOCKS5 UDP Support
+        Phase 3: Connection Request
       
     </span>
   </a>
@@ -2400,55 +2339,66 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#why-socks5-is-more-secure" class="md-nav__link">
+  <a href="#udp-support" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Why SOCKS5 is More Secure
+        UDP Support
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Why SOCKS5 is More Secure">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dns-resolution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DNS Resolution
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#socks5-and-mitm-resistance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SOCKS5 and MITM Resistance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tls-and-browser-fingerprinting-through-socks5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TLS and Browser Fingerprinting Through SOCKS5
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#socks5-authentication-in-chrome" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SOCKS5 Authentication in Chrome
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="SOCKS5 Authentication in Chrome">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#protocol-level-comparison" class="md-nav__link">
+  <a href="#pydolls-socks5forwarder" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Protocol-Level Comparison
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#security-advantages-of-socks5" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Security Advantages of SOCKS5
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#dns-resolution-a-critical-difference" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        DNS Resolution: A Critical Difference
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#man-in-the-middle-mitm-resistance" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Man-in-the-Middle (MITM) Resistance
+        Pydoll's SOCKS5Forwarder
       
     </span>
   </a>
@@ -2461,193 +2411,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#socks5-authentication-and-chrome" class="md-nav__link">
+  <a href="#practical-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        SOCKS5 Authentication and Chrome
+        Practical Configuration
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="SOCKS5 Authentication and Chrome">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#why-chrome-ignores-socks5-credentials" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Why Chrome Ignores SOCKS5 Credentials
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#the-local-forwarder-solution" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The Local Forwarder Solution
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#using-the-forwarder-with-pydoll" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Using the Forwarder with Pydoll
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#security-considerations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Security Considerations
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#environment-limitations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Environment Limitations
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#summary-and-key-takeaways" class="md-nav__link">
+  <a href="#summary" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Summary and Key Takeaways
+        Summary
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Summary and Key Takeaways">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#core-concepts-covered" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Core Concepts Covered
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#socks5-vs-http-proxy-decision-matrix" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        SOCKS5 vs HTTP Proxy: Decision Matrix
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#when-to-use-socks5" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        When to Use SOCKS5
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#practical-pydoll-configuration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Practical Pydoll Configuration
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#further-reading-and-references" class="md-nav__link">
+  <a href="#references" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Further Reading and References
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Further Reading and References">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#related-documentation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Related Documentation
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#external-references" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        External References
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#advanced-topics-beyond-this-document" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Advanced Topics (Beyond This Document)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#final-thoughts" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Final Thoughts
+        References
       
     </span>
   </a>
@@ -4574,10 +4363,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#introduction-the-session-layer-proxy" class="md-nav__link">
+  <a href="#how-socks-differs-from-http-proxies" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Introduction: The Session-Layer Proxy
+        How SOCKS Differs from HTTP Proxies
       
     </span>
   </a>
@@ -4585,18 +4374,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#why-layer-5-matters-session-vs-application" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Why Layer 5 Matters: Session vs Application
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Why Layer 5 Matters: Session vs Application">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
   <a href="#socks4-vs-socks5" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4606,35 +4383,24 @@
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#socks5-handshake-protocol" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#the-socks5-handshake" class="md-nav__link">
     <span class="md-ellipsis">
       
-        SOCKS5 Handshake Protocol
+        The SOCKS5 Handshake
       
     </span>
   </a>
   
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#socks5-packet-structures" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        SOCKS5 Packet Structures
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="SOCKS5 Packet Structures">
+    <nav class="md-nav" aria-label="The SOCKS5 Handshake">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1-client-hello" class="md-nav__link">
+  <a href="#phase-1-method-negotiation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Client Hello
+        Phase 1: Method Negotiation
       
     </span>
   </a>
@@ -4642,10 +4408,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#2-server-method-selection" class="md-nav__link">
+  <a href="#phase-2-authentication" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Server Method Selection
+        Phase 2: Authentication
       
     </span>
   </a>
@@ -4653,48 +4419,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#3-authentication-usernamepassword" class="md-nav__link">
+  <a href="#phase-3-connection-request" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Authentication (Username/Password)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#4-connection-request" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Connection Request
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#5-connection-reply" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Connection Reply
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#socks5-udp-support" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        SOCKS5 UDP Support
+        Phase 3: Connection Request
       
     </span>
   </a>
@@ -4707,55 +4435,66 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#why-socks5-is-more-secure" class="md-nav__link">
+  <a href="#udp-support" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Why SOCKS5 is More Secure
+        UDP Support
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Why SOCKS5 is More Secure">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dns-resolution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DNS Resolution
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#socks5-and-mitm-resistance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SOCKS5 and MITM Resistance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tls-and-browser-fingerprinting-through-socks5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TLS and Browser Fingerprinting Through SOCKS5
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#socks5-authentication-in-chrome" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SOCKS5 Authentication in Chrome
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="SOCKS5 Authentication in Chrome">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#protocol-level-comparison" class="md-nav__link">
+  <a href="#pydolls-socks5forwarder" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Protocol-Level Comparison
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#security-advantages-of-socks5" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Security Advantages of SOCKS5
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#dns-resolution-a-critical-difference" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        DNS Resolution: A Critical Difference
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#man-in-the-middle-mitm-resistance" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Man-in-the-Middle (MITM) Resistance
+        Pydoll's SOCKS5Forwarder
       
     </span>
   </a>
@@ -4768,193 +4507,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#socks5-authentication-and-chrome" class="md-nav__link">
+  <a href="#practical-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        SOCKS5 Authentication and Chrome
+        Practical Configuration
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="SOCKS5 Authentication and Chrome">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#why-chrome-ignores-socks5-credentials" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Why Chrome Ignores SOCKS5 Credentials
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#the-local-forwarder-solution" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The Local Forwarder Solution
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#using-the-forwarder-with-pydoll" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Using the Forwarder with Pydoll
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#security-considerations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Security Considerations
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#environment-limitations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Environment Limitations
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#summary-and-key-takeaways" class="md-nav__link">
+  <a href="#summary" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Summary and Key Takeaways
+        Summary
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Summary and Key Takeaways">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#core-concepts-covered" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Core Concepts Covered
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#socks5-vs-http-proxy-decision-matrix" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        SOCKS5 vs HTTP Proxy: Decision Matrix
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#when-to-use-socks5" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        When to Use SOCKS5
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#practical-pydoll-configuration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Practical Pydoll Configuration
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#further-reading-and-references" class="md-nav__link">
+  <a href="#references" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Further Reading and References
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Further Reading and References">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#related-documentation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Related Documentation
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#external-references" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        External References
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#advanced-topics-beyond-this-document" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Advanced Topics (Beyond This Document)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#final-thoughts" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Final Thoughts
+        References
       
     </span>
   </a>
@@ -5048,113 +4626,30 @@
 
 
 <h1 id="socks-protocol-architecture">SOCKS Protocol Architecture</h1>
-<p>This document provides a comprehensive exploration of SOCKS (SOCKet Secure), widely considered the <strong>gold standard</strong> for privacy-conscious network automation and secure proxying. While HTTP proxies dominate corporate environments, SOCKS proxies are favored by security professionals, privacy advocates, and advanced automation engineers for their <strong>protocol-agnostic nature</strong>, <strong>reduced trust requirements</strong>, and <strong>superior security model</strong>.</p>
-<p>Operating at <strong>Layer 5 (Session Layer)</strong> of the OSI model (below HTTP but above transport), SOCKS proxies offer capabilities that HTTP proxies fundamentally cannot: UDP tunneling, protocol flexibility, end-to-end encryption preservation, and true DNS privacy. Understanding SOCKS architecture is essential for building <strong>undetectable, high-performance</strong> browser automation systems.</p>
+<p>SOCKS (SOCKet Secure) is a proxying protocol that operates between the transport and application layers of the network stack (commonly described as Layer 5 in the OSI model). Unlike HTTP proxies, which parse and understand HTTP traffic, SOCKS proxies forward raw TCP and UDP connections without inspecting their content. This protocol-agnostic design makes SOCKS the preferred choice for privacy-focused automation: the proxy never needs to parse your requests, inject headers, or terminate TLS connections.</p>
+<p>This document covers how SOCKS works at the protocol level, the differences between SOCKS4 and SOCKS5, authentication handling in Chrome, DNS resolution behavior, and practical configuration in Pydoll.</p>
 <div class="admonition info">
 <p class="admonition-title">Module Navigation</p>
 <ul>
-<li><strong><a href="../http-proxies/">← HTTP/HTTPS Proxies</a></strong> - Application-layer proxying limitations</li>
-<li><strong><a href="../network-fundamentals/">← Network Fundamentals</a></strong> - TCP/IP, UDP, OSI model foundations</li>
-<li><strong><a href="../">← Network &amp; Security Overview</a></strong> - Module introduction and learning path</li>
-<li><strong><a href="../proxy-detection/">→ Proxy Detection</a></strong> - Anonymity levels and detection evasion</li>
-<li><strong><a href="../build-proxy/">→ Building Proxies</a></strong> - Full SOCKS5 implementation from scratch</li>
+<li><a href="../http-proxies/">HTTP/HTTPS Proxies</a>: Application-layer proxying</li>
+<li><a href="../network-fundamentals/">Network Fundamentals</a>: TCP/IP, UDP, OSI model</li>
+<li><a href="../">Network &amp; Security Overview</a>: Module introduction</li>
+<li><a href="../proxy-detection/">Proxy Detection</a>: Anonymity levels and detection evasion</li>
+<li><a href="../build-proxy/">Building Proxies</a>: SOCKS5 implementation from scratch</li>
 </ul>
-<p>For practical Pydoll configuration, see <strong><a href="../../../features/configuration/proxy/">Proxy Configuration</a></strong>.</p>
+<p>For practical configuration, see <a href="../../../features/configuration/proxy/">Proxy Configuration</a>.</p>
 </div>
-<div class="admonition tip">
-<p class="admonition-title">Why SOCKS5 is Superior for Automation</p>
-<p>SOCKS5 operates <strong>below the application layer</strong> (Layer 5 vs HTTP's Layer 7). This positioning means:</p>
-<ul>
-<li><strong>Cannot read HTTP traffic</strong>: Only sees destination IPs and ports, not URLs/headers</li>
-<li><strong>Protocol-agnostic</strong>: Proxies HTTP, FTP, SSH, WebSocket, custom protocols</li>
-<li><strong>Preserves end-to-end TLS</strong>: No MITM possibility (unlike HTTP proxies)</li>
-<li><strong>Remote DNS resolution</strong>: Prevents DNS leaks to your ISP</li>
-<li><strong>UDP support</strong>: Critical for WebRTC, DNS, VoIP, gaming protocols</li>
-</ul>
-<p>This dramatically reduces the <strong>trust surface area</strong> compared to HTTP proxies. You only trust the proxy to forward packets correctly, not to handle sensitive application data.</p>
+<h2 id="how-socks-differs-from-http-proxies">How SOCKS Differs from HTTP Proxies</h2>
+<p>The fundamental difference lies in what each proxy can see and do. An HTTP proxy operates at the application layer and understands HTTP: it can read URLs, headers, cookies, and request bodies (for unencrypted traffic), modify them in transit, cache responses, and inject its own headers like <code>Via</code> and <code>X-Forwarded-For</code>. This is powerful for content filtering but means you must trust the proxy operator with your application data.</p>
+<p>A SOCKS proxy operates below the application layer. It sees only the destination address, port, and the volume of data being transferred. It does not parse, modify, or even understand what protocol is flowing through it. HTTP, HTTPS, FTP, SSH, WebSocket, or any custom protocol all look the same to a SOCKS proxy: just bytes being relayed between two endpoints.</p>
+<p>This has a direct practical implication. When you send an HTTPS request through a SOCKS5 proxy, the proxy sees <code>example.com:443</code> and the encrypted TLS stream. It cannot read the URL, headers, cookies, or response content. It does not add identifying headers. It does not need to terminate TLS. The encrypted tunnel runs end-to-end between your browser and the target server.</p>
+<p>However, it is important to understand what SOCKS does not provide. SOCKS is a proxying protocol, not an encryption protocol. The name "SOCKet Secure" refers to secure firewall traversal, not cryptographic security. If you send unencrypted HTTP traffic through a SOCKS5 proxy, the proxy operator can read the bytes passing through, even though the proxy is not designed to inspect them. For actual encryption, you need TLS/HTTPS on top of SOCKS, or an encrypted tunnel (SSH, VPN) wrapping the SOCKS connection.</p>
+<div class="admonition note">
+<p class="admonition-title">Trust Model</p>
+<p>With HTTP proxies, you trust the proxy operator not to log your browsing history, steal tokens, modify responses, or perform MITM attacks. With SOCKS5, you trust the proxy only to forward packets correctly and not log connection metadata. The attack surface is smaller, but it is not zero.</p>
 </div>
-<h2 id="introduction-the-session-layer-proxy">Introduction: The Session-Layer Proxy</h2>
-<p>SOCKS (SOCKet Secure) represents a fundamentally different approach to proxying compared to HTTP proxies. While HTTP proxies are <strong>application-aware</strong> (understanding HTTP semantics, headers, methods), SOCKS proxies are <strong>transport-aware</strong> (understanding only TCP/UDP connections, IPs, and ports).</p>
-<p><strong>Historical Context:</strong></p>
-<p>SOCKS was developed in the early 1990s by <strong>David Koblas and Michelle Koblas at MIPS Computer Systems</strong> to enable hosts inside a firewall to gain <strong>full access</strong> to the Internet without requiring direct IP connectivity. The original motivation was simple: corporate firewalls blocked outbound connections, but employees needed access to external resources. SOCKS provided a solution by establishing a <strong>single controlled gateway</strong> through the firewall.</p>
-<p><strong>Evolution Timeline:</strong></p>
-<ul>
-<li><strong>1992</strong>: SOCKS4 introduced (informal specification, no RFC)</li>
-<li><strong>1996</strong>: SOCKS5 standardized as <strong>RFC 1928</strong> by IETF</li>
-<li><strong>1996</strong>: Username/Password authentication standardized as <strong>RFC 1929</strong></li>
-<li><strong>2003</strong>: GSS-API authentication extension (<strong>RFC 1961</strong>)</li>
-<li><strong>2020s</strong>: Modern extensions (Tor SOCKS extensions, SOCKS6 proposals)</li>
-</ul>
-<p><strong>Why "SOCKet Secure"?</strong></p>
-<p>Despite the name, SOCKS itself provides <strong>no encryption</strong>. "Secure" refers to its ability to traverse firewalls securely (from an access control perspective), not cryptographic security. For encryption, you must layer TLS/SSL on top of SOCKS, or use it within an encrypted tunnel (SSH, VPN).</p>
-<div class="admonition warning">
-<p class="admonition-title">SOCKS Does NOT Encrypt</p>
-<p>A common misconception: <strong>SOCKS ≠ Encryption</strong>. SOCKS is a <strong>proxying protocol</strong>, not an encryption protocol. It forwards packets transparently without modification, including unencrypted HTTP traffic.</p>
-<p>For secure communication, combine SOCKS with:</p>
-<ul>
-<li><strong>TLS/HTTPS</strong> for web traffic</li>
-<li><strong>SSH</strong> for tunnel encryption</li>
-<li><strong>VPN</strong> for full traffic encryption</li>
-</ul>
-<p>The security advantage of SOCKS is <strong>architectural</strong> (less trust required), not cryptographic.</p>
-</div>
-<h2 id="why-layer-5-matters-session-vs-application">Why Layer 5 Matters: Session vs Application</h2>
-<p>The key to understanding SOCKS is understanding <strong>where it operates</strong> in the network stack:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>┌─────────────────────────────────────────────┐
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>│  Layer 7: Application (HTTP, FTP, SMTP)     │ ← HTTP Proxies operate here
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>│  • Full protocol visibility                 │   (can read URLs, headers)
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>│  • Can modify requests/responses            │
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>│  • Protocol-specific (HTTP only)            │
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>├─────────────────────────────────────────────┤
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>│  Layer 6: Presentation (TLS, encryption)    │
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>├─────────────────────────────────────────────┤
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>│  Layer 5: Session (SOCKS)                   │ ← SOCKS Proxies operate here
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│  • Only sees destination IP:port            │   (protocol-agnostic)
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>│  • Cannot inspect application data          │
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│  • Works with any Layer 7 protocol          │
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>├─────────────────────────────────────────────┤
-</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>│  Layer 4: Transport (TCP, UDP)              │
-</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>│  • Connection management                    │
-</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>│  • Port numbers, flow control               │
-</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>├─────────────────────────────────────────────┤
-</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>│  Layer 3: Network (IP)                      │
-</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>│  • Routing, IP addresses                    │
-</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>├─────────────────────────────────────────────┤
-</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>│  Layer 2: Data Link (Ethernet, WiFi)        │
-</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>├─────────────────────────────────────────────┤
-</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>│  Layer 1: Physical (cables, signals)        │
-</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>└─────────────────────────────────────────────┘
-</span></code></pre></div>
-<p><strong>Practical Implication:</strong></p>
-<p>When you use an HTTP proxy:
-<div class="language-http highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nf">GET</span> <span class="nn">http://example.com/secret-api?token=abc123</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="na">Cookie</span><span class="o">:</span> <span class="l">session=sensitive_data</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="na">Authorization</span><span class="o">:</span> <span class="l">Bearer secret_token</span>
-</span></code></pre></div></p>
-<p><strong>HTTP proxy sees everything</strong> - URL, query parameters, cookies, authorization headers.</p>
-<p>When you use a SOCKS5 proxy:
-<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># SOCKS5 handshake (simplified)</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">CONNECT</span> <span class="n">example</span><span class="o">.</span><span class="n">com</span><span class="p">:</span><span class="mi">443</span>  <span class="c1"># Only sees: destination host and port</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="p">[</span><span class="n">Encrypted</span> <span class="n">TLS</span> <span class="n">data</span><span class="p">]</span>     <span class="c1"># Cannot see URL, headers, or content</span>
-</span></code></pre></div></p>
-<p><strong>SOCKS5 sees only</strong>: <code>example.com</code>, port <code>443</code>, and data volume. The HTTP request inside the TLS tunnel is <strong>completely opaque</strong> to the proxy.</p>
-<div class="admonition success">
-<p class="admonition-title">The Security Difference</p>
-<p>With HTTP proxies, you must <strong>trust the proxy operator</strong> not to:</p>
-<ul>
-<li>Log your browsing history (full URLs)</li>
-<li>Steal authentication tokens/cookies</li>
-<li>Modify responses (inject malware, ads)</li>
-<li>Perform MITM attacks on HTTPS (via CA certificate)</li>
-</ul>
-<p>With SOCKS5, you only trust the proxy to:</p>
-<ul>
-<li>Forward packets correctly</li>
-<li>Not log connection metadata (IP, port, timing)</li>
-</ul>
-<p>The <strong>attack surface</strong> is dramatically smaller.</p>
-</div>
-<h3 id="socks4-vs-socks5">SOCKS4 vs SOCKS5</h3>
+<h2 id="socks4-vs-socks5">SOCKS4 vs SOCKS5</h2>
+<p>SOCKS has two versions in common use. SOCKS4 was developed by NEC in the early 1990s as an informal standard with no RFC. SOCKS5 was standardized as RFC 1928 in 1996 to address SOCKS4's limitations.</p>
 <table>
 <thead>
 <tr>
@@ -5165,725 +4660,295 @@
 </thead>
 <tbody>
 <tr>
-<td><strong>RFC</strong></td>
-<td>No official RFC (de facto standard from 1990s)</td>
-<td>RFC 1928 (official standard, 1996)</td>
+<td>Standard</td>
+<td>No official RFC (de facto, 1992)</td>
+<td>RFC 1928 (1996)</td>
 </tr>
 <tr>
-<td><strong>Authentication</strong></td>
-<td>None (user ID only)</td>
-<td>Multiple methods (no auth, username/password, GSSAPI)</td>
+<td>Authentication</td>
+<td>Identification only (USERID field, no password)</td>
+<td>Multiple methods (none, username/password, GSSAPI)</td>
 </tr>
 <tr>
-<td><strong>IP Version</strong></td>
+<td>IP version</td>
 <td>IPv4 only</td>
 <td>IPv4 and IPv6</td>
 </tr>
 <tr>
-<td><strong>UDP Support</strong></td>
+<td>UDP support</td>
 <td>No</td>
-<td>Yes</td>
+<td>Yes (UDP ASSOCIATE command)</td>
 </tr>
 <tr>
-<td><strong>DNS Resolution</strong></td>
-<td>Client-side</td>
-<td>Server-side (more anonymous)</td>
+<td>DNS resolution</td>
+<td>Client-side (SOCKS4A extension adds server-side)</td>
+<td>Server-side when using domain names (ATYP=0x03)</td>
 </tr>
 <tr>
-<td><strong>Protocol Support</strong></td>
+<td>Protocol support</td>
 <td>TCP only</td>
 <td>TCP and UDP</td>
 </tr>
 </tbody>
 </table>
-<div class="admonition info">
-<p class="admonition-title">SOCKS4 History</p>
-<p>SOCKS4 was developed by NEC in the early 1990s as a de facto standard without formal RFC documentation. SOCKS5 (RFC 1928) was later standardized by IETF in 1996 to address SOCKS4's limitations.</p>
-</div>
-<div class="admonition tip">
-<p class="admonition-title">Always Use SOCKS5</p>
-<p>SOCKS5 is superior in every way. SOCKS4 is legacy and should only be used if the proxy doesn't support SOCKS5.</p>
-</div>
-<h3 id="socks5-handshake-protocol">SOCKS5 Handshake Protocol</h3>
-<p>The SOCKS5 connection process follows RFC 1928:</p>
+<p>SOCKS5 is superior in every practical way. Use SOCKS4 only if the proxy does not support SOCKS5.</p>
+<h2 id="the-socks5-handshake">The SOCKS5 Handshake</h2>
+<p>The SOCKS5 connection process follows RFC 1928 and consists of three phases: method negotiation, optional authentication, and the connection request.</p>
 <pre class="mermaid"><code>sequenceDiagram
     participant Client
     participant SOCKS5 as SOCKS5 Proxy
     participant Server as Target Server
 
     Note over Client,SOCKS5: Phase 1: Method Negotiation
-    Client-&gt;&gt;SOCKS5: 1. Hello&lt;br/&gt;[VER=5, NMETHODS, METHODS]
-    SOCKS5-&gt;&gt;Client: 2. Method Selected&lt;br/&gt;[VER=5, METHOD]
+    Client-&gt;&gt;SOCKS5: Hello [VER=5, NMETHODS, METHODS]
+    SOCKS5-&gt;&gt;Client: Method Selected [VER=5, METHOD]
 
-    Note over Client,SOCKS5: Phase 2: Authentication (if needed)
-    Client-&gt;&gt;SOCKS5: 3. Auth Request&lt;br/&gt;[VER=1, ULEN, UNAME, PLEN, PASSWD]
-    SOCKS5-&gt;&gt;Client: 4. Auth Response&lt;br/&gt;[VER=1, STATUS]
+    Note over Client,SOCKS5: Phase 2: Authentication (if required)
+    Client-&gt;&gt;SOCKS5: Auth Request [VER=1, ULEN, UNAME, PLEN, PASSWD]
+    SOCKS5-&gt;&gt;Client: Auth Response [VER=1, STATUS]
 
     Note over Client,SOCKS5: Phase 3: Connection Request
-    Client-&gt;&gt;SOCKS5: 5. Connect Request&lt;br/&gt;[VER=5, CMD, DST.ADDR, DST.PORT]
-    SOCKS5-&gt;&gt;Server: 6. Establish TCP Connection
-    Server--&gt;&gt;SOCKS5: Connection Established
-    SOCKS5-&gt;&gt;Client: 7. Connect Reply&lt;br/&gt;[VER=5, REP, BND.ADDR, BND.PORT]
+    Client-&gt;&gt;SOCKS5: Connect [VER=5, CMD=CONNECT, DST.ADDR, DST.PORT]
+    SOCKS5-&gt;&gt;Server: Establish TCP connection
+    Server--&gt;&gt;SOCKS5: Connection established
+    SOCKS5-&gt;&gt;Client: Reply [VER=5, REP=SUCCESS, BND.ADDR, BND.PORT]
 
-    Note over Client,Server: Data transfer (proxied)
-    Client-&gt;&gt;SOCKS5: Application Data
-    SOCKS5-&gt;&gt;Server: Forward Data
-    Server-&gt;&gt;SOCKS5: Response Data
-    SOCKS5-&gt;&gt;Client: Forward Response</code></pre>
-<h3 id="socks5-packet-structures">SOCKS5 Packet Structures</h3>
-<h4 id="1-client-hello">1. Client Hello</h4>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Byte layout</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="p">[</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="mh">0x05</span><span class="p">,</span>        <span class="c1"># VER: Protocol version (5)</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="mh">0x02</span><span class="p">,</span>        <span class="c1"># NMETHODS: Number of authentication methods</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x02</span>   <span class="c1"># METHODS: No auth (0x00) and Username/Password (0x02)</span>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="p">]</span>
+    Note over Client,Server: Data relay (proxied)
+    Client-&gt;&gt;SOCKS5: Application data
+    SOCKS5-&gt;&gt;Server: Forward data
+    Server-&gt;&gt;SOCKS5: Response data
+    SOCKS5-&gt;&gt;Client: Forward response</code></pre>
+<h3 id="phase-1-method-negotiation">Phase 1: Method Negotiation</h3>
+<p>The client opens a TCP connection to the proxy and sends a greeting containing the protocol version (always <code>0x05</code> for SOCKS5) and a list of authentication methods it supports.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Client Hello</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="p">[</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="mh">0x05</span><span class="p">,</span>        <span class="c1"># VER: Protocol version (5)</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="mh">0x02</span><span class="p">,</span>        <span class="c1"># NMETHODS: Number of methods offered</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x02</span>   <span class="c1"># METHODS: No auth (0x00) and Username/Password (0x02)</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="p">]</span>
 </span></code></pre></div>
-<h4 id="2-server-method-selection">2. Server Method Selection</h4>
+<p>The proxy responds with the method it selects. If the proxy requires authentication and the client offered <code>0x02</code> (username/password), the proxy selects it. If no acceptable method was offered, the proxy responds with <code>0xFF</code> and closes the connection.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Server response</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="p">[</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="mh">0x05</span><span class="p">,</span>   <span class="c1"># VER: Protocol version (5)</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="mh">0x02</span>    <span class="c1"># METHOD: Username/Password selected</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="p">]</span>
+</span></code></pre></div>
+<p>Method codes defined by RFC 1928: <code>0x00</code> = no authentication, <code>0x01</code> = GSSAPI, <code>0x02</code> = username/password (RFC 1929), <code>0x03-0x7F</code> = IANA assigned, <code>0x80-0xFE</code> = reserved for private methods, <code>0xFF</code> = no acceptable methods.</p>
+<h3 id="phase-2-authentication">Phase 2: Authentication</h3>
+<p>If the proxy selected method <code>0x02</code>, the client sends credentials following RFC 1929. The subnegotiation uses its own version number (<code>0x01</code>, not <code>0x05</code>).</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Client authentication</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="p">[</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="mh">0x01</span><span class="p">,</span>              <span class="c1"># VER: Subnegotiation version (1)</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="nb">len</span><span class="p">(</span><span class="n">username</span><span class="p">),</span>     <span class="c1"># ULEN: Username length (max 255)</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="o">*</span><span class="n">username_bytes</span><span class="p">,</span>   <span class="c1"># UNAME: Username</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="nb">len</span><span class="p">(</span><span class="n">password</span><span class="p">),</span>     <span class="c1"># PLEN: Password length (max 255)</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="o">*</span><span class="n">password_bytes</span>    <span class="c1"># PASSWD: Password</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="p">]</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="c1"># Server response</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="p">[</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>    <span class="mh">0x01</span><span class="p">,</span>   <span class="c1"># VER: Subnegotiation version (1)</span>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>    <span class="mh">0x00</span>    <span class="c1"># STATUS: 0 = success, non-zero = failure</span>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="p">]</span>
+</span></code></pre></div>
+<p>Credentials are transmitted in plaintext during this handshake. This is inherent to the SOCKS5 protocol (RFC 1929). For sensitive environments, wrap the SOCKS connection in an SSH tunnel or VPN.</p>
+<h3 id="phase-3-connection-request">Phase 3: Connection Request</h3>
+<p>After authentication succeeds (or if no authentication was required), the client sends a connection request specifying the command, destination address, and port.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="p">[</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="mh">0x05</span><span class="p">,</span>          <span class="c1"># VER: Protocol version (5)</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="mh">0x01</span><span class="p">,</span>          <span class="c1"># CMD: 1=CONNECT, 2=BIND, 3=UDP ASSOCIATE</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="mh">0x00</span><span class="p">,</span>          <span class="c1"># RSV: Reserved</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="mh">0x03</span><span class="p">,</span>          <span class="c1"># ATYP: 1=IPv4 (4 bytes), 3=Domain (length+name), 4=IPv6 (16 bytes)</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="nb">len</span><span class="p">(</span><span class="n">domain</span><span class="p">),</span>   <span class="c1"># Domain length (only for ATYP=0x03)</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="o">*</span><span class="n">domain_bytes</span><span class="p">,</span> <span class="c1"># Domain name</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="o">*</span><span class="n">port_bytes</span>    <span class="c1"># Port (2 bytes, big-endian)</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="p">]</span>
+</span></code></pre></div>
+<p>The address type (ATYP) determines the format: <code>0x01</code> means 4 bytes of IPv4 address follow, <code>0x04</code> means 16 bytes of IPv6, and <code>0x03</code> means a length byte followed by the domain name. When the client sends a domain name (ATYP=0x03), the proxy resolves DNS on its side, which prevents DNS leaks to the client's local network.</p>
+<p>The proxy connects to the destination and responds with a reply:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="p">[</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="mh">0x05</span><span class="p">,</span>        <span class="c1"># VER: Protocol version (5)</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="mh">0x02</span>         <span class="c1"># METHOD: Selected method (0x02 = Username/Password)</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="p">]</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="mh">0x05</span><span class="p">,</span>       <span class="c1"># VER: Protocol version (5)</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="mh">0x00</span><span class="p">,</span>       <span class="c1"># REP: 0x00=success, 0x01-0x08=various errors</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="mh">0x00</span><span class="p">,</span>       <span class="c1"># RSV: Reserved</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="mh">0x01</span><span class="p">,</span>       <span class="c1"># ATYP: Address type of bound address</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="o">*</span><span class="n">bind_addr</span><span class="p">,</span> <span class="c1"># BND.ADDR: Address the proxy bound to</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="o">*</span><span class="n">bind_port</span>  <span class="c1"># BND.PORT: Port the proxy bound to</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="p">]</span>
 </span></code></pre></div>
-<p><strong>Method codes:</strong>
-- <code>0x00</code>: No authentication required
-- <code>0x01</code>: GSSAPI
-- <code>0x02</code>: Username/Password
-- <code>0xFF</code>: No acceptable methods</p>
-<h4 id="3-authentication-usernamepassword">3. Authentication (Username/Password)</h4>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Client authentication request</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="p">[</span>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="mh">0x01</span><span class="p">,</span>              <span class="c1"># VER: Subnegotiation version (1)</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="nb">len</span><span class="p">(</span><span class="n">username</span><span class="p">),</span>     <span class="c1"># ULEN: Username length</span>
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="o">*</span><span class="n">username_bytes</span><span class="p">,</span>   <span class="c1"># UNAME: Username</span>
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="nb">len</span><span class="p">(</span><span class="n">password</span><span class="p">),</span>     <span class="c1"># PLEN: Password length</span>
-</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span class="o">*</span><span class="n">password_bytes</span>    <span class="c1"># PASSWD: Password</span>
-</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="p">]</span>
-</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>
-</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="c1"># Server authentication response</span>
-</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="p">[</span>
-</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>    <span class="mh">0x01</span><span class="p">,</span>              <span class="c1"># VER: Subnegotiation version (1)</span>
-</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>    <span class="mh">0x00</span>               <span class="c1"># STATUS: 0 = success, non-zero = failure</span>
-</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="p">]</span>
-</span></code></pre></div>
-<h4 id="4-connection-request">4. Connection Request</h4>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="p">[</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="mh">0x05</span><span class="p">,</span>              <span class="c1"># VER: Protocol version (5)</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="mh">0x01</span><span class="p">,</span>              <span class="c1"># CMD: Command (1=CONNECT, 2=BIND, 3=UDP ASSOCIATE)</span>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="mh">0x00</span><span class="p">,</span>              <span class="c1"># RSV: Reserved</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="mh">0x03</span><span class="p">,</span>              <span class="c1"># ATYP: Address type (1=IPv4, 3=Domain, 4=IPv6)</span>
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="nb">len</span><span class="p">(</span><span class="n">domain</span><span class="p">),</span>       <span class="c1"># Domain length</span>
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="o">*</span><span class="n">domain_bytes</span><span class="p">,</span>     <span class="c1"># Domain name</span>
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>    <span class="o">*</span><span class="n">port_bytes</span>        <span class="c1"># Port (2 bytes, big-endian)</span>
-</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="p">]</span>
-</span></code></pre></div>
-<h4 id="5-connection-reply">5. Connection Reply</h4>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="p">[</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>    <span class="mh">0x05</span><span class="p">,</span>              <span class="c1"># VER: Protocol version (5)</span>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>    <span class="mh">0x00</span><span class="p">,</span>              <span class="c1"># REP: Reply (0=success, see error codes below)</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span class="mh">0x00</span><span class="p">,</span>              <span class="c1"># RSV: Reserved</span>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    <span class="mh">0x01</span><span class="p">,</span>              <span class="c1"># ATYP: Address type</span>
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>    <span class="o">*</span><span class="n">bind_addr</span><span class="p">,</span>        <span class="c1"># BND.ADDR: Bound address</span>
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>    <span class="o">*</span><span class="n">bind_port</span>         <span class="c1"># BND.PORT: Bound port (2 bytes)</span>
-</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="p">]</span>
-</span></code></pre></div>
-<p><strong>Reply codes:</strong></p>
-<ul>
-<li><code>0x00</code>: Succeeded</li>
-<li><code>0x01</code>: General SOCKS server failure</li>
-<li><code>0x02</code>: Connection not allowed by ruleset</li>
-<li><code>0x03</code>: Network unreachable</li>
-<li><code>0x04</code>: Host unreachable</li>
-<li><code>0x05</code>: Connection refused</li>
-<li><code>0x06</code>: TTL expired</li>
-<li><code>0x07</code>: Command not supported</li>
-<li><code>0x08</code>: Address type not supported</li>
-</ul>
-<div class="admonition info">
-<p class="admonition-title">SOCKS5 Efficiency</p>
-<p>SOCKS5 is binary protocol (not text-based like HTTP). This makes it:</p>
-<ul>
-<li>More efficient (smaller packets)</li>
-<li>Faster to parse</li>
-<li>Less human-readable (requires hex dumping to debug)</li>
-</ul>
-</div>
-<h3 id="socks5-udp-support">SOCKS5 UDP Support</h3>
-<p>One of SOCKS5's unique features is UDP support via the <code>UDP ASSOCIATE</code> command:</p>
+<p>Reply codes: <code>0x00</code> succeeded, <code>0x01</code> general failure, <code>0x02</code> connection not allowed, <code>0x03</code> network unreachable, <code>0x04</code> host unreachable, <code>0x05</code> connection refused, <code>0x06</code> TTL expired, <code>0x07</code> command not supported, <code>0x08</code> address type not supported.</p>
+<p>After a successful reply, the proxy begins relaying data bidirectionally. The entire SOCKS5 handshake is a binary protocol, making it more efficient than text-based HTTP but harder to debug without hex dumps.</p>
+<h2 id="udp-support">UDP Support</h2>
+<p>SOCKS5 supports UDP proxying through the <code>UDP ASSOCIATE</code> command (CMD=0x03). This works differently from TCP proxying: the client sends a UDP ASSOCIATE request over the TCP control connection, and the proxy responds with a relay address and port. The client then sends UDP datagrams to this relay, and the proxy forwards them to their destinations.</p>
 <pre class="mermaid"><code>sequenceDiagram
     participant Client
     participant SOCKS5
     participant UDP_Server as UDP Server
 
-    Note over Client,SOCKS5: Establish TCP control connection
-    Client-&gt;&gt;SOCKS5: TCP: CONNECT (authentication)
-    Client-&gt;&gt;SOCKS5: TCP: UDP ASSOCIATE request
-    SOCKS5-&gt;&gt;Client: TCP: Relay address and port
+    Note over Client,SOCKS5: TCP control connection (handshake + auth)
+    Client-&gt;&gt;SOCKS5: UDP ASSOCIATE request (CMD=0x03)
+    SOCKS5-&gt;&gt;Client: Relay address and port
 
     Note over Client,SOCKS5: UDP data transfer
-    Client-&gt;&gt;SOCKS5: UDP: Datagram to relay
-    SOCKS5-&gt;&gt;UDP_Server: UDP: Forward datagram
-    UDP_Server-&gt;&gt;SOCKS5: UDP: Response datagram
-    SOCKS5-&gt;&gt;Client: UDP: Forward response
+    Client-&gt;&gt;SOCKS5: UDP datagram to relay
+    SOCKS5-&gt;&gt;UDP_Server: Forward datagram
+    UDP_Server-&gt;&gt;SOCKS5: Response datagram
+    SOCKS5-&gt;&gt;Client: Forward response
 
     Note over Client,SOCKS5: TCP control connection stays open</code></pre>
-<p><strong>UDP packet format:</strong></p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="p">[</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span>        <span class="c1"># RSV: Reserved</span>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    <span class="mh">0x00</span><span class="p">,</span>              <span class="c1"># FRAG: Fragment number</span>
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="mh">0x01</span><span class="p">,</span>              <span class="c1"># ATYP: Address type</span>
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    <span class="o">*</span><span class="n">dst_addr</span><span class="p">,</span>         <span class="c1"># DST.ADDR: Destination address</span>
-</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    <span class="o">*</span><span class="n">dst_port</span><span class="p">,</span>         <span class="c1"># DST.PORT: Destination port</span>
-</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    <span class="o">*</span><span class="n">data</span>              <span class="c1"># DATA: User data</span>
-</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="p">]</span>
+<p>Each UDP datagram sent through the relay includes a small header with the destination address and port:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="p">[</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span>    <span class="c1"># RSV: Reserved</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="mh">0x00</span><span class="p">,</span>          <span class="c1"># FRAG: Fragment number (0 = no fragmentation)</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="mh">0x01</span><span class="p">,</span>          <span class="c1"># ATYP: Address type</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="o">*</span><span class="n">dst_addr</span><span class="p">,</span>     <span class="c1"># DST.ADDR: Destination address</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="o">*</span><span class="n">dst_port</span><span class="p">,</span>     <span class="c1"># DST.PORT: Destination port</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span class="o">*</span><span class="n">data</span>          <span class="c1"># DATA: Application data</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="p">]</span>
 </span></code></pre></div>
+<p>The TCP control connection must remain open for the duration of the UDP association. If it closes, the proxy drops the UDP relay.</p>
 <div class="admonition warning">
-<p class="admonition-title">UDP Limitations</p>
-<p>UDP ASSOCIATE requires:</p>
-<ul>
-<li>A persistent TCP control connection</li>
-<li>Client and server to maintain state</li>
-<li>Additional relay infrastructure</li>
-</ul>
-<p>Many proxies don't support UDP, and those that do often have restrictions or additional costs.</p>
+<p class="admonition-title">UDP in Chrome</p>
+<p>Chrome does not use SOCKS5 UDP ASSOCIATE for any traffic. Even when configured with a SOCKS5 proxy, Chrome only proxies TCP connections. WebRTC, DNS-over-UDP, and other UDP traffic are not routed through the SOCKS5 proxy. This means WebRTC IP leaks are still possible with SOCKS5 in Chrome. Use <code>--force-webrtc-ip-handling-policy=disable_non_proxied_udp</code> or Pydoll's <code>webrtc_leak_protection = True</code> to mitigate this. For more details, see <a href="../network-fundamentals/#webrtc-and-ip-leakage">Network Fundamentals: WebRTC and IP Leakage</a>.</p>
 </div>
 <div class="admonition tip">
 <p class="admonition-title">Modern UDP Proxying Alternatives</p>
-<p>For full UDP support in modern setups, consider these alternatives:</p>
-<ul>
-<li><strong>Shadowsocks</strong>: Modern SOCKS5-like protocol designed for UDP/TCP proxying with encryption</li>
-<li><strong>WireGuard</strong>: VPN protocol with native UDP support and excellent performance</li>
-<li><strong>V2Ray/VMess</strong>: Flexible proxy protocol with comprehensive UDP handling</li>
-<li><strong>Trojan</strong>: Lightweight protocol that mimics HTTPS traffic while supporting UDP</li>
-</ul>
-<p>These protocols are particularly useful for gaming, VoIP, or video streaming where UDP performance is critical.</p>
+<p>For scenarios requiring full UDP support beyond what Chrome's SOCKS5 implementation provides, consider Shadowsocks (encrypted SOCKS-like protocol with native UDP), WireGuard (VPN with excellent performance), or V2Ray/VMess (flexible proxy framework with comprehensive UDP handling).</p>
 </div>
-<h2 id="why-socks5-is-more-secure">Why SOCKS5 is More Secure</h2>
-<p>Now that we've built the foundation, let's analyze why SOCKS5 is generally considered more secure than HTTP/HTTPS proxies.</p>
-<h3 id="protocol-level-comparison">Protocol-Level Comparison</h3>
-<p><strong>HTTP Proxy (Layer 7):</strong></p>
-<pre class="mermaid"><code>graph LR
-    A1[Client Application] --&gt; A2[HTTP Library]
-    A2 --&gt; A3[Proxy intercepts HTTP requests]
-    A3 --&gt; A4[Proxy can read Headers, Cookies, Methods, URLs]</code></pre>
-<p><strong>SOCKS5 Proxy (Layer 5):</strong></p>
-<pre class="mermaid"><code>graph LR
-    B1[Client Application] --&gt; B2[Any Protocol]
-    B2 --&gt; B3[TCP/UDP Transport]
-    B3 --&gt; B4[SOCKS5 sees only: Destination IP, Port, Packet size]</code></pre>
-<h3 id="security-advantages-of-socks5">Security Advantages of SOCKS5</h3>
-<table>
-<thead>
-<tr>
-<th>Aspect</th>
-<th>HTTP/HTTPS Proxy</th>
-<th>SOCKS5 Proxy</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Data Visibility</strong></td>
-<td>Can read HTTP headers, URLs, cookies (HTTP)</td>
-<td>Only sees destination IP/port and packet sizes</td>
-</tr>
-<tr>
-<td><strong>Protocol Support</strong></td>
-<td>HTTP/HTTPS only</td>
-<td>Any TCP/UDP protocol</td>
-</tr>
-<tr>
-<td><strong>TLS Inspection</strong></td>
-<td>Possible with MITM certificates</td>
-<td>Not possible (operates below TLS)</td>
-</tr>
-<tr>
-<td><strong>DNS Leaks</strong></td>
-<td>Client resolves DNS (leaks)</td>
-<td>Proxy resolves DNS (no leak)</td>
-</tr>
-<tr>
-<td><strong>Application Awareness</strong></td>
-<td>Understands HTTP</td>
-<td>Protocol-agnostic</td>
-</tr>
-<tr>
-<td><strong>Fingerprinting</strong></td>
-<td>Can inject headers, modify requests</td>
-<td>Transparent packet forwarding</td>
-</tr>
-<tr>
-<td><strong>UDP Support</strong></td>
-<td>None</td>
-<td>Yes (for WebRTC, DNS, etc.)</td>
-</tr>
-</tbody>
-</table>
-<h3 id="dns-resolution-a-critical-difference">DNS Resolution: A Critical Difference</h3>
-<p><strong>HTTP Proxy DNS behavior:</strong></p>
-<pre class="mermaid"><code>sequenceDiagram
-    participant Client
-    participant DNS
-    participant Proxy
-    participant Server
-
-    Note over Client: Client resolves DNS&lt;br/&gt;(uses system DNS)
-    Client-&gt;&gt;DNS: DNS Query: example.com?
-    DNS-&gt;&gt;Client: DNS Response: 93.184.216.34
-    Note over Client: DNS leak: ISP sees query
-
-    Client-&gt;&gt;Proxy: Connect to 93.184.216.34
-    Proxy-&gt;&gt;Server: Forward to 93.184.216.34</code></pre>
-<p><strong>SOCKS5 DNS behavior:</strong></p>
-<pre class="mermaid"><code>sequenceDiagram
-    participant Client
-    participant SOCKS5
-    participant DNS
-    participant Server
-
-    Note over Client: Client sends domain name&lt;br/&gt;(not IP) to SOCKS5
-    Client-&gt;&gt;SOCKS5: CONNECT example.com:443&lt;br/&gt;(ATYP=0x03, domain name)
-
-    Note over SOCKS5: Proxy resolves DNS&lt;br/&gt;(using its own DNS)
-    SOCKS5-&gt;&gt;DNS: DNS Query: example.com?
-    DNS-&gt;&gt;SOCKS5: DNS Response: 93.184.216.34
-    Note over SOCKS5: No DNS leak to client ISP
-
-    SOCKS5-&gt;&gt;Server: Connect to 93.184.216.34</code></pre>
-<div class="admonition tip">
-<p class="admonition-title">Remote DNS Resolution</p>
-<p>SOCKS5's ability to perform DNS resolution at the proxy server is crucial for privacy. Your ISP never sees which websites you're querying, only that you're connected to the proxy.</p>
+<h2 id="dns-resolution">DNS Resolution</h2>
+<p>A common misconception is that HTTP proxies leak DNS queries while SOCKS5 proxies do not. The reality in Chrome is more nuanced.</p>
+<p>When Chrome is configured with any proxy (HTTP, HTTPS, or SOCKS5), it sends hostnames to the proxy rather than resolving DNS locally. For HTTP proxies, the hostname appears in the <code>CONNECT host:443</code> request. For SOCKS5, it appears in the connection request with ATYP=0x03 (domain name). In both cases, the proxy resolves DNS on its side, and Chrome does not make local DNS queries for proxied traffic.</p>
+<p>The real DNS privacy difference between the two proxy types is not who resolves DNS, but what the proxy sees at the application layer. An HTTP proxy sees the full URL for unencrypted requests and the hostname for CONNECT requests. A SOCKS5 proxy sees only the destination hostname and port as opaque connection parameters.</p>
+<p>However, there is an important caveat: Chrome's DNS prefetcher can make local DNS queries for hostnames found in page content, even when a proxy is configured. This can leak the domains you are browsing to your local DNS resolver. To prevent this, disable DNS prefetching or use the flag <code>--host-resolver-rules="MAP * ~NOTFOUND , EXCLUDE 127.0.0.1"</code>.</p>
+<div class="admonition note">
+<p class="admonition-title"><code>socks5://</code> vs <code>socks5h://</code></p>
+<p>Many tools outside Chrome distinguish between <code>socks5://</code> (client resolves DNS) and <code>socks5h://</code> (proxy resolves DNS, the "h" stands for hostname). Chrome always resolves DNS proxy-side for SOCKS5, behaving like <code>socks5h://</code> regardless of which scheme you use. But if you use tools like <code>curl</code>, Firefox, or Python libraries alongside Pydoll, the distinction matters: always use <code>socks5h://</code> to prevent DNS leaks.</p>
 </div>
-<h3 id="man-in-the-middle-mitm-resistance">Man-in-the-Middle (MITM) Resistance</h3>
-<p><strong>HTTP Proxies are vulnerable to MITM:</strong></p>
-<pre class="mermaid"><code>sequenceDiagram
-    participant Client
-    participant Malicious_Proxy as Malicious HTTP Proxy
-    participant Server
-
-    Client-&gt;&gt;Malicious_Proxy: HTTPS request (encrypted)
-    Note over Malicious_Proxy: Proxy terminates TLS&lt;br/&gt;(using fake certificate)
-
-    Malicious_Proxy-&gt;&gt;Malicious_Proxy: Reads/modifies content
-
-    Malicious_Proxy-&gt;&gt;Server: Re-encrypt with real certificate
-    Server-&gt;&gt;Malicious_Proxy: Response
-    Malicious_Proxy-&gt;&gt;Client: Modified response
-
-    Note over Client: May show certificate warning</code></pre>
-<p><strong>SOCKS5 cannot perform MITM:</strong></p>
-<pre class="mermaid"><code>sequenceDiagram
-    participant Client
-    participant SOCKS5
-    participant Server
-
-    Client-&gt;&gt;SOCKS5: CONNECT server.com:443
-    SOCKS5-&gt;&gt;Server: TCP connection established
-    SOCKS5-&gt;&gt;Client: Connection ready
-
-    Note over Client,Server: End-to-end TLS tunnel
-    Client-&gt;&gt;Server: TLS Handshake + Encrypted Data
-    Note over SOCKS5: Cannot decrypt&lt;br/&gt;Cannot modify&lt;br/&gt;Only forwards packets
-    Server-&gt;&gt;Client: Encrypted Response</code></pre>
-<div class="admonition info">
-<p class="admonition-title">Trust Model</p>
-<ul>
-<li><strong>HTTP Proxy</strong>: You trust it with cleartext HTTP data and to properly tunnel HTTPS</li>
-<li><strong>SOCKS5 Proxy</strong>: You only trust it to forward packets correctly</li>
-</ul>
-<p>SOCKS5 has a smaller trust surface area.</p>
-</div>
-<h2 id="socks5-authentication-and-chrome">SOCKS5 Authentication and Chrome</h2>
-<p>One of the most common pitfalls when using SOCKS5 proxies with browser automation is <strong>authentication</strong>. Chrome/Chromium does <strong>not</strong> support SOCKS5 username/password authentication natively. This is a known, longstanding limitation tracked as <a href="https://issues.chromium.org/issues/40323993">Chromium Issue #40323993</a>.</p>
-<h3 id="why-chrome-ignores-socks5-credentials">Why Chrome Ignores SOCKS5 Credentials</h3>
-<p>When you configure Chrome with <code>--proxy-server=socks5://user:pass@proxy:1080</code>, Chrome <strong>silently ignores</strong> the embedded credentials. During the SOCKS5 method negotiation, Chrome only offers method <code>0x00</code> (no authentication required) — it never offers method <code>0x02</code> (username/password).</p>
-<p>This happens because SOCKS5 authentication operates at <strong>a completely different protocol layer</strong> than HTTP proxy authentication:</p>
-<p><strong>HTTP proxy authentication flow (works in Chrome):</strong></p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>Chrome → HTTP CONNECT → Proxy responds 407 → Chrome provides credentials → Proxy connects
-</span></code></pre></div>
-<p>Chrome handles this via the CDP <strong>Fetch domain</strong> — Pydoll intercepts <code>Fetch.authRequired</code> events and automatically responds with stored credentials.</p>
-<p><strong>SOCKS5 authentication flow (NOT supported by Chrome):</strong></p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>Chrome → SOCKS5 Hello [methods: 0x00] → Proxy selects 0x00 or rejects → No auth possible
-</span></code></pre></div>
-<p>The SOCKS5 handshake is a <strong>binary protocol</strong> negotiation at the session layer. Chrome's network stack simply does not implement the username/password subnegotiation (RFC 1929). There is no HTTP 407 challenge, no <code>Fetch.authRequired</code> event, and no way for Pydoll (or any CDP-based tool) to inject credentials.</p>
-<h3 id="the-local-forwarder-solution">The Local Forwarder Solution</h3>
-<p>The standard industry workaround is a <strong>local proxy forwarder</strong> — a lightweight local SOCKS5 server that:</p>
-<ol>
-<li><strong>Accepts connections from Chrome</strong> without authentication (method <code>0x00</code>)</li>
-<li><strong>Connects to the remote SOCKS5 proxy</strong> with full authentication (method <code>0x02</code>, RFC 1929)</li>
-<li><strong>Relays data bidirectionally</strong> between Chrome and the remote proxy</li>
-</ol>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>┌────────────┐     no auth      ┌──────────────┐    user/pass    ┌──────────────┐
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>│   Chrome   │ ──────────────►  │  Local SOCKS5 │ ─────────────► │ Remote SOCKS5│
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>│            │  socks5://       │  Forwarder    │  socks5://     │    Proxy     │
-</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>│            │  127.0.0.1:1081  │  (localhost)  │  proxy:1080    │  (internet)  │
-</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>└────────────┘                  └──────────────┘                 └──────┬───────┘
-</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>                                                                        │
-</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>                                                                        ▼
-</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>                                                                 ┌──────────────┐
-</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>                                                                 │ Destination  │
-</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>                                                                 │   Server     │
-</span><span id="__span-11-11"><a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>                                                                 └──────────────┘
-</span></code></pre></div>
-<p><strong>Detailed handshake sequence:</strong></p>
+<h2 id="socks5-and-mitm-resistance">SOCKS5 and MITM Resistance</h2>
+<p>SOCKS5 is often described as "MITM-resistant." This is true in a specific sense: because SOCKS5 does not understand or interact with TLS, it has no mechanism to terminate a TLS connection and re-encrypt it. A SOCKS5 proxy simply relays encrypted bytes without modification.</p>
+<p>An HTTP proxy, by contrast, can perform TLS termination (MITM) by presenting its own certificate to the client, decrypting the traffic, inspecting or modifying it, and re-encrypting it toward the server. This requires the client to trust the proxy's CA certificate, and it is detectable through certificate pinning and Certificate Transparency logs. The normal behavior of an HTTP proxy with HTTPS (using CONNECT) is to create a transparent tunnel without termination, but the architectural possibility of MITM exists.</p>
+<p>With SOCKS5, TLS termination is not possible at the protocol level. The proxy cannot inject itself into the TLS handshake because it does not parse the application data flowing through it. The end-to-end encryption between client and server is preserved by design.</p>
+<p>It is worth noting that TLS is what provides the actual cryptographic protection, not SOCKS5 itself. If you send unencrypted HTTP through a SOCKS5 proxy, the proxy operator can read everything. The security advantage of SOCKS5 is architectural (it does not require or enable TLS termination), not cryptographic.</p>
+<h2 id="tls-and-browser-fingerprinting-through-socks5">TLS and Browser Fingerprinting Through SOCKS5</h2>
+<p>An important limitation to understand: SOCKS5 does not change your browser's fingerprint. The TLS handshake (ClientHello) passes through the SOCKS5 proxy byte-for-byte, which means the target server sees your browser's exact JA3/JA4 fingerprint. The same applies to HTTP/2 SETTINGS frames, browser-specific header ordering, and all other application-layer fingerprinting signals.</p>
+<p>SOCKS5 hides your IP address and prevents the proxy from injecting identifying headers. It does not help with any form of browser or behavioral fingerprinting. For a complete evasion strategy, you need to address fingerprinting at multiple layers. See <a href="../../fingerprinting/evasion-techniques/">Evasion Techniques</a> for details.</p>
+<h2 id="socks5-authentication-in-chrome">SOCKS5 Authentication in Chrome</h2>
+<p>Chrome does not support SOCKS5 username/password authentication. This is a longstanding limitation tracked as <a href="https://issues.chromium.org/issues/40323993">Chromium Issue #40323993</a>. When Chrome performs the SOCKS5 method negotiation, it only offers method <code>0x00</code> (no authentication). If the proxy requires authentication, the connection fails silently.</p>
+<p>This is fundamentally different from HTTP proxy authentication. HTTP proxies authenticate via HTTP status codes (<code>407 Proxy Authentication Required</code>), which Chrome handles through the Fetch domain in CDP. Pydoll intercepts these <code>Fetch.authRequired</code> events and responds with stored credentials automatically. SOCKS5 authentication, on the other hand, happens during a binary protocol handshake at the session layer, before any HTTP traffic exists. There is no HTTP 407, no <code>Fetch.authRequired</code> event, and no way for CDP-based tools to inject credentials into this process.</p>
+<p>Configuring <code>--proxy-server=socks5://user:pass@proxy:1080</code> does not work. Chrome silently ignores the embedded credentials.</p>
+<h3 id="pydolls-socks5forwarder">Pydoll's SOCKS5Forwarder</h3>
+<p>The standard solution is a local proxy forwarder: a lightweight SOCKS5 server running on localhost that accepts unauthenticated connections from Chrome and forwards them to the remote proxy with full authentication.</p>
 <pre class="mermaid"><code>sequenceDiagram
     participant Chrome
-    participant Forwarder as Local Forwarder
-    participant Remote as Remote SOCKS5 Proxy
-    participant Server as Destination
+    participant Forwarder as Local Forwarder&lt;br/&gt;(127.0.0.1:1081)
+    participant Remote as Remote SOCKS5 Proxy&lt;br/&gt;(proxy:1080)
+    participant Server as Destination Server
 
-    Note over Chrome,Forwarder: Phase 1: Chrome → Forwarder (no auth)
-    Chrome-&gt;&gt;Forwarder: SOCKS5 Hello [VER=5, METHODS=[0x00]]
-    Forwarder-&gt;&gt;Chrome: Method Selected [VER=5, METHOD=0x00]
+    Note over Chrome,Forwarder: No authentication
+    Chrome-&gt;&gt;Forwarder: SOCKS5 Hello [methods: 0x00]
+    Forwarder-&gt;&gt;Chrome: Method selected [0x00]
     Chrome-&gt;&gt;Forwarder: CONNECT example.com:443
 
-    Note over Forwarder,Remote: Phase 2: Forwarder → Remote (with auth)
-    Forwarder-&gt;&gt;Remote: SOCKS5 Hello [VER=5, METHODS=[0x02]]
-    Remote-&gt;&gt;Forwarder: Method Selected [VER=5, METHOD=0x02]
-    Forwarder-&gt;&gt;Remote: Auth [VER=1, USER=..., PASS=...]
-    Remote-&gt;&gt;Forwarder: Auth OK [VER=1, STATUS=0x00]
+    Note over Forwarder,Remote: With authentication
+    Forwarder-&gt;&gt;Remote: SOCKS5 Hello [methods: 0x02]
+    Remote-&gt;&gt;Forwarder: Method selected [0x02]
+    Forwarder-&gt;&gt;Remote: Auth [username, password]
+    Remote-&gt;&gt;Forwarder: Auth OK
     Forwarder-&gt;&gt;Remote: CONNECT example.com:443
-    Remote-&gt;&gt;Server: TCP Connection
-    Remote-&gt;&gt;Forwarder: Connect Reply [SUCCESS]
+    Remote-&gt;&gt;Server: TCP connection
+    Remote-&gt;&gt;Forwarder: Connect OK
 
-    Note over Chrome,Forwarder: Phase 3: Relay confirmation
-    Forwarder-&gt;&gt;Chrome: Connect Reply [SUCCESS]
+    Forwarder-&gt;&gt;Chrome: Connect OK
 
-    Note over Chrome,Server: Phase 4: Bidirectional data relay
-    Chrome-&gt;&gt;Forwarder: Application Data (TLS)
-    Forwarder-&gt;&gt;Remote: Forward Data
-    Remote-&gt;&gt;Server: Forward Data
+    Note over Chrome,Server: Bidirectional data relay
+    Chrome-&gt;&gt;Forwarder: TLS + application data
+    Forwarder-&gt;&gt;Remote: Forward
+    Remote-&gt;&gt;Server: Forward
     Server-&gt;&gt;Remote: Response
-    Remote-&gt;&gt;Forwarder: Forward Response
-    Forwarder-&gt;&gt;Chrome: Forward Response</code></pre>
-<h3 id="using-the-forwarder-with-pydoll">Using the Forwarder with Pydoll</h3>
-<p>Pydoll provides a ready-to-use forwarder in the <code>pydoll.utils</code> module:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">SOCKS5Forwarder</span>
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.chromium</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
-</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChromiumOptions</span>
-</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>
-</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
-</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>    <span class="n">forwarder</span> <span class="o">=</span> <span class="n">SOCKS5Forwarder</span><span class="p">(</span>
-</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>        <span class="n">remote_host</span><span class="o">=</span><span class="s1">&#39;proxy.example.com&#39;</span><span class="p">,</span>
-</span><span id="__span-12-9"><a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>        <span class="n">remote_port</span><span class="o">=</span><span class="mi">1080</span><span class="p">,</span>
-</span><span id="__span-12-10"><a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>        <span class="n">username</span><span class="o">=</span><span class="s1">&#39;myuser&#39;</span><span class="p">,</span>
-</span><span id="__span-12-11"><a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>        <span class="n">password</span><span class="o">=</span><span class="s1">&#39;mypass&#39;</span><span class="p">,</span>
-</span><span id="__span-12-12"><a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a>        <span class="n">local_port</span><span class="o">=</span><span class="mi">1081</span><span class="p">,</span>  <span class="c1"># Use 0 for auto-assigned port</span>
-</span><span id="__span-12-13"><a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>    <span class="p">)</span>
-</span><span id="__span-12-14"><a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a>    <span class="k">async</span> <span class="k">with</span> <span class="n">forwarder</span><span class="p">:</span>
-</span><span id="__span-12-15"><a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a>        <span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
-</span><span id="__span-12-16"><a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a>        <span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;--proxy-server=socks5://127.0.0.1:</span><span class="si">{</span><span class="n">forwarder</span><span class="o">.</span><span class="n">local_port</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-</span><span id="__span-12-17"><a id="__codelineno-12-17" name="__codelineno-12-17" href="#__codelineno-12-17"></a>
-</span><span id="__span-12-18"><a id="__codelineno-12-18" name="__codelineno-12-18" href="#__codelineno-12-18"></a>        <span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">(</span><span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
-</span><span id="__span-12-19"><a id="__codelineno-12-19" name="__codelineno-12-19" href="#__codelineno-12-19"></a>            <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-</span><span id="__span-12-20"><a id="__codelineno-12-20" name="__codelineno-12-20" href="#__codelineno-12-20"></a>            <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">&#39;https://httpbin.org/ip&#39;</span><span class="p">)</span>
-</span><span id="__span-12-21"><a id="__codelineno-12-21" name="__codelineno-12-21" href="#__codelineno-12-21"></a>
-</span><span id="__span-12-22"><a id="__codelineno-12-22" name="__codelineno-12-22" href="#__codelineno-12-22"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+    Remote-&gt;&gt;Forwarder: Forward
+    Forwarder-&gt;&gt;Chrome: Forward</code></pre>
+<p>Pydoll provides a built-in <code>SOCKS5Forwarder</code> in the <code>pydoll.utils</code> module. It is a pure-Python, zero-dependency async implementation that handles the full SOCKS5 handshake with the remote proxy, including username/password authentication (RFC 1929), IPv4, IPv6, and domain address types.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">SOCKS5Forwarder</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.chromium</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChromiumOptions</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="n">forwarder</span> <span class="o">=</span> <span class="n">SOCKS5Forwarder</span><span class="p">(</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>        <span class="n">remote_host</span><span class="o">=</span><span class="s1">&#39;proxy.example.com&#39;</span><span class="p">,</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>        <span class="n">remote_port</span><span class="o">=</span><span class="mi">1080</span><span class="p">,</span>
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>        <span class="n">username</span><span class="o">=</span><span class="s1">&#39;myuser&#39;</span><span class="p">,</span>
+</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>        <span class="n">password</span><span class="o">=</span><span class="s1">&#39;mypass&#39;</span><span class="p">,</span>
+</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>        <span class="n">local_port</span><span class="o">=</span><span class="mi">1081</span><span class="p">,</span>  <span class="c1"># Use 0 for auto-assigned port</span>
+</span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>    <span class="p">)</span>
+</span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>    <span class="k">async</span> <span class="k">with</span> <span class="n">forwarder</span><span class="p">:</span>
+</span><span id="__span-6-15"><a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a>        <span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
+</span><span id="__span-6-16"><a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a>        <span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;--proxy-server=socks5://127.0.0.1:</span><span class="si">{</span><span class="n">forwarder</span><span class="o">.</span><span class="n">local_port</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</span><span id="__span-6-17"><a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a>
+</span><span id="__span-6-18"><a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a>        <span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">(</span><span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
+</span><span id="__span-6-19"><a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a>            <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</span><span id="__span-6-20"><a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a>            <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">&#39;https://httpbin.org/ip&#39;</span><span class="p">)</span>
+</span><span id="__span-6-21"><a id="__codelineno-6-21" name="__codelineno-6-21" href="#__codelineno-6-21"></a>
+</span><span id="__span-6-22"><a id="__codelineno-6-22" name="__codelineno-6-22" href="#__codelineno-6-22"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </span></code></pre></div>
-<p>The forwarder can also be used as a standalone CLI tool:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>python<span class="w"> </span>-m<span class="w"> </span>pydoll.utils.socks5_proxy_forwarder<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">    </span>--remote-host<span class="w"> </span>proxy.example.com<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">    </span>--remote-port<span class="w"> </span><span class="m">1080</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">    </span>--username<span class="w"> </span>myuser<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="w">    </span>--password<span class="w"> </span>mypass<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="w">    </span>--local-port<span class="w"> </span><span class="m">1081</span>
+<p>The forwarder can also run as a standalone CLI tool for testing or use with other applications:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>python<span class="w"> </span>-m<span class="w"> </span>pydoll.utils.socks5_proxy_forwarder<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span>--remote-host<span class="w"> </span>proxy.example.com<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span>--remote-port<span class="w"> </span><span class="m">1080</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">    </span>--username<span class="w"> </span>myuser<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">    </span>--password<span class="w"> </span>mypass<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">    </span>--local-port<span class="w"> </span><span class="m">1081</span>
 </span></code></pre></div>
-<h3 id="security-considerations">Security Considerations</h3>
-<div class="admonition warning">
-<p class="admonition-title">Security Notes</p>
-<ul>
-<li>The local forwarder binds to <code>127.0.0.1</code> by default — only accessible from your machine</li>
-<li><strong>Never</strong> bind to <code>0.0.0.0</code> in production, as this would expose an unauthenticated SOCKS5 proxy to the network</li>
-<li>Credentials are transmitted in plaintext during the SOCKS5 handshake with the remote proxy (this is inherent to SOCKS5 RFC 1929) — use SSH tunnels or VPN for additional encryption if needed</li>
-<li>The forwarder adds minimal latency (local loopback is sub-millisecond)</li>
-</ul>
-</div>
-<h3 id="environment-limitations">Environment Limitations</h3>
-<div class="admonition info">
-<p class="admonition-title">Restricted Environments</p>
-<p>Some environments (Docker containers, serverless platforms, hardened VMs) may restrict binding to local ports. In these cases:</p>
-<ul>
-<li>Ensure your environment allows binding to <code>127.0.0.1</code> on arbitrary ports</li>
-<li>Use <code>local_port=0</code> to let the OS assign an available port</li>
-<li>If local binding is completely blocked, consider using an HTTP CONNECT proxy instead, which Chrome supports natively with authentication</li>
-</ul>
-</div>
-<h2 id="summary-and-key-takeaways">Summary and Key Takeaways</h2>
-<p>SOCKS5 represents the <strong>gold standard</strong> for privacy-conscious proxying, offering protocol flexibility, reduced trust requirements, and superior security compared to application-layer alternatives. Understanding SOCKS architecture is essential for building robust, undetectable automation systems.</p>
-<h3 id="core-concepts-covered">Core Concepts Covered</h3>
-<p><strong>1. Session-Layer Operation:</strong></p>
-<ul>
-<li>SOCKS operates at <strong>Layer 5 (Session Layer)</strong>, below HTTP but above TCP/UDP</li>
-<li><strong>Protocol-agnostic</strong>: Works with any application protocol (HTTP, FTP, SSH, WebSocket, custom)</li>
-<li><strong>Blind forwarding</strong>: Only sees destination IP and port, not application data</li>
-</ul>
-<p><strong>2. SOCKS5 Protocol Features:</strong></p>
-<ul>
-<li><strong>Authentication</strong>: Multiple methods (no auth, username/password, GSSAPI)</li>
-<li><strong>IP Version Support</strong>: Both IPv4 and IPv6</li>
-<li><strong>TCP and UDP</strong>: Full support for connectionless protocols</li>
-<li><strong>Remote DNS Resolution</strong>: Prevents DNS leaks to client ISP</li>
-<li><strong>Binary Protocol</strong>: Efficient, low-overhead packet structures</li>
-</ul>
-<p><strong>3. Security Model:</strong></p>
-<ul>
-<li><strong>Cannot inspect application data</strong>: Operates below TLS encryption</li>
-<li><strong>MITM-resistant</strong>: Cannot terminate TLS connections (unlike HTTP proxies)</li>
-<li><strong>Reduced trust surface</strong>: Only trust proxy to forward packets, not handle sensitive data</li>
-<li><strong>DNS privacy</strong>: Proxy resolves domains, hiding queries from ISP</li>
-</ul>
-<p><strong>4. UDP Support:</strong></p>
-<ul>
-<li>Unique SOCKS5 feature enabling WebRTC, DNS-over-UDP, VoIP, gaming</li>
-<li>Requires persistent TCP control connection + UDP relay</li>
-<li>Many proxies don't support UDP (additional infrastructure required)</li>
-</ul>
-<p><strong>5. SOCKS4 vs SOCKS5:</strong></p>
-<ul>
-<li>SOCKS4: Legacy, TCP-only, no authentication, IPv4-only</li>
-<li>SOCKS5: Modern standard (RFC 1928), UDP support, flexible authentication, IPv4/IPv6</li>
-</ul>
-<h3 id="socks5-vs-http-proxy-decision-matrix">SOCKS5 vs HTTP Proxy: Decision Matrix</h3>
-<table>
-<thead>
-<tr>
-<th>Requirement</th>
-<th>SOCKS5</th>
-<th>HTTP Proxy</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Privacy</strong></td>
-<td><strong>Excellent</strong> (blind forwarding)</td>
-<td><strong>Poor</strong> (sees all HTTP traffic)</td>
-</tr>
-<tr>
-<td><strong>Protocol Flexibility</strong></td>
-<td><strong>Any TCP/UDP</strong></td>
-<td><strong>HTTP/HTTPS only</strong></td>
-</tr>
-<tr>
-<td><strong>DNS Privacy</strong></td>
-<td><strong>Remote resolution</strong></td>
-<td><strong>Client-side leak</strong></td>
-</tr>
-<tr>
-<td><strong>UDP Support</strong></td>
-<td><strong>Yes</strong></td>
-<td><strong>No</strong></td>
-</tr>
-<tr>
-<td><strong>TLS Inspection</strong></td>
-<td><strong>Impossible (secure)</strong></td>
-<td><strong>Possible (MITM risk)</strong></td>
-</tr>
-<tr>
-<td><strong>Stealth</strong></td>
-<td><strong>High (transparent)</strong></td>
-<td><strong>Low (header injection)</strong></td>
-</tr>
-<tr>
-<td><strong>Setup Complexity</strong></td>
-<td><strong>Moderate</strong></td>
-<td><strong>Simple</strong></td>
-</tr>
-<tr>
-<td><strong>Content Filtering</strong></td>
-<td><strong>No</strong> (blind)</td>
-<td><strong>Yes</strong> (application-aware)</td>
-</tr>
-<tr>
-<td><strong>Caching</strong></td>
-<td><strong>No</strong></td>
-<td><strong>Yes</strong></td>
-</tr>
-<tr>
-<td><strong>Corporate Environments</strong></td>
-<td><strong>Rare</strong></td>
-<td><strong>Common</strong></td>
-</tr>
-</tbody>
-</table>
-<p><strong>General Recommendation:</strong>
-- <strong>Privacy/Automation</strong>: SOCKS5 (stealth, protocol flexibility, security)
-- <strong>Corporate/Filtering</strong>: HTTP proxy (content control, caching, policy enforcement)
-- <strong>Maximum Security</strong>: SOCKS5 over SSH tunnel or VPN</p>
-<h3 id="when-to-use-socks5">When to Use SOCKS5</h3>
-<p><strong>Ideal Use Cases:</strong></p>
-<ul>
-<li><strong>Browser automation</strong> requiring stealth and protocol flexibility</li>
-<li><strong>Privacy-critical applications</strong> (journalist tools, VPNs, Tor)</li>
-<li><strong>Multi-protocol applications</strong> (FTP, SSH, WebSocket, custom protocols)</li>
-<li><strong>WebRTC applications</strong> (video conferencing, gaming, real-time communication)</li>
-<li><strong>DNS privacy</strong> (hiding browsing patterns from ISP)</li>
-<li><strong>Bypassing deep packet inspection</strong> (DPI) in restrictive networks</li>
-</ul>
-<p><strong>Poor Use Cases:</strong></p>
-<ul>
-<li><strong>Corporate content filtering</strong> (use HTTP proxy with URL-based policies)</li>
-<li><strong>HTTP caching for bandwidth optimization</strong> (use HTTP proxy or CDN)</li>
-<li><strong>Simple HTTP-only scraping where stealth isn't critical</strong></li>
-</ul>
-<h3 id="practical-pydoll-configuration">Practical Pydoll Configuration</h3>
-<p><strong>Basic SOCKS5 Proxy:</strong>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
-</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChromiumOptions</span>
-</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>
-</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
-</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--proxy-server=socks5://proxy.example.com:1080&#39;</span><span class="p">)</span>
-</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="c1"># For proxies with authentication, embed credentials in the URL:</span>
-</span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="c1"># options.add_argument(&#39;--proxy-server=socks5://user:pass@proxy.example.com:1080&#39;)</span>
-</span><span id="__span-14-8"><a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a>
-</span><span id="__span-14-9"><a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a><span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">(</span><span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
-</span><span id="__span-14-10"><a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a>    <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-</span><span id="__span-14-11"><a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a>    <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">&#39;https://example.com&#39;</span><span class="p">)</span>
-</span></code></pre></div></p>
-<p><strong>SOCKS5 with Authentication (via Pydoll):</strong>
-Pydoll automatically handles SOCKS5 username/password authentication through Chrome's Fetch domain. No manual implementation needed.</p>
-<p><strong>Testing SOCKS5 Proxy:</strong>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">socket</span>
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">socks</span>
-</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>
-</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="c1"># Manual SOCKS5 test (without Pydoll)</span>
-</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="n">socks</span><span class="o">.</span><span class="n">set_default_proxy</span><span class="p">(</span><span class="n">socks</span><span class="o">.</span><span class="n">SOCKS5</span><span class="p">,</span> <span class="s2">&quot;proxy.example.com&quot;</span><span class="p">,</span> <span class="mi">1080</span><span class="p">,</span> 
-</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>                        <span class="n">username</span><span class="o">=</span><span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;pass&quot;</span><span class="p">)</span>
-</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="n">socket</span><span class="o">.</span><span class="n">socket</span> <span class="o">=</span> <span class="n">socks</span><span class="o">.</span><span class="n">socksocket</span>
-</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>
-</span><span id="__span-15-9"><a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="c1"># Now all socket connections use SOCKS5</span>
-</span></code></pre></div></p>
+<p>The forwarder binds to <code>127.0.0.1</code> by default, making it accessible only from your machine. Never bind to <code>0.0.0.0</code> in production, as this would expose an unauthenticated SOCKS5 proxy to the network. Credentials are never logged in plaintext. The forwarder adds sub-millisecond latency since all communication happens over the local loopback interface.</p>
 <div class="admonition tip">
-<p class="admonition-title">SOCKS5 Best Practices</p>
-<p><strong>Use SOCKS5, not SOCKS4</strong> (better security, UDP support)<br />
-<strong>Enable remote DNS resolution</strong> (prevent DNS leaks)<br />
-<strong>Use authentication</strong> (username/password or GSSAPI)<br />
-<strong>Test for WebRTC leaks</strong> (even with SOCKS5, WebRTC can leak real IP)<br />
-<strong>Combine with TLS</strong> (SOCKS provides proxying, not encryption)  </p>
-<p><strong>Don't assume SOCKS5 = encryption</strong> (layer TLS on top)<br />
-<strong>Don't use SOCKS4</strong> (legacy, security limitations)<br />
-<strong>Don't rely on UDP support</strong> (many proxies don't support it)</p>
+<p class="admonition-title">Restricted Environments</p>
+<p>Some environments (Docker containers, serverless platforms, hardened VMs) may restrict binding to local ports. Use <code>local_port=0</code> to let the OS assign an available port. If local binding is completely blocked, consider using an HTTP CONNECT proxy instead, which Chrome supports natively with authentication via Pydoll's ProxyManager.</p>
 </div>
-<h2 id="further-reading-and-references">Further Reading and References</h2>
-<h3 id="related-documentation">Related Documentation</h3>
-<p><strong>Within This Module:</strong></p>
+<h2 id="practical-configuration">Practical Configuration</h2>
+<p><strong>Basic SOCKS5 (no authentication):</strong></p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.chromium</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChromiumOptions</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--proxy-server=socks5://proxy.example.com:1080&#39;</span><span class="p">)</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">(</span><span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>    <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">&#39;https://example.com&#39;</span><span class="p">)</span>
+</span></code></pre></div>
+<p><strong>SOCKS5 with authentication (via SOCKS5Forwarder):</strong></p>
+<p>See the <a href="#pydolls-socks5forwarder">SOCKS5Forwarder section</a> above.</p>
+<p><strong>Preventing leaks:</strong></p>
+<p>For a complete SOCKS5 setup, you should also prevent WebRTC and DNS prefetch leaks:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--proxy-server=socks5://proxy.example.com:1080&#39;</span><span class="p">)</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="n">options</span><span class="o">.</span><span class="n">webrtc_leak_protection</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># Prevents WebRTC IP leaks</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--disable-quic&#39;</span><span class="p">)</span>  <span class="c1"># Forces HTTP/2 over TCP through proxy</span>
+</span></code></pre></div>
+<p><strong>Testing your setup:</strong></p>
+<p>Always verify your proxy configuration with leak tests. Visit <a href="https://browserleaks.com/ip">browserleaks.com/ip</a> to confirm your IP, <a href="https://browserleaks.com/webrtc">browserleaks.com/webrtc</a> to check for WebRTC leaks, and <a href="https://dnsleaktest.com/">dnsleaktest.com</a> to verify DNS is not leaking.</p>
+<h2 id="summary">Summary</h2>
+<p>SOCKS5 provides protocol-agnostic proxying with a smaller trust surface than HTTP proxies. It does not parse, modify, or inject anything into your traffic. DNS resolution happens proxy-side in Chrome. TLS encryption is preserved end-to-end. The main limitation in Chrome is the lack of native SOCKS5 authentication (solved by Pydoll's <code>SOCKS5Forwarder</code>) and the absence of UDP proxying (mitigated by disabling WebRTC or using the appropriate browser flags).</p>
+<p>SOCKS5 does not change your browser's TLS fingerprint, HTTP/2 settings, or any application-layer characteristics. For complete evasion, combine SOCKS5 with browser fingerprint management and behavioral simulation.</p>
+<p><strong>Next steps:</strong></p>
 <ul>
-<li><strong><a href="../http-proxies/">HTTP/HTTPS Proxies</a></strong> - Application-layer proxying comparison</li>
-<li><strong><a href="../network-fundamentals/">Network Fundamentals</a></strong> - TCP/IP, UDP, OSI model foundations</li>
-<li><strong><a href="../proxy-detection/">Proxy Detection</a></strong> - How SOCKS5 proxies can still be detected</li>
-<li><strong><a href="../build-proxy/">Building Proxies</a></strong> - Full SOCKS5 server implementation from scratch</li>
+<li><a href="../proxy-detection/">Proxy Detection</a>: How even SOCKS5 proxies can be detected</li>
+<li><a href="../build-proxy/">Building Proxies</a>: Implement your own SOCKS5 server</li>
+<li><a href="../../../features/configuration/proxy/">Proxy Configuration</a>: Practical Pydoll proxy setup</li>
+<li><a href="../../fingerprinting/evasion-techniques/">Evasion Techniques</a>: Multi-layer evasion strategy</li>
 </ul>
-<p><strong>Practical Usage:</strong></p>
+<h2 id="references">References</h2>
 <ul>
-<li><strong><a href="../../../features/configuration/proxy/">Proxy Configuration (Features)</a></strong> - Configuring SOCKS5 in Pydoll</li>
-<li><strong><a href="../../../features/configuration/browser-options/">Browser Options</a></strong> - Chrome flags for proxy optimization</li>
+<li>RFC 1928: SOCKS Protocol Version 5 (1996) - https://datatracker.ietf.org/doc/html/rfc1928</li>
+<li>RFC 1929: Username/Password Authentication for SOCKS V5 (1996) - https://datatracker.ietf.org/doc/html/rfc1929</li>
+<li>RFC 1961: GSS-API Authentication Method for SOCKS V5 (1996) - https://datatracker.ietf.org/doc/html/rfc1961</li>
+<li>RFC 3089: SOCKS-based IPv6/IPv4 Gateway Mechanism (2001) - https://datatracker.ietf.org/doc/html/rfc3089</li>
+<li>Chromium Proxy Documentation - https://chromium.googlesource.com/chromium/src/+/689912289c/net/docs/proxy.md</li>
+<li>Chromium Issue #40323993: SOCKS5 Authentication - https://issues.chromium.org/issues/40323993</li>
+<li>BrowserLeaks: WebRTC Leak Test - https://browserleaks.com/webrtc</li>
+<li>DNS Leak Test - https://dnsleaktest.com/</li>
+<li>IPLeak: Comprehensive Leak Testing - https://ipleak.net</li>
 </ul>
-<p><strong>Deep Dives:</strong></p>
-<ul>
-<li><strong><a href="../../fingerprinting/network-fingerprinting/">Network Fingerprinting</a></strong> - TCP/IP characteristics that leak through SOCKS5</li>
-<li><strong><a href="../../fingerprinting/browser-fingerprinting/">Browser Fingerprinting</a></strong> - Application-level detection despite SOCKS5</li>
-<li><strong><a href="../../fingerprinting/evasion-techniques/">Evasion Techniques</a></strong> - How to maximize SOCKS5 stealth</li>
-</ul>
-<h3 id="external-references">External References</h3>
-<p><strong>RFCs (Official Specifications):</strong></p>
-<ul>
-<li><strong>RFC 1928</strong> - SOCKS Protocol Version 5 (March 1996)</li>
-<li>https://datatracker.ietf.org/doc/html/rfc1928</li>
-<li>The official SOCKS5 specification</li>
-<li><strong>RFC 1929</strong> - Username/Password Authentication for SOCKS V5 (March 1996)</li>
-<li>https://datatracker.ietf.org/doc/html/rfc1929</li>
-<li>Standard authentication mechanism</li>
-<li><strong>RFC 1961</strong> - GSS-API Authentication Method for SOCKS Version 5 (June 1996)</li>
-<li>https://datatracker.ietf.org/doc/html/rfc1961</li>
-<li>Enterprise authentication (Kerberos)</li>
-<li><strong>RFC 3089</strong> - A SOCKS-based IPv6/IPv4 Gateway Mechanism (April 2001)</li>
-<li>https://datatracker.ietf.org/doc/html/rfc3089</li>
-<li>IPv4/IPv6 interoperability</li>
-</ul>
-<p><strong>SOCKS4 (Informal Specification):</strong></p>
-<ul>
-<li><strong>SOCKS4 Protocol</strong>: http://ftp.icm.edu.pl/packages/socks/socks4/SOCKS4.protocol</li>
-<li><strong>SOCKS4A Extension</strong>: http://ftp.icm.edu.pl/packages/socks/socks4/SOCKS4A.protocol</li>
-<li>Domain name resolution extension</li>
-</ul>
-<p><strong>Technical Articles and Guides:</strong></p>
-<ul>
-<li><strong>Understanding SOCKS5</strong>: https://securitytrails.com/blog/socks5-proxy</li>
-<li><strong>SOCKS5 vs HTTP Proxies</strong>: https://www.varonis.com/blog/socks-proxy-primer</li>
-<li><strong>Building a SOCKS5 Server</strong>: Various implementations on GitHub (see build-proxy.md)</li>
-</ul>
-<p><strong>SOCKS Implementations:</strong></p>
-<ul>
-<li><strong>Dante</strong>: https://www.inet.no/dante/ (Production SOCKS server)</li>
-<li><strong>ss5</strong>: http://ss5.sourceforge.net/ (SOCKS4/SOCKS5 server)</li>
-<li><strong>PySocks</strong>: https://github.com/Anorov/PySocks (Python SOCKS client)</li>
-<li><strong>go-socks5</strong>: https://github.com/armon/go-socks5 (Go SOCKS5 library)</li>
-</ul>
-<p><strong>Modern SOCKS-like Protocols:</strong></p>
-<ul>
-<li><strong>Shadowsocks</strong>: https://shadowsocks.org/ (Encrypted SOCKS5-like protocol)</li>
-<li><strong>WireGuard</strong>: https://www.wireguard.com/ (VPN with SOCKS-like simplicity)</li>
-<li><strong>V2Ray/VMess</strong>: https://www.v2ray.com/ (Flexible proxy framework)</li>
-<li><strong>Trojan</strong>: https://trojan-gfw.github.io/trojan/ (HTTPS-mimicking proxy)</li>
-</ul>
-<p><strong>Testing Tools:</strong></p>
-<ul>
-<li><strong>curl with SOCKS5</strong>:
-  <div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>curl<span class="w"> </span>--socks5<span class="w"> </span>proxy:1080<span class="w"> </span>--socks5-basic<span class="w"> </span>--user<span class="w"> </span>user:pass<span class="w"> </span>https://example.com
-</span></code></pre></div></li>
-<li><strong>proxychains</strong>: Force any application through SOCKS5
-  <div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>proxychains4<span class="w"> </span>firefox
-</span></code></pre></div></li>
-<li><strong>Wireshark</strong>: Packet analysis to verify SOCKS5 handshake</li>
-</ul>
-<p><strong>Security and Privacy:</strong></p>
-<ul>
-<li><strong>DNS Leak Testing</strong>: https://dnsleaktest.com/</li>
-<li><strong>WebRTC Leak Testing</strong>: https://browserleaks.com/webrtc</li>
-<li><strong>IP Detection</strong>: https://ipleak.net/</li>
-</ul>
-<h3 id="advanced-topics-beyond-this-document">Advanced Topics (Beyond This Document)</h3>
-<p><strong>SOCKS Extensions:</strong></p>
-<ul>
-<li><strong>Tor SOCKS Extensions</strong>: Tor-specific SOCKS5 extensions for circuit isolation</li>
-<li><strong>SOCKS6 Proposals</strong>: Next-generation SOCKS protocol (draft stage)</li>
-<li><strong>SOCKS over TLS</strong>: Encrypted SOCKS channels</li>
-</ul>
-<p><strong>Performance Optimization:</strong></p>
-<ul>
-<li><strong>Connection Pooling</strong>: Reusing SOCKS5 connections</li>
-<li><strong>Multiplexing</strong>: Multiple streams over single SOCKS connection</li>
-<li><strong>UDP Performance</strong>: Optimizing SOCKS5 UDP relay</li>
-</ul>
-<p><strong>Enterprise Deployments:</strong></p>
-<ul>
-<li><strong>LDAP Integration</strong>: Enterprise user authentication</li>
-<li><strong>Load Balancing</strong>: Distributing traffic across SOCKS5 proxies</li>
-<li><strong>High Availability</strong>: Failover and redundancy strategies</li>
-</ul>
-<p><strong>Protocol Comparison:</strong></p>
-<ul>
-<li><strong>SOCKS vs VPN</strong>: When to use each</li>
-<li><strong>SOCKS vs SSH Tunneling</strong>: Tunneling vs proxying</li>
-<li><strong>SOCKS vs Tor</strong>: Anonymity vs performance tradeoffs</li>
-</ul>
-<hr />
-<h2 id="final-thoughts">Final Thoughts</h2>
-<p>SOCKS5 is the <strong>preferred proxy protocol</strong> for privacy-conscious browser automation, offering fundamental architectural advantages over HTTP proxies:</p>
-<ul>
-<li><strong>Protocol flexibility</strong> enables proxying any TCP/UDP application</li>
-<li><strong>Session-layer operation</strong> prevents application data inspection</li>
-<li><strong>Remote DNS resolution</strong> protects browsing patterns</li>
-<li><strong>MITM resistance</strong> preserves end-to-end TLS encryption</li>
-</ul>
-<p>While HTTP proxies dominate corporate environments due to content filtering capabilities, <strong>SOCKS5 is the superior choice</strong> for automation requiring stealth, security, and protocol flexibility.</p>
-<p><strong>Key Takeaway</strong>: Use SOCKS5 for privacy and automation, HTTP proxies for corporate filtering.</p>
-<p><strong>Next Steps:</strong></p>
-<ol>
-<li>Read <strong><a href="../proxy-detection/">Proxy Detection</a></strong> to understand how even SOCKS5 can be detected</li>
-<li>Learn <strong><a href="../build-proxy/">Building Proxies</a></strong> to implement your own SOCKS5 server</li>
-<li>Configure SOCKS5 in Pydoll using <strong><a href="../../../features/configuration/proxy/">Proxy Configuration</a></strong></li>
-</ol>
-<hr />
 
 
 
