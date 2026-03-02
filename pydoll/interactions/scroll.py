@@ -281,7 +281,10 @@ class Scroll:
         timing = self._timing
         scrolled = 0.0
 
-        correction_velocity = random.uniform(200, 400)
+        min_correction_velocity = (distance * (0.15)) / timing.frame_interval
+        correction_velocity = random.uniform(
+            max(200, min_correction_velocity), max(400, min_correction_velocity * 1.5)
+        )
 
         while scrolled < distance:
             frame_delta = correction_velocity * timing.frame_interval
