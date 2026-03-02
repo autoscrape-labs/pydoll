@@ -91,6 +91,12 @@ class Keyboard:
         self._executor = executor
         self._timing = timing or TimingConfig()
         self._typo_config = typo_config or TypoConfig()
+        self._has_focus = hasattr(executor, 'focus')
+
+    async def _ensure_focus(self):
+        """Re-focus the executor element before a keystroke if it supports focus."""
+        if self._has_focus:
+            await self._executor.focus()
 
     async def press(
         self,
@@ -232,7 +238,8 @@ class Keyboard:
             char_index += 1
 
     async def _type_char(self, char: str):
-        """Type a single character."""
+        """Type a single character, re-focusing the element before each keystroke."""
+        await self._ensure_focus()
         command_down = InputCommands.dispatch_key_event(
             type=KeyEventType.KEY_DOWN,
             text=char,
@@ -247,6 +254,7 @@ class Keyboard:
 
     async def _type_backspace(self):
         """Send backspace keypress."""
+        await self._ensure_focus()
         await self.down(Key.BACKSPACE)
         await self.up(Key.BACKSPACE)
 
