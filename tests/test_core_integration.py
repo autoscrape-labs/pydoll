@@ -246,4 +246,32 @@ class TestCoreTypeText:
             prop = await input_el.execute_script('return this.value', return_by_value=True)
             assert prop['result']['result']['value'] == test_text
 
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        'text,label',
+        [
+            ('abcdefghijklmnopqrstuvwxyz', 'lowercase'),
+            ('ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'uppercase'),
+            ('0123456789', 'digits'),
+            ('-=[];\',./', 'punctuation_unshifted'),
+            ('!@#$%^&*()_+{}|:"<>?~', 'punctuation_shifted'),
+        ],
+    )
+    async def test_type_text_all_character_groups(self, ci_chrome_options, text, label):
+        """type_text should correctly type every mapped character group."""
+        test_file = Path(__file__).parent / 'pages' / 'test_core_simple.html'
+        file_url = f'file://{test_file.absolute()}'
+
+        async with Chrome(options=ci_chrome_options) as browser:
+            tab = await browser.start()
+            await tab.go_to(file_url)
+            await asyncio.sleep(0.5)
+
+            input_el = await tab.find(id='text-input')
+            await input_el.type_text(text)
+            await asyncio.sleep(0.3)
+
+            prop = await input_el.execute_script('return this.value', return_by_value=True)
+            assert prop['result']['result']['value'] == text, f'Failed for {label}: {text!r}'
+
 
