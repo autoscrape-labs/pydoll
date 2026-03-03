@@ -1,3 +1,11 @@
+## 2.21.1 (2026-03-03)
+
+### Fix
+
+- **keyboard**: send correct key, code and keycode in type_text
+- **elements**: fix humanized interactions inside iframes
+- humanized scroll overshoot correction causes infinite loop
+
 ## 2.21.0 (2026-03-01)
 
 ### Feat
