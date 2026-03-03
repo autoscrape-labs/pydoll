@@ -899,3 +899,77 @@ class TestIframeEdgeCases:
             text = await element_after.text
             assert 'Iframe Content' in text
 
+
+class TestIframeTypeText:
+    """Integration tests for type_text inside iframes."""
+
+    @pytest.mark.asyncio
+    async def test_type_text_in_iframe_input(self, ci_chrome_options):
+        """type_text should work inside an iframe input."""
+        test_file = Path(__file__).parent / 'pages' / 'test_iframe_simple.html'
+        file_url = f'file://{test_file.absolute()}'
+
+        async with Chrome(options=ci_chrome_options) as browser:
+            tab = await browser.start()
+            await tab.go_to(file_url)
+            await asyncio.sleep(1)
+
+            iframe_element = await tab.find(id='simple-iframe')
+            input_el = await iframe_element.find(id='iframe-input')
+
+            await input_el.type_text('hello')
+            await asyncio.sleep(0.3)
+
+            prop = await input_el.execute_script(
+                'return this.value', return_by_value=True
+            )
+            assert prop['result']['result']['value'] == 'hello'
+
+    @pytest.mark.asyncio
+    async def test_type_text_humanized_in_iframe_input(self, ci_chrome_options):
+        """type_text with humanize=True should work inside an iframe."""
+        test_file = Path(__file__).parent / 'pages' / 'test_iframe_simple.html'
+        file_url = f'file://{test_file.absolute()}'
+
+        async with Chrome(options=ci_chrome_options) as browser:
+            tab = await browser.start()
+            await tab.go_to(file_url)
+            await asyncio.sleep(1)
+
+            iframe_element = await tab.find(id='simple-iframe')
+            input_el = await iframe_element.find(id='iframe-input')
+
+            await input_el.type_text('Test', humanize=True)
+            await asyncio.sleep(0.3)
+
+            prop = await input_el.execute_script(
+                'return this.value', return_by_value=True
+            )
+            value = prop['result']['result']['value']
+            # Humanized typing may introduce and correct typos,
+            # but the final value should be non-empty.
+            assert len(value) >= 2
+
+    @pytest.mark.asyncio
+    async def test_type_text_email_in_iframe_input(self, ci_chrome_options):
+        """type_text should handle symbols like @ and . inside iframe."""
+        test_file = Path(__file__).parent / 'pages' / 'test_iframe_simple.html'
+        file_url = f'file://{test_file.absolute()}'
+
+        async with Chrome(options=ci_chrome_options) as browser:
+            tab = await browser.start()
+            await tab.go_to(file_url)
+            await asyncio.sleep(1)
+
+            iframe_element = await tab.find(id='simple-iframe')
+            input_el = await iframe_element.find(id='iframe-email')
+
+            test_text = 'user@test.com'
+            await input_el.type_text(test_text)
+            await asyncio.sleep(0.3)
+
+            prop = await input_el.execute_script(
+                'return this.value', return_by_value=True
+            )
+            assert prop['result']['result']['value'] == test_text
+
