@@ -623,6 +623,32 @@ class TestKeyboardTypeText:
         assert command_down['params']['windowsVirtualKeyCode'] == 0
 
     @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        'char',
+        list('abcdefghijklmnopqrstuvwxyz'
+             'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+             '0123456789'
+             ' -=[]\\;\',./`'
+             '!@#$%^&*()_+{}|:"<>?~'
+             '\n\t'),
+    )
+    async def test_type_char_all_mapped_characters(self, mock_tab, char):
+        """Every character in CHAR_TO_KEY_INFO should produce non-zero keycode."""
+        from pydoll.constants import CHAR_TO_KEY_INFO
+
+        keyboard = Keyboard(mock_tab)
+        await keyboard._type_char(char)
+
+        command_down = mock_tab._execute_command.call_args_list[0][0][0]
+        expected_key, expected_code, expected_keycode = CHAR_TO_KEY_INFO[char]
+
+        assert command_down['params']['text'] == char
+        assert command_down['params']['key'] == expected_key
+        assert command_down['params']['code'] == expected_code
+        assert command_down['params']['windowsVirtualKeyCode'] == expected_keycode
+        assert expected_keycode > 0, f'keycode for {char!r} should not be 0'
+
+    @pytest.mark.asyncio
     async def test_type_backspace(self, keyboard_api, mock_tab):
         """Test _type_backspace sends backspace keys."""
         await keyboard_api._type_backspace()
