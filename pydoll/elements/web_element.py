@@ -103,6 +103,15 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
             selector: Selector string used to find this element (for debugging).
             attributes_list: Flat list of alternating attribute names and values.
             mouse: Optional Mouse instance for humanized click behavior.
+
+        Note:
+            Mouse and Keyboard follow different ownership strategies. Mouse is a shared
+            instance from Tab, passed down to elements to preserve cursor position state
+            across interactions. It dispatches commands through Tab._execute_command, which
+            means it has no iframe context awareness. Keyboard is created per-element and
+            routes commands through the element's own _execute_command, correctly handling
+            iframe routing. For iframe elements, the mouse is intentionally skipped during
+            humanized clicks (see click()) to avoid dispatching events to the wrong frame.
         """
         self._object_id = object_id
         self._search_method = method
@@ -218,17 +227,15 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
 
         The context includes: frame_id, document_url, execution_context_id,
         document_object_id and, for OOPIF targets, the session_id and
-        session_handler used for routing commands. The first call resolves and
-        caches the context. Non-iframe elements return None.
+        session_handler used for routing commands. The context is always freshly
+        resolved to avoid stale execution contexts after iframe navigations or
+        reloads. Non-iframe elements return None.
 
         Returns:
-            IFrameContext | None: Cached iframe context or None for non-iframes.
+            IFrameContext | None: Resolved iframe context or None for non-iframes.
         """
         if not self.is_iframe:
             return None
-
-        if self._iframe_context:
-            return self._iframe_context
 
         resolver = self._get_iframe_resolver()
         self._iframe_context = await resolver.resolve()
@@ -593,7 +600,8 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
                 element_bounds_js['y'] + element_bounds_js['height'] / 2 + y_offset,
             )
 
-        if humanize and self._mouse is not None:
+        has_iframe_context = getattr(self, '_iframe_context', None) is not None
+        if humanize and self._mouse is not None and not has_iframe_context:
             logger.info(
                 f'Clicking element (humanized): x={position_to_click[0]}, y={position_to_click[1]}'
             )
@@ -621,6 +629,10 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         await self._execute_command(press_command)
         await asyncio.sleep(hold_time)
         await self._execute_command(release_command)
+
+    async def focus(self):
+        """Focus this element via CDP DOM.focus command."""
+        await self._execute_command(DomCommands.focus(object_id=self._object_id))
 
     async def clear(self):
         """

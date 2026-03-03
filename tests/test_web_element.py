@@ -303,8 +303,8 @@ class TestWebElementMethods:
         with patch('asyncio.sleep') as mock_sleep:
             await input_element.type_text(test_text, humanize=False, interval=0.05)
 
-        # Should call execute_command for each character (KEY_DOWN + KEY_UP)
-        assert input_element._connection_handler.execute_command.call_count == len(test_text) * 2
+        # Should call execute_command for each character (focus + KEY_DOWN + KEY_UP)
+        assert input_element._connection_handler.execute_command.call_count == len(test_text) * 3
         assert input_element.click.call_count == 1
 
         # Verify sleep was called between characters
@@ -389,11 +389,11 @@ class TestWebElementIFrame:
         assert ctx.execution_context_id == 42
         assert ctx.document_object_id == 'document-object-id'
 
-        # Subsequent access should not trigger additional CDP calls
-        iframe_element._connection_handler.execute_command.reset_mock()
-        cached_ctx = await iframe_element.iframe_context
-        assert cached_ctx is ctx
-        iframe_element._connection_handler.execute_command.assert_not_awaited()
+        # Subsequent access should re-resolve (no caching) to avoid stale contexts
+        ctx2 = await iframe_element.iframe_context
+        assert ctx2 is not ctx
+        assert ctx2.frame_id == ctx.frame_id
+        assert ctx2.execution_context_id == ctx.execution_context_id
 
     @pytest.mark.asyncio
     async def test_iframe_inner_html_uses_runtime_evaluate(self, iframe_element):
@@ -873,6 +873,29 @@ class TestWebElementHumanizedClick:
             await web_element.click()
 
         assert web_element._connection_handler.execute_command.call_count == 3
+
+    @pytest.mark.asyncio
+    async def test_click_humanized_iframe_element_skips_mouse(
+        self, element_with_mouse, mouse_mock
+    ):
+        """When element has iframe context, humanized click falls back to CDP."""
+        from pydoll.interactions.iframe import IFrameContext
+
+        bounds = [0, 0, 100, 0, 100, 100, 0, 100]
+        element_with_mouse.is_visible = AsyncMock(return_value=True)
+        element_with_mouse.scroll_into_view = AsyncMock()
+        element_with_mouse._iframe_context = IFrameContext(frame_id='frame-123')
+        element_with_mouse._connection_handler.execute_command.side_effect = [
+            {'result': {'model': {'content': bounds}}},
+            None,  # mouse press
+            None,  # mouse release
+        ]
+
+        with patch('asyncio.sleep'):
+            await element_with_mouse.click(humanize=True)
+
+        mouse_mock.click.assert_not_called()
+        assert element_with_mouse._connection_handler.execute_command.call_count == 3
 
     @pytest.mark.asyncio
     async def test_click_option_element_skips_mouse(self, mouse_mock, mock_connection_handler):
