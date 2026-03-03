@@ -553,24 +553,74 @@ class TestKeyboardTypeText:
 
     @pytest.mark.asyncio
     async def test_type_char(self, keyboard_api, mock_tab):
-        """Test _type_char sends KEY_DOWN and KEY_UP events."""
+        """Test _type_char sends KEY_DOWN and KEY_UP with key info."""
         await keyboard_api._type_char("x")
 
         # Should call execute_command twice (down + up)
         assert mock_tab._execute_command.call_count == 2
 
-        # Verify KEY_DOWN
+        # Verify KEY_DOWN includes key, code and keycode
         first_call = mock_tab._execute_command.call_args_list[0]
         command_down = first_call[0][0]
         assert command_down['method'] == 'Input.dispatchKeyEvent'
         assert command_down['params']['type'] == KeyEventType.KEY_DOWN
         assert command_down['params']['text'] == 'x'
+        assert command_down['params']['key'] == 'x'
+        assert command_down['params']['code'] == 'KeyX'
+        assert command_down['params']['windowsVirtualKeyCode'] == 88
+        assert command_down['params']['nativeVirtualKeyCode'] == 88
 
-        # Verify KEY_UP
+        # Verify KEY_UP includes key, code and keycode
         second_call = mock_tab._execute_command.call_args_list[1]
         command_up = second_call[0][0]
         assert command_up['method'] == 'Input.dispatchKeyEvent'
         assert command_up['params']['type'] == KeyEventType.KEY_UP
+        assert command_up['params']['key'] == 'x'
+        assert command_up['params']['code'] == 'KeyX'
+        assert command_up['params']['windowsVirtualKeyCode'] == 88
+
+    @pytest.mark.asyncio
+    async def test_type_char_uppercase(self, keyboard_api, mock_tab):
+        """Test _type_char sends correct key info for uppercase letters."""
+        await keyboard_api._type_char("A")
+
+        command_down = mock_tab._execute_command.call_args_list[0][0][0]
+        assert command_down['params']['text'] == 'A'
+        assert command_down['params']['key'] == 'A'
+        assert command_down['params']['code'] == 'KeyA'
+        assert command_down['params']['windowsVirtualKeyCode'] == 65
+
+    @pytest.mark.asyncio
+    async def test_type_char_digit(self, keyboard_api, mock_tab):
+        """Test _type_char sends correct key info for digits."""
+        await keyboard_api._type_char("5")
+
+        command_down = mock_tab._execute_command.call_args_list[0][0][0]
+        assert command_down['params']['text'] == '5'
+        assert command_down['params']['key'] == '5'
+        assert command_down['params']['code'] == 'Digit5'
+        assert command_down['params']['windowsVirtualKeyCode'] == 53
+
+    @pytest.mark.asyncio
+    async def test_type_char_symbol(self, keyboard_api, mock_tab):
+        """Test _type_char sends correct key info for symbols."""
+        await keyboard_api._type_char("@")
+
+        command_down = mock_tab._execute_command.call_args_list[0][0][0]
+        assert command_down['params']['text'] == '@'
+        assert command_down['params']['key'] == '@'
+        assert command_down['params']['code'] == 'Digit2'
+        assert command_down['params']['windowsVirtualKeyCode'] == 50
+
+    @pytest.mark.asyncio
+    async def test_type_char_unmapped(self, keyboard_api, mock_tab):
+        """Test _type_char falls back gracefully for unmapped characters."""
+        await keyboard_api._type_char("\u00e9")  # é (accented)
+
+        command_down = mock_tab._execute_command.call_args_list[0][0][0]
+        assert command_down['params']['text'] == '\u00e9'
+        assert command_down['params']['key'] == '\u00e9'
+        assert command_down['params']['windowsVirtualKeyCode'] == 0
 
     @pytest.mark.asyncio
     async def test_type_backspace(self, keyboard_api, mock_tab):
