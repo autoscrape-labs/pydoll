@@ -8,7 +8,13 @@ from dataclasses import dataclass
 from typing import Any, Optional, Protocol, cast
 
 from pydoll.commands import InputCommands
-from pydoll.constants import DEFAULT_TYPO_PROBABILITY, QWERTY_NEIGHBORS, Key, TypoType
+from pydoll.constants import (
+    CHAR_TO_KEY_INFO,
+    DEFAULT_TYPO_PROBABILITY,
+    QWERTY_NEIGHBORS,
+    Key,
+    TypoType,
+)
 from pydoll.protocol.input.types import KeyEventType, KeyModifier
 
 logger = logging.getLogger(__name__)
@@ -240,15 +246,24 @@ class Keyboard:
     async def _type_char(self, char: str):
         """Type a single character, re-focusing the element before each keystroke."""
         await self._ensure_focus()
+        key, code, keycode = CHAR_TO_KEY_INFO.get(char, (char, '', 0))
         command_down = InputCommands.dispatch_key_event(
             type=KeyEventType.KEY_DOWN,
+            key=key,
+            code=code,
             text=char,
             unmodified_text=char,
+            windows_virtual_key_code=keycode,
+            native_virtual_key_code=keycode,
         )
         await self._executor._execute_command(command_down)
 
         command_up = InputCommands.dispatch_key_event(
             type=KeyEventType.KEY_UP,
+            key=key,
+            code=code,
+            windows_virtual_key_code=keycode,
+            native_virtual_key_code=keycode,
         )
         await self._executor._execute_command(command_up)
 
