@@ -3340,6 +3340,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pydoll.elements.web_element.WebElement.focus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;focus
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pydoll.elements.web_element.WebElement.clear" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4921,6 +4932,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pydoll.elements.web_element.WebElement.focus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;focus
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pydoll.elements.web_element.WebElement.clear" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -5378,6 +5400,17 @@ and manipulation using Chrome DevTools Protocol commands.</p>
     </table>
 
 
+<details class="note" open>
+  <summary>Note</summary>
+  <p>Mouse and Keyboard follow different ownership strategies. Mouse is a shared
+instance from Tab, passed down to elements to preserve cursor position state
+across interactions. It dispatches commands through Tab._execute_command, which
+means it has no iframe context awareness. Keyboard is created per-element and
+routes commands through the element's own _execute_command, correctly handling
+iframe routing. For iframe elements, the mouse is intentionally skipped during
+humanized clicks (see click()) to avoid dispatching events to the wrong frame.</p>
+</details>
+
 
 
 
@@ -5659,8 +5692,9 @@ and manipulation using Chrome DevTools Protocol commands.</p>
         <p>Return the resolved iframe context for this element when it is an <iframe>.</p>
 <p>The context includes: frame_id, document_url, execution_context_id,
 document_object_id and, for OOPIF targets, the session_id and
-session_handler used for routing commands. The first call resolves and
-caches the context. Non-iframe elements return None.</p>
+session_handler used for routing commands. The context is always freshly
+resolved to avoid stale execution contexts after iframe navigations or
+reloads. Non-iframe elements return None.</p>
 
 
 <table>
@@ -5679,7 +5713,7 @@ caches the context. Non-iframe elements return None.</p>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
-                <p>IFrameContext | None: Cached iframe context or None for non-iframes.</p>
+                <p>IFrameContext | None: Resolved iframe context or None for non-iframes.</p>
               </div>
             </td>
           </tr>
@@ -6571,6 +6605,30 @@ mousePressed/mouseReleased events directly.</p>
   <p>For <option> elements, delegates to specialized JavaScript approach.
 Element is automatically scrolled into view.</p>
 </details>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="pydoll.elements.web_element.WebElement.focus" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">focus</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">focus</span><span class="p">()</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Focus this element via CDP DOM.focus command.</p>
+
 
     </div>
 
