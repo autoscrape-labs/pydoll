@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 from abc import ABC, abstractmethod
 from random import randint
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, overload
@@ -14,7 +15,7 @@ from pydoll.exceptions import (
     FailedToStartBrowser,
     InvalidConnectionPort,
 )
-from pydoll.protocol.bidi import browsing_context, session
+from pydoll.protocol.bidi import browsing_context, script, session
 
 if TYPE_CHECKING:
     from pydoll.browser.firefox.options import FirefoxOptions
@@ -88,7 +89,14 @@ class FirefoxBrowser(ABC):
         await self._verify_browser_running()
         logger.info('Firefox is running; establishing BiDi session')
 
-        await self._connection_handler.new_session()
+        await self._connection_handler.new_session({
+            'moz:firefoxOptions': {
+                'prefs': {
+                    'dom.webdriver.enabled': False,
+                }
+            }
+        })
+        await self._hide_automation_signals()
 
         response = await self._connection_handler.execute_command(browsing_context.get_tree())
         contexts = response.get('result', {}).get('contexts', [])
@@ -116,6 +124,8 @@ class FirefoxBrowser(ABC):
         await self._connection_handler.close()
         await asyncio.sleep(0.1)
         self._temp_directory_manager.cleanup()
+        if hasattr(self, '_profile_temp_dir'):
+            self._profile_temp_dir.cleanup()
         logger.info('Firefox stopped and resources cleaned up')
 
     async def new_tab(self, url: str = '') -> FirefoxTab:
@@ -214,16 +224,171 @@ class FirefoxBrowser(ABC):
             await asyncio.sleep(1)
         return False
 
+    async def _hide_automation_signals(self) -> None:
+        """
+        Inject a preload script that runs before every page load to remove
+        common browser-automation fingerprints detectable by websites.
+        """
+        stealth_script = '''() => {
+  // --- navigator.webdriver ---
+  // Strategy 1: delete the property from the prototype entirely (cleanest).
+  // Strategy 2: if not configurable/deletable, override with a spoofed getter.
+  try {
+    if (Object.getOwnPropertyDescriptor(Navigator.prototype, 'webdriver')?.configurable) {
+      delete Navigator.prototype.webdriver;
+    } else {
+      throw new Error('not configurable');
+    }
+  } catch (_) {
+    // Fallback: redefine with a getter whose toString looks native
+    try {
+      const webdriverGetter = () => undefined;
+      try {
+        webdriverGetter.toString = () => 'function get webdriver() { [native code] }';
+      } catch (_) {}
+      Object.defineProperty(Navigator.prototype, 'webdriver', {
+        get: webdriverGetter,
+        configurable: true,
+        enumerable: true,
+      });
+    } catch (_) {}
+  }
+  // Also remove any own property that may have been set on the instance
+  try {
+    if (Object.getOwnPropertyDescriptor(navigator, 'webdriver')?.configurable) {
+      delete navigator.webdriver;
+    }
+  } catch (_) {}
+
+  // --- navigator.languages ---
+  try {
+    if (!navigator.languages || navigator.languages.length === 0) {
+      Object.defineProperty(navigator, 'languages', {
+        get: () => ['en-US', 'en'],
+        configurable: true,
+      });
+    }
+  } catch (_) {}
+
+  // --- navigator.plugins ---
+  try {
+    if (navigator.plugins.length === 0) {
+      Object.defineProperty(navigator, 'plugins', {
+        get: () => {
+          const arr = [{ name: 'PDF Viewer', filename: 'internal-pdf-viewer' }];
+          Object.setPrototypeOf(arr, PluginArray.prototype);
+          return arr;
+        },
+        configurable: true,
+      });
+    }
+  } catch (_) {}
+
+  // --- navigator.mimeTypes ---
+  try {
+    if (!navigator.mimeTypes || navigator.mimeTypes.length === 0) {
+      Object.defineProperty(navigator, 'mimeTypes', {
+        get: () => {
+          const arr = [{ type: 'application/pdf', suffixes: 'pdf', description: '' }];
+          Object.setPrototypeOf(arr, MimeTypeArray.prototype);
+          return arr;
+        },
+        configurable: true,
+      });
+    }
+  } catch (_) {}
+
+  // --- permissions.query ---
+  try {
+    const origQuery = navigator.permissions.query.bind(navigator.permissions);
+    navigator.permissions.query = (params) =>
+      params.name === 'notifications'
+        ? Promise.resolve({ state: Notification.permission })
+        : origQuery(params);
+  } catch (_) {}
+
+  // --- hardwareConcurrency ---
+  try {
+    Object.defineProperty(navigator, 'hardwareConcurrency', {
+      get: () => 4,
+      configurable: true,
+    });
+  } catch (_) {}
+}'''
+        await self._connection_handler.execute_command(
+            script.add_preload_script(stealth_script)
+        )
+        logger.debug('Automation signals hidden via preload script')
+
     def _setup_user_dir(self) -> str:
         """
-        Create a temporary Firefox profile directory.
+        Create a temporary Firefox profile directory with stealth preferences.
+
+        The profile is placed under ~/.cache/pydoll/profiles/ rather than /tmp
+        because snap Firefox uses a private /tmp namespace and silently ignores
+        --profile paths outside $HOME.
 
         Returns:
             Path to the created profile directory.
         """
-        temp_dir = self._temp_directory_manager.create_temp_dir()
-        logger.debug(f'Firefox profile directory: {temp_dir.name}')
-        return temp_dir.name
+        import tempfile
+
+        home_profiles = os.path.expanduser('~/.cache/pydoll/profiles')
+        os.makedirs(home_profiles, exist_ok=True)
+        self._profile_temp_dir = tempfile.TemporaryDirectory(dir=home_profiles)
+        profile_dir = self._profile_temp_dir.name
+        self._write_user_js(profile_dir)
+        self._write_user_chrome_css(profile_dir)
+        logger.info(f'Firefox profile directory: {profile_dir}')
+        return profile_dir
+
+    @staticmethod
+    def _write_user_js(profile_dir: str) -> None:
+        """Write user.js with stealth preferences to the Firefox profile."""
+        prefs = [
+            ('dom.webdriver.enabled', False),
+            ('marionette.enabled', False),
+            ('toolkit.legacyUserProfileCustomizations.stylesheets', True),
+            ('devtools.debugger.prompt-connection', False),
+            # Disable automation/testing-specific UI and features
+            ('browser.aboutConfig.showWarning', False),
+            ('browser.shell.checkDefaultBrowser', False),
+            ('browser.startup.homepage_override.mstone', 'ignore'),
+            # Reduce fingerprinting surface without breaking functionality
+            ('privacy.resistFingerprinting', False),
+            ('privacy.trackingprotection.enabled', False),
+            # Suppress first-run dialogs and telemetry
+            ('datareporting.healthreport.uploadEnabled', False),
+            ('datareporting.policy.dataSubmissionEnabled', False),
+            ('toolkit.telemetry.enabled', False),
+            ('toolkit.telemetry.unified', False),
+            ('browser.newtabpage.activity-stream.feeds.telemetry', False),
+            ('browser.ping-centre.telemetry', False),
+        ]
+        lines = [f'user_pref("{key}", {str(val).lower()});\n' for key, val in prefs]
+        user_js_path = os.path.join(profile_dir, 'user.js')
+        with open(user_js_path, 'w', encoding='utf-8') as f:
+            f.writelines(lines)
+        logger.debug(f'Wrote user.js to {user_js_path}')
+
+    @staticmethod
+    def _write_user_chrome_css(profile_dir: str) -> None:
+        """Write userChrome.css to hide the remote control notification bar."""
+        chrome_dir = os.path.join(profile_dir, 'chrome')
+        os.makedirs(chrome_dir, exist_ok=True)
+        css = (
+            '#remote-control-box {\n'
+            '  display: none !important;\n'
+            '}\n'
+            '\n'
+            ':root[remotecontrol] #urlbar-background {\n'
+            '  background: unset !important;\n'
+            '}\n'
+        )
+        css_path = os.path.join(chrome_dir, 'userChrome.css')
+        with open(css_path, 'w', encoding='utf-8') as f:
+            f.write(css)
+        logger.debug(f'Wrote userChrome.css to {css_path}')
 
     @staticmethod
     def _validate_connection_port(connection_port: Optional[int]):

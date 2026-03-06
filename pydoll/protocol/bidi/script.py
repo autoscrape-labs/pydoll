@@ -73,3 +73,26 @@ def call_function(
     if args is not None:
         params['arguments'] = args
     return Command(method='script.callFunction', params=params)
+
+
+class AddPreloadScriptParams(TypedDict):
+    functionDeclaration: str
+    contexts: NotRequired[Optional[list[str]]]
+
+
+class AddPreloadScriptResult(TypedDict):
+    script: str
+
+
+AddPreloadScriptResponse = Response[AddPreloadScriptResult]
+AddPreloadScriptCommand = Command[AddPreloadScriptParams, AddPreloadScriptResponse]
+
+
+def add_preload_script(
+    function_declaration: str,
+    contexts: Optional[list[str]] = None,
+) -> AddPreloadScriptCommand:
+    params = AddPreloadScriptParams(functionDeclaration=function_declaration)
+    if contexts is not None:
+        params['contexts'] = contexts
+    return Command(method='script.addPreloadScript', params=params)

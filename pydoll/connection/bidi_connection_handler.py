@@ -51,16 +51,19 @@ class BiDiConnectionHandler(ConnectionHandler):
             raise BiDiCommandError(f'{error}: {message}')
         return response
 
-    async def new_session(self) -> dict:
+    async def new_session(self, capabilities: Optional[dict] = None) -> dict:
         """
         Establish a new BiDi session with the browser.
 
         Sends session.new and stores the returned sessionId for future use.
 
+        Args:
+            capabilities: Optional BiDi capabilities dict (e.g. moz:firefoxOptions).
+
         Returns:
             Full response dict from the browser.
         """
-        command = session_module.new_session()
+        command = session_module.new_session(capabilities)
         response = await self.execute_command(command)
         self._session_id = response.get('result', {}).get('sessionId')
         logger.info(f'BiDi session established: sessionId={self._session_id}')
