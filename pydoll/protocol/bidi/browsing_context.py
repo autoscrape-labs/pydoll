@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from typing import Optional
 
+from typing_extensions import NotRequired, TypedDict
+
 from pydoll.protocol.base import Command, EmptyResponse, Response
-from typing_extensions import TypedDict, NotRequired
 
 
 class NavigateParams(TypedDict):

@@ -4,11 +4,12 @@ import base64
 import logging
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, overload
 
+from pydoll.browser.firefox.element import KEYS, FirefoxElement
 from pydoll.protocol.bidi import browsing_context, script, session
+from pydoll.protocol.bidi import input as bidi_input
 
 if TYPE_CHECKING:
     from pydoll.connection.bidi_connection_handler import BiDiConnectionHandler
-    from pydoll.protocol.bidi.browsing_context import BrowsingContextInfo
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +80,7 @@ class FirefoxTab:
         selector: str,
         selector_type: str = 'css',
         max_node_count: Optional[int] = None,
-    ) -> list[dict]:
+    ) -> list[FirefoxElement]:
         """
         Find elements in this tab using a CSS or XPath selector.
 
@@ -89,7 +90,7 @@ class FirefoxTab:
             max_node_count: Maximum number of nodes to return.
 
         Returns:
-            List of node reference dicts.
+            List of FirefoxElement instances ready for interaction.
         """
         locator = {'type': selector_type, 'value': selector}
         logger.debug(
@@ -99,7 +100,8 @@ class FirefoxTab:
         response = await self._connection_handler.execute_command(
             browsing_context.locate_nodes(self._context_id, locator, max_node_count)
         )
-        return response.get('result', {}).get('nodes', [])
+        nodes = response.get('result', {}).get('nodes', [])
+        return [FirefoxElement(node, self._context_id, self._connection_handler) for node in nodes]
 
     async def take_screenshot(self) -> bytes:
         """
@@ -173,6 +175,30 @@ class FirefoxTab:
         logger.debug(f'Registered callback: event={event_name}, id={callback_id}')
         return callback_id
 
+    async def press_key(self, key: str) -> None:
+        """
+        Press a key in the current tab context (no specific element targeted).
+
+        Args:
+            key: Key name (e.g. 'enter', 'escape', 'tab') or a single character.
+        """
+        value = KEYS.get(key.lower(), key)
+        await self._connection_handler.execute_command(
+            bidi_input.perform_actions(
+                self._context_id,
+                [
+                    {
+                        'type': 'key',
+                        'id': 'keyboard1',
+                        'actions': [
+                            {'type': 'keyDown', 'value': value},
+                            {'type': 'keyUp', 'value': value},
+                        ],
+                    }
+                ],
+            )
+        )
+
     async def remove_callback(self, callback_id: int) -> bool:
         """Remove a registered event callback by ID."""
         return await self._connection_handler.remove_callback(callback_id)
@@ -198,9 +224,7 @@ class FirefoxTab:
     async def close(self):
         """Close this tab's browsing context."""
         logger.info(f'Closing context: {self._context_id}')
-        await self._connection_handler.execute_command(
-            browsing_context.close(self._context_id)
-        )
+        await self._connection_handler.execute_command(browsing_context.close(self._context_id))
 
     def __repr__(self) -> str:
         return f'FirefoxTab(context_id={self._context_id!r})'

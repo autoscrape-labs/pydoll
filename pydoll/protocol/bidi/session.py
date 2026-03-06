@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from typing import Optional
 
+from typing_extensions import NotRequired, TypedDict
+
 from pydoll.protocol.base import Command, EmptyResponse, Response
-from typing_extensions import TypedDict, NotRequired
 
 
 class CapabilitiesRequest(TypedDict):
@@ -37,9 +38,7 @@ def new_session(capabilities: Optional[dict] = None) -> SessionNewCommand:
     return Command(method='session.new', params=params)
 
 
-def subscribe(
-    events: list[str], contexts: Optional[list[str]] = None
-) -> SessionSubscribeCommand:
+def subscribe(events: list[str], contexts: Optional[list[str]] = None) -> SessionSubscribeCommand:
     params = SessionSubscribeParams(events=events)
     if contexts is not None:
         params['contexts'] = contexts

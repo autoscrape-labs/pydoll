@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from typing import Optional
 
+from typing_extensions import NotRequired, TypedDict
+
 from pydoll.protocol.base import Command, Response
-from typing_extensions import TypedDict, NotRequired
 
 
 class ScriptTarget(TypedDict):
@@ -44,9 +45,7 @@ EvaluateCommand = Command[EvaluateParams, EvaluateResponse]
 CallFunctionCommand = Command[CallFunctionParams, CallFunctionResponse]
 
 
-def evaluate(
-    expression: str, context: str, await_promise: bool = True
-) -> EvaluateCommand:
+def evaluate(expression: str, context: str, await_promise: bool = True) -> EvaluateCommand:
     return Command(
         method='script.evaluate',
         params=EvaluateParams(

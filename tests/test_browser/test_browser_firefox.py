@@ -8,6 +8,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 import pytest_asyncio
 
+from pydoll.browser.firefox.element import FirefoxElement, KEYS
 from pydoll.browser.firefox.firefox import Firefox
 from pydoll.browser.firefox.base import FirefoxBrowser
 from pydoll.browser.firefox.options import FirefoxOptions
@@ -50,6 +51,13 @@ async def firefox_tab(mock_bidi_handler):
 
 
 @pytest_asyncio.fixture
+async def firefox_element(mock_bidi_handler):
+    """A FirefoxElement backed by a mocked handler."""
+    node = {'type': 'node', 'sharedId': 'shared-1', 'value': {'nodeType': 1}}
+    return FirefoxElement(node=node, context_id='ctx-1', connection_handler=mock_bidi_handler)
+
+
+@pytest_asyncio.fixture
 async def mock_firefox(mock_bidi_handler):
     """A Firefox instance with all external dependencies mocked out."""
     with (
@@ -88,7 +96,7 @@ class TestFirefoxOptions:
         opts = FirefoxOptions()
         assert opts.arguments == []
         assert opts.binary_location == ''
-        assert opts.start_timeout == 20
+        assert opts.start_timeout == 30
         assert opts.headless is False
         assert opts.browser_preferences == {}
 
@@ -272,14 +280,22 @@ class TestFirefoxTab:
         assert cmd['params']['target']['context'] == 'ctx-1'
 
     @pytest.mark.asyncio
-    async def test_find_returns_nodes(self, firefox_tab, mock_bidi_handler):
+    async def test_find_returns_firefox_elements(self, firefox_tab, mock_bidi_handler):
         nodes = [{'type': 'node', 'sharedId': 'node-1'}]
         mock_bidi_handler.execute_command.return_value = {'result': {'nodes': nodes}}
         result = await firefox_tab.find('.my-class')
-        assert result == nodes
+        assert len(result) == 1
+        assert isinstance(result[0], FirefoxElement)
+        assert result[0].shared_id == 'node-1'
         cmd = mock_bidi_handler.execute_command.call_args[0][0]
         assert cmd['method'] == 'browsingContext.locateNodes'
         assert cmd['params']['locator'] == {'type': 'css', 'value': '.my-class'}
+
+    @pytest.mark.asyncio
+    async def test_find_empty_result(self, firefox_tab, mock_bidi_handler):
+        mock_bidi_handler.execute_command.return_value = {'result': {'nodes': []}}
+        result = await firefox_tab.find('.missing')
+        assert result == []
 
     @pytest.mark.asyncio
     async def test_find_with_xpath_locator(self, firefox_tab, mock_bidi_handler):
@@ -311,7 +327,7 @@ class TestFirefoxTab:
         mock_bidi_handler.execute_command.return_value = {
             'result': {'result': {'type': 'string', 'value': 'https://example.com'}, 'realm': 'r'}
         }
-        url = await firefox_tab.current_url()
+        url = await firefox_tab.current_url
         assert url == 'https://example.com'
 
     @pytest.mark.asyncio
@@ -319,7 +335,7 @@ class TestFirefoxTab:
         mock_bidi_handler.execute_command.return_value = {
             'result': {'result': {'type': 'string', 'value': '<html></html>'}, 'realm': 'r'}
         }
-        source = await firefox_tab.page_source()
+        source = await firefox_tab.page_source
         assert source == '<html></html>'
 
     @pytest.mark.asyncio
@@ -327,8 +343,37 @@ class TestFirefoxTab:
         mock_bidi_handler.execute_command.return_value = {
             'result': {'result': {'type': 'string', 'value': 'My Page'}, 'realm': 'r'}
         }
-        title = await firefox_tab.title()
+        title = await firefox_tab.title
         assert title == 'My Page'
+
+    @pytest.mark.asyncio
+    async def test_press_key_named_key(self, firefox_tab, mock_bidi_handler):
+        await firefox_tab.press_key('enter')
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['method'] == 'input.performActions'
+        assert cmd['params']['context'] == 'ctx-1'
+        actions = cmd['params']['actions'][0]['actions']
+        assert actions == [
+            {'type': 'keyDown', 'value': KEYS['enter']},
+            {'type': 'keyUp', 'value': KEYS['enter']},
+        ]
+
+    @pytest.mark.asyncio
+    async def test_press_key_single_char(self, firefox_tab, mock_bidi_handler):
+        await firefox_tab.press_key('z')
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        actions = cmd['params']['actions'][0]['actions']
+        assert actions == [
+            {'type': 'keyDown', 'value': 'z'},
+            {'type': 'keyUp', 'value': 'z'},
+        ]
+
+    @pytest.mark.asyncio
+    async def test_press_key_unknown_key_uses_value_as_is(self, firefox_tab, mock_bidi_handler):
+        await firefox_tab.press_key('X')
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        actions = cmd['params']['actions'][0]['actions']
+        assert actions[0]['value'] == 'X'
 
     @pytest.mark.asyncio
     async def test_on_subscribes_and_registers_callback(self, firefox_tab, mock_bidi_handler):
@@ -395,7 +440,7 @@ class TestFirefoxBinaryDetection:
     def test_linux_binary_found(self):
         with (
             patch('platform.system', return_value='Linux'),
-            patch('pydoll.utils.validate_browser_paths', return_value='/usr/bin/firefox'),
+            patch('pydoll.browser.firefox.firefox.validate_browser_paths', return_value='/usr/bin/firefox'),
         ):
             path = Firefox._get_default_binary_location()
         assert path == '/usr/bin/firefox'
@@ -528,3 +573,225 @@ class TestFirefoxBrowserLifecycle:
         async with mock_firefox:
             pass
         mock_firefox._browser_process_manager.stop_process.assert_called_once()
+
+
+# ---------------------------------------------------------------------------
+# FirefoxElement tests
+# ---------------------------------------------------------------------------
+
+class TestFirefoxElement:
+    def test_shared_id_property(self, firefox_element):
+        assert firefox_element.shared_id == 'shared-1'
+
+    def test_node_property(self, firefox_element):
+        assert firefox_element.node['sharedId'] == 'shared-1'
+        assert firefox_element.node['type'] == 'node'
+
+    def test_repr(self, firefox_element):
+        assert 'shared-1' in repr(firefox_element)
+
+    # --- click ---
+
+    @pytest.mark.asyncio
+    async def test_click_sends_perform_actions(self, firefox_element, mock_bidi_handler):
+        await firefox_element.click()
+        mock_bidi_handler.execute_command.assert_called_once()
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['method'] == 'input.performActions'
+        assert cmd['params']['context'] == 'ctx-1'
+
+    @pytest.mark.asyncio
+    async def test_click_uses_element_origin(self, firefox_element, mock_bidi_handler):
+        await firefox_element.click()
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        pointer_group = cmd['params']['actions'][0]
+        assert pointer_group['type'] == 'pointer'
+        assert pointer_group['parameters'] == {'pointerType': 'mouse'}
+        actions = pointer_group['actions']
+        assert actions[0]['type'] == 'pointerMove'
+        assert actions[0]['origin'] == {
+            'type': 'element',
+            'element': {'sharedId': 'shared-1'},
+        }
+        assert actions[1] == {'type': 'pointerDown', 'button': 0}
+        assert actions[2] == {'type': 'pointerUp', 'button': 0}
+
+    # --- hover ---
+
+    @pytest.mark.asyncio
+    async def test_hover_sends_only_pointer_move(self, firefox_element, mock_bidi_handler):
+        await firefox_element.hover()
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['method'] == 'input.performActions'
+        actions = cmd['params']['actions'][0]['actions']
+        assert len(actions) == 1
+        assert actions[0]['type'] == 'pointerMove'
+        assert actions[0]['origin']['element']['sharedId'] == 'shared-1'
+
+    # --- type ---
+
+    @pytest.mark.asyncio
+    async def test_type_calls_click_then_key_actions(self, firefox_element, mock_bidi_handler):
+        await firefox_element.type('ab', clear_first=False)
+        # First call: click; second call: key actions
+        assert mock_bidi_handler.execute_command.call_count == 2
+        key_cmd = mock_bidi_handler.execute_command.call_args_list[1][0][0]
+        assert key_cmd['method'] == 'input.performActions'
+        assert key_cmd['params']['actions'][0]['type'] == 'key'
+
+    @pytest.mark.asyncio
+    async def test_type_sends_chars_as_key_pairs(self, firefox_element, mock_bidi_handler):
+        await firefox_element.type('hi', clear_first=False)
+        key_cmd = mock_bidi_handler.execute_command.call_args_list[1][0][0]
+        actions = key_cmd['params']['actions'][0]['actions']
+        assert actions == [
+            {'type': 'keyDown', 'value': 'h'},
+            {'type': 'keyUp', 'value': 'h'},
+            {'type': 'keyDown', 'value': 'i'},
+            {'type': 'keyUp', 'value': 'i'},
+        ]
+
+    @pytest.mark.asyncio
+    async def test_type_with_clear_prepends_select_all_delete(self, firefox_element, mock_bidi_handler):
+        await firefox_element.type('x', clear_first=True)
+        key_cmd = mock_bidi_handler.execute_command.call_args_list[1][0][0]
+        actions = key_cmd['params']['actions'][0]['actions']
+        # First 6 actions are the clear sequence
+        assert actions[0] == {'type': 'keyDown', 'value': KEYS['ctrl']}
+        assert actions[1] == {'type': 'keyDown', 'value': 'a'}
+        assert actions[2] == {'type': 'keyUp', 'value': 'a'}
+        assert actions[3] == {'type': 'keyUp', 'value': KEYS['ctrl']}
+        assert actions[4] == {'type': 'keyDown', 'value': KEYS['delete']}
+        assert actions[5] == {'type': 'keyUp', 'value': KEYS['delete']}
+        # Then the typed character
+        assert actions[6] == {'type': 'keyDown', 'value': 'x'}
+        assert actions[7] == {'type': 'keyUp', 'value': 'x'}
+
+    @pytest.mark.asyncio
+    async def test_type_empty_string_still_clicks(self, firefox_element, mock_bidi_handler):
+        await firefox_element.type('', clear_first=False)
+        assert mock_bidi_handler.execute_command.call_count == 2
+        key_cmd = mock_bidi_handler.execute_command.call_args_list[1][0][0]
+        actions = key_cmd['params']['actions'][0]['actions']
+        assert actions == []
+
+    # --- press_key ---
+
+    @pytest.mark.asyncio
+    async def test_press_key_named_key(self, firefox_element, mock_bidi_handler):
+        await firefox_element.press_key('enter')
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['method'] == 'input.performActions'
+        actions = cmd['params']['actions'][0]['actions']
+        assert actions == [
+            {'type': 'keyDown', 'value': KEYS['enter']},
+            {'type': 'keyUp', 'value': KEYS['enter']},
+        ]
+
+    @pytest.mark.asyncio
+    async def test_press_key_escape(self, firefox_element, mock_bidi_handler):
+        await firefox_element.press_key('escape')
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        actions = cmd['params']['actions'][0]['actions']
+        assert actions[0]['value'] == KEYS['escape']
+
+    @pytest.mark.asyncio
+    async def test_press_key_single_char(self, firefox_element, mock_bidi_handler):
+        await firefox_element.press_key('a')
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        actions = cmd['params']['actions'][0]['actions']
+        assert actions == [
+            {'type': 'keyDown', 'value': 'a'},
+            {'type': 'keyUp', 'value': 'a'},
+        ]
+
+    @pytest.mark.asyncio
+    async def test_press_key_unknown_falls_back_to_value(self, firefox_element, mock_bidi_handler):
+        await firefox_element.press_key('Q')
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        actions = cmd['params']['actions'][0]['actions']
+        assert actions[0]['value'] == 'Q'
+
+    # --- get_attribute ---
+
+    @pytest.mark.asyncio
+    async def test_get_attribute_sends_call_function(self, firefox_element, mock_bidi_handler):
+        mock_bidi_handler.execute_command.return_value = {
+            'result': {'result': {'type': 'string', 'value': 'https://example.com'}, 'realm': 'r'}
+        }
+        result = await firefox_element.get_attribute('href')
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['method'] == 'script.callFunction'
+        assert cmd['params']['functionDeclaration'] == '(el) => el.getAttribute("href")'
+        assert cmd['params']['arguments'] == [{'sharedId': 'shared-1'}]
+        assert cmd['params']['target']['context'] == 'ctx-1'
+        assert result == 'https://example.com'
+
+    @pytest.mark.asyncio
+    async def test_get_attribute_returns_none_when_missing(self, firefox_element, mock_bidi_handler):
+        mock_bidi_handler.execute_command.return_value = {
+            'result': {'result': {'type': 'null'}, 'realm': 'r'}
+        }
+        result = await firefox_element.get_attribute('data-missing')
+        assert result is None
+
+    # --- get_property ---
+
+    @pytest.mark.asyncio
+    async def test_get_property_sends_call_function(self, firefox_element, mock_bidi_handler):
+        mock_bidi_handler.execute_command.return_value = {
+            'result': {'result': {'type': 'string', 'value': 'typed text'}, 'realm': 'r'}
+        }
+        result = await firefox_element.get_property('value')
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['method'] == 'script.callFunction'
+        assert cmd['params']['functionDeclaration'] == '(el) => el["value"]'
+        assert result == 'typed text'
+
+    @pytest.mark.asyncio
+    async def test_get_property_boolean(self, firefox_element, mock_bidi_handler):
+        mock_bidi_handler.execute_command.return_value = {
+            'result': {'result': {'type': 'boolean', 'value': True}, 'realm': 'r'}
+        }
+        result = await firefox_element.get_property('checked')
+        assert result is True
+
+    # --- text ---
+
+    @pytest.mark.asyncio
+    async def test_text_uses_inner_text(self, firefox_element, mock_bidi_handler):
+        mock_bidi_handler.execute_command.return_value = {
+            'result': {'result': {'type': 'string', 'value': 'Hello world'}, 'realm': 'r'}
+        }
+        result = await firefox_element.text
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['params']['functionDeclaration'] == '(el) => el.innerText'
+        assert result == 'Hello world'
+
+    @pytest.mark.asyncio
+    async def test_text_returns_empty_string_when_none(self, firefox_element, mock_bidi_handler):
+        mock_bidi_handler.execute_command.return_value = {
+            'result': {'result': {'type': 'null'}, 'realm': 'r'}
+        }
+        result = await firefox_element.text
+        assert result == ''
+
+    # --- inner_html ---
+
+    @pytest.mark.asyncio
+    async def test_inner_html_uses_inner_html(self, firefox_element, mock_bidi_handler):
+        mock_bidi_handler.execute_command.return_value = {
+            'result': {'result': {'type': 'string', 'value': '<span>hi</span>'}, 'realm': 'r'}
+        }
+        result = await firefox_element.inner_html
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['params']['functionDeclaration'] == '(el) => el.innerHTML'
+        assert result == '<span>hi</span>'
+
+    @pytest.mark.asyncio
+    async def test_inner_html_returns_empty_string_when_none(self, firefox_element, mock_bidi_handler):
+        mock_bidi_handler.execute_command.return_value = {
+            'result': {'result': {'type': 'null'}, 'realm': 'r'}
+        }
+        result = await firefox_element.inner_html
+        assert result == ''

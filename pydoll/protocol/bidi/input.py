@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from pydoll.protocol.base import Command, EmptyResponse, Response
 from typing_extensions import TypedDict
+
+from pydoll.protocol.base import Command, EmptyResponse, Response
 
 
 class PerformActionsParams(TypedDict):

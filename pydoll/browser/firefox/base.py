@@ -78,7 +78,7 @@ class FirefoxBrowser(ABC):
         logger.debug(f'Resolved Firefox binary: {binary_location}')
 
         profile_dir = self._setup_user_dir()
-        self.options.arguments.append(f'--profile')
+        self.options.arguments.append('--profile')
         self.options.arguments.append(profile_dir)
 
         logger.info(f'Starting Firefox on port {self._connection_port}')
@@ -229,7 +229,7 @@ class FirefoxBrowser(ABC):
         Inject a preload script that runs before every page load to remove
         common browser-automation fingerprints detectable by websites.
         """
-        stealth_script = '''() => {
+        stealth_script = """() => {
   // --- navigator.webdriver ---
   // Strategy 1: delete the property from the prototype entirely (cleanest).
   // Strategy 2: if not configurable/deletable, override with a spoofed getter.
@@ -314,10 +314,8 @@ class FirefoxBrowser(ABC):
       configurable: true,
     });
   } catch (_) {}
-}'''
-        await self._connection_handler.execute_command(
-            script.add_preload_script(stealth_script)
-        )
+}"""
+        await self._connection_handler.execute_command(script.add_preload_script(stealth_script))
         logger.debug('Automation signals hidden via preload script')
 
     def _setup_user_dir(self) -> str:
