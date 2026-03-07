@@ -113,6 +113,7 @@ if TYPE_CHECKING:
         CaptureScreenshotResponse,
         GetResourceContentResponse,
         GetResourceTreeResponse,
+        NavigateResult,
         PrintToPDFResponse,
     )
     from pydoll.protocol.runtime.methods import CallFunctionOnResponse, EvaluateResponse
@@ -909,7 +910,7 @@ class Tab(FindElementsMixin):
             return
 
         async with self._wait_page_load(timeout=timeout):
-            response = await self._execute_command(PageCommands.navigate(url))
+            response: NavigateResult = await self._execute_command(PageCommands.navigate(url))
             error_text = response['result'].get('errorText')
             if error_text:
                 raise NavigationError(url, error_text)
