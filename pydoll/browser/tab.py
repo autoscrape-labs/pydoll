@@ -51,6 +51,7 @@ from pydoll.exceptions import (
     InvalidScriptWithElement,
     InvalidTabInitialization,
     MissingScreenshotPath,
+    NavigationError,
     NetworkEventsNotEnabled,
     NoDialogPresent,
     NotAnIFrame,
@@ -899,6 +900,7 @@ class Tab(FindElementsMixin):
             timeout: Maximum seconds to wait for page load (default 300).
 
         Raises:
+            NavigationError: If the navigation fails (e.g., DNS error).
             PageLoadTimeout: If page doesn't finish loading within timeout.
         """
         logger.info(f'Navigating to URL: {url} (timeout={timeout}s)')
@@ -907,7 +909,10 @@ class Tab(FindElementsMixin):
             return
 
         async with self._wait_page_load(timeout=timeout):
-            await self._execute_command(PageCommands.navigate(url))
+            response = await self._execute_command(PageCommands.navigate(url))
+            error_text = response['result'].get('errorText')
+            if error_text:
+                raise NavigationError(url, error_text)
         logger.info(f'Navigation complete: {url}')
 
     async def refresh(

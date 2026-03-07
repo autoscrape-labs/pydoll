@@ -211,6 +211,17 @@ class DownloadTimeout(TimeoutException):
     message = 'Timed out waiting for download to complete'
 
 
+class NavigationError(PydollException):
+    """Raised when page navigation fails (e.g., DNS resolution failure)."""
+
+    def __init__(self, url: str, error_text: str):
+        self.url = url
+        self.error_text = error_text
+        super().__init__(
+            message=f'Navigation to {url} failed: {error_text}',
+        )
+
+
 class ConfigurationException(PydollException):
     """Base class for exceptions related to configuration and options."""
 
