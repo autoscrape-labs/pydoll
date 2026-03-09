@@ -11,7 +11,6 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-# WebDriver special key values (Unicode private use area)
 KEYS = {
     'ctrl': '\ue009',
     'shift': '\ue008',
@@ -211,7 +210,7 @@ class FirefoxElement:
 
     async def _call_function(self, function_declaration: str) -> Any:
         """Call a JS function with this element as the first argument."""
-        response = await self._connection_handler.execute_command(
+        response: dict = await self._connection_handler.execute_command(
             script.call_function(
                 function_declaration=function_declaration,
                 context=self._context_id,

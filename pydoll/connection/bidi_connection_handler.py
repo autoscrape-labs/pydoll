@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Any, Optional
 
 from pydoll.connection.connection_handler import ConnectionHandler
 from pydoll.exceptions import BiDiCommandError
@@ -43,7 +43,7 @@ class BiDiConnectionHandler(ConnectionHandler):
         Raises:
             BiDiCommandError: If the browser returns a BiDi error response.
         """
-        response = await super().execute_command(command, timeout)
+        response: Any = await super().execute_command(command, timeout)
         if response.get('type') == 'error':
             error = response.get('error', 'unknown')
             message = response.get('message', '')
@@ -64,7 +64,7 @@ class BiDiConnectionHandler(ConnectionHandler):
             Full response dict from the browser.
         """
         command = session_module.new_session(capabilities)
-        response = await self.execute_command(command)
+        response: dict = await self.execute_command(command)
         self._session_id = response.get('result', {}).get('sessionId')
         logger.info(f'BiDi session established: sessionId={self._session_id}')
         return response

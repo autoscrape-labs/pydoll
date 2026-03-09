@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, overload
 from pydoll.browser.firefox.element import KEYS, FirefoxElement
 from pydoll.protocol.bidi import browsing_context, network, script, session, storage
 from pydoll.protocol.bidi import input as bidi_input
-from pydoll.protocol.bidi.network import InterceptPhase, NetworkEvent
+from pydoll.protocol.bidi.network import Header, InterceptPhase, NetworkEvent
 
 if TYPE_CHECKING:
     from pydoll.connection.bidi_connection_handler import BiDiConnectionHandler
@@ -54,7 +54,7 @@ class FirefoxTab:
             Navigation result dict with 'url' key.
         """
         logger.info(f'Navigating to {url} (context={self._context_id})')
-        response = await self._connection_handler.execute_command(
+        response: dict = await self._connection_handler.execute_command(
             browsing_context.navigate(self._context_id, url, wait)
         )
         return response['result']
@@ -71,7 +71,7 @@ class FirefoxTab:
             The JavaScript result value.
         """
         logger.debug(f'Evaluating expression in context={self._context_id}')
-        response = await self._connection_handler.execute_command(
+        response: dict = await self._connection_handler.execute_command(
             script.evaluate(expression, self._context_id, await_promise)
         )
         result = response.get('result', {})
@@ -100,7 +100,7 @@ class FirefoxTab:
             f'Finding nodes: selector={selector!r}, type={selector_type}, '
             f'context={self._context_id}'
         )
-        response = await self._connection_handler.execute_command(
+        response: dict = await self._connection_handler.execute_command(
             browsing_context.locate_nodes(self._context_id, locator, max_node_count)
         )
         nodes = response.get('result', {}).get('nodes', [])
@@ -114,7 +114,7 @@ class FirefoxTab:
             PNG screenshot as bytes.
         """
         logger.debug(f'Taking screenshot: context={self._context_id}')
-        response = await self._connection_handler.execute_command(
+        response: dict = await self._connection_handler.execute_command(
             browsing_context.capture_screenshot(self._context_id)
         )
         data = response.get('result', {}).get('data', '')
@@ -209,7 +209,7 @@ class FirefoxTab:
             httpOnly, secure, sameSite, expiry, etc.
         """
         logger.debug(f'Getting cookies: context={self._context_id}')
-        response = await self._connection_handler.execute_command(
+        response: dict = await self._connection_handler.execute_command(
             storage.get_cookies(self._context_id)
         )
         return response.get('result', {}).get('cookies', [])
@@ -314,7 +314,7 @@ class FirefoxTab:
             Reload result dict with 'url' key.
         """
         logger.info(f'Refreshing context={self._context_id}')
-        response = await self._connection_handler.execute_command(
+        response: dict = await self._connection_handler.execute_command(
             browsing_context.reload(self._context_id, wait)
         )
         return response.get('result', {})
@@ -327,7 +327,7 @@ class FirefoxTab:
             TraverseHistory result dict.
         """
         logger.info(f'Going back: context={self._context_id}')
-        response = await self._connection_handler.execute_command(
+        response: dict = await self._connection_handler.execute_command(
             browsing_context.traverse_history(self._context_id, delta=-1)
         )
         return response.get('result', {})
@@ -340,7 +340,7 @@ class FirefoxTab:
             TraverseHistory result dict.
         """
         logger.info(f'Going forward: context={self._context_id}')
-        response = await self._connection_handler.execute_command(
+        response: dict = await self._connection_handler.execute_command(
             browsing_context.traverse_history(self._context_id, delta=1)
         )
         return response.get('result', {})
@@ -388,7 +388,7 @@ class FirefoxTab:
         if phases is None:
             phases = [InterceptPhase.BEFORE_REQUEST_SENT]
         logger.info(f'Adding intercept phases={phases}: context={self._context_id}')
-        response = await self._connection_handler.execute_command(
+        response: dict = await self._connection_handler.execute_command(
             network.add_intercept(
                 phases=phases,
                 contexts=[self._context_id],
@@ -407,7 +407,7 @@ class FirefoxTab:
         request_id: str,
         url: Optional[str] = None,
         method: Optional[str] = None,
-        headers: Optional[list[dict]] = None,
+        headers: Optional[list[Header]] = None,
         body: Optional[str] = None,
     ) -> None:
         """
@@ -440,7 +440,7 @@ class FirefoxTab:
         self,
         request_id: str,
         status_code: int = 200,
-        headers: Optional[list[dict]] = None,
+        headers: Optional[list[Header]] = None,
         body: Optional[str] = None,
         reason_phrase: Optional[str] = None,
     ) -> None:
@@ -468,7 +468,7 @@ class FirefoxTab:
         self,
         request_id: str,
         status_code: Optional[int] = None,
-        headers: Optional[list[dict]] = None,
+        headers: Optional[list[Header]] = None,
         reason_phrase: Optional[str] = None,
     ) -> None:
         """
@@ -526,7 +526,7 @@ class FirefoxTab:
             New FirefoxTab instance.
         """
         logger.info('Creating new tab')
-        response = await self._connection_handler.execute_command(browsing_context.create())
+        response: dict = await self._connection_handler.execute_command(browsing_context.create())
         context_id = response['result']['context']
         tab = FirefoxTab(context_id, self._connection_handler)
         if url:

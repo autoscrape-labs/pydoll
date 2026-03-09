@@ -6,9 +6,10 @@ import os
 import tempfile
 from abc import ABC, abstractmethod
 from random import randint
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, overload
+from typing import Any, Awaitable, Callable, Optional, overload
 
 from pydoll.browser.firefox.tab import FirefoxTab
+from pydoll.browser.interfaces import BrowserOptionsManager, Options
 from pydoll.browser.managers import BrowserProcessManager, TempDirectoryManager
 from pydoll.connection.bidi_connection_handler import BiDiConnectionHandler
 from pydoll.exceptions import (
@@ -17,10 +18,6 @@ from pydoll.exceptions import (
     InvalidConnectionPort,
 )
 from pydoll.protocol.bidi import browsing_context, script, session
-
-if TYPE_CHECKING:
-    from pydoll.browser.firefox_options import FirefoxOptions
-    from pydoll.browser.interfaces import BrowserOptionsManager
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +43,7 @@ class FirefoxBrowser(ABC):
             connection_port: BiDi WebSocket port. Random port (9223-9322) if None.
         """
         self._validate_connection_port(connection_port)
-        self.options: FirefoxOptions = options_manager.initialize_options()
+        self.options: Options = options_manager.initialize_options()
         self._connection_port = connection_port if connection_port else randint(9223, 9322)
         self._browser_process_manager = BrowserProcessManager()
         self._temp_directory_manager = TempDirectoryManager()
@@ -99,7 +96,7 @@ class FirefoxBrowser(ABC):
         })
         await self._hide_automation_signals()
 
-        response = await self._connection_handler.execute_command(browsing_context.get_tree())
+        response: dict = await self._connection_handler.execute_command(browsing_context.get_tree())
         contexts = response.get('result', {}).get('contexts', [])
         if not contexts:
             raise FailedToStartBrowser('No browsing contexts found after start')
@@ -140,7 +137,7 @@ class FirefoxBrowser(ABC):
             New FirefoxTab instance.
         """
         logger.info('Creating new Firefox tab')
-        response = await self._connection_handler.execute_command(browsing_context.create())
+        response: dict = await self._connection_handler.execute_command(browsing_context.create())
         context_id = response['result']['context']
         tab = FirefoxTab(context_id, self._connection_handler)
         self._tabs[context_id] = tab
@@ -155,7 +152,7 @@ class FirefoxBrowser(ABC):
         Returns:
             List of FirefoxTab instances.
         """
-        response = await self._connection_handler.execute_command(browsing_context.get_tree())
+        response: dict = await self._connection_handler.execute_command(browsing_context.get_tree())
         contexts = response.get('result', {}).get('contexts', [])
         tabs = []
         for ctx in contexts:
@@ -345,14 +342,11 @@ class FirefoxBrowser(ABC):
             ('marionette.enabled', False),
             ('toolkit.legacyUserProfileCustomizations.stylesheets', True),
             ('devtools.debugger.prompt-connection', False),
-            # Disable automation/testing-specific UI and features
             ('browser.aboutConfig.showWarning', False),
             ('browser.shell.checkDefaultBrowser', False),
             ('browser.startup.homepage_override.mstone', 'ignore'),
-            # Reduce fingerprinting surface without breaking functionality
             ('privacy.resistFingerprinting', False),
             ('privacy.trackingprotection.enabled', False),
-            # Suppress first-run dialogs and telemetry
             ('datareporting.healthreport.uploadEnabled', False),
             ('datareporting.policy.dataSubmissionEnabled', False),
             ('toolkit.telemetry.enabled', False),

@@ -51,9 +51,6 @@ class Firefox(FirefoxBrowser):
                 r'C:\Program Files (x86)\Mozilla Firefox\firefox.exe',
             ],
             'Linux': [
-                # Prefer the real snap binary over the wrapper scripts —
-                # the wrappers (/usr/bin/firefox, /snap/bin/firefox) silently
-                # drop unknown flags like --remote-debugging-port.
                 '/snap/firefox/current/usr/lib/firefox/firefox',
                 '/usr/lib/firefox/firefox',
                 '/usr/bin/firefox-esr',

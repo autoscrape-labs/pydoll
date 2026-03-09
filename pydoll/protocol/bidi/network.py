@@ -6,9 +6,10 @@ from typing_extensions import NotRequired, TypedDict
 
 from pydoll.protocol.base import Command, EmptyResponse, Response
 
-# ---------------------------------------------------------------------------
-# Shared types
-# ---------------------------------------------------------------------------
+
+class BytesValue(TypedDict):
+    type: str
+    value: str
 
 
 class Header(TypedDict):
@@ -22,24 +23,14 @@ def make_header(name: str, value: str) -> Header:
 
 
 class UrlPatternString(TypedDict):
-    type: str  # 'string'
+    type: str
     pattern: str
 
 
-class BytesValue(TypedDict):
-    type: str  # 'string' | 'base64'
-    value: str
-
-
 class AuthCredentials(TypedDict):
-    type: str  # 'password'
+    type: str
     username: str
     password: str
-
-
-# ---------------------------------------------------------------------------
-# Command params
-# ---------------------------------------------------------------------------
 
 
 class AddInterceptParams(TypedDict):
@@ -69,7 +60,7 @@ class ContinueResponseParams(TypedDict):
 
 class ContinueWithAuthParams(TypedDict):
     request: str
-    action: str  # 'provideCredentials' | 'default' | 'cancel'
+    action: str
     credentials: NotRequired[AuthCredentials]
 
 
@@ -85,18 +76,9 @@ class ProvideResponseParams(TypedDict):
     statusCode: NotRequired[int]
 
 
-# ---------------------------------------------------------------------------
-# Result types
-# ---------------------------------------------------------------------------
-
-
 class AddInterceptResult(TypedDict):
     intercept: str
 
-
-# ---------------------------------------------------------------------------
-# Response / Command aliases
-# ---------------------------------------------------------------------------
 
 AddInterceptResponse = Response[AddInterceptResult]
 RemoveInterceptResponse = Response[EmptyResponse]
@@ -113,11 +95,6 @@ ContinueResponseCommand = Command[ContinueResponseParams, ContinueResponseRespon
 ContinueWithAuthCommand = Command[ContinueWithAuthParams, ContinueWithAuthResponse]
 FailRequestCommand = Command[FailRequestParams, FailRequestResponse]
 ProvideResponseCommand = Command[ProvideResponseParams, ProvideResponseResponse]
-
-
-# ---------------------------------------------------------------------------
-# Event name constants
-# ---------------------------------------------------------------------------
 
 
 class NetworkEvent:
@@ -138,20 +115,12 @@ class NetworkEvent:
     ]
 
 
-# ---------------------------------------------------------------------------
-# Intercept phases
-# ---------------------------------------------------------------------------
-
-
 class InterceptPhase:
+    """BiDi network intercept phase constants."""
+
     BEFORE_REQUEST_SENT = 'beforeRequestSent'
     RESPONSE_STARTED = 'responseStarted'
     AUTH_REQUIRED = 'authRequired'
-
-
-# ---------------------------------------------------------------------------
-# Factory functions
-# ---------------------------------------------------------------------------
 
 
 def add_intercept(
@@ -163,9 +132,9 @@ def add_intercept(
     Register a network intercept.
 
     Args:
-        phases: List of phases to intercept. Use ``InterceptPhase`` constants.
-        contexts: Browsing context IDs to scope the intercept to (tab-level).
-        url_patterns: Optional URL glob patterns to match (e.g. '*://example.com/*').
+        phases: Phases to intercept. Use ``InterceptPhase`` constants.
+        contexts: Browsing context IDs to scope the intercept to.
+        url_patterns: URL patterns to match (must be valid URL pattern strings).
 
     Returns:
         Command dict for ``network.addIntercept``.
@@ -226,6 +195,10 @@ def continue_with_auth(
     username: Optional[str] = None,
     password: Optional[str] = None,
 ) -> ContinueWithAuthCommand:
+    """
+    Args:
+        action: ``'provideCredentials'``, ``'default'``, or ``'cancel'``.
+    """
     params = ContinueWithAuthParams(request=request_id, action=action)
     if action == 'provideCredentials' and username is not None and password is not None:
         params['credentials'] = AuthCredentials(
