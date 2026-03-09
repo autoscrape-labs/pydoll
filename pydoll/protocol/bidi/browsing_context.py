@@ -36,6 +36,16 @@ class CloseParams(TypedDict):
     context: str
 
 
+class ReloadParams(TypedDict):
+    context: str
+    wait: NotRequired[str]
+
+
+class TraverseHistoryParams(TypedDict):
+    context: str
+    delta: int
+
+
 class NavigateResult(TypedDict):
     navigation: Optional[str]
     url: str
@@ -70,6 +80,8 @@ GetTreeResponse = Response[GetTreeResult]
 CaptureScreenshotResponse = Response[CaptureScreenshotResult]
 LocateNodesResponse = Response[LocateNodesResult]
 CloseResponse = Response[EmptyResponse]
+ReloadResponse = Response[NavigateResult]
+TraverseHistoryResponse = Response[EmptyResponse]
 
 NavigateCommand = Command[NavigateParams, NavigateResponse]
 CreateCommand = Command[CreateParams, CreateResponse]
@@ -77,6 +89,8 @@ GetTreeCommand = Command[GetTreeParams, GetTreeResponse]
 CaptureScreenshotCommand = Command[CaptureScreenshotParams, CaptureScreenshotResponse]
 LocateNodesCommand = Command[LocateNodesParams, LocateNodesResponse]
 CloseCommand = Command[CloseParams, CloseResponse]
+ReloadCommand = Command[ReloadParams, ReloadResponse]
+TraverseHistoryCommand = Command[TraverseHistoryParams, TraverseHistoryResponse]
 
 
 def navigate(context: str, url: str, wait: str = 'complete') -> NavigateCommand:
@@ -118,3 +132,17 @@ def locate_nodes(
 
 def close(context: str) -> CloseCommand:
     return Command(method='browsingContext.close', params=CloseParams(context=context))
+
+
+def reload(context: str, wait: str = 'complete') -> ReloadCommand:
+    return Command(
+        method='browsingContext.reload',
+        params=ReloadParams(context=context, wait=wait),
+    )
+
+
+def traverse_history(context: str, delta: int) -> TraverseHistoryCommand:
+    return Command(
+        method='browsingContext.traverseHistory',
+        params=TraverseHistoryParams(context=context, delta=delta),
+    )

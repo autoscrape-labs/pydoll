@@ -303,6 +303,48 @@ class FirefoxTab:
             storage.delete_cookies(self._context_id, filter=cookie_filter)
         )
 
+    async def refresh(self, wait: str = 'complete') -> dict:
+        """
+        Reload the current page.
+
+        Args:
+            wait: Page load strategy - 'none', 'interactive', or 'complete'.
+
+        Returns:
+            Reload result dict with 'url' key.
+        """
+        logger.info(f'Refreshing context={self._context_id}')
+        response = await self._connection_handler.execute_command(
+            browsing_context.reload(self._context_id, wait)
+        )
+        return response.get('result', {})
+
+    async def go_back(self) -> dict:
+        """
+        Navigate one step back in browser history.
+
+        Returns:
+            TraverseHistory result dict.
+        """
+        logger.info(f'Going back: context={self._context_id}')
+        response = await self._connection_handler.execute_command(
+            browsing_context.traverse_history(self._context_id, delta=-1)
+        )
+        return response.get('result', {})
+
+    async def go_forward(self) -> dict:
+        """
+        Navigate one step forward in browser history.
+
+        Returns:
+            TraverseHistory result dict.
+        """
+        logger.info(f'Going forward: context={self._context_id}')
+        response = await self._connection_handler.execute_command(
+            browsing_context.traverse_history(self._context_id, delta=1)
+        )
+        return response.get('result', {})
+
     async def remove_callback(self, callback_id: int) -> bool:
         """Remove a registered event callback by ID."""
         return await self._connection_handler.remove_callback(callback_id)

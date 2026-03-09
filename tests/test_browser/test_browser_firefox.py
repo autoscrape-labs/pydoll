@@ -579,6 +579,49 @@ class TestFirefoxTab:
         cmd = mock_bidi_handler.execute_command.call_args[0][0]
         assert cmd['params']['filter'] == {'name': 'session', 'domain': 'example.com'}
 
+    # --- refresh ---
+
+    @pytest.mark.asyncio
+    async def test_refresh_sends_reload_command(self, firefox_tab, mock_bidi_handler):
+        mock_bidi_handler.execute_command.return_value = {
+            'result': {'url': 'https://example.com', 'navigation': 'nav-2'}
+        }
+        result = await firefox_tab.refresh()
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['method'] == 'browsingContext.reload'
+        assert cmd['params']['context'] == 'ctx-1'
+        assert cmd['params']['wait'] == 'complete'
+        assert result['url'] == 'https://example.com'
+
+    @pytest.mark.asyncio
+    async def test_refresh_with_custom_wait(self, firefox_tab, mock_bidi_handler):
+        mock_bidi_handler.execute_command.return_value = {'result': {}}
+        await firefox_tab.refresh(wait='none')
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['params']['wait'] == 'none'
+
+    # --- go_back ---
+
+    @pytest.mark.asyncio
+    async def test_go_back_sends_traverse_history_minus_one(self, firefox_tab, mock_bidi_handler):
+        mock_bidi_handler.execute_command.return_value = {'result': {}}
+        await firefox_tab.go_back()
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['method'] == 'browsingContext.traverseHistory'
+        assert cmd['params']['context'] == 'ctx-1'
+        assert cmd['params']['delta'] == -1
+
+    # --- go_forward ---
+
+    @pytest.mark.asyncio
+    async def test_go_forward_sends_traverse_history_plus_one(self, firefox_tab, mock_bidi_handler):
+        mock_bidi_handler.execute_command.return_value = {'result': {}}
+        await firefox_tab.go_forward()
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['method'] == 'browsingContext.traverseHistory'
+        assert cmd['params']['context'] == 'ctx-1'
+        assert cmd['params']['delta'] == 1
+
 
 # ---------------------------------------------------------------------------
 # Firefox (binary detection) tests
