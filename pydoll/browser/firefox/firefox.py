@@ -5,6 +5,7 @@ import platform
 from typing import Optional
 
 from pydoll.browser.firefox.base import FirefoxBrowser
+from pydoll.browser.managers.firefox_options_manager import FirefoxOptionsManager
 from pydoll.exceptions import UnsupportedOS
 from pydoll.utils import validate_browser_paths
 
@@ -26,10 +27,6 @@ class Firefox(FirefoxBrowser):
             options: FirefoxOptions configuration (default if None).
             connection_port: BiDi WebSocket port (random if None).
         """
-        # Lazy import to avoid a circular dependency:
-        # firefox_options_manager → firefox/__init__ → firefox.py → firefox_options_manager
-        from pydoll.browser.managers.firefox_options_manager import FirefoxOptionsManager
-
         options_manager = FirefoxOptionsManager(options)
         super().__init__(options_manager, connection_port)
 

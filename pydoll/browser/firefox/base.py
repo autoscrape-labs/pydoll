@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
+import tempfile
 from abc import ABC, abstractmethod
 from random import randint
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, overload
@@ -187,8 +188,6 @@ class FirefoxBrowser(ABC):
         Returns:
             Callback ID for later removal.
         """
-        import asyncio
-
         await self._connection_handler.execute_command(session.subscribe([event_name]))
 
         async def callback_wrapper(event):
@@ -329,8 +328,6 @@ class FirefoxBrowser(ABC):
         Returns:
             Path to the created profile directory.
         """
-        import tempfile
-
         home_profiles = os.path.expanduser('~/.cache/pydoll/profiles')
         os.makedirs(home_profiles, exist_ok=True)
         self._profile_temp_dir = tempfile.TemporaryDirectory(dir=home_profiles)

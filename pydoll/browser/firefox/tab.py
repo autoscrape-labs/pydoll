@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import base64
 import logging
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, overload
@@ -155,8 +156,6 @@ class FirefoxTab:
         Returns:
             Callback ID for later removal.
         """
-        import asyncio
-
         await self._connection_handler.execute_command(
             session.subscribe([event_name], contexts=[self._context_id])
         )
