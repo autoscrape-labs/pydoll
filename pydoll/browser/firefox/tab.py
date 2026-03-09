@@ -6,8 +6,9 @@ import logging
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, overload
 
 from pydoll.browser.firefox.element import KEYS, FirefoxElement
-from pydoll.protocol.bidi import browsing_context, script, session, storage
+from pydoll.protocol.bidi import browsing_context, network, script, session, storage
 from pydoll.protocol.bidi import input as bidi_input
+from pydoll.protocol.bidi.network import NetworkEvent, InterceptPhase
 
 if TYPE_CHECKING:
     from pydoll.connection.bidi_connection_handler import BiDiConnectionHandler
@@ -344,6 +345,171 @@ class FirefoxTab:
             browsing_context.traverse_history(self._context_id, delta=1)
         )
         return response.get('result', {})
+
+    async def enable_network_events(self) -> None:
+        """
+        Subscribe to all BiDi network monitoring events for this tab.
+
+        After calling this, use ``tab.on(NetworkEvent.BEFORE_REQUEST_SENT, cb)``
+        etc. to receive events. No intercept is registered — requests flow
+        through unblocked.
+        """
+        logger.info(f'Enabling network events: context={self._context_id}')
+        await self._connection_handler.execute_command(
+            session.subscribe(NetworkEvent.ALL_EVENTS, contexts=[self._context_id])
+        )
+
+    async def disable_network_events(self) -> None:
+        """Unsubscribe from all BiDi network monitoring events for this tab."""
+        logger.info(f'Disabling network events: context={self._context_id}')
+        await self._connection_handler.execute_command(
+            session.unsubscribe(NetworkEvent.ALL_EVENTS, contexts=[self._context_id])
+        )
+
+    async def add_intercept(
+        self,
+        phases: Optional[list[str]] = None,
+        url_patterns: Optional[list[str]] = None,
+    ) -> str:
+        """
+        Register a network intercept scoped to this tab.
+
+        Every matching request will be **blocked** until the callback calls
+        ``continue_request()``, ``fail_request()``, or ``provide_response()``.
+
+        Args:
+            phases: Intercept phases. Defaults to ``['beforeRequestSent']``.
+                    Use ``InterceptPhase`` constants.
+            url_patterns: Optional URL glob patterns (e.g. ``'*://api.example.com/*'``).
+                          Omit to intercept all URLs.
+
+        Returns:
+            Intercept ID — pass to ``remove_intercept()`` to clean up.
+        """
+        if phases is None:
+            phases = [InterceptPhase.BEFORE_REQUEST_SENT]
+        logger.info(f'Adding intercept phases={phases}: context={self._context_id}')
+        response = await self._connection_handler.execute_command(
+            network.add_intercept(
+                phases=phases,
+                contexts=[self._context_id],
+                url_patterns=url_patterns,
+            )
+        )
+        return response['result']['intercept']
+
+    async def remove_intercept(self, intercept_id: str) -> None:
+        """Remove a previously registered network intercept."""
+        logger.debug(f'Removing intercept {intercept_id!r}')
+        await self._connection_handler.execute_command(
+            network.remove_intercept(intercept_id)
+        )
+
+    async def continue_request(
+        self,
+        request_id: str,
+        url: Optional[str] = None,
+        method: Optional[str] = None,
+        headers: Optional[list[dict]] = None,
+        body: Optional[str] = None,
+    ) -> None:
+        """
+        Allow a blocked request to proceed, with optional modifications.
+
+        Must be called from within a ``network.beforeRequestSent`` callback
+        when ``isBlocked`` is ``True``.
+
+        Args:
+            request_id: ``event['params']['request']['request']``.
+            url: Override the request URL.
+            method: Override the HTTP method (e.g. ``'POST'``).
+            headers: Override headers — list of ``{'name': ..., 'value': ...}`` dicts.
+            body: Override the request body as a plain string.
+        """
+        await self._connection_handler.execute_command(
+            network.continue_request(request_id, url=url, method=method,
+                                     headers=headers, body=body)
+        )
+
+    async def fail_request(self, request_id: str) -> None:
+        """
+        Abort a blocked request with a network error.
+
+        Args:
+            request_id: ``event['params']['request']['request']``.
+        """
+        await self._connection_handler.execute_command(
+            network.fail_request(request_id)
+        )
+
+    async def provide_response(
+        self,
+        request_id: str,
+        status_code: int = 200,
+        headers: Optional[list[dict]] = None,
+        body: Optional[str] = None,
+        reason_phrase: Optional[str] = None,
+    ) -> None:
+        """
+        Fulfill a blocked request with a synthetic response without hitting the server.
+
+        Args:
+            request_id: ``event['params']['request']['request']``.
+            status_code: HTTP status code (default 200).
+            headers: Response headers — list of ``{'name': ..., 'value': ...}`` dicts.
+            body: Response body as a plain string.
+            reason_phrase: HTTP reason phrase (e.g. ``'OK'``, ``'Not Found'``).
+        """
+        await self._connection_handler.execute_command(
+            network.provide_response(request_id, status_code=status_code,
+                                     headers=headers, body=body,
+                                     reason_phrase=reason_phrase)
+        )
+
+    async def continue_response(
+        self,
+        request_id: str,
+        status_code: Optional[int] = None,
+        headers: Optional[list[dict]] = None,
+        reason_phrase: Optional[str] = None,
+    ) -> None:
+        """
+        Allow a blocked response to proceed, with optional modifications.
+
+        Must be called from within a ``network.responseStarted`` callback
+        when ``isBlocked`` is ``True``.
+
+        Args:
+            request_id: ``event['params']['request']['request']``.
+            status_code: Override the response status code.
+            headers: Override response headers.
+            reason_phrase: Override the HTTP reason phrase.
+        """
+        await self._connection_handler.execute_command(
+            network.continue_response(request_id, status_code=status_code,
+                                      headers=headers, reason_phrase=reason_phrase)
+        )
+
+    async def continue_with_auth(
+        self,
+        request_id: str,
+        action: str = 'cancel',
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+    ) -> None:
+        """
+        Respond to an auth challenge from a ``network.authRequired`` event.
+
+        Args:
+            request_id: ``event['params']['request']['request']``.
+            action: ``'provideCredentials'``, ``'default'``, or ``'cancel'``.
+            username: Username (required when action is ``'provideCredentials'``).
+            password: Password (required when action is ``'provideCredentials'``).
+        """
+        await self._connection_handler.execute_command(
+            network.continue_with_auth(request_id, action=action,
+                                       username=username, password=password)
+        )
 
     async def remove_callback(self, callback_id: int) -> bool:
         """Remove a registered event callback by ID."""

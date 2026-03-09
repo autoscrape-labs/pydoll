@@ -15,6 +15,7 @@ from pydoll.browser.firefox_options import FirefoxOptions
 from pydoll.browser.firefox.tab import FirefoxTab
 from pydoll.browser.managers.firefox_options_manager import FirefoxOptionsManager
 from pydoll.connection.bidi_connection_handler import BiDiConnectionHandler
+from pydoll.protocol.bidi.network import NetworkEvent, InterceptPhase
 from pydoll.exceptions import (
     ArgumentAlreadyExistsInOptions,
     ArgumentNotFoundInOptions,
@@ -621,6 +622,169 @@ class TestFirefoxTab:
         assert cmd['method'] == 'browsingContext.traverseHistory'
         assert cmd['params']['context'] == 'ctx-1'
         assert cmd['params']['delta'] == 1
+
+    # --- network events ---
+
+    @pytest.mark.asyncio
+    async def test_enable_network_events_subscribes_all_events(self, firefox_tab, mock_bidi_handler):
+        await firefox_tab.enable_network_events()
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['method'] == 'session.subscribe'
+        assert set(NetworkEvent.ALL_EVENTS).issubset(set(cmd['params']['events']))
+        assert 'ctx-1' in cmd['params']['contexts']
+
+    @pytest.mark.asyncio
+    async def test_disable_network_events_unsubscribes(self, firefox_tab, mock_bidi_handler):
+        await firefox_tab.disable_network_events()
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['method'] == 'session.unsubscribe'
+        assert set(NetworkEvent.ALL_EVENTS).issubset(set(cmd['params']['events']))
+
+    # --- add_intercept ---
+
+    @pytest.mark.asyncio
+    async def test_add_intercept_default_phase(self, firefox_tab, mock_bidi_handler):
+        mock_bidi_handler.execute_command.return_value = {'result': {'intercept': 'intercept-1'}}
+        intercept_id = await firefox_tab.add_intercept()
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['method'] == 'network.addIntercept'
+        assert cmd['params']['phases'] == [InterceptPhase.BEFORE_REQUEST_SENT]
+        assert cmd['params']['contexts'] == ['ctx-1']
+        assert intercept_id == 'intercept-1'
+
+    @pytest.mark.asyncio
+    async def test_add_intercept_custom_phases(self, firefox_tab, mock_bidi_handler):
+        mock_bidi_handler.execute_command.return_value = {'result': {'intercept': 'intercept-2'}}
+        phases = [InterceptPhase.BEFORE_REQUEST_SENT, InterceptPhase.AUTH_REQUIRED]
+        await firefox_tab.add_intercept(phases=phases)
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['params']['phases'] == phases
+
+    @pytest.mark.asyncio
+    async def test_add_intercept_with_url_patterns(self, firefox_tab, mock_bidi_handler):
+        mock_bidi_handler.execute_command.return_value = {'result': {'intercept': 'intercept-3'}}
+        await firefox_tab.add_intercept(url_patterns=['*://api.example.com/*'])
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['params']['urlPatterns'] == [{'type': 'string', 'pattern': '*://api.example.com/*'}]
+
+    # --- remove_intercept ---
+
+    @pytest.mark.asyncio
+    async def test_remove_intercept(self, firefox_tab, mock_bidi_handler):
+        await firefox_tab.remove_intercept('intercept-1')
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['method'] == 'network.removeIntercept'
+        assert cmd['params']['intercept'] == 'intercept-1'
+
+    # --- continue_request ---
+
+    @pytest.mark.asyncio
+    async def test_continue_request_minimal(self, firefox_tab, mock_bidi_handler):
+        await firefox_tab.continue_request('req-1')
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['method'] == 'network.continueRequest'
+        assert cmd['params']['request'] == 'req-1'
+        assert 'url' not in cmd['params']
+        assert 'headers' not in cmd['params']
+        assert 'body' not in cmd['params']
+
+    @pytest.mark.asyncio
+    async def test_continue_request_with_modifications(self, firefox_tab, mock_bidi_handler):
+        await firefox_tab.continue_request(
+            'req-1',
+            url='https://other.com/',
+            method='POST',
+            headers=[{'name': 'X-Custom', 'value': 'val'}],
+            body='payload',
+        )
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['params']['url'] == 'https://other.com/'
+        assert cmd['params']['method'] == 'POST'
+        assert cmd['params']['headers'] == [{'name': 'X-Custom', 'value': 'val'}]
+        assert cmd['params']['body'] == {'type': 'string', 'value': 'payload'}
+
+    # --- fail_request ---
+
+    @pytest.mark.asyncio
+    async def test_fail_request(self, firefox_tab, mock_bidi_handler):
+        await firefox_tab.fail_request('req-1')
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['method'] == 'network.failRequest'
+        assert cmd['params']['request'] == 'req-1'
+
+    # --- provide_response ---
+
+    @pytest.mark.asyncio
+    async def test_provide_response_minimal(self, firefox_tab, mock_bidi_handler):
+        await firefox_tab.provide_response('req-1')
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['method'] == 'network.provideResponse'
+        assert cmd['params']['request'] == 'req-1'
+        assert cmd['params']['statusCode'] == 200
+
+    @pytest.mark.asyncio
+    async def test_provide_response_full(self, firefox_tab, mock_bidi_handler):
+        await firefox_tab.provide_response(
+            'req-1',
+            status_code=404,
+            reason_phrase='Not Found',
+            headers=[{'name': 'Content-Type', 'value': 'text/plain'}],
+            body='not found',
+        )
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['params']['statusCode'] == 404
+        assert cmd['params']['reasonPhrase'] == 'Not Found'
+        assert cmd['params']['headers'] == [{'name': 'Content-Type', 'value': 'text/plain'}]
+        assert cmd['params']['body'] == {'type': 'string', 'value': 'not found'}
+
+    # --- continue_response ---
+
+    @pytest.mark.asyncio
+    async def test_continue_response_minimal(self, firefox_tab, mock_bidi_handler):
+        await firefox_tab.continue_response('req-1')
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['method'] == 'network.continueResponse'
+        assert cmd['params']['request'] == 'req-1'
+        assert 'statusCode' not in cmd['params']
+
+    @pytest.mark.asyncio
+    async def test_continue_response_with_overrides(self, firefox_tab, mock_bidi_handler):
+        await firefox_tab.continue_response(
+            'req-1',
+            status_code=301,
+            reason_phrase='Moved Permanently',
+            headers=[{'name': 'Location', 'value': 'https://new.example.com/'}],
+        )
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['params']['statusCode'] == 301
+        assert cmd['params']['reasonPhrase'] == 'Moved Permanently'
+        assert cmd['params']['headers'][0]['name'] == 'Location'
+
+    # --- continue_with_auth ---
+
+    @pytest.mark.asyncio
+    async def test_continue_with_auth_cancel(self, firefox_tab, mock_bidi_handler):
+        await firefox_tab.continue_with_auth('req-1', action='cancel')
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['method'] == 'network.continueWithAuth'
+        assert cmd['params']['action'] == 'cancel'
+        assert 'credentials' not in cmd['params']
+
+    @pytest.mark.asyncio
+    async def test_continue_with_auth_provide_credentials(self, firefox_tab, mock_bidi_handler):
+        await firefox_tab.continue_with_auth(
+            'req-1',
+            action='provideCredentials',
+            username='user',
+            password='pass',
+        )
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['params']['action'] == 'provideCredentials'
+        assert cmd['params']['credentials'] == {
+            'type': 'password',
+            'username': 'user',
+            'password': 'pass',
+        }
 
 
 # ---------------------------------------------------------------------------
