@@ -6,11 +6,12 @@ import logging
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, overload
 
 from pydoll.browser.firefox.element import KEYS, FirefoxElement
-from pydoll.protocol.bidi import browsing_context, script, session
+from pydoll.protocol.bidi import browsing_context, script, session, storage
 from pydoll.protocol.bidi import input as bidi_input
 
 if TYPE_CHECKING:
     from pydoll.connection.bidi_connection_handler import BiDiConnectionHandler
+    from pydoll.protocol.bidi.storage import CookieParam
 
 logger = logging.getLogger(__name__)
 
@@ -196,6 +197,110 @@ class FirefoxTab:
                     }
                 ],
             )
+        )
+
+    async def get_cookies(self) -> list[dict]:
+        """
+        Get all cookies for this tab's browsing context.
+
+        Returns:
+            List of cookie dicts with keys: name, value, domain, path,
+            httpOnly, secure, sameSite, expiry, etc.
+        """
+        logger.debug(f'Getting cookies: context={self._context_id}')
+        response = await self._connection_handler.execute_command(
+            storage.get_cookies(self._context_id)
+        )
+        return response.get('result', {}).get('cookies', [])
+
+    async def set_cookie(
+        self,
+        name: str,
+        value: str,
+        domain: str,
+        path: str = '/',
+        http_only: bool = False,
+        secure: bool = False,
+        same_site: Optional[str] = None,
+        expiry: Optional[int] = None,
+    ) -> None:
+        """
+        Set a cookie in this tab's browsing context.
+
+        Args:
+            name: Cookie name.
+            value: Cookie value.
+            domain: Cookie domain (e.g. 'example.com').
+            path: Cookie path (default '/').
+            http_only: Whether the cookie is HTTP-only.
+            secure: Whether the cookie requires HTTPS.
+            same_site: SameSite policy - 'strict', 'lax', or 'none'.
+            expiry: Cookie expiry as a Unix timestamp.
+        """
+        logger.debug(f'Setting cookie {name!r}: context={self._context_id}')
+        await self._connection_handler.execute_command(
+            storage.set_cookie(
+                self._context_id,
+                name=name,
+                value=value,
+                domain=domain,
+                path=path,
+                http_only=http_only,
+                secure=secure,
+                same_site=same_site,
+                expiry=expiry,
+            )
+        )
+
+    async def set_cookies(self, cookies: list[CookieParam]) -> None:
+        """
+        Set multiple cookies in this tab's browsing context.
+
+        Args:
+            cookies: List of CookieParam dicts. Each must have ``name``,
+                ``value`` and ``domain``; all other fields are optional.
+        """
+        logger.debug(f'Setting {len(cookies)} cookies: context={self._context_id}')
+        for cookie in cookies:
+            await self._connection_handler.execute_command(
+                storage.set_cookie(
+                    self._context_id,
+                    name=cookie['name'],
+                    value=cookie['value'],
+                    domain=cookie['domain'],
+                    path=cookie.get('path', '/'),
+                    http_only=cookie.get('httpOnly', False),
+                    secure=cookie.get('secure', False),
+                    same_site=cookie.get('sameSite'),
+                    expiry=cookie.get('expiry'),
+                )
+            )
+
+    async def delete_cookies(
+        self, name: Optional[str] = None, domain: Optional[str] = None
+    ) -> None:
+        """
+        Delete cookies in this tab's browsing context.
+
+        Args:
+            name: If provided, only delete cookies with this name.
+            domain: If provided, only delete cookies for this domain.
+                    When neither is given, all cookies for the context are deleted.
+        """
+        cookie_filter = None
+        if name is not None or domain is not None:
+            cookie_filter = storage.CookieFilter()
+            if name is not None:
+                cookie_filter['name'] = name
+            if domain is not None:
+                cookie_filter['domain'] = domain
+
+        logger.debug(
+            f'Deleting cookies: context={self._context_id}, '
+            f'name={name!r}, domain={domain!r}'
+        )
+        await self._connection_handler.execute_command(
+            storage.delete_cookies(self._context_id, filter=cookie_filter)
         )
 
     async def remove_callback(self, callback_id: int) -> bool:

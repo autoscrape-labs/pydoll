@@ -426,6 +426,159 @@ class TestFirefoxTab:
         assert cmd['method'] == 'browsingContext.close'
         assert cmd['params']['context'] == 'ctx-1'
 
+    # --- get_cookies ---
+
+    @pytest.mark.asyncio
+    async def test_get_cookies_returns_list(self, firefox_tab, mock_bidi_handler):
+        cookies = [
+            {'name': 'session', 'value': 'abc'},
+            {'name': 'tracking', 'value': 'xyz'},
+        ]
+        mock_bidi_handler.execute_command.return_value = {
+            'result': {'cookies': cookies, 'partitionKey': {}}
+        }
+        result = await firefox_tab.get_cookies()
+        assert result == cookies
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['method'] == 'storage.getCookies'
+        assert cmd['params']['partition'] == {'type': 'context', 'context': 'ctx-1'}
+
+    @pytest.mark.asyncio
+    async def test_get_cookies_empty(self, firefox_tab, mock_bidi_handler):
+        mock_bidi_handler.execute_command.return_value = {
+            'result': {'cookies': [], 'partitionKey': {}}
+        }
+        result = await firefox_tab.get_cookies()
+        assert result == []
+
+    # --- set_cookie ---
+
+    @pytest.mark.asyncio
+    async def test_set_cookie_sends_correct_command(self, firefox_tab, mock_bidi_handler):
+        await firefox_tab.set_cookie(
+            name='test',
+            value='hello',
+            domain='example.com',
+        )
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['method'] == 'storage.setCookie'
+        assert cmd['params']['cookie']['name'] == 'test'
+        assert cmd['params']['cookie']['value'] == {'type': 'string', 'value': 'hello'}
+        assert cmd['params']['cookie']['domain'] == 'example.com'
+        assert cmd['params']['cookie']['path'] == '/'
+        assert cmd['params']['cookie']['httpOnly'] is False
+        assert cmd['params']['cookie']['secure'] is False
+        assert cmd['params']['partition'] == {'type': 'context', 'context': 'ctx-1'}
+
+    @pytest.mark.asyncio
+    async def test_set_cookie_with_all_options(self, firefox_tab, mock_bidi_handler):
+        await firefox_tab.set_cookie(
+            name='full',
+            value='cookie',
+            domain='example.com',
+            path='/app',
+            http_only=True,
+            secure=True,
+            same_site='strict',
+            expiry=9999999999,
+        )
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        cookie = cmd['params']['cookie']
+        assert cookie['path'] == '/app'
+        assert cookie['httpOnly'] is True
+        assert cookie['secure'] is True
+        assert cookie['sameSite'] == 'strict'
+        assert cookie['expiry'] == 9999999999
+
+    @pytest.mark.asyncio
+    async def test_set_cookie_optional_fields_absent_by_default(self, firefox_tab, mock_bidi_handler):
+        await firefox_tab.set_cookie(name='x', value='y', domain='example.com')
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        cookie = cmd['params']['cookie']
+        assert 'sameSite' not in cookie
+        assert 'expiry' not in cookie
+
+    # --- set_cookies ---
+
+    @pytest.mark.asyncio
+    async def test_set_cookies_sends_one_command_per_cookie(self, firefox_tab, mock_bidi_handler):
+        await firefox_tab.set_cookies([
+            {'name': 'a', 'value': '1', 'domain': 'example.com'},
+            {'name': 'b', 'value': '2', 'domain': 'example.com'},
+            {'name': 'c', 'value': '3', 'domain': 'example.com'},
+        ])
+        assert mock_bidi_handler.execute_command.call_count == 3
+        for call, expected_name in zip(mock_bidi_handler.execute_command.call_args_list, ['a', 'b', 'c']):
+            cmd = call[0][0]
+            assert cmd['method'] == 'storage.setCookie'
+            assert cmd['params']['cookie']['name'] == expected_name
+
+    @pytest.mark.asyncio
+    async def test_set_cookies_applies_defaults(self, firefox_tab, mock_bidi_handler):
+        await firefox_tab.set_cookies([
+            {'name': 'minimal', 'value': 'val', 'domain': 'example.com'},
+        ])
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        cookie = cmd['params']['cookie']
+        assert cookie['path'] == '/'
+        assert cookie['httpOnly'] is False
+        assert cookie['secure'] is False
+
+    @pytest.mark.asyncio
+    async def test_set_cookies_forwards_optional_fields(self, firefox_tab, mock_bidi_handler):
+        await firefox_tab.set_cookies([
+            {
+                'name': 'rich',
+                'value': 'val',
+                'domain': 'example.com',
+                'path': '/admin',
+                'httpOnly': True,
+                'secure': True,
+                'sameSite': 'lax',
+                'expiry': 1234567890,
+            }
+        ])
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        cookie = cmd['params']['cookie']
+        assert cookie['path'] == '/admin'
+        assert cookie['httpOnly'] is True
+        assert cookie['secure'] is True
+        assert cookie['sameSite'] == 'lax'
+        assert cookie['expiry'] == 1234567890
+
+    @pytest.mark.asyncio
+    async def test_set_cookies_empty_list_does_nothing(self, firefox_tab, mock_bidi_handler):
+        await firefox_tab.set_cookies([])
+        mock_bidi_handler.execute_command.assert_not_called()
+
+    # --- delete_cookies ---
+
+    @pytest.mark.asyncio
+    async def test_delete_cookies_all_sends_no_filter(self, firefox_tab, mock_bidi_handler):
+        await firefox_tab.delete_cookies()
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['method'] == 'storage.deleteCookies'
+        assert cmd['params']['partition'] == {'type': 'context', 'context': 'ctx-1'}
+        assert 'filter' not in cmd['params']
+
+    @pytest.mark.asyncio
+    async def test_delete_cookies_by_name(self, firefox_tab, mock_bidi_handler):
+        await firefox_tab.delete_cookies(name='session')
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['params']['filter'] == {'name': 'session'}
+
+    @pytest.mark.asyncio
+    async def test_delete_cookies_by_domain(self, firefox_tab, mock_bidi_handler):
+        await firefox_tab.delete_cookies(domain='example.com')
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['params']['filter'] == {'domain': 'example.com'}
+
+    @pytest.mark.asyncio
+    async def test_delete_cookies_by_name_and_domain(self, firefox_tab, mock_bidi_handler):
+        await firefox_tab.delete_cookies(name='session', domain='example.com')
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['params']['filter'] == {'name': 'session', 'domain': 'example.com'}
+
 
 # ---------------------------------------------------------------------------
 # Firefox (binary detection) tests
