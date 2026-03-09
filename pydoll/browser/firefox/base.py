@@ -18,7 +18,7 @@ from pydoll.exceptions import (
 from pydoll.protocol.bidi import browsing_context, script, session
 
 if TYPE_CHECKING:
-    from pydoll.browser.firefox.options import FirefoxOptions
+    from pydoll.browser.firefox_options import FirefoxOptions
     from pydoll.browser.interfaces import BrowserOptionsManager
 
 logger = logging.getLogger(__name__)

@@ -11,7 +11,7 @@ import pytest_asyncio
 from pydoll.browser.firefox.element import FirefoxElement, KEYS
 from pydoll.browser.firefox.firefox import Firefox
 from pydoll.browser.firefox.base import FirefoxBrowser
-from pydoll.browser.firefox.options import FirefoxOptions
+from pydoll.browser.firefox_options import FirefoxOptions
 from pydoll.browser.firefox.tab import FirefoxTab
 from pydoll.browser.managers.firefox_options_manager import FirefoxOptionsManager
 from pydoll.connection.bidi_connection_handler import BiDiConnectionHandler

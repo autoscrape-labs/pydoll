@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from typing import Optional
 
-from pydoll.browser.firefox.options import FirefoxOptions
+from pydoll.browser.firefox_options import FirefoxOptions
 from pydoll.browser.interfaces import BrowserOptionsManager
 from pydoll.exceptions import InvalidOptionsObject
 
