@@ -6,7 +6,6 @@ from typing_extensions import NotRequired, TypedDict
 
 from pydoll.protocol.base import Command, EmptyResponse, Response
 
-
 # ---------------------------------------------------------------------------
 # Shared types
 # ---------------------------------------------------------------------------
@@ -23,17 +22,17 @@ def make_header(name: str, value: str) -> Header:
 
 
 class UrlPatternString(TypedDict):
-    type: str   # 'string'
+    type: str  # 'string'
     pattern: str
 
 
 class BytesValue(TypedDict):
-    type: str   # 'string' | 'base64'
+    type: str  # 'string' | 'base64'
     value: str
 
 
 class AuthCredentials(TypedDict):
-    type: str   # 'password'
+    type: str  # 'password'
     username: str
     password: str
 
@@ -70,7 +69,7 @@ class ContinueResponseParams(TypedDict):
 
 class ContinueWithAuthParams(TypedDict):
     request: str
-    action: str   # 'provideCredentials' | 'default' | 'cancel'
+    action: str  # 'provideCredentials' | 'default' | 'cancel'
     credentials: NotRequired[AuthCredentials]
 
 
@@ -175,9 +174,7 @@ def add_intercept(
     if contexts is not None:
         params['contexts'] = contexts
     if url_patterns is not None:
-        params['urlPatterns'] = [
-            UrlPatternString(type='string', pattern=p) for p in url_patterns
-        ]
+        params['urlPatterns'] = [UrlPatternString(type='string', pattern=p) for p in url_patterns]
     return Command(method='network.addIntercept', params=params)
 
 

@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, overload
 from pydoll.browser.firefox.element import KEYS, FirefoxElement
 from pydoll.protocol.bidi import browsing_context, network, script, session, storage
 from pydoll.protocol.bidi import input as bidi_input
-from pydoll.protocol.bidi.network import NetworkEvent, InterceptPhase
+from pydoll.protocol.bidi.network import InterceptPhase, NetworkEvent
 
 if TYPE_CHECKING:
     from pydoll.connection.bidi_connection_handler import BiDiConnectionHandler
@@ -297,8 +297,7 @@ class FirefoxTab:
                 cookie_filter['domain'] = domain
 
         logger.debug(
-            f'Deleting cookies: context={self._context_id}, '
-            f'name={name!r}, domain={domain!r}'
+            f'Deleting cookies: context={self._context_id}, name={name!r}, domain={domain!r}'
         )
         await self._connection_handler.execute_command(
             storage.delete_cookies(self._context_id, filter=cookie_filter)
@@ -401,9 +400,7 @@ class FirefoxTab:
     async def remove_intercept(self, intercept_id: str) -> None:
         """Remove a previously registered network intercept."""
         logger.debug(f'Removing intercept {intercept_id!r}')
-        await self._connection_handler.execute_command(
-            network.remove_intercept(intercept_id)
-        )
+        await self._connection_handler.execute_command(network.remove_intercept(intercept_id))
 
     async def continue_request(
         self,
@@ -427,8 +424,7 @@ class FirefoxTab:
             body: Override the request body as a plain string.
         """
         await self._connection_handler.execute_command(
-            network.continue_request(request_id, url=url, method=method,
-                                     headers=headers, body=body)
+            network.continue_request(request_id, url=url, method=method, headers=headers, body=body)
         )
 
     async def fail_request(self, request_id: str) -> None:
@@ -438,9 +434,7 @@ class FirefoxTab:
         Args:
             request_id: ``event['params']['request']['request']``.
         """
-        await self._connection_handler.execute_command(
-            network.fail_request(request_id)
-        )
+        await self._connection_handler.execute_command(network.fail_request(request_id))
 
     async def provide_response(
         self,
@@ -461,9 +455,13 @@ class FirefoxTab:
             reason_phrase: HTTP reason phrase (e.g. ``'OK'``, ``'Not Found'``).
         """
         await self._connection_handler.execute_command(
-            network.provide_response(request_id, status_code=status_code,
-                                     headers=headers, body=body,
-                                     reason_phrase=reason_phrase)
+            network.provide_response(
+                request_id,
+                status_code=status_code,
+                headers=headers,
+                body=body,
+                reason_phrase=reason_phrase,
+            )
         )
 
     async def continue_response(
@@ -486,8 +484,9 @@ class FirefoxTab:
             reason_phrase: Override the HTTP reason phrase.
         """
         await self._connection_handler.execute_command(
-            network.continue_response(request_id, status_code=status_code,
-                                      headers=headers, reason_phrase=reason_phrase)
+            network.continue_response(
+                request_id, status_code=status_code, headers=headers, reason_phrase=reason_phrase
+            )
         )
 
     async def continue_with_auth(
@@ -507,8 +506,9 @@ class FirefoxTab:
             password: Password (required when action is ``'provideCredentials'``).
         """
         await self._connection_handler.execute_command(
-            network.continue_with_auth(request_id, action=action,
-                                       username=username, password=password)
+            network.continue_with_auth(
+                request_id, action=action, username=username, password=password
+            )
         )
 
     async def remove_callback(self, callback_id: int) -> bool:
