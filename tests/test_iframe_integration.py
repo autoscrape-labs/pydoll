@@ -973,3 +973,123 @@ class TestIframeTypeText:
             )
             assert prop['result']['result']['value'] == test_text
 
+
+class TestFrameElementIntegration:
+    """Integration tests for <frame> elements (frameset pages)."""
+
+    @pytest.mark.asyncio
+    async def test_frame_element_is_iframe(self, ci_chrome_options):
+        """Test that a <frame> element is recognized as an iframe."""
+        test_file = Path(__file__).parent / 'pages' / 'test_frameset.html'
+        file_url = f'file://{test_file.absolute()}'
+
+        async with Chrome(options=ci_chrome_options) as browser:
+            tab = await browser.start()
+            await tab.go_to(file_url)
+            await asyncio.sleep(1)
+
+            frame_element = await tab.find(id='left-frame', timeout=5)
+            assert frame_element is not None
+            assert frame_element.tag_name == 'frame'
+            assert frame_element.is_iframe
+
+    @pytest.mark.asyncio
+    async def test_find_element_inside_frame(self, ci_chrome_options):
+        """Test finding an element inside a <frame> element."""
+        test_file = Path(__file__).parent / 'pages' / 'test_frameset.html'
+        file_url = f'file://{test_file.absolute()}'
+
+        async with Chrome(options=ci_chrome_options) as browser:
+            tab = await browser.start()
+            await tab.go_to(file_url)
+            await asyncio.sleep(1)
+
+            frame_element = await tab.find(id='left-frame', timeout=5)
+            heading = await frame_element.find(id='frame-heading', timeout=5)
+            assert heading is not None
+
+            text = await heading.text
+            assert 'Frame Content' in text
+
+    @pytest.mark.asyncio
+    async def test_frame_context_is_resolved(self, ci_chrome_options):
+        """Test that iframe_context works for <frame> elements."""
+        test_file = Path(__file__).parent / 'pages' / 'test_frameset.html'
+        file_url = f'file://{test_file.absolute()}'
+
+        async with Chrome(options=ci_chrome_options) as browser:
+            tab = await browser.start()
+            await tab.go_to(file_url)
+            await asyncio.sleep(1)
+
+            frame_element = await tab.find(id='left-frame', timeout=5)
+            ctx = await frame_element.iframe_context
+            assert ctx is not None
+            assert ctx.frame_id is not None
+            assert ctx.execution_context_id is not None
+
+    @pytest.mark.asyncio
+    async def test_inner_html_of_frame(self, ci_chrome_options):
+        """Test that inner_html works for <frame> elements."""
+        test_file = Path(__file__).parent / 'pages' / 'test_frameset.html'
+        file_url = f'file://{test_file.absolute()}'
+
+        async with Chrome(options=ci_chrome_options) as browser:
+            tab = await browser.start()
+            await tab.go_to(file_url)
+            await asyncio.sleep(1)
+
+            frame_element = await tab.find(id='left-frame', timeout=5)
+            html = await frame_element.inner_html
+            assert 'frame-heading' in html
+
+    @pytest.mark.asyncio
+    async def test_multiple_frames_in_frameset(self, ci_chrome_options):
+        """Test interacting with multiple <frame> elements in a frameset."""
+        test_file = Path(__file__).parent / 'pages' / 'test_frameset.html'
+        file_url = f'file://{test_file.absolute()}'
+
+        async with Chrome(options=ci_chrome_options) as browser:
+            tab = await browser.start()
+            await tab.go_to(file_url)
+            await asyncio.sleep(1)
+
+            left_frame = await tab.find(id='left-frame', timeout=5)
+            right_frame = await tab.find(id='right-frame', timeout=5)
+
+            assert left_frame.is_iframe
+            assert right_frame.is_iframe
+
+            # Left frame has frame-specific content
+            left_heading = await left_frame.find(id='frame-heading', timeout=5)
+            left_text = await left_heading.text
+            assert 'Frame Content' in left_text
+
+            # Right frame has iframe content (reuses test_iframe_content.html)
+            right_heading = await right_frame.find(id='iframe-heading', timeout=5)
+            right_text = await right_heading.text
+            assert 'Iframe Content' in right_text
+
+    @pytest.mark.asyncio
+    async def test_type_text_in_frame_input(self, ci_chrome_options):
+        """Test typing text into an input inside a <frame> element."""
+        test_file = Path(__file__).parent / 'pages' / 'test_frameset.html'
+        file_url = f'file://{test_file.absolute()}'
+
+        async with Chrome(options=ci_chrome_options) as browser:
+            tab = await browser.start()
+            await tab.go_to(file_url)
+            await asyncio.sleep(1)
+
+            frame_element = await tab.find(id='left-frame', timeout=5)
+            input_el = await frame_element.find(id='frame-input', timeout=5)
+
+            test_text = 'hello frame'
+            await input_el.type_text(test_text)
+            await asyncio.sleep(0.3)
+
+            prop = await input_el.execute_script(
+                'return this.value', return_by_value=True
+            )
+            assert prop['result']['result']['value'] == test_text
+
