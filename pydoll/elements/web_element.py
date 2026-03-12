@@ -169,7 +169,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
     @property
     def is_iframe(self) -> bool:
         """Whether the element represents an iframe."""
-        return self.tag_name == 'iframe'
+        return self.tag_name in {'iframe', 'frame'}
 
     @property
     def is_enabled(self) -> bool:
