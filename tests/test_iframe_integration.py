@@ -988,7 +988,7 @@ class TestFrameElementIntegration:
             await tab.go_to(file_url)
             await asyncio.sleep(1)
 
-            frame_element = await tab.find(id='left-frame')
+            frame_element = await tab.find(id='left-frame', timeout=5)
             assert frame_element is not None
             assert frame_element.tag_name == 'frame'
             assert frame_element.is_iframe
@@ -1004,8 +1004,8 @@ class TestFrameElementIntegration:
             await tab.go_to(file_url)
             await asyncio.sleep(1)
 
-            frame_element = await tab.find(id='left-frame')
-            heading = await frame_element.find(id='frame-heading')
+            frame_element = await tab.find(id='left-frame', timeout=5)
+            heading = await frame_element.find(id='frame-heading', timeout=5)
             assert heading is not None
 
             text = await heading.text
@@ -1022,7 +1022,7 @@ class TestFrameElementIntegration:
             await tab.go_to(file_url)
             await asyncio.sleep(1)
 
-            frame_element = await tab.find(id='left-frame')
+            frame_element = await tab.find(id='left-frame', timeout=5)
             ctx = await frame_element.iframe_context
             assert ctx is not None
             assert ctx.frame_id is not None
@@ -1039,7 +1039,7 @@ class TestFrameElementIntegration:
             await tab.go_to(file_url)
             await asyncio.sleep(1)
 
-            frame_element = await tab.find(id='left-frame')
+            frame_element = await tab.find(id='left-frame', timeout=5)
             html = await frame_element.inner_html
             assert 'frame-heading' in html
 
@@ -1054,19 +1054,19 @@ class TestFrameElementIntegration:
             await tab.go_to(file_url)
             await asyncio.sleep(1)
 
-            left_frame = await tab.find(id='left-frame')
-            right_frame = await tab.find(id='right-frame')
+            left_frame = await tab.find(id='left-frame', timeout=5)
+            right_frame = await tab.find(id='right-frame', timeout=5)
 
             assert left_frame.is_iframe
             assert right_frame.is_iframe
 
             # Left frame has frame-specific content
-            left_heading = await left_frame.find(id='frame-heading')
+            left_heading = await left_frame.find(id='frame-heading', timeout=5)
             left_text = await left_heading.text
             assert 'Frame Content' in left_text
 
             # Right frame has iframe content (reuses test_iframe_content.html)
-            right_heading = await right_frame.find(id='iframe-heading')
+            right_heading = await right_frame.find(id='iframe-heading', timeout=5)
             right_text = await right_heading.text
             assert 'Iframe Content' in right_text
 
@@ -1081,8 +1081,8 @@ class TestFrameElementIntegration:
             await tab.go_to(file_url)
             await asyncio.sleep(1)
 
-            frame_element = await tab.find(id='left-frame')
-            input_el = await frame_element.find(id='frame-input')
+            frame_element = await tab.find(id='left-frame', timeout=5)
+            input_el = await frame_element.find(id='frame-input', timeout=5)
 
             test_text = 'hello frame'
             await input_el.type_text(test_text)
