@@ -191,6 +191,32 @@ class TestWebElementProperties:
         assert web_element.id == 'test-id'
         assert web_element.tag_name == 'div'
 
+    def test_is_iframe_property_with_iframe_tag(self, iframe_element):
+        """Test is_iframe returns True for iframe tag."""
+        assert iframe_element.is_iframe is True
+
+    def test_is_iframe_property_with_frame_tag(self, mock_connection_handler):
+        """Test is_iframe returns True for frame tag (frameset frames)."""
+        element = WebElement(
+            object_id='frame-object-id',
+            connection_handler=mock_connection_handler,
+            attributes_list=['tag_name', 'frame', 'id', 'my-frame'],
+        )
+        assert element.is_iframe is True
+
+    def test_is_iframe_property_with_regular_tag(self, web_element):
+        """Test is_iframe returns False for non-frame tags."""
+        assert web_element.is_iframe is False
+
+    def test_is_iframe_property_with_no_tag(self, mock_connection_handler):
+        """Test is_iframe returns False when tag_name is None."""
+        element = WebElement(
+            object_id='no-tag',
+            connection_handler=mock_connection_handler,
+            attributes_list=[],
+        )
+        assert element.is_iframe is False
+
     def test_is_enabled_property(self, web_element, disabled_element):
         """Test is_enabled property for enabled and disabled elements."""
         assert web_element.is_enabled is True
