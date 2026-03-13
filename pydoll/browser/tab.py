@@ -1829,7 +1829,6 @@ class Tab(FindElementsMixin):
             serialization_options=serialization_options,
         )
 
-
     async def _refresh_if_url_not_changed(
         self, url: str, timeout: int = 300
     ) -> bool:
