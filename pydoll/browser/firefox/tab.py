@@ -1,0 +1,542 @@
+from __future__ import annotations
+
+import asyncio
+import base64
+import logging
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, overload
+
+from pydoll.browser.firefox.element import KEYS, FirefoxElement
+from pydoll.protocol.bidi import browsing_context, network, script, session, storage
+from pydoll.protocol.bidi import input as bidi_input
+from pydoll.protocol.bidi.network import Header, InterceptPhase, NetworkEvent
+
+if TYPE_CHECKING:
+    from pydoll.connection.bidi_connection_handler import BiDiConnectionHandler
+    from pydoll.protocol.bidi.storage import CookieParam
+
+logger = logging.getLogger(__name__)
+
+
+class FirefoxTab:
+    """
+    Represents a Firefox browser tab using WebDriver BiDi protocol.
+
+    Wraps a BiDi browsing context ID and provides high-level methods
+    mirroring the Chromium Tab API.
+    """
+
+    def __init__(self, context_id: str, connection_handler: BiDiConnectionHandler):
+        """
+        Initialize a FirefoxTab.
+
+        Args:
+            context_id: BiDi browsing context ID for this tab.
+            connection_handler: Shared BiDi connection handler.
+        """
+        self._context_id = context_id
+        self._connection_handler = connection_handler
+        logger.debug(f'FirefoxTab initialized: context_id={context_id}')
+
+    @property
+    def context_id(self) -> str:
+        """BiDi browsing context ID for this tab."""
+        return self._context_id
+
+    async def go_to(self, url: str, wait: str = 'complete') -> dict:
+        """
+        Navigate to a URL and wait for the page to load.
+
+        Args:
+            url: URL to navigate to.
+            wait: Page load strategy - 'none', 'interactive', or 'complete'.
+
+        Returns:
+            Navigation result dict with 'url' key.
+        """
+        logger.info(f'Navigating to {url} (context={self._context_id})')
+        response: dict = await self._connection_handler.execute_command(
+            browsing_context.navigate(self._context_id, url, wait)
+        )
+        return response['result']
+
+    async def evaluate(self, expression: str, await_promise: bool = True) -> Any:
+        """
+        Evaluate a JavaScript expression in this tab's context.
+
+        Args:
+            expression: JavaScript expression to evaluate.
+            await_promise: Whether to await the result if it's a Promise.
+
+        Returns:
+            The JavaScript result value.
+        """
+        logger.debug(f'Evaluating expression in context={self._context_id}')
+        response: dict = await self._connection_handler.execute_command(
+            script.evaluate(expression, self._context_id, await_promise)
+        )
+        result = response.get('result', {})
+        script_result = result.get('result', {})
+        return script_result.get('value')
+
+    async def find(
+        self,
+        selector: str,
+        selector_type: str = 'css',
+        max_node_count: Optional[int] = None,
+    ) -> list[FirefoxElement]:
+        """
+        Find elements in this tab using a CSS or XPath selector.
+
+        Args:
+            selector: CSS selector or XPath expression.
+            selector_type: Locator type - 'css' or 'xpath'.
+            max_node_count: Maximum number of nodes to return.
+
+        Returns:
+            List of FirefoxElement instances ready for interaction.
+        """
+        locator = {'type': selector_type, 'value': selector}
+        logger.debug(
+            f'Finding nodes: selector={selector!r}, type={selector_type}, '
+            f'context={self._context_id}'
+        )
+        response: dict = await self._connection_handler.execute_command(
+            browsing_context.locate_nodes(self._context_id, locator, max_node_count)
+        )
+        nodes = response.get('result', {}).get('nodes', [])
+        return [FirefoxElement(node, self._context_id, self._connection_handler) for node in nodes]
+
+    async def take_screenshot(self) -> bytes:
+        """
+        Capture a screenshot of this tab.
+
+        Returns:
+            PNG screenshot as bytes.
+        """
+        logger.debug(f'Taking screenshot: context={self._context_id}')
+        response: dict = await self._connection_handler.execute_command(
+            browsing_context.capture_screenshot(self._context_id)
+        )
+        data = response.get('result', {}).get('data', '')
+        return base64.b64decode(data)
+
+    @property
+    async def current_url(self) -> Optional[str]:
+        """Get the current URL of this tab."""
+        return await self.evaluate('window.location.href')
+
+    @property
+    async def page_source(self) -> Optional[str]:
+        """Get the full HTML source of the current page."""
+        return await self.evaluate('document.documentElement.outerHTML')
+
+    @property
+    async def title(self) -> Optional[str]:
+        """Get the current page title."""
+        return await self.evaluate('document.title')
+
+    @overload
+    async def on(
+        self, event_name: str, callback: Callable[[Any], Any], temporary: bool = False
+    ) -> int: ...
+    @overload
+    async def on(
+        self,
+        event_name: str,
+        callback: Callable[[Any], Awaitable[Any]],
+        temporary: bool = False,
+    ) -> int: ...
+    async def on(self, event_name, callback, temporary: bool = False) -> int:
+        """
+        Subscribe to a BiDi event and register a callback.
+
+        Args:
+            event_name: BiDi event name (e.g., 'browsingContext.load').
+            callback: Function to call when the event fires (sync or async).
+            temporary: Remove after first invocation.
+
+        Returns:
+            Callback ID for later removal.
+        """
+        await self._connection_handler.execute_command(
+            session.subscribe([event_name], contexts=[self._context_id])
+        )
+
+        async def callback_wrapper(event):
+            asyncio.create_task(callback(event))
+
+        if asyncio.iscoroutinefunction(callback):
+            function_to_register = callback_wrapper
+        else:
+            function_to_register = callback
+
+        callback_id = await self._connection_handler.register_callback(
+            event_name, function_to_register, temporary
+        )
+        logger.debug(f'Registered callback: event={event_name}, id={callback_id}')
+        return callback_id
+
+    async def press_key(self, key: str) -> None:
+        """
+        Press a key in the current tab context (no specific element targeted).
+
+        Args:
+            key: Key name (e.g. 'enter', 'escape', 'tab') or a single character.
+        """
+        value = KEYS.get(key.lower(), key)
+        await self._connection_handler.execute_command(
+            bidi_input.perform_actions(
+                self._context_id,
+                [
+                    {
+                        'type': 'key',
+                        'id': 'keyboard1',
+                        'actions': [
+                            {'type': 'keyDown', 'value': value},
+                            {'type': 'keyUp', 'value': value},
+                        ],
+                    }
+                ],
+            )
+        )
+
+    async def get_cookies(self) -> list[dict]:
+        """
+        Get all cookies for this tab's browsing context.
+
+        Returns:
+            List of cookie dicts with keys: name, value, domain, path,
+            httpOnly, secure, sameSite, expiry, etc.
+        """
+        logger.debug(f'Getting cookies: context={self._context_id}')
+        response: dict = await self._connection_handler.execute_command(
+            storage.get_cookies(self._context_id)
+        )
+        return response.get('result', {}).get('cookies', [])
+
+    async def set_cookie(
+        self,
+        name: str,
+        value: str,
+        domain: str,
+        path: str = '/',
+        http_only: bool = False,
+        secure: bool = False,
+        same_site: Optional[str] = None,
+        expiry: Optional[int] = None,
+    ) -> None:
+        """
+        Set a cookie in this tab's browsing context.
+
+        Args:
+            name: Cookie name.
+            value: Cookie value.
+            domain: Cookie domain (e.g. 'example.com').
+            path: Cookie path (default '/').
+            http_only: Whether the cookie is HTTP-only.
+            secure: Whether the cookie requires HTTPS.
+            same_site: SameSite policy - 'strict', 'lax', or 'none'.
+            expiry: Cookie expiry as a Unix timestamp.
+        """
+        logger.debug(f'Setting cookie {name!r}: context={self._context_id}')
+        await self._connection_handler.execute_command(
+            storage.set_cookie(
+                self._context_id,
+                name=name,
+                value=value,
+                domain=domain,
+                path=path,
+                http_only=http_only,
+                secure=secure,
+                same_site=same_site,
+                expiry=expiry,
+            )
+        )
+
+    async def set_cookies(self, cookies: list[CookieParam]) -> None:
+        """
+        Set multiple cookies in this tab's browsing context.
+
+        Args:
+            cookies: List of CookieParam dicts. Each must have ``name``,
+                ``value`` and ``domain``; all other fields are optional.
+        """
+        logger.debug(f'Setting {len(cookies)} cookies: context={self._context_id}')
+        for cookie in cookies:
+            await self._connection_handler.execute_command(
+                storage.set_cookie(
+                    self._context_id,
+                    name=cookie['name'],
+                    value=cookie['value'],
+                    domain=cookie['domain'],
+                    path=cookie.get('path', '/'),
+                    http_only=cookie.get('httpOnly', False),
+                    secure=cookie.get('secure', False),
+                    same_site=cookie.get('sameSite'),
+                    expiry=cookie.get('expiry'),
+                )
+            )
+
+    async def delete_cookies(
+        self, name: Optional[str] = None, domain: Optional[str] = None
+    ) -> None:
+        """
+        Delete cookies in this tab's browsing context.
+
+        Args:
+            name: If provided, only delete cookies with this name.
+            domain: If provided, only delete cookies for this domain.
+                    When neither is given, all cookies for the context are deleted.
+        """
+        cookie_filter = None
+        if name is not None or domain is not None:
+            cookie_filter = storage.CookieFilter()
+            if name is not None:
+                cookie_filter['name'] = name
+            if domain is not None:
+                cookie_filter['domain'] = domain
+
+        logger.debug(
+            f'Deleting cookies: context={self._context_id}, name={name!r}, domain={domain!r}'
+        )
+        await self._connection_handler.execute_command(
+            storage.delete_cookies(self._context_id, filter=cookie_filter)
+        )
+
+    async def refresh(self, wait: str = 'complete') -> dict:
+        """
+        Reload the current page.
+
+        Args:
+            wait: Page load strategy - 'none', 'interactive', or 'complete'.
+
+        Returns:
+            Reload result dict with 'url' key.
+        """
+        logger.info(f'Refreshing context={self._context_id}')
+        response: dict = await self._connection_handler.execute_command(
+            browsing_context.reload(self._context_id, wait)
+        )
+        return response.get('result', {})
+
+    async def go_back(self) -> dict:
+        """
+        Navigate one step back in browser history.
+
+        Returns:
+            TraverseHistory result dict.
+        """
+        logger.info(f'Going back: context={self._context_id}')
+        response: dict = await self._connection_handler.execute_command(
+            browsing_context.traverse_history(self._context_id, delta=-1)
+        )
+        return response.get('result', {})
+
+    async def go_forward(self) -> dict:
+        """
+        Navigate one step forward in browser history.
+
+        Returns:
+            TraverseHistory result dict.
+        """
+        logger.info(f'Going forward: context={self._context_id}')
+        response: dict = await self._connection_handler.execute_command(
+            browsing_context.traverse_history(self._context_id, delta=1)
+        )
+        return response.get('result', {})
+
+    async def enable_network_events(self) -> None:
+        """
+        Subscribe to all BiDi network monitoring events for this tab.
+
+        After calling this, use ``tab.on(NetworkEvent.BEFORE_REQUEST_SENT, cb)``
+        etc. to receive events. No intercept is registered — requests flow
+        through unblocked.
+        """
+        logger.info(f'Enabling network events: context={self._context_id}')
+        await self._connection_handler.execute_command(
+            session.subscribe(NetworkEvent.ALL_EVENTS, contexts=[self._context_id])
+        )
+
+    async def disable_network_events(self) -> None:
+        """Unsubscribe from all BiDi network monitoring events for this tab."""
+        logger.info(f'Disabling network events: context={self._context_id}')
+        await self._connection_handler.execute_command(
+            session.unsubscribe(NetworkEvent.ALL_EVENTS, contexts=[self._context_id])
+        )
+
+    async def add_intercept(
+        self,
+        phases: Optional[list[str]] = None,
+        url_patterns: Optional[list[str]] = None,
+    ) -> str:
+        """
+        Register a network intercept scoped to this tab.
+
+        Every matching request will be **blocked** until the callback calls
+        ``continue_request()``, ``fail_request()``, or ``provide_response()``.
+
+        Args:
+            phases: Intercept phases. Defaults to ``['beforeRequestSent']``.
+                    Use ``InterceptPhase`` constants.
+            url_patterns: Optional URL glob patterns (e.g. ``'*://api.example.com/*'``).
+                          Omit to intercept all URLs.
+
+        Returns:
+            Intercept ID — pass to ``remove_intercept()`` to clean up.
+        """
+        if phases is None:
+            phases = [InterceptPhase.BEFORE_REQUEST_SENT]
+        logger.info(f'Adding intercept phases={phases}: context={self._context_id}')
+        response: dict = await self._connection_handler.execute_command(
+            network.add_intercept(
+                phases=phases,
+                contexts=[self._context_id],
+                url_patterns=url_patterns,
+            )
+        )
+        return response['result']['intercept']
+
+    async def remove_intercept(self, intercept_id: str) -> None:
+        """Remove a previously registered network intercept."""
+        logger.debug(f'Removing intercept {intercept_id!r}')
+        await self._connection_handler.execute_command(network.remove_intercept(intercept_id))
+
+    async def continue_request(
+        self,
+        request_id: str,
+        url: Optional[str] = None,
+        method: Optional[str] = None,
+        headers: Optional[list[Header]] = None,
+        body: Optional[str] = None,
+    ) -> None:
+        """
+        Allow a blocked request to proceed, with optional modifications.
+
+        Must be called from within a ``network.beforeRequestSent`` callback
+        when ``isBlocked`` is ``True``.
+
+        Args:
+            request_id: ``event['params']['request']['request']``.
+            url: Override the request URL.
+            method: Override the HTTP method (e.g. ``'POST'``).
+            headers: Override headers — list of ``{'name': ..., 'value': ...}`` dicts.
+            body: Override the request body as a plain string.
+        """
+        await self._connection_handler.execute_command(
+            network.continue_request(request_id, url=url, method=method, headers=headers, body=body)
+        )
+
+    async def fail_request(self, request_id: str) -> None:
+        """
+        Abort a blocked request with a network error.
+
+        Args:
+            request_id: ``event['params']['request']['request']``.
+        """
+        await self._connection_handler.execute_command(network.fail_request(request_id))
+
+    async def provide_response(
+        self,
+        request_id: str,
+        status_code: int = 200,
+        headers: Optional[list[Header]] = None,
+        body: Optional[str] = None,
+        reason_phrase: Optional[str] = None,
+    ) -> None:
+        """
+        Fulfill a blocked request with a synthetic response without hitting the server.
+
+        Args:
+            request_id: ``event['params']['request']['request']``.
+            status_code: HTTP status code (default 200).
+            headers: Response headers — list of ``{'name': ..., 'value': ...}`` dicts.
+            body: Response body as a plain string.
+            reason_phrase: HTTP reason phrase (e.g. ``'OK'``, ``'Not Found'``).
+        """
+        await self._connection_handler.execute_command(
+            network.provide_response(
+                request_id,
+                status_code=status_code,
+                headers=headers,
+                body=body,
+                reason_phrase=reason_phrase,
+            )
+        )
+
+    async def continue_response(
+        self,
+        request_id: str,
+        status_code: Optional[int] = None,
+        headers: Optional[list[Header]] = None,
+        reason_phrase: Optional[str] = None,
+    ) -> None:
+        """
+        Allow a blocked response to proceed, with optional modifications.
+
+        Must be called from within a ``network.responseStarted`` callback
+        when ``isBlocked`` is ``True``.
+
+        Args:
+            request_id: ``event['params']['request']['request']``.
+            status_code: Override the response status code.
+            headers: Override response headers.
+            reason_phrase: Override the HTTP reason phrase.
+        """
+        await self._connection_handler.execute_command(
+            network.continue_response(
+                request_id, status_code=status_code, headers=headers, reason_phrase=reason_phrase
+            )
+        )
+
+    async def continue_with_auth(
+        self,
+        request_id: str,
+        action: str = 'cancel',
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+    ) -> None:
+        """
+        Respond to an auth challenge from a ``network.authRequired`` event.
+
+        Args:
+            request_id: ``event['params']['request']['request']``.
+            action: ``'provideCredentials'``, ``'default'``, or ``'cancel'``.
+            username: Username (required when action is ``'provideCredentials'``).
+            password: Password (required when action is ``'provideCredentials'``).
+        """
+        await self._connection_handler.execute_command(
+            network.continue_with_auth(
+                request_id, action=action, username=username, password=password
+            )
+        )
+
+    async def remove_callback(self, callback_id: int) -> bool:
+        """Remove a registered event callback by ID."""
+        return await self._connection_handler.remove_callback(callback_id)
+
+    async def new_tab(self, url: str = '') -> FirefoxTab:
+        """
+        Open a new browser tab.
+
+        Args:
+            url: URL to navigate to after opening (stays on about:blank if empty).
+
+        Returns:
+            New FirefoxTab instance.
+        """
+        logger.info('Creating new tab')
+        response: dict = await self._connection_handler.execute_command(browsing_context.create())
+        context_id = response['result']['context']
+        tab = FirefoxTab(context_id, self._connection_handler)
+        if url:
+            await tab.go_to(url)
+        return tab
+
+    async def close(self):
+        """Close this tab's browsing context."""
+        logger.info(f'Closing context: {self._context_id}')
+        await self._connection_handler.execute_command(browsing_context.close(self._context_id))
+
+    def __repr__(self) -> str:
+        return f'FirefoxTab(context_id={self._context_id!r})'
