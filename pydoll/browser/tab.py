@@ -51,6 +51,7 @@ from pydoll.exceptions import (
     InvalidScriptWithElement,
     InvalidTabInitialization,
     MissingScreenshotPath,
+    NavigationError,
     NetworkEventsNotEnabled,
     NoDialogPresent,
     NotAnIFrame,
@@ -112,6 +113,7 @@ if TYPE_CHECKING:
         CaptureScreenshotResponse,
         GetResourceContentResponse,
         GetResourceTreeResponse,
+        NavigateResponse,
         PrintToPDFResponse,
     )
     from pydoll.protocol.runtime.methods import CallFunctionOnResponse, EvaluateResponse
@@ -899,15 +901,21 @@ class Tab(FindElementsMixin):
             timeout: Maximum seconds to wait for page load (default 300).
 
         Raises:
+            NavigationError: If the navigation fails (e.g., DNS error).
             PageLoadTimeout: If page doesn't finish loading within timeout.
         """
         logger.info(f'Navigating to URL: {url} (timeout={timeout}s)')
-        if await self._refresh_if_url_not_changed(url):
-            logger.debug('URL matches current page; refreshing instead')
+        if await self._refresh_if_url_not_changed(url, timeout):
+            logger.debug('URL matches current page; refreshed with navigation')
             return
 
         async with self._wait_page_load(timeout=timeout):
-            await self._execute_command(PageCommands.navigate(url))
+            response: NavigateResponse = await self._execute_command(
+                PageCommands.navigate(url)
+            )
+            error_text = response['result'].get('errorText')
+            if error_text:
+                raise NavigationError(url, error_text)
         logger.info(f'Navigation complete: {url}')
 
     async def refresh(
@@ -1821,11 +1829,33 @@ class Tab(FindElementsMixin):
             serialization_options=serialization_options,
         )
 
-    async def _refresh_if_url_not_changed(self, url: str) -> bool:
-        """Refresh page if URL hasn't changed."""
+    async def _refresh_if_url_not_changed(
+        self, url: str, timeout: int = 300
+    ) -> bool:
+        """Navigate to URL if it matches the current page.
+
+        Uses Page.navigate instead of Page.reload so that navigation
+        errors (e.g., DNS failures) are detected via errorText.
+
+        Args:
+            url: URL to compare against the current page.
+            timeout: Maximum seconds to wait for page load.
+
+        Returns:
+            True if the URL matched and a navigate-refresh was performed.
+
+        Raises:
+            NavigationError: If the navigation fails.
+        """
         current_url = await self.current_url
         if current_url == url:
-            await self.refresh()
+            async with self._wait_page_load(timeout=timeout):
+                response: NavigateResponse = await self._execute_command(
+                    PageCommands.navigate(url)
+                )
+                error_text = response['result'].get('errorText')
+                if error_text:
+                    raise NavigationError(url, error_text)
             return True
         return False
 

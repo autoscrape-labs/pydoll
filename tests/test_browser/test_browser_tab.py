@@ -406,6 +406,30 @@ class TestTabNavigation:
         assert tab._connection_handler.execute_command.call_count == 4
 
     @pytest.mark.asyncio
+    async def test_go_to_navigation_error(self, tab):
+        """Test that navigation errors raise NavigationError."""
+        from pydoll.exceptions import NavigationError
+
+        tab._connection_handler.execute_command.side_effect = [
+            {'result': {'result': {'value': 'https://old-url.com'}}},  # current_url
+            {'result': {}},  # Page.enable
+            {'result': {'frameId': 'f', 'errorText': 'net::ERR_NAME_NOT_RESOLVED'}},
+            {'result': {}},  # Page.disable
+        ]
+
+        async def fire_callback(event_name, callback, temporary=False):
+            callback({'method': event_name, 'params': {}})
+            return 1
+
+        tab._connection_handler.register_callback = AsyncMock(
+            side_effect=fire_callback
+        )
+
+        with pytest.raises(NavigationError) as exc_info:
+            await tab.go_to('https://nonexistent.invalid')
+        assert 'net::ERR_NAME_NOT_RESOLVED' in str(exc_info.value)
+
+    @pytest.mark.asyncio
     async def test_go_to_same_url(self, tab):
         """Test navigating to the same URL (should refresh)."""
         tab._connection_handler.execute_command.side_effect = [
