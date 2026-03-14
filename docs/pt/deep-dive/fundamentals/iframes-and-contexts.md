@@ -322,19 +322,19 @@ Gerencia alvos (targets) do navegador (páginas, iframes, workers, etc.).
 **Uso no Pydoll:**
 
 ```python
-# De pydoll/elements/web_element.py (simplificado)
-async def _resolve_oopif_by_parent(self, parent_frame_id: str, ...):
-    """Resolve um OOPIF usando o ID do frame pai."""
+# De pydoll/interactions/iframe.py (simplificado)
+async def _resolve_oopif_by_parent(self, content_frame_id: str, ...):
+    """Resolve um OOPIF usando o content frame id."""
     browser_handler = ConnectionHandler(...)
     targets_response: GetTargetsResponse = await browser_handler.execute_command(
         TargetCommands.get_targets()
     )
     target_infos = targets_response.get('result', {}).get('targetInfos', [])
-    
+
     # Encontra alvos cujo parentFrameId bate
     direct_children = [
         target_info for target_info in target_infos
-        if target_info.get('parentFrameId') == parent_frame_id
+        if target_info.get('parentFrameId') == content_frame_id
     ]
     
     if direct_children:
@@ -617,12 +617,12 @@ sequenceDiagram
 **Código**:
 
 ```python
-# De pydoll/elements/web_element.py
-async def _ensure_iframe_context(self) -> None:
-    """Inicializa e cacheia informação de contexto para elementos iframe."""
-    node_info = await self._describe_node(object_id=self._object_id)
+# De pydoll/interactions/iframe.py
+async def resolve(self) -> IFrameContext:
+    """Resolve e retorna o contexto do iframe."""
     base_handler, base_session_id = self._get_base_session()
-    frame_id, document_url, parent_frame_id, backend_node_id = self._extract_frame_metadata(
+    node_info = await self._describe_element_node(base_handler, base_session_id)
+    frame_id, document_url, content_frame_id, backend_node_id = self._extract_frame_metadata(
         node_info
     )
     # ... continua resolução
@@ -637,7 +637,7 @@ def _extract_frame_metadata(
 ) -> tuple[Optional[str], Optional[str], Optional[str], Optional[int]]:
     """Extrai metadados relacionados a iframe de um Nó DOM.describeNode."""
     content_document = node_info.get('contentDocument') or {}
-    parent_frame_id = node_info.get('frameId')
+    content_frame_id = node_info.get('frameId')
     backend_node_id = node_info.get('backendNodeId')
     frame_id = content_document.get('frameId')
     document_url = (
@@ -646,7 +646,7 @@ def _extract_frame_metadata(
         or node_info.get('documentURL')
         or node_info.get('baseURL')
     )
-    return frame_id, document_url, parent_frame_id, backend_node_id
+    return frame_id, document_url, content_frame_id, backend_node_id
 ```
 
 **Resultado**:
@@ -748,32 +748,41 @@ Se nenhum filho direto adequado for encontrado (ou se `parentFrameId` estiver in
 1. Iterar todos os alvos iframe/page.
 2. Anexar a cada um e buscar sua árvore de frames.
 3. Primeiro, tentar casar o **dono do frame raiz** via `DOM.getFrameOwner(root_frame_id)` com o `backendNodeId` do iframe.
-4. Se isso não bater, procurar um **frame filho** cujo `parentId` seja o `parent_frame_id` (isso cobre casos em que o OOPIF está aninhado sob um frame intermediário).
+4. Se isso não bater, procurar um **frame filho** cujo `parentId` seja o `content_frame_id` (isso cobre casos em que o OOPIF está aninhado sob um frame intermediário).
 
 **Código**:
 
 ```python
-# De pydoll/elements/web_element.py
+# De pydoll/interactions/iframe.py
 async def _resolve_oopif_by_parent(
     self,
-    parent_frame_id: str,
+    content_frame_id: str,
     backend_node_id: Optional[int],
+    base_handler: Optional[ConnectionHandler] = None,
+    base_session_id: Optional[str] = None,
 ) -> tuple[Optional[ConnectionHandler], Optional[str], Optional[str], Optional[str]]:
-    """Resolve um OOPIF usando o ID do frame pai."""
+    """Resolve um OOPIF usando o content frame id."""
     browser_handler = ConnectionHandler(
-        connection_port=self._connection_handler._connection_port
+        connection_port=self._element._connection_handler._connection_port
     )
     targets_response: GetTargetsResponse = await browser_handler.execute_command(
         TargetCommands.get_targets()
     )
     target_infos = targets_response.get('result', {}).get('targetInfos', [])
 
+    # O handler que pode resolver DOM.getFrameOwner para o contexto do elemento.
+    # Quando o <iframe> está dentro de um OOPIF aninhado, o handler do Tab
+    # não tem visibilidade; devemos rotear pela sessão que originalmente
+    # encontrou o elemento.
+    owner_handler = base_handler or self._element._connection_handler
+    owner_session_id = base_session_id
+
     # Estratégia 3a: Filhos diretos (caminho rápido)
     direct_children = [
         target_info
         for target_info in target_infos
         if target_info.get('type') in {'iframe', 'page'}
-        and target_info.get('parentFrameId') == parent_frame_id
+        and target_info.get('parentFrameId') == content_frame_id
     ]
 
     is_single_child = len(direct_children) == 1
@@ -803,7 +812,7 @@ async def _resolve_oopif_by_parent(
         # Caso OOPIF: confirmar propriedade via DOM.getFrameOwner
         if root_frame_id and backend_node_id is not None:
             owner_backend_id = await self._owner_backend_for(
-                self._connection_handler, None, root_frame_id
+                owner_handler, owner_session_id, root_frame_id
             )
             if owner_backend_id == backend_node_id:
                 return (
@@ -830,10 +839,19 @@ async def _resolve_oopif_by_parent(
         root_frame = (frame_tree or {}).get('frame', {})
         root_frame_id = root_frame.get('id', '')
 
+        # Match direto: content_frame_id igual ao root frame ID do alvo
+        if root_frame_id and root_frame_id == content_frame_id:
+            return (
+                browser_handler,
+                attached_session_id,
+                root_frame_id,
+                root_frame.get('url'),
+            )
+
         # Primeiro tenta casar o dono do frame raiz via backend_node_id
         if root_frame_id and backend_node_id is not None:
             owner_backend_id = await self._owner_backend_for(
-                self._connection_handler, None, root_frame_id
+                owner_handler, owner_session_id, root_frame_id
             )
             if owner_backend_id == backend_node_id:
                 return (
@@ -843,8 +861,10 @@ async def _resolve_oopif_by_parent(
                     root_frame.get('url'),
                 )
 
-        # Fallback: procurar frame filho cujo parentId seja parent_frame_id
-        child_frame_id = WebElement._find_child_by_parent(frame_tree, parent_frame_id)
+        # Fallback: procurar frame filho cujo parentId seja content_frame_id
+        child_frame_id = IFrameContextResolver._find_child_by_parent(
+            frame_tree, content_frame_id
+        )
         if child_frame_id:
             return browser_handler, attached_session_id, child_frame_id, None
 
@@ -1133,7 +1153,7 @@ direct_children = [
     target_info
     for target_info in target_infos
     if target_info.get('type') in {'iframe', 'page'}
-    and target_info.get('parentFrameId') == parent_frame_id
+    and target_info.get('parentFrameId') == content_frame_id
 ]
 if direct_children:
     # Anexa hatchery, pula o escaneamento de todos os alvos
