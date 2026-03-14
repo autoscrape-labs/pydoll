@@ -522,10 +522,10 @@ class TestResolveOopifIfNeeded:
 
     @pytest.mark.asyncio
     async def test_returns_early_when_no_parent_frame(self, resolver):
-        """Test early return when parent_frame_id is None."""
+        """Test early return when content_frame_id is None."""
         result = await resolver._resolve_oopif_if_needed(
             current_frame_id='frame-123',
-            parent_frame_id=None,
+            content_frame_id=None,
             backend_node_id=456,
             current_document_url='https://example.com',
         )
@@ -541,7 +541,7 @@ class TestResolveOopifIfNeeded:
         """Test early return when frame is resolved and no backend_node_id."""
         result = await resolver._resolve_oopif_if_needed(
             current_frame_id='resolved-frame',
-            parent_frame_id='parent-123',
+            content_frame_id='parent-123',
             backend_node_id=None,
             current_document_url='https://resolved.com',
         )
