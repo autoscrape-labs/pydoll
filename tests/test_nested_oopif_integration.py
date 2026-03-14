@@ -19,15 +19,23 @@ from pydoll.browser.chromium import Chrome
 PAGES_DIR = Path(__file__).parent / 'pages' / 'oopif'
 
 
-def _free_port() -> int:
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.bind(('', 0))
-        return s.getsockname()[1]
-
-
 class _SilentHandler(http.server.SimpleHTTPRequestHandler):
     def log_message(self, *args):
         pass
+
+
+def _wait_for_server(host: str, port: int, timeout: float = 5.0) -> None:
+    """Block until the server at host:port accepts a TCP connection."""
+    import time
+
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        try:
+            with socket.create_connection((host, port), timeout=0.5):
+                return
+        except OSError:
+            time.sleep(0.05)
+    raise RuntimeError(f'Server {host}:{port} not ready within {timeout}s')
 
 
 @pytest.fixture(scope='module')
@@ -41,12 +49,16 @@ def cross_origin_servers():
 
         return H
 
-    port_a, port_b = _free_port(), _free_port()
-    srv_a = http.server.HTTPServer(('127.0.0.1', port_a), _handler())
-    srv_b = http.server.HTTPServer(('127.0.0.1', port_b), _handler())
+    srv_a = http.server.HTTPServer(('127.0.0.1', 0), _handler())
+    srv_b = http.server.HTTPServer(('127.0.0.1', 0), _handler())
+    port_a = srv_a.server_address[1]
+    port_b = srv_b.server_address[1]
 
     for srv in (srv_a, srv_b):
         threading.Thread(target=srv.serve_forever, daemon=True).start()
+
+    _wait_for_server('127.0.0.1', port_a)
+    _wait_for_server('127.0.0.1', port_b)
 
     yield port_a, port_b
 
@@ -68,7 +80,6 @@ class TestCrossOriginIframeResolution:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(url)
-            await asyncio.sleep(2)
 
             iframe = await tab.find(id='cross-origin-iframe', timeout=10)
             assert iframe.is_iframe
@@ -87,7 +98,6 @@ class TestCrossOriginIframeResolution:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(url)
-            await asyncio.sleep(2)
 
             iframe = await tab.find(id='cross-origin-iframe', timeout=10)
             btn = await iframe.find(id='oopif-btn', timeout=10)
@@ -114,7 +124,6 @@ class TestNestedIframeInsideOopif:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(url)
-            await asyncio.sleep(2)
 
             oopif = await tab.find(id='cross-origin-iframe', timeout=10)
             nested = await oopif.find(id='nested-iframe', timeout=10)
@@ -135,7 +144,6 @@ class TestNestedIframeInsideOopif:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(url)
-            await asyncio.sleep(2)
 
             oopif = await tab.find(id='cross-origin-iframe', timeout=10)
             nested = await oopif.find(id='nested-iframe', timeout=10)
@@ -164,9 +172,8 @@ class TestShadowRootInsideOopif:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(url)
-            await asyncio.sleep(2)
 
-            shadow_roots = await tab.find_shadow_roots(True)
+            shadow_roots = await tab.find_shadow_roots(True, timeout=10)
             for sr in shadow_roots:
                 html = await sr.inner_html
                 if 'Shadow content inside OOPIF' in html:
@@ -187,9 +194,8 @@ class TestShadowRootInsideOopif:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(url)
-            await asyncio.sleep(2)
 
-            shadow_roots = await tab.find_shadow_roots(True)
+            shadow_roots = await tab.find_shadow_roots(True, timeout=10)
             for sr in shadow_roots:
                 html = await sr.inner_html
                 if 'Shadow content inside OOPIF' in html:
@@ -223,9 +229,8 @@ class TestIframeInsideShadowRootInsideOopif:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(url)
-            await asyncio.sleep(2)
 
-            shadow_roots = await tab.find_shadow_roots(True)
+            shadow_roots = await tab.find_shadow_roots(True, timeout=10)
             for sr in shadow_roots:
                 html = await sr.inner_html
                 if 'Shadow content inside OOPIF' in html:
@@ -252,9 +257,8 @@ class TestIframeInsideShadowRootInsideOopif:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(url)
-            await asyncio.sleep(2)
 
-            shadow_roots = await tab.find_shadow_roots(True)
+            shadow_roots = await tab.find_shadow_roots(True, timeout=10)
             for sr in shadow_roots:
                 html = await sr.inner_html
                 if 'Shadow content inside OOPIF' in html:
