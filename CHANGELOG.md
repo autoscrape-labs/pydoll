@@ -1,3 +1,10 @@
+## 2.21.3 (2026-03-14)
+
+### Fix
+
+- **test**: improve OOPIF integration test reliability
+- **iframe**: resolve nested OOPIF iframes inside shadow roots
+
 ## 2.21.2 (2026-03-12)
 
 ### Fix
