@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>OOPIF Content</title>
+    <style>
+        body { font-family: sans-serif; padding: 10px; }
+        .click-counter { color: green; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1 id="oopif-heading">Cross-Origin Content</h1>
+    <p id="oopif-text">Content from different origin</p>
+
+    <button id="oopif-btn">OOPIF Button</button>
+    <span id="oopif-btn-count" class="click-counter">0</span>
+
+    <!-- Nested iframe (same origin as this content page) -->
+    <iframe id="nested-iframe" src="oopif_nested.html"
+            style="width:600px;height:200px;border:1px solid #666;"></iframe>
+
+    <!-- Shadow root with elements and a nested iframe -->
+    <div id="shadow-host"></div>
+
+    <script>
+        // Click counter
+        (function() {
+            var count = 0;
+            document.getElementById('oopif-btn').addEventListener('click', function() {
+                count++;
+                document.getElementById('oopif-btn-count').textContent = String(count);
+            });
+        })();
+
+        // Shadow root containing text, button, and a nested iframe
+        (function() {
+            var host = document.getElementById('shadow-host');
+            var shadow = host.attachShadow({ mode: 'open' });
+            shadow.innerHTML = [
+                '<p id="shadow-text">Shadow content inside OOPIF</p>',
+                '<button id="shadow-btn">Shadow Button</button>',
+                '<span id="shadow-btn-count" class="click-counter">0</span>',
+                '<iframe id="shadow-iframe" src="oopif_shadow_iframe.html" ',
+                'style="width:500px;height:150px;border:1px solid #999;"></iframe>',
+            ].join('');
+
+            var count = 0;
+            shadow.getElementById('shadow-btn').addEventListener('click', function() {
+                count++;
+                shadow.getElementById('shadow-btn-count').textContent = String(count);
+            });
+        })();
+    </script>
+</body>
+</html>

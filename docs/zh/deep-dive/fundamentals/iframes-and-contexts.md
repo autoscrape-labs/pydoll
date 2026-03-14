@@ -322,19 +322,19 @@ async def _owner_backend_for(
 **Pydoll 用法：**
 
 ```python
-# 源自 pydoll/elements/web_element.py (简化版)
-async def _resolve_oopif_by_parent(self, parent_frame_id: str, ...):
-    """使用父 frame id 解析 OOPIF。"""
+# 源自 pydoll/interactions/iframe.py (简化版)
+async def _resolve_oopif_by_parent(self, content_frame_id: str, ...):
+    """使用 content frame id 解析 OOPIF。"""
     browser_handler = ConnectionHandler(...)
     targets_response: GetTargetsResponse = await browser_handler.execute_command(
         TargetCommands.get_targets()
     )
     target_infos = targets_response.get('result', {}).get('targetInfos', [])
-    
+
     # 查找 parentFrameId 匹配的目标
     direct_children = [
         target_info for target_info in target_infos
-        if target_info.get('parentFrameId') == parent_frame_id
+        if target_info.get('parentFrameId') == content_frame_id
     ]
     
     if direct_children:
@@ -617,12 +617,12 @@ sequenceDiagram
 **代码**：
 
 ```python
-# 源自 pydoll/elements/web_element.py
-async def _ensure_iframe_context(self) -> None:
-    """初始化并缓存 iframe 元素的上下文信息。"""
-    node_info = await self._describe_node(object_id=self._object_id)
+# 源自 pydoll/interactions/iframe.py
+async def resolve(self) -> IFrameContext:
+    """解析并返回 iframe 上下文。"""
     base_handler, base_session_id = self._get_base_session()
-    frame_id, document_url, parent_frame_id, backend_node_id = self._extract_frame_metadata(
+    node_info = await self._describe_element_node(base_handler, base_session_id)
+    frame_id, document_url, content_frame_id, backend_node_id = self._extract_frame_metadata(
         node_info
     )
     # ... 继续解析
@@ -637,7 +637,7 @@ def _extract_frame_metadata(
 ) -> tuple[Optional[str], Optional[str], Optional[str], Optional[int]]:
     """从 DOM.describeNode 节点中提取 iframe 相关的元数据。"""
     content_document = node_info.get('contentDocument') or {}
-    parent_frame_id = node_info.get('frameId')
+    content_frame_id = node_info.get('frameId')
     backend_node_id = node_info.get('backendNodeId')
     frame_id = content_document.get('frameId')
     document_url = (
@@ -646,7 +646,7 @@ def _extract_frame_metadata(
         or node_info.get('documentURL')
         or node_info.get('baseURL')
     )
-    return frame_id, document_url, parent_frame_id, backend_node_id
+    return frame_id, document_url, content_frame_id, backend_node_id
 ```
 
 **结果**：
@@ -748,32 +748,40 @@ async def _find_frame_by_owner(
 1. 遍历所有 iframe/page 目标。
 2. 附加到每个目标并获取其 frame 树。
 3. 先尝试通过 `DOM.getFrameOwner(root_frame_id)` 将**根 frame 的所有者**与 iframe 的 `backendNodeId` 进行匹配。
-4. 如果仍不匹配，则查找 `parentId` 等于我们的 `parent_frame_id` 的**子 frame**（覆盖 OOPIF 由中间 frame 间接承载的情况）。
+4. 如果仍不匹配，则查找 `parentId` 等于我们的 `content_frame_id` 的**子 frame**（覆盖 OOPIF 由中间 frame 间接承载的情况）。
 
 **代码**：
 
 ```python
-# 源自 pydoll/elements/web_element.py
+# 源自 pydoll/interactions/iframe.py
 async def _resolve_oopif_by_parent(
     self,
-    parent_frame_id: str,
+    content_frame_id: str,
     backend_node_id: Optional[int],
+    base_handler: Optional[ConnectionHandler] = None,
+    base_session_id: Optional[str] = None,
 ) -> tuple[Optional[ConnectionHandler], Optional[str], Optional[str], Optional[str]]:
-    """使用父 frame id 解析 OOPIF。"""
+    """使用 content frame id 解析 OOPIF。"""
     browser_handler = ConnectionHandler(
-        connection_port=self._connection_handler._connection_port
+        connection_port=self._element._connection_handler._connection_port
     )
     targets_response: GetTargetsResponse = await browser_handler.execute_command(
         TargetCommands.get_targets()
     )
     target_infos = targets_response.get('result', {}).get('targetInfos', [])
 
+    # 可以解析 DOM.getFrameOwner 的处理程序。
+    # 当 <iframe> 位于嵌套 OOPIF 内部时，Tab 级处理程序没有可见性；
+    # 我们必须通过最初发现该元素的会话路由。
+    owner_handler = base_handler or self._element._connection_handler
+    owner_session_id = base_session_id
+
     # 策略 3a：直接子目标（快速路径）
     direct_children = [
         target_info
         for target_info in target_infos
         if target_info.get('type') in {'iframe', 'page'}
-        and target_info.get('parentFrameId') == parent_frame_id
+        and target_info.get('parentFrameId') == content_frame_id
     ]
 
     is_single_child = len(direct_children) == 1
@@ -803,7 +811,7 @@ async def _resolve_oopif_by_parent(
         # OOPIF 场景：通过 DOM.getFrameOwner 确认所有权
         if root_frame_id and backend_node_id is not None:
             owner_backend_id = await self._owner_backend_for(
-                self._connection_handler, None, root_frame_id
+                owner_handler, owner_session_id, root_frame_id
             )
             if owner_backend_id == backend_node_id:
                 return (
@@ -830,10 +838,19 @@ async def _resolve_oopif_by_parent(
         root_frame = (frame_tree or {}).get('frame', {})
         root_frame_id = root_frame.get('id', '')
 
+        # 直接匹配：content_frame_id 等于该目标的根 frame ID
+        if root_frame_id and root_frame_id == content_frame_id:
+            return (
+                browser_handler,
+                attached_session_id,
+                root_frame_id,
+                root_frame.get('url'),
+            )
+
         # 优先尝试根据 backend_node_id 匹配根 frame 的所有者
         if root_frame_id and backend_node_id is not None:
             owner_backend_id = await self._owner_backend_for(
-                self._connection_handler, None, root_frame_id
+                owner_handler, owner_session_id, root_frame_id
             )
             if owner_backend_id == backend_node_id:
                 return (
@@ -843,8 +860,10 @@ async def _resolve_oopif_by_parent(
                     root_frame.get('url'),
                 )
 
-        # 备用：查找 parentId 等于 parent_frame_id 的子 frame
-        child_frame_id = WebElement._find_child_by_parent(frame_tree, parent_frame_id)
+        # 备用：查找 parentId 等于 content_frame_id 的子 frame
+        child_frame_id = IFrameContextResolver._find_child_by_parent(
+            frame_tree, content_frame_id
+        )
         if child_frame_id:
             return browser_handler, attached_session_id, child_frame_id, None
 
@@ -1133,7 +1152,7 @@ direct_children = [
     target_info
     for target_info in target_infos
     if target_info.get('type') in {'iframe', 'page'}
-    and target_info.get('parentFrameId') == parent_frame_id
+    and target_info.get('parentFrameId') == content_frame_id
 ]
 if direct_children:
     # 立即附加，跳过扫描所有目标

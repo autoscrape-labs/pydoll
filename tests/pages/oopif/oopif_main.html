@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>OOPIF Test - Main Page</title>
+</head>
+<body>
+    <h1 id="main-heading">Main Page</h1>
+    <iframe id="cross-origin-iframe" style="width:800px;height:600px;border:1px solid #ccc;"></iframe>
+    <script>
+        var port = new URLSearchParams(location.search).get('port');
+        if (port) {
+            document.getElementById('cross-origin-iframe').src =
+                'http://127.0.0.1:' + port + '/oopif_content.html';
+        }
+    </script>
+</body>
+</html>
