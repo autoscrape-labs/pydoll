@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Iterable, Optional
 from pydoll.commands import DomCommands, PageCommands, RuntimeCommands, TargetCommands
 from pydoll.connection import ConnectionHandler
 from pydoll.exceptions import InvalidIFrame
-from pydoll.protocol.dom.methods import GetFrameOwnerResponse
+from pydoll.protocol.dom.methods import DescribeNodeResponse, GetFrameOwnerResponse
 from pydoll.protocol.dom.types import Node
 from pydoll.protocol.page.methods import CreateIsolatedWorldResponse, GetFrameTreeResponse
 from pydoll.protocol.page.types import Frame, FrameTree
@@ -49,10 +49,10 @@ class IFrameContextResolver:
         Raises:
             InvalidIFrame: If unable to resolve the iframe context.
         """
-        node_info = await self._element._describe_node(object_id=self._element._object_id)
         base_handler, base_session_id = self._get_base_session()
-        frame_id, document_url, parent_frame_id, backend_node_id = self._extract_frame_metadata(
-            node_info
+        node_info = await self._describe_element_node(base_handler, base_session_id)
+        frame_id, document_url, content_frame_id, backend_node_id = (
+            self._extract_frame_metadata(node_info)
         )
 
         if not frame_id and backend_node_id is not None:
@@ -61,7 +61,12 @@ class IFrameContextResolver:
             )
 
         session_handler, session_id, frame_id, document_url = await self._resolve_oopif_if_needed(
-            frame_id, parent_frame_id, backend_node_id, document_url
+            frame_id,
+            content_frame_id,
+            backend_node_id,
+            current_document_url=document_url,
+            base_handler=base_handler,
+            base_session_id=base_session_id,
         )
 
         if not frame_id:
@@ -95,13 +100,41 @@ class IFrameContextResolver:
         session_id = getattr(self._element, '_routing_session_id', None)
         return handler, session_id
 
+    async def _describe_element_node(
+        self,
+        handler: ConnectionHandler,
+        session_id: Optional[str],
+    ) -> Node:
+        """Describe the iframe element using the given handler/session.
+
+        This bypasses ``_resolve_routing()`` which, after a previous
+        resolution, may return the iframe *content* session instead of
+        the parent session where the element actually lives.
+        """
+        command = DomCommands.describe_node(object_id=self._element._object_id)
+        if session_id:
+            command['sessionId'] = session_id
+        response: DescribeNodeResponse = await handler.execute_command(command)
+        if 'error' in response:
+            return {}
+        return response.get('result', {}).get('node', {})
+
     @staticmethod
     def _extract_frame_metadata(
         node_info: Node,
     ) -> tuple[Optional[str], Optional[str], Optional[str], Optional[int]]:
-        """Extract iframe-related metadata from DOM node info."""
+        """Extract iframe-related metadata from DOM node info.
+
+        Returns:
+            Tuple of (frame_id, document_url, content_frame_id, backend_node_id).
+            ``content_frame_id`` is the frame ID of the frame *created* by the
+            ``<iframe>`` element (``node_info['frameId']`` on frame-owner
+            elements).  For same-origin iframes it equals
+            ``contentDocument.frameId``; for OOPIFs ``contentDocument`` is
+            absent but ``content_frame_id`` is still set by the browser.
+        """
         content_document = node_info.get('contentDocument') or {}
-        parent_frame_id = node_info.get('frameId')
+        content_frame_id = node_info.get('frameId')
         backend_node_id = node_info.get('backendNodeId')
         frame_id = content_document.get('frameId')
         document_url = (
@@ -110,7 +143,7 @@ class IFrameContextResolver:
             or node_info.get('documentURL')
             or node_info.get('baseURL')
         )
-        return frame_id, document_url, parent_frame_id, backend_node_id
+        return frame_id, document_url, content_frame_id, backend_node_id
 
     async def _resolve_frame_by_owner(
         self,
@@ -184,12 +217,14 @@ class IFrameContextResolver:
     async def _resolve_oopif_if_needed(
         self,
         current_frame_id: Optional[str],
-        parent_frame_id: Optional[str],
+        content_frame_id: Optional[str],
         backend_node_id: Optional[int],
         current_document_url: Optional[str],
+        base_handler: Optional[ConnectionHandler] = None,
+        base_session_id: Optional[str] = None,
     ) -> tuple[Optional[ConnectionHandler], Optional[str], Optional[str], Optional[str]]:
         """Resolve OOPIF and routing when needed."""
-        if not parent_frame_id or (current_frame_id and backend_node_id is None):
+        if not content_frame_id or (current_frame_id and backend_node_id is None):
             return None, None, current_frame_id, current_document_url
 
         (
@@ -197,7 +232,9 @@ class IFrameContextResolver:
             session_id,
             resolved_frame_id,
             resolved_url,
-        ) = await self._resolve_oopif_by_parent(parent_frame_id, backend_node_id)
+        ) = await self._resolve_oopif_by_parent(
+            content_frame_id, backend_node_id, base_handler, base_session_id
+        )
 
         if session_handler and session_id and resolved_url:
             return (
@@ -216,10 +253,24 @@ class IFrameContextResolver:
 
     async def _resolve_oopif_by_parent(
         self,
-        parent_frame_id: str,
+        content_frame_id: str,
         backend_node_id: Optional[int],
+        base_handler: Optional[ConnectionHandler] = None,
+        base_session_id: Optional[str] = None,
     ) -> tuple[Optional[ConnectionHandler], Optional[str], Optional[str], Optional[str]]:
-        """Resolve out-of-process iframe using parent frame id."""
+        """Resolve out-of-process iframe using content frame id.
+
+        ``content_frame_id`` is the frame ID of the frame *created* by the
+        ``<iframe>`` element (obtained from ``DOM.describeNode``'s
+        ``node.frameId``).  For OOPIF targets the root frame of the target
+        shares this ID, so we can match directly without needing
+        ``DOM.getFrameOwner``.
+
+        When a direct frame-ID match is not possible (e.g. nested sub-frames
+        inside the OOPIF), the method falls back to ``DOM.getFrameOwner``
+        using the routing handler/session that has DOM visibility into the
+        parent context.
+        """
         browser_handler = ConnectionHandler(
             connection_port=self._element._connection_handler._connection_port
         )
@@ -228,11 +279,18 @@ class IFrameContextResolver:
         )
         target_infos = targets_response.get('result', {}).get('targetInfos', [])
 
+        # The handler/session that can resolve DOM.getFrameOwner for the
+        # element's context.  When the <iframe> lives inside a nested OOPIF
+        # the Tab-level handler has no visibility; we must route through the
+        # session that originally found the element.
+        owner_handler = base_handler or self._element._connection_handler
+        owner_session_id = base_session_id
+
         direct_children = [
             target_info
             for target_info in target_infos
             if target_info.get('type') in {'iframe', 'page'}
-            and target_info.get('parentFrameId') == parent_frame_id
+            and target_info.get('parentFrameId') == content_frame_id
         ]
 
         is_single_child = len(direct_children) == 1
@@ -258,7 +316,7 @@ class IFrameContextResolver:
 
             if root_frame_id and backend_node_id is not None:
                 owner_backend_id = await self._owner_backend_for(
-                    self._element._connection_handler, None, root_frame_id
+                    owner_handler, owner_session_id, root_frame_id
                 )
                 if owner_backend_id == backend_node_id:
                     return (
@@ -284,9 +342,21 @@ class IFrameContextResolver:
             root_frame = (frame_tree or {}).get('frame', {})
             root_frame_id = root_frame.get('id', '')
 
+            # Direct match: the <iframe> element's frameId (content_frame_id)
+            # equals this target's root frame ID.  This handles nested OOPIFs
+            # where DOM.getFrameOwner cannot be resolved through the main
+            # page handler.
+            if root_frame_id and root_frame_id == content_frame_id:
+                return (
+                    browser_handler,
+                    attached_session_id,
+                    root_frame_id,
+                    root_frame.get('url'),
+                )
+
             if root_frame_id and backend_node_id is not None:
                 owner_backend_id = await self._owner_backend_for(
-                    self._element._connection_handler, None, root_frame_id
+                    owner_handler, owner_session_id, root_frame_id
                 )
                 if owner_backend_id == backend_node_id:
                     return (
@@ -296,7 +366,7 @@ class IFrameContextResolver:
                         root_frame.get('url'),
                     )
 
-            child_frame_id = self._find_child_by_parent(frame_tree, parent_frame_id)
+            child_frame_id = self._find_child_by_parent(frame_tree, content_frame_id)
             if child_frame_id:
                 return browser_handler, attached_session_id, child_frame_id, None
 

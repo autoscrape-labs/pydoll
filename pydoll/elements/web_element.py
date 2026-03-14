@@ -943,11 +943,18 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         return response['result']['result'].get('value', '')
 
     def _apply_routing_from_context(self) -> None:
-        """Apply routing attributes from iframe context."""
-        if hasattr(self, '_routing_session_handler'):
-            delattr(self, '_routing_session_handler')
-        if hasattr(self, '_routing_session_id'):
-            delattr(self, '_routing_session_id')
+        """Apply routing attributes from iframe context.
+
+        After iframe context resolution, commands targeting the *content* of
+        the iframe should route through ``_iframe_context`` (handled by
+        ``_resolve_routing`` which prioritises ``_iframe_context`` over
+        ``_routing_session_*``).
+
+        The ``_routing_session_handler`` / ``_routing_session_id`` attributes
+        must be preserved: they identify the parent OOPIF session where the
+        ``<iframe>`` *element itself* lives.  The resolver needs them to
+        re-describe the element on subsequent re-resolutions.
+        """
 
     async def _click_option_tag(self):
         """Specialized method for clicking <option> elements in dropdowns."""
