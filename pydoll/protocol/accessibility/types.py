@@ -104,6 +104,27 @@ class AXPropertyName(str, Enum):
     FLOWTO = 'flowto'
     LABELLEDBY = 'labelledby'
     OWNS = 'owns'
+    # Extra attributes
+    ACTIONS = 'actions'
+    URL = 'url'
+    # Hidden reasons
+    ACTIVE_FULLSCREEN_ELEMENT = 'activeFullscreenElement'
+    ANCESTOR_DISALLOWS_CHILD = 'ancestorDisallowsChild'
+    ANCESTOR_IS_LEAF_NODE = 'ancestorIsLeafNode'
+    ARIA_HIDDEN_ELEMENT = 'ariaHiddenElement'
+    ARIA_HIDDEN_SUBTREE = 'ariaHiddenSubtree'
+    DISPLAY_LOCK = 'displayLock'
+    EMPTY_ALT = 'emptyAlt'
+    FROM_SUBTREE_HTML = 'fromSubtreeHtml'
+    HIDDEN_BY_CHILD_TREE = 'hiddenByChildTree'
+    IGNORED_PARENT = 'ignoredParent'
+    INLINE_TEXT_BOX = 'inlineTextBox'
+    NOT_RENDERED = 'notRendered'
+    NOT_VISIBLE = 'notVisible'
+    POTENTIALLY_OFFSCREEN = 'potentiallyOffscreen'
+    PRESENTATIONAL_ROLE = 'presentationalRole'
+    ROLE_PRESENTATION = 'rolePresentation'
+    UNINTERESTING = 'uninteresting'
 
 
 class AXRelatedNode(TypedDict):
