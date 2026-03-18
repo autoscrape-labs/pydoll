@@ -36,13 +36,13 @@ It combines a high-level API for common tasks with low-level CDP access for fine
 
 ### Sponsors
 
-<p>
-    <a href="https://www.thordata.com/?ls=github&lk=pydoll"><img src="public/images/Thordata-logo.png" height="30" alt="Thordata" style="vertical-align: middle;" /></a>
-    &nbsp;&nbsp;&nbsp;
-    <a href="https://dashboard.capsolver.com/passport/register?inviteCode=WPhTbOsbXEpc"><img src="public/images/capsolver-logo.png" height="40" alt="CapSolver" style="vertical-align: middle;" /></a>
-    &nbsp;&nbsp;&nbsp;
-    <a href="https://www.testmuai.com/?utm_medium=sponsor&utm_source=pydoll"><img src="public/images/logo-lamda-test.svg" height="30" width="130" alt="LambdaTest" style="vertical-align: middle;" /></a>
-</p>
+<table>
+  <tr>
+    <td><a href="https://www.thordata.com/?ls=github&lk=pydoll"><img src="public/images/Thordata-logo.png" height="30" alt="Thordata" /></a></td>
+    <td><a href="https://dashboard.capsolver.com/passport/register?inviteCode=WPhTbOsbXEpc"><img src="public/images/capsolver-logo.png" height="40" alt="CapSolver" /></a></td>
+    <td><a href="https://www.testmuai.com/?utm_medium=sponsor&utm_source=pydoll"><img src="public/images/logo-lamda-test.svg" height="30" width="130" alt="LambdaTest" /></a></td>
+  </tr>
+</table>
 
 <sub>[Learn more about our sponsors](SPONSORS.md) &middot; [Become a sponsor](https://github.com/sponsors/thalissonvs)</sub>
 
