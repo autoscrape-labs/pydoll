@@ -155,6 +155,34 @@
   content: url('../images/logo.png');
 }
 
+/* ===== SPONSORS GRID ===== */
+
+.md-typeset .sponsors-grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 24px;
+  margin: 16px 0;
+}
+
+.md-typeset .sponsors-grid img {
+  max-width: none !important;
+  height: auto !important;
+}
+
+.md-typeset .sponsors-grid img[alt="Thordata"] {
+  height: 40px !important;
+}
+
+.md-typeset .sponsors-grid img[alt="LambdaTest"] {
+  height: 40px !important;
+  width: 160px !important;
+}
+
+.md-typeset .sponsors-grid img[alt="CapSolver"] {
+  height: 60px !important;
+}
+
 /* ===== MELHORIAS DE LINKS PARA MODO ESCURO ===== */
 
 /* Links gerais no conteúdo - modo escuro */

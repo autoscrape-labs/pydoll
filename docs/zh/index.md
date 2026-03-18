@@ -249,32 +249,32 @@ bs4 = "^0.0.2"
 
 更少的依赖项带来了： 更高的运行可靠性以及更强的性能表现。
 
+## 顶级赞助商
+
+<a href="https://substack.thewebscraping.club/p/pydoll-webdriver-scraping?utm_source=github&utm_medium=repo&utm_campaign=pydoll" target="_blank" rel="noopener nofollow sponsored">
+  <img src="../resources/images/banner-the-webscraping-club.png" alt="The Web Scraping Club" />
+</a>
+
+<sub>在 <b><a href="https://substack.thewebscraping.club/p/pydoll-webdriver-scraping?utm_source=github&utm_medium=repo&utm_campaign=pydoll" target="_blank" rel="noopener nofollow sponsored">The Web Scraping Club</a></b> 上阅读 Pydoll 的完整评测，这是排名第一的网页抓取专属通讯。</sub>
+
 ## 赞助商
 
 赞助商的支持对于项目的持续发展至关重要。每一份合作都能帮助我们覆盖基础成本、推动新功能迭代，并保证项目长期维护与更新。非常感谢所有相信并支持 Pydoll 的伙伴！
 
-<table>
-  <tr>
-    <td>
-      <a href="https://www.thordata.com/?ls=github&lk=pydoll" target="_blank" rel="noopener nofollow sponsored">
-        <img src="../resources/images/Thordata-logo.png" alt="Thordata" width="200" height="45" />
-      </a>
-    </td>
-    <td>
-      <a href="https://www.lambdatest.com/?utm_source=pydoll&utm_medium=sponsor" target="_blank" rel="noopener nofollow sponsored">
-        <img src="https://www.lambdatest.com/blue-logo.png" alt="LambdaTest" width="200" height="45" />
-      </a>
-    </td>
-    <td>
-      <a href="https://dashboard.capsolver.com/passport/register?inviteCode=WPhTbOsbXEpc" target="_blank" rel="noopener nofollow sponsored">
-        <img src="../resources/images/capsolver-logo.png" alt="CapSolver" width="200" height="45" />
-      </a>
-    </td>
-  </tr>
-</table>
+<div class="sponsors-grid">
+  <a href="https://www.thordata.com/?ls=github&lk=pydoll" target="_blank" rel="noopener nofollow sponsored">
+    <img src="../resources/images/Thordata-logo.png" alt="Thordata" />
+  </a>
+  <a href="https://www.testmuai.com/?utm_medium=sponsor&utm_source=pydoll" target="_blank" rel="noopener nofollow sponsored">
+    <img src="../resources/images/logo-lamda-test.svg" alt="LambdaTest" />
+  </a>
+  <a href="https://dashboard.capsolver.com/passport/register?inviteCode=WPhTbOsbXEpc" target="_blank" rel="noopener nofollow sponsored">
+    <img src="../resources/images/capsolver-logo.png" alt="CapSolver" />
+  </a>
+</div>
 
 <p>
-  <a href="https://github.com/sponsors/thalissonvs" target="_blank" rel="noopener" style="display:inline-block;padding:6px 10px;border:1px solid #94a3b8;border-radius:6px;text-decoration:none;color:#e2e8f0;background:#0f172a;">成为赞助商</a>
+  <a href="https://github.com/sponsors/thalissonvs" target="_blank" rel="noopener">成为赞助商</a>
 </p>
 
 ## 许可证

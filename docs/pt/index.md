@@ -247,32 +247,32 @@ bs4 = "^0.0.2"
 
 O pequeno número de dependências também contribui para a confiabilidade e o desempenho do Pydoll, pois há menos fatores externos que podem impactar seu funcionamento.
 
+## Top Sponsors
+
+<a href="https://substack.thewebscraping.club/p/pydoll-webdriver-scraping?utm_source=github&utm_medium=repo&utm_campaign=pydoll" target="_blank" rel="noopener nofollow sponsored">
+  <img src="../resources/images/banner-the-webscraping-club.png" alt="The Web Scraping Club" />
+</a>
+
+<sub>Leia uma review completa do Pydoll no <b><a href="https://substack.thewebscraping.club/p/pydoll-webdriver-scraping?utm_source=github&utm_medium=repo&utm_campaign=pydoll" target="_blank" rel="noopener nofollow sponsored">The Web Scraping Club</a></b>, a newsletter #1 dedicada a web scraping.</sub>
+
 ## Patrocinadores
 
 O apoio dos patrocinadores é essencial para manter o projeto vivo, em constante evolução e acessível a toda a comunidade. Cada parceria ajuda a cobrir custos, impulsionar novos recursos e garantir o desenvolvimento contínuo. Somos muito gratos a todos que acreditam e apoiam o projeto!
 
-<table>
-  <tr>
-    <td>
-      <a href="https://www.thordata.com/?ls=github&lk=pydoll" target="_blank" rel="noopener nofollow sponsored">
-        <img src="../resources/images/Thordata-logo.png" alt="Thordata" width="200" height="45" />
-      </a>
-    </td>
-    <td>
-      <a href="https://www.lambdatest.com/?utm_source=pydoll&utm_medium=sponsor" target="_blank" rel="noopener nofollow sponsored">
-        <img src="https://www.lambdatest.com/blue-logo.png" alt="LambdaTest" width="200" height="45" />
-      </a>
-    </td>
-    <td>
-      <a href="https://dashboard.capsolver.com/passport/register?inviteCode=WPhTbOsbXEpc" target="_blank" rel="noopener nofollow sponsored">
-        <img src="../resources/images/capsolver-logo.png" alt="CapSolver" width="200" height="45" />
-      </a>
-    </td>
-  </tr>
-</table>
+<div class="sponsors-grid">
+  <a href="https://www.thordata.com/?ls=github&lk=pydoll" target="_blank" rel="noopener nofollow sponsored">
+    <img src="../resources/images/Thordata-logo.png" alt="Thordata" />
+  </a>
+  <a href="https://www.testmuai.com/?utm_medium=sponsor&utm_source=pydoll" target="_blank" rel="noopener nofollow sponsored">
+    <img src="../resources/images/logo-lamda-test.svg" alt="LambdaTest" />
+  </a>
+  <a href="https://dashboard.capsolver.com/passport/register?inviteCode=WPhTbOsbXEpc" target="_blank" rel="noopener nofollow sponsored">
+    <img src="../resources/images/capsolver-logo.png" alt="CapSolver" />
+  </a>
+</div>
 
 <p>
-  <a href="https://github.com/sponsors/thalissonvs" target="_blank" rel="noopener">Become a sponsor</a>
+  <a href="https://github.com/sponsors/thalissonvs" target="_blank" rel="noopener">Seja um patrocinador</a>
 </p>
 
 
