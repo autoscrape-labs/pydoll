@@ -26,27 +26,25 @@ Pydoll automates Chromium-based browsers (Chrome, Edge) by connecting directly t
 
 It combines a high-level API for common tasks with low-level CDP access for fine-grained control over network, fingerprinting, and browser behavior. The entire codebase is async-native and fully type-checked with mypy.
 
+### Top Sponsors
+
+<a href="https://substack.thewebscraping.club/p/pydoll-webdriver-scraping?utm_source=github&utm_medium=repo&utm_campaign=pydoll">
+    <img src="public/images/banner-the-webscraping-club.png" alt="The Web Scraping Club" />
+</a>
+
+<sub>Read a full review of Pydoll on <b><a href="https://substack.thewebscraping.club/p/pydoll-webdriver-scraping?utm_source=github&utm_medium=repo&utm_campaign=pydoll">The Web Scraping Club</a></b>, the #1 newsletter dedicated to web scraping.</sub>
+
 ### Sponsors
 
-<a href="https://www.thordata.com/?ls=github&lk=pydoll">
-<img alt="Thordata" src="public/images/thordata.png" />
-</a>
+<p>
+    <a href="https://www.thordata.com/?ls=github&lk=pydoll"><img src="public/images/Thordata-logo.png" height="40" alt="Thordata" style="vertical-align: middle;" /></a>
+    &nbsp;&nbsp;&nbsp;
+    <a href="https://dashboard.capsolver.com/passport/register?inviteCode=WPhTbOsbXEpc"><img src="public/images/capsolver-logo.png" height="60" alt="CapSolver" style="vertical-align: middle;" /></a>
+    &nbsp;&nbsp;&nbsp;
+    <a href="https://www.testmuai.com/?utm_medium=sponsor&utm_source=pydoll"><img src="public/images/logo-lamda-test.svg" height="40" width="160" alt="LambdaTest" style="vertical-align: middle;" /></a>
+</p>
 
-Pydoll is proudly sponsored by **[Thordata](https://www.thordata.com/?ls=github&lk=pydoll)**: a residential proxy network built for serious web scraping and automation. With **190+ real residential and ISP locations**, fully encrypted connections, and infrastructure optimized for high-performance workflows, Thordata is an excellent choice for scaling your Pydoll automations.
-
-**[Sign up through our link](https://www.thordata.com/?ls=github&lk=pydoll)** to support the project and get **1GB free** to get started.
-
----
-
-<a href="https://dashboard.capsolver.com/passport/register?inviteCode=WPhTbOsbXEpc">
-<img alt="CapSolver" src="public/images/capsolver.jpeg" />
-</a>
-
-Pydoll excels at behavioral evasion, but it doesn't solve captchas. That's where **[CapSolver](https://dashboard.capsolver.com/passport/register?inviteCode=WPhTbOsbXEpc)** comes in. An AI-powered service that handles reCAPTCHA, Cloudflare challenges, and more, seamlessly integrating with your automation workflows.
-
-**[Register with our invite code](https://dashboard.capsolver.com/passport/register?inviteCode=WPhTbOsbXEpc)** and use code **PYDOLL** to get an extra **6% balance bonus**.
-
----
+<sub>[Learn more about our sponsors](SPONSORS.md) &middot; [Become a sponsor](https://github.com/sponsors/thalissonvs)</sub>
 
 ### Why Pydoll
 
