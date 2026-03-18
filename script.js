@@ -339,6 +339,13 @@
 // You can add more sponsors by pushing new objects to this array
 const SPONSORS = [
   {
+    name: 'The Web Scraping Club',
+    url: 'https://substack.thewebscraping.club/p/pydoll-webdriver-scraping?utm_source=github&utm_medium=repo&utm_campaign=pydoll',
+    logo: '/images/logo-the-webscraping-club.png',
+    width: 200,
+    height: 45
+  },
+  {
     name: 'Thordata',
     url: 'https://www.thordata.com/?ls=github&lk=pydoll',
     logo: '/images/Thordata-logo.png',
@@ -347,8 +354,8 @@ const SPONSORS = [
   },
   {
     name: 'LambdaTest',
-    url: 'https://www.lambdatest.com/?utm_source=pydoll&utm_medium=sponsor',
-    logo: 'https://www.lambdatest.com/blue-logo.png',
+    url: 'https://www.testmuai.com/?utm_medium=sponsor&utm_source=pydoll',
+    logo: '/images/logo-lamda-test.svg',
     width: 200,
     height: 45
   },
@@ -356,7 +363,8 @@ const SPONSORS = [
     name: 'CapSolver',
     url: 'https://dashboard.capsolver.com/passport/register?inviteCode=WPhTbOsbXEpc',
     logo: '/images/capsolver-logo.png',
-    width: 150
+    width: 200,
+    height: 45
   }
 ]
 
