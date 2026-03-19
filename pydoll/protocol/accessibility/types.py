@@ -124,6 +124,15 @@ class AXPropertyName(str, Enum):
     POTENTIALLY_OFFSCREEN = 'potentiallyOffscreen'
     PRESENTATIONAL_ROLE = 'presentationalRole'
     ROLE_PRESENTATION = 'rolePresentation'
+    ACTIVE_MODAL_DIALOG = 'activeModalDialog'
+    ACTIVE_ARIA_MODAL_DIALOG = 'activeAriaModalDialog'
+    EMPTY_TEXT = 'emptyText'
+    INERT_ELEMENT = 'inertElement'
+    INERT_SUBTREE = 'inertSubtree'
+    LABEL_CONTAINER = 'labelContainer'
+    LABEL_FOR = 'labelFor'
+    PROBABLY_PRESENTATIONAL = 'probablyPresentational'
+    INACTIVE_CAROUSEL_TAB_CONTENT = 'inactiveCarouselTabContent'
     UNINTERESTING = 'uninteresting'
 
 
