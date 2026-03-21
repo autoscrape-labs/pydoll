@@ -894,8 +894,6 @@ class Tab(FindElementsMixin):
         """
         Navigate to URL and wait for loading to complete.
 
-        Refreshes if URL matches current page.
-
         Args:
             url: Target URL to navigate to.
             timeout: Maximum seconds to wait for page load (default 300).
@@ -905,14 +903,8 @@ class Tab(FindElementsMixin):
             PageLoadTimeout: If page doesn't finish loading within timeout.
         """
         logger.info(f'Navigating to URL: {url} (timeout={timeout}s)')
-        if await self._refresh_if_url_not_changed(url, timeout):
-            logger.debug('URL matches current page; refreshed with navigation')
-            return
-
         async with self._wait_page_load(timeout=timeout):
-            response: NavigateResponse = await self._execute_command(
-                PageCommands.navigate(url)
-            )
+            response: NavigateResponse = await self._execute_command(PageCommands.navigate(url))
             error_text = response['result'].get('errorText')
             if error_text:
                 raise NavigationError(url, error_text)
@@ -1828,36 +1820,6 @@ class Tab(FindElementsMixin):
             unique_context_id=unique_context_id,
             serialization_options=serialization_options,
         )
-
-    async def _refresh_if_url_not_changed(
-        self, url: str, timeout: int = 300
-    ) -> bool:
-        """Navigate to URL if it matches the current page.
-
-        Uses Page.navigate instead of Page.reload so that navigation
-        errors (e.g., DNS failures) are detected via errorText.
-
-        Args:
-            url: URL to compare against the current page.
-            timeout: Maximum seconds to wait for page load.
-
-        Returns:
-            True if the URL matched and a navigate-refresh was performed.
-
-        Raises:
-            NavigationError: If the navigation fails.
-        """
-        current_url = await self.current_url
-        if current_url == url:
-            async with self._wait_page_load(timeout=timeout):
-                response: NavigateResponse = await self._execute_command(
-                    PageCommands.navigate(url)
-                )
-                error_text = response['result'].get('errorText')
-                if error_text:
-                    raise NavigationError(url, error_text)
-            return True
-        return False
 
     @staticmethod
     def _validate_argument_error(response: EvaluateResponse) -> None:
