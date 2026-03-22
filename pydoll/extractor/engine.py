@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import types
+from collections.abc import Coroutine
 from typing import TYPE_CHECKING, Optional, TypeVar, Union, get_args, get_origin
 
 from pydoll.elements.mixins.find_elements_mixin import FindElementsMixin
@@ -119,7 +120,9 @@ class ExtractionEngine:
             Dictionary of field name -> extracted value.
         """
         field_names: list[str] = []
-        tasks: list[asyncio.Task[Union[str, int, float, bool, list[str], object]]] = []
+        coroutines: list[
+            Coroutine[None, None, Union[str, int, float, bool, list[str], object]]
+        ] = []
 
         for name, metadata in model.get_extraction_fields().items():
             if not metadata.has_selector:
@@ -132,9 +135,9 @@ class ExtractionEngine:
                 continue
 
             field_names.append(name)
-            tasks.append(self._extract_field(metadata, annotation, context, timeout))
+            coroutines.append(self._extract_field(metadata, annotation, context, timeout))
 
-        results = await asyncio.gather(*tasks, return_exceptions=True)
+        results = await asyncio.gather(*coroutines, return_exceptions=True)
 
         values: dict[str, Union[str, int, float, bool, list[str], object]] = {}
         for name, result in zip(field_names, results):
