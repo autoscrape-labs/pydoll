@@ -1,4 +1,5 @@
 # global imports
+from pydoll.commands.accessibility_commands import AccessibilityCommands
 from pydoll.commands.browser_commands import BrowserCommands
 from pydoll.commands.dom_commands import DomCommands
 from pydoll.commands.emulation_commands import EmulationCommands
@@ -11,6 +12,7 @@ from pydoll.commands.storage_commands import StorageCommands
 from pydoll.commands.target_commands import TargetCommands
 
 __all__ = [
+    'AccessibilityCommands',
     'DomCommands',
     'EmulationCommands',
     'FetchCommands',
