@@ -525,3 +525,118 @@ class TestEdgeCases:
             assert article.contributors[1].role == 'Data Analyst'
             assert article.contributors[2].name == 'Carol Williams'
             assert article.contributors[2].role == 'Reviewer'
+
+
+class TestConcurrentExtraction:
+    """Tests that validate concurrent field and container extraction."""
+
+    @pytest.mark.asyncio
+    async def test_many_fields_extracted_concurrently(self, ci_chrome_options):
+        """Model with many fields should extract them all concurrently."""
+
+        class FullArticle(ExtractionModel):
+            title: str = Field(selector='h1.article-title', description='Title')
+            body: str = Field(selector='.article-body', description='Body')
+            author_name: str = Field(selector='.author-card .name', description='Author')
+            author_bio: str = Field(selector='.author-card .bio', description='Bio')
+            avatar: str = Field(
+                selector='.author-card img.avatar',
+                attribute='src',
+                description='Avatar',
+            )
+            published: str = Field(
+                selector='time.published',
+                attribute='datetime',
+                description='Date',
+            )
+            image_src: str = Field(
+                selector='.hero-image',
+                attribute='src',
+                description='Image',
+            )
+            image_alt: str = Field(
+                selector='.hero-image',
+                attribute='alt',
+                description='Alt',
+            )
+            price: str = Field(selector='.price', description='Price')
+            link: str = Field(
+                selector='.source-link',
+                attribute='href',
+                description='Link',
+            )
+            tags: list[str] = Field(selector='.tag-list .tag', description='Tags')
+
+        async with Chrome(options=ci_chrome_options) as browser:
+            tab = await browser.start()
+            await tab.go_to(FILE_URL)
+            await asyncio.sleep(0.5)
+
+            article = await tab.extract(FullArticle)
+            assert article.title == 'Understanding Web Scraping'
+            assert article.author_name == 'Jane Doe'
+            assert article.published == '2025-03-15'
+            assert article.image_src == 'https://example.com/hero.jpg'
+            assert article.image_alt == 'Hero image'
+            assert 'R$' in article.price
+            assert len(article.tags) == 3
+
+    @pytest.mark.asyncio
+    async def test_extract_all_containers_concurrently(self, ci_chrome_options):
+        """extract_all should process all containers concurrently."""
+        async with Chrome(options=ci_chrome_options) as browser:
+            tab = await browser.start()
+            await tab.go_to(FILE_URL)
+            await asyncio.sleep(0.5)
+
+            quotes = await tab.extract_all(QuoteWithYear, scope='.quote')
+            assert len(quotes) == 3
+            # All quotes should have been extracted correctly
+            assert quotes[0].year == 2005
+            assert quotes[1].year == 2001
+            assert quotes[2].year == 2005
+            assert quotes[0].author == 'Steve Jobs'
+            assert quotes[1].author == 'Steve Jobs'
+
+    @pytest.mark.asyncio
+    async def test_concurrent_nested_with_multiple_containers(self, ci_chrome_options):
+        """extract_all with nested models should handle concurrency correctly."""
+        async with Chrome(options=ci_chrome_options) as browser:
+            tab = await browser.start()
+            await tab.go_to(FILE_URL)
+            await asyncio.sleep(0.5)
+
+            products = await tab.extract_all(ProductModel, scope='.product-card')
+            assert len(products) == 2
+            # Both products extracted concurrently with nested meta
+            assert products[0].name == 'Laptop Pro'
+            assert products[0].meta.brand == 'TechCorp'
+            assert products[1].name == 'Mouse Wireless'
+            assert products[1].meta.brand == 'PeripheralCo'
+
+    @pytest.mark.asyncio
+    async def test_concurrent_with_mixed_required_optional(self, ci_chrome_options):
+        """Concurrent extraction with mix of required and optional fields."""
+
+        class MixedModel(ExtractionModel):
+            title: str = Field(selector='h1.article-title', description='Title')
+            missing_1: Optional[str] = Field(
+                selector='.nonexistent-1', description='Missing 1', default=None
+            )
+            body: str = Field(selector='.article-body', description='Body')
+            missing_2: Optional[str] = Field(
+                selector='.nonexistent-2', description='Missing 2', default=None
+            )
+            tags: list[str] = Field(selector='.tag-list .tag', description='Tags')
+
+        async with Chrome(options=ci_chrome_options) as browser:
+            tab = await browser.start()
+            await tab.go_to(FILE_URL)
+            await asyncio.sleep(0.5)
+
+            result = await tab.extract(MixedModel)
+            assert result.title == 'Understanding Web Scraping'
+            assert result.missing_1 is None
+            assert 'extracting data' in result.body
+            assert result.missing_2 is None
+            assert len(result.tags) == 3
