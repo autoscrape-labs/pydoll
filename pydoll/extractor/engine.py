@@ -78,9 +78,11 @@ class ExtractionEngine:
         Returns:
             List of populated model instances.
         """
-        containers = await self._tab.query(scope, find_all=True, timeout=timeout, raise_exc=False)
-        if not containers:
+        found = await self._tab.query(scope, find_all=True, timeout=timeout, raise_exc=False)
+        if found is None or not found:
             return []
+
+        containers: list[WebElement] = found if isinstance(found, list) else [found]
 
         if limit is not None:
             containers = containers[:limit]
@@ -97,7 +99,7 @@ class ExtractionEngine:
         model: type[T],
         context: FindElementsMixin,
         timeout: int,
-    ) -> dict[str, str | list[str] | object]:
+    ) -> dict[str, Union[str, int, float, bool, list[str], object]]:
         """Extract all fields from the DOM within the given context.
 
         Args:
@@ -108,7 +110,7 @@ class ExtractionEngine:
         Returns:
             Dictionary of field name -> extracted value.
         """
-        values: dict[str, str | list[str] | object] = {}
+        values: dict[str, Union[str, int, float, bool, list[str], object]] = {}
 
         for name, metadata in model.get_extraction_fields().items():
             if not metadata.has_selector:
@@ -117,6 +119,8 @@ class ExtractionEngine:
 
             field_info = model.model_fields[name]
             annotation = field_info.annotation
+            if annotation is None:
+                continue
 
             try:
                 value = await self._extract_field(metadata, annotation, context, timeout)
@@ -137,7 +141,7 @@ class ExtractionEngine:
         annotation: type,
         context: FindElementsMixin,
         timeout: int,
-    ) -> str | list[str] | object:
+    ) -> Union[str, int, float, bool, list[str], object]:
         """Extract a single field value from the DOM.
 
         Handles scalar types, list types, nested ExtractionModel,
@@ -170,12 +174,15 @@ class ExtractionEngine:
         timeout: int,
     ) -> list[Union[str, int, float, bool, object]]:
         """Extract a list of values from multiple matching elements."""
-        elements = await context.query(
-            metadata.selector, find_all=True, timeout=timeout, raise_exc=False
-        )
-        if not elements:
+        selector = metadata.selector
+        if selector is None:
             return []
 
+        found = await context.query(selector, find_all=True, timeout=timeout, raise_exc=False)
+        if found is None or not found:
+            return []
+
+        elements: list[WebElement] = found if isinstance(found, list) else [found]
         inner_type = _get_inner_type(annotation)
 
         if _is_extraction_model(inner_type):
@@ -199,7 +206,11 @@ class ExtractionEngine:
         timeout: int,
     ) -> T:
         """Extract a nested ExtractionModel by scoping to the selector element."""
-        scope_element = await context.query(metadata.selector, timeout=timeout, raise_exc=True)
+        selector = metadata.selector
+        if selector is None:
+            raise FieldExtractionFailed('Nested model field has no selector')
+
+        scope_element = await context.query(selector, timeout=timeout, raise_exc=True)
         values = await self._extract_fields(model, scope_element, timeout)
         return _build_instance(model, values)
 
@@ -208,9 +219,13 @@ async def _extract_scalar_field(
     metadata: ExtractionMetadata,
     context: FindElementsMixin,
     timeout: int,
-) -> Union[str, int, float, bool]:
+) -> Union[str, int, float, bool, object]:
     """Extract a single scalar value from the DOM."""
-    element = await context.query(metadata.selector, timeout=timeout, raise_exc=True)
+    selector = metadata.selector
+    if selector is None:
+        raise FieldExtractionFailed('Scalar field has no selector')
+
+    element = await context.query(selector, timeout=timeout, raise_exc=True)
     raw = await _extract_value(element, metadata)
     return _apply_transform(raw, metadata)
 
@@ -239,7 +254,7 @@ async def _extract_value(
 def _apply_transform(
     raw: str,
     metadata: ExtractionMetadata,
-) -> Union[str, int, float, bool]:
+) -> Union[str, int, float, bool, object]:
     """Apply metadata.transform to the raw extracted string.
 
     Args:
@@ -256,7 +271,7 @@ def _apply_transform(
 
 def _build_instance(
     model: type[T],
-    values: dict[str, str | list[str] | object],
+    values: dict[str, Union[str, int, float, bool, list[str], object]],
 ) -> T:
     """Build model instance from extracted values.
 

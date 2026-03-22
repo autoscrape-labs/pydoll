@@ -48,9 +48,12 @@ class ExtractionModel(BaseModel):
         """
         # Check own __dict__ to avoid inheriting parent's cache via MRO
         own_cache = cls.__dict__.get('_extraction_fields_cache')
-        if own_cache is None:
-            cls._extraction_fields_cache = _collect_extraction_metadata(cls)
-        return cls._extraction_fields_cache
+        if own_cache is not None:
+            return own_cache
+
+        result = _collect_extraction_metadata(cls)
+        cls._extraction_fields_cache = result
+        return result
 
 
 def _collect_extraction_metadata(

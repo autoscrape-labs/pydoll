@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import itertools
 from dataclasses import dataclass
-from typing import Callable, Optional, Union
+from typing import Callable, Optional, Union, cast
 
 from pydantic import Field as PydanticField
 from pydantic.fields import FieldInfo
@@ -14,7 +14,7 @@ from pydoll.extractor.exceptions import InvalidExtractionModel
 
 # Module-level registry: stores ExtractionMetadata keyed by a unique int.
 # Field() registers metadata and stores the key in pydantic's json_schema_extra.
-# ExtractionModel.__init_subclass__ reads the key to retrieve metadata.
+# ExtractionModel.get_extraction_fields() reads the key to retrieve metadata.
 _FIELD_METADATA_REGISTRY: dict[int, ExtractionMetadata] = {}
 _field_id_counter = itertools.count(1)
 
@@ -24,7 +24,7 @@ class ExtractionMetadata:
     """Immutable extraction metadata attached to a pydantic field.
 
     Stored in a module-level registry by Field() and retrieved by
-    ExtractionModel.__init_subclass__ via the registry key stored
+    ExtractionModel.get_extraction_fields() via the registry key stored
     in the field's json_schema_extra.
     """
 
@@ -95,10 +95,13 @@ def Field(
 
     key = _register_metadata(metadata)
 
-    return PydanticField(
-        default=default,
-        description=description,
-        json_schema_extra={'_extraction_key': key},
+    return cast(
+        FieldInfo,
+        PydanticField(
+            default=default,
+            description=description,
+            json_schema_extra={'_extraction_key': key},
+        ),
     )
 
 

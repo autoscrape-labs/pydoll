@@ -61,6 +61,7 @@ from pydoll.exceptions import (
     WaitElementTimeout,
     WebSocketConnectionClosed,
 )
+from pydoll.extractor.engine import ExtractionEngine
 from pydoll.interactions import KeyboardAPI, MouseAPI, ScrollAPI
 from pydoll.interactions.iframe import IFrameContext
 from pydoll.protocol.browser.types import DownloadBehavior, DownloadProgressState
@@ -87,10 +88,9 @@ from pydoll.utils.bundle import (
     rewrite_html_urls,
 )
 
-from pydoll.extractor.engine import ExtractionEngine
-
 if TYPE_CHECKING:
     from pydoll.browser.chromium.base import Browser
+    from pydoll.extractor.model import ExtractionModel
     from pydoll.protocol.base import EmptyResponse, Response
     from pydoll.protocol.browser.events import (
         DownloadProgressEvent,
@@ -127,7 +127,7 @@ logger = logging.getLogger(__name__)
 
 IFrame: TypeAlias = 'Tab'
 
-T = TypeVar('T')
+T = TypeVar('T', bound='ExtractionModel')
 
 _CLOUDFLARE_CHALLENGE_DOMAIN = 'challenges.cloudflare.com'
 _CLOUDFLARE_IFRAME_SELECTOR = f'iframe[src*="{_CLOUDFLARE_CHALLENGE_DOMAIN}"]'
@@ -289,9 +289,7 @@ class Tab(FindElementsMixin):
             FieldExtractionFailed: If a required field cannot be extracted.
             InvalidExtractionModel: If model definition is invalid.
         """
-        return await self._extractor.extract(
-            model, scope=scope, timeout=timeout
-        )
+        return await self._extractor.extract(model, scope=scope, timeout=timeout)
 
     async def extract_all(
         self,
@@ -315,9 +313,7 @@ class Tab(FindElementsMixin):
         Returns:
             List of populated model instances.
         """
-        return await self._extractor.extract_all(
-            model, scope=scope, timeout=timeout, limit=limit
-        )
+        return await self._extractor.extract_all(model, scope=scope, timeout=timeout, limit=limit)
 
     @property
     def intercept_file_chooser_dialog_enabled(self) -> bool:
