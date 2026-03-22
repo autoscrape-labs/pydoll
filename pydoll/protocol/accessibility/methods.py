@@ -117,8 +117,6 @@ EnableCommand = Command[EmptyParams, Response[EmptyResponse]]
 GetPartialAXTreeCommand = Command[GetPartialAXTreeParams, GetPartialAXTreeResponse]
 GetFullAXTreeCommand = Command[GetFullAXTreeParams, GetFullAXTreeResponse]
 GetRootAXNodeCommand = Command[GetRootAXNodeParams, GetRootAXNodeResponse]
-GetAXNodeAndAncestorsCommand = Command[
-    GetAXNodeAndAncestorsParams, GetAXNodeAndAncestorsResponse
-]
+GetAXNodeAndAncestorsCommand = Command[GetAXNodeAndAncestorsParams, GetAXNodeAndAncestorsResponse]
 GetChildAXNodesCommand = Command[GetChildAXNodesParams, GetChildAXNodesResponse]
 QueryAXTreeCommand = Command[QueryAXTreeParams, QueryAXTreeResponse]

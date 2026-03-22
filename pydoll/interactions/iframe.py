@@ -51,8 +51,8 @@ class IFrameContextResolver:
         """
         base_handler, base_session_id = self._get_base_session()
         node_info = await self._describe_element_node(base_handler, base_session_id)
-        frame_id, document_url, content_frame_id, backend_node_id = (
-            self._extract_frame_metadata(node_info)
+        frame_id, document_url, content_frame_id, backend_node_id = self._extract_frame_metadata(
+            node_info
         )
 
         if not frame_id and backend_node_id is not None:
