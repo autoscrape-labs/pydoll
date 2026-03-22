@@ -389,7 +389,6 @@ class TestTabNavigation:
     async def test_go_to_new_url(self, tab):
         """Test navigating to a new URL."""
         tab._connection_handler.execute_command.side_effect = [
-            {'result': {'result': {'value': 'https://old-url.com'}}},  # current_url
             {'result': {}},  # Page.enable
             {'result': {'frameId': 'frame-id'}},  # navigate command
             {'result': {}},  # Page.disable
@@ -403,15 +402,37 @@ class TestTabNavigation:
 
         await tab.go_to('https://example.com')
 
-        assert tab._connection_handler.execute_command.call_count == 4
+        assert tab._connection_handler.execute_command.call_count == 3
+
+    @pytest.mark.asyncio
+    async def test_go_to_navigation_error(self, tab):
+        """Test that navigation errors raise NavigationError."""
+        from pydoll.exceptions import NavigationError
+
+        tab._connection_handler.execute_command.side_effect = [
+            {'result': {}},  # Page.enable
+            {'result': {'frameId': 'f', 'errorText': 'net::ERR_NAME_NOT_RESOLVED'}},
+            {'result': {}},  # Page.disable
+        ]
+
+        async def fire_callback(event_name, callback, temporary=False):
+            callback({'method': event_name, 'params': {}})
+            return 1
+
+        tab._connection_handler.register_callback = AsyncMock(
+            side_effect=fire_callback
+        )
+
+        with pytest.raises(NavigationError) as exc_info:
+            await tab.go_to('https://nonexistent.invalid')
+        assert 'net::ERR_NAME_NOT_RESOLVED' in str(exc_info.value)
 
     @pytest.mark.asyncio
     async def test_go_to_same_url(self, tab):
-        """Test navigating to the same URL (should refresh)."""
+        """Test navigating to the same URL works the same as a new URL."""
         tab._connection_handler.execute_command.side_effect = [
-            {'result': {'result': {'value': 'https://example.com'}}},  # current_url
             {'result': {}},  # Page.enable
-            {'result': {}},  # refresh command
+            {'result': {'frameId': 'frame-id'}},  # navigate command
             {'result': {}},  # Page.disable
         ]
 
@@ -423,13 +444,12 @@ class TestTabNavigation:
 
         await tab.go_to('https://example.com')
 
-        assert tab._connection_handler.execute_command.call_count == 4
+        assert tab._connection_handler.execute_command.call_count == 3
 
     @pytest.mark.asyncio
     async def test_go_to_timeout(self, tab):
         """Test navigation timeout."""
         tab._connection_handler.execute_command.side_effect = [
-            {'result': {'result': {'value': 'https://old-url.com'}}},  # current_url
             {'result': {}},  # Page.enable
             {'result': {'frameId': 'frame-id'}},  # navigate command
             {'result': {}},  # Page.disable
@@ -1827,38 +1847,6 @@ class TestTabUtilityMethods:
 
         assert tab._page_events_enabled is False
 
-    @pytest.mark.asyncio
-    async def test_refresh_if_url_not_changed_same_url(self, tab):
-        """Test _refresh_if_url_not_changed with same URL."""
-        tab._connection_handler.execute_command.side_effect = [
-            {'result': {'result': {'value': 'https://example.com'}}},  # current_url call
-            {'result': {}},  # Page.enable
-            {'result': {}},  # refresh call
-            {'result': {}},  # Page.disable
-        ]
-
-        async def fire_callback(event_name, callback, temporary=False):
-            callback({'method': event_name, 'params': {}})
-            return 1
-
-        tab._connection_handler.register_callback = AsyncMock(side_effect=fire_callback)
-
-        result = await tab._refresh_if_url_not_changed('https://example.com')
-
-        assert result is True
-        assert tab._connection_handler.execute_command.call_count == 4
-
-    @pytest.mark.asyncio
-    async def test_refresh_if_url_not_changed_different_url(self, tab):
-        """Test _refresh_if_url_not_changed with different URL."""
-        tab._connection_handler.execute_command.return_value = {
-            'result': {'result': {'value': 'https://different.com'}}
-        }
-        
-        result = await tab._refresh_if_url_not_changed('https://example.com')
-        
-        assert result is False
-        assert_mock_called_at_least_once(tab._connection_handler)
 
 
 class TestTabRequestManagement:
