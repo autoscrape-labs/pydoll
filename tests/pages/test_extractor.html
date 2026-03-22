@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Extractor Test Page</title>
+</head>
+<body>
+    <!-- Single article for extract() tests -->
+    <article id="main-article">
+        <h1 class="article-title">Understanding Web Scraping</h1>
+        <div class="author-card">
+            <span class="name">Jane Doe</span>
+            <img class="avatar" src="https://example.com/jane.jpg" alt="Jane Doe photo">
+            <p class="bio">Senior developer and open source contributor.</p>
+        </div>
+        <time class="published" datetime="2025-03-15">March 15, 2025</time>
+        <div class="article-body">
+            <p>Web scraping is a technique for extracting data from websites.</p>
+        </div>
+        <div class="tag-list">
+            <span class="tag">python</span>
+            <span class="tag">automation</span>
+            <span class="tag">web</span>
+        </div>
+        <img class="hero-image" src="https://example.com/hero.jpg" alt="Hero image" data-id="img-42">
+        <span class="price">R$ 1.234,56</span>
+        <a class="source-link" href="https://example.com/article/1">Original source</a>
+    </article>
+
+    <!-- Repeated quotes for extract_all() tests -->
+    <section id="quotes-section">
+        <div class="quote">
+            <p class="text">The only way to do great work is to love what you do.</p>
+            <span class="author">Steve Jobs</span>
+            <span class="year">2005</span>
+        </div>
+        <div class="quote">
+            <p class="text">Innovation distinguishes between a leader and a follower.</p>
+            <span class="author">Steve Jobs</span>
+            <span class="year">2001</span>
+        </div>
+        <div class="quote">
+            <p class="text">Stay hungry, stay foolish.</p>
+            <span class="author">Steve Jobs</span>
+            <span class="year">2005</span>
+        </div>
+    </section>
+
+    <!-- Products for extract_all with nested models -->
+    <section id="products-section">
+        <div class="product-card">
+            <h3 class="product-name">Laptop Pro</h3>
+            <span class="product-price">R$ 5.999,00</span>
+            <div class="product-meta">
+                <span class="brand">TechCorp</span>
+                <span class="sku">SKU-001</span>
+            </div>
+        </div>
+        <div class="product-card">
+            <h3 class="product-name">Mouse Wireless</h3>
+            <span class="product-price">R$ 89,90</span>
+            <div class="product-meta">
+                <span class="brand">PeripheralCo</span>
+                <span class="sku">SKU-002</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Article with multiple authors for list[NestedModel] tests -->
+    <article id="multi-author-article">
+        <h2 class="title">Collaborative Research Paper</h2>
+        <div class="contributors">
+            <div class="contributor">
+                <span class="name">Alice Smith</span>
+                <span class="role">Lead Researcher</span>
+            </div>
+            <div class="contributor">
+                <span class="name">Bob Johnson</span>
+                <span class="role">Data Analyst</span>
+            </div>
+            <div class="contributor">
+                <span class="name">Carol Williams</span>
+                <span class="role">Reviewer</span>
+            </div>
+        </div>
+    </article>
+
+    <!-- Element with empty text -->
+    <div id="empty-element"></div>
+
+    <!-- XPath test section -->
+    <div id="xpath-section">
+        <div class="level-1">
+            <span class="deep-value">Found via XPath</span>
+        </div>
+    </div>
+</body>
+</html>
