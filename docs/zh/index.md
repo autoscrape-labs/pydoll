@@ -50,6 +50,7 @@ $ pip install git+https://github.com/autoscrape-labs/pydoll.git
 - **强大的网络监控**: 轻松实现请求拦截、流量篡改与响应分析，完整掌控网络通信链路，轻松突破层层防护体系。
 - **事件驱动架构**: 实时响应页面事件、网络请求与用户交互，构建能动态适应防护系统的智能自动化流。
 - **直观的元素定位**: 使用符合人类直觉的定位方法 `find()` 和 `query()` ，面对动态加载的防护内容，定位依然精准。
+- **结构化提取**: 定义 [Pydantic](https://docs.pydantic.dev/) 模型，调用 `tab.extract()`，获取类型化和验证过的数据。无需逐元素手动查询。
 - **强类型安全**: 完备的类型系统为复杂自动化场景提供更优IDE支持和更好地预防运行时报错。
 
 
@@ -57,9 +58,11 @@ $ pip install git+https://github.com/autoscrape-labs/pydoll.git
 
 让我们以最优雅的方式，开启您的网页自动化之旅！🚀
 
-## 简单的例子上手
+## 快速入门
 
-让我们从一个实际案例开始。以下脚本将打开 Pydoll 的 GitHub 仓库并star：  
+### 1. 有状态自动化与规避
+
+当您需要导航、绕过挑战或与动态UI交互时，Pydoll的命令式API默认以人性化的时序处理一切。
 
 ```python
 import asyncio
@@ -69,14 +72,15 @@ async def main():
     async with Chrome() as browser:
         tab = await browser.start()
         await tab.go_to('https://github.com/autoscrape-labs/pydoll')
-        
+
+        # 查找元素并以人类般的时序进行交互
         star_button = await tab.find(
             tag_name='button',
             timeout=5,
             raise_exc=False
         )
         if not star_button:
-            print("Ops! The button was not found.")
+            print("按钮未找到。")
             return
 
         await star_button.click()
@@ -85,102 +89,123 @@ async def main():
 asyncio.run(main())
 ```
 
-此示例演示了如何导航到网站、等待元素出现并与之交互。您可以使用这样的模式来自动执行许多不同的 Web 任务。
+### 2. 结构化数据提取
 
-??? note "或者使用不带上下文管理器的..."
-    如果你不想要使用上下文管理器模式，你可以手动管理浏览器实例：
-    
-    ```python
-    import asyncio
-    from pydoll.browser.chromium import Chrome
-    
-    async def main():
-        browser = Chrome()
-        tab = await browser.start()
-        await tab.go_to('https://github.com/autoscrape-labs/pydoll')
-        
-        star_button = await tab.find(
-            tag_name='button',
-            timeout=5,
-            raise_exc=False
-        )
-        if not star_button:
-            print("Ops! The button was not found.")
-            return
+到达目标页面后，切换到声明式引擎。用模型定义您想要的数据，Pydoll会提取它——类型化、验证过、随时可用。
 
-        await star_button.click()
-        await asyncio.sleep(3)
-        await browser.stop()
-    
-    asyncio.run(main())
-    ```
-    
-    Note that when not using the context manager, you'll need to explicitly call `browser.stop()` to release resources.
-
-## 补充例子: 自定义浏览器配置
-
-对于更高级的使用场景，Pydoll 允许您使用 `ChromiumOptions` 类自定义浏览器配置。此功能在您需要执行以下操作时非常有用：
-
-- 在无头模式下运行（无可见浏览器窗口）
-- 指定自定义浏览器可执行文件路径
-- 配置代理、用户代理或其他浏览器设置
-- 设置窗口尺寸或启动参数
-
-以下示例展示了如何使用 Chrome 的自定义选项：
-
-```python hl_lines="8-12 30-32 34-38"
+```python
 import asyncio
-import os
+from pydoll.browser.chromium import Chrome
+from pydoll.extractor import ExtractionModel, Field
+
+class Quote(ExtractionModel):
+    text: str = Field(selector='.text', description='引用文本')
+    author: str = Field(selector='.author', description='作者')
+    tags: list[str] = Field(selector='.tag', description='标签')
+    year: int | None = Field(selector='.year', description='年份', default=None)
+
+async def extract_quotes():
+    async with Chrome() as browser:
+        tab = await browser.start()
+        await tab.go_to('https://quotes.toscrape.com')
+
+        quotes = await tab.extract_all(Quote, scope='.quote', timeout=5)
+
+        for q in quotes:
+            print(f'{q.author}: {q.text}')  # 完全类型化，IDE自动补全
+            print(q.tags)                    # list[str]，不是原始元素
+            print(q.model_dump_json())       # 内置pydantic序列化
+
+asyncio.run(extract_quotes())
+```
+
+模型支持CSS/XPath自动检测、HTML属性提取、自定义转换函数和嵌套模型。
+
+??? note "嵌套模型、转换函数和属性提取"
+    ```python
+    from datetime import datetime
+    from pydoll.extractor import ExtractionModel, Field
+
+    def parse_date(raw: str) -> datetime:
+        return datetime.strptime(raw.strip(), '%B %d, %Y')
+
+    class Author(ExtractionModel):
+        name: str = Field(selector='.author-title')
+        born: datetime = Field(
+            selector='.author-born-date',
+            transform=parse_date,
+        )
+
+    class Article(ExtractionModel):
+        title: str = Field(selector='h1')
+        url: str = Field(selector='.source-link', attribute='href')
+        author: Author = Field(selector='.author-card', description='嵌套模型')
+
+    article = await tab.extract(Article, timeout=5)
+    article.author.born.year  # int — 类型在整个链中保持一致
+    ```
+
+## 扩展示例：结合两种方式
+
+实际的抓取任务通常结合两种方式：命令式自动化用于导航和绕过挑战，然后声明式提取用于收集结构化数据。
+
+```python
+import asyncio
+from typing import Optional
+
 from pydoll.browser.chromium import Chrome
 from pydoll.browser.options import ChromiumOptions
+from pydoll.extractor import ExtractionModel, Field
+
+
+class GitHubRepo(ExtractionModel):
+    name: str = Field(
+        selector='[itemprop="name"] a',
+        description='仓库名称',
+    )
+    description: Optional[str] = Field(
+        selector='[itemprop="description"]',
+        description='仓库描述',
+        default=None,
+    )
+    language: Optional[str] = Field(
+        selector='[itemprop="programmingLanguage"]',
+        description='主要编程语言',
+        default=None,
+    )
+
 
 async def main():
     options = ChromiumOptions()
-    options.binary_location = '/usr/bin/google-chrome-stable'
     options.add_argument('--headless=new')
-    options.add_argument('--start-maximized')
-    options.add_argument('--disable-notifications')
-    
+
     async with Chrome(options=options) as browser:
         tab = await browser.start()
-        await tab.go_to('https://github.com/autoscrape-labs/pydoll')
-        
-        star_button = await tab.find(
-            tag_name='button',
-            timeout=5,
-            raise_exc=False
+
+        # 1. 导航和交互（命令式）
+        await tab.go_to('https://github.com/autoscrape-labs')
+
+        # 2. 提取结构化数据（声明式）
+        repos = await tab.extract_all(
+            GitHubRepo,
+            scope='article.Box-row',
+            timeout=10,
         )
-        if not star_button:
-            print("Ops! The button was not found.")
-            return
 
-        await star_button.click()
-        await asyncio.sleep(3)
-
-        screenshot_path = os.path.join(os.getcwd(), 'pydoll_repo.png')
-        await tab.take_screenshot(path=screenshot_path)
-        print(f"Screenshot saved to: {screenshot_path}")
-
-        base64_screenshot = await tab.take_screenshot(as_base64=True)
-
-        repo_description_element = await tab.find(
-            class_name='f4.my-3'
-        )
-        repo_description = await repo_description_element.text
-        print(f"Repository description: {repo_description}")
+        for repo in repos:
+            print(f'{repo.name} ({repo.language}): {repo.description}')
+            print(repo.model_dump_json())
 
 if __name__ == "__main__":
     asyncio.run(main())
 ```
 
+此示例演示了：
 
-此扩展示例演示了：
-
-1. 创建和配置浏览器选项
-2. 设置自定义Chrome可执行程序路径
-3. 启用无头模式以实现无痕操作
-4. 设置其他浏览器命令行flags
-5. 屏幕截图（在无头模式下尤其有用）
+1. 为GitHub仓库数据定义类型化模型
+2. 配置无头模式以实现无痕操作
+3. 使用 `extract_all` 一次性收集多个仓库
+4. 获取完全类型化的对象，支持IDE自动补全和pydantic序列化
 
 ??? info "关于Chrome配置选项"
     The `options.add_argument()` 方法允许您传递任何 Chromium 命令行参数来自定义浏览器行为。有数百个可用选项可用于控制从网络到渲染行为的所有内容。
@@ -233,10 +258,11 @@ Pydoll仅依赖少量的核心库：
 
 ```
 python = "^3.10"
-websockets = "^13.1"
+websockets = "^14"
 aiohttp = "^3.9.5"
-aiofiles = "^23.2.1"
-bs4 = "^0.0.2"
+aiofiles = "^25.1.0"
+pydantic = "^2.0"
+typing_extensions = "^4.14.0"
 ```
 
 这种极简依赖策略带来五大核心优势：  
