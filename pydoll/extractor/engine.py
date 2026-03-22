@@ -2,18 +2,19 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import types
 from typing import TYPE_CHECKING, Optional, TypeVar, Union, get_args, get_origin
 
+from pydoll.elements.mixins.find_elements_mixin import FindElementsMixin
+from pydoll.elements.web_element import WebElement
 from pydoll.extractor.exceptions import FieldExtractionFailed
 from pydoll.extractor.field import ExtractionMetadata
 from pydoll.extractor.model import ExtractionModel
 
 if TYPE_CHECKING:
     from pydoll.browser.tab import Tab
-    from pydoll.elements.mixins.find_elements_mixin import FindElementsMixin
-    from pydoll.elements.web_element import WebElement
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +53,12 @@ class ExtractionEngine:
         """
         context: FindElementsMixin = self._tab
         if scope is not None:
-            context = await self._tab.query(scope, timeout=timeout)
+            result = await self._tab.query(scope, timeout=timeout)
+            if not isinstance(result, WebElement):
+                raise ValueError(
+                    f'Expected a single element for scope "{scope}", got {type(result)}'
+                )
+            context = result
 
         values = await self._extract_fields(model, context, timeout)
         return _build_instance(model, values)
@@ -87,12 +93,11 @@ class ExtractionEngine:
         if limit is not None:
             containers = containers[:limit]
 
-        results: list[T] = []
-        for container in containers:
-            values = await self._extract_fields(model, container, timeout)
-            results.append(_build_instance(model, values))
-
-        return results
+        extraction_tasks = [
+            self._extract_fields(model, container, timeout) for container in containers
+        ]
+        all_values = await asyncio.gather(*extraction_tasks)
+        return [_build_instance(model, values) for values in all_values]
 
     async def _extract_fields(
         self,
@@ -100,7 +105,10 @@ class ExtractionEngine:
         context: FindElementsMixin,
         timeout: int,
     ) -> dict[str, Union[str, int, float, bool, list[str], object]]:
-        """Extract all fields from the DOM within the given context.
+        """Extract all fields from the DOM concurrently.
+
+        Launches all field extractions in parallel using asyncio.gather,
+        then collects results and handles errors per field.
 
         Args:
             model: ExtractionModel subclass with extraction fields.
@@ -110,7 +118,8 @@ class ExtractionEngine:
         Returns:
             Dictionary of field name -> extracted value.
         """
-        values: dict[str, Union[str, int, float, bool, list[str], object]] = {}
+        field_names: list[str] = []
+        tasks: list[asyncio.Task[Union[str, int, float, bool, list[str], object]]] = []
 
         for name, metadata in model.get_extraction_fields().items():
             if not metadata.has_selector:
@@ -122,16 +131,22 @@ class ExtractionEngine:
             if annotation is None:
                 continue
 
-            try:
-                value = await self._extract_field(metadata, annotation, context, timeout)
-                values[name] = value
-            except Exception as exc:
+            field_names.append(name)
+            tasks.append(self._extract_field(metadata, annotation, context, timeout))
+
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        values: dict[str, Union[str, int, float, bool, list[str], object]] = {}
+        for name, result in zip(field_names, results):
+            if isinstance(result, BaseException):
+                field_info = model.model_fields[name]
                 if not field_info.is_required():
-                    logger.debug(f'Optional field "{name}" extraction failed: {exc}')
+                    logger.debug(f'Optional field "{name}" extraction failed: {result}')
                     continue
                 raise FieldExtractionFailed(
-                    f'Required field "{name}" could not be extracted: {exc}'
-                ) from exc
+                    f'Required field "{name}" could not be extracted: {result}'
+                ) from result
+            values[name] = result
 
         return values
 
@@ -210,8 +225,10 @@ class ExtractionEngine:
         if selector is None:
             raise FieldExtractionFailed('Nested model field has no selector')
 
-        scope_element = await context.query(selector, timeout=timeout, raise_exc=True)
-        values = await self._extract_fields(model, scope_element, timeout)
+        result = await context.query(selector, timeout=timeout, raise_exc=True)
+        if not isinstance(result, WebElement):
+            raise ValueError(f'Expected a single element for "{selector}", got {type(result)}')
+        values = await self._extract_fields(model, result, timeout)
         return _build_instance(model, values)
 
 
@@ -225,8 +242,10 @@ async def _extract_scalar_field(
     if selector is None:
         raise FieldExtractionFailed('Scalar field has no selector')
 
-    element = await context.query(selector, timeout=timeout, raise_exc=True)
-    raw = await _extract_value(element, metadata)
+    result = await context.query(selector, timeout=timeout, raise_exc=True)
+    if not isinstance(result, WebElement):
+        raise ValueError(f'Expected a single element for "{selector}", got {type(result)}')
+    raw = await _extract_value(result, metadata)
     return _apply_transform(raw, metadata)
 
 
