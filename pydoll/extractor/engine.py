@@ -204,17 +204,13 @@ class ExtractionEngine:
         inner_type = _get_inner_type(annotation)
 
         if _is_extraction_model(inner_type):
-            results: list[Union[str, int, float, bool, object]] = []
-            for element in elements:
-                field_values = await self._extract_fields(inner_type, element, timeout)
-                results.append(_build_instance(inner_type, field_values))
-            return results
+            all_field_values = await asyncio.gather(
+                *(self._extract_fields(inner_type, el, timeout) for el in elements)
+            )
+            return [_build_instance(inner_type, fv) for fv in all_field_values]
 
-        scalar_values: list[Union[str, int, float, bool, object]] = []
-        for element in elements:
-            raw = await _extract_value(element, metadata)
-            scalar_values.append(_apply_transform(raw, metadata))
-        return scalar_values
+        all_raw = await asyncio.gather(*(_extract_value(el, metadata) for el in elements))
+        return [_apply_transform(raw, metadata) for raw in all_raw]
 
     async def _extract_nested_model(
         self,
