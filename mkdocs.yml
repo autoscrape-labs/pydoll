@@ -12,6 +12,8 @@ nav:
       - Overview: features/index.md
       - Core Concepts: features/core-concepts.md
       - Element Finding: features/element-finding.md
+      - Data Extraction:
+          - Structured Extraction: features/extraction/structured-extraction.md
       - Automation:
           - Human-Like Interactions: features/automation/human-interactions.md
           - Keyboard Control: features/automation/keyboard-control.md
