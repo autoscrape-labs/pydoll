@@ -519,12 +519,14 @@ class TestKeyboardTypeText:
         import warnings
 
         with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
+            warnings.simplefilter("always", DeprecationWarning)
             await keyboard_api.type_text("a", interval=0.1)
 
-            assert len(w) == 1
-            assert issubclass(w[0].category, DeprecationWarning)
-            assert "interval" in str(w[0].message)
+            deprecation_warnings = [
+                x for x in w if issubclass(x.category, DeprecationWarning)
+            ]
+            assert len(deprecation_warnings) == 1
+            assert "interval" in str(deprecation_warnings[0].message)
 
     @pytest.mark.asyncio
     async def test_type_char_calls_focus(self, keyboard_api, mock_tab):
