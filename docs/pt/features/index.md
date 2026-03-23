@@ -18,6 +18,12 @@ Encontrar e interagir com elementos da página é o pão com manteiga da automa�
 
 **[Localização de Elementos](element-finding.md)**: Domine as estratégias de localização de elementos do Pydoll, desde o intuitivo método `find()` que usa atributos HTML naturais, até o poderoso método `query()` para seletores CSS e XPath. Você também aprenderá sobre auxiliares de travessia do DOM que permitem navegar pela estrutura da página eficientemente.
 
+## Extração de Dados
+
+Transforme páginas web em objetos Python estruturados com modelos tipados, validação automática e serialização Pydantic.
+
+**[Extração Estruturada](extraction/structured-extraction.md)**: Defina um modelo Pydantic com seletores CSS/XPath, chame `tab.extract()` e receba um objeto totalmente tipado. Suporta modelos aninhados, campos lista, extração de atributos, transforms customizados, campos opcionais com defaults e timeouts configuráveis. Sem necessidade de consulta manual elemento por elemento.
+
 ## Capacidades de Automação
 
 Estas são as funcionalidades que dão vida à sua automação: simular interações do usuário, controle de teclado, lidar com operações de arquivo, trabalhar com iframes e capturar conteúdo visual.

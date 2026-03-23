@@ -50,6 +50,7 @@ $ pip install git+https://github.com/autoscrape-labs/pydoll.git
 - **Monitoramento de Rede Poderoso**: Intercepte, modifique e analise todo o tráfego de rede com facilidade, dando a você controle total sobre as requisições.
 - **Arquitetura Orientada a Eventos**: Reaja a eventos da página, requisições de rede e interações do usuário em tempo real.
 - **Localização de Elementos Intuitiva**: Métodos modernos `find()` e `query()` que fazem sentido e funcionam como você esperaria.
+- **Extração Estruturada**: Defina um modelo [Pydantic](https://docs.pydantic.dev/), chame `tab.extract()` e receba dados tipados e validados. Sem consulta manual elemento por elemento.
 - **Segurança de Tipos Robusta**: Sistema de tipos abrangente para melhor suporte da IDE e prevenção de erros.
 
 
@@ -57,9 +58,11 @@ Pronto para começar? As páginas a seguir guiarão você pela instalação, uso
 
 Vamos começar a automatizar a web, da maneira certa! 🚀
 
-## Guia de Início Rápido: Um exemplo simples
+## Guia de Início Rápido
 
-Vamos começar com um exemplo prático. O script a seguir abrirá o repositório Pydoll no GitHub e o marcará como favorito:
+### 1. Automação Stateful e Evasão
+
+Quando você precisa navegar, contornar desafios ou interagir com UIs dinâmicas, a API imperativa do Pydoll cuida de tudo com timing humanizado por padrão.
 
 ```python
 import asyncio
@@ -70,6 +73,7 @@ async def main():
         tab = await browser.start()
         await tab.go_to('https://github.com/autoscrape-labs/pydoll')
 
+        # Encontra elementos e interage com timing humano
         star_button = await tab.find(
             tag_name='button',
             timeout=5,
@@ -85,100 +89,123 @@ async def main():
 asyncio.run(main())
 ```
 
-Este exemplo demonstra como navegar até um site, esperar que um elemento apareça e interagir com ele. Você pode adaptar esse padrão para automatizar diversas tarefas web.
+### 2. Extração Estruturada de Dados
 
-??? note "Ou use sem o gerenciador de contexto..."
-    Se preferir não usar o padrão de gerenciador de contexto, você pode gerenciar a instância do navegador manualmente:
-    ```python
-    import asyncio
-    from pydoll.browser.chromium import Chrome
+Ao chegar na página alvo, mude para o motor declarativo. Defina o que você quer com um modelo, e o Pydoll extrai — tipado, validado e pronto para uso.
 
-    async def main():
-        browser = Chrome()
-        tab = await browser.start()
-        await tab.go_to('https://github.com/autoscrape-labs/pydoll')
-
-        star_button = await tab.find(
-            tag_name='button',
-            timeout=5,
-            raise_exc=False
-        )
-        if not star_button:
-            print("Ops! O botão não foi encontrado.")
-            return
-
-        await star_button.click()
-        await asyncio.sleep(3)
-        await browser.stop()
-
-    asyncio.run(main())
-    ```
-    Observe que, ao não usar o gerenciador de contexto, você precisará chamar explicitamente `browser.stop()` para liberar os recursos.
-
-
-## Exemplo Estendido: Configuração personalizada do navegador
-
-Para cenários de uso mais avançados, o Pydoll permite personalizar a configuração do seu navegador usando a classe `ChromiumOptions`. Isso é útil quando você precisa:
-
-- Executar em modo headless (sem janela do navegador visível)
-- Especificar um caminho personalizado para o executável do navegador
-- Configurar proxies, user agents ou outras configurações do navegador
-- Definir as dimensões da janela ou argumentos de inicialização
-
-Aqui está um exemplo mostrando como usar opções personalizadas para o Chrome:
-
-```python hl_lines="8-12 30-32 34-38"
+```python
 import asyncio
-import os
+from pydoll.browser.chromium import Chrome
+from pydoll.extractor import ExtractionModel, Field
+
+class Quote(ExtractionModel):
+    text: str = Field(selector='.text', description='O texto da citação')
+    author: str = Field(selector='.author', description='Quem disse')
+    tags: list[str] = Field(selector='.tag', description='Tags')
+    year: int | None = Field(selector='.year', description='Ano', default=None)
+
+async def extract_quotes():
+    async with Chrome() as browser:
+        tab = await browser.start()
+        await tab.go_to('https://quotes.toscrape.com')
+
+        quotes = await tab.extract_all(Quote, scope='.quote', timeout=5)
+
+        for q in quotes:
+            print(f'{q.author}: {q.text}')  # totalmente tipado, autocomplete da IDE funciona
+            print(q.tags)                    # list[str], não um elemento bruto
+            print(q.model_dump_json())       # serialização pydantic embutida
+
+asyncio.run(extract_quotes())
+```
+
+Modelos suportam auto-detecção CSS/XPath, extração de atributos HTML, transforms customizados e modelos aninhados.
+
+??? note "Modelos aninhados, transforms e extração de atributos"
+    ```python
+    from datetime import datetime
+    from pydoll.extractor import ExtractionModel, Field
+
+    def parse_date(raw: str) -> datetime:
+        return datetime.strptime(raw.strip(), '%B %d, %Y')
+
+    class Author(ExtractionModel):
+        name: str = Field(selector='.author-title')
+        born: datetime = Field(
+            selector='.author-born-date',
+            transform=parse_date,
+        )
+
+    class Article(ExtractionModel):
+        title: str = Field(selector='h1')
+        url: str = Field(selector='.source-link', attribute='href')
+        author: Author = Field(selector='.author-card', description='Modelo aninhado')
+
+    article = await tab.extract(Article, timeout=5)
+    article.author.born.year  # int — tipos preservados em toda a cadeia
+    ```
+
+## Exemplo Estendido: Combinando as Duas Abordagens
+
+Uma tarefa real de scraping tipicamente combina as duas abordagens: automação imperativa para navegar e contornar desafios, depois extração declarativa para coletar dados estruturados.
+
+```python
+import asyncio
+from typing import Optional
+
 from pydoll.browser.chromium import Chrome
 from pydoll.browser.options import ChromiumOptions
+from pydoll.extractor import ExtractionModel, Field
+
+
+class GitHubRepo(ExtractionModel):
+    name: str = Field(
+        selector='[itemprop="name"] a',
+        description='Nome do repositório',
+    )
+    description: Optional[str] = Field(
+        selector='[itemprop="description"]',
+        description='Descrição do repositório',
+        default=None,
+    )
+    language: Optional[str] = Field(
+        selector='[itemprop="programmingLanguage"]',
+        description='Linguagem de programação principal',
+        default=None,
+    )
+
 
 async def main():
     options = ChromiumOptions()
-    options.binary_location = '/usr/bin/google-chrome-stable'
     options.add_argument('--headless=new')
-    options.add_argument('--start-maximized')
-    options.add_argument('--disable-notifications')
 
     async with Chrome(options=options) as browser:
         tab = await browser.start()
-        await tab.go_to('https://github.com/autoscrape-labs/pydoll')
 
-        star_button = await tab.find(
-            tag_name='button',
-            timeout=5,
-            raise_exc=False
+        # 1. Navegar e interagir (imperativo)
+        await tab.go_to('https://github.com/autoscrape-labs')
+
+        # 2. Extrair dados estruturados (declarativo)
+        repos = await tab.extract_all(
+            GitHubRepo,
+            scope='article.Box-row',
+            timeout=10,
         )
-        if not star_button:
-            print("Ops! O botão não foi encontrado.")
-            return
 
-        await star_button.click()
-        await asyncio.sleep(3)
-
-        screenshot_path = os.path.join(os.getcwd(), 'pydoll_repo.png')
-        await tab.take_screenshot(path=screenshot_path)
-        print(f"Captura de tela salva em: {screenshot_path}")
-
-        base64_screenshot = await tab.take_screenshot(as_base64=True)
-
-        repo_description_element = await tab.find(
-            class_name='f4.my-3'
-        )
-        repo_description = await repo_description_element.text
-        print(f"Descrição do repositório: {repo_description}")
+        for repo in repos:
+            print(f'{repo.name} ({repo.language}): {repo.description}')
+            print(repo.model_dump_json())
 
 if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-Este exemplo estendido demonstra:
+Este exemplo demonstra:
 
-1. Criação e configuração de opções do navegador
-2. Definição de um caminho personalizado para o binário do Chrome
-3. Habilitação do modo headless para operação invisível
-4. Definição de sinalizadores adicionais do navegador
-5. Captura de tela (especialmente útil em modo headless) modo)
+1. Definição de um modelo tipado para dados de repositórios GitHub
+2. Configuração do modo headless para operação invisível
+3. Uso de `extract_all` para coletar múltiplos repositórios de uma vez
+4. Objetos totalmente tipados com autocomplete da IDE e serialização pydantic
 
 ??? info "Sobre as Opções do Chromium"
     O método `options.add_argument()` permite que você passe qualquer argumento de linha de comando do Chromium para personalizar o comportamento do navegador. Existem centenas de opções disponíveis para controlar tudo, desde rede até comportamento de renderização. 
@@ -231,10 +258,11 @@ O Pydoll depende de apenas alguns pacotes cuidadosamente selecionados:
 
 ```
 python = "^3.10"
-websockets = "^13.1"
+websockets = "^14"
 aiohttp = "^3.9.5"
-aiofiles = "^23.2.1"
-bs4 = "^0.0.2"
+aiofiles = "^25.1.0"
+pydantic = "^2.0"
+typing_extensions = "^4.14.0"
 ```
 
 É só isso! Essa dependência mínima do Pydoll significa:

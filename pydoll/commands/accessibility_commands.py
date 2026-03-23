@@ -161,9 +161,7 @@ class AccessibilityCommands:
             params['backendNodeId'] = backend_node_id
         if object_id is not None:
             params['objectId'] = object_id
-        return Command(
-            method=AccessibilityMethod.GET_AX_NODE_AND_ANCESTORS, params=params
-        )
+        return Command(method=AccessibilityMethod.GET_AX_NODE_AND_ANCESTORS, params=params)
 
     @staticmethod
     def get_child_ax_nodes(
