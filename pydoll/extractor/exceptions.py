@@ -21,3 +21,15 @@ class InvalidExtractionModel(ExtractionException):
     """Raised when an ExtractionModel definition is invalid."""
 
     message = 'Invalid extraction model definition'
+
+
+class LLMExtractionFailed(ExtractionException):
+    """Raised when LLM-based extraction fails (provider error, bad response)."""
+
+    message = 'LLM extraction failed'
+
+
+class LLMProviderNotConfigured(ExtractionException):
+    """Raised when description-only fields exist but no LLM provider was given."""
+
+    message = 'No LLM provider configured for description-only fields'
