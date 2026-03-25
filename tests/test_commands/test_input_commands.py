@@ -6,7 +6,7 @@ verifying that they generate the correct CDP commands with proper parameters.
 """
 
 from pydoll.commands.input_commands import InputCommands
-from pydoll.protocol.input.types import (
+from pydoll.protocol.cdp.input.types import (
     DragEventType,
     GestureSourceType,
     KeyEventType,
@@ -17,7 +17,7 @@ from pydoll.protocol.input.types import (
     PointerType,
     TouchEventType,
 )
-from pydoll.protocol.input.methods import InputMethod
+from pydoll.protocol.cdp.input.methods import InputMethod
 
 
 def test_cancel_dragging():

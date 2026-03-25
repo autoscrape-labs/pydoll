@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional
 
-from pydoll.protocol.base import Command
-from pydoll.protocol.network.methods import (
+from pydoll.protocol.cdp.base import Command
+from pydoll.protocol.cdp.network.methods import (
     DeleteCookiesParams,
     EmulateNetworkConditionsParams,
     EnableReportingApiParams,
@@ -33,8 +33,8 @@ from pydoll.protocol.network.methods import (
 )
 
 if TYPE_CHECKING:
-    from pydoll.protocol.emulation.types import UserAgentMetadata
-    from pydoll.protocol.network.methods import (
+    from pydoll.protocol.cdp.emulation.types import UserAgentMetadata
+    from pydoll.protocol.cdp.network.methods import (
         ClearAcceptedEncodingsOverrideCommand,
         ClearBrowserCacheCommand,
         ClearBrowserCookiesCommand,
@@ -66,7 +66,7 @@ if TYPE_CHECKING:
         StreamResourceContentCommand,
         TakeResponseBodyForInterceptionAsStreamCommand,
     )
-    from pydoll.protocol.network.types import (
+    from pydoll.protocol.cdp.network.types import (
         ConnectionType,
         ContentEncoding,
         CookiePartitionKey,

@@ -6,11 +6,11 @@ from typing import TYPE_CHECKING
 from pydoll.commands import DomCommands
 from pydoll.connection import ConnectionHandler
 from pydoll.elements.mixins import FindElementsMixin
-from pydoll.protocol.dom.types import ShadowRootType
+from pydoll.protocol.cdp.dom.types import ShadowRootType
 
 if TYPE_CHECKING:
     from pydoll.elements.web_element import WebElement
-    from pydoll.protocol.dom.methods import GetOuterHTMLResponse
+    from pydoll.protocol.cdp.dom.methods import GetOuterHTMLResponse
 
 logger = logging.getLogger(__name__)
 

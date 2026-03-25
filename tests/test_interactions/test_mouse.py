@@ -11,7 +11,7 @@ from pydoll.interactions.utils import (
     minimum_jerk,
     random_control_points,
 )
-from pydoll.protocol.input.types import MouseButton, MouseEventType
+from pydoll.protocol.cdp.input.types import MouseButton, MouseEventType
 
 
 @pytest_asyncio.fixture

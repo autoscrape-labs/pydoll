@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional
 
-from pydoll.protocol.base import Command
-from pydoll.protocol.input.methods import (
+from pydoll.protocol.cdp.base import Command
+from pydoll.protocol.cdp.input.methods import (
     DispatchDragEventParams,
     DispatchKeyEventParams,
     DispatchMouseEventParams,
@@ -20,7 +20,7 @@ from pydoll.protocol.input.methods import (
 )
 
 if TYPE_CHECKING:
-    from pydoll.protocol.input.methods import (
+    from pydoll.protocol.cdp.input.methods import (
         CancelDraggingCommand,
         DispatchDragEventCommand,
         DispatchKeyEventCommand,
@@ -37,7 +37,7 @@ if TYPE_CHECKING:
         SynthesizeTapGestureCommand,
         TouchPoint,
     )
-    from pydoll.protocol.input.types import (
+    from pydoll.protocol.cdp.input.types import (
         DragEventType,
         GestureSourceType,
         KeyEventType,

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional
 
-from pydoll.protocol.accessibility.methods import (
+from pydoll.protocol.cdp.accessibility.methods import (
     AccessibilityMethod,
     GetAXNodeAndAncestorsParams,
     GetChildAXNodesParams,
@@ -11,10 +11,10 @@ from pydoll.protocol.accessibility.methods import (
     GetRootAXNodeParams,
     QueryAXTreeParams,
 )
-from pydoll.protocol.base import Command
+from pydoll.protocol.cdp.base import Command
 
 if TYPE_CHECKING:
-    from pydoll.protocol.accessibility.methods import (
+    from pydoll.protocol.cdp.accessibility.methods import (
         DisableCommand,
         EnableCommand,
         GetAXNodeAndAncestorsCommand,
@@ -24,7 +24,7 @@ if TYPE_CHECKING:
         GetRootAXNodeCommand,
         QueryAXTreeCommand,
     )
-    from pydoll.protocol.accessibility.types import AXNodeId
+    from pydoll.protocol.cdp.accessibility.types import AXNodeId
 
 
 class AccessibilityCommands:

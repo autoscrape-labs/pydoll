@@ -1,6 +1,6 @@
 from pydoll.commands.browser_commands import BrowserCommands
-from pydoll.protocol.browser.methods import BrowserMethod
-from pydoll.protocol.browser.types import (
+from pydoll.protocol.cdp.browser.methods import BrowserMethod
+from pydoll.protocol.cdp.browser.types import (
     WindowState, 
     PermissionType, 
     DownloadBehavior,

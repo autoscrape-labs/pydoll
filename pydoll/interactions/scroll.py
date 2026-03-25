@@ -9,8 +9,8 @@ from typing import TYPE_CHECKING, Optional
 from pydoll.commands import InputCommands, RuntimeCommands
 from pydoll.constants import Scripts, ScrollPosition
 from pydoll.interactions.utils import CubicBezier
-from pydoll.protocol.input.types import MouseEventType
-from pydoll.protocol.runtime.methods import EvaluateResponse
+from pydoll.protocol.cdp.input.types import MouseEventType
+from pydoll.protocol.cdp.runtime.methods import EvaluateResponse
 
 if TYPE_CHECKING:
     from pydoll.browser.tab import Tab

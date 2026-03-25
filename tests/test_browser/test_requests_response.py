@@ -7,8 +7,8 @@ import pytest
 
 from pydoll.browser.requests.response import Response, STATUS_CODE_RANGE_OK
 from pydoll.exceptions import HTTPError
-from pydoll.protocol.fetch.types import HeaderEntry
-from pydoll.protocol.network.types import CookieParam
+from pydoll.protocol.cdp.fetch.types import HeaderEntry
+from pydoll.protocol.cdp.network.types import CookieParam
 
 
 class TestResponseInitialization:

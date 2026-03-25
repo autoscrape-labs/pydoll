@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING, Any, Callable, cast
 from urllib.parse import parse_qs, urlparse
 
 from pydoll.commands.network_commands import NetworkCommands
-from pydoll.protocol.network.events import (
+from pydoll.protocol.cdp.network.events import (
     DataReceivedEvent,
     LoadingFailedEvent,
     LoadingFinishedEvent,
@@ -28,7 +28,7 @@ from pydoll.protocol.network.events import (
     ResponseReceivedEvent,
     ResponseReceivedExtraInfoEvent,
 )
-from pydoll.protocol.network.har_types import (
+from pydoll.protocol.cdp.network.har_types import (
     Har,
     HarContent,
     HarCookie,
@@ -42,13 +42,13 @@ from pydoll.protocol.network.har_types import (
     HarResponse,
     HarTimings,
 )
-from pydoll.protocol.network.types import ResourceType
+from pydoll.protocol.cdp.network.types import ResourceType
 
 if TYPE_CHECKING:
     from pydoll.browser.tab import Tab
-    from pydoll.protocol.network.methods import GetResponseBodyResponse
-    from pydoll.protocol.network.types import ResourceTiming
-    from pydoll.protocol.network.types import Response as CDPResponse
+    from pydoll.protocol.cdp.network.methods import GetResponseBodyResponse
+    from pydoll.protocol.cdp.network.types import ResourceTiming
+    from pydoll.protocol.cdp.network.types import Response as CDPResponse
 
 logger = logging.getLogger(__name__)
 

@@ -6,8 +6,8 @@ verifying that they generate the correct CDP commands with proper parameters.
 """
 
 from pydoll.commands.target_commands import TargetCommands
-from pydoll.protocol.browser.types import WindowState
-from pydoll.protocol.target.methods import TargetMethod
+from pydoll.protocol.cdp.browser.types import WindowState
+from pydoll.protocol.cdp.target.methods import TargetMethod
 
 
 def test_activate_target():

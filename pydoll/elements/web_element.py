@@ -35,21 +35,21 @@ from pydoll.exceptions import (
 )
 from pydoll.interactions.iframe import IFrameContext, IFrameContextResolver
 from pydoll.interactions.keyboard import Keyboard
-from pydoll.protocol.dom.types import ShadowRootType
-from pydoll.protocol.input.types import (
+from pydoll.protocol.cdp.dom.types import ShadowRootType
+from pydoll.protocol.cdp.input.types import (
     KeyEventType,
     KeyModifier,
     MouseButton,
     MouseEventType,
 )
-from pydoll.protocol.page.types import ScreenshotFormat, Viewport
-from pydoll.protocol.runtime.methods import (
+from pydoll.protocol.cdp.page.types import ScreenshotFormat, Viewport
+from pydoll.protocol.cdp.runtime.methods import (
     CallFunctionOnResponse,
     EvaluateResponse,
     GetPropertiesResponse,
     SerializationOptions,
 )
-from pydoll.protocol.runtime.types import CallArgument
+from pydoll.protocol.cdp.runtime.types import CallArgument
 from pydoll.utils import (
     decode_base64_to_bytes,
     extract_text_from_html,
@@ -58,15 +58,15 @@ from pydoll.utils import (
 
 if TYPE_CHECKING:
     from pydoll.interactions.mouse import Mouse as MouseType
-    from pydoll.protocol.dom.methods import (
+    from pydoll.protocol.cdp.dom.methods import (
         DescribeNodeResponse,
         GetBoxModelResponse,
         GetOuterHTMLResponse,
         ResolveNodeResponse,
     )
-    from pydoll.protocol.dom.types import Quad
-    from pydoll.protocol.page.methods import CaptureScreenshotResponse
-    from pydoll.protocol.runtime.methods import GetPropertiesResponse
+    from pydoll.protocol.cdp.dom.types import Quad
+    from pydoll.protocol.cdp.page.methods import CaptureScreenshotResponse
+    from pydoll.protocol.cdp.runtime.methods import GetPropertiesResponse
 
 logger = logging.getLogger(__name__)
 

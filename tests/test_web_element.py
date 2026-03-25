@@ -18,8 +18,8 @@ from pydoll.exceptions import (
     ElementNotVisible,
     WaitElementTimeout,
 )
-from pydoll.protocol.input.types import KeyModifier
-from pydoll.protocol.runtime.types import CallArgument
+from pydoll.protocol.cdp.input.types import KeyModifier
+from pydoll.protocol.cdp.runtime.types import CallArgument
 
 
 @pytest_asyncio.fixture

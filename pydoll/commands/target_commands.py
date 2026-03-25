@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional
 
-from pydoll.protocol.base import Command
-from pydoll.protocol.target.methods import (
+from pydoll.protocol.cdp.base import Command
+from pydoll.protocol.cdp.target.methods import (
     ActivateTargetParams,
     AttachToBrowserTargetParams,
     AttachToTargetParams,
@@ -21,8 +21,8 @@ from pydoll.protocol.target.methods import (
 )
 
 if TYPE_CHECKING:
-    from pydoll.protocol.browser.types import WindowState
-    from pydoll.protocol.target.methods import (
+    from pydoll.protocol.cdp.browser.types import WindowState
+    from pydoll.protocol.cdp.target.methods import (
         ActivateTargetCommand,
         AttachToBrowserTargetCommand,
         AttachToTargetCommand,
@@ -38,7 +38,7 @@ if TYPE_CHECKING:
         SetDiscoverTargetsCommand,
         SetRemoteLocationsCommand,
     )
-    from pydoll.protocol.target.types import RemoteLocation
+    from pydoll.protocol.cdp.target.types import RemoteLocation
 
 
 class TargetCommands:

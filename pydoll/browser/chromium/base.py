@@ -37,39 +37,39 @@ from pydoll.exceptions import (
     MissingTargetOrWebSocket,
     NoValidTabFound,
 )
-from pydoll.protocol.browser.types import DownloadBehavior
-from pydoll.protocol.fetch.events import FetchEvent
-from pydoll.protocol.fetch.types import AuthChallengeResponseType
+from pydoll.protocol.cdp.browser.types import DownloadBehavior
+from pydoll.protocol.cdp.fetch.events import FetchEvent
+from pydoll.protocol.cdp.fetch.types import AuthChallengeResponseType
 from pydoll.utils.user_agent_parser import UserAgentParser
 
 if TYPE_CHECKING:
     from tempfile import TemporaryDirectory
 
     from pydoll.browser.interfaces import BrowserOptionsManager
-    from pydoll.protocol.base import Command, Response, T_CommandParams, T_CommandResponse
-    from pydoll.protocol.browser.methods import (
+    from pydoll.protocol.cdp.base import Command, Response, T_CommandParams, T_CommandResponse
+    from pydoll.protocol.cdp.browser.methods import (
         GetVersionResponse,
         GetVersionResult,
         GetWindowForTargetResponse,
     )
-    from pydoll.protocol.browser.types import Bounds, PermissionType
-    from pydoll.protocol.fetch.events import RequestPausedEvent
-    from pydoll.protocol.fetch.types import HeaderEntry
-    from pydoll.protocol.network.types import (
+    from pydoll.protocol.cdp.browser.types import Bounds, PermissionType
+    from pydoll.protocol.cdp.fetch.events import RequestPausedEvent
+    from pydoll.protocol.cdp.fetch.types import HeaderEntry
+    from pydoll.protocol.cdp.network.types import (
         Cookie,
         CookieParam,
         ErrorReason,
         RequestMethod,
         ResourceType,
     )
-    from pydoll.protocol.storage.methods import GetCookiesResponse
-    from pydoll.protocol.target.methods import (
+    from pydoll.protocol.cdp.storage.methods import GetCookiesResponse
+    from pydoll.protocol.cdp.target.methods import (
         CreateBrowserContextResponse,
         CreateTargetResponse,
         GetBrowserContextsResponse,
         GetTargetsResponse,
     )
-    from pydoll.protocol.target.types import TargetInfo
+    from pydoll.protocol.cdp.target.types import TargetInfo
 
 logger = logging.getLogger(__name__)
 

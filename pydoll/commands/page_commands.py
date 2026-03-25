@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Literal, Optional
 
-from pydoll.protocol.base import Command
-from pydoll.protocol.page.methods import (
+from pydoll.protocol.cdp.base import Command
+from pydoll.protocol.cdp.page.methods import (
     AddCompilationCacheParams,
     AddScriptToEvaluateOnNewDocumentParams,
     CaptureScreenshotParams,
@@ -40,7 +40,7 @@ from pydoll.protocol.page.methods import (
     SetWebLifecycleStateParams,
     StartScreencastParams,
 )
-from pydoll.protocol.page.types import (
+from pydoll.protocol.cdp.page.types import (
     CompilationCacheParams,
     FontFamilies,
     FontSizes,
@@ -48,7 +48,7 @@ from pydoll.protocol.page.types import (
 )
 
 if TYPE_CHECKING:
-    from pydoll.protocol.page.methods import (
+    from pydoll.protocol.cdp.page.methods import (
         AddCompilationCacheCommand,
         AddScriptToEvaluateOnNewDocumentCommand,
         BringToFrontCommand,
@@ -98,7 +98,7 @@ if TYPE_CHECKING:
         StopScreencastCommand,
         WaitForDebuggerCommand,
     )
-    from pydoll.protocol.page.types import (
+    from pydoll.protocol.cdp.page.types import (
         AutoResponseMode,
         ReferrerPolicy,
         ScreencastFormat,

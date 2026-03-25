@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional
 
-from pydoll.protocol.base import Command
-from pydoll.protocol.storage.methods import (
+from pydoll.protocol.cdp.base import Command
+from pydoll.protocol.cdp.storage.methods import (
     ClearCookiesParams,
     ClearDataForOriginParams,
     ClearDataForStorageKeyParams,
@@ -41,8 +41,8 @@ from pydoll.protocol.storage.methods import (
 )
 
 if TYPE_CHECKING:
-    from pydoll.protocol.network.types import CookieParam
-    from pydoll.protocol.storage.methods import (
+    from pydoll.protocol.cdp.network.types import CookieParam
+    from pydoll.protocol.cdp.storage.methods import (
         ClearCookiesCommand,
         ClearDataForOriginCommand,
         ClearDataForStorageKeyCommand,
@@ -81,7 +81,7 @@ if TYPE_CHECKING:
         UntrackIndexedDBForOriginCommand,
         UntrackIndexedDBForStorageKeyCommand,
     )
-    from pydoll.protocol.storage.types import StorageBucket
+    from pydoll.protocol.cdp.storage.types import StorageBucket
 
 
 class StorageCommands:  # noqa: PLR0904

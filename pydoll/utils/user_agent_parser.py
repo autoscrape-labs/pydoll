@@ -1,7 +1,7 @@
 import re
 from dataclasses import dataclass, field
 
-from pydoll.protocol.emulation.types import UserAgentBrandVersion, UserAgentMetadata
+from pydoll.protocol.cdp.emulation.types import UserAgentBrandVersion, UserAgentMetadata
 
 _CHROME_RE = re.compile(r'Chrome/(\d+)\.(\d+)\.(\d+)\.(\d+)')
 _EDGE_RE = re.compile(r'Edg/(\d+)\.(\d+)\.(\d+)\.(\d+)')

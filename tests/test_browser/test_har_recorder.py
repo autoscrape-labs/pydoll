@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock, Mock, patch
 
 from pydoll.browser.requests.har_recorder import HarRecorder, HarCapture
 from pydoll.browser.requests.request import Request
-from pydoll.protocol.network.events import NetworkEvent
+from pydoll.protocol.cdp.network.events import NetworkEvent
 
 
 @pytest_asyncio.fixture
@@ -791,7 +791,7 @@ class TestResourceTypeFiltering:
 
     @pytest.mark.asyncio
     async def test_filter_skips_non_matching_types(self, mock_tab):
-        from pydoll.protocol.network.types import ResourceType
+        from pydoll.protocol.cdp.network.types import ResourceType
         recorder = HarRecorder(mock_tab, resource_types=[ResourceType.FETCH])
         await recorder.start()
 
@@ -809,7 +809,7 @@ class TestResourceTypeFiltering:
 
     @pytest.mark.asyncio
     async def test_filter_accepts_matching_types(self, mock_tab):
-        from pydoll.protocol.network.types import ResourceType
+        from pydoll.protocol.cdp.network.types import ResourceType
         recorder = HarRecorder(mock_tab, resource_types=[ResourceType.FETCH])
         await recorder.start()
 
@@ -844,7 +844,7 @@ class TestResourceTypeFiltering:
 
     @pytest.mark.asyncio
     async def test_record_passes_resource_types(self, request_instance, mock_tab):
-        from pydoll.protocol.network.types import ResourceType
+        from pydoll.protocol.cdp.network.types import ResourceType
         async with request_instance.record(
             resource_types=[ResourceType.XHR, ResourceType.FETCH]
         ) as capture:

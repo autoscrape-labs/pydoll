@@ -5,7 +5,7 @@ import logging
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from pydoll.protocol.base import Command
+    from pydoll.protocol.cdp.base import Command
 
 logger = logging.getLogger(__name__)
 

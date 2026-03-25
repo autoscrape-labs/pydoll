@@ -6,7 +6,7 @@ verifying that they generate the correct CDP commands with proper parameters.
 """
 
 from pydoll.commands.page_commands import PageCommands
-from pydoll.protocol.page.types import (
+from pydoll.protocol.cdp.page.types import (
     ReferrerPolicy,
     ScreencastFormat,
     ScreenshotFormat,
@@ -14,7 +14,7 @@ from pydoll.protocol.page.types import (
     TransitionType,
     WebLifecycleState,
 )
-from pydoll.protocol.page.methods import PageMethod
+from pydoll.protocol.cdp.page.methods import PageMethod
 
 
 def test_add_script_to_evaluate_on_new_document_minimal():
@@ -591,7 +591,7 @@ def test_set_prerendering_allowed():
 
 def test_set_rph_registration_mode():
     """Test set_rph_registration_mode method."""
-    from pydoll.protocol.page.methods import AutoResponseMode
+    from pydoll.protocol.cdp.page.methods import AutoResponseMode
     result = PageCommands.set_rph_registration_mode(mode=AutoResponseMode.AUTO_ACCEPT)
     assert result['method'] == PageMethod.SET_RPH_REGISTRATION_MODE
     assert result['params']['mode'] == AutoResponseMode.AUTO_ACCEPT
@@ -599,7 +599,7 @@ def test_set_rph_registration_mode():
 
 def test_set_spc_transaction_mode():
     """Test set_spc_transaction_mode method."""
-    from pydoll.protocol.page.methods import AutoResponseMode
+    from pydoll.protocol.cdp.page.methods import AutoResponseMode
     result = PageCommands.set_spc_transaction_mode(mode=AutoResponseMode.AUTO_REJECT)
     assert result['method'] == PageMethod.SET_SPC_TRANSACTION_MODE
     assert result['params']['mode'] == AutoResponseMode.AUTO_REJECT

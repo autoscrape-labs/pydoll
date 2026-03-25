@@ -6,7 +6,7 @@ verifying that they generate the correct CDP commands with proper parameters.
 """
 
 from pydoll.commands.storage_commands import StorageCommands
-from pydoll.protocol.storage.methods import StorageMethod
+from pydoll.protocol.cdp.storage.methods import StorageMethod
 
 
 def test_clear_cookies_minimal():

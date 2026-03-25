@@ -15,7 +15,7 @@ from pydoll.exceptions import (
     CommandExecutionTimeout,
     WebSocketConnectionClosed,
 )
-from pydoll.protocol.base import CDPEvent, Response
+from pydoll.protocol.cdp.base import CDPEvent, Response
 from pydoll.utils import get_browser_ws_address
 
 if TYPE_CHECKING:
@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 
     from websockets.asyncio.client import connect as Connect
 
-    from pydoll.protocol.base import Command, T_CommandParams, T_CommandResponse
+    from pydoll.protocol.cdp.base import Command, T_CommandParams, T_CommandResponse
 
 logger = logging.getLogger(__name__)
 

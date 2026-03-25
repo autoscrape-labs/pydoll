@@ -13,8 +13,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from pydoll.browser.tab import Tab
 from pydoll.browser.requests.request import Request
 from pydoll.browser.requests.response import Response
-from pydoll.protocol.fetch.types import HeaderEntry
-from pydoll.protocol.network.types import CookieParam
+from pydoll.protocol.cdp.fetch.types import HeaderEntry
+from pydoll.protocol.cdp.network.types import CookieParam
 
 
 @pytest_asyncio.fixture

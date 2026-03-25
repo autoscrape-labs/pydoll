@@ -64,18 +64,18 @@ from pydoll.exceptions import (
 from pydoll.extractor.engine import ExtractionEngine
 from pydoll.interactions import KeyboardAPI, MouseAPI, ScrollAPI
 from pydoll.interactions.iframe import IFrameContext
-from pydoll.protocol.browser.types import DownloadBehavior, DownloadProgressState
-from pydoll.protocol.dom.types import Node, ShadowRootType
-from pydoll.protocol.network.types import ResourceType
-from pydoll.protocol.page.events import PageEvent
-from pydoll.protocol.page.types import FrameResourceTree, ScreenshotFormat
-from pydoll.protocol.runtime.methods import (
+from pydoll.protocol.cdp.browser.types import DownloadBehavior, DownloadProgressState
+from pydoll.protocol.cdp.dom.types import Node, ShadowRootType
+from pydoll.protocol.cdp.network.types import ResourceType
+from pydoll.protocol.cdp.page.events import PageEvent
+from pydoll.protocol.cdp.page.types import FrameResourceTree, ScreenshotFormat
+from pydoll.protocol.cdp.runtime.methods import (
     CallFunctionOnResponse,
     EvaluateResponse,
     SerializationOptions,
 )
-from pydoll.protocol.runtime.types import CallArgument
-from pydoll.protocol.target.types import TargetInfo
+from pydoll.protocol.cdp.runtime.types import CallArgument
+from pydoll.protocol.cdp.target.types import TargetInfo
 from pydoll.utils import (
     decode_base64_to_bytes,
     has_return_outside_function,
@@ -92,37 +92,37 @@ if TYPE_CHECKING:
     from pydoll.browser.chromium.base import Browser
     from pydoll.extractor.llm import ExtractionStrategy, LLMProvider
     from pydoll.extractor.model import ExtractionModel
-    from pydoll.protocol.base import EmptyResponse, Response
-    from pydoll.protocol.browser.events import (
+    from pydoll.protocol.cdp.base import EmptyResponse, Response
+    from pydoll.protocol.cdp.browser.events import (
         DownloadProgressEvent,
         DownloadWillBeginEvent,
     )
-    from pydoll.protocol.dom.methods import (
+    from pydoll.protocol.cdp.dom.methods import (
         DescribeNodeResponse,
         GetDocumentResponse,
         ResolveNodeResponse,
     )
-    from pydoll.protocol.fetch.types import AuthChallengeResponseType, HeaderEntry, RequestStage
-    from pydoll.protocol.network.events import RequestWillBeSentEvent
-    from pydoll.protocol.network.methods import GetCookiesResponse as NetworkGetCookiesResponse
-    from pydoll.protocol.network.methods import GetResponseBodyResponse
-    from pydoll.protocol.network.types import (
+    from pydoll.protocol.cdp.fetch.types import AuthChallengeResponseType, HeaderEntry, RequestStage
+    from pydoll.protocol.cdp.network.events import RequestWillBeSentEvent
+    from pydoll.protocol.cdp.network.methods import GetCookiesResponse as NetworkGetCookiesResponse
+    from pydoll.protocol.cdp.network.methods import GetResponseBodyResponse
+    from pydoll.protocol.cdp.network.types import (
         Cookie,
         CookieParam,
         ErrorReason,
         RequestMethod,
     )
-    from pydoll.protocol.page.events import FileChooserOpenedEvent
-    from pydoll.protocol.page.methods import (
+    from pydoll.protocol.cdp.page.events import FileChooserOpenedEvent
+    from pydoll.protocol.cdp.page.methods import (
         CaptureScreenshotResponse,
         GetResourceContentResponse,
         GetResourceTreeResponse,
         NavigateResponse,
         PrintToPDFResponse,
     )
-    from pydoll.protocol.runtime.methods import CallFunctionOnResponse, EvaluateResponse
-    from pydoll.protocol.storage.methods import GetCookiesResponse as StorageGetCookiesResponse
-    from pydoll.protocol.target.methods import AttachToTargetResponse, GetTargetsResponse
+    from pydoll.protocol.cdp.runtime.methods import CallFunctionOnResponse, EvaluateResponse
+    from pydoll.protocol.cdp.storage.methods import GetCookiesResponse as StorageGetCookiesResponse
+    from pydoll.protocol.cdp.target.methods import AttachToTargetResponse, GetTargetsResponse
 
 logger = logging.getLogger(__name__)
 

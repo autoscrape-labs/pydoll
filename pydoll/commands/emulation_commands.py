@@ -2,15 +2,15 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional
 
-from pydoll.protocol.base import Command
-from pydoll.protocol.emulation.methods import (
+from pydoll.protocol.cdp.base import Command
+from pydoll.protocol.cdp.emulation.methods import (
     EmulationMethod,
     SetUserAgentOverrideParams,
 )
 
 if TYPE_CHECKING:
-    from pydoll.protocol.emulation.methods import SetUserAgentOverrideCommand
-    from pydoll.protocol.emulation.types import UserAgentMetadata
+    from pydoll.protocol.cdp.emulation.methods import SetUserAgentOverrideCommand
+    from pydoll.protocol.cdp.emulation.types import UserAgentMetadata
 
 
 class EmulationCommands:

@@ -1,6 +1,6 @@
 from pydoll.commands.dom_commands import DomCommands
-from pydoll.protocol.dom.methods import DomMethod
-from pydoll.protocol.dom.types import IncludeWhitespace, LogicalAxes, PhysicalAxes, RelationType
+from pydoll.protocol.cdp.dom.methods import DomMethod
+from pydoll.protocol.cdp.dom.types import IncludeWhitespace, LogicalAxes, PhysicalAxes, RelationType
 
 class TestDomCommands:
     """Tests for the DomCommands class."""

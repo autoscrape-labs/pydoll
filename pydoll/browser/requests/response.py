@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING, Any, Optional, Union
 from pydoll.exceptions import HTTPError
 
 if TYPE_CHECKING:
-    from pydoll.protocol.fetch.types import HeaderEntry
-    from pydoll.protocol.network.types import CookieParam
+    from pydoll.protocol.cdp.fetch.types import HeaderEntry
+    from pydoll.protocol.cdp.network.types import CookieParam
 
 logger = logging.getLogger(__name__)
 

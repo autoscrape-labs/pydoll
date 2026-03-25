@@ -15,7 +15,7 @@ from pydoll.exceptions import (
     WebSocketConnectionClosed,
 )
 from pydoll.interactions.iframe import IFrameContext
-from pydoll.protocol.dom.types import ShadowRootType
+from pydoll.protocol.cdp.dom.types import ShadowRootType
 
 
 @pytest_asyncio.fixture

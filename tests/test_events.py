@@ -1,12 +1,12 @@
-from pydoll.protocol.browser.events import BrowserEvent
-from pydoll.protocol.dom.events import DomEvent
-from pydoll.protocol.fetch.events import FetchEvent
-from pydoll.protocol.input.events import InputEvent
-from pydoll.protocol.network.events import NetworkEvent
-from pydoll.protocol.page.events import PageEvent
-from pydoll.protocol.runtime.events import RuntimeEvent
-from pydoll.protocol.storage.events import StorageEvent
-from pydoll.protocol.target.events import TargetEvent
+from pydoll.protocol.cdp.browser.events import BrowserEvent
+from pydoll.protocol.cdp.dom.events import DomEvent
+from pydoll.protocol.cdp.fetch.events import FetchEvent
+from pydoll.protocol.cdp.input.events import InputEvent
+from pydoll.protocol.cdp.network.events import NetworkEvent
+from pydoll.protocol.cdp.page.events import PageEvent
+from pydoll.protocol.cdp.runtime.events import RuntimeEvent
+from pydoll.protocol.cdp.storage.events import StorageEvent
+from pydoll.protocol.cdp.target.events import TargetEvent
 
 
 def test_browser_events():

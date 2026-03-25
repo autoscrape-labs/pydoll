@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional
 
-from pydoll.protocol.base import Command
-from pydoll.protocol.runtime.methods import (
+from pydoll.protocol.cdp.base import Command
+from pydoll.protocol.cdp.runtime.methods import (
     AddBindingParams,
     AwaitPromiseParams,
     CallFunctionOnParams,
@@ -23,7 +23,7 @@ from pydoll.protocol.runtime.methods import (
 )
 
 if TYPE_CHECKING:
-    from pydoll.protocol.runtime.methods import (
+    from pydoll.protocol.cdp.runtime.methods import (
         AddBindingCommand,
         AwaitPromiseCommand,
         CallArgument,

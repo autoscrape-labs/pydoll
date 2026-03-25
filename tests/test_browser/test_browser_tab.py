@@ -7,11 +7,11 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch, ANY
 from pathlib import Path
 
 from pydoll.elements.web_element import WebElement
-from pydoll.protocol.runtime.types import CallArgument, SerializationOptions
+from pydoll.protocol.cdp.runtime.types import CallArgument, SerializationOptions
 from pydoll.browser.options import ChromiumOptions
 
-from pydoll.protocol.network.types import ResourceType, RequestMethod
-from pydoll.protocol.fetch.types import RequestStage
+from pydoll.protocol.cdp.network.types import ResourceType, RequestMethod
+from pydoll.protocol.cdp.fetch.types import RequestStage
 from pydoll.constants import By, PageLoadState
 from pydoll.browser.tab import Tab
 from pydoll.utils.bundle import (
@@ -19,8 +19,8 @@ from pydoll.utils.bundle import (
     collect_frame_resources,
     rewrite_css_urls,
 )
-from pydoll.protocol.page.events import PageEvent
-from pydoll.protocol.browser.types import DownloadBehavior
+from pydoll.protocol.cdp.page.events import PageEvent
+from pydoll.protocol.cdp.browser.types import DownloadBehavior
 from pydoll.exceptions import DownloadTimeout, InvalidTabInitialization
 from pydoll.exceptions import (
     NoDialogPresent,
@@ -1046,7 +1046,7 @@ class TestTabFileChooser:
     @pytest.mark.asyncio
     async def test_expect_file_chooser_event_handler_single_file(self, tab):
         """Test the real event_handler function with single file."""
-        from pydoll.protocol.page.events import FileChooserOpenedEvent, PageEvent
+        from pydoll.protocol.cdp.page.events import FileChooserOpenedEvent, PageEvent
         
         # Mock execute_command to capture the call
         tab._execute_command = AsyncMock()
@@ -1091,7 +1091,7 @@ class TestTabFileChooser:
     @pytest.mark.asyncio
     async def test_expect_file_chooser_event_handler_multiple_files(self, tab):
         """Test the real event_handler function with multiple files."""
-        from pydoll.protocol.page.events import FileChooserOpenedEvent, PageEvent
+        from pydoll.protocol.cdp.page.events import FileChooserOpenedEvent, PageEvent
         
         # Mock execute_command to capture the call
         tab._execute_command = AsyncMock()
@@ -1135,7 +1135,7 @@ class TestTabFileChooser:
 
     async def _test_event_handler_with_files(self, tab, files, expected_files, backend_node_id):
         """Helper method to test event handler with different file types."""
-        from pydoll.protocol.page.events import FileChooserOpenedEvent, PageEvent
+        from pydoll.protocol.cdp.page.events import FileChooserOpenedEvent, PageEvent
         
         # Mock execute_command to capture the call
         tab._execute_command = AsyncMock()
@@ -1880,7 +1880,7 @@ class TestTabRequestManagement:
     @pytest.mark.asyncio
     async def test_fail_request(self, tab):
         """Test fail_request method."""
-        from pydoll.protocol.network.types import ErrorReason
+        from pydoll.protocol.cdp.network.types import ErrorReason
         
         request_id = 'test_request_456'
         error_reason = ErrorReason.FAILED
@@ -1927,7 +1927,7 @@ class TestTabRequestManagement:
     @pytest.mark.asyncio
     async def test_continue_request_with_all_params(self, tab):
         """Test continue_request with all parameters."""
-        from pydoll.protocol.network.types import RequestMethod
+        from pydoll.protocol.cdp.network.types import RequestMethod
         
         request_id = 'test_request_456'
         url = 'https://modified-example.com'
@@ -1978,7 +1978,7 @@ class TestTabRequestManagement:
     @pytest.mark.asyncio
     async def test_fail_request_with_different_error(self, tab):
         """Test fail_request with different error reason."""
-        from pydoll.protocol.network.types import ErrorReason
+        from pydoll.protocol.cdp.network.types import ErrorReason
         
         request_id = 'test_request_error'
         error_reason = ErrorReason.ABORTED

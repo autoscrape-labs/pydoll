@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional
 
-from pydoll.protocol.base import Command
-from pydoll.protocol.fetch.methods import (
+from pydoll.protocol.cdp.base import Command
+from pydoll.protocol.cdp.fetch.methods import (
     AuthChallengeResponse,
     ContinueRequestParams,
     ContinueResponseParams,
@@ -15,10 +15,10 @@ from pydoll.protocol.fetch.methods import (
     GetResponseBodyParams,
     TakeResponseBodyAsStreamParams,
 )
-from pydoll.protocol.fetch.types import RequestPattern
+from pydoll.protocol.cdp.fetch.types import RequestPattern
 
 if TYPE_CHECKING:
-    from pydoll.protocol.fetch.methods import (
+    from pydoll.protocol.cdp.fetch.methods import (
         ContinueRequestCommand,
         ContinueResponseCommand,
         ContinueWithAuthCommand,
@@ -29,13 +29,13 @@ if TYPE_CHECKING:
         GetResponseBodyCommand,
         TakeResponseBodyAsStreamCommand,
     )
-    from pydoll.protocol.fetch.types import (
+    from pydoll.protocol.cdp.fetch.types import (
         AuthChallengeResponseType,
         HeaderEntry,
         RequestStage,
         ResourceType,
     )
-    from pydoll.protocol.network.types import ErrorReason, RequestMethod
+    from pydoll.protocol.cdp.network.types import ErrorReason, RequestMethod
 
 
 class FetchCommands:

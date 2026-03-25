@@ -15,7 +15,7 @@ from pydoll.constants import (
     Key,
     TypoType,
 )
-from pydoll.protocol.input.types import KeyEventType, KeyModifier
+from pydoll.protocol.cdp.input.types import KeyEventType, KeyModifier
 
 logger = logging.getLogger(__name__)
 

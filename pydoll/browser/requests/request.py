@@ -17,8 +17,8 @@ from pydoll.browser.requests.response import Response
 from pydoll.commands.runtime_commands import RuntimeCommands
 from pydoll.constants import Scripts
 from pydoll.exceptions import HTTPError
-from pydoll.protocol.fetch.types import HeaderEntry
-from pydoll.protocol.network.events import (
+from pydoll.protocol.cdp.fetch.types import HeaderEntry
+from pydoll.protocol.cdp.network.events import (
     NetworkEvent,
     RequestWillBeSentEvent,
     RequestWillBeSentExtraInfoEvent,
@@ -26,7 +26,7 @@ from pydoll.protocol.network.events import (
     ResponseReceivedExtraInfoEvent,
     ResponseReceivedExtraInfoEventParams,
 )
-from pydoll.protocol.network.types import CookieParam, ResourceType
+from pydoll.protocol.cdp.network.types import CookieParam, ResourceType
 
 logger = logging.getLogger(__name__)
 
@@ -41,12 +41,12 @@ RequestSentEvent = Union[
 
 if TYPE_CHECKING:
     from pydoll.browser.tab import Tab
-    from pydoll.protocol.network.events import (
+    from pydoll.protocol.cdp.network.events import (
         RequestWillBeSentEventParams,
         RequestWillBeSentExtraInfoEventParams,
         ResponseReceivedEventParams,
     )
-    from pydoll.protocol.runtime.methods import EvaluateResponse
+    from pydoll.protocol.cdp.runtime.methods import EvaluateResponse
 
     RequestReceivedEventParams = Union[
         ResponseReceivedEventParams,

@@ -23,15 +23,15 @@ from pydoll.commands import (
     StorageCommands,
     TargetCommands,
 )
-from pydoll.protocol.fetch.events import FetchEvent
+from pydoll.protocol.cdp.fetch.events import FetchEvent
 from pydoll.connection.connection_handler import ConnectionHandler
 from pydoll.exceptions import (
     MissingTargetOrWebSocket,
     InvalidWebSocketAddress,
 )
 
-from pydoll.protocol.network.types import RequestMethod, ErrorReason
-from pydoll.protocol.browser.types import DownloadBehavior, PermissionType
+from pydoll.protocol.cdp.network.types import RequestMethod, ErrorReason
+from pydoll.protocol.cdp.browser.types import DownloadBehavior, PermissionType
 
 class ConcreteBrowser(Browser):
     def _get_default_binary_location(self) -> str:
@@ -666,7 +666,7 @@ async def test_new_tab_sets_up_context_proxy_auth_handlers(MockTab, mock_browser
     assert enable_call.kwargs.get('handle_auth') is True
 
     # Assert: event handlers registered with temporary=True
-    from pydoll.protocol.fetch.events import FetchEvent as FE
+    from pydoll.protocol.cdp.fetch.events import FetchEvent as FE
     # First: request paused
     assert any(
         (c.args[0] == FE.REQUEST_PAUSED and c.kwargs.get('temporary') is True)

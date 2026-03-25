@@ -9,7 +9,7 @@ from pydoll.browser.chromium import Chrome
 from pydoll.elements.shadow_root import ShadowRoot
 from pydoll.elements.web_element import WebElement
 from pydoll.exceptions import ShadowRootNotFound
-from pydoll.protocol.dom.types import ShadowRootType
+from pydoll.protocol.cdp.dom.types import ShadowRootType
 
 TEST_PAGE = f'file://{(Path(__file__).parent / "pages" / "shadow_dom_test.html").absolute()}'
 

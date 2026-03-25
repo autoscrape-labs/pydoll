@@ -6,8 +6,8 @@ verifying that they generate the correct CDP commands with proper parameters.
 """
 
 from pydoll.commands.emulation_commands import EmulationCommands
-from pydoll.protocol.emulation.methods import EmulationMethod
-from pydoll.protocol.emulation.types import UserAgentBrandVersion, UserAgentMetadata
+from pydoll.protocol.cdp.emulation.methods import EmulationMethod
+from pydoll.protocol.cdp.emulation.types import UserAgentBrandVersion, UserAgentMetadata
 
 
 def test_set_user_agent_override_minimal():

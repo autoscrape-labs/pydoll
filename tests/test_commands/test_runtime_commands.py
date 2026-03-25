@@ -6,7 +6,7 @@ verifying that they generate the correct CDP commands with proper parameters.
 """
 
 from pydoll.commands.runtime_commands import RuntimeCommands
-from pydoll.protocol.runtime.methods import RuntimeMethod
+from pydoll.protocol.cdp.runtime.methods import RuntimeMethod
 
 
 def test_add_binding_minimal():

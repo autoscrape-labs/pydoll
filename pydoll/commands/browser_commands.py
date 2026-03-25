@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional
 
-from pydoll.protocol.base import Command
-from pydoll.protocol.browser.methods import (
+from pydoll.protocol.cdp.base import Command
+from pydoll.protocol.cdp.browser.methods import (
     AddPrivacySandboxCoordinatorKeyConfigParams,
     AddPrivacySandboxEnrollmentOverrideParams,
     BrowserMethod,
@@ -21,13 +21,13 @@ from pydoll.protocol.browser.methods import (
     SetPermissionParams,
     SetWindowBoundsParams,
 )
-from pydoll.protocol.browser.types import (
+from pydoll.protocol.cdp.browser.types import (
     Bounds,
     WindowState,
 )
 
 if TYPE_CHECKING:
-    from pydoll.protocol.browser.methods import (
+    from pydoll.protocol.cdp.browser.methods import (
         AddPrivacySandboxCoordinatorKeyConfigCommand,
         AddPrivacySandboxEnrollmentOverrideCommand,
         CancelDownloadCommand,
@@ -50,7 +50,7 @@ if TYPE_CHECKING:
         SetPermissionCommand,
         SetWindowBoundsCommand,
     )
-    from pydoll.protocol.browser.types import (
+    from pydoll.protocol.cdp.browser.types import (
         BrowserCommandId,
         BrowserContextID,
         PermissionDescriptor,

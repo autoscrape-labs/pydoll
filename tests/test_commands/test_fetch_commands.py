@@ -1,8 +1,8 @@
 import pytest
 from pydoll.commands.fetch_commands import FetchCommands
-from pydoll.protocol.fetch.types import AuthChallengeResponseType, RequestStage
-from pydoll.protocol.network.types import RequestMethod, ErrorReason, ResourceType
-from pydoll.protocol.fetch.methods import FetchMethod
+from pydoll.protocol.cdp.fetch.types import AuthChallengeResponseType, RequestStage
+from pydoll.protocol.cdp.network.types import RequestMethod, ErrorReason, ResourceType
+from pydoll.protocol.cdp.fetch.methods import FetchMethod
 
 
 class TestFetchCommands:

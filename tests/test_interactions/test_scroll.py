@@ -733,7 +733,7 @@ class TestScrollHumanizedMethods:
     async def test_dispatch_scroll_event(self, mock_tab):
         """Test _dispatch_scroll_event sends mouse wheel event."""
         from pydoll.interactions.scroll import Scroll
-        from pydoll.protocol.input.types import MouseEventType
+        from pydoll.protocol.cdp.input.types import MouseEventType
 
         mock_tab._execute_command.return_value = {
             'result': {'result': {'value': '[400, 300]'}}

@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 from pydoll.interactions.keyboard import Keyboard, KeyboardAPI
 from pydoll.constants import Key
-from pydoll.protocol.input.types import KeyEventType
+from pydoll.protocol.cdp.input.types import KeyEventType
 
 
 @pytest_asyncio.fixture

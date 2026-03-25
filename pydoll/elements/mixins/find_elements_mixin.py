@@ -18,10 +18,10 @@ if TYPE_CHECKING:
 
     from pydoll.elements.web_element import WebElement
     from pydoll.interactions.iframe import IFrameContext
-    from pydoll.protocol.base import Command, T_CommandParams, T_CommandResponse
-    from pydoll.protocol.dom.methods import DescribeNodeResponse
-    from pydoll.protocol.dom.types import Node
-    from pydoll.protocol.runtime.methods import (
+    from pydoll.protocol.cdp.base import Command, T_CommandParams, T_CommandResponse
+    from pydoll.protocol.cdp.dom.methods import DescribeNodeResponse
+    from pydoll.protocol.cdp.dom.types import Node
+    from pydoll.protocol.cdp.runtime.methods import (
         CallFunctionOnParams,
         CallFunctionOnResponse,
         EvaluateParams,

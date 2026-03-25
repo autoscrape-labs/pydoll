@@ -7,12 +7,12 @@ from typing import TYPE_CHECKING, Iterable, Optional
 from pydoll.commands import DomCommands, PageCommands, RuntimeCommands, TargetCommands
 from pydoll.connection import ConnectionHandler
 from pydoll.exceptions import InvalidIFrame
-from pydoll.protocol.dom.methods import DescribeNodeResponse, GetFrameOwnerResponse
-from pydoll.protocol.dom.types import Node
-from pydoll.protocol.page.methods import CreateIsolatedWorldResponse, GetFrameTreeResponse
-from pydoll.protocol.page.types import Frame, FrameTree
-from pydoll.protocol.runtime.methods import EvaluateResponse
-from pydoll.protocol.target.methods import AttachToTargetResponse, GetTargetsResponse
+from pydoll.protocol.cdp.dom.methods import DescribeNodeResponse, GetFrameOwnerResponse
+from pydoll.protocol.cdp.dom.types import Node
+from pydoll.protocol.cdp.page.methods import CreateIsolatedWorldResponse, GetFrameTreeResponse
+from pydoll.protocol.cdp.page.types import Frame, FrameTree
+from pydoll.protocol.cdp.runtime.methods import EvaluateResponse
+from pydoll.protocol.cdp.target.methods import AttachToTargetResponse, GetTargetsResponse
 
 if TYPE_CHECKING:
     from pydoll.elements.web_element import WebElement

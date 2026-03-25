@@ -4,7 +4,7 @@ import asyncio
 import logging
 from typing import TYPE_CHECKING, cast
 
-from pydoll.protocol.page.events import (
+from pydoll.protocol.cdp.page.events import (
     JavascriptDialogOpeningEvent,
     JavascriptDialogOpeningEventParams,
 )
@@ -12,8 +12,8 @@ from pydoll.protocol.page.events import (
 if TYPE_CHECKING:
     from typing import Any, Callable
 
-    from pydoll.protocol.base import CDPEvent
-    from pydoll.protocol.network.events import RequestWillBeSentEvent
+    from pydoll.protocol.cdp.base import CDPEvent
+    from pydoll.protocol.cdp.network.events import RequestWillBeSentEvent
 
 logger = logging.getLogger(__name__)
 

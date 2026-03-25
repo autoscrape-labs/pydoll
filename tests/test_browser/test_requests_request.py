@@ -11,9 +11,9 @@ from urllib.parse import urlencode
 from pydoll.browser.requests.request import Request
 from pydoll.browser.requests.response import Response
 from pydoll.exceptions import HTTPError
-from pydoll.protocol.fetch.types import HeaderEntry
-from pydoll.protocol.network.events import NetworkEvent
-from pydoll.protocol.network.types import CookieParam
+from pydoll.protocol.cdp.fetch.types import HeaderEntry
+from pydoll.protocol.cdp.network.events import NetworkEvent
+from pydoll.protocol.cdp.network.types import CookieParam
 
 
 @pytest_asyncio.fixture
@@ -543,7 +543,7 @@ class TestRequestHeaderExtraction:
 
     def test_extract_received_headers(self, request_instance):
         """Test _extract_received_headers method."""
-        from pydoll.protocol.network.events import NetworkEvent
+        from pydoll.protocol.cdp.network.events import NetworkEvent
         
         # Mock network events with response headers
         mock_response_event = {
@@ -589,7 +589,7 @@ class TestRequestHeaderExtraction:
 
     def test_extract_sent_headers(self, request_instance):
         """Test _extract_sent_headers method."""
-        from pydoll.protocol.network.events import NetworkEvent
+        from pydoll.protocol.cdp.network.events import NetworkEvent
         
         # Mock network events with request headers
         mock_request_event = {
@@ -635,7 +635,7 @@ class TestRequestHeaderExtraction:
 
     def test_extract_headers_from_events_with_response_events(self, request_instance):
         """Test _extract_headers_from_events with response events."""
-        from pydoll.protocol.network.events import NetworkEvent
+        from pydoll.protocol.cdp.network.events import NetworkEvent
         
         # Mock response events
         events = [
@@ -682,7 +682,7 @@ class TestRequestHeaderExtraction:
 
     def test_extract_headers_from_events_with_request_events(self, request_instance):
         """Test _extract_headers_from_events with request events."""
-        from pydoll.protocol.network.events import NetworkEvent
+        from pydoll.protocol.cdp.network.events import NetworkEvent
         
         # Mock request events
         events = [
@@ -729,7 +729,7 @@ class TestRequestHeaderExtraction:
 
     def test_extract_headers_from_events_deduplication(self, request_instance):
         """Test that _extract_headers_from_events deduplicates headers correctly."""
-        from pydoll.protocol.network.events import NetworkEvent
+        from pydoll.protocol.cdp.network.events import NetworkEvent
         
         # Mock events with duplicate headers
         events = [
@@ -783,7 +783,7 @@ class TestRequestHeaderExtraction:
 
     def test_extract_headers_from_events_no_matching_keys(self, request_instance):
         """Test _extract_headers_from_events when no event keys match extractors."""
-        from pydoll.protocol.network.events import NetworkEvent
+        from pydoll.protocol.cdp.network.events import NetworkEvent
         
         # Mock event with keys that don't match extractors
         events = [
@@ -958,7 +958,7 @@ class TestRequestHeaderExtraction:
 
     def test_header_extraction_with_complex_values(self, request_instance):
         """Test header extraction with complex header values."""
-        from pydoll.protocol.network.events import NetworkEvent
+        from pydoll.protocol.cdp.network.events import NetworkEvent
         
         # Mock event with complex header values
         events = [
@@ -995,7 +995,7 @@ class TestRequestHeaderExtraction:
 
     def test_header_extraction_integration_flow(self, request_instance):
         """Test complete header extraction flow for both sent and received headers."""
-        from pydoll.protocol.network.events import NetworkEvent
+        from pydoll.protocol.cdp.network.events import NetworkEvent
         
         # Set up complete request/response flow
         request_instance._requests_sent = [
@@ -1051,7 +1051,7 @@ class TestRequestHeaderExtraction:
 
     def test_filter_response_extra_info_events(self, request_instance):
         """Test _filter_response_extra_info_events method."""
-        from pydoll.protocol.network.events import NetworkEvent
+        from pydoll.protocol.cdp.network.events import NetworkEvent
         
         # Mock events with different types
         events = [
@@ -1095,7 +1095,7 @@ class TestRequestHeaderExtraction:
 
     def test_filter_response_extra_info_events_empty(self, request_instance):
         """Test _filter_response_extra_info_events with no matching events."""
-        from pydoll.protocol.network.events import NetworkEvent
+        from pydoll.protocol.cdp.network.events import NetworkEvent
         
         # Mock events without RESPONSE_RECEIVED_EXTRA_INFO
         events = [
@@ -1129,7 +1129,7 @@ class TestRequestHeaderExtraction:
 
     def test_extract_set_cookies_basic(self, request_instance):
         """Test _extract_set_cookies method with basic cookies."""
-        from pydoll.protocol.network.events import NetworkEvent
+        from pydoll.protocol.cdp.network.events import NetworkEvent
         
         # Mock events with Set-Cookie headers
         events = [
@@ -1173,7 +1173,7 @@ class TestRequestHeaderExtraction:
 
     def test_extract_set_cookies_multiple_cookies_same_header(self, request_instance):
         """Test _extract_set_cookies with multiple cookies in same Set-Cookie header."""
-        from pydoll.protocol.network.events import NetworkEvent
+        from pydoll.protocol.cdp.network.events import NetworkEvent
         
         # Mock event with multiple cookies in one header (newline-separated, not comma)
         events = [
@@ -1213,7 +1213,7 @@ class TestRequestHeaderExtraction:
 
     def test_extract_set_cookies_duplicate_names(self, request_instance):
         """Test _extract_set_cookies with duplicate cookie names (should be deduplicated)."""
-        from pydoll.protocol.network.events import NetworkEvent
+        from pydoll.protocol.cdp.network.events import NetworkEvent
         
         # Mock events with duplicate cookie names
         events = [
@@ -1254,7 +1254,7 @@ class TestRequestHeaderExtraction:
 
     def test_extract_set_cookies_complex_values(self, request_instance):
         """Test _extract_set_cookies with complex cookie values and attributes."""
-        from pydoll.protocol.network.events import NetworkEvent
+        from pydoll.protocol.cdp.network.events import NetworkEvent
         
         # Mock event with complex cookie attributes
         events = [
@@ -1284,7 +1284,7 @@ class TestRequestHeaderExtraction:
 
     def test_extract_set_cookies_no_set_cookie_headers(self, request_instance):
         """Test _extract_set_cookies when no Set-Cookie headers are present."""
-        from pydoll.protocol.network.events import NetworkEvent
+        from pydoll.protocol.cdp.network.events import NetworkEvent
         
         # Mock events without Set-Cookie headers
         events = [
@@ -1320,7 +1320,7 @@ class TestRequestHeaderExtraction:
 
     def test_extract_set_cookies_malformed_cookies(self, request_instance):
         """Test _extract_set_cookies with malformed cookie strings."""
-        from pydoll.protocol.network.events import NetworkEvent
+        from pydoll.protocol.cdp.network.events import NetworkEvent
         
         # Mock event with malformed cookies (newline-separated to match implementation)
         events = [
@@ -1357,7 +1357,7 @@ class TestRequestHeaderExtraction:
 
     def test_extract_set_cookies_edge_case_attributes(self, request_instance):
         """Test _extract_set_cookies with edge case cookie attributes."""
-        from pydoll.protocol.network.events import NetworkEvent
+        from pydoll.protocol.cdp.network.events import NetworkEvent
         
         # Mock event with edge case attributes
         events = [
@@ -1387,7 +1387,7 @@ class TestRequestHeaderExtraction:
 
     def test_extract_set_cookies_integration_with_filter(self, request_instance):
         """Test integration between _extract_set_cookies and _filter_response_extra_info_events."""
-        from pydoll.protocol.network.events import NetworkEvent
+        from pydoll.protocol.cdp.network.events import NetworkEvent
         
         # Mock mixed events (some relevant, some not)
         events = [
@@ -1429,7 +1429,7 @@ class TestRequestHeaderExtraction:
 
     def test_extract_set_cookies_empty_name_rejection(self, request_instance):
         """Test that _extract_set_cookies rejects cookies with empty names."""
-        from pydoll.protocol.network.events import NetworkEvent
+        from pydoll.protocol.cdp.network.events import NetworkEvent
         
         # Mock event with various invalid cookie formats
         events = [
