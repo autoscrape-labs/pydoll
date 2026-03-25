@@ -1,4 +1,4 @@
-from pydoll.commands.browser_commands import BrowserCommands
+from pydoll.commands.cdp.browser_commands import BrowserCommands
 from pydoll.protocol.cdp.browser.methods import BrowserMethod
 from pydoll.protocol.cdp.browser.types import (
     WindowState, 

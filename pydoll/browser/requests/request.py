@@ -14,7 +14,7 @@ from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 from pydoll.browser.requests.har_recorder import HarCapture, HarRecorder
 from pydoll.browser.requests.response import Response
-from pydoll.commands.runtime_commands import RuntimeCommands
+from pydoll.commands.cdp.runtime_commands import RuntimeCommands
 from pydoll.constants import Scripts
 from pydoll.exceptions import HTTPError
 from pydoll.protocol.cdp.fetch.types import HeaderEntry

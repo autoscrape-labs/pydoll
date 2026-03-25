@@ -7,7 +7,7 @@ verifying that they generate the correct CDP commands with proper parameters.
 
 import pytest
 
-from pydoll.commands.accessibility_commands import AccessibilityCommands
+from pydoll.commands.cdp.accessibility_commands import AccessibilityCommands
 from pydoll.protocol.cdp.accessibility.methods import AccessibilityMethod
 
 

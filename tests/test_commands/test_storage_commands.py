@@ -5,7 +5,7 @@ This module contains comprehensive tests for all StorageCommands methods,
 verifying that they generate the correct CDP commands with proper parameters.
 """
 
-from pydoll.commands.storage_commands import StorageCommands
+from pydoll.commands.cdp.storage_commands import StorageCommands
 from pydoll.protocol.cdp.storage.methods import StorageMethod
 
 

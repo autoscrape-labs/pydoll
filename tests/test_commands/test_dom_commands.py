@@ -1,4 +1,4 @@
-from pydoll.commands.dom_commands import DomCommands
+from pydoll.commands.cdp.dom_commands import DomCommands
 from pydoll.protocol.cdp.dom.methods import DomMethod
 from pydoll.protocol.cdp.dom.types import IncludeWhitespace, LogicalAxes, PhysicalAxes, RelationType
 

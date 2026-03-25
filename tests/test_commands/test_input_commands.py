@@ -5,7 +5,7 @@ This module contains comprehensive tests for all InputCommands methods,
 verifying that they generate the correct CDP commands with proper parameters.
 """
 
-from pydoll.commands.input_commands import InputCommands
+from pydoll.commands.cdp.input_commands import InputCommands
 from pydoll.protocol.cdp.input.types import (
     DragEventType,
     GestureSourceType,

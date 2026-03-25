@@ -5,7 +5,7 @@ This module contains tests for all EmulationCommands methods,
 verifying that they generate the correct CDP commands with proper parameters.
 """
 
-from pydoll.commands.emulation_commands import EmulationCommands
+from pydoll.commands.cdp.emulation_commands import EmulationCommands
 from pydoll.protocol.cdp.emulation.methods import EmulationMethod
 from pydoll.protocol.cdp.emulation.types import UserAgentBrandVersion, UserAgentMetadata
 

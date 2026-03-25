@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, cast
 from urllib.parse import parse_qs, urlparse
 
-from pydoll.commands.network_commands import NetworkCommands
+from pydoll.commands.cdp.network_commands import NetworkCommands
 from pydoll.protocol.cdp.network.events import (
     DataReceivedEvent,
     LoadingFailedEvent,

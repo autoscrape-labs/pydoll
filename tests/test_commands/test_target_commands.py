@@ -5,7 +5,7 @@ This module contains comprehensive tests for all TargetCommands methods,
 verifying that they generate the correct CDP commands with proper parameters.
 """
 
-from pydoll.commands.target_commands import TargetCommands
+from pydoll.commands.cdp.target_commands import TargetCommands
 from pydoll.protocol.cdp.browser.types import WindowState
 from pydoll.protocol.cdp.target.methods import TargetMethod
 

@@ -5,7 +5,7 @@ This module contains comprehensive tests for all RuntimeCommands methods,
 verifying that they generate the correct CDP commands with proper parameters.
 """
 
-from pydoll.commands.runtime_commands import RuntimeCommands
+from pydoll.commands.cdp.runtime_commands import RuntimeCommands
 from pydoll.protocol.cdp.runtime.methods import RuntimeMethod
 
 

@@ -5,7 +5,7 @@ This module contains comprehensive tests for all NetworkCommands methods,
 verifying that they generate the correct CDP commands with proper parameters.
 """
 
-from pydoll.commands.network_commands import NetworkCommands
+from pydoll.commands.cdp.network_commands import NetworkCommands
 from pydoll.protocol.cdp.network.types import ConnectionType, ContentEncoding, CookiePriority, CookieSameSite, CookieSourceScheme
 from pydoll.protocol.cdp.network.methods import NetworkMethod
 

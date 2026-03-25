@@ -5,7 +5,7 @@ This module contains comprehensive tests for all PageCommands methods,
 verifying that they generate the correct CDP commands with proper parameters.
 """
 
-from pydoll.commands.page_commands import PageCommands
+from pydoll.commands.cdp.page_commands import PageCommands
 from pydoll.protocol.cdp.page.types import (
     ReferrerPolicy,
     ScreencastFormat,
