@@ -27,7 +27,7 @@ from pydoll.extractor.model import ExtractionModel
 from pydoll.utils.html_to_markdown import clean_html
 
 if TYPE_CHECKING:
-    from pydoll.browser.tab import Tab
+    from pydoll.browser.chromium.tab import Tab
 
 logger = logging.getLogger(__name__)
 

@@ -17,7 +17,7 @@ from pydoll.interactions.utils import (
 from pydoll.protocol.cdp.input.types import MouseButton, MouseEventType
 
 if TYPE_CHECKING:
-    from pydoll.browser.tab import Tab
+    from pydoll.browser.chromium.tab import Tab
 
 logger = logging.getLogger(__name__)
 

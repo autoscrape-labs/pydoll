@@ -1,15 +1,24 @@
-from contextlib import suppress
+from __future__ import annotations
 
-from pydoll.browser.interfaces import Options
+import logging
+from contextlib import suppress
+from typing import TYPE_CHECKING, Optional
+
 from pydoll.constants import PageLoadState
 from pydoll.exceptions import (
     ArgumentAlreadyExistsInOptions,
     ArgumentNotFoundInOptions,
+    InvalidOptionsObject,
     WrongPrefsDict,
 )
 
+if TYPE_CHECKING:
+    from pydoll.browser.protocols import OptionsProtocol
 
-class ChromiumOptions(Options):
+logger = logging.getLogger(__name__)
+
+
+class ChromiumOptions:
     """
     A class to manage command-line options for a browser instance.
 
@@ -341,3 +350,35 @@ class ChromiumOptions(Options):
     @page_load_state.setter
     def page_load_state(self, state: PageLoadState):
         self._page_load_state = state
+
+
+class ChromiumOptionsManager:
+    """Manages browser options configuration for Chromium-based browsers."""
+
+    def __init__(self, options: Optional[OptionsProtocol] = None):
+        self.options = options
+
+    def initialize_options(self) -> ChromiumOptions:
+        """Initialize and validate browser options.
+
+        Returns:
+            Properly configured ChromiumOptions instance.
+
+        Raises:
+            InvalidOptionsObject: If provided options is not ChromiumOptions.
+        """
+        if self.options is None:
+            self.options = ChromiumOptions()
+
+        if not isinstance(self.options, ChromiumOptions):
+            raise InvalidOptionsObject(
+                f'Expected ChromiumOptions, got {type(self.options)}'
+            )
+
+        self.add_default_arguments()
+        return self.options
+
+    def add_default_arguments(self):
+        """Add default arguments required for CDP integration."""
+        self.options.add_argument('--no-first-run')
+        self.options.add_argument('--no-default-browser-check')

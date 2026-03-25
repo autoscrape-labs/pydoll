@@ -1,7 +1,7 @@
 import pytest
 
-from pydoll.browser.interfaces import Options as OptionsInterface
-from pydoll.browser.options import ChromiumOptions as Options
+from pydoll.browser.protocols import OptionsProtocol
+from pydoll.browser.chromium.options import ChromiumOptions as Options
 from pydoll.constants import PageLoadState
 from pydoll.exceptions import (
     ArgumentAlreadyExistsInOptions,
@@ -203,49 +203,9 @@ def test_get_pref_path_none():
     assert options._get_pref_path(['download', 'default_directory']) is None
 
 
-def test_options_interface_enforcement():
-    with pytest.raises(TypeError):
-        OptionsInterface()
-
-    class IncompleteOptions(OptionsInterface):
-        pass
-
-    with pytest.raises(TypeError):
-        IncompleteOptions()
-
-    class CompleteOptions(OptionsInterface):
-        @property
-        def arguments(self):
-            return []
-
-        @property
-        def binary_location(self):
-            return ''
-
-        @property
-        def start_timeout(self):
-            return 0
-
-        def add_argument(self, argument):
-            pass
-
-        @property
-        def browser_preferences(self):
-            return {}
-
-        @property
-        def headless(self):
-            return False
-
-        @property
-        def page_load_state(self):
-            return PageLoadState.COMPLETE
-
-        @page_load_state.setter
-        def page_load_state(self, state):
-            pass
-
-    CompleteOptions()
+def test_options_protocol_compliance():
+    options = Options()
+    assert isinstance(options, OptionsProtocol)
 
 def test_set_headless():
     options = Options()

@@ -6,7 +6,6 @@ import logging
 import os
 import shutil
 import warnings
-from abc import ABC, abstractmethod
 from contextlib import suppress
 from functools import partial
 from random import randint
@@ -18,7 +17,7 @@ from pydoll.browser.managers import (
     ProxyManager,
     TempDirectoryManager,
 )
-from pydoll.browser.tab import Tab
+from pydoll.browser.chromium.tab import Tab
 from pydoll.commands import (
     BrowserCommands,
     EmulationCommands,
@@ -45,7 +44,7 @@ from pydoll.utils.user_agent_parser import UserAgentParser
 if TYPE_CHECKING:
     from tempfile import TemporaryDirectory
 
-    from pydoll.browser.interfaces import BrowserOptionsManager
+    from pydoll.browser.protocols import BrowserOptionsManagerProtocol
     from pydoll.protocol.cdp.base import Command, Response, T_CommandParams, T_CommandResponse
     from pydoll.protocol.cdp.browser.methods import (
         GetVersionResponse,
@@ -74,7 +73,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class Browser(ABC):  # noqa: PLR0904
+class Browser:  # noqa: PLR0904
     """
     Abstract base class for browser automation using Chrome DevTools Protocol.
 
@@ -84,7 +83,7 @@ class Browser(ABC):  # noqa: PLR0904
 
     def __init__(
         self,
-        options_manager: BrowserOptionsManager,
+        options_manager: BrowserOptionsManagerProtocol,
         connection_port: Optional[int] = None,
     ):
         """
@@ -1055,7 +1054,6 @@ class Browser(ABC):  # noqa: PLR0904
             ))
         return sanitized, creds
 
-    @abstractmethod
     def _get_default_binary_location(self) -> str:
         """Get default browser executable path (implemented by subclasses)."""
-        pass
+        raise NotImplementedError

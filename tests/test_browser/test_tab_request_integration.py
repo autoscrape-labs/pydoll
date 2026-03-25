@@ -10,7 +10,7 @@ import pytest_asyncio
 import uuid
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from pydoll.browser.tab import Tab
+from pydoll.browser.chromium.tab import Tab
 from pydoll.browser.requests.request import Request
 from pydoll.browser.requests.response import Response
 from pydoll.protocol.cdp.fetch.types import HeaderEntry
@@ -45,7 +45,7 @@ async def tab(mock_browser, mock_connection_handler):
     # Generate unique target_id for each test to avoid singleton conflicts
     unique_target_id = f'test-target-{uuid.uuid4().hex[:8]}'
     
-    with patch('pydoll.browser.tab.ConnectionHandler', return_value=mock_connection_handler):
+    with patch('pydoll.browser.chromium.tab.ConnectionHandler', return_value=mock_connection_handler):
         tab_instance = Tab(
             browser=mock_browser,
             connection_port=9222,
@@ -103,7 +103,7 @@ class TestTabRequestProperty:
     def test_multiple_tabs_have_separate_requests(self, mock_browser, mock_connection_handler):
         """Test that different Tab instances have separate Request instances."""
         # Create two different tabs
-        with patch('pydoll.browser.tab.ConnectionHandler', return_value=mock_connection_handler):
+        with patch('pydoll.browser.chromium.tab.ConnectionHandler', return_value=mock_connection_handler):
             tab1 = Tab(
                 browser=mock_browser,
                 connection_port=9222,
@@ -392,7 +392,7 @@ class TestTabRequestEdgeCases:
         # Create tab with specific target_id
         target_id = "reusable-target-123"
         
-        with patch('pydoll.browser.tab.ConnectionHandler', return_value=mock_connection_handler):
+        with patch('pydoll.browser.chromium.tab.ConnectionHandler', return_value=mock_connection_handler):
             # First tab instance
             tab1 = Tab(
                 browser=mock_browser,
@@ -445,7 +445,7 @@ class TestTabRequestEdgeCases:
         
         tabs_and_requests = []
         
-        with patch('pydoll.browser.tab.ConnectionHandler', return_value=mock_connection_handler):
+        with patch('pydoll.browser.chromium.tab.ConnectionHandler', return_value=mock_connection_handler):
             for config in tab_configurations:
                 tab = Tab(
                     browser=mock_browser,

@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from pydoll.browser.chromium.chrome import Chrome
-from pydoll.browser.options import ChromiumOptions
+from pydoll.browser.chromium.options import ChromiumOptions
 from pydoll.exceptions import InvalidBrowserPath, UnsupportedOS, InvalidConnectionPort
 
 

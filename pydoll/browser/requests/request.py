@@ -40,7 +40,7 @@ RequestSentEvent = Union[
 ]
 
 if TYPE_CHECKING:
-    from pydoll.browser.tab import Tab
+    from pydoll.browser.chromium.tab import Tab
     from pydoll.protocol.cdp.network.events import (
         RequestWillBeSentEventParams,
         RequestWillBeSentExtraInfoEventParams,

@@ -45,7 +45,7 @@ from pydoll.protocol.cdp.network.har_types import (
 from pydoll.protocol.cdp.network.types import ResourceType
 
 if TYPE_CHECKING:
-    from pydoll.browser.tab import Tab
+    from pydoll.browser.chromium.tab import Tab
     from pydoll.protocol.cdp.network.methods import GetResponseBodyResponse
     from pydoll.protocol.cdp.network.types import ResourceTiming
     from pydoll.protocol.cdp.network.types import Response as CDPResponse

@@ -8,14 +8,14 @@ import pytest_asyncio
 from pydoll import exceptions
 from pydoll.browser.chromium.chrome import Chrome
 from pydoll.browser.chromium.base import Browser
+from pydoll.browser.chromium.options import ChromiumOptionsManager
 from pydoll.browser.managers import (
     ProxyManager,
-    ChromiumOptionsManager,
     BrowserProcessManager,
     TempDirectoryManager,
 )
-from pydoll.browser.options import ChromiumOptions as Options
-from pydoll.browser.tab import Tab
+from pydoll.browser.chromium.options import ChromiumOptions as Options
+from pydoll.browser.chromium.tab import Tab
 from pydoll.commands import (
     BrowserCommands,
     FetchCommands,

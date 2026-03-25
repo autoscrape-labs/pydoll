@@ -4,8 +4,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from pydoll.browser.chromium.edge import Edge
-from pydoll.browser.managers import ChromiumOptionsManager
-from pydoll.browser.options import ChromiumOptions
+from pydoll.browser.chromium.options import ChromiumOptionsManager
+from pydoll.browser.chromium.options import ChromiumOptions
 from pydoll.exceptions import UnsupportedOS, InvalidBrowserPath, InvalidConnectionPort
 
 

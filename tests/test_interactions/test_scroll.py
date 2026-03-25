@@ -221,7 +221,7 @@ class TestScrollAPIIntegrationWithTab:
     async def test_tab_has_scroll_property(self):
         """Test that Tab has scroll property."""
         with patch('pydoll.connection.ConnectionHandler', autospec=True):
-            from pydoll.browser.tab import Tab
+            from pydoll.browser.chromium.tab import Tab
 
             mock_browser = MagicMock()
             tab = Tab(mock_browser, target_id='test-id')
@@ -237,7 +237,7 @@ class TestScrollAPIIntegrationWithTab:
     async def test_tab_scroll_property_is_lazy(self):
         """Test that scroll property is created lazily."""
         with patch('pydoll.connection.ConnectionHandler', autospec=True):
-            from pydoll.browser.tab import Tab
+            from pydoll.browser.chromium.tab import Tab
 
             mock_browser = MagicMock()
             tab = Tab(mock_browser, target_id='test-id')
@@ -257,7 +257,7 @@ class TestScrollAPIIntegrationWithTab:
     async def test_scroll_execute_command_integration(self):
         """Test that scroll methods properly call tab._execute_command."""
         with patch('pydoll.connection.ConnectionHandler', autospec=True):
-            from pydoll.browser.tab import Tab
+            from pydoll.browser.chromium.tab import Tab
 
             mock_browser = MagicMock()
             tab = Tab(mock_browser, target_id='test-id')

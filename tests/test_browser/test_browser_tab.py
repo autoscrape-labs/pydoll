@@ -8,12 +8,12 @@ from pathlib import Path
 
 from pydoll.elements.web_element import WebElement
 from pydoll.protocol.cdp.runtime.types import CallArgument, SerializationOptions
-from pydoll.browser.options import ChromiumOptions
+from pydoll.browser.chromium.options import ChromiumOptions
 
 from pydoll.protocol.cdp.network.types import ResourceType, RequestMethod
 from pydoll.protocol.cdp.fetch.types import RequestStage
 from pydoll.constants import By, PageLoadState
-from pydoll.browser.tab import Tab
+from pydoll.browser.chromium.tab import Tab
 from pydoll.utils.bundle import (
     build_asset_filename,
     collect_frame_resources,
@@ -62,7 +62,7 @@ async def mock_browser():
 async def tab(mock_browser, mock_connection_handler):
     """Tab fixture with mocked dependencies."""
     unique_target_id = f'test-target-{uuid.uuid4().hex[:8]}'
-    with patch('pydoll.browser.tab.ConnectionHandler', return_value=mock_connection_handler):
+    with patch('pydoll.browser.chromium.tab.ConnectionHandler', return_value=mock_connection_handler):
         created = Tab(
             browser=mock_browser,
             connection_port=9222,
@@ -319,7 +319,7 @@ class TestTabCookieManagement:
             'result': {'cookies': test_cookies}
         }
         
-        with patch('pydoll.browser.tab.ConnectionHandler', return_value=mock_connection_handler):
+        with patch('pydoll.browser.chromium.tab.ConnectionHandler', return_value=mock_connection_handler):
             tab_with_context = Tab(
                 browser=mock_browser,
                 connection_port=9222,
@@ -349,7 +349,7 @@ class TestTabCookieManagement:
             'result': {'cookies': test_cookies}
         }
         
-        with patch('pydoll.browser.tab.ConnectionHandler', return_value=mock_connection_handler):
+        with patch('pydoll.browser.chromium.tab.ConnectionHandler', return_value=mock_connection_handler):
             tab_without_context = Tab(
                 browser=mock_browser,
                 connection_port=9222,
@@ -1724,7 +1724,7 @@ class TestTabFrameHandling:
         ])
         tab._browser._tabs_opened = {}
 
-        with patch('pydoll.browser.tab.ConnectionHandler', autospec=True):
+        with patch('pydoll.browser.chromium.tab.ConnectionHandler', autospec=True):
             with pytest.warns(DeprecationWarning):
                 frame1 = await tab.get_frame(mock_iframe_element)
             # Second call should reuse from cache and not create a new Tab

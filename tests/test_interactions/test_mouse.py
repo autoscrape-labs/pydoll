@@ -825,7 +825,7 @@ class TestTabMouseProperty:
     """Test tab.mouse lazy property."""
 
     def test_tab_mouse_property_exists(self):
-        from pydoll.browser.tab import Tab
+        from pydoll.browser.chromium.tab import Tab
         assert hasattr(Tab, 'mouse')
 
     def test_tab_mouse_returns_mouse_api(self):

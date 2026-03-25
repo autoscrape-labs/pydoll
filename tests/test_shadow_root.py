@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 import pytest_asyncio
 
-from pydoll.browser.tab import Tab
+from pydoll.browser.chromium.tab import Tab
 from pydoll.elements.shadow_root import ShadowRoot
 from pydoll.elements.web_element import WebElement
 from pydoll.exceptions import (
@@ -329,7 +329,7 @@ async def tab(tab_connection_handler):
     """Tab fixture with mocked dependencies."""
     browser = MagicMock()
     browser.options = MagicMock()
-    with patch('pydoll.browser.tab.ConnectionHandler', return_value=tab_connection_handler):
+    with patch('pydoll.browser.chromium.tab.ConnectionHandler', return_value=tab_connection_handler):
         return Tab(
             browser=browser,
             connection_port=9222,
@@ -911,7 +911,7 @@ class TestTabFindShadowRootsDeep:
             {'result': {'node': {'nodeName': 'BODY', 'attributes': []}}},
         ]
 
-        with patch('pydoll.browser.tab.ConnectionHandler', return_value=mock_browser_handler):
+        with patch('pydoll.browser.chromium.tab.ConnectionHandler', return_value=mock_browser_handler):
             result = await tab.find_shadow_roots(deep=True)
 
         assert len(result) == 1
@@ -942,7 +942,7 @@ class TestTabFindShadowRootsDeep:
             'result': {'targetInfos': []}
         }
 
-        with patch('pydoll.browser.tab.ConnectionHandler', return_value=mock_browser_handler):
+        with patch('pydoll.browser.chromium.tab.ConnectionHandler', return_value=mock_browser_handler):
             result = await tab.find_shadow_roots(deep=True)
 
         assert result == []
@@ -1011,7 +1011,7 @@ class TestTabFindShadowRootsDeep:
             {'result': {'node': {'nodeName': 'DIV', 'attributes': ['id', 'widget']}}},
         ]
 
-        with patch('pydoll.browser.tab.ConnectionHandler', return_value=mock_browser_handler):
+        with patch('pydoll.browser.chromium.tab.ConnectionHandler', return_value=mock_browser_handler):
             result = await tab.find_shadow_roots(deep=True)
 
         assert len(result) == 1
@@ -1078,7 +1078,7 @@ class TestTabFindShadowRootsDeep:
             {'result': {'node': {'nodeName': 'DIV', 'attributes': ['class', 'turnstile']}}},
         ]
 
-        with patch('pydoll.browser.tab.ConnectionHandler', return_value=mock_browser_handler):
+        with patch('pydoll.browser.chromium.tab.ConnectionHandler', return_value=mock_browser_handler):
             result = await tab.find_shadow_roots(deep=True)
 
         assert len(result) == 1
@@ -1176,7 +1176,7 @@ class TestTabFindShadowRootsDeep:
             {'result': {'node': {'nodeName': 'BODY', 'attributes': []}}},
         ]
 
-        with patch('pydoll.browser.tab.ConnectionHandler', return_value=mock_browser_handler):
+        with patch('pydoll.browser.chromium.tab.ConnectionHandler', return_value=mock_browser_handler):
             result = await tab.find_shadow_roots(deep=True)
 
         assert len(result) == 2
@@ -1244,7 +1244,7 @@ class TestTabFindShadowRootsDeep:
             CommandExecutionTimeout(),
         ]
 
-        with patch('pydoll.browser.tab.ConnectionHandler', return_value=mock_browser_handler):
+        with patch('pydoll.browser.chromium.tab.ConnectionHandler', return_value=mock_browser_handler):
             result = await tab.find_shadow_roots(deep=True)
 
         assert len(result) == 1
@@ -1422,7 +1422,7 @@ class TestTabFindShadowRootsTimeout:
         mock_browser_handler = AsyncMock()
         mock_browser_handler.execute_command = AsyncMock(side_effect=browser_side_effect)
 
-        with patch('pydoll.browser.tab.ConnectionHandler', return_value=mock_browser_handler):
+        with patch('pydoll.browser.chromium.tab.ConnectionHandler', return_value=mock_browser_handler):
             result = await tab.find_shadow_roots(deep=True, timeout=5)
 
         assert len(result) == 1

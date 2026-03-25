@@ -2,7 +2,7 @@
 
 import pytest
 
-from pydoll.browser.options import ChromiumOptions as Options
+from pydoll.browser.chromium.options import ChromiumOptions as Options
 
 
 @pytest.fixture

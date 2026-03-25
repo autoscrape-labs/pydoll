@@ -13,7 +13,7 @@ from pydoll.protocol.cdp.input.types import MouseEventType
 from pydoll.protocol.cdp.runtime.methods import EvaluateResponse
 
 if TYPE_CHECKING:
-    from pydoll.browser.tab import Tab
+    from pydoll.browser.chromium.tab import Tab
 
 
 @dataclass(frozen=True)

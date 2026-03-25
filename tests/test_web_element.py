@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 import pytest_asyncio
 
-from pydoll.browser.options import ChromiumOptions as Options
+from pydoll.browser.chromium.options import ChromiumOptions as Options
 from pydoll.browser.chromium.chrome import Chrome
 from pydoll.commands import DomCommands, RuntimeCommands
 from pydoll.constants import Key

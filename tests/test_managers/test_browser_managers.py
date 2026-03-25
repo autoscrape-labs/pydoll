@@ -2,13 +2,13 @@ from unittest.mock import MagicMock, Mock, patch, ANY
 
 import pytest
 
+from pydoll.browser.chromium.options import ChromiumOptionsManager
 from pydoll.browser.managers import (
-    ChromiumOptionsManager,
     BrowserProcessManager,
     ProxyManager,
     TempDirectoryManager,
 )
-from pydoll.browser.options import ChromiumOptions as Options
+from pydoll.browser.chromium.options import ChromiumOptions as Options
 from pydoll.exceptions import InvalidOptionsObject
 
 
