@@ -326,9 +326,9 @@ async def test__aexit__(connection_handler):
 
 def test__repr__(connection_handler):
     result = connection_handler.__repr__()
-    assert result == 'ConnectionHandler(port=9222)'
+    assert result == 'CDPConnectionHandler(port=9222)'
 
 
 def test__str__(connection_handler):
     result = connection_handler.__str__()
-    assert result == 'ConnectionHandler(port=9222)'
+    assert result == 'CDPConnectionHandler(port=9222)'

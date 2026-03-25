@@ -125,16 +125,18 @@ def test_clear_callbacks(events_manager):
 
 
 @pytest.mark.asyncio
-async def test_process_event_updates_network_logs(events_manager):
-    assert events_manager.network_logs == []
+async def test_cdp_event_tracker_updates_network_logs():
+    from pydoll.connection.managers.event_trackers import CDPEventTracker
+    tracker = CDPEventTracker()
+    assert tracker.network_logs == []
     network_event = {
         'method': 'Network.requestWillBeSent',
         'url': 'http://example.com',
     }
 
-    await events_manager.process_event(network_event)
+    await tracker.track(network_event)
 
-    assert network_event in events_manager.network_logs, (
+    assert network_event in tracker.network_logs, (
         'The network event should be added to the logs'
     )
 

@@ -2,38 +2,28 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import TYPE_CHECKING, cast
-
-from pydoll.protocol.cdp.page.events import (
-    JavascriptDialogOpeningEvent,
-    JavascriptDialogOpeningEventParams,
-)
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from typing import Any, Callable
-
-    from pydoll.protocol.cdp.base import CDPEvent
-    from pydoll.protocol.cdp.network.events import RequestWillBeSentEvent
 
 logger = logging.getLogger(__name__)
 
 
 class EventsManager:
     """
-    Manages event callbacks, processing, and network logs.
+    Protocol-agnostic event callback registration and dispatch.
 
-    Handles event callback registration, triggering, and maintains state
-    for network logs and dialog information.
+    Handles event callback registration, triggering, and removal.
+    Protocol-specific tracking (network logs, dialogs) is handled
+    by EventTracker implementations.
     """
 
     def __init__(self) -> None:
         """Initialize events manager with empty state."""
         self._event_callbacks: dict[int, dict] = {}
         self._callback_id = 0
-        self.network_logs: list[RequestWillBeSentEvent] = []
-        self.dialog = JavascriptDialogOpeningEvent()  # type: ignore
         logger.info('EventsManager initialized')
-        logger.debug('Initial state: callbacks=0, logs=0, dialog=empty')
 
     def register_callback(
         self, event_name: str, callback: Callable[[dict], Any], temporary: bool = False
@@ -76,38 +66,19 @@ class EventsManager:
         """Remove all registered callbacks."""
         self._event_callbacks.clear()
         logger.info('All callbacks cleared')
-        logger.debug('Callbacks store is now empty')
 
-    async def process_event(self, event_data: CDPEvent):
+    async def process_event(self, event_data: dict):
         """
-        Process received event and trigger callbacks.
+        Process received event and trigger matching callbacks.
 
-        Handles special events (network requests, dialogs) and updates
-        internal state before triggering registered callbacks.
+        Args:
+            event_data: Parsed event message with 'method' and 'params' fields.
         """
-        event_name = event_data['method']
+        event_name = event_data.get('method', 'unknown-event')
         logger.debug(f'Processing event: {event_name}')
-
-        if 'Network.requestWillBeSent' in event_name:
-            self._update_network_logs(event_data)
-
-        if 'Page.javascriptDialogOpening' in event_name:
-            self.dialog = JavascriptDialogOpeningEvent(
-                method=event_data['method'],
-                params=cast(JavascriptDialogOpeningEventParams, event_data['params']),
-            )
-
-        if 'Page.javascriptDialogClosed' in event_name:
-            self.dialog = JavascriptDialogOpeningEvent()  # type: ignore
-
         await self._trigger_callbacks(event_name, event_data)
 
-    def _update_network_logs(self, event_data: RequestWillBeSentEvent):
-        """Add network event to logs (keeps last 10000 entries)."""
-        self.network_logs.append(event_data)
-        self.network_logs = self.network_logs[-10000:]  # keep only last 10000 logs
-
-    async def _trigger_callbacks(self, event_name: str, event_data: CDPEvent):
+    async def _trigger_callbacks(self, event_name: str, event_data: dict):
         """Trigger all registered callbacks for event, removing temporary ones."""
         callbacks_to_remove = []
 
