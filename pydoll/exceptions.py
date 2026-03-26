@@ -97,6 +97,12 @@ class MissingTargetOrWebSocket(BrowserException):
     message = 'Tab has no target ID or WebSocket address'
 
 
+class UnsupportedOperation(BrowserException):
+    """Raised when a method is not supported by the current browser."""
+
+    message = 'This operation is not supported by this browser'
+
+
 class ProtocolException(PydollException):
     """Base class for exceptions related to CDP protocol communication."""
 
