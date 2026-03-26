@@ -18,10 +18,14 @@ from pydoll.commands.bidi.storage_commands import StorageCommands
 from pydoll.connection.bidi_connection_handler import BiDiConnectionHandler
 from pydoll.exceptions import BrowserNotRunning, UnsupportedOperation
 from pydoll.protocol.bidi.base import Command, T_CommandParams, T_CommandResult
-from pydoll.protocol.bidi.browser.types import ClientWindowInfo, UserContextInfo
-from pydoll.protocol.bidi.browsing_context.types import Info
-from pydoll.protocol.bidi.network.types import Cookie
-from pydoll.protocol.bidi.storage.types import PartialCookie
+from pydoll.protocol.bidi.browser.types import ClientWindowInfo
+from pydoll.protocol.types import (
+    BrowserVersion,
+    Cookie,
+    CookieParam,
+    DownloadBehavior,
+    WindowBounds,
+)
 
 if TYPE_CHECKING:
     from typing import Any, Awaitable, Callable
@@ -147,47 +151,42 @@ class FirefoxBrowser:
         )
         return [ctx['userContext'] for ctx in response['result']['userContexts']]
 
-    async def get_opened_tabs(self) -> list[Info]:
-        """Get all open browsing contexts (tabs)."""
-        response = await self._execute_command(BrowsingContextCommands.get_tree())
-        return response['result']['contexts']
+    async def get_opened_tabs(self):
+        """Get all open tabs. Requires BiDi Tab implementation."""
+        raise NotImplementedError('BiDi Tab not yet implemented.')
 
-    async def get_version(self) -> dict:
+    async def get_version(self) -> BrowserVersion:
         """Get browser version information."""
-        response = await self._execute_command(SessionCommands.status())
-        return response['result']
+        response = await self._execute_command(SessionCommands.new())
+        caps = response['result'].get('capabilities', {})
+        return BrowserVersion(
+            browserName=caps.get('browserName', ''),
+            browserVersion=caps.get('browserVersion', ''),
+            userAgent=caps.get('userAgent', ''),
+        )
 
     async def set_download_path(
         self, path: str, browser_context_id: Optional[str] = None
     ):
         """Set download directory path."""
-        user_contexts = [browser_context_id] if browser_context_id else None
-        await self._execute_command(
-            BrowserCommands.set_download_behavior(
-                download_behavior={
-                    'type': 'allowed',
-                    'destinationFolder': path,
-                },
-                user_contexts=user_contexts,
-            )
+        await self.set_download_behavior(
+            DownloadBehavior.ALLOW, path, browser_context_id
         )
 
     async def set_download_behavior(
         self,
-        behavior: str,
+        behavior: DownloadBehavior,
         download_path: Optional[str] = None,
         browser_context_id: Optional[str] = None,
-        events_enabled: bool = False,
     ):
         """Configure download handling.
 
         Args:
-            behavior: "allow" or "deny".
-            download_path: Required if behavior is "allow".
+            behavior: ALLOW or DENY.
+            download_path: Required if behavior is ALLOW.
             browser_context_id: Context to apply to.
-            events_enabled: Not supported in BiDi, ignored.
         """
-        if behavior == 'allow' and download_path:
+        if behavior == DownloadBehavior.ALLOW and download_path:
             bidi_behavior = {
                 'type': 'allowed',
                 'destinationFolder': download_path,
@@ -219,7 +218,7 @@ class FirefoxBrowser:
 
     async def set_cookies(
         self,
-        cookies: list[PartialCookie],
+        cookies: list[CookieParam],
         browser_context_id: Optional[str] = None,
     ):
         """Set cookies."""
@@ -230,8 +229,23 @@ class FirefoxBrowser:
                 'userContext': browser_context_id,
             }
         for cookie in cookies:
+            bidi_cookie = {
+                'name': cookie['name'],
+                'value': {'type': 'string', 'value': cookie['value']},
+                'domain': cookie['domain'],
+            }
+            if 'path' in cookie:
+                bidi_cookie['path'] = cookie['path']
+            if 'httpOnly' in cookie:
+                bidi_cookie['httpOnly'] = cookie['httpOnly']
+            if 'secure' in cookie:
+                bidi_cookie['secure'] = cookie['secure']
+            if 'sameSite' in cookie:
+                bidi_cookie['sameSite'] = cookie['sameSite'].lower()
+            if 'expiry' in cookie:
+                bidi_cookie['expiry'] = cookie['expiry']
             await self._execute_command(
-                StorageCommands.set_cookie(cookie=cookie, partition=partition)
+                StorageCommands.set_cookie(cookie=bidi_cookie, partition=partition)
             )
 
     async def get_cookies(
@@ -247,7 +261,21 @@ class FirefoxBrowser:
         response = await self._execute_command(
             StorageCommands.get_cookies(partition=partition)
         )
-        return response['result']['cookies']
+        bidi_cookies = response['result']['cookies']
+        return [
+            Cookie(
+                name=c['name'],
+                value=c['value'].get('value', '') if isinstance(c['value'], dict) else c['value'],
+                domain=c['domain'],
+                path=c['path'],
+                size=c.get('size', 0),
+                httpOnly=c['httpOnly'],
+                secure=c['secure'],
+                sameSite=c['sameSite'],
+                **({'expiry': c['expiry']} if 'expiry' in c else {}),
+            )
+            for c in bidi_cookies
+        ]
 
     async def set_window_maximized(self):
         """Maximize browser window."""
@@ -271,11 +299,11 @@ class FirefoxBrowser:
                 )
             )
 
-    async def set_window_bounds(self, bounds: dict):
+    async def set_window_bounds(self, bounds: WindowBounds):
         """Set window position and/or size.
 
         Args:
-            bounds: Dict with optional keys: width, height, x, y.
+            bounds: WindowBounds with optional keys: width, height, x, y.
         """
         windows = await self._get_client_windows()
         if windows:
@@ -286,6 +314,14 @@ class FirefoxBrowser:
                     **bounds,
                 )
             )
+
+    async def get_window_id_for_tab(self, tab) -> str:
+        """Get the client window ID for a tab's context."""
+        contexts = await self.get_opened_tabs()
+        for ctx in contexts:
+            if ctx.get('clientWindow'):
+                return ctx['clientWindow']
+        raise UnsupportedOperation('No client window found.')
 
     @overload
     async def on(
@@ -334,26 +370,6 @@ class FirefoxBrowser:
         """Remove registered event callback."""
         await self._connection_handler.remove_callback(callback_id)
 
-    async def get_targets(self):
-        """Not supported in BiDi. Use get_opened_tabs() instead."""
-        raise UnsupportedOperation(
-            'get_targets() is CDP-specific. Use get_opened_tabs() instead.'
-        )
-
-    async def get_window_id(self) -> int:
-        """Not supported in BiDi."""
-        raise UnsupportedOperation(
-            'Window IDs are CDP-specific. Use set_window_maximized/minimized/bounds directly.'
-        )
-
-    async def get_window_id_for_target(self, target_id: str) -> int:
-        """Not supported in BiDi."""
-        raise UnsupportedOperation('Window IDs are CDP-specific.')
-
-    async def get_window_id_for_tab(self, tab) -> int:
-        """Not supported in BiDi."""
-        raise UnsupportedOperation('Window IDs are CDP-specific.')
-
     async def grant_permissions(self, permissions, origin=None, browser_context_id=None):
         """Not yet supported in BiDi."""
         raise UnsupportedOperation('grant_permissions is not yet supported in BiDi.')
@@ -361,36 +377,6 @@ class FirefoxBrowser:
     async def reset_permissions(self, browser_context_id=None):
         """Not yet supported in BiDi."""
         raise UnsupportedOperation('reset_permissions is not yet supported in BiDi.')
-
-    async def enable_fetch_events(self, **kwargs):
-        """Not supported in BiDi. Use network intercepts instead."""
-        raise UnsupportedOperation(
-            'Fetch events are CDP-specific. Use BiDi network intercepts.'
-        )
-
-    async def disable_fetch_events(self):
-        """Not supported in BiDi."""
-        raise UnsupportedOperation('Fetch events are CDP-specific.')
-
-    async def continue_request(self, request_id: str, **kwargs):
-        """Not supported in BiDi. Use network intercepts instead."""
-        raise UnsupportedOperation('Use BiDi network intercepts.')
-
-    async def fail_request(self, request_id: str, **kwargs):
-        """Not supported in BiDi. Use network intercepts instead."""
-        raise UnsupportedOperation('Use BiDi network intercepts.')
-
-    async def fulfill_request(self, request_id: str, response_code: int, **kwargs):
-        """Not supported in BiDi. Use network intercepts instead."""
-        raise UnsupportedOperation('Use BiDi network intercepts.')
-
-    async def enable_runtime_events(self):
-        """Not needed in BiDi — events are subscription-based."""
-        raise UnsupportedOperation('BiDi uses session.subscribe for events.')
-
-    async def disable_runtime_events(self):
-        """Not needed in BiDi."""
-        raise UnsupportedOperation('BiDi uses session.subscribe for events.')
 
     async def _execute_command(
         self,
