@@ -15,7 +15,6 @@ from pydoll.browser.managers import (
 from pydoll.commands.bidi.browser_commands import BrowserCommands
 from pydoll.commands.bidi.browsing_context_commands import BrowsingContextCommands
 from pydoll.commands.bidi.network_commands import NetworkCommands
-from pydoll.commands.bidi.script_commands import ScriptCommands
 from pydoll.commands.bidi.session_commands import SessionCommands
 from pydoll.commands.bidi.storage_commands import StorageCommands
 from pydoll.connection.bidi_connection_handler import BiDiConnectionHandler
@@ -75,7 +74,6 @@ class FirefoxBrowser:
             self.options.binary_location or self._get_default_binary_location()
         )
         temp_dir = self._temp_directory_manager.create_temp_dir()
-        self._write_default_prefs(temp_dir.name)
 
         self._browser_process_manager.start_browser_process(
             binary_location,
@@ -87,7 +85,6 @@ class FirefoxBrowser:
         response = await self._execute_command(SessionCommands.new())
         self._session_id = response['result']['sessionId']
         logger.info(f'BiDi session established: {self._session_id}')
-        await self._disable_webdriver_flag()
 
     async def stop(self):
         """Stop Firefox and cleanup resources."""
@@ -502,45 +499,6 @@ class FirefoxBrowser:
     ) -> T_CommandResult:
         """Execute a BiDi command and return typed result."""
         return await self._connection_handler.execute_command(command, timeout)
-
-    @staticmethod
-    def _write_default_prefs(profile_dir: str):
-        """Write default Firefox preferences to suppress automation indicators."""
-        prefs = {
-            'remote.enabled': True,
-            'fission.bfcacheInParent': False,
-            'fission.webContentIsolationStrategy': 0,
-            'toolkit.telemetry.reportingpolicy.firstRun': False,
-            'browser.shell.checkDefaultBrowser': False,
-            'browser.startup.homepage_override.mstone': 'ignore',
-            'datareporting.policy.dataSubmissionEnabled': False,
-            'toolkit.telemetry.enabled': False,
-            'app.normandy.enabled': False,
-            'browser.aboutConfig.showWarning': False,
-            'browser.newtabpage.activity-stream.enabled': False,
-            'browser.tabs.warnOnClose': False,
-        }
-        prefs_path = os.path.join(profile_dir, 'user.js')
-        with open(prefs_path, 'w') as f:
-            for key, value in prefs.items():
-                if isinstance(value, bool):
-                    val_str = 'true' if value else 'false'
-                elif isinstance(value, int):
-                    val_str = str(value)
-                else:
-                    val_str = f'"{value}"'
-                f.write(f'user_pref("{key}", {val_str});\n')
-
-    async def _disable_webdriver_flag(self):
-        """Override navigator.webdriver to prevent bot detection."""
-        await self._execute_command(
-            ScriptCommands.add_preload_script(
-                function_declaration=(
-                    '() => { Object.defineProperty(navigator, "webdriver",'
-                    ' { get: () => undefined }) }'
-                ),
-            )
-        )
 
     async def _get_client_windows(self) -> list[ClientWindowInfo]:
         """Get all client windows."""
