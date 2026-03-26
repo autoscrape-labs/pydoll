@@ -275,7 +275,7 @@ class IFrameContextResolver:
             connection_port=self._element._connection_handler._connection_port
         )
         targets_response: GetTargetsResponse = await browser_handler.execute_command(
-            TargetCommands._get_targets()
+            TargetCommands.get_targets()
         )
         target_infos = targets_response.get('result', {}).get('targetInfos', [])
 

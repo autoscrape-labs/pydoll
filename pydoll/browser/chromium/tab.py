@@ -758,7 +758,7 @@ class Tab(FindElementsMixin):
         """Discover shadow roots inside cross-origin iframes (OOPIFs)."""
         browser_handler = ConnectionHandler(connection_port=self._connection_port)
         targets_response: GetTargetsResponse = await browser_handler.execute_command(
-            TargetCommands._get_targets()
+            TargetCommands.get_targets()
         )
 
         target_infos = targets_response.get('result', {}).get('targetInfos', [])
