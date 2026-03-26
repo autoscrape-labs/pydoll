@@ -192,28 +192,28 @@ class TestTabEventManagement:
     @pytest.mark.asyncio
     async def test_enable_page_events(self, tab):
         """Test enabling page events."""
-        await tab.enable_page_events()
+        await tab._enable_page_events()
         assert tab.page_events_enabled is True
         assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_enable_network_events(self, tab):
         """Test enabling network events."""
-        await tab.enable_network_events()
+        await tab._enable_network_events()
         assert tab.network_events_enabled is True
         assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_enable_fetch_events(self, tab):
         """Test enabling fetch events with default parameters."""
-        await tab.enable_fetch_events()
+        await tab._enable_fetch_events()
         assert tab.fetch_events_enabled is True
         assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_enable_fetch_events_with_params(self, tab):
         """Test enabling fetch events with custom parameters."""
-        await tab.enable_fetch_events(
+        await tab._enable_fetch_events(
             handle_auth=True,
             resource_type=ResourceType.DOCUMENT,
             request_stage=RequestStage.REQUEST
@@ -224,21 +224,21 @@ class TestTabEventManagement:
     @pytest.mark.asyncio
     async def test_enable_dom_events(self, tab):
         """Test enabling DOM events."""
-        await tab.enable_dom_events()
+        await tab._enable_dom_events()
         assert tab.dom_events_enabled is True
         assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_enable_runtime_events(self, tab):
         """Test enabling runtime events."""
-        await tab.enable_runtime_events()
+        await tab._enable_runtime_events()
         assert tab.runtime_events_enabled is True
         assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_enable_intercept_file_chooser_dialog(self, tab):
         """Test enabling file chooser dialog interception."""
-        await tab.enable_intercept_file_chooser_dialog()
+        await tab._enable_intercept_file_chooser_dialog()
         assert tab.intercept_file_chooser_dialog_enabled is True
         assert_mock_called_at_least_once(tab._connection_handler)
 
@@ -246,7 +246,7 @@ class TestTabEventManagement:
     async def test_disable_fetch_events(self, tab):
         """Test disabling fetch events."""
         tab._fetch_events_enabled = True
-        await tab.disable_fetch_events()
+        await tab._disable_fetch_events()
         assert tab.fetch_events_enabled is False
         assert_mock_called_at_least_once(tab._connection_handler)
 
@@ -254,7 +254,7 @@ class TestTabEventManagement:
     async def test_disable_page_events(self, tab):
         """Test disabling page events."""
         tab._page_events_enabled = True
-        await tab.disable_page_events()
+        await tab._disable_page_events()
         assert tab.page_events_enabled is False
         assert_mock_called_at_least_once(tab._connection_handler)
 
@@ -262,7 +262,7 @@ class TestTabEventManagement:
     async def test_disable_network_events(self, tab):
         """Test disabling network events."""
         tab._network_events_enabled = True
-        await tab.disable_network_events()
+        await tab._disable_network_events()
         assert tab.network_events_enabled is False
         assert_mock_called_at_least_once(tab._connection_handler)
 
@@ -270,7 +270,7 @@ class TestTabEventManagement:
     async def test_disable_dom_events(self, tab):
         """Test disabling DOM events."""
         tab._dom_events_enabled = True
-        await tab.disable_dom_events()
+        await tab._disable_dom_events()
         assert tab.dom_events_enabled is False
         assert_mock_called_at_least_once(tab._connection_handler)
 
@@ -278,7 +278,7 @@ class TestTabEventManagement:
     async def test_disable_runtime_events(self, tab):
         """Test disabling runtime events."""
         tab._runtime_events_enabled = True
-        await tab.disable_runtime_events()
+        await tab._disable_runtime_events()
         assert tab.runtime_events_enabled is False
         assert_mock_called_at_least_once(tab._connection_handler)
 
@@ -286,7 +286,7 @@ class TestTabEventManagement:
     async def test_disable_intercept_file_chooser_dialog(self, tab):
         """Test disabling file chooser dialog interception."""
         tab._intercept_file_chooser_dialog_enabled = True
-        await tab.disable_intercept_file_chooser_dialog()
+        await tab._disable_intercept_file_chooser_dialog()
         assert tab.intercept_file_chooser_dialog_enabled is False
         assert_mock_called_at_least_once(tab._connection_handler)
 
@@ -978,9 +978,9 @@ class TestTabFileChooser:
         mock_disable_intercept = AsyncMock()
         mock_on = AsyncMock()
         
-        with patch.object(tab, 'enable_page_events', mock_enable_page_events):
-            with patch.object(tab, 'enable_intercept_file_chooser_dialog', mock_enable_intercept):
-                with patch.object(tab, 'disable_intercept_file_chooser_dialog', mock_disable_intercept):
+        with patch.object(tab, '_enable_page_events', mock_enable_page_events):
+            with patch.object(tab, '_enable_intercept_file_chooser_dialog', mock_enable_intercept):
+                with patch.object(tab, '_disable_intercept_file_chooser_dialog', mock_disable_intercept):
                     with patch.object(tab, 'on', mock_on):
                         async with tab.expect_file_chooser('test.txt'):
                             pass
@@ -1005,9 +1005,9 @@ class TestTabFileChooser:
         mock_disable_intercept = AsyncMock()
         mock_on = AsyncMock()
         
-        with patch.object(tab, 'enable_page_events', mock_enable_page_events):
-            with patch.object(tab, 'enable_intercept_file_chooser_dialog', mock_enable_intercept):
-                with patch.object(tab, 'disable_intercept_file_chooser_dialog', mock_disable_intercept):
+        with patch.object(tab, '_enable_page_events', mock_enable_page_events):
+            with patch.object(tab, '_enable_intercept_file_chooser_dialog', mock_enable_intercept):
+                with patch.object(tab, '_disable_intercept_file_chooser_dialog', mock_disable_intercept):
                     with patch.object(tab, 'on', mock_on):
                         async with tab.expect_file_chooser(files):
                             pass
@@ -1032,9 +1032,9 @@ class TestTabFileChooser:
         mock_disable_intercept = AsyncMock()
         mock_on = AsyncMock()
         
-        with patch.object(tab, 'enable_page_events', mock_enable_page_events):
-            with patch.object(tab, 'enable_intercept_file_chooser_dialog', mock_enable_intercept):
-                with patch.object(tab, 'disable_intercept_file_chooser_dialog', mock_disable_intercept):
+        with patch.object(tab, '_enable_page_events', mock_enable_page_events):
+            with patch.object(tab, '_enable_intercept_file_chooser_dialog', mock_enable_intercept):
+                with patch.object(tab, '_disable_intercept_file_chooser_dialog', mock_disable_intercept):
                     with patch.object(tab, 'on', mock_on):
                         async with tab.expect_file_chooser(files):
                             pass
@@ -1071,10 +1071,10 @@ class TestTabFileChooser:
             return 123
         
         # Mock the required methods
-        with patch.object(tab, 'enable_page_events', AsyncMock()):
-            with patch.object(tab, 'enable_intercept_file_chooser_dialog', AsyncMock()):
-                with patch.object(tab, 'disable_intercept_file_chooser_dialog', AsyncMock()):
-                    with patch.object(tab, 'disable_page_events', AsyncMock()):
+        with patch.object(tab, '_enable_page_events', AsyncMock()):
+            with patch.object(tab, '_enable_intercept_file_chooser_dialog', AsyncMock()):
+                with patch.object(tab, '_disable_intercept_file_chooser_dialog', AsyncMock()):
+                    with patch.object(tab, '_disable_page_events', AsyncMock()):
                         with patch.object(tab, 'on', mock_on):
                             async with tab.expect_file_chooser('test.txt'):
                                 # Execute the captured real handler
@@ -1116,10 +1116,10 @@ class TestTabFileChooser:
             return 123
         
         # Mock the required methods
-        with patch.object(tab, 'enable_page_events', AsyncMock()):
-            with patch.object(tab, 'enable_intercept_file_chooser_dialog', AsyncMock()):
-                with patch.object(tab, 'disable_intercept_file_chooser_dialog', AsyncMock()):
-                    with patch.object(tab, 'disable_page_events', AsyncMock()):
+        with patch.object(tab, '_enable_page_events', AsyncMock()):
+            with patch.object(tab, '_enable_intercept_file_chooser_dialog', AsyncMock()):
+                with patch.object(tab, '_disable_intercept_file_chooser_dialog', AsyncMock()):
+                    with patch.object(tab, '_disable_page_events', AsyncMock()):
                         with patch.object(tab, 'on', mock_on):
                             async with tab.expect_file_chooser(['file1.txt', 'file2.pdf', 'file3.jpg']):
                                 # Execute the captured real handler
@@ -1160,10 +1160,10 @@ class TestTabFileChooser:
             return 123
         
         # Mock the required methods
-        with patch.object(tab, 'enable_page_events', AsyncMock()):
-            with patch.object(tab, 'enable_intercept_file_chooser_dialog', AsyncMock()):
-                with patch.object(tab, 'disable_intercept_file_chooser_dialog', AsyncMock()):
-                    with patch.object(tab, 'disable_page_events', AsyncMock()):
+        with patch.object(tab, '_enable_page_events', AsyncMock()):
+            with patch.object(tab, '_enable_intercept_file_chooser_dialog', AsyncMock()):
+                with patch.object(tab, '_disable_intercept_file_chooser_dialog', AsyncMock()):
+                    with patch.object(tab, '_disable_page_events', AsyncMock()):
                         with patch.object(tab, 'on', mock_on):
                             async with tab.expect_file_chooser(files):
                                 # Execute the captured real handler
@@ -1218,7 +1218,7 @@ class TestTabCloudflareBypass:
         tab._connection_handler.register_callback.return_value = callback_id
 
         mock_enable_page_events = AsyncMock()
-        with patch.object(tab, 'enable_page_events', mock_enable_page_events):
+        with patch.object(tab, '_enable_page_events', mock_enable_page_events):
             await tab.enable_auto_solve_cloudflare_captcha()
 
         mock_enable_page_events.assert_called_once()
@@ -1232,7 +1232,7 @@ class TestTabCloudflareBypass:
         tab._connection_handler.register_callback.return_value = callback_id
 
         mock_enable_page_events = AsyncMock()
-        with patch.object(tab, 'enable_page_events', mock_enable_page_events):
+        with patch.object(tab, '_enable_page_events', mock_enable_page_events):
             await tab.enable_auto_solve_cloudflare_captcha(
                 time_to_wait_captcha=10,
             )
@@ -1263,8 +1263,8 @@ class TestTabCloudflareBypass:
         mock_enable_page_events = AsyncMock()
         mock_disable_page_events = AsyncMock()
 
-        with patch.object(tab, 'enable_page_events', mock_enable_page_events):
-            with patch.object(tab, 'disable_page_events', mock_disable_page_events):
+        with patch.object(tab, '_enable_page_events', mock_enable_page_events):
+            with patch.object(tab, '_disable_page_events', mock_disable_page_events):
                 with patch('asyncio.Event', return_value=mock_event):
                     async with tab.expect_and_bypass_cloudflare_captcha():
                         pass
@@ -1319,7 +1319,7 @@ class TestTabCloudflareBypass:
         tab._connection_handler.register_callback.return_value = callback_id
 
         mock_enable_page_events = AsyncMock()
-        with patch.object(tab, 'enable_page_events', mock_enable_page_events):
+        with patch.object(tab, '_enable_page_events', mock_enable_page_events):
             with pytest.warns(DeprecationWarning, match='custom_selector is deprecated'):
                 await tab.enable_auto_solve_cloudflare_captcha(
                     custom_selector=(By.ID, 'custom-captcha'),
@@ -1332,7 +1332,7 @@ class TestTabCloudflareBypass:
         tab._connection_handler.register_callback.return_value = callback_id
 
         mock_enable_page_events = AsyncMock()
-        with patch.object(tab, 'enable_page_events', mock_enable_page_events):
+        with patch.object(tab, '_enable_page_events', mock_enable_page_events):
             with pytest.warns(DeprecationWarning, match='time_before_click is deprecated'):
                 await tab.enable_auto_solve_cloudflare_captcha(
                     time_before_click=3,
@@ -1349,8 +1349,8 @@ class TestTabCloudflareBypass:
         mock_enable_page_events = AsyncMock()
         mock_disable_page_events = AsyncMock()
 
-        with patch.object(tab, 'enable_page_events', mock_enable_page_events):
-            with patch.object(tab, 'disable_page_events', mock_disable_page_events):
+        with patch.object(tab, '_enable_page_events', mock_enable_page_events):
+            with patch.object(tab, '_disable_page_events', mock_disable_page_events):
                 with patch('asyncio.Event', return_value=mock_event):
                     with pytest.warns(DeprecationWarning, match='time_before_click is deprecated'):
                         async with tab.expect_and_bypass_cloudflare_captcha(
@@ -1369,8 +1369,8 @@ class TestTabCloudflareBypass:
         mock_enable_page_events = AsyncMock()
         mock_disable_page_events = AsyncMock()
 
-        with patch.object(tab, 'enable_page_events', mock_enable_page_events):
-            with patch.object(tab, 'disable_page_events', mock_disable_page_events):
+        with patch.object(tab, '_enable_page_events', mock_enable_page_events):
+            with patch.object(tab, '_disable_page_events', mock_disable_page_events):
                 with patch('asyncio.Event', return_value=mock_event):
                     with pytest.warns(DeprecationWarning, match='custom_selector is deprecated'):
                         async with tab.expect_and_bypass_cloudflare_captcha(
@@ -1619,8 +1619,8 @@ class TestTabDownload:
             handlers[event_name] = handler
             return 500 if event_name == PageEvent.DOWNLOAD_WILL_BEGIN else 501
 
-        with patch.object(tab, 'enable_page_events', enable_page_events), \
-             patch.object(tab, 'disable_page_events', disable_page_events), \
+        with patch.object(tab, '_enable_page_events', enable_page_events), \
+             patch.object(tab, '_disable_page_events', disable_page_events), \
              patch.object(tab, 'on', fake_on):
             async with tab.expect_download(keep_file_at=str(tmp_path)):
                 await handlers[PageEvent.DOWNLOAD_WILL_BEGIN]({
@@ -1661,8 +1661,8 @@ class TestTabDownload:
             handlers[event_name] = handler
             return 600 if event_name == PageEvent.DOWNLOAD_WILL_BEGIN else 601
 
-        with patch.object(tab, 'enable_page_events', enable_page_events), \
-             patch.object(tab, 'disable_page_events', disable_page_events), \
+        with patch.object(tab, '_enable_page_events', enable_page_events), \
+             patch.object(tab, '_disable_page_events', disable_page_events), \
              patch.object(tab, 'on', fake_on):
             async with tab.expect_download(keep_file_at=str(tmp_path)):
                 await handlers[PageEvent.DOWNLOAD_WILL_BEGIN]({
@@ -1700,7 +1700,7 @@ class TestTabFrameHandling:
         mock_iframe_element.get_attribute.return_value = 'https://example.com/iframe'
         mock_iframe_element._object_id = 'iframe-object-id'
         
-        mock_browser.get_targets = AsyncMock(return_value=[
+        mock_browser._get_targets = AsyncMock(return_value=[
             {'targetId': 'iframe-target-id', 'url': 'https://example.com/iframe'}
         ])
 
@@ -1708,7 +1708,7 @@ class TestTabFrameHandling:
             frame = await tab.get_frame(mock_iframe_element)
         
         assert isinstance(frame, Tab)
-        mock_browser.get_targets.assert_called_once()
+        mock_browser._get_targets.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_get_frame_uses_cache_on_subsequent_calls(self, tab, mock_browser):
@@ -1719,7 +1719,7 @@ class TestTabFrameHandling:
         frame_url = 'https://example.com/iframe'
         mock_iframe_element.get_attribute.return_value = frame_url
         # Prepare browser targets and cache
-        mock_browser.get_targets = AsyncMock(return_value=[
+        mock_browser._get_targets = AsyncMock(return_value=[
             {'targetId': 'iframe-target-id', 'url': frame_url, 'type': 'page'}
         ])
         tab._browser._tabs_opened = {}
@@ -1753,7 +1753,7 @@ class TestTabFrameHandling:
         mock_iframe_element.get_attribute.return_value = 'https://example.com/iframe'
         mock_iframe_element._object_id = 'iframe-object-id'
 
-        mock_browser.get_targets = AsyncMock(return_value=[])
+        mock_browser._get_targets = AsyncMock(return_value=[])
         
         with pytest.warns(DeprecationWarning):
             with pytest.raises(IFrameNotFound):

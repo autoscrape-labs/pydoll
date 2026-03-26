@@ -403,7 +403,7 @@ class Tab(FindElementsMixin):
         )
         return response['result']['result'].get('value', '')
 
-    async def enable_page_events(self):
+    async def _enable_page_events(self):
         """Enable CDP Page domain events (load, navigation, dialogs, etc.)."""
         logger.debug('Enabling Page events')
         response = await self._execute_command(PageCommands.enable())
@@ -411,7 +411,7 @@ class Tab(FindElementsMixin):
         logger.debug('Page events enabled')
         return response
 
-    async def enable_network_events(self):
+    async def _enable_network_events(self):
         """Enable CDP Network domain events (requests, responses, etc.)."""
         logger.debug('Enabling Network events')
         response = await self._execute_command(NetworkCommands.enable())
@@ -419,7 +419,7 @@ class Tab(FindElementsMixin):
         logger.debug('Network events enabled')
         return response
 
-    async def enable_fetch_events(
+    async def _enable_fetch_events(
         self,
         handle_auth: bool = False,
         resource_type: Optional[ResourceType] = None,
@@ -451,7 +451,7 @@ class Tab(FindElementsMixin):
         logger.debug('Fetch events enabled')
         return response
 
-    async def enable_dom_events(self):
+    async def _enable_dom_events(self):
         """Enable CDP DOM domain events (document structure changes)."""
         logger.debug('Enabling DOM events')
         response = await self._execute_command(DomCommands.enable())
@@ -459,7 +459,7 @@ class Tab(FindElementsMixin):
         logger.debug('DOM events enabled')
         return response
 
-    async def enable_runtime_events(self):
+    async def _enable_runtime_events(self):
         """Enable CDP Runtime domain events."""
         logger.debug('Enabling Runtime events')
         response = await self._execute_command(RuntimeCommands.enable())
@@ -467,7 +467,7 @@ class Tab(FindElementsMixin):
         logger.debug('Runtime events enabled')
         return response
 
-    async def enable_intercept_file_chooser_dialog(self):
+    async def _enable_intercept_file_chooser_dialog(self):
         """
         Enable file chooser dialog interception for automated uploads.
 
@@ -514,7 +514,7 @@ class Tab(FindElementsMixin):
 
         logger.info('Enabling Cloudflare captcha auto-solve')
         if not self.page_events_enabled:
-            await self.enable_page_events()
+            await self._enable_page_events()
 
         callback = partial(
             self._bypass_cloudflare,
@@ -526,7 +526,7 @@ class Tab(FindElementsMixin):
             f'Cloudflare auto-solve callback registered: id={self._cloudflare_captcha_callback_id}'
         )
 
-    async def disable_fetch_events(self):
+    async def _disable_fetch_events(self):
         """Disable CDP Fetch domain and release paused requests."""
         logger.debug('Disabling Fetch events')
         response = await self._execute_command(FetchCommands.disable())
@@ -534,7 +534,7 @@ class Tab(FindElementsMixin):
         logger.debug('Fetch events disabled')
         return response
 
-    async def disable_page_events(self):
+    async def _disable_page_events(self):
         """Disable CDP Page domain events."""
         logger.debug('Disabling Page events')
         response = await self._execute_command(PageCommands.disable())
@@ -542,7 +542,7 @@ class Tab(FindElementsMixin):
         logger.debug('Page events disabled')
         return response
 
-    async def disable_network_events(self):
+    async def _disable_network_events(self):
         """Disable CDP Network domain events."""
         logger.debug('Disabling Network events')
         response = await self._execute_command(NetworkCommands.disable())
@@ -550,7 +550,7 @@ class Tab(FindElementsMixin):
         logger.debug('Network events disabled')
         return response
 
-    async def disable_dom_events(self):
+    async def _disable_dom_events(self):
         """Disable CDP DOM domain events."""
         logger.debug('Disabling DOM events')
         response = await self._execute_command(DomCommands.disable())
@@ -558,7 +558,7 @@ class Tab(FindElementsMixin):
         logger.debug('DOM events disabled')
         return response
 
-    async def disable_runtime_events(self):
+    async def _disable_runtime_events(self):
         """Disable CDP Runtime domain events."""
         logger.debug('Disabling Runtime events')
         response = await self._execute_command(RuntimeCommands.disable())
@@ -566,7 +566,7 @@ class Tab(FindElementsMixin):
         logger.debug('Runtime events disabled')
         return response
 
-    async def disable_intercept_file_chooser_dialog(self):
+    async def _disable_intercept_file_chooser_dialog(self):
         """Disable file chooser dialog interception."""
         logger.info('Disabling file chooser interception')
         response = await self._execute_command(
@@ -629,7 +629,7 @@ class Tab(FindElementsMixin):
         if not frame_url:
             raise InvalidIFrame('The iframe does not have a valid src attribute')
 
-        targets = await self._browser.get_targets()
+        targets = await self._browser._get_targets()
         iframe_target = next((target for target in targets if target['url'] == frame_url), None)
         if not iframe_target:
             raise IFrameNotFound('The target for the iframe was not found')
@@ -758,7 +758,7 @@ class Tab(FindElementsMixin):
         """Discover shadow roots inside cross-origin iframes (OOPIFs)."""
         browser_handler = ConnectionHandler(connection_port=self._connection_port)
         targets_response: GetTargetsResponse = await browser_handler.execute_command(
-            TargetCommands.get_targets()
+            TargetCommands._get_targets()
         )
 
         target_infos = targets_response.get('result', {}).get('targetInfos', [])
@@ -1214,7 +1214,7 @@ class Tab(FindElementsMixin):
 
         page_was_enabled = self.page_events_enabled
         if not page_was_enabled:
-            await self.enable_page_events()
+            await self._enable_page_events()
 
         try:
             tree_response: GetResourceTreeResponse = await self._execute_command(
@@ -1241,7 +1241,7 @@ class Tab(FindElementsMixin):
             logger.info(f'Page bundle saved to: {path}')
         finally:
             if not page_was_enabled:
-                await self.disable_page_events()
+                await self._disable_page_events()
 
     async def _fetch_document_html(self, frame_tree: FrameResourceTree) -> str:
         """Fetch the main document HTML from the frame tree."""
@@ -1612,12 +1612,12 @@ class Tab(FindElementsMixin):
 
         if self.page_events_enabled is False:
             _before_page_events_enabled = False
-            await self.enable_page_events()
+            await self._enable_page_events()
         else:
             _before_page_events_enabled = True
 
         if self.intercept_file_chooser_dialog_enabled is False:
-            await self.enable_intercept_file_chooser_dialog()
+            await self._enable_intercept_file_chooser_dialog()
 
         logger.info('Waiting for file chooser to open')
         await self.on(
@@ -1629,10 +1629,10 @@ class Tab(FindElementsMixin):
         yield
 
         if self.intercept_file_chooser_dialog_enabled is True:
-            await self.disable_intercept_file_chooser_dialog()
+            await self._disable_intercept_file_chooser_dialog()
 
         if _before_page_events_enabled is False:
-            await self.disable_page_events()
+            await self._disable_page_events()
 
     @asynccontextmanager
     async def expect_and_bypass_cloudflare_captcha(
@@ -1681,7 +1681,7 @@ class Tab(FindElementsMixin):
         _before_page_events_enabled = self.page_events_enabled
 
         if not _before_page_events_enabled:
-            await self.enable_page_events()
+            await self._enable_page_events()
 
         logger.info('Expecting and bypassing Cloudflare captcha if present')
         callback_id = await self.on(PageEvent.LOAD_EVENT_FIRED, bypass_cloudflare)
@@ -1692,7 +1692,7 @@ class Tab(FindElementsMixin):
         finally:
             await self._connection_handler.remove_callback(callback_id)
             if not _before_page_events_enabled:
-                await self.disable_page_events()
+                await self._disable_page_events()
 
     @asynccontextmanager
     async def expect_download(
@@ -1735,7 +1735,7 @@ class Tab(FindElementsMixin):
         _page_events_was_enabled = True
         if not self._page_events_enabled:
             _page_events_was_enabled = False
-            await self.enable_page_events()
+            await self._enable_page_events()
 
         loop = asyncio.get_event_loop()
         will_begin: asyncio.Future[bool] = loop.create_future()
@@ -1831,7 +1831,7 @@ class Tab(FindElementsMixin):
             shutil.rmtree(download_dir, ignore_errors=True)
 
         if not page_events_was_enabled:
-            await self.disable_page_events()
+            await self._disable_page_events()
 
     @overload
     async def on(
@@ -2000,7 +2000,7 @@ class Tab(FindElementsMixin):
         cleanup_page_events = not self._page_events_enabled
 
         if cleanup_page_events:
-            await self.enable_page_events()
+            await self._enable_page_events()
 
         def on_loaded(_: dict):
             page_loaded.set()
@@ -2020,7 +2020,7 @@ class Tab(FindElementsMixin):
                 await self.remove_callback(callback_id)
             if cleanup_page_events:
                 with contextlib.suppress(Exception):
-                    await self.disable_page_events()
+                    await self._disable_page_events()
 
     async def _find_cloudflare_shadow_root(self, timeout: float) -> ShadowRoot:
         """Poll for the Cloudflare Turnstile shadow root.

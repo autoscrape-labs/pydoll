@@ -36,9 +36,17 @@ from pydoll.exceptions import (
     MissingTargetOrWebSocket,
     NoValidTabFound,
 )
-from pydoll.protocol.cdp.browser.types import DownloadBehavior
+from pydoll.protocol.cdp.browser.types import DownloadBehavior as CDPDownloadBehavior
 from pydoll.protocol.cdp.fetch.events import FetchEvent
 from pydoll.protocol.cdp.fetch.types import AuthChallengeResponseType
+from pydoll.protocol.types import (
+    BrowserVersion,
+    Cookie,
+    CookieParam,
+    DownloadBehavior,
+    Header,
+    WindowBounds,
+)
 from pydoll.utils.user_agent_parser import UserAgentParser
 
 if TYPE_CHECKING:
@@ -55,8 +63,6 @@ if TYPE_CHECKING:
     from pydoll.protocol.cdp.fetch.events import RequestPausedEvent
     from pydoll.protocol.cdp.fetch.types import HeaderEntry
     from pydoll.protocol.cdp.network.types import (
-        Cookie,
-        CookieParam,
         ErrorReason,
         RequestMethod,
         ResourceType,
@@ -192,7 +198,7 @@ class Browser:  # noqa: PLR0904
         logger.info('Browser process started and responsive')
         await self._configure_proxy(proxy_config[0], proxy_config[1])
 
-        valid_tab_id = await self._get_valid_tab_id(await self.get_targets())
+        valid_tab_id = await self._get_valid_tab_id(await self._get_targets())
         tab = Tab(self, target_id=valid_tab_id, connection_port=self._connection_port)
         self._tabs_opened[valid_tab_id] = tab
         await self._apply_user_agent_override(tab)
@@ -316,7 +322,7 @@ class Browser:  # noqa: PLR0904
         logger.info(f'New tab created: {target_id}')
         return tab
 
-    async def get_targets(self) -> list[TargetInfo]:
+    async def _get_targets(self) -> list[TargetInfo]:
         """
         Get all active targets/pages in browser.
 
@@ -339,7 +345,7 @@ class Browser:  # noqa: PLR0904
         Returns:
             List of Tab instances. The last tab is the most recent one.
         """
-        targets = await self.get_targets()
+        targets = await self._get_targets()
         valid_tab_targets = [
             target
             for target in targets
@@ -362,7 +368,7 @@ class Browser:  # noqa: PLR0904
         )
         return existing_tabs + new_tabs
 
-    async def get_tab_by_target(self, target: TargetInfo) -> Tab:
+    async def _get_tab_by_target(self, target: TargetInfo) -> Tab:
         tab = Tab(self, **self._get_tab_kwargs(target['targetId']))
         await self._apply_user_agent_override(tab)
         return tab
@@ -370,20 +376,13 @@ class Browser:  # noqa: PLR0904
     async def set_download_path(self, path: str, browser_context_id: Optional[str] = None):
         """Set download directory path (convenience method for set_download_behavior)."""
         logger.info(f'Setting download path: {path} (context={browser_context_id})')
-        return await self._execute_command(
-            BrowserCommands.set_download_behavior(
-                behavior=DownloadBehavior.ALLOW,
-                download_path=path,
-                browser_context_id=browser_context_id,
-            )
-        )
+        await self.set_download_behavior(DownloadBehavior.ALLOW, path, browser_context_id)
 
     async def set_download_behavior(
         self,
         behavior: DownloadBehavior,
         download_path: Optional[str] = None,
         browser_context_id: Optional[str] = None,
-        events_enabled: bool = False,
     ):
         """
         Configure download handling.
@@ -392,19 +391,13 @@ class Browser:  # noqa: PLR0904
             behavior: ALLOW (save to path), DENY (cancel), or DEFAULT.
             download_path: Required if behavior is ALLOW.
             browser_context_id: Context to apply to (default if None).
-            events_enabled: Generate download events for progress tracking.
         """
-        logger.info(
-            f'Setting download behavior: behavior={behavior},'
-            f'path={download_path}, context={browser_context_id},'
-            f'events={events_enabled}'
-        )
+        cdp_behavior = CDPDownloadBehavior(behavior.value)
         return await self._execute_command(
             BrowserCommands.set_download_behavior(
-                behavior=behavior,
+                behavior=cdp_behavior,
                 download_path=download_path,
                 browser_context_id=browser_context_id,
-                events_enabled=events_enabled,
             )
         )
 
@@ -435,13 +428,17 @@ class Browser:  # noqa: PLR0904
         )
         return response['result']['cookies']
 
-    async def get_version(self) -> GetVersionResult:
-        """Get browser version and CDP protocol information."""
+    async def get_version(self) -> BrowserVersion:
+        """Get browser version information."""
         response: GetVersionResponse = await self._execute_command(BrowserCommands.get_version())
-        logger.debug(f'Browser version: {response["result"]}')
-        return response['result']
+        result: GetVersionResult = response['result']
+        return BrowserVersion(
+            browserName=result.get('product', ''),
+            browserVersion=result.get('revision', ''),
+            userAgent=result.get('userAgent', ''),
+        )
 
-    async def get_window_id_for_target(self, target_id: str) -> int:
+    async def _get_window_id_for_target(self, target_id: str) -> int:
         """Get window ID for target (used for window manipulation via CDP)."""
         response: GetWindowForTargetResponse = await self._execute_command(
             BrowserCommands.get_window_for_target(target_id)
@@ -455,40 +452,40 @@ class Browser:  # noqa: PLR0904
         if not target_id:
             logger.error('Missing target id or ws address for tab when getting window id')
             raise MissingTargetOrWebSocket()
-        return await self.get_window_id_for_target(target_id)
+        return await self._get_window_id_for_target(target_id)
 
-    async def get_window_id(self) -> int:
+    async def _get_window_id(self) -> int:
         """
         Get window ID for any valid tab.
 
         Raises:
             NoValidTabFound: If no valid attached tab can be found.
         """
-        targets = await self.get_targets()
+        targets = await self._get_targets()
         valid_tab_id = await self._get_valid_tab_id(targets)
-        return await self.get_window_id_for_target(valid_tab_id)
+        return await self._get_window_id_for_target(valid_tab_id)
 
     async def set_window_maximized(self):
         """Maximize browser window (affects all tabs in window)."""
-        window_id = await self.get_window_id()
+        window_id = await self._get_window_id()
         logger.info(f'Maximizing window: id={window_id}')
         return await self._execute_command(BrowserCommands.set_window_maximized(window_id))
 
     async def set_window_minimized(self):
         """Minimize browser window to taskbar/dock."""
-        window_id = await self.get_window_id()
+        window_id = await self._get_window_id()
         logger.info(f'Minimizing window: id={window_id}')
         return await self._execute_command(BrowserCommands.set_window_minimized(window_id))
 
-    async def set_window_bounds(self, bounds: Bounds):
+    async def set_window_bounds(self, bounds: WindowBounds):
         """
         Set window position and/or size.
 
         Args:
-            bounds: Properties to modify (left, top, width, height, windowState).
+            bounds: Properties to modify (width, height, x, y).
                 Only specified properties are changed.
         """
-        window_id = await self.get_window_id()
+        window_id = await self._get_window_id()
         logger.info(f'Setting window bounds: id={window_id}, bounds={bounds}')
         return await self._execute_command(BrowserCommands.set_window_bounds(window_id, bounds))
 
@@ -566,7 +563,7 @@ class Browser:  # noqa: PLR0904
         logger.debug(f'Removing callback: id={callback_id}')
         return await self._connection_handler.remove_callback(callback_id)
 
-    async def enable_fetch_events(
+    async def _enable_fetch_events(
         self,
         handle_auth_requests: bool = False,
         resource_type: Optional[ResourceType] = None,
@@ -595,17 +592,17 @@ class Browser:  # noqa: PLR0904
             )
         )
 
-    async def disable_fetch_events(self):
+    async def _disable_fetch_events(self):
         """Disable request interception and release any paused requests."""
         logger.debug('Disabling Fetch events')
         return await self._connection_handler.execute_command(FetchCommands.disable())
 
-    async def enable_runtime_events(self):
+    async def _enable_runtime_events(self):
         """Enable runtime events."""
         logger.debug('Enabling Runtime events')
         return await self._connection_handler.execute_command(RuntimeCommands.enable())
 
-    async def disable_runtime_events(self):
+    async def _disable_runtime_events(self):
         """Disable runtime events."""
         logger.debug('Disabling Runtime events')
         return await self._connection_handler.execute_command(RuntimeCommands.disable())
@@ -695,7 +692,7 @@ class Browser:  # noqa: PLR0904
                 proxy_password=proxy_password,
             )
         )
-        await self.disable_fetch_events()
+        await self._disable_fetch_events()
         return response
 
     @staticmethod
@@ -724,7 +721,7 @@ class Browser:  # noqa: PLR0904
             proxy_username=proxy_username,
             proxy_password=proxy_password,
         )
-        await tab.disable_fetch_events()
+        await tab._disable_fetch_events()
         return response
 
     async def _setup_context_proxy_auth_for_tab(
@@ -741,7 +738,7 @@ class Browser:  # noqa: PLR0904
             f'Enabling context-level proxy auth for tab (context={browser_context_id}, '
             f'user_set={bool(username)}'
         )
-        await tab.enable_fetch_events(handle_auth=True)
+        await tab._enable_fetch_events(handle_auth=True)
         await tab.on(
             FetchEvent.REQUEST_PAUSED,
             partial(
@@ -821,7 +818,7 @@ class Browser:  # noqa: PLR0904
             'Configuring proxy authentication: '
             f'credentials provided={bool(proxy_credentials[0] or proxy_credentials[1])}'
         )
-        await self.enable_fetch_events(handle_auth_requests=True)
+        await self._enable_fetch_events(handle_auth_requests=True)
         await self.on(
             FetchEvent.REQUEST_PAUSED,
             self._continue_request_callback,
