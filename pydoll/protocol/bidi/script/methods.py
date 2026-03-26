@@ -96,20 +96,20 @@ class RemovePreloadScriptParameters(TypedDict):
     script: PreloadScript
 
 
-AddPreloadScriptCommand = Command[AddPreloadScriptParameters, AddPreloadScriptResult]
+AddPreloadScriptCommand = Command[AddPreloadScriptParameters, CommandResponse[AddPreloadScriptResult]]
 AddPreloadScriptResponse = CommandResponse[AddPreloadScriptResult]
 
-DisownCommand = Command[DisownParameters, EmptyResult]
+DisownCommand = Command[DisownParameters, CommandResponse[EmptyResult]]
 DisownResponse = CommandResponse[EmptyResult]
 
-CallFunctionCommand = Command[CallFunctionParameters, EvaluateResult]
+CallFunctionCommand = Command[CallFunctionParameters, CommandResponse[EvaluateResult]]
 CallFunctionResponse = CommandResponse[EvaluateResult]
 
-EvaluateCommand = Command[EvaluateParameters, EvaluateResult]
+EvaluateCommand = Command[EvaluateParameters, CommandResponse[EvaluateResult]]
 EvaluateResponse = CommandResponse[EvaluateResult]
 
-GetRealmsCommand = Command[GetRealmsParameters, GetRealmsResult]
+GetRealmsCommand = Command[GetRealmsParameters, CommandResponse[GetRealmsResult]]
 GetRealmsResponse = CommandResponse[GetRealmsResult]
 
-RemovePreloadScriptCommand = Command[RemovePreloadScriptParameters, EmptyResult]
+RemovePreloadScriptCommand = Command[RemovePreloadScriptParameters, CommandResponse[EmptyResult]]
 RemovePreloadScriptResponse = CommandResponse[EmptyResult]

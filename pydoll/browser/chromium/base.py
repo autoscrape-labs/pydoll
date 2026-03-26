@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import fnmatch
 import json
 import logging
 import os
@@ -12,6 +13,7 @@ from random import randint
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, overload
 from urllib.parse import urlsplit, urlunsplit
 
+from pydoll.browser.intercepted_request import InterceptedRequest
 from pydoll.browser.managers import (
     BrowserProcessManager,
     ProxyManager,
@@ -39,6 +41,8 @@ from pydoll.exceptions import (
 from pydoll.protocol.cdp.browser.types import DownloadBehavior as CDPDownloadBehavior
 from pydoll.protocol.cdp.fetch.events import FetchEvent
 from pydoll.protocol.cdp.fetch.types import AuthChallengeResponseType
+from pydoll.protocol.cdp.network.types import ErrorReason as CDPErrorReason
+from pydoll.protocol.events import CDP_DOMAIN_MAP, CDP_EVENT_MAP, Event
 from pydoll.protocol.types import (
     BrowserVersion,
     Cookie,
@@ -526,22 +530,22 @@ class Browser:  # noqa: PLR0904
         self, event_name: str, callback: Callable[[Any], Awaitable[Any]], temporary: bool = False
     ) -> int: ...
     async def on(self, event_name, callback, temporary: bool = False) -> int:
-        """
-        Register CDP event listener at browser level.
-
-        Callback runs in background task to prevent blocking. Affects all pages/targets.
+        """Register event listener at browser level.
 
         Args:
-            event_name: CDP event name (e.g., "Network.responseReceived").
+            event_name: Event enum or native protocol event name.
             callback: Function called on event (sync or async).
             temporary: Remove after first invocation.
 
         Returns:
             Callback ID for removal.
-
-        Note:
-            For page-specific events, use Tab.on() instead.
         """
+
+        native_event = event_name
+        if isinstance(event_name, Event):
+            native_event = CDP_EVENT_MAP.get(event_name, event_name)
+
+        await self._auto_enable_domain(native_event)
 
         async def callback_wrapper(event):
             asyncio.create_task(callback(event))
@@ -550,18 +554,124 @@ class Browser:  # noqa: PLR0904
             function_to_register = callback_wrapper
         else:
             function_to_register = callback
-        logger.debug(
-            f'Registering callback: event={event_name}, temporary={temporary}, '
-            f'async={asyncio.iscoroutinefunction(callback)}'
-        )
+
         return await self._connection_handler.register_callback(
-            event_name, function_to_register, temporary
+            native_event, function_to_register, temporary
         )
+
+    async def _auto_enable_domain(self, event_name: str):
+        """Auto-enable the CDP domain for an event if not already enabled."""
+
+        domain_methods = {
+            'page': self._enable_page_events_if_needed,
+            'network': self._enable_network_events_if_needed,
+            'runtime': self._enable_runtime_events_if_needed,
+        }
+        for prefix, domain in CDP_DOMAIN_MAP.items():
+            if event_name.startswith(prefix) and domain in domain_methods:
+                await domain_methods[domain]()
+                return
+
+    async def _enable_page_events_if_needed(self):
+        pass
+
+    async def _enable_network_events_if_needed(self):
+        pass
+
+    async def _enable_runtime_events_if_needed(self):
+        pass
 
     async def remove_callback(self, callback_id: int):
         """Remove callback from browser."""
         logger.debug(f'Removing callback: id={callback_id}')
         return await self._connection_handler.remove_callback(callback_id)
+
+    async def intercept_requests(
+        self,
+        callback: Callable,
+        url_patterns: Optional[list[str]] = None,
+    ) -> str:
+        """Intercept network requests.
+
+        Args:
+            callback: Async function receiving InterceptedRequest.
+            url_patterns: URL patterns to match (e.g. ['/api/*']). All if None.
+
+        Returns:
+            Intercept ID for later removal.
+        """
+
+        await self._enable_fetch_events()
+
+        async def _cdp_continue(request_id, url=None, method=None, headers=None, **_):
+            cdp_headers = None
+            if headers:
+                cdp_headers = [{'name': h['name'], 'value': h['value']} for h in headers]
+            await self._execute_command(
+                FetchCommands.continue_request(
+                    request_id=request_id, url=url, method=method, headers=cdp_headers,
+                )
+            )
+
+        async def _cdp_fail(request_id, **_):
+            await self._execute_command(
+                FetchCommands.fail_request(request_id, CDPErrorReason.BLOCKED_BY_CLIENT)
+            )
+
+        async def _cdp_respond(request_id, status=200, headers=None, body=None, **_):
+            cdp_headers = None
+            if headers:
+                cdp_headers = [{'name': h['name'], 'value': h['value']} for h in headers]
+            await self._execute_command(
+                FetchCommands.fulfill_request(
+                    request_id=request_id,
+                    response_code=status,
+                    response_headers=cdp_headers,
+                    body=body,
+                )
+            )
+
+        async def _on_request_paused(event):
+            params = event.get('params', {})
+            request_data = params.get('request', {})
+            raw_headers = request_data.get('headers', {})
+            headers_list = [{'name': k, 'value': v} for k, v in raw_headers.items()]
+
+            req = InterceptedRequest(
+                request_id=params.get('requestId', ''),
+                url=request_data.get('url', ''),
+                method=request_data.get('method', ''),
+                headers=headers_list,
+                body=None,
+                continue_fn=_cdp_continue,
+                fail_fn=_cdp_fail,
+                respond_fn=_cdp_respond,
+            )
+
+            if url_patterns:
+                matched = any(
+                    self._match_url_pattern(req.url, pattern)
+                    for pattern in url_patterns
+                )
+                if not matched:
+                    await req.continue_()
+                    return
+
+            await callback(req)
+
+        callback_id = await self._connection_handler.register_callback(
+            FetchEvent.REQUEST_PAUSED, _on_request_paused
+        )
+        return str(callback_id)
+
+    async def remove_intercept(self, intercept_id: str):
+        """Remove a request intercept."""
+        await self._connection_handler.remove_callback(int(intercept_id))
+
+    @staticmethod
+    def _match_url_pattern(url: str, pattern: str) -> bool:
+        """Simple URL pattern matching (supports * wildcard)."""
+        return fnmatch.fnmatch(url, f'*{pattern}*') if not pattern.startswith('http') else fnmatch.fnmatch(url, pattern)
 
     async def _enable_fetch_events(
         self,

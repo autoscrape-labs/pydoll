@@ -166,41 +166,41 @@ class SetExtraHeadersParameters(TypedDict):
     userContexts: NotRequired[list[UserContext]]
 
 
-AddDataCollectorCommand = Command[AddDataCollectorParameters, AddDataCollectorResult]
+AddDataCollectorCommand = Command[AddDataCollectorParameters, CommandResponse[AddDataCollectorResult]]
 AddDataCollectorResponse = CommandResponse[AddDataCollectorResult]
 
-AddInterceptCommand = Command[AddInterceptParameters, AddInterceptResult]
+AddInterceptCommand = Command[AddInterceptParameters, CommandResponse[AddInterceptResult]]
 AddInterceptResponse = CommandResponse[AddInterceptResult]
 
-ContinueRequestCommand = Command[ContinueRequestParameters, EmptyResult]
+ContinueRequestCommand = Command[ContinueRequestParameters, CommandResponse[EmptyResult]]
 ContinueRequestResponse = CommandResponse[EmptyResult]
 
-ContinueResponseCommand = Command[ContinueResponseParameters, EmptyResult]
+ContinueResponseCommand = Command[ContinueResponseParameters, CommandResponse[EmptyResult]]
 ContinueResponseResponse = CommandResponse[EmptyResult]
 
-ContinueWithAuthCommand = Command[ContinueWithAuthParameters, EmptyResult]
+ContinueWithAuthCommand = Command[ContinueWithAuthParameters, CommandResponse[EmptyResult]]
 ContinueWithAuthResponse = CommandResponse[EmptyResult]
 
-DisownDataCommand = Command[DisownDataParameters, EmptyResult]
+DisownDataCommand = Command[DisownDataParameters, CommandResponse[EmptyResult]]
 DisownDataResponse = CommandResponse[EmptyResult]
 
-FailRequestCommand = Command[FailRequestParameters, EmptyResult]
+FailRequestCommand = Command[FailRequestParameters, CommandResponse[EmptyResult]]
 FailRequestResponse = CommandResponse[EmptyResult]
 
-GetDataCommand = Command[GetDataParameters, GetDataResult]
+GetDataCommand = Command[GetDataParameters, CommandResponse[GetDataResult]]
 GetDataResponse = CommandResponse[GetDataResult]
 
-ProvideResponseCommand = Command[ProvideResponseParameters, EmptyResult]
+ProvideResponseCommand = Command[ProvideResponseParameters, CommandResponse[EmptyResult]]
 ProvideResponseResponse = CommandResponse[EmptyResult]
 
-RemoveDataCollectorCommand = Command[RemoveDataCollectorParameters, EmptyResult]
+RemoveDataCollectorCommand = Command[RemoveDataCollectorParameters, CommandResponse[EmptyResult]]
 RemoveDataCollectorResponse = CommandResponse[EmptyResult]
 
-RemoveInterceptCommand = Command[RemoveInterceptParameters, EmptyResult]
+RemoveInterceptCommand = Command[RemoveInterceptParameters, CommandResponse[EmptyResult]]
 RemoveInterceptResponse = CommandResponse[EmptyResult]
 
-SetCacheBehaviorCommand = Command[SetCacheBehaviorParameters, EmptyResult]
+SetCacheBehaviorCommand = Command[SetCacheBehaviorParameters, CommandResponse[EmptyResult]]
 SetCacheBehaviorResponse = CommandResponse[EmptyResult]
 
-SetExtraHeadersCommand = Command[SetExtraHeadersParameters, EmptyResult]
+SetExtraHeadersCommand = Command[SetExtraHeadersParameters, CommandResponse[EmptyResult]]
 SetExtraHeadersResponse = CommandResponse[EmptyResult]

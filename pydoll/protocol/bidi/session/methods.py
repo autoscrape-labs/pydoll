@@ -71,17 +71,17 @@ class SubscribeResult(TypedDict):
 
 UnsubscribeParameters = UnsubscribeByAttributesRequest | UnsubscribeByIDRequest
 
-StatusCommand = Command[EmptyParams, StatusResult]
+StatusCommand = Command[EmptyParams, CommandResponse[StatusResult]]
 StatusResponse = CommandResponse[StatusResult]
 
-NewCommand = Command[NewParameters, NewResult]
+NewCommand = Command[NewParameters, CommandResponse[NewResult]]
 NewResponse = CommandResponse[NewResult]
 
-EndCommand = Command[EmptyParams, EmptyResult]
+EndCommand = Command[EmptyParams, CommandResponse[EmptyResult]]
 EndResponse = CommandResponse[EmptyResult]
 
-SubscribeCommand = Command[SubscribeParameters, SubscribeResult]
+SubscribeCommand = Command[SubscribeParameters, CommandResponse[SubscribeResult]]
 SubscribeResponse = CommandResponse[SubscribeResult]
 
-UnsubscribeCommand = Command[UnsubscribeParameters, EmptyResult]
+UnsubscribeCommand = Command[UnsubscribeParameters, CommandResponse[EmptyResult]]
 UnsubscribeResponse = CommandResponse[EmptyResult]

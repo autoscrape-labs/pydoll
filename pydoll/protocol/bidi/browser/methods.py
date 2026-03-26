@@ -78,23 +78,23 @@ class SetDownloadBehaviorParameters(TypedDict):
     userContexts: NotRequired[list[UserContext]]
 
 
-CloseCommand = Command[EmptyParams, EmptyResult]
+CloseCommand = Command[EmptyParams, CommandResponse[EmptyResult]]
 CloseResponse = CommandResponse[EmptyResult]
 
-CreateUserContextCommand = Command[CreateUserContextParameters, UserContextInfo]
+CreateUserContextCommand = Command[CreateUserContextParameters, CommandResponse[UserContextInfo]]
 CreateUserContextResponse = CommandResponse[UserContextInfo]
 
-GetClientWindowsCommand = Command[EmptyParams, GetClientWindowsResult]
+GetClientWindowsCommand = Command[EmptyParams, CommandResponse[GetClientWindowsResult]]
 GetClientWindowsResponse = CommandResponse[GetClientWindowsResult]
 
-GetUserContextsCommand = Command[EmptyParams, GetUserContextsResult]
+GetUserContextsCommand = Command[EmptyParams, CommandResponse[GetUserContextsResult]]
 GetUserContextsResponse = CommandResponse[GetUserContextsResult]
 
-RemoveUserContextCommand = Command[RemoveUserContextParameters, EmptyResult]
+RemoveUserContextCommand = Command[RemoveUserContextParameters, CommandResponse[EmptyResult]]
 RemoveUserContextResponse = CommandResponse[EmptyResult]
 
-SetClientWindowStateCommand = Command[SetClientWindowStateParameters, ClientWindowInfo]
+SetClientWindowStateCommand = Command[SetClientWindowStateParameters, CommandResponse[ClientWindowInfo]]
 SetClientWindowStateResponse = CommandResponse[ClientWindowInfo]
 
-SetDownloadBehaviorCommand = Command[SetDownloadBehaviorParameters, EmptyResult]
+SetDownloadBehaviorCommand = Command[SetDownloadBehaviorParameters, CommandResponse[EmptyResult]]
 SetDownloadBehaviorResponse = CommandResponse[EmptyResult]

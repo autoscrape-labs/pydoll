@@ -188,41 +188,41 @@ class TraverseHistoryParameters(TypedDict):
     delta: int
 
 
-ActivateCommand = Command[ActivateParameters, EmptyResult]
+ActivateCommand = Command[ActivateParameters, CommandResponse[EmptyResult]]
 ActivateResponse = CommandResponse[EmptyResult]
 
-CaptureScreenshotCommand = Command[CaptureScreenshotParameters, CaptureScreenshotResult]
+CaptureScreenshotCommand = Command[CaptureScreenshotParameters, CommandResponse[CaptureScreenshotResult]]
 CaptureScreenshotResponse = CommandResponse[CaptureScreenshotResult]
 
-CloseCommand = Command[CloseParameters, EmptyResult]
+CloseCommand = Command[CloseParameters, CommandResponse[EmptyResult]]
 CloseResponse = CommandResponse[EmptyResult]
 
-CreateCommand = Command[CreateParameters, CreateResult]
+CreateCommand = Command[CreateParameters, CommandResponse[CreateResult]]
 CreateResponse = CommandResponse[CreateResult]
 
-GetTreeCommand = Command[GetTreeParameters, GetTreeResult]
+GetTreeCommand = Command[GetTreeParameters, CommandResponse[GetTreeResult]]
 GetTreeResponse = CommandResponse[GetTreeResult]
 
-HandleUserPromptCommand = Command[HandleUserPromptParameters, EmptyResult]
+HandleUserPromptCommand = Command[HandleUserPromptParameters, CommandResponse[EmptyResult]]
 HandleUserPromptResponse = CommandResponse[EmptyResult]
 
-LocateNodesCommand = Command[LocateNodesParameters, LocateNodesResult]
+LocateNodesCommand = Command[LocateNodesParameters, CommandResponse[LocateNodesResult]]
 LocateNodesResponse = CommandResponse[LocateNodesResult]
 
-NavigateCommand = Command[NavigateParameters, NavigateResult]
+NavigateCommand = Command[NavigateParameters, CommandResponse[NavigateResult]]
 NavigateResponse = CommandResponse[NavigateResult]
 
-PrintCommand = Command[PrintParameters, PrintResult]
+PrintCommand = Command[PrintParameters, CommandResponse[PrintResult]]
 PrintResponse = CommandResponse[PrintResult]
 
-ReloadCommand = Command[ReloadParameters, NavigateResult]
+ReloadCommand = Command[ReloadParameters, CommandResponse[NavigateResult]]
 ReloadResponse = CommandResponse[NavigateResult]
 
-SetBypassCSPCommand = Command[SetBypassCSPParameters, EmptyResult]
+SetBypassCSPCommand = Command[SetBypassCSPParameters, CommandResponse[EmptyResult]]
 SetBypassCSPResponse = CommandResponse[EmptyResult]
 
-SetViewportCommand = Command[SetViewportParameters, EmptyResult]
+SetViewportCommand = Command[SetViewportParameters, CommandResponse[EmptyResult]]
 SetViewportResponse = CommandResponse[EmptyResult]
 
-TraverseHistoryCommand = Command[TraverseHistoryParameters, EmptyResult]
+TraverseHistoryCommand = Command[TraverseHistoryParameters, CommandResponse[EmptyResult]]
 TraverseHistoryResponse = CommandResponse[EmptyResult]

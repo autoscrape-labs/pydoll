@@ -60,11 +60,11 @@ class DeleteCookiesResult(TypedDict):
     partitionKey: PartitionKey
 
 
-GetCookiesCommand = Command[GetCookiesParameters, GetCookiesResult]
+GetCookiesCommand = Command[GetCookiesParameters, CommandResponse[GetCookiesResult]]
 GetCookiesResponse = CommandResponse[GetCookiesResult]
 
-SetCookieCommand = Command[SetCookieParameters, SetCookieResult]
+SetCookieCommand = Command[SetCookieParameters, CommandResponse[SetCookieResult]]
 SetCookieResponse = CommandResponse[SetCookieResult]
 
-DeleteCookiesCommand = Command[DeleteCookiesParameters, DeleteCookiesResult]
+DeleteCookiesCommand = Command[DeleteCookiesParameters, CommandResponse[DeleteCookiesResult]]
 DeleteCookiesResponse = CommandResponse[DeleteCookiesResult]

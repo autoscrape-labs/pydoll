@@ -6,6 +6,7 @@ import os
 from random import randint
 from typing import TYPE_CHECKING, Optional, overload
 
+from pydoll.browser.intercepted_request import InterceptedRequest
 from pydoll.browser.managers import (
     BrowserProcessManager,
     ProxyManager,
@@ -13,12 +14,14 @@ from pydoll.browser.managers import (
 )
 from pydoll.commands.bidi.browser_commands import BrowserCommands
 from pydoll.commands.bidi.browsing_context_commands import BrowsingContextCommands
+from pydoll.commands.bidi.network_commands import NetworkCommands
 from pydoll.commands.bidi.session_commands import SessionCommands
 from pydoll.commands.bidi.storage_commands import StorageCommands
 from pydoll.connection.bidi_connection_handler import BiDiConnectionHandler
 from pydoll.exceptions import BrowserNotRunning, UnsupportedOperation
 from pydoll.protocol.bidi.base import Command, T_CommandParams, T_CommandResult
 from pydoll.protocol.bidi.browser.types import ClientWindowInfo
+from pydoll.protocol.events import BIDI_EVENT_MAP, Event
 from pydoll.protocol.types import (
     BrowserVersion,
     Cookie,
@@ -343,15 +346,20 @@ class FirefoxBrowser:
         """Register event listener.
 
         Args:
-            event_name: BiDi event name (e.g. 'browsingContext.load').
+            event_name: Event enum or native BiDi event name.
             callback: Function called on event (sync or async).
             temporary: Remove after first invocation.
 
         Returns:
             Callback ID for removal.
         """
+
+        native_event = event_name
+        if isinstance(event_name, Event):
+            native_event = BIDI_EVENT_MAP.get(event_name, event_name)
+
         await self._execute_command(
-            SessionCommands.subscribe(events=[event_name])
+            SessionCommands.subscribe(events=[native_event])
         )
 
         async def callback_wrapper(event):
@@ -363,12 +371,118 @@ class FirefoxBrowser:
             function_to_register = callback
 
         return await self._connection_handler.register_callback(
-            event_name, function_to_register, temporary
+            native_event, function_to_register, temporary
         )
 
     async def remove_callback(self, callback_id: int):
         """Remove registered event callback."""
         await self._connection_handler.remove_callback(callback_id)
+
+    async def intercept_requests(
+        self,
+        callback: Callable,
+        url_patterns: Optional[list[str]] = None,
+    ) -> str:
+        """Intercept network requests.
+
+        Args:
+            callback: Async function receiving InterceptedRequest.
+            url_patterns: URL patterns to match. All if None.
+
+        Returns:
+            Intercept ID for later removal.
+        """
+
+        bidi_patterns = None
+        if url_patterns:
+            bidi_patterns = [
+                {'type': 'string', 'pattern': p} for p in url_patterns
+            ]
+
+        response = await self._execute_command(
+            NetworkCommands.add_intercept(
+                phases=['beforeRequestSent'],
+                url_patterns=bidi_patterns,
+            )
+        )
+        intercept_id = response['result']['intercept']
+
+        await self._execute_command(
+            SessionCommands.subscribe(events=['network.beforeRequestSent'])
+        )
+
+        async def _bidi_continue(request_id, url=None, method=None, headers=None, **_):
+            bidi_headers = None
+            if headers:
+                bidi_headers = [
+                    {'name': h['name'], 'value': {'type': 'string', 'value': h['value']}}
+                    for h in headers
+                ]
+            await self._execute_command(
+                NetworkCommands.continue_request(
+                    request=request_id, url=url, method=method, headers=bidi_headers,
+                )
+            )
+
+        async def _bidi_fail(request_id, **_):
+            await self._execute_command(
+                NetworkCommands.fail_request(request=request_id)
+            )
+
+        async def _bidi_respond(request_id, status=200, headers=None, body=None, **_):
+            bidi_headers = None
+            if headers:
+                bidi_headers = [
+                    {'name': h['name'], 'value': {'type': 'string', 'value': h['value']}}
+                    for h in headers
+                ]
+            bidi_body = None
+            if body:
+                bidi_body = {'type': 'string', 'value': body}
+            await self._execute_command(
+                NetworkCommands.provide_response(
+                    request=request_id,
+                    status_code=status,
+                    headers=bidi_headers,
+                    body=bidi_body,
+                )
+            )
+
+        async def _on_before_request_sent(event):
+            params = event.get('params', {})
+            if not params.get('isBlocked'):
+                return
+
+            request_data = params.get('request', {})
+            raw_headers = request_data.get('headers', [])
+            headers_list = [
+                {'name': h['name'], 'value': h['value'].get('value', '') if isinstance(h['value'], dict) else h['value']}
+                for h in raw_headers
+            ]
+
+            req = InterceptedRequest(
+                request_id=request_data.get('request', ''),
+                url=request_data.get('url', ''),
+                method=request_data.get('method', ''),
+                headers=headers_list,
+                body=None,
+                continue_fn=_bidi_continue,
+                fail_fn=_bidi_fail,
+                respond_fn=_bidi_respond,
+            )
+            await callback(req)
+
+        await self._connection_handler.register_callback(
+            'network.beforeRequestSent', _on_before_request_sent
+        )
+        return intercept_id
+
+    async def remove_intercept(self, intercept_id: str):
+        """Remove a request intercept."""
+
+        await self._execute_command(
+            NetworkCommands.remove_intercept(intercept=intercept_id)
+        )
 
     async def grant_permissions(self, permissions, origin=None, browser_context_id=None):
         """Not yet supported in BiDi."""

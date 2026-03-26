@@ -37,11 +37,11 @@ class SetFilesParameters(TypedDict):
     files: list[str]
 
 
-PerformActionsCommand = Command[PerformActionsParameters, EmptyResult]
+PerformActionsCommand = Command[PerformActionsParameters, CommandResponse[EmptyResult]]
 PerformActionsResponse = CommandResponse[EmptyResult]
 
-ReleaseActionsCommand = Command[ReleaseActionsParameters, EmptyResult]
+ReleaseActionsCommand = Command[ReleaseActionsParameters, CommandResponse[EmptyResult]]
 ReleaseActionsResponse = CommandResponse[EmptyResult]
 
-SetFilesCommand = Command[SetFilesParameters, EmptyResult]
+SetFilesCommand = Command[SetFilesParameters, CommandResponse[EmptyResult]]
 SetFilesResponse = CommandResponse[EmptyResult]

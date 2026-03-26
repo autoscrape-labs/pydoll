@@ -31,8 +31,8 @@ class UninstallParameters(TypedDict):
     extension: Extension
 
 
-InstallCommand = Command[InstallParameters, InstallResult]
+InstallCommand = Command[InstallParameters, CommandResponse[InstallResult]]
 InstallResponse = CommandResponse[InstallResult]
 
-UninstallCommand = Command[UninstallParameters, EmptyResult]
+UninstallCommand = Command[UninstallParameters, CommandResponse[EmptyResult]]
 UninstallResponse = CommandResponse[EmptyResult]
