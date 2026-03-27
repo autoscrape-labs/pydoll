@@ -136,8 +136,8 @@ class TestTabRequestIntegration:
         request_instance = tab.request
         
         # Mock network events methods
-        tab.enable_network_events = AsyncMock()
-        tab.disable_network_events = AsyncMock()
+        tab._enable_network_events = AsyncMock()
+        tab._disable_network_events = AsyncMock()
         tab.on = AsyncMock(side_effect=lambda *a, **kw: len(tab.on.call_args_list))
         tab.remove_callback = AsyncMock()
 
@@ -185,8 +185,8 @@ class TestTabRequestIntegration:
         
         # Tab initially has network events disabled
         tab._network_events_enabled = False
-        tab.enable_network_events = AsyncMock()
-        tab.disable_network_events = AsyncMock()
+        tab._enable_network_events = AsyncMock()
+        tab._disable_network_events = AsyncMock()
         tab.on = AsyncMock(side_effect=lambda *a, **kw: len(tab.on.call_args_list))
         tab.remove_callback = AsyncMock()
 
@@ -220,7 +220,7 @@ class TestTabRequestIntegration:
             await request_instance.get('https://example.com')
 
             # Verify network events were enabled and callbacks were registered
-            tab.enable_network_events.assert_called_once()
+            tab._enable_network_events.assert_called_once()
             assert tab.on.call_count == 4  # Four network events should be registered
 
     @pytest.mark.asyncio
@@ -230,8 +230,8 @@ class TestTabRequestIntegration:
         
         # Mock tab methods
         tab._network_events_enabled = False
-        tab.enable_network_events = AsyncMock()
-        tab.disable_network_events = AsyncMock()
+        tab._enable_network_events = AsyncMock()
+        tab._disable_network_events = AsyncMock()
         tab.on = AsyncMock(side_effect=lambda *a, **kw: len(tab.on.call_args_list))
         tab.remove_callback = AsyncMock()
         tab._execute_command = AsyncMock()
@@ -273,8 +273,8 @@ class TestTabRequestIntegration:
         
         # Mock tab methods
         tab._network_events_enabled = False
-        tab.enable_network_events = AsyncMock()
-        tab.disable_network_events = AsyncMock()
+        tab._enable_network_events = AsyncMock()
+        tab._disable_network_events = AsyncMock()
         tab.on = AsyncMock(side_effect=lambda *a, **kw: len(tab.on.call_args_list))
         tab.remove_callback = AsyncMock()
 
@@ -295,8 +295,8 @@ class TestTabRequestIntegration:
         
         # Mock tab methods
         tab._network_events_enabled = False
-        tab.enable_network_events = AsyncMock()
-        tab.disable_network_events = AsyncMock()
+        tab._enable_network_events = AsyncMock()
+        tab._disable_network_events = AsyncMock()
         tab.on = AsyncMock(side_effect=lambda *a, **kw: len(tab.on.call_args_list))
         tab.remove_callback = AsyncMock()
         tab._execute_command = AsyncMock()

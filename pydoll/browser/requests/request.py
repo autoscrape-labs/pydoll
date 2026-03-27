@@ -429,8 +429,8 @@ class Request:
         Note:
             Network events are only enabled if not already active on the tab.
         """
-        if not self.tab.network_events_enabled:
-            await self.tab.enable_network_events()
+        if not self.tab._network_events_enabled:
+            await self.tab._enable_network_events()
             self._network_events_enabled = True
             logger.debug('Network events enabled on tab for request capture')
 
@@ -472,7 +472,7 @@ class Request:
             await self.tab.remove_callback(callback_id)
         self._callback_ids.clear()
         if self._network_events_enabled:
-            await self.tab.disable_network_events()
+            await self.tab._disable_network_events()
             self._network_events_enabled = False
             logger.debug('Network events disabled on tab after request')
 
