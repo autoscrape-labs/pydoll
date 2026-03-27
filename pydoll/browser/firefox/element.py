@@ -3,10 +3,12 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any, Optional
 
+from pydoll.browser.firefox.find_mixin import _FirefoxFindMixin
 from pydoll.protocol.bidi import input as bidi_input
 from pydoll.protocol.bidi import script
 
 if TYPE_CHECKING:
+    from pydoll.browser.firefox.shadow_root import FirefoxShadowRoot
     from pydoll.connection.bidi_connection_handler import BiDiConnectionHandler
 
 logger = logging.getLogger(__name__)
@@ -34,7 +36,7 @@ KEYS = {
 }
 
 
-class FirefoxElement:
+class FirefoxElement(_FirefoxFindMixin):
     """
     Represents a DOM element in a Firefox tab via WebDriver BiDi.
 
@@ -62,6 +64,11 @@ class FirefoxElement:
         self._connection_handler = connection_handler
         self._shared_id: str = node.get('sharedId', '')
         logger.debug(f'FirefoxElement initialized: sharedId={self._shared_id}')
+
+    @property
+    def _find_start_nodes(self) -> list[dict]:
+        """Scope ``find()`` / ``query()`` to within this element."""
+        return [{'type': 'node', 'sharedId': self._shared_id}]
 
     @property
     def shared_id(self) -> str:
@@ -220,6 +227,28 @@ class FirefoxElement:
         result = response.get('result', {})
         script_result = result.get('result', {})
         return script_result.get('value')
+
+    async def get_shadow_root(self) -> FirefoxShadowRoot:
+        """
+        Return the shadow root attached to this element.
+
+        Raises:
+            ValueError: If the element has no shadow root (``el.shadowRoot`` is ``null``).
+        """
+        from pydoll.browser.firefox.shadow_root import FirefoxShadowRoot
+
+        response: dict = await self._connection_handler.execute_command(
+            script.call_function(
+                function_declaration='(el) => el.shadowRoot',
+                context=self._context_id,
+                args=[{'sharedId': self._shared_id}],
+            )
+        )
+        result = response.get('result', {}).get('result', {})
+        shared_id = result.get('sharedId', '')
+        if not shared_id:
+            raise ValueError(f'Element {self._shared_id!r} has no shadow root')
+        return FirefoxShadowRoot(shared_id, self._context_id, self._connection_handler)
 
     def __repr__(self) -> str:
         return f'FirefoxElement(sharedId={self._shared_id!r})'

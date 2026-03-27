@@ -24,7 +24,10 @@ from pydoll.exceptions import (
     BrowserNotRunning,
     InvalidConnectionPort,
     InvalidOptionsObject,
+    NetworkEventsNotEnabled,
+    NoDialogPresent,
     UnsupportedOS,
+    WaitElementTimeout,
 )
 
 
@@ -284,7 +287,7 @@ class TestFirefoxTab:
     async def test_find_returns_firefox_elements(self, firefox_tab, mock_bidi_handler):
         nodes = [{'type': 'node', 'sharedId': 'node-1'}]
         mock_bidi_handler.execute_command.return_value = {'result': {'nodes': nodes}}
-        result = await firefox_tab.find('.my-class')
+        result = await firefox_tab.query('.my-class', find_all=True)
         assert len(result) == 1
         assert isinstance(result[0], FirefoxElement)
         assert result[0].shared_id == 'node-1'
@@ -295,20 +298,20 @@ class TestFirefoxTab:
     @pytest.mark.asyncio
     async def test_find_empty_result(self, firefox_tab, mock_bidi_handler):
         mock_bidi_handler.execute_command.return_value = {'result': {'nodes': []}}
-        result = await firefox_tab.find('.missing')
+        result = await firefox_tab.query('.missing', find_all=True, raise_exc=False)
         assert result == []
 
     @pytest.mark.asyncio
     async def test_find_with_xpath_locator(self, firefox_tab, mock_bidi_handler):
         mock_bidi_handler.execute_command.return_value = {'result': {'nodes': []}}
-        await firefox_tab.find('//h1', selector_type='xpath')
+        await firefox_tab.query('//h1', raise_exc=False)
         cmd = mock_bidi_handler.execute_command.call_args[0][0]
         assert cmd['params']['locator'] == {'type': 'xpath', 'value': '//h1'}
 
     @pytest.mark.asyncio
     async def test_find_with_max_node_count(self, firefox_tab, mock_bidi_handler):
         mock_bidi_handler.execute_command.return_value = {'result': {'nodes': []}}
-        await firefox_tab.find('p', max_node_count=5)
+        await firefox_tab.query('p', max_node_count=5, raise_exc=False)
         cmd = mock_bidi_handler.execute_command.call_args[0][0]
         assert cmd['params']['maxNodeCount'] == 5
 
@@ -785,6 +788,241 @@ class TestFirefoxTab:
             'username': 'user',
             'password': 'pass',
         }
+
+    # --- find with timeout ---
+
+    @pytest.mark.asyncio
+    async def test_find_with_timeout_returns_elements_when_found(self, firefox_tab, mock_bidi_handler):
+        node = {'type': 'node', 'sharedId': 'shared-1', 'value': {'nodeType': 1}}
+        mock_bidi_handler.execute_command.return_value = {'result': {'nodes': [node]}}
+        elements = await firefox_tab.query('#btn', timeout=2.0, find_all=True)
+        assert len(elements) == 1
+
+    @pytest.mark.asyncio
+    async def test_find_with_timeout_raises_on_timeout(self, firefox_tab, mock_bidi_handler):
+        mock_bidi_handler.execute_command.return_value = {'result': {'nodes': []}}
+        with pytest.raises(WaitElementTimeout):
+            await firefox_tab.find('#missing', timeout=0.1)
+
+    # --- take_screenshot enhanced ---
+
+    @pytest.mark.asyncio
+    async def test_take_screenshot_as_base64(self, firefox_tab, mock_bidi_handler):
+        raw = b'fake-png-data'
+        encoded = base64.b64encode(raw).decode()
+        mock_bidi_handler.execute_command.return_value = {'result': {'data': encoded}}
+        result = await firefox_tab.take_screenshot(as_base64=True)
+        assert result == encoded
+
+    @pytest.mark.asyncio
+    async def test_take_screenshot_to_file(self, firefox_tab, mock_bidi_handler, tmp_path):
+        raw = b'fake-png-data'
+        encoded = base64.b64encode(raw).decode()
+        mock_bidi_handler.execute_command.return_value = {'result': {'data': encoded}}
+        out_path = str(tmp_path / 'shot.png')
+        result = await firefox_tab.take_screenshot(path=out_path)
+        assert result is None
+        with open(out_path, 'rb') as f:
+            assert f.read() == raw
+
+    # --- delete_all_cookies ---
+
+    @pytest.mark.asyncio
+    async def test_delete_all_cookies_sends_no_filter(self, firefox_tab, mock_bidi_handler):
+        await firefox_tab.delete_all_cookies()
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['method'] == 'storage.deleteCookies'
+        assert 'filter' not in cmd['params']
+
+    # --- dialog handling ---
+
+    @pytest.mark.asyncio
+    async def test_has_dialog_subscribes_on_first_call(self, firefox_tab, mock_bidi_handler):
+        result = await firefox_tab.has_dialog()
+        assert result is False
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['method'] == 'session.subscribe'
+        assert 'browsingContext.userPromptOpened' in cmd['params']['events']
+
+    @pytest.mark.asyncio
+    async def test_has_dialog_returns_true_after_event(self, firefox_tab, mock_bidi_handler):
+        await firefox_tab.has_dialog()  # subscribes and registers callback
+        # Simulate dialog event by setting internal state directly
+        firefox_tab._current_dialog = {'params': {'message': 'Are you sure?'}}
+        assert await firefox_tab.has_dialog() is True
+
+    @pytest.mark.asyncio
+    async def test_get_dialog_message_raises_when_no_dialog(self, firefox_tab, mock_bidi_handler):
+        with pytest.raises(NoDialogPresent):
+            await firefox_tab.get_dialog_message()
+
+    @pytest.mark.asyncio
+    async def test_get_dialog_message_returns_message(self, firefox_tab, mock_bidi_handler):
+        firefox_tab._current_dialog = {'params': {'message': 'Hello dialog'}}
+        firefox_tab._dialog_subscribed = True
+        msg = await firefox_tab.get_dialog_message()
+        assert msg == 'Hello dialog'
+
+    @pytest.mark.asyncio
+    async def test_handle_dialog_raises_when_no_dialog(self, firefox_tab, mock_bidi_handler):
+        with pytest.raises(NoDialogPresent):
+            await firefox_tab.handle_dialog(accept=True)
+
+    @pytest.mark.asyncio
+    async def test_handle_dialog_accept(self, firefox_tab, mock_bidi_handler):
+        firefox_tab._current_dialog = {'params': {'message': 'confirm?'}}
+        firefox_tab._dialog_subscribed = True
+        await firefox_tab.handle_dialog(accept=True)
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['method'] == 'browsingContext.handleUserPrompt'
+        assert cmd['params']['accept'] is True
+        assert firefox_tab._current_dialog is None
+
+    @pytest.mark.asyncio
+    async def test_handle_dialog_with_prompt_text(self, firefox_tab, mock_bidi_handler):
+        firefox_tab._current_dialog = {'params': {'message': 'Enter text:'}}
+        firefox_tab._dialog_subscribed = True
+        await firefox_tab.handle_dialog(accept=True, prompt_text='my input')
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['params']['userText'] == 'my input'
+
+    # --- bring_to_front ---
+
+    @pytest.mark.asyncio
+    async def test_bring_to_front_sends_activate(self, firefox_tab, mock_bidi_handler):
+        await firefox_tab.bring_to_front()
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['method'] == 'browsingContext.activate'
+        assert cmd['params']['context'] == 'ctx-1'
+
+    # --- print_to_pdf ---
+
+    @pytest.mark.asyncio
+    async def test_print_to_pdf_as_base64(self, firefox_tab, mock_bidi_handler):
+        pdf_b64 = base64.b64encode(b'%PDF-fake').decode()
+        mock_bidi_handler.execute_command.return_value = {'result': {'data': pdf_b64}}
+        result = await firefox_tab.print_to_pdf(as_base64=True)
+        assert result == pdf_b64
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['method'] == 'browsingContext.print'
+
+    @pytest.mark.asyncio
+    async def test_print_to_pdf_to_file(self, firefox_tab, mock_bidi_handler, tmp_path):
+        pdf_bytes = b'%PDF-fake'
+        pdf_b64 = base64.b64encode(pdf_bytes).decode()
+        mock_bidi_handler.execute_command.return_value = {'result': {'data': pdf_b64}}
+        out_path = str(tmp_path / 'page.pdf')
+        result = await firefox_tab.print_to_pdf(path=out_path)
+        assert result is None
+        with open(out_path, 'rb') as f:
+            assert f.read() == pdf_bytes
+
+    @pytest.mark.asyncio
+    async def test_print_to_pdf_raises_without_path_or_base64(self, firefox_tab, mock_bidi_handler):
+        pdf_b64 = base64.b64encode(b'%PDF-fake').decode()
+        mock_bidi_handler.execute_command.return_value = {'result': {'data': pdf_b64}}
+        with pytest.raises(ValueError):
+            await firefox_tab.print_to_pdf()
+
+    @pytest.mark.asyncio
+    async def test_print_to_pdf_landscape(self, firefox_tab, mock_bidi_handler):
+        pdf_b64 = base64.b64encode(b'%PDF-fake').decode()
+        mock_bidi_handler.execute_command.return_value = {'result': {'data': pdf_b64}}
+        await firefox_tab.print_to_pdf(as_base64=True, landscape=True)
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['params']['landscape'] is True
+
+    # --- get_network_response_body ---
+
+    @pytest.mark.asyncio
+    async def test_get_network_response_body_raises_when_not_enabled(self, firefox_tab, mock_bidi_handler):
+        with pytest.raises(NetworkEventsNotEnabled):
+            await firefox_tab.get_network_response_body('req-1')
+
+    @pytest.mark.asyncio
+    async def test_get_network_response_body_returns_body(self, firefox_tab, mock_bidi_handler):
+        firefox_tab._network_events_enabled = True
+        mock_bidi_handler.execute_command.return_value = {
+            'result': {'body': '{"key": "value"}', 'base64Encoded': False}
+        }
+        body = await firefox_tab.get_network_response_body('req-1')
+        assert body == '{"key": "value"}'
+        cmd = mock_bidi_handler.execute_command.call_args[0][0]
+        assert cmd['method'] == 'network.getResponseBody'
+        assert cmd['params']['request'] == 'req-1'
+
+    # --- clear_callbacks ---
+
+    @pytest.mark.asyncio
+    async def test_clear_callbacks_delegates_to_handler(self, firefox_tab, mock_bidi_handler):
+        mock_bidi_handler.clear_callbacks = AsyncMock()
+        await firefox_tab.clear_callbacks()
+        mock_bidi_handler.clear_callbacks.assert_called_once()
+
+    # --- get_network_logs ---
+
+    @pytest.mark.asyncio
+    async def test_get_network_logs_raises_when_not_enabled(self, firefox_tab, mock_bidi_handler):
+        with pytest.raises(NetworkEventsNotEnabled):
+            firefox_tab.get_network_logs()
+
+    @pytest.mark.asyncio
+    async def test_get_network_logs_returns_all_logs(self, firefox_tab, mock_bidi_handler):
+        firefox_tab._network_events_enabled = True
+        firefox_tab._network_logs = [
+            {'params': {'request': {'url': 'https://example.com/api'}}},
+            {'params': {'request': {'url': 'https://other.com/'}}},
+        ]
+        logs = firefox_tab.get_network_logs()
+        assert len(logs) == 2
+
+    @pytest.mark.asyncio
+    async def test_get_network_logs_filters_by_url(self, firefox_tab, mock_bidi_handler):
+        firefox_tab._network_events_enabled = True
+        firefox_tab._network_logs = [
+            {'params': {'request': {'url': 'https://example.com/api'}}},
+            {'params': {'request': {'url': 'https://other.com/'}}},
+        ]
+        logs = firefox_tab.get_network_logs(filter='example.com')
+        assert len(logs) == 1
+        assert 'example.com' in logs[0]['params']['request']['url']
+
+    # --- enable_network_events sets flag ---
+
+    @pytest.mark.asyncio
+    async def test_enable_network_events_sets_enabled_flag(self, firefox_tab, mock_bidi_handler):
+        assert firefox_tab._network_events_enabled is False
+        await firefox_tab.enable_network_events()
+        assert firefox_tab._network_events_enabled is True
+
+    @pytest.mark.asyncio
+    async def test_disable_network_events_clears_enabled_flag(self, firefox_tab, mock_bidi_handler):
+        firefox_tab._network_events_enabled = True
+        firefox_tab._network_logs_callback_id = 5
+        await firefox_tab.disable_network_events()
+        assert firefox_tab._network_events_enabled is False
+        mock_bidi_handler.remove_callback.assert_called_once_with(5)
+
+    # --- expect_file_chooser ---
+
+    @pytest.mark.asyncio
+    async def test_expect_file_chooser_subscribes_and_removes_callback(
+        self, firefox_tab, mock_bidi_handler
+    ):
+        mock_bidi_handler.register_callback.return_value = 99
+        async with firefox_tab.expect_file_chooser(['/tmp/file.txt']):
+            pass
+        # Verify subscription
+        subscribe_calls = [
+            call[0][0] for call in mock_bidi_handler.execute_command.call_args_list
+            if call[0][0].get('method') == 'session.subscribe'
+        ]
+        assert any(
+            'input.fileDialogOpened' in c.get('params', {}).get('events', [])
+            for c in subscribe_calls
+        )
+        # Callback should be removed after context exits
+        mock_bidi_handler.remove_callback.assert_called_with(99)
 
 
 # ---------------------------------------------------------------------------

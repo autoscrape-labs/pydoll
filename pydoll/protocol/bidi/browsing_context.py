@@ -30,6 +30,7 @@ class LocateNodesParams(TypedDict):
     context: str
     locator: dict
     maxNodeCount: NotRequired[int]
+    startNodes: NotRequired[list[dict]]
 
 
 class CloseParams(TypedDict):
@@ -122,11 +123,16 @@ def capture_screenshot(context: str) -> CaptureScreenshotCommand:
 
 
 def locate_nodes(
-    context: str, locator: dict, max_node_count: Optional[int] = None
+    context: str,
+    locator: dict,
+    max_node_count: Optional[int] = None,
+    start_nodes: Optional[list[dict]] = None,
 ) -> LocateNodesCommand:
     params = LocateNodesParams(context=context, locator=locator)
     if max_node_count is not None:
         params['maxNodeCount'] = max_node_count
+    if start_nodes is not None:
+        params['startNodes'] = start_nodes
     return Command(method='browsingContext.locateNodes', params=params)
 
 
@@ -146,3 +152,71 @@ def traverse_history(context: str, delta: int) -> TraverseHistoryCommand:
         method='browsingContext.traverseHistory',
         params=TraverseHistoryParams(context=context, delta=delta),
     )
+
+
+class ActivateParams(TypedDict):
+    context: str
+
+
+class PrintPageParams(TypedDict):
+    context: str
+    landscape: NotRequired[bool]
+    printBackground: NotRequired[bool]
+    scale: NotRequired[float]
+
+
+class PrintPageResult(TypedDict):
+    data: str
+
+
+class HandleUserPromptParams(TypedDict):
+    context: str
+    accept: bool
+    userText: NotRequired[str]
+
+
+ActivateResponse = Response[EmptyResponse]
+PrintPageResponse = Response[PrintPageResult]
+HandleUserPromptResponse = Response[EmptyResponse]
+
+ActivateCommand = Command[ActivateParams, ActivateResponse]
+PrintPageCommand = Command[PrintPageParams, PrintPageResponse]
+HandleUserPromptCommand = Command[HandleUserPromptParams, HandleUserPromptResponse]
+
+
+class BrowsingContextEvent:
+    USER_PROMPT_OPENED = 'browsingContext.userPromptOpened'
+    USER_PROMPT_CLOSED = 'browsingContext.userPromptClosed'
+
+
+def activate(context: str) -> ActivateCommand:
+    return Command(
+        method='browsingContext.activate',
+        params=ActivateParams(context=context),
+    )
+
+
+def print_page(
+    context: str,
+    landscape: bool = False,
+    print_background: bool = True,
+    scale: float = 1.0,
+) -> PrintPageCommand:
+    return Command(
+        method='browsingContext.print',
+        params=PrintPageParams(
+            context=context,
+            landscape=landscape,
+            printBackground=print_background,
+            scale=scale,
+        ),
+    )
+
+
+def handle_user_prompt(
+    context: str, accept: bool, user_text: Optional[str] = None
+) -> HandleUserPromptCommand:
+    params = HandleUserPromptParams(context=context, accept=accept)
+    if user_text is not None:
+        params['userText'] = user_text
+    return Command(method='browsingContext.handleUserPrompt', params=params)

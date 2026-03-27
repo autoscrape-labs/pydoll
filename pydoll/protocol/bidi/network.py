@@ -214,6 +214,26 @@ def fail_request(request_id: str) -> FailRequestCommand:
     )
 
 
+class GetResponseBodyParams(TypedDict):
+    request: str
+
+
+class GetResponseBodyResult(TypedDict):
+    body: str
+    base64Encoded: bool
+
+
+GetResponseBodyResponse = Response[GetResponseBodyResult]
+GetResponseBodyCommand = Command[GetResponseBodyParams, GetResponseBodyResponse]
+
+
+def get_response_body(request_id: str) -> GetResponseBodyCommand:
+    return Command(
+        method='network.getResponseBody',
+        params=GetResponseBodyParams(request=request_id),
+    )
+
+
 def provide_response(
     request_id: str,
     status_code: int = 200,

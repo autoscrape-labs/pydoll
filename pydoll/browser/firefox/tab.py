@@ -3,11 +3,18 @@ from __future__ import annotations
 import asyncio
 import base64
 import logging
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, overload
+from contextlib import asynccontextmanager
+from typing import TYPE_CHECKING, Any, AsyncIterator, Awaitable, Callable, Optional, overload
 
-from pydoll.browser.firefox.element import KEYS, FirefoxElement
+import aiofiles
+
+from pydoll.browser.firefox.element import KEYS
+from pydoll.browser.firefox.find_mixin import _FirefoxFindMixin
+from pydoll.exceptions import NetworkEventsNotEnabled, NoDialogPresent
 from pydoll.protocol.bidi import browsing_context, network, script, session, storage
 from pydoll.protocol.bidi import input as bidi_input
+from pydoll.protocol.bidi.browsing_context import BrowsingContextEvent
+from pydoll.protocol.bidi.input import InputEvent
 from pydoll.protocol.bidi.network import Header, InterceptPhase, NetworkEvent
 
 if TYPE_CHECKING:
@@ -17,7 +24,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class FirefoxTab:
+class FirefoxTab(_FirefoxFindMixin):
     """
     Represents a Firefox browser tab using WebDriver BiDi protocol.
 
@@ -35,6 +42,11 @@ class FirefoxTab:
         """
         self._context_id = context_id
         self._connection_handler = connection_handler
+        self._network_events_enabled: bool = False
+        self._network_logs: list[dict] = []
+        self._network_logs_callback_id: Optional[int] = None
+        self._current_dialog: Optional[dict] = None
+        self._dialog_subscribed: bool = False
         logger.debug(f'FirefoxTab initialized: context_id={context_id}')
 
     @property
@@ -78,47 +90,32 @@ class FirefoxTab:
         script_result = result.get('result', {})
         return script_result.get('value')
 
-    async def find(
-        self,
-        selector: str,
-        selector_type: str = 'css',
-        max_node_count: Optional[int] = None,
-    ) -> list[FirefoxElement]:
-        """
-        Find elements in this tab using a CSS or XPath selector.
-
-        Args:
-            selector: CSS selector or XPath expression.
-            selector_type: Locator type - 'css' or 'xpath'.
-            max_node_count: Maximum number of nodes to return.
-
-        Returns:
-            List of FirefoxElement instances ready for interaction.
-        """
-        locator = {'type': selector_type, 'value': selector}
-        logger.debug(
-            f'Finding nodes: selector={selector!r}, type={selector_type}, '
-            f'context={self._context_id}'
-        )
-        response: dict = await self._connection_handler.execute_command(
-            browsing_context.locate_nodes(self._context_id, locator, max_node_count)
-        )
-        nodes = response.get('result', {}).get('nodes', [])
-        return [FirefoxElement(node, self._context_id, self._connection_handler) for node in nodes]
-
-    async def take_screenshot(self) -> bytes:
+    async def take_screenshot(
+        self, path: Optional[str] = None, as_base64: bool = False
+    ) -> Optional[bytes | str]:
         """
         Capture a screenshot of this tab.
 
+        Args:
+            path: If provided, save the screenshot to this file path.
+            as_base64: If True, return the screenshot as a base64 string.
+
         Returns:
-            PNG screenshot as bytes.
+            PNG bytes, base64 string, or None (if path provided).
         """
         logger.debug(f'Taking screenshot: context={self._context_id}')
         response: dict = await self._connection_handler.execute_command(
             browsing_context.capture_screenshot(self._context_id)
         )
         data = response.get('result', {}).get('data', '')
-        return base64.b64decode(data)
+        if as_base64:
+            return data
+        png_bytes = base64.b64decode(data)
+        if path is not None:
+            async with aiofiles.open(path, 'wb') as f:
+                await f.write(png_bytes)
+            return None
+        return png_bytes
 
     @property
     async def current_url(self) -> Optional[str]:
@@ -303,6 +300,10 @@ class FirefoxTab:
             storage.delete_cookies(self._context_id, filter=cookie_filter)
         )
 
+    async def delete_all_cookies(self) -> None:
+        """Delete all cookies for this tab's browsing context."""
+        await self.delete_cookies()
+
     async def refresh(self, wait: str = 'complete') -> dict:
         """
         Reload the current page.
@@ -358,12 +359,24 @@ class FirefoxTab:
             session.subscribe(NetworkEvent.ALL_EVENTS, contexts=[self._context_id])
         )
 
+        async def _log_event(event: dict) -> None:
+            self._network_logs.append(event)
+
+        self._network_logs_callback_id = await self._connection_handler.register_callback(
+            NetworkEvent.BEFORE_REQUEST_SENT, _log_event, False
+        )
+        self._network_events_enabled = True
+
     async def disable_network_events(self) -> None:
         """Unsubscribe from all BiDi network monitoring events for this tab."""
         logger.info(f'Disabling network events: context={self._context_id}')
         await self._connection_handler.execute_command(
             session.unsubscribe(NetworkEvent.ALL_EVENTS, contexts=[self._context_id])
         )
+        if self._network_logs_callback_id is not None:
+            await self._connection_handler.remove_callback(self._network_logs_callback_id)
+            self._network_logs_callback_id = None
+        self._network_events_enabled = False
 
     async def add_intercept(
         self,
@@ -537,6 +550,183 @@ class FirefoxTab:
         """Close this tab's browsing context."""
         logger.info(f'Closing context: {self._context_id}')
         await self._connection_handler.execute_command(browsing_context.close(self._context_id))
+
+    async def has_dialog(self) -> bool:
+        """
+        Check whether a dialog (alert, confirm, prompt) is currently open.
+
+        Subscribes to userPromptOpened on first call.
+        """
+        if not self._dialog_subscribed:
+            await self._connection_handler.execute_command(
+                session.subscribe(
+                    [BrowsingContextEvent.USER_PROMPT_OPENED], contexts=[self._context_id]
+                )
+            )
+
+            async def _on_dialog(event: dict) -> None:
+                self._current_dialog = event
+
+            await self._connection_handler.register_callback(
+                BrowsingContextEvent.USER_PROMPT_OPENED, _on_dialog, False
+            )
+            self._dialog_subscribed = True
+        return bool(self._current_dialog)
+
+    async def get_dialog_message(self) -> str:
+        """
+        Return the message text of the currently open dialog.
+
+        Raises:
+            NoDialogPresent: If no dialog is currently open.
+        """
+        if not await self.has_dialog():
+            raise NoDialogPresent()
+        return self._current_dialog['params']['message']  # type: ignore[index]
+
+    async def handle_dialog(self, accept: bool, prompt_text: Optional[str] = None) -> None:
+        """
+        Accept or dismiss the currently open dialog.
+
+        Args:
+            accept: True to accept, False to dismiss.
+            prompt_text: Optional text for prompt dialogs.
+
+        Raises:
+            NoDialogPresent: If no dialog is currently open.
+        """
+        if not await self.has_dialog():
+            raise NoDialogPresent()
+        await self._connection_handler.execute_command(
+            browsing_context.handle_user_prompt(self._context_id, accept, prompt_text)
+        )
+        self._current_dialog = None
+
+    async def bring_to_front(self) -> None:
+        """Activate/focus this tab."""
+        logger.debug(f'Bringing to front: context={self._context_id}')
+        await self._connection_handler.execute_command(browsing_context.activate(self._context_id))
+
+    async def print_to_pdf(
+        self,
+        path: Optional[str] = None,
+        landscape: bool = False,
+        print_background: bool = True,
+        scale: float = 1.0,
+        as_base64: bool = False,
+    ) -> Optional[str]:
+        """
+        Print the current page to PDF.
+
+        Args:
+            path: If provided, save the PDF to this file path.
+            landscape: Whether to print in landscape orientation.
+            print_background: Whether to print background graphics.
+            scale: Scale factor (0.1–2.0).
+            as_base64: If True, return the PDF as a base64 string.
+
+        Returns:
+            Base64 string if as_base64=True, None if path provided.
+
+        Raises:
+            ValueError: If neither path nor as_base64=True is specified.
+        """
+        logger.debug(f'Printing to PDF: context={self._context_id}')
+        response: dict = await self._connection_handler.execute_command(
+            browsing_context.print_page(self._context_id, landscape, print_background, scale)
+        )
+        data: str = response['result']['data']
+        if as_base64:
+            return data
+        if path is not None:
+            pdf_bytes = base64.b64decode(data)
+            async with aiofiles.open(path, 'wb') as f:
+                await f.write(pdf_bytes)
+            return None
+        raise ValueError('path is required when as_base64 is False')
+
+    async def get_network_response_body(self, request_id: str) -> str:
+        """
+        Retrieve the response body for a completed network request.
+
+        Args:
+            request_id: The BiDi request ID from a network event.
+
+        Returns:
+            Response body as a string.
+
+        Raises:
+            NetworkEventsNotEnabled: If network events haven't been enabled.
+        """
+        if not self._network_events_enabled:
+            raise NetworkEventsNotEnabled()
+        response: dict = await self._connection_handler.execute_command(
+            network.get_response_body(request_id)
+        )
+        return response['result']['body']
+
+    async def clear_callbacks(self) -> None:
+        """Remove all registered event callbacks."""
+        await self._connection_handler.clear_callbacks()
+
+    def get_network_logs(self, filter: Optional[str] = None) -> list[dict]:
+        """
+        Return captured network log events.
+
+        Args:
+            filter: Optional URL substring to filter events by.
+
+        Returns:
+            List of network event dicts.
+
+        Raises:
+            NetworkEventsNotEnabled: If network events haven't been enabled.
+        """
+        if not self._network_events_enabled:
+            raise NetworkEventsNotEnabled()
+        if filter is None:
+            return list(self._network_logs)
+        return [
+            event
+            for event in self._network_logs
+            if filter in event.get('params', {}).get('request', {}).get('url', '')
+        ]
+
+    @asynccontextmanager
+    async def expect_file_chooser(self, files: list[str]) -> AsyncIterator[None]:
+        """
+        Context manager that handles a file chooser dialog.
+
+        Subscribe to ``input.fileDialogOpened`` before yielding, then set files
+        automatically when the dialog opens.
+
+        Args:
+            files: List of absolute file paths to select.
+
+        Example::
+
+            async with tab.expect_file_chooser(['/tmp/file.txt']):
+                await element.click()  # triggers file input dialog
+        """
+        await self._connection_handler.execute_command(
+            session.subscribe([InputEvent.FILE_DIALOG_OPENED], contexts=[self._context_id])
+        )
+
+        async def _on_file_dialog(event: dict) -> None:
+            element = event.get('params', {}).get('element', {})
+            shared_id = element.get('sharedId', '')
+            if shared_id:
+                await self._connection_handler.execute_command(
+                    bidi_input.set_files(self._context_id, shared_id, files)
+                )
+
+        callback_id = await self._connection_handler.register_callback(
+            InputEvent.FILE_DIALOG_OPENED, _on_file_dialog, True
+        )
+        try:
+            yield
+        finally:
+            await self._connection_handler.remove_callback(callback_id)
 
     def __repr__(self) -> str:
         return f'FirefoxTab(context_id={self._context_id!r})'
