@@ -68,6 +68,7 @@ from pydoll.protocol.cdp.browser.types import DownloadBehavior, DownloadProgress
 from pydoll.protocol.cdp.dom.types import Node, ShadowRootType
 from pydoll.protocol.cdp.network.types import ResourceType
 from pydoll.protocol.cdp.page.events import PageEvent
+from pydoll.protocol.events import CDP_EVENT_MAP, Event
 from pydoll.protocol.cdp.page.types import FrameResourceTree, ScreenshotFormat
 from pydoll.protocol.cdp.runtime.methods import (
     CallFunctionOnResponse,
@@ -191,30 +192,6 @@ class Tab(FindElementsMixin):
             )
         )
 
-    @property
-    def page_events_enabled(self) -> bool:
-        """Whether CDP Page domain events are enabled."""
-        return self._page_events_enabled
-
-    @property
-    def network_events_enabled(self) -> bool:
-        """Whether CDP Network domain events are enabled."""
-        return self._network_events_enabled
-
-    @property
-    def fetch_events_enabled(self) -> bool:
-        """Whether CDP Fetch domain events (request interception) are enabled."""
-        return self._fetch_events_enabled
-
-    @property
-    def dom_events_enabled(self) -> bool:
-        """Whether CDP DOM domain events are enabled."""
-        return self._dom_events_enabled
-
-    @property
-    def runtime_events_enabled(self) -> bool:
-        """Whether CDP Runtime domain events are enabled."""
-        return self._runtime_events_enabled
 
     @property
     def request(self) -> Request:
@@ -374,10 +351,6 @@ class Tab(FindElementsMixin):
             llm_provider=llm_provider, strategy=strategy,
         )
 
-    @property
-    def intercept_file_chooser_dialog_enabled(self) -> bool:
-        """Whether file chooser dialog interception is active."""
-        return self._intercept_file_chooser_dialog_enabled
 
     @property
     async def current_url(self) -> str:
@@ -513,7 +486,7 @@ class Tab(FindElementsMixin):
             )
 
         logger.info('Enabling Cloudflare captcha auto-solve')
-        if not self.page_events_enabled:
+        if not self._page_events_enabled:
             await self._enable_page_events()
 
         callback = partial(
@@ -956,7 +929,7 @@ class Tab(FindElementsMixin):
         Raises:
             NetworkEventsNotEnabled: If network events are not enabled.
         """
-        if not self.network_events_enabled:
+        if not self._network_events_enabled:
             raise NetworkEventsNotEnabled('Network events must be enabled to get response body')
 
         response: GetResponseBodyResponse = await self._execute_command(
@@ -978,7 +951,7 @@ class Tab(FindElementsMixin):
         Raises:
             NetworkEventsNotEnabled: If network events are not enabled.
         """
-        if not self.network_events_enabled:
+        if not self._network_events_enabled:
             raise NetworkEventsNotEnabled('Network events must be enabled to get network logs')
 
         logs = self._connection_handler.network_logs
@@ -1212,7 +1185,7 @@ class Tab(FindElementsMixin):
 
         logger.info(f'Saving page bundle: path={path}, inline={inline_assets}')
 
-        page_was_enabled = self.page_events_enabled
+        page_was_enabled = self._page_events_enabled
         if not page_was_enabled:
             await self._enable_page_events()
 
@@ -1610,13 +1583,13 @@ class Tab(FindElementsMixin):
             )
             logger.debug(f'Files set on input: {file_list}')
 
-        if self.page_events_enabled is False:
+        if self._page_events_enabled is False:
             _before_page_events_enabled = False
             await self._enable_page_events()
         else:
             _before_page_events_enabled = True
 
-        if self.intercept_file_chooser_dialog_enabled is False:
+        if self._intercept_file_chooser_dialog_enabled is False:
             await self._enable_intercept_file_chooser_dialog()
 
         logger.info('Waiting for file chooser to open')
@@ -1628,7 +1601,7 @@ class Tab(FindElementsMixin):
 
         yield
 
-        if self.intercept_file_chooser_dialog_enabled is True:
+        if self._intercept_file_chooser_dialog_enabled is True:
             await self._disable_intercept_file_chooser_dialog()
 
         if _before_page_events_enabled is False:
@@ -1678,7 +1651,7 @@ class Tab(FindElementsMixin):
             finally:
                 captcha_processed.set()
 
-        _before_page_events_enabled = self.page_events_enabled
+        _before_page_events_enabled = self._page_events_enabled
 
         if not _before_page_events_enabled:
             await self._enable_page_events()
@@ -1847,22 +1820,19 @@ class Tab(FindElementsMixin):
         callback,
         temporary=False,
     ) -> int:
-        """
-        Register CDP event listener.
-
-        Callback runs in background task to prevent blocking.
+        """Register event listener on this tab.
 
         Args:
-            event_name: CDP event name (e.g., 'Page.loadEventFired').
+            event_name: Event enum or native protocol event name.
             callback: Function called on event (sync or async).
             temporary: Remove after first invocation.
 
         Returns:
             Callback ID for removal.
-
-        Note:
-            Corresponding domain must be enabled before events fire.
         """
+        native_event = event_name
+        if isinstance(event_name, Event):
+            native_event = CDP_EVENT_MAP.get(event_name, event_name)
 
         async def callback_wrapper(event):
             asyncio.create_task(callback(event))
@@ -1872,12 +1842,8 @@ class Tab(FindElementsMixin):
         else:
             function_to_register = callback
 
-        logger.debug(
-            f'Registering callback on tab: event={event_name}, temporary={temporary}, '
-            f'async={asyncio.iscoroutinefunction(callback)}'
-        )
         return await self._connection_handler.register_callback(
-            event_name, function_to_register, temporary
+            native_event, function_to_register, temporary
         )
 
     async def remove_callback(self, callback_id: int):

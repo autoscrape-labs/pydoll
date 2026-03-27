@@ -97,12 +97,12 @@ class TestTabInitialization:
         assert tab._connection_port == 9222
         assert tab._target_id.startswith('test-target-')
         assert tab._browser_context_id == 'test-context-id'
-        assert not tab.page_events_enabled
-        assert not tab.network_events_enabled
-        assert not tab.fetch_events_enabled
-        assert not tab.dom_events_enabled
-        assert not tab.runtime_events_enabled
-        assert not tab.intercept_file_chooser_dialog_enabled
+        assert not tab._page_events_enabled
+        assert not tab._network_events_enabled
+        assert not tab._fetch_events_enabled
+        assert not tab._dom_events_enabled
+        assert not tab._runtime_events_enabled
+        assert not tab._intercept_file_chooser_dialog_enabled
 
     def test_tab_init_raises_when_no_identifiers(self, mock_browser):
         with pytest.raises(InvalidTabInitialization):
@@ -111,12 +111,12 @@ class TestTabInitialization:
     def test_tab_properties(self, tab):
         """Test Tab boolean properties."""
         # Initially all should be False
-        assert tab.page_events_enabled is False
-        assert tab.network_events_enabled is False
-        assert tab.fetch_events_enabled is False
-        assert tab.dom_events_enabled is False
-        assert tab.runtime_events_enabled is False
-        assert tab.intercept_file_chooser_dialog_enabled is False
+        assert tab._page_events_enabled is False
+        assert tab._network_events_enabled is False
+        assert tab._fetch_events_enabled is False
+        assert tab._dom_events_enabled is False
+        assert tab._runtime_events_enabled is False
+        assert tab._intercept_file_chooser_dialog_enabled is False
 
         # Test setting properties
         tab._page_events_enabled = True
@@ -126,12 +126,12 @@ class TestTabInitialization:
         tab._runtime_events_enabled = True
         tab._intercept_file_chooser_dialog_enabled = True
 
-        assert tab.page_events_enabled is True
-        assert tab.network_events_enabled is True
-        assert tab.fetch_events_enabled is True
-        assert tab.dom_events_enabled is True
-        assert tab.runtime_events_enabled is True
-        assert tab.intercept_file_chooser_dialog_enabled is True
+        assert tab._page_events_enabled is True
+        assert tab._network_events_enabled is True
+        assert tab._fetch_events_enabled is True
+        assert tab._dom_events_enabled is True
+        assert tab._runtime_events_enabled is True
+        assert tab._intercept_file_chooser_dialog_enabled is True
 
 
 class TestTabProperties:
@@ -193,21 +193,21 @@ class TestTabEventManagement:
     async def test_enable_page_events(self, tab):
         """Test enabling page events."""
         await tab._enable_page_events()
-        assert tab.page_events_enabled is True
+        assert tab._page_events_enabled is True
         assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_enable_network_events(self, tab):
         """Test enabling network events."""
         await tab._enable_network_events()
-        assert tab.network_events_enabled is True
+        assert tab._network_events_enabled is True
         assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_enable_fetch_events(self, tab):
         """Test enabling fetch events with default parameters."""
         await tab._enable_fetch_events()
-        assert tab.fetch_events_enabled is True
+        assert tab._fetch_events_enabled is True
         assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
@@ -218,28 +218,28 @@ class TestTabEventManagement:
             resource_type=ResourceType.DOCUMENT,
             request_stage=RequestStage.REQUEST
         )
-        assert tab.fetch_events_enabled is True
+        assert tab._fetch_events_enabled is True
         assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_enable_dom_events(self, tab):
         """Test enabling DOM events."""
         await tab._enable_dom_events()
-        assert tab.dom_events_enabled is True
+        assert tab._dom_events_enabled is True
         assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_enable_runtime_events(self, tab):
         """Test enabling runtime events."""
         await tab._enable_runtime_events()
-        assert tab.runtime_events_enabled is True
+        assert tab._runtime_events_enabled is True
         assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
     async def test_enable_intercept_file_chooser_dialog(self, tab):
         """Test enabling file chooser dialog interception."""
         await tab._enable_intercept_file_chooser_dialog()
-        assert tab.intercept_file_chooser_dialog_enabled is True
+        assert tab._intercept_file_chooser_dialog_enabled is True
         assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
@@ -247,7 +247,7 @@ class TestTabEventManagement:
         """Test disabling fetch events."""
         tab._fetch_events_enabled = True
         await tab._disable_fetch_events()
-        assert tab.fetch_events_enabled is False
+        assert tab._fetch_events_enabled is False
         assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
@@ -255,7 +255,7 @@ class TestTabEventManagement:
         """Test disabling page events."""
         tab._page_events_enabled = True
         await tab._disable_page_events()
-        assert tab.page_events_enabled is False
+        assert tab._page_events_enabled is False
         assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
@@ -263,7 +263,7 @@ class TestTabEventManagement:
         """Test disabling network events."""
         tab._network_events_enabled = True
         await tab._disable_network_events()
-        assert tab.network_events_enabled is False
+        assert tab._network_events_enabled is False
         assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
@@ -271,7 +271,7 @@ class TestTabEventManagement:
         """Test disabling DOM events."""
         tab._dom_events_enabled = True
         await tab._disable_dom_events()
-        assert tab.dom_events_enabled is False
+        assert tab._dom_events_enabled is False
         assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
@@ -279,7 +279,7 @@ class TestTabEventManagement:
         """Test disabling runtime events."""
         tab._runtime_events_enabled = True
         await tab._disable_runtime_events()
-        assert tab.runtime_events_enabled is False
+        assert tab._runtime_events_enabled is False
         assert_mock_called_at_least_once(tab._connection_handler)
 
     @pytest.mark.asyncio
@@ -287,7 +287,7 @@ class TestTabEventManagement:
         """Test disabling file chooser dialog interception."""
         tab._intercept_file_chooser_dialog_enabled = True
         await tab._disable_intercept_file_chooser_dialog()
-        assert tab.intercept_file_chooser_dialog_enabled is False
+        assert tab._intercept_file_chooser_dialog_enabled is False
         assert_mock_called_at_least_once(tab._connection_handler)
 
 
