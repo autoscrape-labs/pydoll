@@ -12,6 +12,7 @@ from pydoll.browser.managers import (
     ProxyManager,
     TempDirectoryManager,
 )
+from pydoll.browser.firefox.tab import BiDiTab
 from pydoll.commands.bidi.browser_commands import BrowserCommands
 from pydoll.commands.bidi.browsing_context_commands import BrowsingContextCommands
 from pydoll.commands.bidi.network_commands import NetworkCommands
@@ -86,6 +87,11 @@ class FirefoxBrowser:
         self._session_id = response['result']['sessionId']
         logger.info(f'BiDi session established: {self._session_id}')
 
+        tabs = await self.get_opened_tabs()
+        if tabs:
+            return tabs[0]
+        return await self.new_tab()
+
     async def stop(self):
         """Stop Firefox and cleanup resources."""
         if not await self._is_browser_running():
@@ -154,9 +160,36 @@ class FirefoxBrowser:
         )
         return [ctx['userContext'] for ctx in response['result']['userContexts']]
 
-    async def get_opened_tabs(self):
-        """Get all open tabs. Requires BiDi Tab implementation."""
-        raise NotImplementedError('BiDi Tab not yet implemented.')
+    async def get_opened_tabs(self) -> list[BiDiTab]:
+        """Get all open browsing contexts (tabs)."""
+        response = await self._execute_command(BrowsingContextCommands.get_tree())
+        contexts = response['result']['contexts']
+        return [
+            BiDiTab(ctx['context'], self._connection_handler)
+            for ctx in contexts
+        ]
+
+    async def new_tab(self, url: str = '', browser_context_id: Optional[str] = None) -> BiDiTab:
+        """Create a new tab.
+
+        Args:
+            url: URL to navigate to (empty for blank tab).
+            browser_context_id: UserContext to create the tab in.
+        """
+        params = {'type': 'tab'}
+        if browser_context_id:
+            params['userContext'] = browser_context_id
+
+        response = await self._execute_command(
+            BrowsingContextCommands.create(**params)
+        )
+        context_id = response['result']['context']
+        tab = BiDiTab(context_id, self._connection_handler)
+
+        if url:
+            await tab.go_to(url)
+
+        return tab
 
     async def get_version(self) -> BrowserVersion:
         """Get browser version information."""
