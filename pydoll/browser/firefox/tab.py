@@ -12,6 +12,7 @@ from pydoll.commands.bidi.script_commands import ScriptCommands
 from pydoll.commands.bidi.session_commands import SessionCommands
 from pydoll.commands.bidi.storage_commands import StorageCommands
 from pydoll.connection.bidi_connection_handler import BiDiConnectionHandler
+from pydoll.elements.mixins.bidi_find_elements_mixin import BidiFindElementsMixin
 from pydoll.protocol.bidi.base import Command, T_CommandParams, T_CommandResult
 from pydoll.protocol.events import BIDI_EVENT_MAP, Event
 from pydoll.protocol.types import Cookie, CookieParam
@@ -22,7 +23,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class BiDiTab:
+class BiDiTab(BidiFindElementsMixin):
     """Firefox tab automation via WebDriver BiDi protocol.
 
     Unlike CDP where each tab has its own WebSocket connection,
