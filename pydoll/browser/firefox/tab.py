@@ -168,7 +168,7 @@ class BiDiTab:
             script: JavaScript expression to evaluate.
 
         Returns:
-            The result of the script evaluation.
+            The deserialized result of the script evaluation.
         """
         response = await self._execute_command(
             ScriptCommands.evaluate(
@@ -180,7 +180,8 @@ class BiDiTab:
         result = response['result']
         if result.get('type') == 'exception':
             raise RuntimeError(result['exceptionDetails']['text'])
-        return result.get('result', {}).get('value')
+        remote_value = result.get('result', {})
+        return self._deserialize_remote_value(remote_value)
 
     async def get_cookies(self) -> list[Cookie]:
         """Get all cookies for this tab's context."""
@@ -352,3 +353,47 @@ class BiDiTab:
         if result.get('type') == 'success':
             return result.get('result', {})
         return {}
+
+    @staticmethod
+    def _deserialize_remote_value(remote_value: dict):
+        """Convert a BiDi RemoteValue to a Python value."""
+        value_type = remote_value.get('type')
+
+        if value_type in ('undefined', 'null'):
+            return None
+        if value_type in ('string', 'boolean'):
+            return remote_value.get('value')
+        if value_type == 'number':
+            val = remote_value.get('value')
+            if val == 'NaN':
+                return float('nan')
+            if val == '-0':
+                return -0.0
+            if val == 'Infinity':
+                return float('inf')
+            if val == '-Infinity':
+                return float('-inf')
+            return val
+        if value_type == 'bigint':
+            return int(remote_value.get('value', '0'))
+        if value_type == 'array':
+            items = remote_value.get('value', [])
+            return [BiDiTab._deserialize_remote_value(item) for item in items]
+        if value_type in ('object', 'map'):
+            pairs = remote_value.get('value', [])
+            return {
+                (k if isinstance(k, str) else BiDiTab._deserialize_remote_value(k)):
+                BiDiTab._deserialize_remote_value(v)
+                for k, v in pairs
+            }
+        if value_type == 'set':
+            items = remote_value.get('value', [])
+            return [BiDiTab._deserialize_remote_value(item) for item in items]
+        if value_type == 'date':
+            return remote_value.get('value')
+        if value_type == 'regexp':
+            val = remote_value.get('value', {})
+            return f'/{val.get("pattern", "")}/{val.get("flags", "")}'
+        if value_type == 'node':
+            return remote_value
+        return remote_value.get('value', remote_value)
