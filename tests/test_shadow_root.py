@@ -5,8 +5,8 @@ import pytest
 import pytest_asyncio
 
 from pydoll.browser.chromium.tab import Tab
-from pydoll.elements.shadow_root import ShadowRoot
-from pydoll.elements.web_element import WebElement
+from pydoll.elements.cdp.shadow_root import ShadowRoot
+from pydoll.elements.cdp.web_element import WebElement
 from pydoll.exceptions import (
     CommandExecutionTimeout,
     ElementNotFound,

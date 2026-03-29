@@ -9,7 +9,7 @@ from collections.abc import Coroutine
 from typing import TYPE_CHECKING, Optional, TypeVar, Union, get_args, get_origin
 
 from pydoll.elements.mixins.find_elements_mixin import FindElementsMixin
-from pydoll.elements.web_element import WebElement
+from pydoll.elements.cdp.web_element import WebElement
 from pydoll.extractor.exceptions import (
     FieldExtractionFailed,
     LLMExtractionFailed,

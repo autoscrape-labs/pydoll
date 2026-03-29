@@ -2,13 +2,14 @@ import pytest
 import re
 from unittest.mock import AsyncMock, MagicMock, patch
 
+from pydoll.elements.mixins.cdp_find_elements_mixin import CDPFindElementsMixin
 from pydoll.elements.mixins.find_elements_mixin import FindElementsMixin
 from pydoll.elements.utils import SelectorParser
 from pydoll.constants import By
 from pydoll.exceptions import ElementNotFound, WaitElementTimeout
 
 
-class MockFindElementsMixin(FindElementsMixin):
+class MockFindElementsMixin(CDPFindElementsMixin):
     """Mock implementation of FindElementsMixin for testing."""
     
     def __init__(self):
@@ -408,17 +409,17 @@ class TestFindElementsMixinEdgeCases:
         assert call_args[1] == ''
 
     @pytest.mark.asyncio
-    async def test_find_or_wait_element_timeout_zero(self):
-        """Test find_or_wait_element with timeout=0 calls find immediately."""
+    async def test__find_or_wait_element_timeout_zero(self):
+        """Test _find_or_wait_element with timeout=0 calls find immediately."""
         self.mixin._find_element = AsyncMock(return_value=MagicMock())
         
-        result = await self.mixin.find_or_wait_element(By.ID, 'test-id', timeout=0)
+        result = await self.mixin._find_or_wait_element(By.ID, 'test-id', timeout=0)
         
         self.mixin._find_element.assert_called_once_with(By.ID, 'test-id', raise_exc=True)
 
     @pytest.mark.asyncio
-    async def test_find_or_wait_element_timeout_success_on_retry(self):
-        """Test find_or_wait_element succeeds on retry within timeout."""
+    async def test__find_or_wait_element_timeout_success_on_retry(self):
+        """Test _find_or_wait_element succeeds on retry within timeout."""
         # First call returns None, second call returns element
         mock_element = MagicMock()
         self.mixin._find_element = AsyncMock(side_effect=[None, mock_element])
@@ -428,7 +429,7 @@ class TestFindElementsMixinEdgeCases:
             # Mock time progression
             mock_loop.return_value.time.side_effect = [0, 0.5, 1.0]
             
-            result = await self.mixin.find_or_wait_element(
+            result = await self.mixin._find_or_wait_element(
                 By.ID, 'test-id', timeout=2, raise_exc=False
             )
         
@@ -437,8 +438,8 @@ class TestFindElementsMixinEdgeCases:
         mock_sleep.assert_called_once_with(0.5)
 
     @pytest.mark.asyncio
-    async def test_find_or_wait_element_timeout_failure(self):
-        """Test find_or_wait_element raises WaitElementTimeout."""
+    async def test__find_or_wait_element_timeout_failure(self):
+        """Test _find_or_wait_element raises WaitElementTimeout."""
         self.mixin._find_element = AsyncMock(return_value=None)
         
         with patch('asyncio.sleep') as mock_sleep, \
@@ -447,13 +448,13 @@ class TestFindElementsMixinEdgeCases:
             mock_loop.return_value.time.side_effect = [0, 0.5, 1.0, 1.5, 2.1]
             
             with pytest.raises(WaitElementTimeout):
-                await self.mixin.find_or_wait_element(
+                await self.mixin._find_or_wait_element(
                     By.ID, 'test-id', timeout=2, raise_exc=True
                 )
 
     @pytest.mark.asyncio
-    async def test_find_or_wait_element_timeout_failure_no_exception(self):
-        """Test find_or_wait_element returns None when raise_exc=False."""
+    async def test__find_or_wait_element_timeout_failure_no_exception(self):
+        """Test _find_or_wait_element returns None when raise_exc=False."""
         self.mixin._find_element = AsyncMock(return_value=None)
         
         with patch('asyncio.sleep') as mock_sleep, \
@@ -461,7 +462,7 @@ class TestFindElementsMixinEdgeCases:
             # Mock time progression that exceeds timeout
             mock_loop.return_value.time.side_effect = [0, 0.5, 1.0, 1.5, 2.1]
             
-            result = await self.mixin.find_or_wait_element(
+            result = await self.mixin._find_or_wait_element(
                 By.ID, 'test-id', timeout=2, raise_exc=False
             )
         
@@ -473,7 +474,7 @@ class TestFindElementsMixinEdgeCases:
         mock_elements = [MagicMock(), MagicMock()]
         self.mixin._find_elements = AsyncMock(return_value=mock_elements)
         
-        result = await self.mixin.find_or_wait_element(
+        result = await self.mixin._find_or_wait_element(
             By.CLASS_NAME, 'item', timeout=1, find_all=True
         )
         
@@ -1009,7 +1010,7 @@ class TestFindAcrossIframes:
 
         self.mixin._find_element = AsyncMock(return_value=mock_iframe)
 
-        result = await self.mixin.find_or_wait_element(
+        result = await self.mixin._find_or_wait_element(
             By.CSS_SELECTOR, 'iframe > body', timeout=0
         )
 
@@ -1032,7 +1033,7 @@ class TestFindAcrossIframes:
 
         self.mixin._find_element = AsyncMock(return_value=mock_iframe)
 
-        result = await self.mixin.find_or_wait_element(
+        result = await self.mixin._find_or_wait_element(
             By.XPATH, '//iframe/body', timeout=0
         )
 
@@ -1058,7 +1059,7 @@ class TestFindAcrossIframes:
 
         self.mixin._find_element = AsyncMock(return_value=mock_outer_iframe)
 
-        result = await self.mixin.find_or_wait_element(
+        result = await self.mixin._find_or_wait_element(
             By.CSS_SELECTOR, 'iframe > iframe > div', timeout=0
         )
 
@@ -1083,7 +1084,7 @@ class TestFindAcrossIframes:
 
         self.mixin._find_element = AsyncMock(return_value=mock_iframe)
 
-        result = await self.mixin.find_or_wait_element(
+        result = await self.mixin._find_or_wait_element(
             By.XPATH, '//div/iframe/div', timeout=0
         )
 
@@ -1107,7 +1108,7 @@ class TestFindAcrossIframes:
 
         self.mixin._find_element = AsyncMock(return_value=mock_iframe)
 
-        result = await self.mixin.find_or_wait_element(
+        result = await self.mixin._find_or_wait_element(
             By.CSS_SELECTOR, 'div > iframe > div', timeout=0
         )
 
@@ -1131,7 +1132,7 @@ class TestFindAcrossIframes:
 
         self.mixin._find_element = AsyncMock(return_value=mock_iframe)
 
-        result = await self.mixin.find_or_wait_element(
+        result = await self.mixin._find_or_wait_element(
             By.CSS_SELECTOR, 'iframe > .item', timeout=0, find_all=True
         )
 
@@ -1158,7 +1159,7 @@ class TestFindAcrossIframes:
              patch('asyncio.get_event_loop') as mock_loop:
             mock_loop.return_value.time.side_effect = [0, 0.5, 1.0]
 
-            result = await self.mixin.find_or_wait_element(
+            result = await self.mixin._find_or_wait_element(
                 By.CSS_SELECTOR, 'iframe > body', timeout=5
             )
 
@@ -1175,7 +1176,7 @@ class TestFindAcrossIframes:
             mock_loop.return_value.time.side_effect = [0, 0.5, 1.0, 1.5, 2.1]
 
             with pytest.raises(WaitElementTimeout, match='across iframes'):
-                await self.mixin.find_or_wait_element(
+                await self.mixin._find_or_wait_element(
                     By.CSS_SELECTOR, 'iframe > body', timeout=2
                 )
 
@@ -1185,7 +1186,7 @@ class TestFindAcrossIframes:
         self.mixin._find_element = AsyncMock(return_value=None)
 
         with pytest.raises(ElementNotFound, match='across iframes'):
-            await self.mixin.find_or_wait_element(
+            await self.mixin._find_or_wait_element(
                 By.CSS_SELECTOR, 'iframe > body', timeout=0
             )
 
@@ -1194,7 +1195,7 @@ class TestFindAcrossIframes:
         """raise_exc=False, not found — returns None."""
         self.mixin._find_element = AsyncMock(return_value=None)
 
-        result = await self.mixin.find_or_wait_element(
+        result = await self.mixin._find_or_wait_element(
             By.CSS_SELECTOR, 'iframe > body', timeout=0, raise_exc=False
         )
         assert result is None
@@ -1204,7 +1205,7 @@ class TestFindAcrossIframes:
         """raise_exc=False, find_all=True — returns []."""
         self.mixin._find_element = AsyncMock(return_value=None)
 
-        result = await self.mixin.find_or_wait_element(
+        result = await self.mixin._find_or_wait_element(
             By.CSS_SELECTOR, 'iframe > body', timeout=0, find_all=True, raise_exc=False
         )
         assert result == []
@@ -1218,7 +1219,7 @@ class TestFindAcrossIframes:
         self.mixin._find_element = AsyncMock(return_value=mock_element)
 
         with pytest.raises(ElementNotFound):
-            await self.mixin.find_or_wait_element(
+            await self.mixin._find_or_wait_element(
                 By.CSS_SELECTOR, 'iframe > body', timeout=0
             )
 
@@ -1228,7 +1229,7 @@ class TestFindAcrossIframes:
         mock_element = MagicMock()
         self.mixin._find_element = AsyncMock(return_value=mock_element)
 
-        result = await self.mixin.find_or_wait_element(
+        result = await self.mixin._find_or_wait_element(
             By.CSS_SELECTOR, 'div > span', timeout=0
         )
 

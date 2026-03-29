@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from pydoll.browser.chromium import Chrome
-from pydoll.elements.web_element import WebElement
+from pydoll.elements.cdp.web_element import WebElement
 
 TEST_PAGE = f'file://{(Path(__file__).parent / "pages" / "test_click_nested.html").absolute()}'
 

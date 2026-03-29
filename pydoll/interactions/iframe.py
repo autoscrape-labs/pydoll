@@ -15,7 +15,7 @@ from pydoll.protocol.cdp.runtime.methods import EvaluateResponse
 from pydoll.protocol.cdp.target.methods import AttachToTargetResponse, GetTargetsResponse
 
 if TYPE_CHECKING:
-    from pydoll.elements.web_element import WebElement
+    from pydoll.elements.cdp.web_element import WebElement
 
 logger = logging.getLogger(__name__)
 

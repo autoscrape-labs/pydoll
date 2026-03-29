@@ -40,9 +40,9 @@ from pydoll.commands import (
 )
 from pydoll.connection import ConnectionHandler
 from pydoll.constants import By, PageLoadState
-from pydoll.elements.mixins import FindElementsMixin
-from pydoll.elements.shadow_root import ShadowRoot
-from pydoll.elements.web_element import WebElement
+from pydoll.elements.mixins.cdp_find_elements_mixin import CDPFindElementsMixin
+from pydoll.elements.cdp.shadow_root import ShadowRoot
+from pydoll.elements.cdp.web_element import WebElement
 from pydoll.exceptions import (
     CommandExecutionTimeout,
     DownloadTimeout,
@@ -136,7 +136,7 @@ _CLOUDFLARE_IFRAME_SELECTOR = f'iframe[src*="{_CLOUDFLARE_CHALLENGE_DOMAIN}"]'
 _CLOUDFLARE_CHECKBOX_SELECTOR = 'span.cb-i'
 
 
-class Tab(FindElementsMixin):
+class Tab(CDPFindElementsMixin):
     """
     Controls a browser tab via Chrome DevTools Protocol.
 

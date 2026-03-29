@@ -10,7 +10,7 @@ from pydoll.browser.chromium.options import ChromiumOptions as Options
 from pydoll.browser.chromium.chrome import Chrome
 from pydoll.commands import DomCommands, RuntimeCommands
 from pydoll.constants import Key
-from pydoll.elements.web_element import WebElement
+from pydoll.elements.cdp.web_element import WebElement
 from pydoll.exceptions import (
     ElementNotAFileInput,
     ElementNotFound,
@@ -2022,7 +2022,7 @@ import pytest
 import pytest_asyncio
 from unittest.mock import AsyncMock, patch
 
-from pydoll.elements.web_element import WebElement
+from pydoll.elements.cdp.web_element import WebElement
 from pydoll.interactions.iframe import IFrameContext
 from pydoll.connection import ConnectionHandler
 from pydoll.exceptions import InvalidIFrame

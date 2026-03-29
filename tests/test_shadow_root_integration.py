@@ -6,8 +6,8 @@ from pathlib import Path
 import pytest
 
 from pydoll.browser.chromium import Chrome
-from pydoll.elements.shadow_root import ShadowRoot
-from pydoll.elements.web_element import WebElement
+from pydoll.elements.cdp.shadow_root import ShadowRoot
+from pydoll.elements.cdp.web_element import WebElement
 from pydoll.exceptions import ShadowRootNotFound
 from pydoll.protocol.cdp.dom.types import ShadowRootType
 

@@ -5,17 +5,17 @@ from typing import TYPE_CHECKING
 
 from pydoll.commands import DomCommands
 from pydoll.connection import ConnectionHandler
-from pydoll.elements.mixins import FindElementsMixin
+from pydoll.elements.mixins.cdp_find_elements_mixin import CDPFindElementsMixin
 from pydoll.protocol.cdp.dom.types import ShadowRootType
 
 if TYPE_CHECKING:
-    from pydoll.elements.web_element import WebElement
+    from pydoll.elements.cdp.web_element import WebElement
     from pydoll.protocol.cdp.dom.methods import GetOuterHTMLResponse
 
 logger = logging.getLogger(__name__)
 
 
-class ShadowRoot(FindElementsMixin):
+class ShadowRoot(CDPFindElementsMixin):
     """
     Shadow root wrapper for shadow DOM traversal.
 

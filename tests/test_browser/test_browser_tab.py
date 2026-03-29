@@ -6,7 +6,7 @@ import uuid
 from unittest.mock import AsyncMock, MagicMock, Mock, patch, ANY
 from pathlib import Path
 
-from pydoll.elements.web_element import WebElement
+from pydoll.elements.cdp.web_element import WebElement
 from pydoll.protocol.cdp.runtime.types import CallArgument, SerializationOptions
 from pydoll.browser.chromium.options import ChromiumOptions
 

@@ -20,8 +20,8 @@ from pydoll.constants import (
     Key,
     Scripts,
 )
-from pydoll.elements.mixins import FindElementsMixin
-from pydoll.elements.shadow_root import ShadowRoot
+from pydoll.elements.mixins.cdp_find_elements_mixin import CDPFindElementsMixin
+from pydoll.elements.cdp.shadow_root import ShadowRoot
 from pydoll.exceptions import (
     ElementNotAFileInput,
     ElementNotFound,
@@ -71,7 +71,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class WebElement(FindElementsMixin):  # noqa: PLR0904
+class WebElement(CDPFindElementsMixin):  # noqa: PLR0904
     """
     DOM element wrapper for browser automation.
 

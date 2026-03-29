@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from pydoll.browser.chromium import Chrome
-from pydoll.elements.web_element import WebElement
+from pydoll.elements.cdp.web_element import WebElement
 
 
 class TestCoreFindQuery:
