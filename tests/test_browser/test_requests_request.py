@@ -20,9 +20,9 @@ from pydoll.protocol.cdp.network.types import CookieParam
 async def mock_tab():
     """Create a mock Tab instance for testing."""
     tab = Mock()
-    tab.network_events_enabled = False
-    tab.enable_network_events = AsyncMock()
-    tab.disable_network_events = AsyncMock()
+    tab._network_events_enabled = False
+    tab._enable_network_events = AsyncMock()
+    tab._disable_network_events = AsyncMock()
     tab.remove_callback = AsyncMock()
     tab.on = AsyncMock(side_effect=lambda *a, **kw: len(tab.on.call_args_list))
     tab._execute_command = AsyncMock()
@@ -366,21 +366,21 @@ class TestRequestCallbackManagement:
     @pytest.mark.asyncio
     async def test_register_callbacks_enables_network_events(self, request_instance, mock_tab):
         """Test that registering callbacks enables network events."""
-        mock_tab.network_events_enabled = False
+        mock_tab._network_events_enabled = False
         
         await request_instance._register_callbacks()
         
-        mock_tab.enable_network_events.assert_called_once()
+        mock_tab._enable_network_events.assert_called_once()
         assert request_instance._network_events_enabled is True
 
     @pytest.mark.asyncio
     async def test_register_callbacks_skips_if_already_enabled(self, request_instance, mock_tab):
         """Test that network events are not re-enabled if already active."""
-        mock_tab.network_events_enabled = True
+        mock_tab._network_events_enabled = True
         
         await request_instance._register_callbacks()
         
-        mock_tab.enable_network_events.assert_not_called()
+        mock_tab._enable_network_events.assert_not_called()
         assert request_instance._network_events_enabled is False
 
     @pytest.mark.asyncio
@@ -409,7 +409,7 @@ class TestRequestCallbackManagement:
 
         await request_instance._clear_callbacks()
 
-        mock_tab.disable_network_events.assert_called_once()
+        mock_tab._disable_network_events.assert_called_once()
         assert mock_tab.remove_callback.call_count == 4
         assert request_instance._network_events_enabled is False
         assert request_instance._callback_ids == []
@@ -422,7 +422,7 @@ class TestRequestCallbackManagement:
 
         await request_instance._clear_callbacks()
 
-        mock_tab.disable_network_events.assert_not_called()
+        mock_tab._disable_network_events.assert_not_called()
         assert mock_tab.remove_callback.call_count == 2
         assert request_instance._callback_ids == []
 

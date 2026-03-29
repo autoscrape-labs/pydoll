@@ -15,9 +15,9 @@ from pydoll.protocol.cdp.network.events import NetworkEvent
 async def mock_tab():
     """Create a mock Tab instance for testing."""
     tab = Mock()
-    tab.network_events_enabled = False
-    tab.enable_network_events = AsyncMock()
-    tab.disable_network_events = AsyncMock()
+    tab._network_events_enabled = False
+    tab._enable_network_events = AsyncMock()
+    tab._disable_network_events = AsyncMock()
     tab.on = AsyncMock(side_effect=lambda *a, **kw: len(tab.on.call_args_list))
     tab.remove_callback = AsyncMock()
     tab.clear_callbacks = AsyncMock()
@@ -195,16 +195,16 @@ class TestHarRecorderStart:
 
     @pytest.mark.asyncio
     async def test_start_enables_network_events_if_not_enabled(self, recorder, mock_tab):
-        mock_tab.network_events_enabled = False
+        mock_tab._network_events_enabled = False
         await recorder.start()
-        mock_tab.enable_network_events.assert_called_once()
+        mock_tab._enable_network_events.assert_called_once()
         assert recorder._network_was_enabled is True
 
     @pytest.mark.asyncio
     async def test_start_skips_network_enable_if_already_enabled(self, recorder, mock_tab):
-        mock_tab.network_events_enabled = True
+        mock_tab._network_events_enabled = True
         await recorder.start()
-        mock_tab.enable_network_events.assert_not_called()
+        mock_tab._enable_network_events.assert_not_called()
         assert recorder._network_was_enabled is False
 
     @pytest.mark.asyncio
@@ -243,17 +243,17 @@ class TestHarRecorderStop:
 
     @pytest.mark.asyncio
     async def test_stop_disables_network_events_if_we_enabled(self, recorder, mock_tab):
-        mock_tab.network_events_enabled = False
+        mock_tab._network_events_enabled = False
         await recorder.start()
         await recorder.stop()
-        mock_tab.disable_network_events.assert_called_once()
+        mock_tab._disable_network_events.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_stop_does_not_disable_network_events_if_not_ours(self, recorder, mock_tab):
-        mock_tab.network_events_enabled = True
+        mock_tab._network_events_enabled = True
         await recorder.start()
         await recorder.stop()
-        mock_tab.disable_network_events.assert_not_called()
+        mock_tab._disable_network_events.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_stop_flushes_pending_entries(self, recorder, mock_tab):
@@ -748,10 +748,10 @@ class TestRequestRecord:
 
     @pytest.mark.asyncio
     async def test_record_enables_network_events(self, request_instance, mock_tab):
-        mock_tab.network_events_enabled = False
+        mock_tab._network_events_enabled = False
         async with request_instance.record():
             pass
-        mock_tab.enable_network_events.assert_called_once()
+        mock_tab._enable_network_events.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_record_registers_and_removes_callbacks(self, request_instance, mock_tab):
@@ -771,19 +771,19 @@ class TestRequestRecord:
     async def test_record_disables_network_events_if_enabled_by_recorder(
         self, request_instance, mock_tab
     ):
-        mock_tab.network_events_enabled = False
+        mock_tab._network_events_enabled = False
         async with request_instance.record():
             pass
-        mock_tab.disable_network_events.assert_called_once()
+        mock_tab._disable_network_events.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_record_does_not_disable_network_events_if_already_enabled(
         self, request_instance, mock_tab
     ):
-        mock_tab.network_events_enabled = True
+        mock_tab._network_events_enabled = True
         async with request_instance.record():
             pass
-        mock_tab.disable_network_events.assert_not_called()
+        mock_tab._disable_network_events.assert_not_called()
 
 
 class TestResourceTypeFiltering:

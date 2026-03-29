@@ -89,8 +89,8 @@ class HarRecorder:
         Enables network events if not already on, and registers callbacks
         for the 7 CDP events needed to build HAR entries.
         """
-        if not self._tab.network_events_enabled:
-            await self._tab.enable_network_events()
+        if not self._tab._network_events_enabled:
+            await self._tab._enable_network_events()
             self._network_was_enabled = True
             logger.debug('HAR recorder enabled network events')
 
@@ -130,7 +130,7 @@ class HarRecorder:
         self._flush_pending()
 
         if self._network_was_enabled:
-            await self._tab.disable_network_events()
+            await self._tab._disable_network_events()
             self._network_was_enabled = False
 
         logger.info('HAR recorder stopped, captured %d entries', len(self._entries))
