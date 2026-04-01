@@ -1031,6 +1031,6 @@ Want to dive deeper into element finding?
 
 - **[FindElements Mixin Deep Dive](../deep-dive/find-elements-mixin.md)**: Learn about the architecture, internal selector strategies, and performance optimizations
 - **[Selectors Guide](../deep-dive/selectors-guide.md)**: Comprehensive guide to CSS selectors and XPath with syntax references and real-world examples
-- **[WebElement Domain](../deep-dive/webelement-domain.md)**: Understand what you can do with elements once you've found them
+- **[WebElement Domain](../deep-dive/architecture/webelement-domain.md)**: Understand what you can do with elements once you've found them
 
 Element finding is the foundation of successful browser automation. Master these techniques, and you'll be able to reliably locate any element on any web page, no matter how complex the structure.
