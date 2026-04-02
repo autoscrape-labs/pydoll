@@ -59,7 +59,7 @@ Behind the scenes, `browser.start()` does the following:
 4. **Returns a Tab instance** ready for automation
 
 !!! info "Want to Know More?"
-    For technical details on how the browser process is managed internally, see the [Browser Domain](../../deep-dive/browser-domain.md#browser-process-manager) deep dive.
+    For technical details on how the browser process is managed internally, see the [Browser Domain](../../deep-dive/architecture/browser-domain.md#browser-process-manager) deep dive.
 
 ### Benefits You'll Notice
 
@@ -97,14 +97,14 @@ The Chrome DevTools Protocol isn't just for Pydoll; it's the same protocol that 
 - **Active development**: Google maintains and evolves CDP continuously
 
 !!! tip "Deep Dive: Understanding CDP"
-    For a comprehensive understanding of how CDP works and why it's superior to WebDriver, see our [Chrome DevTools Protocol](../../deep-dive/cdp.md) deep dive.
+    For a comprehensive understanding of how CDP works and why it's superior to WebDriver, see our [Chrome DevTools Protocol](../../deep-dive/fundamentals/cdp.md) deep dive.
 
 ## Async-First Architecture
 
 Pydoll isn't just async-compatible; it's designed from the ground up to leverage Python's `asyncio` framework. This isn't a checkbox feature; it's fundamental to how Pydoll achieves high performance.
 
 !!! info "New to Async Programming?"
-    If you're not familiar with Python's `async`/`await` syntax or asyncio concepts, we strongly recommend reading our [Understanding Async/Await](../../deep-dive/connection-layer.md#understanding-asyncawait) guide first. It explains the fundamentals with practical examples that will help you understand how Pydoll's async architecture works and why it's so powerful for browser automation.
+    If you're not familiar with Python's `async`/`await` syntax or asyncio concepts, we strongly recommend reading our [Understanding Async/Await](../../deep-dive/fundamentals/connection-layer.md#understanding-asyncawait) guide first. It explains the fundamentals with practical examples that will help you understand how Pydoll's async architecture works and why it's so powerful for browser automation.
 
 ### Why Async Matters for Browser Automation
 
@@ -190,7 +190,7 @@ async with tab.expect_download(keep_file_at='/downloads') as dl:
 ```
 
 !!! tip "Deep Dive"
-    Want to understand how async operations work under the hood? Check out the [Connection Layer](../../deep-dive/connection-layer.md) deep dive for implementation details.
+    Want to understand how async operations work under the hood? Check out the [Connection Layer](../../deep-dive/fundamentals/connection-layer.md) deep dive for implementation details.
 
 ### Performance Implications
 
