@@ -44,6 +44,8 @@ class _FirefoxFindMixin:
         name: Optional[str] = None,
         tag_name: Optional[str] = None,
         text: Optional[str] = None,
+        accessibility_name: Optional[str] = None,
+        accessibility_role: Optional[str] = None,
         timeout: float = 0,
         find_all: bool = False,
         raise_exc: bool = True,
@@ -52,16 +54,20 @@ class _FirefoxFindMixin:
         """
         Find element(s) using keyword criteria, mirroring the Chrome Tab API.
 
-        A single CSS-mappable criterion (``id``, ``class_name``, ``tag_name``)
-        is sent as a CSS locator; anything more complex (multiple criteria,
-        ``name``, ``text``, extra ``**attributes``) is compiled to XPath.
+        Locator selection priority:
+        - ``accessibility_name`` / ``accessibility_role`` → BiDi ``AccessibilityLocator``
+        - ``text`` alone (no other structural criteria) → BiDi ``InnerTextLocator``
+        - everything else → CSS selector (or XPath when ``text`` is combined with
+          structural criteria such as ``tag_name``, ``id``, etc.)
 
         Args:
             id: Element ``id`` attribute.
             class_name: CSS class name.
             name: Element ``name`` attribute.
             tag_name: HTML tag name (e.g. ``'button'``).
-            text: Partial text content to match (``contains()``).
+            text: Partial inner-text to match.
+            accessibility_name: Accessible name (ARIA label / visible text).
+            accessibility_role: ARIA role (e.g. ``'button'``, ``'link'``).
             timeout: Seconds to wait for the element to appear (0 = one attempt).
             find_all: Return all matches when ``True``; first match only when ``False``.
             raise_exc: Raise ``ElementNotFound`` / ``WaitElementTimeout`` on failure.
@@ -75,12 +81,21 @@ class _FirefoxFindMixin:
             ElementNotFound: If element not found and ``raise_exc=True`` with no timeout.
             WaitElementTimeout: If element not found within ``timeout`` and ``raise_exc=True``.
         """
-        if not any([id, class_name, name, tag_name, text, *attributes.keys()]):
+        if not any([
+            id, class_name, name, tag_name, text,
+            accessibility_name, accessibility_role,
+            *attributes.keys(),
+        ]):
             raise ValueError(
                 'At least one of id, class_name, name, tag_name, text, '
+                'accessibility_name, accessibility_role, '
                 'or an extra attribute must be provided.'
             )
-        locator = self._build_locator(id, class_name, name, tag_name, text, **attributes)
+        locator = self._build_locator(
+            id, class_name, name, tag_name, text,
+            accessibility_name, accessibility_role,
+            **attributes,
+        )
         return await self._locate(locator, timeout, find_all, raise_exc)
 
     async def query(
@@ -119,27 +134,55 @@ class _FirefoxFindMixin:
         name: Optional[str],
         tag_name: Optional[str],
         text: Optional[str],
+        accessibility_name: Optional[str] = None,
+        accessibility_role: Optional[str] = None,
         **attributes: str,
     ) -> dict:
         """
         Build a BiDi locator dict from keyword criteria.
 
-        Builds a CSS selector whenever possible (including combinations), falling
-        back to XPath only when ``text`` is provided (CSS cannot match text content).
+        Priority:
+        1. Accessibility criteria → ``AccessibilityLocator``
+        2. Text only (no structural criteria) → ``InnerTextLocator``
+        3. Text + structural criteria → XPath (CSS cannot match text content)
+        4. Structural criteria only → CSS selector
 
         CSS selector shape: ``{tag}{#id}{.class}{[name="…"]}{[attr="…"]…}``
 
         Examples::
 
-            tag_name="a", class_name="link"      →  CSS  ``a.link``
-            tag_name="input", name="email"        →  CSS  ``input[name="email"]``
-            class_name="foo", data_test="bar"     →  CSS  ``.foo[data-test="bar"]``
-            tag_name="span", text="hello"         →  XPath
+            tag_name="a", class_name="link"         →  CSS  ``a.link``
+            tag_name="input", name="email"           →  CSS  ``input[name="email"]``
+            text="Sign in"                           →  InnerTextLocator (BiDi native)
+            accessibility_role="button"              →  AccessibilityLocator (BiDi native)
+            tag_name="span", text="hello"            →  XPath (combined)
         """
-        if text:
+        # 1. Accessibility locator (BiDi native)
+        if accessibility_name or accessibility_role:
+            value: dict = {}
+            if accessibility_name:
+                value['name'] = accessibility_name
+            if accessibility_role:
+                value['role'] = accessibility_role
+            return {'type': 'accessibility', 'value': value}
+
+        structural_criteria = any([id, class_name, name, tag_name, *attributes.keys()])
+
+        # 2. Text-only → InnerTextLocator (BiDi native, more accurate than XPath)
+        if text and not structural_criteria:
+            return {
+                'type': 'innerText',
+                'value': text,
+                'matchType': 'partial',
+                'ignoreCase': False,
+            }
+
+        # 3. Text + structural criteria → XPath (CSS cannot filter by text)
+        if text and structural_criteria:
             xpath = SelectorParser.build_xpath(id, class_name, name, tag_name, text, **attributes)
             return {'type': 'xpath', 'value': xpath}
 
+        # 4. Structural criteria only → CSS
         parts: list[str] = []
         if tag_name:
             parts.append(tag_name)

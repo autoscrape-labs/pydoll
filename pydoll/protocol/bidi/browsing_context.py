@@ -22,8 +22,22 @@ class GetTreeParams(TypedDict):
     root: NotRequired[str]
 
 
+class BoxClipRectangle(TypedDict):
+    type: str  # "box"
+    x: float
+    y: float
+    width: float
+    height: float
+
+
+class ElementClipRectangle(TypedDict):
+    type: str  # "element"
+    element: dict  # script.SharedReference — {"sharedId": "..."}
+
+
 class CaptureScreenshotParams(TypedDict):
     context: str
+    clip: NotRequired[dict]
 
 
 class LocateNodesParams(TypedDict):
@@ -115,10 +129,26 @@ def get_tree(root: Optional[str] = None) -> GetTreeCommand:
     return Command(method='browsingContext.getTree', params=params)
 
 
-def capture_screenshot(context: str) -> CaptureScreenshotCommand:
+def capture_screenshot(
+    context: str,
+    shared_id: Optional[str] = None,
+) -> CaptureScreenshotCommand:
+    """
+    Capture a screenshot of the browsing context or a specific element.
+
+    Args:
+        context: Browsing context ID.
+        shared_id: If provided, clips the screenshot to the element's bounding box.
+    """
+    params = CaptureScreenshotParams(context=context)
+    if shared_id is not None:
+        params['clip'] = ElementClipRectangle(
+            type='element',
+            element={'sharedId': shared_id},
+        )
     return Command(
         method='browsingContext.captureScreenshot',
-        params=CaptureScreenshotParams(context=context),
+        params=params,
     )
 
 

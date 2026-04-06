@@ -71,7 +71,7 @@ class FirefoxTab(_FirefoxFindMixin):
         )
         return response['result']
 
-    async def evaluate(self, expression: str, await_promise: bool = True) -> Any:
+    async def execute_script(self, expression: str, await_promise: bool = True) -> Any:
         """
         Evaluate a JavaScript expression in this tab's context.
 
@@ -119,18 +119,24 @@ class FirefoxTab(_FirefoxFindMixin):
 
     @property
     async def current_url(self) -> Optional[str]:
-        """Get the current URL of this tab."""
-        return await self.evaluate('window.location.href')
+        """Get the current URL of this tab via browsingContext.getTree (no JS)."""
+        response: dict = await self._connection_handler.execute_command(
+            browsing_context.get_tree(root=self._context_id)
+        )
+        contexts = response.get('result', {}).get('contexts', [])
+        if contexts:
+            return contexts[0].get('url')
+        return None
 
     @property
     async def page_source(self) -> Optional[str]:
         """Get the full HTML source of the current page."""
-        return await self.evaluate('document.documentElement.outerHTML')
+        return await self.execute_script('document.documentElement.outerHTML')
 
     @property
     async def title(self) -> Optional[str]:
         """Get the current page title."""
-        return await self.evaluate('document.title')
+        return await self.execute_script('document.title')
 
     @overload
     async def on(
@@ -449,7 +455,7 @@ class FirefoxTab(_FirefoxFindMixin):
         """
         await self._connection_handler.execute_command(network.fail_request(request_id))
 
-    async def provide_response(
+    async def fulfill_request(
         self,
         request_id: str,
         status_code: int = 200,
@@ -644,26 +650,6 @@ class FirefoxTab(_FirefoxFindMixin):
                 await f.write(pdf_bytes)
             return None
         raise ValueError('path is required when as_base64 is False')
-
-    async def get_network_response_body(self, request_id: str) -> str:
-        """
-        Retrieve the response body for a completed network request.
-
-        Args:
-            request_id: The BiDi request ID from a network event.
-
-        Returns:
-            Response body as a string.
-
-        Raises:
-            NetworkEventsNotEnabled: If network events haven't been enabled.
-        """
-        if not self._network_events_enabled:
-            raise NetworkEventsNotEnabled()
-        response: dict = await self._connection_handler.execute_command(
-            network.get_response_body(request_id)
-        )
-        return response['result']['body']
 
     async def clear_callbacks(self) -> None:
         """Remove all registered event callbacks."""

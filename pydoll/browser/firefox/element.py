@@ -1,17 +1,86 @@
 from __future__ import annotations
 
+import asyncio
+import base64
 import logging
 from typing import TYPE_CHECKING, Any, Optional
 
+import aiofiles
+
 from pydoll.browser.firefox.find_mixin import _FirefoxFindMixin
+from pydoll.exceptions import ElementNotInteractable, WaitElementTimeout
+from pydoll.protocol.bidi import browsing_context, script
 from pydoll.protocol.bidi import input as bidi_input
-from pydoll.protocol.bidi import script
 
 if TYPE_CHECKING:
     from pydoll.browser.firefox.shadow_root import FirefoxShadowRoot
     from pydoll.connection.bidi_connection_handler import BiDiConnectionHandler
 
 logger = logging.getLogger(__name__)
+
+_ELEMENT_VISIBLE = """
+(el) => {
+    const rect = el.getBoundingClientRect();
+    return (
+        rect.width > 0 && rect.height > 0
+        && getComputedStyle(el).visibility !== 'hidden'
+        && getComputedStyle(el).display !== 'none'
+    );
+}
+"""
+
+_ELEMENT_INTERACTABLE = """
+(el) => {
+    const style = window.getComputedStyle(el);
+    const rect = el.getBoundingClientRect();
+    if (
+        rect.width <= 0 || rect.height <= 0 ||
+        style.visibility === 'hidden' ||
+        style.display === 'none' ||
+        style.pointerEvents === 'none'
+    ) { return false; }
+    const x = rect.x + rect.width / 2;
+    const y = rect.y + rect.height / 2;
+    const elementFromPoint = document.elementFromPoint(x, y);
+    if (!elementFromPoint || (elementFromPoint !== el && !el.contains(elementFromPoint))) {
+        return false;
+    }
+    if (el.disabled) { return false; }
+    return true;
+}
+"""
+
+_IS_EDITABLE = """
+(el) => {
+    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+        return !el.disabled && !el.readOnly;
+    }
+    let current = el;
+    while (current) {
+        if (current.isContentEditable) { return true; }
+        current = current.parentElement;
+    }
+    return false;
+}
+"""
+
+_CLEAR_INPUT = """
+(el) => {
+    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+        el.value = '';
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+        return true;
+    }
+    if (el.isContentEditable) {
+        el.focus();
+        el.innerHTML = '';
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        return true;
+    }
+    return false;
+}
+"""
 
 KEYS = {
     'ctrl': '\ue009',
@@ -136,7 +205,7 @@ class FirefoxElement(_FirefoxFindMixin):
             )
         )
 
-    async def type(self, text: str, clear_first: bool = True) -> None:
+    async def type_text(self, text: str, clear_first: bool = True) -> None:
         """
         Click the element to focus it, then type text character by character.
 
@@ -172,7 +241,7 @@ class FirefoxElement(_FirefoxFindMixin):
         )
         logger.debug(f'Typed {len(text)} chars into element: sharedId={self._shared_id}')
 
-    async def press_key(self, key: str) -> None:
+    async def press_keyboard_key(self, key: str) -> None:
         """
         Press a single key while this element is focused.
 
@@ -196,6 +265,101 @@ class FirefoxElement(_FirefoxFindMixin):
                 ],
             )
         )
+
+    async def focus(self) -> None:
+        """Focus this element."""
+        logger.debug(f'Focusing element: sharedId={self._shared_id}')
+        await self._call_function('(el) => el.focus()')
+
+    async def scroll_into_view(self) -> None:
+        """Scroll element into the visible viewport."""
+        logger.debug(f'Scrolling element into view: sharedId={self._shared_id}')
+        await self._call_function(
+            '(el) => el.scrollIntoView({ behavior: "smooth", block: "center" })'
+        )
+
+    async def clear(self) -> None:
+        """
+        Clear the current value of the element.
+
+        Supports standard inputs, textareas, and contenteditable elements.
+        Dispatches ``input`` and ``change`` events so frameworks detect the update.
+
+        Raises:
+            ElementNotInteractable: If the element does not accept text input.
+        """
+        logger.debug(f'Clearing element: sharedId={self._shared_id}')
+        success = await self._call_function(_CLEAR_INPUT)
+        if not success:
+            raise ElementNotInteractable('Element does not accept text input')
+
+    async def is_visible(self) -> bool:
+        """Check if the element is visible (has dimensions and is not hidden)."""
+        result = await self._call_function(_ELEMENT_VISIBLE)
+        return bool(result)
+
+    async def is_interactable(self) -> bool:
+        """Check if the element is interactable (visible, not covered, not disabled)."""
+        result = await self._call_function(_ELEMENT_INTERACTABLE)
+        return bool(result)
+
+    async def is_editable(self) -> bool:
+        """Check if the element can accept text input (input, textarea, or contenteditable)."""
+        result = await self._call_function(_IS_EDITABLE)
+        return bool(result)
+
+    async def wait_until(
+        self,
+        *,
+        is_visible: bool = False,
+        is_interactable: bool = False,
+        timeout: int = 0,
+    ) -> None:
+        """
+        Wait for the element to meet the specified conditions.
+
+        Args:
+            is_visible: Wait until the element is visible.
+            is_interactable: Wait until the element is interactable.
+            timeout: Maximum seconds to wait (0 = wait forever).
+
+        Raises:
+            ValueError: If neither ``is_visible`` nor ``is_interactable`` is True.
+            WaitElementTimeout: If the condition is not met within ``timeout`` seconds.
+        """
+        checks_map = [
+            (is_visible, self.is_visible),
+            (is_interactable, self.is_interactable),
+        ]
+        checks = [func for flag, func in checks_map if flag]
+        if not checks:
+            raise ValueError('At least one of is_visible or is_interactable must be True')
+
+        condition_parts = []
+        if is_visible:
+            condition_parts.append('visible')
+        if is_interactable:
+            condition_parts.append('interactable')
+        condition_msg = ' and '.join(condition_parts)
+
+        logger.info(
+            f'Waiting for element: {condition_msg}, timeout={timeout}s, '
+            f'sharedId={self._shared_id}'
+        )
+        loop = asyncio.get_event_loop()
+        start_time = loop.time()
+        while True:
+            results = await asyncio.gather(*(check() for check in checks))
+            if all(results):
+                logger.info(f'Element condition satisfied: {condition_msg}')
+                return
+
+            if timeout and loop.time() - start_time > timeout:
+                raise WaitElementTimeout(
+                    f'Timed out waiting for element to become {condition_msg}'
+                )
+
+            await asyncio.sleep(0.5)
 
     async def get_attribute(self, name: str) -> Optional[str]:
         """Get the value of an HTML attribute (e.g. 'href', 'class')."""
@@ -227,6 +391,52 @@ class FirefoxElement(_FirefoxFindMixin):
         result = response.get('result', {})
         script_result = result.get('result', {})
         return script_result.get('value')
+
+    async def set_input_files(self, files: list[str]) -> None:
+        """
+        Set files on a file input element directly, without opening a file dialog.
+
+        This works in both headless and headed mode and does not require
+        ``expect_file_chooser``.
+
+        Args:
+            files: List of absolute file paths to assign to the input.
+        """
+        await self._connection_handler.execute_command(
+            bidi_input.set_files(self._context_id, self._shared_id, files)
+        )
+
+    async def take_screenshot(
+        self,
+        path: Optional[str] = None,
+        as_base64: bool = False,
+    ) -> Optional[bytes | str]:
+        """
+        Capture a screenshot clipped to this element's bounding box.
+
+        Uses ``browsingContext.captureScreenshot`` with ``ElementClipRectangle``
+        — no JavaScript involved.
+
+        Args:
+            path: If provided, save the screenshot to this file path.
+            as_base64: If True, return the screenshot as a base64 string.
+
+        Returns:
+            PNG bytes, base64 string, or None (if path provided).
+        """
+        logger.debug(f'Taking element screenshot: sharedId={self._shared_id}')
+        response: dict = await self._connection_handler.execute_command(
+            browsing_context.capture_screenshot(self._context_id, shared_id=self._shared_id)
+        )
+        data: str = response.get('result', {}).get('data', '')
+        if as_base64:
+            return data
+        png_bytes = base64.b64decode(data)
+        if path is not None:
+            async with aiofiles.open(path, 'wb') as f:
+                await f.write(png_bytes)
+            return None
+        return png_bytes
 
     async def get_shadow_root(self) -> FirefoxShadowRoot:
         """
