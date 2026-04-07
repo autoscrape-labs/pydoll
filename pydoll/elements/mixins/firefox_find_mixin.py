@@ -204,9 +204,9 @@ class FirefoxFindMixin:
             parts.append(f'.{class_name}')
         if name:
             parts.append(f'[name="{name}"]')
-        for attr, value in attributes.items():
+        for attr, attr_value in attributes.items():
             html_attr = attr.replace('_', '-')
-            parts.append(f'[{html_attr}="{value}"]')
+            parts.append(f'[{html_attr}="{attr_value}"]')
 
         return {'type': 'css', 'value': ''.join(parts)}
 
@@ -223,7 +223,7 @@ class FirefoxFindMixin:
         deadline = asyncio.get_event_loop().time() + timeout if timeout else None
 
         while True:
-            response = await self._connection_handler.execute_command(
+            response: dict = await self._connection_handler.execute_command(
                 browsing_context.locate_nodes(
                     self._context_id,
                     locator,

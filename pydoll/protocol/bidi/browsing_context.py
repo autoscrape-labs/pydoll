@@ -37,7 +37,7 @@ class ElementClipRectangle(TypedDict):
 
 class CaptureScreenshotParams(TypedDict):
     context: str
-    clip: NotRequired[dict]
+    clip: NotRequired[ElementClipRectangle]
 
 
 class LocateNodesParams(TypedDict):
