@@ -8,8 +8,8 @@ from typing import TYPE_CHECKING, Any, AsyncIterator, Awaitable, Callable, Optio
 
 import aiofiles
 
-from pydoll.browser.firefox.element import KEYS
-from pydoll.browser.firefox.find_mixin import _FirefoxFindMixin
+from pydoll.elements.firefox_element import KEYS
+from pydoll.elements.mixins.firefox_find_mixin import FirefoxFindMixin
 from pydoll.exceptions import NetworkEventsNotEnabled, NoDialogPresent
 from pydoll.protocol.bidi import browsing_context, network, script, session, storage
 from pydoll.protocol.bidi import input as bidi_input
@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class FirefoxTab(_FirefoxFindMixin):
+class FirefoxTab(FirefoxFindMixin):
     """
     Represents a Firefox browser tab using WebDriver BiDi protocol.
 

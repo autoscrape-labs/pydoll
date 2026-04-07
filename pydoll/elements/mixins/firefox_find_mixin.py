@@ -10,13 +10,25 @@ from pydoll.exceptions import ElementNotFound, WaitElementTimeout
 from pydoll.protocol.bidi import browsing_context
 
 if TYPE_CHECKING:
-    from pydoll.browser.firefox.element import FirefoxElement
     from pydoll.connection.bidi_connection_handler import BiDiConnectionHandler
+    from pydoll.elements.firefox_element import FirefoxElement
 
 logger = logging.getLogger(__name__)
 
 
-class _FirefoxFindMixin:
+def create_firefox_element(*args, **kwargs) -> FirefoxElement:
+    """
+    Create FirefoxElement instance avoiding circular imports.
+
+    Factory function that dynamically imports FirefoxElement at runtime
+    to prevent circular import dependencies.
+    """
+    from pydoll.elements.firefox_element import FirefoxElement  # noqa: PLC0415
+
+    return FirefoxElement(*args, **kwargs)
+
+
+class FirefoxFindMixin:
     """
     Mixin providing Chrome-like element finding via BiDi browsingContext.locateNodes.
 
@@ -207,8 +219,6 @@ class _FirefoxFindMixin:
         max_node_count: Optional[int] = None,
     ) -> Union[FirefoxElement, list[FirefoxElement], None]:
         """Execute ``locateNodes`` with optional retry, return ``FirefoxElement(s)``."""
-        from pydoll.browser.firefox.element import FirefoxElement  # avoid circular import
-
         start_nodes = self._find_start_nodes
         deadline = asyncio.get_event_loop().time() + timeout if timeout else None
 
@@ -225,7 +235,7 @@ class _FirefoxFindMixin:
 
             if nodes:
                 elements = [
-                    FirefoxElement(node, self._context_id, self._connection_handler)
+                    create_firefox_element(node, self._context_id, self._connection_handler)
                     for node in nodes
                 ]
                 return elements if find_all else elements[0]

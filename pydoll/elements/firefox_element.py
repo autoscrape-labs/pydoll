@@ -7,13 +7,13 @@ from typing import TYPE_CHECKING, Any, Optional
 
 import aiofiles
 
-from pydoll.browser.firefox.find_mixin import _FirefoxFindMixin
+from pydoll.elements.firefox_shadow_root import FirefoxShadowRoot
+from pydoll.elements.mixins.firefox_find_mixin import FirefoxFindMixin
 from pydoll.exceptions import ElementNotInteractable, WaitElementTimeout
 from pydoll.protocol.bidi import browsing_context, script
 from pydoll.protocol.bidi import input as bidi_input
 
 if TYPE_CHECKING:
-    from pydoll.browser.firefox.shadow_root import FirefoxShadowRoot
     from pydoll.connection.bidi_connection_handler import BiDiConnectionHandler
 
 logger = logging.getLogger(__name__)
@@ -105,7 +105,7 @@ KEYS = {
 }
 
 
-class FirefoxElement(_FirefoxFindMixin):
+class FirefoxElement(FirefoxFindMixin):
     """
     Represents a DOM element in a Firefox tab via WebDriver BiDi.
 
@@ -263,6 +263,96 @@ class FirefoxElement(_FirefoxFindMixin):
                         ],
                     }
                 ],
+            )
+        )
+
+    async def key_down(self, key: str, *modifiers: str) -> None:
+        """
+        Send a key-down event, optionally holding modifier keys first.
+
+        The virtual keyboard state is maintained by the browser between calls,
+        so keys remain logically held until :meth:`key_up` is called or
+        ``input.releaseActions`` is issued.
+
+        Args:
+            key: Key name from the :data:`KEYS` dict (e.g. ``'enter'``,
+                 ``'escape'``) or a single character (e.g. ``'a'``, ``'1'``).
+            *modifiers: Zero or more modifier key names to hold before the
+                main key (e.g. ``'ctrl'``, ``'shift'``, ``'alt'``).
+
+        Example:
+            await element.key_down('a', 'ctrl')   # Ctrl held, then A pressed
+        """
+        actions: list[dict] = []
+        for mod in modifiers:
+            actions.append({'type': 'keyDown', 'value': KEYS.get(mod.lower(), mod)})
+        actions.append({'type': 'keyDown', 'value': KEYS.get(key.lower(), key)})
+
+        await self._connection_handler.execute_command(
+            bidi_input.perform_actions(
+                self._context_id,
+                [{'type': 'key', 'id': 'keyboard1', 'actions': actions}],
+            )
+        )
+
+    async def key_up(self, key: str, *modifiers: str) -> None:
+        """
+        Send a key-up event, releasing modifier keys afterwards.
+
+        Modifiers are released in reverse order so the sequence is the
+        mirror image of :meth:`key_down`.
+
+        Args:
+            key: Key name from the :data:`KEYS` dict or a single character.
+            *modifiers: Modifier key names that were held when :meth:`key_down`
+                was called (e.g. ``'ctrl'``, ``'shift'``).
+
+        Example:
+            await element.key_up('a', 'ctrl')   # A released, then Ctrl released
+        """
+        actions: list[dict] = [{'type': 'keyUp', 'value': KEYS.get(key.lower(), key)}]
+        for mod in reversed(modifiers):
+            actions.append({'type': 'keyUp', 'value': KEYS.get(mod.lower(), mod)})
+
+        await self._connection_handler.execute_command(
+            bidi_input.perform_actions(
+                self._context_id,
+                [{'type': 'key', 'id': 'keyboard1', 'actions': actions}],
+            )
+        )
+
+    async def hotkey(self, *keys: str) -> None:
+        """
+        Execute a key combination in a single atomic BiDi action sequence.
+
+        All keys are pressed in order, then released in reverse, so the last
+        key given is treated as the "main" key and the preceding ones as
+        modifiers.
+
+        Args:
+            *keys: Two or more key names. The last one is the main key;
+                   all others are held as modifiers.
+                   E.g. ``hotkey('ctrl', 'a')`` → Ctrl+A.
+
+        Raises:
+            ValueError: If fewer than one key is provided.
+
+        Example:
+            await element.hotkey('ctrl', 'a')          # Select all
+            await element.hotkey('ctrl', 'c')          # Copy
+            await element.hotkey('ctrl', 'shift', 's') # Save-as style combo
+        """
+        if not keys:
+            raise ValueError('hotkey requires at least one key')
+
+        resolved = [KEYS.get(k.lower(), k) for k in keys]
+        actions: list[dict] = [{'type': 'keyDown', 'value': v} for v in resolved]
+        actions += [{'type': 'keyUp', 'value': v} for v in reversed(resolved)]
+
+        await self._connection_handler.execute_command(
+            bidi_input.perform_actions(
+                self._context_id,
+                [{'type': 'key', 'id': 'keyboard1', 'actions': actions}],
             )
         )
 
@@ -445,8 +535,6 @@ class FirefoxElement(_FirefoxFindMixin):
         Raises:
             ValueError: If the element has no shadow root (``el.shadowRoot`` is ``null``).
         """
-        from pydoll.browser.firefox.shadow_root import FirefoxShadowRoot
-
         response: dict = await self._connection_handler.execute_command(
             script.call_function(
                 function_declaration='(el) => el.shadowRoot',

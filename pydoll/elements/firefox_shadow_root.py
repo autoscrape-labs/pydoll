@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
-from pydoll.browser.firefox.find_mixin import _FirefoxFindMixin
+from pydoll.elements.mixins.firefox_find_mixin import FirefoxFindMixin
 
 if TYPE_CHECKING:
     from pydoll.connection.bidi_connection_handler import BiDiConnectionHandler
@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class FirefoxShadowRoot(_FirefoxFindMixin):
+class FirefoxShadowRoot(FirefoxFindMixin):
     """
     Represents a shadow root attached to a Firefox element.
 
