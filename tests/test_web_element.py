@@ -728,6 +728,12 @@ class TestWebElementClicking:
             await web_element.click_using_js()
 
     @pytest.mark.asyncio
+    async def test_click_using_js_negative_timeout_raises(self, web_element):
+        """Test JavaScript click with negative timeout raises ValueError."""
+        with pytest.raises(ValueError, match='timeout must be greater than or equal to 0'):
+            await web_element.click_using_js(timeout=-1)
+
+    @pytest.mark.asyncio
     async def test_click_using_js_not_visible_with_timeout_waits(self, web_element):
         """Test JavaScript click with timeout waits for element to become visible."""
         web_element.is_visible = AsyncMock(return_value=False)
@@ -818,6 +824,12 @@ class TestWebElementClicking:
 
         with pytest.raises(ElementNotVisible):
             await web_element.click()
+
+    @pytest.mark.asyncio
+    async def test_click_negative_timeout_raises(self, web_element):
+        """Test click with negative timeout raises ValueError."""
+        with pytest.raises(ValueError, match='timeout must be greater than or equal to 0'):
+            await web_element.click(timeout=-1)
 
     @pytest.mark.asyncio
     async def test_click_not_visible_with_timeout_waits(self, web_element):
