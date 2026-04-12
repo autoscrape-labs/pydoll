@@ -756,6 +756,22 @@ class TestWebElementClicking:
             await web_element.click_using_js(timeout=5)
 
     @pytest.mark.asyncio
+    async def test_click_using_js_visible_with_timeout_does_not_wait(self, web_element):
+        """Test JS click on already visible element does not call wait_until even with timeout."""
+        web_element.is_visible = AsyncMock(return_value=True)
+        web_element.scroll_into_view = AsyncMock()
+        web_element.wait_until = AsyncMock()
+        web_element.execute_script = AsyncMock(
+            return_value={'result': {'result': {'value': True}}}
+        )
+
+        await web_element.click_using_js(timeout=5)
+
+        web_element.wait_until.assert_not_called()
+        web_element.scroll_into_view.assert_called_once()
+        web_element.execute_script.assert_called_once()
+
+    @pytest.mark.asyncio
     async def test_click_using_js_not_interactable(self, web_element):
         """Test JavaScript click when element is not interactable."""
         web_element.is_visible = AsyncMock(return_value=True)

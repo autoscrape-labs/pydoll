@@ -535,6 +535,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
                 When 0, raises immediately if not visible.
 
         Raises:
+            ValueError: If timeout is negative.
             ElementNotVisible: If element is not visible and no timeout specified.
             WaitElementTimeout: If element not visible within timeout.
             ElementNotInteractable: If element couldn't be clicked.
@@ -543,13 +544,16 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
             For <option> elements, uses specialized selection approach.
             Element is automatically scrolled into view.
         """
+        if timeout < 0:
+            raise ValueError('timeout must be greater than or equal to 0')
+
         if await self._is_option_element():
             return await self._click_option_tag()
 
         await self.scroll_into_view()
 
         if not await self.is_visible():
-            if timeout:
+            if timeout > 0:
                 await self.wait_until(is_visible=True, timeout=timeout)
             else:
                 raise ElementNotVisible()
@@ -583,6 +587,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
                 When 0, raises immediately if not visible.
 
         Raises:
+            ValueError: If timeout is negative.
             ElementNotVisible: If element is not visible and no timeout specified.
             WaitElementTimeout: If element not visible within timeout.
 
@@ -590,11 +595,14 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
             For <option> elements, delegates to specialized JavaScript approach.
             Element is automatically scrolled into view.
         """
+        if timeout < 0:
+            raise ValueError('timeout must be greater than or equal to 0')
+
         if await self._is_option_element():
             return await self._click_option_tag()
 
         if not await self.is_visible():
-            if timeout:
+            if timeout > 0:
                 await self.wait_until(is_visible=True, timeout=timeout)
             else:
                 raise ElementNotVisible()
