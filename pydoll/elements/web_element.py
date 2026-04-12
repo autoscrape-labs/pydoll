@@ -526,12 +526,17 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
 
             await asyncio.sleep(0.5)
 
-    async def click_using_js(self):
+    async def click_using_js(self, timeout: int = 0):
         """
         Click element using JavaScript click() method.
 
+        Args:
+            timeout: Maximum seconds to wait for element to become visible.
+                When 0, raises immediately if not visible.
+
         Raises:
-            ElementNotVisible: If element is not visible.
+            ElementNotVisible: If element is not visible and no timeout specified.
+            WaitElementTimeout: If element not visible within timeout.
             ElementNotInteractable: If element couldn't be clicked.
 
         Note:
@@ -544,7 +549,10 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         await self.scroll_into_view()
 
         if not await self.is_visible():
-            raise ElementNotVisible()
+            if timeout:
+                await self.wait_until(is_visible=True, timeout=timeout)
+            else:
+                raise ElementNotVisible()
 
         logger.info(f'Clicking element via JS: object_id={self._object_id}')
         result = await self.execute_script(Scripts.CLICK, return_by_value=True)
@@ -558,6 +566,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         y_offset: int = 0,
         hold_time: float = 0.1,
         humanize: bool = False,
+        timeout: int = 0,
     ):
         """
         Click element using simulated mouse events.
@@ -570,9 +579,12 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
                 Bezier curve movement from the current tracked position to the
                 element center before clicking. When False, dispatches raw CDP
                 mousePressed/mouseReleased events directly.
+            timeout: Maximum seconds to wait for element to become visible.
+                When 0, raises immediately if not visible.
 
         Raises:
-            ElementNotVisible: If element is not visible.
+            ElementNotVisible: If element is not visible and no timeout specified.
+            WaitElementTimeout: If element not visible within timeout.
 
         Note:
             For <option> elements, delegates to specialized JavaScript approach.
@@ -582,7 +594,10 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
             return await self._click_option_tag()
 
         if not await self.is_visible():
-            raise ElementNotVisible()
+            if timeout:
+                await self.wait_until(is_visible=True, timeout=timeout)
+            else:
+                raise ElementNotVisible()
 
         await self.scroll_into_view()
 

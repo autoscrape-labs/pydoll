@@ -728,6 +728,34 @@ class TestWebElementClicking:
             await web_element.click_using_js()
 
     @pytest.mark.asyncio
+    async def test_click_using_js_not_visible_with_timeout_waits(self, web_element):
+        """Test JavaScript click with timeout waits for element to become visible."""
+        web_element.is_visible = AsyncMock(return_value=False)
+        web_element.scroll_into_view = AsyncMock()
+        web_element.wait_until = AsyncMock()
+        web_element.execute_script = AsyncMock(
+            return_value={'result': {'result': {'value': True}}}
+        )
+
+        await web_element.click_using_js(timeout=5)
+
+        web_element.wait_until.assert_called_once_with(
+            is_visible=True, timeout=5
+        )
+
+    @pytest.mark.asyncio
+    async def test_click_using_js_not_visible_with_timeout_raises_on_expiry(self, web_element):
+        """Test JavaScript click with timeout raises WaitElementTimeout when element never becomes visible."""
+        web_element.is_visible = AsyncMock(return_value=False)
+        web_element.scroll_into_view = AsyncMock()
+        web_element.wait_until = AsyncMock(
+            side_effect=WaitElementTimeout('Timed out waiting for element to become visible')
+        )
+
+        with pytest.raises(WaitElementTimeout):
+            await web_element.click_using_js(timeout=5)
+
+    @pytest.mark.asyncio
     async def test_click_using_js_not_interactable(self, web_element):
         """Test JavaScript click when element is not interactable."""
         web_element.is_visible = AsyncMock(return_value=True)
@@ -774,6 +802,57 @@ class TestWebElementClicking:
 
         with pytest.raises(ElementNotVisible):
             await web_element.click()
+
+    @pytest.mark.asyncio
+    async def test_click_not_visible_with_timeout_waits(self, web_element):
+        """Test click with timeout waits for element to become visible."""
+        web_element.is_visible = AsyncMock(return_value=False)
+        web_element.wait_until = AsyncMock()
+        web_element.scroll_into_view = AsyncMock()
+
+        bounds = [0, 0, 100, 0, 100, 100, 0, 100]
+        web_element._connection_handler.execute_command.side_effect = [
+            {'result': {'model': {'content': bounds}}},
+            None,
+            None,
+        ]
+
+        with patch('asyncio.sleep'):
+            await web_element.click(timeout=5)
+
+        web_element.wait_until.assert_called_once_with(
+            is_visible=True, timeout=5
+        )
+
+    @pytest.mark.asyncio
+    async def test_click_not_visible_with_timeout_raises_on_expiry(self, web_element):
+        """Test click with timeout raises WaitElementTimeout when element never becomes visible."""
+        web_element.is_visible = AsyncMock(return_value=False)
+        web_element.wait_until = AsyncMock(
+            side_effect=WaitElementTimeout('Timed out waiting for element to become visible')
+        )
+
+        with pytest.raises(WaitElementTimeout):
+            await web_element.click(timeout=5)
+
+    @pytest.mark.asyncio
+    async def test_click_visible_ignores_timeout(self, web_element):
+        """Test click on already visible element does not call wait_until even with timeout."""
+        web_element.is_visible = AsyncMock(return_value=True)
+        web_element.wait_until = AsyncMock()
+        web_element.scroll_into_view = AsyncMock()
+
+        bounds = [0, 0, 100, 0, 100, 100, 0, 100]
+        web_element._connection_handler.execute_command.side_effect = [
+            {'result': {'model': {'content': bounds}}},
+            None,
+            None,
+        ]
+
+        with patch('asyncio.sleep'):
+            await web_element.click(timeout=5)
+
+        web_element.wait_until.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_click_option_element(self, option_element):
