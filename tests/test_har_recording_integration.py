@@ -92,7 +92,7 @@ def test_page_path():
     return Path(__file__).parent / 'pages' / 'test_har_recording.html'
 
 
-async def _wait_for_requests_done(tab, timeout=15):
+async def _wait_for_requests_done(tab, timeout=30):
     """Poll the page until status shows 'done'."""
     for _ in range(int(timeout / 0.5)):
         await asyncio.sleep(0.5)

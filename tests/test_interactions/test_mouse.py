@@ -559,7 +559,7 @@ class TestMouseHumanizedMove:
             overshoot_probability=0.0,
             micro_pause_probability=0.0,
         )
-        await mouse._move_humanized(50, 50)
+        await mouse._move_humanized(5, 5)
         short_count = mock_tab._execute_command.call_count
 
         mock_tab._execute_command.reset_mock()

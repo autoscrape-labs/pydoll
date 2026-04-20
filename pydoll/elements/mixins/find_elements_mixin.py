@@ -905,3 +905,73 @@ class FindElementsMixin:
         Check if response has objectId key.
         """
         return bool(response.get('result', {}).get('result', {}).get('objectId'))
+
+    async def _get_family_elements(
+        self, script: str, max_depth: int = 1, tag_filter: list[str] = []
+    ) -> list[WebElement]:
+        """
+        Retrieve all family elements of this element (elements at the same DOM level).
+
+        Args:
+            script (str): CDP script to execute for retrieving family elements.
+            tag_filter (list[str], optional): List of HTML tag names to filter results.
+                If empty, returns all family elements regardless of tag. Defaults to [].
+
+        Returns:
+            list[WebElement]: List of family WebElement objects that share the same
+                parent as this element and match the tag filter criteria.
+        """
+        # Fallback to direct evaluate if execute_script is not locally defined
+        if hasattr(self, 'execute_script'):
+            result = await self.execute_script(  # type: ignore
+                script.format(tag_filter=tag_filter, max_depth=max_depth)
+            )
+        elif hasattr(self, '_object_id') and self._object_id:
+            result = await self._execute_command(
+                RuntimeCommands.call_function_on(
+                    function_declaration=script.format(
+                        tag_filter=tag_filter, max_depth=max_depth
+                    ),
+                    object_id=self._object_id,
+                )
+            )
+        else:
+            result = await self._execute_command(
+                RuntimeCommands.evaluate(
+                    expression=script.format(tag_filter=tag_filter, max_depth=max_depth)
+                )
+            )
+
+        if not self._has_object_id_key(result):
+            return []
+
+        array_object_id = result['result']['result']['objectId']
+
+        get_properties_command = RuntimeCommands.get_properties(object_id=array_object_id)
+        properties_response: GetPropertiesResponse = await self._execute_command(
+            get_properties_command
+        )
+
+        iframe_context = None
+        if getattr(self, 'is_iframe', False):
+            element_self = cast('WebElement', self)
+            iframe_context = await element_self.iframe_context
+
+        inherited_context = iframe_context or getattr(self, '_iframe_context', None)
+        family_elements: list[WebElement] = []
+        for prop in properties_response['result']['result']:
+            if not (prop['name'].isdigit() and 'objectId' in prop['value']):
+                continue
+            child_object_id = prop['value']['objectId']
+            attributes = await self._get_object_attributes(object_id=child_object_id)
+            child = create_web_element(
+                child_object_id,
+                self._connection_handler,
+                attributes_list=attributes,
+                mouse=getattr(self, '_mouse', None),
+            )
+            self._apply_iframe_context_to_element(child, inherited_context)
+            family_elements.append(child)
+
+        logger.debug(f'Family elements found: {len(family_elements)}')
+        return family_elements

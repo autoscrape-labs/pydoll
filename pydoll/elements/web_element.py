@@ -46,7 +46,6 @@ from pydoll.protocol.page.types import ScreenshotFormat, Viewport
 from pydoll.protocol.runtime.methods import (
     CallFunctionOnResponse,
     EvaluateResponse,
-    GetPropertiesResponse,
     SerializationOptions,
 )
 from pydoll.protocol.runtime.types import CallArgument
@@ -66,7 +65,6 @@ if TYPE_CHECKING:
     )
     from pydoll.protocol.dom.types import Quad
     from pydoll.protocol.page.methods import CaptureScreenshotResponse
-    from pydoll.protocol.runtime.methods import GetPropertiesResponse
 
 logger = logging.getLogger(__name__)
 
@@ -965,52 +963,6 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
                 return_by_value=True,
             )
         )
-
-    async def _get_family_elements(
-        self, script: str, max_depth: int = 1, tag_filter: list[str] = []
-    ) -> list[WebElement]:
-        """
-        Retrieve all family elements of this element (elements at the same DOM level).
-
-        Args:
-            script (str): CDP script to execute for retrieving family elements.
-            tag_filter (list[str], optional): List of HTML tag names to filter results.
-                If empty, returns all family elements regardless of tag. Defaults to [].
-
-        Returns:
-            list[WebElement]: List of family WebElement objects that share the same
-                parent as this element and match the tag filter criteria.
-        """
-        result = await self.execute_script(
-            script.format(tag_filter=tag_filter, max_depth=max_depth)
-        )
-        if not self._has_object_id_key(result):
-            return []
-
-        array_object_id = result['result']['result']['objectId']
-
-        get_properties_command = RuntimeCommands.get_properties(object_id=array_object_id)
-        properties_response: GetPropertiesResponse = await self._execute_command(
-            get_properties_command
-        )
-
-        family_elements: list[WebElement] = []
-        for prop in properties_response['result']['result']:
-            if not (prop['name'].isdigit() and 'objectId' in prop['value']):
-                continue
-            child_object_id = prop['value']['objectId']
-            attributes = await self._get_object_attributes(object_id=child_object_id)
-            family_elements.append(
-                WebElement(
-                    child_object_id,
-                    self._connection_handler,
-                    attributes_list=attributes,
-                    mouse=self._mouse,
-                )
-            )
-
-        logger.debug(f'Family elements found: {len(family_elements)}')
-        return family_elements
 
     def _def_attributes(self, attributes_list: list[str]):
         """Process flat attribute list into dictionary (renames 'class' to 'class_name')."""
