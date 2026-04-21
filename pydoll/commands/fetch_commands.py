@@ -176,13 +176,15 @@ class FetchCommands:
         Returns:
             Command[Response]: A command for enabling fetch interception.
         """
+        params = EnableParams(handleAuthRequests=handle_auth_requests)
+
         request_pattern = RequestPattern(urlPattern=url_pattern)
         if resource_type is not None:
             request_pattern['resourceType'] = resource_type
         if request_stage is not None:
             request_pattern['requestStage'] = request_stage
+        params['patterns'] = [request_pattern]
 
-        params = EnableParams(patterns=[request_pattern], handleAuthRequests=handle_auth_requests)
         return Command(method=FetchMethod.ENABLE, params=params)
 
     @staticmethod

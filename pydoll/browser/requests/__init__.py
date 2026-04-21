@@ -4,7 +4,8 @@ It allows making HTTP requests within the browser context, reusing cookies and h
 """
 
 from .har_recorder import HarCapture
+from .har_replayer import HarReplayer
 from .request import Request
 from .response import Response
 
-__all__ = ['HarCapture', 'Request', 'Response']
+__all__ = ['HarCapture', 'HarReplayer', 'Request', 'Response']

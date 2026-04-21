@@ -52,8 +52,11 @@ def test_add_argument():
 def test_add_duplicate_argument():
     options = Options()
     options.add_argument('--headless')
-    with pytest.raises(ArgumentAlreadyExistsInOptions, match='Argument already exists: --headless'):
-        options.add_argument('--headless')
+    assert len(options.arguments) == 1
+    # Adding duplicate should not raise error and should not change list length
+    options.add_argument('--headless')
+    assert len(options.arguments) == 1
+    assert options.arguments == ['--headless']
 
 def test_remove_argument():
     options = Options()

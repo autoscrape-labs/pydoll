@@ -242,9 +242,9 @@ class Scripts:
 (async function() {{
     async function makeRequest(url, options) {{
         try {{
-            const response = await fetch(url, options, {{
-                credentials: 'include',
-            }});
+            const response = await window.fetch(
+                url, Object.assign({ credentials: 'include' }, options)
+            );
             const headers = {{}};
             response.headers.forEach((value, key) => {{
                 headers[key] = value;

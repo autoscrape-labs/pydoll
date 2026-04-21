@@ -9,10 +9,12 @@ import json as jsonlib
 import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Optional, Union, cast
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 from pydoll.browser.requests.har_recorder import HarCapture, HarRecorder
+from pydoll.browser.requests.har_replayer import HarReplayer
 from pydoll.browser.requests.response import Response
 from pydoll.commands.runtime_commands import RuntimeCommands
 from pydoll.constants import Scripts
@@ -320,6 +322,32 @@ class Request:
             yield capture
         finally:
             await recorder.stop()
+
+    @asynccontextmanager
+    async def replay(
+        self,
+        har_path: str | Path,
+    ) -> AsyncIterator[HarReplayer]:
+        """Replay network traffic from a HAR file.
+
+        Context manager that intercepts all network activity on the tab
+        and fulfills requests from the specified HAR file if a match is found.
+
+        Args:
+            har_path: Path to the HAR 1.2 JSON file to load.
+
+        Usage::
+
+            async with tab.request.replay('flow.har'):
+                await tab.go_to('https://example.com')
+                # Content will be served from HAR instead of network
+        """
+        replayer = HarReplayer(self.tab, har_path)
+        await replayer.start()
+        try:
+            yield replayer
+        finally:
+            await replayer.stop()
 
     @staticmethod
     def _build_url_with_params(url: str, params: Optional[dict[str, str]]) -> str:

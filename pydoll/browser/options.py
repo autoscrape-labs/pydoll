@@ -1,12 +1,14 @@
+import logging
 from contextlib import suppress
 
 from pydoll.browser.interfaces import Options
 from pydoll.constants import PageLoadState
 from pydoll.exceptions import (
-    ArgumentAlreadyExistsInOptions,
     ArgumentNotFoundInOptions,
     WrongPrefsDict,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class ChromiumOptions(Options):
@@ -118,7 +120,7 @@ class ChromiumOptions(Options):
             ArgumentNotFoundInOptions: If the argument is not in the list of arguments.
         """
         if argument not in self._arguments:
-            raise ArgumentNotFoundInOptions(f'Argument not found: {argument}')
+            logger.debug(f'Argument not found: {argument}')
         self._arguments.remove(argument)
 
     @property
