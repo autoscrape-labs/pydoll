@@ -5,7 +5,9 @@ from typing import TYPE_CHECKING
 
 from pydoll.commands import DomCommands
 from pydoll.connection import ConnectionHandler
+from pydoll.constants import Scripts
 from pydoll.elements.mixins import FindElementsMixin
+from pydoll.exceptions import ElementNotFound
 from pydoll.protocol.dom.types import ShadowRootType
 
 if TYPE_CHECKING:
@@ -77,10 +79,68 @@ class ShadowRoot(FindElementsMixin):
     @property
     async def inner_html(self) -> str:
         """HTML content of the shadow root."""
-        response: GetOuterHTMLResponse = await self._execute_command(
+        command: GetOuterHTMLResponse = await self._execute_command(
             DomCommands.get_outer_html(object_id=self._object_id)
         )
-        return response['result']['outerHTML']
+        return command['result']['outerHTML']
+
+    async def get_children_elements(
+        self, max_depth: int = 1, tag_filter: list[str] = [], raise_exc: bool = False
+    ) -> list[WebElement]:
+        """
+        Retrieve all direct and nested child elements within this shadow root.
+
+        Args:
+            max_depth (int, optional): Maximum depth to traverse when finding children.
+                Defaults to 1 for direct children only.
+            tag_filter (list[str], optional): List of HTML tag names to filter results.
+                If empty, returns all child elements regardless of tag. Defaults to [].
+
+        Returns:
+            list[WebElement]: List of child WebElement objects found within the shadow root.
+
+        Raises:
+            ElementNotFound: If no child elements are found and raise_exc is True.
+        """
+        logger.debug(
+            f'Getting shadow children: max_depth={max_depth}, '
+            f'tag_filter={tag_filter}, raise_exc={raise_exc}'
+        )
+        children = await self._get_family_elements(
+            script=Scripts.GET_CHILDREN_NODE, max_depth=max_depth, tag_filter=tag_filter
+        )
+        if not children and raise_exc:
+            raise ElementNotFound(f'Child element not found for shadow root: {self}')
+        logger.debug(f'Shadow children found: {len(children)}')
+        return children
+
+    async def get_siblings_elements(
+        self, tag_filter: list[str] = [], raise_exc: bool = False
+    ) -> list[WebElement]:
+        """
+        Retrieve all sibling elements of the shadow root (at the same DOM level).
+
+        Note: Siblings of a shadow root are technically sibling elements of its host.
+
+        Args:
+            tag_filter (list[str], optional): List of HTML tag names to filter results.
+                If empty, returns all sibling elements regardless of tag. Defaults to [].
+
+        Returns:
+            list[WebElement]: List of sibling WebElement objects matching criteria.
+        """
+        logger.debug(f'Getting shadow siblings: tag_filter={tag_filter}, raise_exc={raise_exc}')
+        if not self._host_element:
+            logger.warning(
+                'get_siblings_elements called on ShadowRoot without host_element'
+            )
+            return []
+
+        siblings = await self._host_element.get_siblings_elements(
+            tag_filter=tag_filter, raise_exc=raise_exc
+        )
+        logger.debug(f'Shadow siblings (via host) found: {len(siblings)}')
+        return siblings
 
     def __repr__(self) -> str:
         return f'ShadowRoot(mode={self._mode.value}, object_id={self._object_id})'

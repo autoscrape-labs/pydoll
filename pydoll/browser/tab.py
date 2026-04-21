@@ -114,6 +114,7 @@ if TYPE_CHECKING:
     from pydoll.protocol.page.events import FileChooserOpenedEvent
     from pydoll.protocol.page.methods import (
         CaptureScreenshotResponse,
+        CaptureSnapshotResponse,
         GetResourceContentResponse,
         GetResourceTreeResponse,
         NavigateResponse,
@@ -1129,6 +1130,33 @@ class Tab(FindElementsMixin):
         logger.info(f'PDF saved to: {path}')
 
         return None
+
+    async def capture_snapshot(self) -> str:
+        """
+        Capture a snapshot of the current page as MHTML.
+
+        Returns:
+            str: MHTML data string.
+        """
+        command = PageCommands.capture_snapshot()
+        response: CaptureSnapshotResponse = await self._execute_command(command)
+        return response['result']['data']
+
+    async def save_page_snapshot(self, path: str | Path) -> None:
+        """
+        Save a snapshot of the current page as an MHTML file.
+
+        Args:
+            path (str | Path): The path where the snapshot will be saved.
+        """
+        data = await self.capture_snapshot()
+        file_path = Path(path)
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+
+        async with aiofiles.open(file_path, 'w', encoding='utf-8') as f:
+            await f.write(data)
+
+        logger.info(f'Page snapshot saved to {file_path}')
 
     async def save_bundle(self, path: str | Path, inline_assets: bool = False) -> None:
         """
