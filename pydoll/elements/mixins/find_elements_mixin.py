@@ -276,6 +276,24 @@ class FindElementsMixin:
         expression: str,
         timeout: int = ...,
         find_all: bool = ...,
+        raise_exc: Literal[True] = True,
+    ) -> Union[WebElement, list[WebElement]]: ...
+
+    @overload
+    async def query(
+        self,
+        expression: str,
+        timeout: int = ...,
+        find_all: Literal[False] = False,
+        raise_exc: bool = ...,
+    ) -> Optional[WebElement]: ...
+
+    @overload
+    async def query(
+        self,
+        expression: str,
+        timeout: int = ...,
+        find_all: bool = ...,
         raise_exc: bool = ...,
     ) -> Union[WebElement, list[WebElement], None]: ...
 
