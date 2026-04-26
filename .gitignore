@@ -166,5 +166,3 @@ cython_debug/
 # Dev test file
 dev_test_file.py
 
-# pi coding agent
-.pi/
