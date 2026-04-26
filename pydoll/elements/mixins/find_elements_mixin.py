@@ -133,6 +133,34 @@ class FindElementsMixin:
         text: Optional[str] = ...,
         timeout: int = ...,
         find_all: bool = ...,
+        raise_exc: Literal[True] = True,
+        **attributes,
+    ) -> Union[WebElement, list[WebElement]]: ...
+
+    @overload
+    async def find(
+        self,
+        id: Optional[str] = ...,
+        class_name: Optional[str] = ...,
+        name: Optional[str] = ...,
+        tag_name: Optional[str] = ...,
+        text: Optional[str] = ...,
+        timeout: int = ...,
+        find_all: Literal[False] = False,
+        raise_exc: bool = ...,
+        **attributes,
+    ) -> Optional[WebElement]: ...
+
+    @overload
+    async def find(
+        self,
+        id: Optional[str] = ...,
+        class_name: Optional[str] = ...,
+        name: Optional[str] = ...,
+        tag_name: Optional[str] = ...,
+        text: Optional[str] = ...,
+        timeout: int = ...,
+        find_all: bool = ...,
         raise_exc: bool = ...,
         **attributes,
     ) -> Union[WebElement, list[WebElement], None]: ...
