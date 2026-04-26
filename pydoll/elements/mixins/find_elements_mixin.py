@@ -78,7 +78,7 @@ class FindElementsMixin:
         timeout: int = ...,
         find_all: Literal[False] = False,
         raise_exc: Literal[True] = True,
-        **attributes,
+        **attributes: str,
     ) -> WebElement: ...
 
     @overload
@@ -92,7 +92,7 @@ class FindElementsMixin:
         timeout: int = ...,
         find_all: Literal[False] = False,
         raise_exc: Literal[False] = False,
-        **attributes,
+        **attributes: str,
     ) -> Optional[WebElement]: ...
 
     @overload
@@ -106,7 +106,7 @@ class FindElementsMixin:
         timeout: int = ...,
         find_all: Literal[True] = True,
         raise_exc: Literal[True] = True,
-        **attributes,
+        **attributes: str,
     ) -> list[WebElement]: ...
 
     @overload
@@ -120,7 +120,7 @@ class FindElementsMixin:
         timeout: int = ...,
         find_all: Literal[True] = True,
         raise_exc: Literal[False] = False,
-        **attributes,
+        **attributes: str,
     ) -> Optional[list[WebElement]]: ...
 
     @overload
@@ -134,7 +134,7 @@ class FindElementsMixin:
         timeout: int = ...,
         find_all: bool = ...,
         raise_exc: Literal[True] = True,
-        **attributes,
+        **attributes: str,
     ) -> Union[WebElement, list[WebElement]]: ...
 
     @overload
@@ -148,7 +148,7 @@ class FindElementsMixin:
         timeout: int = ...,
         find_all: Literal[False] = False,
         raise_exc: bool = ...,
-        **attributes,
+        **attributes: str,
     ) -> Optional[WebElement]: ...
 
     @overload
@@ -162,7 +162,7 @@ class FindElementsMixin:
         timeout: int = ...,
         find_all: bool = ...,
         raise_exc: bool = ...,
-        **attributes,
+        **attributes: str,
     ) -> Union[WebElement, list[WebElement], None]: ...
 
     async def find(
@@ -175,7 +175,7 @@ class FindElementsMixin:
         timeout: int = 0,
         find_all: bool = False,
         raise_exc: bool = True,
-        **attributes: dict[str, str],
+        **attributes: str,
     ) -> Union[WebElement, list[WebElement], None]:
         """
         Find element(s) using combination of common HTML attributes.
