@@ -160,6 +160,20 @@ class FindElementsMixin:
         tag_name: Optional[str] = ...,
         text: Optional[str] = ...,
         timeout: int = ...,
+        find_all: Literal[True] = True,
+        raise_exc: bool = ...,
+        **attributes: str,
+    ) -> Optional[list[WebElement]]: ...
+
+    @overload
+    async def find(
+        self,
+        id: Optional[str] = ...,
+        class_name: Optional[str] = ...,
+        name: Optional[str] = ...,
+        tag_name: Optional[str] = ...,
+        text: Optional[str] = ...,
+        timeout: int = ...,
         find_all: bool = ...,
         raise_exc: bool = ...,
         **attributes: str,
@@ -287,6 +301,15 @@ class FindElementsMixin:
         find_all: Literal[False] = False,
         raise_exc: bool = ...,
     ) -> Optional[WebElement]: ...
+
+    @overload
+    async def query(
+        self,
+        expression: str,
+        timeout: int = ...,
+        find_all: Literal[True] = True,
+        raise_exc: bool = ...,
+    ) -> Optional[list[WebElement]]: ...
 
     @overload
     async def query(
@@ -659,7 +682,7 @@ class FindElementsMixin:
         name: Optional[str] = None,
         tag_name: Optional[str] = None,
         text: Optional[str] = None,
-        **attributes,
+        **attributes: str,
     ) -> tuple[By, str]:
         """
         Determine appropriate selector strategy and value from provided arguments.
