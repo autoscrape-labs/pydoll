@@ -31,6 +31,7 @@ class ChromiumOptions(Options):
         self._headless = False
         self._webrtc_leak_protection = False
         self._page_load_state = PageLoadState.COMPLETE
+        self._max_parallel_tasks = None
 
     @property
     def arguments(self) -> list[str]:
@@ -91,6 +92,28 @@ class ChromiumOptions(Options):
             timeout (int): The timeout in seconds.
         """
         self._start_timeout = timeout
+
+    @property
+    def max_parallel_tasks(self) -> int | None:
+        """
+        Gets the maximum number of coroutines Browser.run_in_parallel executes at once.
+
+        Returns:
+            int | None: Maximum concurrent tasks, or None for no limit.
+        """
+        return self._max_parallel_tasks
+
+    @max_parallel_tasks.setter
+    def max_parallel_tasks(self, limit: int | None):
+        """
+        Sets the maximum number of coroutines Browser.run_in_parallel executes at once.
+
+        Args:
+            limit: Positive integer concurrency limit, or None for no limit.
+        """
+        if limit is not None and limit < 1:
+            raise ValueError('max_parallel_tasks must be a positive integer or None')
+        self._max_parallel_tasks = limit
 
     def add_argument(self, argument: str):
         """

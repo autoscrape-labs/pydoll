@@ -289,8 +289,8 @@ async def parallel_scraping():
                     await tab.close()
                     await browser.delete_browser_context(context_id)
         
-        # Scrape all sites concurrently
-        results = await asyncio.gather(*[
+        # Scrape all sites concurrently. Results preserve input order.
+        results = await browser.run_in_parallel(*[
             scrape_site(tab, site, ctx) for tab, site, ctx in zip(tabs, websites, contexts)
         ])
         
@@ -611,7 +611,7 @@ async def use_context_pool():
         
         # Scrape multiple URLs using the pool
         urls = [f'https://example.com/page{i}' for i in range(10)]
-        results = await asyncio.gather(*[scrape_with_pool(url) for url in urls])
+        results = await browser.run_in_parallel(*[scrape_with_pool(url) for url in urls])
         
         for i, title in enumerate(results):
             print(f"{urls[i]}: {title}")
@@ -697,4 +697,3 @@ asyncio.run(context_config_manager())
 - **[Core Concepts](../core-concepts.md)** - Understanding Pydoll's architecture
 
 Browser Contexts are one of Pydoll's most powerful features for creating sophisticated automation workflows. By understanding how they work—especially the window behavior in headed mode and their lightweight nature—you can build efficient, scalable automation that handles complex multi-environment scenarios with ease.
-

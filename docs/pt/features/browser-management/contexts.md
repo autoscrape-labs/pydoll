@@ -289,8 +289,8 @@ async def parallel_scraping():
                     await tab.close()
                     await browser.delete_browser_context(context_id)
         
-        # Raspa todos os sites concorrentemente
-        results = await asyncio.gather(*[
+        # Raspa todos os sites concorrentemente. Os resultados preservam a ordem de entrada.
+        results = await browser.run_in_parallel(*[
             scrape_site(tab, site, ctx) for tab, site, ctx in zip(tabs, websites, contexts)
         ])
         
@@ -611,7 +611,7 @@ async def use_context_pool():
         
         # Raspar múltiplas URLs usando o pool
         urls = [f'https://example.com/page{i}' for i in range(10)]
-        results = await asyncio.gather(*[scrape_with_pool(url) for url in urls])
+        results = await browser.run_in_parallel(*[scrape_with_pool(url) for url in urls])
         
         for i, title in enumerate(results):
             print(f"{urls[i]}: {title}")

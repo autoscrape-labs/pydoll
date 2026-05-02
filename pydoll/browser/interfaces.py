@@ -19,6 +19,11 @@ class Options(ABC):
     def start_timeout(self) -> int:
         pass
 
+    @property
+    @abstractmethod
+    def max_parallel_tasks(self) -> int | None:
+        pass
+
     @abstractmethod
     def add_argument(self, argument: str):
         pass

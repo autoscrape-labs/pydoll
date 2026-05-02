@@ -289,8 +289,8 @@ async def parallel_scraping():
                     await tab.close()
                     await browser.delete_browser_context(context_id)
         
-        # 并发抓取所有网站
-        results = await asyncio.gather(*[
+        # 并发抓取所有网站。结果会保留输入顺序。
+        results = await browser.run_in_parallel(*[
             scrape_site(tab, site, ctx) for tab, site, ctx in zip(tabs, websites, contexts)
         ])
         
@@ -611,7 +611,7 @@ async def use_context_pool():
         
         # 使用池抓取多个URL
         urls = [f'https://example.com/page{i}' for i in range(10)]
-        results = await asyncio.gather(*[scrape_with_pool(url) for url in urls])
+        results = await browser.run_in_parallel(*[scrape_with_pool(url) for url in urls])
         
         for i, title in enumerate(results):
             print(f"{urls[i]}: {title}")
@@ -697,4 +697,3 @@ asyncio.run(context_config_manager())
 - **[核心概念](../core-concepts.md)** - 理解Pydoll的架构
 
 浏览器上下文是Pydoll创建复杂自动化工作流的最强大功能之一。通过理解它们的工作方式——特别是有头模式下的窗口行为及其轻量级特性——您可以构建高效、可扩展的自动化，轻松处理复杂的多环境场景。
-

@@ -23,6 +23,7 @@ async def main():
     options.headless = True
     options.start_timeout = 15
     options.page_load_state = PageLoadState.INTERACTIVE
+    options.max_parallel_tasks = 5
     
     # 添加命令行参数
     options.add_argument('--disable-gpu')
@@ -107,6 +108,25 @@ options.start_timeout = 20  # 秒（默认：10）
     - **太低**：浏览器可能无法完全初始化，导致启动失败
     - **太高**：挂起会阻塞您的自动化更长时间
     - **推荐**：大多数情况下 10-15 秒，慢速系统或大型浏览器配置文件 20-30 秒
+
+### 并行任务限制
+
+限制 `browser.run_in_parallel()` 同时执行的协程数量：
+
+```python
+options = ChromiumOptions()
+options.max_parallel_tasks = 5  # 默认：None（不限制）
+
+async with Chrome(options=options) as browser:
+    await browser.start()
+    results = await browser.run_in_parallel(
+        process_url('https://example.com/1'),
+        process_url('https://example.com/2'),
+        process_url('https://example.com/3'),
+    )
+```
+
+`run_in_parallel()` 会按照输入协程的顺序返回结果，并传播失败任务中的异常。当你需要避免打开过多标签页、发出过多请求或压垮目标站点时，请使用 `max_parallel_tasks`。设置为 `None` 表示不限制并发；任何整数值都必须为正数。
 
 ### 无头模式
 

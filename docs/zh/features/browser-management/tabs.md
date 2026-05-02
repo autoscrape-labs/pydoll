@@ -264,7 +264,7 @@ async def concurrent_scraping():
         tabs = [initial_tab] + [await browser.new_tab() for _ in urls[1:]]
 
         # 并发运行所有爬虫
-        results = await asyncio.gather(*[
+        results = await browser.run_in_parallel(*[
             scrape_page(tab, url) for tab, url in zip(tabs, urls)
         ])
 
@@ -677,12 +677,30 @@ async def parallel_pattern():
                 if tab is not initial_tab:
                     await tab.close()
 
-        # 并发运行所有标签页
-        await asyncio.gather(*[
+        # 并发运行所有标签页。结果会保留输入顺序。
+        await browser.run_in_parallel(*[
             process_page(tab, url) for tab, url in zip(tabs, urls)
         ])
 
 asyncio.run(parallel_pattern())
+```
+
+`browser.run_in_parallel()` 是用于并发执行浏览器相关协程的便捷包装器。它会保留结果顺序，像 `asyncio.gather()` 一样传播异常，并在需要限制并发时遵守 `browser.options.max_parallel_tasks`。
+
+```python
+from pydoll.browser.options import ChromiumOptions
+
+options = ChromiumOptions()
+options.max_parallel_tasks = 3  # 每次最多运行 3 个协程
+
+async with Chrome(options=options) as browser:
+    await browser.start()
+    results = await browser.run_in_parallel(
+        scrape_page('https://example.com/a'),
+        scrape_page('https://example.com/b'),
+        scrape_page('https://example.com/c'),
+        scrape_page('https://example.com/d'),
+    )
 ```
 
 ### 工作池模式

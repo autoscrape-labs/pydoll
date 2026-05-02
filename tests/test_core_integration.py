@@ -9,6 +9,34 @@ from pydoll.browser.chromium import Chrome
 from pydoll.elements.web_element import WebElement
 
 
+class TestBrowserRunInParallelIntegration:
+    """Integration tests for Browser.run_in_parallel with real tabs."""
+
+    @pytest.mark.asyncio
+    async def test_run_in_parallel_across_tabs(self, ci_chrome_options):
+        core_page = Path(__file__).parent / 'pages' / 'test_core_simple.html'
+        iframe_page = Path(__file__).parent / 'pages' / 'test_iframe_simple.html'
+
+        async def load_page_and_get_heading(tab, url):
+            await tab.go_to(url)
+            heading = await tab.find(id='main-heading')
+            return await tab.title, await heading.text
+
+        async with Chrome(options=ci_chrome_options) as browser:
+            first_tab = await browser.start()
+            second_tab = await browser.new_tab()
+
+            results = await browser.run_in_parallel(
+                load_page_and_get_heading(first_tab, f'file://{core_page.absolute()}'),
+                load_page_and_get_heading(second_tab, f'file://{iframe_page.absolute()}'),
+            )
+
+        assert results == [
+            ('Core Test Page', 'Core Test Page'),
+            ('Test Simple Iframe', 'Main Page'),
+        ]
+
+
 class TestCoreFindQuery:
     """Find and query basics on a simple page."""
 
@@ -273,5 +301,4 @@ class TestCoreTypeText:
 
             prop = await input_el.execute_script('return this.value', return_by_value=True)
             assert prop['result']['result']['value'] == text, f'Failed for {label}: {text!r}'
-
 

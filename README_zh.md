@@ -639,7 +639,7 @@ async def concurrent_scraping():
         scrape_page('https://google.com/', tab_google),
         scrape_page('https://duckduckgo.com/', tab_duckduckgo)
     ]
-    results = await asyncio.gather(*tasks)
+    results = await browser.run_in_parallel(*tasks)
     print(results)
     await browser.stop()
 

@@ -133,7 +133,7 @@ async def main():
         await browser.start()
         
         # Process all URLs concurrently!
-        titles = await asyncio.gather(
+        titles = await browser.run_in_parallel(
             *(scrape_page(browser, url) for url in urls)
         )
         
@@ -211,7 +211,7 @@ async def benchmark_concurrent():
             browser.new_tab(f'https://example.com/page{i}')
             for i in range(10)
         ]
-        await asyncio.gather(*tasks)
+        await browser.run_in_parallel(*tasks)
         elapsed = time.time() - start
         
         print(f"10 pages loaded in {elapsed:.2f}s")

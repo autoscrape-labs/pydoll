@@ -10,7 +10,7 @@ from abc import ABC, abstractmethod
 from contextlib import suppress
 from functools import partial
 from random import randint
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, overload
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Coroutine, Optional, TypeVar, overload
 from urllib.parse import urlsplit, urlunsplit
 
 from pydoll.browser.managers import (
@@ -72,6 +72,7 @@ if TYPE_CHECKING:
     from pydoll.protocol.target.types import TargetInfo
 
 logger = logging.getLogger(__name__)
+_T = TypeVar('_T')
 
 
 class Browser(ABC):  # noqa: PLR0904
@@ -228,6 +229,40 @@ class Browser(ABC):  # noqa: PLR0904
         """
         logger.info('Closing browser WebSocket connection')
         await self._connection_handler.close()
+
+    @overload
+    async def run_in_parallel(self) -> list[Any]: ...
+    @overload
+    async def run_in_parallel(self, *coroutines: Coroutine[Any, Any, _T]) -> list[_T]: ...
+    async def run_in_parallel(self, *coroutines: Coroutine[Any, Any, Any]) -> list[Any]:
+        """
+        Run coroutines concurrently and return their results in order.
+
+        Uses asyncio.gather internally and respects options.max_parallel_tasks
+        when a concurrency limit is configured.
+        """
+        max_parallel_tasks = self.options.max_parallel_tasks
+
+        if max_parallel_tasks is None or len(coroutines) <= max_parallel_tasks:
+            return await asyncio.gather(*coroutines)
+
+        semaphore = asyncio.Semaphore(max_parallel_tasks)
+        started_coroutines: set[int] = set()
+
+        async def run_with_limit(index: int, coroutine: Coroutine[Any, Any, Any]) -> Any:
+            async with semaphore:
+                started_coroutines.add(index)
+                return await coroutine
+
+        try:
+            return await asyncio.gather(
+                *(run_with_limit(index, coroutine) for index, coroutine in enumerate(coroutines))
+            )
+        except asyncio.CancelledError:
+            for index, coroutine in enumerate(coroutines):
+                if index not in started_coroutines:
+                    coroutine.close()
+            raise
 
     async def create_browser_context(
         self, proxy_server: Optional[str] = None, proxy_bypass_list: Optional[str] = None

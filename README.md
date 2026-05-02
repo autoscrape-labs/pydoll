@@ -350,7 +350,7 @@ async def concurrent_scraping():
         tab_google = await browser.start()
         tab_ddg = await browser.new_tab()
 
-        results = await asyncio.gather(
+        results = await browser.run_in_parallel(
             scrape_page('https://google.com/', tab_google),
             scrape_page('https://duckduckgo.com/', tab_ddg)
         )

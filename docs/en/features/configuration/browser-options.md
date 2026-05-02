@@ -23,6 +23,7 @@ async def main():
     options.headless = True
     options.start_timeout = 15
     options.page_load_state = PageLoadState.INTERACTIVE
+    options.max_parallel_tasks = 5
     
     # Add command-line arguments
     options.add_argument('--disable-gpu')
@@ -107,6 +108,25 @@ options.start_timeout = 20  # seconds (default: 10)
     - **Too low**: Browser may not fully initialize, causing startup failures
     - **Too high**: Hangs will block your automation for longer
     - **Recommended**: 10-15s for most cases, 20-30s for slow systems or heavy browser profiles
+
+### Parallel Task Limit
+
+Limit how many coroutines `browser.run_in_parallel()` executes at the same time:
+
+```python
+options = ChromiumOptions()
+options.max_parallel_tasks = 5  # default: None (no limit)
+
+async with Chrome(options=options) as browser:
+    await browser.start()
+    results = await browser.run_in_parallel(
+        process_url('https://example.com/1'),
+        process_url('https://example.com/2'),
+        process_url('https://example.com/3'),
+    )
+```
+
+`run_in_parallel()` returns results in the same order as the input coroutines and propagates exceptions from failed tasks. Use `max_parallel_tasks` when you need to avoid opening too many tabs, issuing too many requests, or overwhelming the target site. Set it to `None` for unlimited concurrency; any integer value must be positive.
 
 ### Headless Mode
 

@@ -31,6 +31,26 @@ def test_set_start_timeout():
     options.start_timeout = 30
     assert options.start_timeout == 30
 
+def test_initial_max_parallel_tasks():
+    options = Options()
+    assert options.max_parallel_tasks is None
+
+def test_set_max_parallel_tasks():
+    options = Options()
+    options.max_parallel_tasks = 3
+    assert options.max_parallel_tasks == 3
+
+def test_set_max_parallel_tasks_none():
+    options = Options()
+    options.max_parallel_tasks = 3
+    options.max_parallel_tasks = None
+    assert options.max_parallel_tasks is None
+
+def test_set_invalid_max_parallel_tasks():
+    options = Options()
+    with pytest.raises(ValueError, match='max_parallel_tasks must be a positive integer or None'):
+        options.max_parallel_tasks = 0
+
 
 def test_initial_page_load_state():
     options = Options()
@@ -225,6 +245,10 @@ def test_options_interface_enforcement():
         @property
         def start_timeout(self):
             return 0
+
+        @property
+        def max_parallel_tasks(self):
+            return None
 
         def add_argument(self, argument):
             pass

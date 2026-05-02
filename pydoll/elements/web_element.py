@@ -5,7 +5,7 @@ import json
 import logging
 import warnings
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, cast
 
 import aiofiles
 
@@ -35,6 +35,7 @@ from pydoll.exceptions import (
 )
 from pydoll.interactions.iframe import IFrameContext, IFrameContextResolver
 from pydoll.interactions.keyboard import Keyboard
+from pydoll.protocol.base import Command
 from pydoll.protocol.dom.types import ShadowRootType
 from pydoll.protocol.input.types import (
     KeyEventType,
@@ -200,7 +201,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         Returns coordinates in CSS pixels relative to document origin.
         """
         command = DomCommands.get_box_model(object_id=self._object_id)
-        response: GetBoxModelResponse = await self._execute_command(command)
+        response: GetBoxModelResponse = await self._execute_command(cast(Command, command))
         content = response['result']['model']['content']
         logger.debug(f'Bounds retrieved (points={len(content)})')
         return content
@@ -217,7 +218,9 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
             return response.get('result', {}).get('result', {}).get('value', '')
 
         command = DomCommands.get_outer_html(object_id=self._object_id)
-        response_get_outer_html: GetOuterHTMLResponse = await self._execute_command(command)
+        response_get_outer_html: GetOuterHTMLResponse = await self._execute_command(
+            cast(Command, command)
+        )
         return response_get_outer_html['result']['outerHTML']
 
     @property
@@ -316,7 +319,9 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
     async def _get_shadow_root(self) -> ShadowRoot:
         """Get the shadow root attached to this element (single attempt)."""
         response: DescribeNodeResponse = await self._execute_command(
-            DomCommands.describe_node(object_id=self._object_id, depth=1, pierce=True)
+            cast(
+                Command, DomCommands.describe_node(object_id=self._object_id, depth=1, pierce=True)
+            )
         )
         node_info = response.get('result', {}).get('node', {})
         shadow_roots = node_info.get('shadowRoots', [])
@@ -329,7 +334,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
             raise ShadowRootNotFound('Shadow root found but backend node ID is unavailable')
 
         resolve_response: ResolveNodeResponse = await self._execute_command(
-            DomCommands.resolve_node(backend_node_id=backend_node_id)
+            cast(Command, DomCommands.resolve_node(backend_node_id=backend_node_id))
         )
         shadow_object_id = resolve_response['result']['object']['objectId']
 
@@ -457,7 +462,10 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         )
 
         screenshot: CaptureScreenshotResponse = await self._connection_handler.execute_command(
-            PageCommands.capture_screenshot(format=file_format, clip=clip, quality=quality)
+            cast(
+                Command,
+                PageCommands.capture_screenshot(format=file_format, clip=clip, quality=quality),
+            )
         )
 
         screenshot_data = screenshot['result']['data']
@@ -478,7 +486,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         """Scroll element into visible viewport."""
         command = DomCommands.scroll_into_view_if_needed(object_id=self._object_id)
         logger.info(f'Scrolling element into view: object_id={self._object_id}')
-        await self._execute_command(command)
+        await self._execute_command(cast(Command, command))
 
     async def wait_until(
         self,
@@ -626,13 +634,13 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
             button=MouseButton.LEFT,
             click_count=1,
         )
-        await self._execute_command(press_command)
+        await self._execute_command(cast(Command, press_command))
         await asyncio.sleep(hold_time)
-        await self._execute_command(release_command)
+        await self._execute_command(cast(Command, release_command))
 
     async def focus(self):
         """Focus this element via CDP DOM.focus command."""
-        await self._execute_command(DomCommands.focus(object_id=self._object_id))
+        await self._execute_command(cast(Command, DomCommands.focus(object_id=self._object_id)))
 
     async def clear(self):
         """
@@ -705,7 +713,10 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         files_list = [str(file) for file in files] if isinstance(files, list) else [str(files)]
         logger.info(f'Setting input files: count={len(files_list)}')
         await self._execute_command(
-            DomCommands.set_file_input_files(files=files_list, object_id=self._object_id)
+            cast(
+                Command,
+                DomCommands.set_file_input_files(files=files_list, object_id=self._object_id),
+            )
         )
 
     async def type_text(
@@ -746,12 +757,15 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         key_name, code = key
         logger.info(f'Key down: key={key_name} code={code} modifiers={modifiers}')
         await self._execute_command(
-            InputCommands.dispatch_key_event(
-                type=KeyEventType.KEY_DOWN,
-                key=key_name,
-                windows_virtual_key_code=code,
-                native_virtual_key_code=code,
-                modifiers=modifiers,
+            cast(
+                Command,
+                InputCommands.dispatch_key_event(
+                    type=KeyEventType.KEY_DOWN,
+                    key=key_name,
+                    windows_virtual_key_code=code,
+                    native_virtual_key_code=code,
+                    modifiers=modifiers,
+                ),
             )
         )
 
@@ -771,11 +785,14 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         key_name, code = key
         logger.info(f'Key up: key={key_name} code={code}')
         await self._execute_command(
-            InputCommands.dispatch_key_event(
-                type=KeyEventType.KEY_UP,
-                key=key_name,
-                windows_virtual_key_code=code,
-                native_virtual_key_code=code,
+            cast(
+                Command,
+                InputCommands.dispatch_key_event(
+                    type=KeyEventType.KEY_UP,
+                    key=key_name,
+                    windows_virtual_key_code=code,
+                    native_virtual_key_code=code,
+                ),
             )
         )
 
@@ -917,7 +934,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
             unique_context_id=unique_context_id,
             serialization_options=serialization_options,
         )
-        return await self._execute_command(command)
+        return await self._execute_command(cast(Command, command))
 
     def __repr__(self):
         """String representation showing attributes and object ID."""
@@ -934,10 +951,13 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         if iframe_context is None:
             raise InvalidIFrame('Unable to resolve iframe context')
         response: EvaluateResponse = await self._execute_command(
-            RuntimeCommands.evaluate(
-                expression='document.documentElement.outerHTML',
-                context_id=iframe_context.execution_context_id,
-                return_by_value=True,
+            cast(
+                Command,
+                RuntimeCommands.evaluate(
+                    expression='document.documentElement.outerHTML',
+                    context_id=iframe_context.execution_context_id,
+                    return_by_value=True,
+                ),
             )
         )
         return response['result']['result'].get('value', '')
@@ -959,10 +979,13 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
     async def _click_option_tag(self):
         """Specialized method for clicking <option> elements in dropdowns."""
         await self._execute_command(
-            RuntimeCommands.call_function_on(
-                object_id=self._object_id,
-                function_declaration=Scripts.CLICK_OPTION_TAG,
-                return_by_value=True,
+            cast(
+                Command,
+                RuntimeCommands.call_function_on(
+                    object_id=self._object_id,
+                    function_declaration=Scripts.CLICK_OPTION_TAG,
+                    return_by_value=True,
+                ),
             )
         )
 
@@ -991,7 +1014,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
 
         get_properties_command = RuntimeCommands.get_properties(object_id=array_object_id)
         properties_response: GetPropertiesResponse = await self._execute_command(
-            get_properties_command
+            cast(Command, get_properties_command)
         )
 
         family_elements: list[WebElement] = []

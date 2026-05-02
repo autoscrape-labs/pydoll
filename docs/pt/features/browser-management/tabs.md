@@ -264,7 +264,7 @@ async def concurrent_scraping():
         tabs = [initial_tab] + [await browser.new_tab() for _ in urls[1:]]
 
         # Executar todos os scrapers concorrentemente
-        results = await asyncio.gather(*[
+        results = await browser.run_in_parallel(*[
             scrape_page(tab, url) for tab, url in zip(tabs, urls)
         ])
 
@@ -677,12 +677,30 @@ async def parallel_pattern():
                 if tab is not initial_tab:
                     await tab.close()
 
-        # Executar todas as abas concorrentemente
-        await asyncio.gather(*[
+        # Executar todas as abas concorrentemente. Os resultados preservam a ordem de entrada.
+        await browser.run_in_parallel(*[
             process_page(tab, url) for tab, url in zip(tabs, urls)
         ])
 
 asyncio.run(parallel_pattern())
+```
+
+`browser.run_in_parallel()` é um wrapper de conveniência para executar corrotinas relacionadas ao navegador concorrentemente. Ele preserva a ordem dos resultados, propaga exceções como `asyncio.gather()` e respeita `browser.options.max_parallel_tasks` quando você precisa limitar a concorrência.
+
+```python
+from pydoll.browser.options import ChromiumOptions
+
+options = ChromiumOptions()
+options.max_parallel_tasks = 3  # Executa no máximo 3 corrotinas por vez
+
+async with Chrome(options=options) as browser:
+    await browser.start()
+    results = await browser.run_in_parallel(
+        scrape_page('https://example.com/a'),
+        scrape_page('https://example.com/b'),
+        scrape_page('https://example.com/c'),
+        scrape_page('https://example.com/d'),
+    )
 ```
 
 ### Padrão de Pool de Workers

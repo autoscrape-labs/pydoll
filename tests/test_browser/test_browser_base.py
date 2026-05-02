@@ -171,6 +171,89 @@ async def test_start_browser_success_with_start_timeout(mock_browser):
 
 
 @pytest.mark.asyncio
+async def test_run_in_parallel_returns_results_in_order(mock_browser):
+    async def return_after(delay, value):
+        await asyncio.sleep(delay)
+        return value
+
+    results = await mock_browser.run_in_parallel(
+        return_after(0.02, 'first'),
+        return_after(0.01, 'second'),
+        return_after(0, 'third'),
+    )
+
+    assert results == ['first', 'second', 'third']
+
+
+@pytest.mark.asyncio
+async def test_run_in_parallel_propagates_exceptions(mock_browser):
+    async def fail():
+        raise RuntimeError('parallel task failed')
+
+    with pytest.raises(RuntimeError, match='parallel task failed'):
+        await mock_browser.run_in_parallel(fail())
+
+
+@pytest.mark.asyncio
+async def test_run_in_parallel_respects_max_parallel_tasks(mock_browser):
+    active_tasks = 0
+    max_seen_active_tasks = 0
+
+    async def track_task(value):
+        nonlocal active_tasks, max_seen_active_tasks
+        active_tasks += 1
+        max_seen_active_tasks = max(max_seen_active_tasks, active_tasks)
+        await asyncio.sleep(0.01)
+        active_tasks -= 1
+        return value
+
+    mock_browser.options.max_parallel_tasks = 2
+
+    results = await mock_browser.run_in_parallel(*(track_task(index) for index in range(5)))
+
+    assert results == [0, 1, 2, 3, 4]
+    assert max_seen_active_tasks == 2
+
+
+@pytest.mark.asyncio
+async def test_run_in_parallel_closes_unstarted_coroutines_on_cancellation(mock_browser, recwarn):
+    first_coroutine_started = asyncio.Event()
+    release_first_coroutine = asyncio.Event()
+
+    async def hold_semaphore():
+        first_coroutine_started.set()
+        await release_first_coroutine.wait()
+
+    async def wait_for_semaphore():
+        await asyncio.sleep(0)
+
+    mock_browser.options.max_parallel_tasks = 1
+    task = asyncio.create_task(
+        mock_browser.run_in_parallel(
+            hold_semaphore(),
+            wait_for_semaphore(),
+            wait_for_semaphore(),
+        )
+    )
+
+    await first_coroutine_started.wait()
+    task.cancel()
+
+    with pytest.raises(asyncio.CancelledError):
+        await task
+
+    release_first_coroutine.set()
+
+    unawaited_coroutine_warnings = [
+        warning
+        for warning in recwarn
+        if issubclass(warning.category, RuntimeWarning)
+        and 'was never awaited' in str(warning.message)
+    ]
+    assert not unawaited_coroutine_warnings
+
+
+@pytest.mark.asyncio
 async def test_proxy_configuration(mock_browser):
     mock_browser._proxy_manager.get_proxy_credentials = MagicMock(
         return_value=(True, ('user', 'pass'))
