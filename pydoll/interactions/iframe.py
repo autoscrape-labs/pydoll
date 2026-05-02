@@ -72,14 +72,15 @@ class IFrameContextResolver:
         if not frame_id:
             raise InvalidIFrame('Unable to resolve frameId for the iframe element')
 
-        context = IFrameContext(frame_id=frame_id, document_url=document_url)
-
-        if session_handler and session_id:
-            context.session_handler = session_handler
-            context.session_id = session_id
-
         effective_handler = session_handler or base_handler
         effective_session_id = session_id or base_session_id
+
+        context = IFrameContext(
+            frame_id=frame_id,
+            document_url=document_url,
+            session_handler=effective_handler if effective_session_id else None,
+            session_id=effective_session_id,
+        )
 
         execution_context_id = await self._create_isolated_world_for_frame(
             frame_id, effective_handler, effective_session_id

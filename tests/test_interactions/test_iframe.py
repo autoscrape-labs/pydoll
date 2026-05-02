@@ -517,6 +517,47 @@ class TestGetDocumentObjectId:
             await resolver._get_document_object_id(42, context)
 
 
+class TestResolve:
+    """Test resolve method."""
+
+    @pytest.mark.asyncio
+    async def test_resolve_uses_effective_base_session_for_document_lookup(
+        self, resolver, mock_element
+    ):
+        """Inherited routing session should be preserved on the resolved context."""
+        mock_base_handler = MagicMock()
+        mock_base_handler.execute_command = AsyncMock()
+        mock_element._routing_session_handler = mock_base_handler
+        mock_element._routing_session_id = 'base-session-000'
+
+        resolver._describe_element_node = AsyncMock(
+            return_value={
+                'contentDocument': {
+                    'frameId': 'resolved-frame-id',
+                    'documentURL': 'https://test.iframe.com',
+                },
+                'frameId': 'content-frame-id',
+                'backendNodeId': 456,
+            }
+        )
+        resolver._resolve_oopif_if_needed = AsyncMock(
+            return_value=(None, None, 'resolved-frame-id', 'https://iframe.example.com')
+        )
+        resolver._create_isolated_world_for_frame = AsyncMock(return_value=999)
+        resolver._get_document_object_id = AsyncMock(return_value='doc-object-000')
+
+        context = await resolver.resolve()
+
+        assert context.session_handler is mock_base_handler
+        assert context.session_id == 'base-session-000'
+        assert context.execution_context_id == 999
+        assert context.document_object_id == 'doc-object-000'
+        resolver._create_isolated_world_for_frame.assert_awaited_once_with(
+            'resolved-frame-id', mock_base_handler, 'base-session-000'
+        )
+        resolver._get_document_object_id.assert_awaited_once_with(999, context)
+
+
 class TestResolveOopifIfNeeded:
     """Test _resolve_oopif_if_needed method."""
 
