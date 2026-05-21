@@ -88,6 +88,10 @@ class Browser(ABC):  # noqa: PLR0904
         self,
         options_manager: BrowserOptionsManager,
         connection_port: Optional[int] = None,
+        proxy_manager: Optional[ProxyManager] = None,
+        browser_process_manager: Optional[BrowserProcessManager] = None,
+        temp_directory_manager: Optional[TempDirectoryManager] = None,
+        connection_handler: Optional[ConnectionHandler] = None,
     ):
         """
         Initialize browser instance with configuration.
@@ -96,18 +100,23 @@ class Browser(ABC):  # noqa: PLR0904
             options_manager: Manages browser options initialization and defaults.
                 Must implement initialize_options() and add_default_arguments().
             connection_port: CDP WebSocket port. Random port (9223-9322) if None.
+            proxy_manager: Proxy manager; built from options when omitted.
+            browser_process_manager: Process manager; default when omitted.
+            temp_directory_manager: Temp directory manager; default when omitted.
+            connection_handler: Browser-level connection handler; built from the
+                connection port when omitted (mainly for testing).
 
         Note:
             Call start() to actually launch the browser.
         """
         self._validate_connection_port(connection_port)
         self.options = options_manager.initialize_options()
-        self._proxy_manager = ProxyManager(self.options)
+        self._proxy_manager = proxy_manager or ProxyManager(self.options)
         self._connection_port = connection_port if connection_port else randint(9223, 9322)
-        self._browser_process_manager = BrowserProcessManager()
-        self._temp_directory_manager = TempDirectoryManager()
+        self._browser_process_manager = browser_process_manager or BrowserProcessManager()
+        self._temp_directory_manager = temp_directory_manager or TempDirectoryManager()
         self._ws_address: Optional[str] = None
-        self._connection_handler = ConnectionHandler(self._connection_port)
+        self._connection_handler = connection_handler or ConnectionHandler(self._connection_port)
         self._backup_preferences_dir = ''
         self._tabs_opened: dict[str, Tab] = {}
         self._context_proxy_auth: dict[str, tuple[str, str]] = {}
