@@ -67,6 +67,15 @@ omit = [
     'pydoll/commands/*.py',
 ]
 
+[tool.coverage.report]
+exclude_also = [
+    'if TYPE_CHECKING:',
+    'if __name__ == .__main__.:',
+    'raise NotImplementedError',
+    '@(abc\.)?abstractmethod',
+    '\.\.\.',
+]
+
 [tool.taskipy.tasks]
 lint = 'ruff check .; ruff check . --diff'
 format = 'ruff check . --fix; ruff format .'
