@@ -3419,6 +3419,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#pydoll.connection.managers.commands_manager.CommandsManager.fail_all_pending" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;fail_all_pending
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -3469,6 +3480,39 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;dialog
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.connection.managers.events_manager.EventsManager.start" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;start
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.connection.managers.events_manager.EventsManager.enqueue_event" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;enqueue_event
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.connection.managers.events_manager.EventsManager.stop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;stop
       
     </span>
   </a>
@@ -4510,6 +4554,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#pydoll.connection.managers.commands_manager.CommandsManager.fail_all_pending" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;fail_all_pending
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -4560,6 +4615,39 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;dialog
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.connection.managers.events_manager.EventsManager.start" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;start
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.connection.managers.events_manager.EventsManager.enqueue_event" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;enqueue_event
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.connection.managers.events_manager.EventsManager.stop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;stop
       
     </span>
   </a>
@@ -4839,6 +4927,9 @@ for asynchronous command execution.</p>
     <div class="doc doc-contents ">
 
         <p>Resolve pending command with its result.</p>
+<p>A late response can arrive after the caller already timed out (its future
+was cancelled by asyncio.wait_for) but before the command was removed.
+Popping and checking done() avoids InvalidStateError in that window.</p>
 
 
     </div>
@@ -4859,6 +4950,28 @@ for asynchronous command execution.</p>
     <div class="doc doc-contents ">
 
         <p>Remove pending command without resolving (for timeouts/cancellations).</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="pydoll.connection.managers.commands_manager.CommandsManager.fail_all_pending" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">fail_all_pending</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">fail_all_pending</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Fail every pending command future with the given exception and clear them.</p>
+<p>Used when the connection is lost so in-flight commands raise immediately
+instead of hanging until their individual timeout expires.</p>
 
 
     </div>
@@ -4927,7 +5040,7 @@ for network logs and dialog information.</p>
   </span>
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">network_logs</span> <span class="o">=</span> <span class="p">[]</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">network_logs</span> <span class="o">=</span> <span class="n"><span title="collections.deque">deque</span></span><span class="p">(</span><span class="n"><span title="collections.deque(maxlen)">maxlen</span></span><span class="o">=</span><span class="n"><span title="pydoll.connection.managers.events_manager.MAX_NETWORK_LOGS">MAX_NETWORK_LOGS</span></span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4965,6 +5078,78 @@ for network logs and dialog information.</p>
 
 
 
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="pydoll.connection.managers.events_manager.EventsManager.start" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">start</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">start</span><span class="p">()</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Start the event-processing worker if not already running.</p>
+<p>Called when a connection is established. The worker drains queued events
+in arrival order so event handling never blocks the WebSocket read loop.
+Its lifetime is bound to the connection: stop() is invoked from the
+receive loop's finally block, so the worker can never outlive the socket.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="pydoll.connection.managers.events_manager.EventsManager.enqueue_event" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">enqueue_event</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">enqueue_event</span><span class="p">(</span><span class="n">event_data</span><span class="p">)</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Queue an event for ordered, non-blocking processing.</p>
+<p>Queuing is O(1) and never awaits, so a slow event callback can never
+delay delivery of command responses on the read loop.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="pydoll.connection.managers.events_manager.EventsManager.stop" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">stop</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">stop</span><span class="p">()</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Cancel the worker, await its exit, and drop any queued events.</p>
+<p>Awaiting the cancelled task is what prevents "Task was destroyed but it
+is pending" warnings: the task is never garbage-collected while pending.</p>
+
+
+    </div>
+
+</div>
 
 <div class="doc doc-object doc-function">
 
