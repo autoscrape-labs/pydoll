@@ -546,6 +546,16 @@ async def _coro(value):
     return value
 
 
+def _response_cookie_present(recording, path_suffix, name):
+    entry = _origin_entry(recording, path_suffix)
+    return entry is not None and any(c['name'] == name for c in entry['response']['cookies'])
+
+
+def _request_cookie_present(recording, path_suffix, name):
+    entry = _origin_entry(recording, path_suffix)
+    return entry is not None and any(c['name'] == name for c in entry['request']['cookies'])
+
+
 class _RequestSentWaiter:
     """Arm a listener for a ``Network.requestWillBeSent`` event before navigating.
 
@@ -634,6 +644,14 @@ class TestHarCookiesIntegration:
                 await tab.go_to(f'{api_server}/cookies-page')
                 assert await _wait_for_requests_done(tab), 'Page requests did not complete'
                 await _wait_for_network_idle(tab)
+                # Set-Cookie arrives via the async responseReceivedExtraInfo event,
+                # which can land after load; poll the live recording until it folds in.
+                await wait_until(
+                    lambda: _coro(
+                        _response_cookie_present(recording, '/set-cookie', 'har_session')
+                    ),
+                    message='Set-Cookie not captured into HAR within timeout',
+                )
 
             set_cookie_entry = _origin_entry(recording, '/set-cookie')
             assert set_cookie_entry is not None
@@ -662,6 +680,12 @@ class TestHarCookiesIntegration:
                 await tab.go_to(f'{api_server}/cookies-page')
                 assert await _wait_for_requests_done(tab), 'Page requests did not complete'
                 await _wait_for_network_idle(tab)
+                await wait_until(
+                    lambda: _coro(
+                        _request_cookie_present(recording, '/needs-cookie', 'har_session')
+                    ),
+                    message='request Cookie not captured into HAR within timeout',
+                )
 
             needs_cookie_entry = _origin_entry(recording, '/needs-cookie')
             assert needs_cookie_entry is not None
