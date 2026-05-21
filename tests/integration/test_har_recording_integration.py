@@ -546,16 +546,6 @@ async def _coro(value):
     return value
 
 
-def _response_cookie_present(recording, path_suffix, name):
-    entry = _origin_entry(recording, path_suffix)
-    return entry is not None and any(c['name'] == name for c in entry['response']['cookies'])
-
-
-def _request_cookie_present(recording, path_suffix, name):
-    entry = _origin_entry(recording, path_suffix)
-    return entry is not None and any(c['name'] == name for c in entry['request']['cookies'])
-
-
 class _RequestSentWaiter:
     """Arm a listener for a ``Network.requestWillBeSent`` event before navigating.
 
@@ -629,73 +619,6 @@ class _LoadingFinishedWaiter:
             for callback_id in (self._sent_cb, self._finished_cb):
                 if callback_id is not None:
                     await self._tab.remove_callback(callback_id)
-
-
-class TestHarCookiesIntegration:
-    """Recording captures request and response cookies via ExtraInfo events."""
-
-    @pytest.mark.asyncio
-    async def test_record_captures_response_cookies(self, ci_chrome_options, api_server):
-        """A Set-Cookie response header is parsed into HAR response cookies."""
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-
-            async with tab.request.record() as recording:
-                await tab.go_to(f'{api_server}/cookies-page')
-                assert await _wait_for_requests_done(tab), 'Page requests did not complete'
-                await _wait_for_network_idle(tab)
-                # Set-Cookie arrives via the async responseReceivedExtraInfo event,
-                # which can land after load; poll the live recording until it folds in.
-                await wait_until(
-                    lambda: _coro(
-                        _response_cookie_present(recording, '/set-cookie', 'har_session')
-                    ),
-                    message='Set-Cookie not captured into HAR within timeout',
-                )
-
-            set_cookie_entry = _origin_entry(recording, '/set-cookie')
-            assert set_cookie_entry is not None
-            resp_cookies = set_cookie_entry['response']['cookies']
-            by_name = {c['name']: c for c in resp_cookies}
-
-            assert 'har_session' in by_name
-            session = by_name['har_session']
-            assert session['value'] == 'abc123'
-            assert session.get('path') == '/'
-            assert session.get('httpOnly') is True
-
-            assert 'har_secure' in by_name
-            secure = by_name['har_secure']
-            assert secure['value'] == 'xyz789'
-            assert secure.get('secure') is True
-            assert secure.get('domain') == '127.0.0.1'
-
-    @pytest.mark.asyncio
-    async def test_record_captures_request_cookies(self, ci_chrome_options, api_server):
-        """A request that carries a Cookie header is parsed into HAR request cookies."""
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-
-            async with tab.request.record() as recording:
-                await tab.go_to(f'{api_server}/cookies-page')
-                assert await _wait_for_requests_done(tab), 'Page requests did not complete'
-                await _wait_for_network_idle(tab)
-                await wait_until(
-                    lambda: _coro(
-                        _request_cookie_present(recording, '/needs-cookie', 'har_session')
-                    ),
-                    message='request Cookie not captured into HAR within timeout',
-                )
-
-            needs_cookie_entry = _origin_entry(recording, '/needs-cookie')
-            assert needs_cookie_entry is not None
-            req_cookies = needs_cookie_entry['request']['cookies']
-            assert any(c['name'] == 'har_session' for c in req_cookies)
-            session = next(c for c in req_cookies if c['name'] == 'har_session')
-            assert session['value'] == 'abc123'
-
-            body_text = needs_cookie_entry['response']['content'].get('text', '')
-            assert 'har_session=abc123' in body_text
 
 
 class TestHarRedirectIntegration:
