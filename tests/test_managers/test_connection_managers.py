@@ -1,7 +1,10 @@
+import asyncio
+
 import pytest
 
 from pydoll import exceptions
 from pydoll.connection.managers import CommandsManager, EventsManager
+from pydoll.connection.managers.events_manager import MAX_NETWORK_LOGS
 
 
 @pytest.fixture
@@ -126,7 +129,7 @@ def test_clear_callbacks(events_manager):
 
 @pytest.mark.asyncio
 async def test_process_event_updates_network_logs(events_manager):
-    assert events_manager.network_logs == []
+    assert len(events_manager.network_logs) == 0
     network_event = {
         'method': 'Network.requestWillBeSent',
         'url': 'http://example.com',
@@ -193,3 +196,137 @@ async def test_trigger_callbacks_error_handling(events_manager, caplog):
         'Error in callback' in record.message for record in caplog.records
     )
     assert error_logged, 'The error in the callback should be logged'
+
+
+# --- CommandsManager.fail_all_pending ---
+
+
+def test_fail_all_pending_sets_exception_on_every_future(commands_manager):
+    futures = [
+        commands_manager.create_command_future({'method': f'M{i}'}) for i in range(3)
+    ]
+
+    commands_manager.fail_all_pending(exceptions.WebSocketConnectionClosed())
+
+    assert commands_manager._pending_commands == {}
+    for future in futures:
+        assert future.done()
+        with pytest.raises(exceptions.WebSocketConnectionClosed):
+            future.result()
+
+
+def test_fail_all_pending_skips_already_resolved(commands_manager):
+    future = commands_manager.create_command_future({'method': 'M'})
+    commands_manager.resolve_command(1, '{"ok": true}')
+
+    # No pending futures remain; calling must be a no-op and must not raise.
+    commands_manager.fail_all_pending(exceptions.WebSocketConnectionClosed())
+
+    assert future.result() == '{"ok": true}'
+
+
+def test_fail_all_pending_empty_is_noop(commands_manager):
+    commands_manager.fail_all_pending(exceptions.WebSocketConnectionClosed())
+    assert commands_manager._pending_commands == {}
+
+
+def test_resolve_command_ignores_cancelled_future(commands_manager):
+    future = commands_manager.create_command_future({'method': 'M'})
+    future.cancel()
+
+    # A late response arriving after the caller timed out (future cancelled)
+    # must not raise InvalidStateError and must drop the pending entry.
+    commands_manager.resolve_command(1, '{"ok": true}')
+
+    assert 1 not in commands_manager._pending_commands
+
+
+# --- EventsManager event worker (decoupled, ordered, leak-free) ---
+
+
+@pytest.mark.asyncio
+async def test_worker_processes_enqueued_events_in_order(events_manager):
+    processed = []
+    events_manager.register_callback('E', lambda e: processed.append(e['n']))
+
+    events_manager.start()
+    for n in range(5):
+        events_manager.enqueue_event({'method': 'E', 'n': n})
+    await asyncio.wait_for(events_manager._event_queue.join(), 1)
+    await events_manager.stop()
+
+    assert processed == [0, 1, 2, 3, 4]
+
+
+@pytest.mark.asyncio
+async def test_worker_isolates_failures_and_keeps_processing(events_manager, caplog):
+    processed = []
+
+    def cb(event):
+        if event['n'] == 1:
+            raise ValueError('boom')
+        processed.append(event['n'])
+
+    events_manager.register_callback('E', cb)
+    events_manager.start()
+    for n in range(3):
+        events_manager.enqueue_event({'method': 'E', 'n': n})
+    await asyncio.wait_for(events_manager._event_queue.join(), 1)
+    await events_manager.stop()
+
+    assert processed == [0, 2]
+
+
+@pytest.mark.asyncio
+async def test_stop_cancels_worker_and_clears_queue(events_manager):
+    events_manager.start()
+    worker = events_manager._worker_task
+    events_manager.enqueue_event({'method': 'E', 'n': 0})
+
+    await events_manager.stop()
+
+    assert worker.done()
+    assert events_manager._worker_task is None
+    assert events_manager._event_queue.empty()
+
+
+@pytest.mark.asyncio
+async def test_start_is_idempotent(events_manager):
+    events_manager.start()
+    first = events_manager._worker_task
+    events_manager.start()
+    assert events_manager._worker_task is first
+    await events_manager.stop()
+
+
+@pytest.mark.asyncio
+async def test_stop_without_start_is_safe(events_manager):
+    await events_manager.stop()
+    assert events_manager._worker_task is None
+
+
+# --- EventsManager.process_event robustness (malformed messages) ---
+
+
+@pytest.mark.asyncio
+async def test_process_event_without_method_is_ignored(events_manager):
+    await events_manager.process_event({'params': {'foo': 'bar'}})
+    assert len(events_manager.network_logs) == 0
+
+
+@pytest.mark.asyncio
+async def test_process_dialog_event_without_params_does_not_raise(events_manager):
+    await events_manager.process_event({'method': 'Page.javascriptDialogOpening'})
+
+
+# --- EventsManager.network_logs is bounded ---
+
+
+@pytest.mark.asyncio
+async def test_network_logs_are_bounded(events_manager):
+    for i in range(MAX_NETWORK_LOGS + 50):
+        events_manager._update_network_logs({'method': 'Network.requestWillBeSent', 'i': i})
+
+    assert len(events_manager.network_logs) == MAX_NETWORK_LOGS
+    assert events_manager.network_logs[0]['i'] == 50
+    assert events_manager.network_logs[-1]['i'] == MAX_NETWORK_LOGS + 49

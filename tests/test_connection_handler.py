@@ -17,7 +17,10 @@ async def connection_handler():
     handler = ConnectionHandler(connection_port=9222)
     handler._ws_connection = AsyncMock()
     handler._ws_connection.state = State.OPEN
-    return handler
+    handler._receive_task = MagicMock()
+    handler._receive_task.done.return_value = False
+    yield handler
+    await handler._events_handler.stop()
 
 
 @pytest_asyncio.fixture
@@ -29,7 +32,8 @@ async def connection_handler_closed():
     )
     handler._ws_connection = AsyncMock()
     handler._ws_connection.state = State.CLOSED
-    return handler
+    yield handler
+    await handler._events_handler.stop()
 
 
 @pytest_asyncio.fixture
@@ -42,7 +46,8 @@ async def connection_handler_with_page_id():
     )
     handler._ws_connection = AsyncMock()
     handler._ws_connection.state = State.CLOSED
-    return handler
+    yield handler
+    await handler._events_handler.stop()
 
 
 @pytest.mark.asyncio
@@ -230,7 +235,7 @@ async def test__incoming_messages(connection_handler):
 async def test__process_single_message(connection_handler):
     raw_message = '{"id": 1, "method": "SomeMethod"}'
     connection_handler._command_manager.resolve_command = MagicMock()
-    await connection_handler._process_single_message(raw_message)
+    connection_handler._process_single_message(raw_message)
     connection_handler._command_manager.resolve_command.assert_called_once_with(
         1, raw_message
     )
@@ -239,18 +244,16 @@ async def test__process_single_message(connection_handler):
 @pytest.mark.asyncio
 async def test__process_single_message_invalid_command(connection_handler):
     raw_message = 'not a valid JSON'
-    result = await connection_handler._process_single_message(raw_message)
+    result = connection_handler._process_single_message(raw_message)
     assert result is None
 
 
 @pytest.mark.asyncio
-async def test__process_single_message_event(connection_handler):
+async def test__process_single_message_event_is_enqueued(connection_handler):
     event = {'method': 'SomeEvent'}
-    connection_handler._events_handler.process_event = AsyncMock()
-    await connection_handler._process_single_message(json.dumps(event))
-    connection_handler._events_handler.process_event.assert_called_once_with(
-        event
-    )
+    connection_handler._events_handler.enqueue_event = MagicMock()
+    connection_handler._process_single_message(json.dumps(event))
+    connection_handler._events_handler.enqueue_event.assert_called_once_with(event)
 
 
 @pytest.mark.asyncio
@@ -258,8 +261,11 @@ async def test__process_single_message_event_with_callback(connection_handler):
     event = {'method': 'SomeEvent'}
     callback = MagicMock(return_value=None)
     await connection_handler.register_callback('SomeEvent', callback)
-    await connection_handler._process_single_message(json.dumps(event))
+    connection_handler._events_handler.start()
+    connection_handler._process_single_message(json.dumps(event))
+    await asyncio.wait_for(connection_handler._events_handler._event_queue.join(), 1)
     callback.assert_called_once_with(event)
+    await connection_handler._events_handler.stop()
 
 
 @pytest.mark.asyncio
@@ -270,16 +276,15 @@ async def test__receive_events_flow(connection_handler):
 
     connection_handler._incoming_messages = fake_incoming_messages
 
-    connection_handler._handle_command_message = AsyncMock()
-    connection_handler._handle_event_message = AsyncMock()
+    connection_handler._command_manager.resolve_command = MagicMock()
+    connection_handler._events_handler.enqueue_event = MagicMock()
 
     await connection_handler._receive_events()
 
-    connection_handler._handle_command_message.assert_awaited_once_with({
-        'id': 1,
-        'method': 'TestCommand',
-    })
-    connection_handler._handle_event_message.assert_awaited_once_with({
+    connection_handler._command_manager.resolve_command.assert_called_once_with(
+        1, '{"id": 1, "method": "TestCommand"}'
+    )
+    connection_handler._events_handler.enqueue_event.assert_called_once_with({
         'method': 'TestEvent'
     })
 
@@ -299,7 +304,7 @@ async def test__receive_events_connection_closed(connection_handler):
 
 
 @pytest.mark.asyncio
-async def test__receive_events_unexpected_exception(connection_handler):
+async def test__receive_events_unexpected_exception_does_not_propagate(connection_handler):
     async def fake_incoming_messages_unexpected_error():
         raise ValueError('Unexpected error in async generator')
         yield  # Garante que seja um async generator
@@ -307,11 +312,15 @@ async def test__receive_events_unexpected_exception(connection_handler):
     connection_handler._incoming_messages = (
         fake_incoming_messages_unexpected_error
     )
+    connection_handler._command_manager.fail_all_pending = MagicMock()
+    connection_handler._events_handler.stop = AsyncMock()
 
-    with pytest.raises(
-        ValueError, match='Unexpected error in async generator'
-    ):
-        await connection_handler._receive_events()
+    # A fatal loop error must NOT propagate out of the (never-awaited) receive task;
+    # it must fail pending commands and stop the event worker instead.
+    await connection_handler._receive_events()
+
+    connection_handler._command_manager.fail_all_pending.assert_called_once()
+    connection_handler._events_handler.stop.assert_awaited_once()
 
 
 @pytest.mark.asyncio
@@ -386,6 +395,164 @@ async def test_single_receiver_task_created(connection_handler_closed):
     first_task.cancel()
     with suppress(asyncio.CancelledError):
         await first_task
+
+
+def _make_parked_ws():
+    """A fake open WebSocket whose recv() blocks, so the receive loop parks."""
+    ws = AsyncMock()
+    ws.state = State.OPEN
+
+    async def _blocking_recv():
+        await asyncio.sleep(3600)
+
+    ws.recv = _blocking_recv
+    return ws
+
+
+@pytest.mark.asyncio
+async def test_is_connection_healthy_requires_live_receive_task(connection_handler):
+    connection_handler._ws_connection.state = State.OPEN
+
+    connection_handler._receive_task = MagicMock()
+    connection_handler._receive_task.done.return_value = False
+    assert connection_handler._is_connection_healthy() is True
+
+    connection_handler._receive_task.done.return_value = True
+    assert connection_handler._is_connection_healthy() is False
+
+    connection_handler._receive_task = None
+    assert connection_handler._is_connection_healthy() is False
+
+
+@pytest.mark.asyncio
+async def test_dead_receive_task_triggers_reconnect(connection_handler):
+    dead_task = MagicMock()
+    dead_task.done.return_value = True
+    connection_handler._receive_task = dead_task
+    connection_handler._establish_new_connection = AsyncMock()
+
+    await connection_handler._ensure_active_connection()
+
+    connection_handler._establish_new_connection.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_healthy_connection_is_not_reestablished(connection_handler):
+    connection_handler._establish_new_connection = AsyncMock()
+
+    await connection_handler._ensure_active_connection()
+
+    connection_handler._establish_new_connection.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_concurrent_ensure_active_connects_only_once(connection_handler_closed):
+    connect_calls = 0
+
+    async def slow_connect(address, **kwargs):
+        nonlocal connect_calls
+        connect_calls += 1
+        await asyncio.sleep(0.01)
+        return _make_parked_ws()
+
+    connection_handler_closed._ws_connector = slow_connect
+
+    await asyncio.gather(
+        *(connection_handler_closed._ensure_active_connection() for _ in range(10))
+    )
+
+    assert connect_calls == 1
+    await connection_handler_closed.close()
+
+
+@pytest.mark.asyncio
+async def test_handle_connection_loss_fails_pending_commands(connection_handler):
+    f1 = connection_handler._command_manager.create_command_future({'method': 'A'})
+    f2 = connection_handler._command_manager.create_command_future({'method': 'B'})
+
+    await connection_handler._handle_connection_loss()
+
+    assert f1.done() and f2.done()
+    for future in (f1, f2):
+        with pytest.raises(exceptions.WebSocketConnectionClosed):
+            future.result()
+
+
+@pytest.mark.asyncio
+async def test_receive_loop_skips_unparseable_message(connection_handler):
+    resolved = []
+
+    async def fake_incoming():
+        yield 'not valid json'
+        yield '{"id": 1, "result": {}}'
+
+    connection_handler._incoming_messages = fake_incoming
+    connection_handler._command_manager.resolve_command = MagicMock(
+        side_effect=lambda cmd_id, raw: resolved.append(cmd_id)
+    )
+
+    await connection_handler._receive_events()
+
+    assert resolved == [1]
+
+
+@pytest.mark.asyncio
+async def test_receive_loop_survives_processing_error(connection_handler):
+    seen = []
+
+    def resolve(cmd_id, raw):
+        seen.append(cmd_id)
+        if cmd_id == 1:
+            raise RuntimeError('processing blew up')
+
+    connection_handler._command_manager.resolve_command = resolve
+
+    async def fake_incoming():
+        yield '{"id": 1, "result": {}}'
+        yield '{"id": 2, "result": {}}'
+
+    connection_handler._incoming_messages = fake_incoming
+
+    await connection_handler._receive_events()
+
+    assert seen == [1, 2]
+
+
+@pytest.mark.asyncio
+async def test_establish_uses_unbounded_max_size_and_starts_worker(connection_handler_closed):
+    captured = {}
+
+    async def connector(address, **kwargs):
+        captured.update(kwargs)
+        return _make_parked_ws()
+
+    connection_handler_closed._ws_connector = connector
+
+    await connection_handler_closed._establish_new_connection()
+
+    assert captured.get('max_size') is None
+    worker = connection_handler_closed._events_handler._worker_task
+    assert worker is not None and not worker.done()
+
+    await connection_handler_closed.close()
+    assert connection_handler_closed._events_handler._worker_task is None
+
+
+@pytest.mark.asyncio
+async def test_receive_loop_exit_stops_event_worker(connection_handler):
+    connection_handler._events_handler.start()
+    worker = connection_handler._events_handler._worker_task
+
+    async def fake_incoming():
+        raise websockets.ConnectionClosed(1006, 'gone', rcvd_then_sent=True)
+        yield
+
+    connection_handler._incoming_messages = fake_incoming
+
+    await connection_handler._receive_events()
+
+    assert worker.done()
+    assert connection_handler._events_handler._worker_task is None
 
 
 @pytest.mark.asyncio
