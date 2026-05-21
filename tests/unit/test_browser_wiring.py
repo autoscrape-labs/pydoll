@@ -10,9 +10,28 @@ from __future__ import annotations
 import pytest
 
 from pydoll.browser.chromium import Chrome
+from pydoll.browser.managers import BrowserProcessManager
 from pydoll.browser.managers.browser_options_manager import ChromiumOptionsManager
 from pydoll.browser.options import ChromiumOptions
+from pydoll.browser.tab import Tab
 from pydoll.exceptions import InvalidOptionsObject
+
+
+class _FakeProcess:
+    """Stand-in for the spawned browser subprocess (nothing really runs)."""
+
+    def __init__(self):
+        self.pid = 4242
+        self.terminated = False
+
+    def terminate(self):
+        self.terminated = True
+
+    def wait(self, timeout=None):
+        return 0
+
+    def kill(self):
+        self.terminated = True
 
 
 def test_chrome_applies_default_arguments_to_real_options():
@@ -48,3 +67,25 @@ def test_options_manager_applies_defaults_to_supplied_options():
 def test_options_manager_rejects_non_chromium_options():
     with pytest.raises(InvalidOptionsObject):
         ChromiumOptionsManager('not-options').initialize_options()
+
+
+@pytest.mark.asyncio
+async def test_browser_start_and_stop_orchestrate_process_and_connection(fake_conn):
+    fake_process = _FakeProcess()
+    browser = Chrome()
+    browser.options.binary_location = '/usr/bin/true'
+    browser._connection_handler = fake_conn
+    browser._browser_process_manager = BrowserProcessManager(
+        process_creator=lambda command: fake_process
+    )
+    fake_conn.set_response(
+        'Target.getTargets',
+        {'targetInfos': [{'targetId': 'tab-1', 'type': 'page', 'url': 'about:blank'}]},
+    )
+
+    tab = await browser.start()
+    assert isinstance(tab, Tab)
+    assert tab._target_id == 'tab-1'
+
+    await browser.stop()
+    assert fake_process.terminated is True

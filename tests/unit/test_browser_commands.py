@@ -80,3 +80,13 @@ async def test_fail_request_carries_error_reason(browser, fake_conn):
 async def test_fulfill_request_carries_response_code(browser, fake_conn):
     await browser.fulfill_request(request_id='r1', response_code=204)
     assert fake_conn.last_command('Fetch.fulfillRequest')['params']['responseCode'] == 204
+
+
+@pytest.mark.asyncio
+async def test_create_browser_context_sanitizes_proxy_and_keeps_credentials(browser, fake_conn):
+    fake_conn.set_response('Target.createBrowserContext', {'browserContextId': 'ctx-1'})
+    context_id = await browser.create_browser_context(proxy_server='http://user:pass@host:8080')
+    assert context_id == 'ctx-1'
+    sent = fake_conn.last_command('Target.createBrowserContext')
+    assert sent['params']['proxyServer'] == 'http://host:8080'
+    assert browser._context_proxy_auth[context_id] == ('user', 'pass')
