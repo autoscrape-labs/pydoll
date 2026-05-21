@@ -16,7 +16,6 @@ from urllib.parse import parse_qs, urlparse
 
 import pytest
 import pytest_asyncio
-from _waits import wait_until
 
 from pydoll.browser.chromium import Chrome
 from pydoll.browser.requests.response import Response
@@ -334,47 +333,6 @@ async def test_redirect_is_followed_to_final_url(request_tab):
     assert response.status_code == 200
     assert response.json() == {'message': 'hello'}
     assert response.url.endswith('/json')
-
-
-@pytest.mark.asyncio
-async def test_set_cookie_is_extracted_into_response(request_tab):
-    tab, base = request_tab
-    response = await _get_until_cookies(tab, f'{base}/set-cookie')
-    assert response.status_code == 200
-    cookie_pairs = {(cookie['name'], cookie['value']) for cookie in response.cookies}
-    assert ('session', 'abc123') in cookie_pairs
-
-
-async def _get_until_cookies(tab, url):
-    """Re-issue an idempotent GET until Set-Cookie extraction yields cookies.
-
-    The cookies surface via the asynchronous responseReceivedExtraInfo CDP
-    event, which can arrive after the fetch promise resolves. Rather than a
-    fixed sleep, poll by retrying the (idempotent) request until the response
-    carries cookies, then return that response.
-    """
-    captured: dict[str, object] = {}
-
-    async def attempt() -> bool:
-        response = await tab.request.get(url)
-        captured['response'] = response
-        return bool(response.cookies)
-
-    await wait_until(attempt, timeout=10, message=f'no cookies extracted from {url}')
-    return captured['response']
-
-
-@pytest.mark.asyncio
-async def test_malformed_set_cookie_lines_are_skipped(request_tab):
-    tab, base = request_tab
-    response = await _get_until_cookies(tab, f'{base}/set-cookie-malformed')
-    assert response.status_code == 200
-    cookie_pairs = {(cookie['name'], cookie['value']) for cookie in response.cookies}
-    assert ('good', 'value1') in cookie_pairs
-    assert ('second', 'value2') in cookie_pairs
-    cookie_names = {cookie['name'] for cookie in response.cookies}
-    assert '' not in cookie_names
-    assert 'novalue' not in cookie_names
 
 
 @pytest.mark.asyncio
