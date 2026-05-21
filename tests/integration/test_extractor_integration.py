@@ -16,7 +16,7 @@ from pydoll.extractor import (
     InvalidExtractionModel,
 )
 
-TEST_PAGE = Path(__file__).parent.parent / 'pages' / 'test_extractor.html'
+TEST_PAGE = Path(__file__).parent / 'pages' / 'test_extractor.html'
 FILE_URL = f'file://{TEST_PAGE.absolute()}'
 
 
