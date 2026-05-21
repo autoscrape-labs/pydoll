@@ -3728,6 +3728,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pydoll.commands.runtime_commands.RuntimeCommands.run_if_waiting_for_debugger" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;run_if_waiting_for_debugger
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pydoll.commands.runtime_commands.RuntimeCommands.evaluate" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4733,6 +4744,17 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;enable
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.commands.runtime_commands.RuntimeCommands.run_if_waiting_for_debugger" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;run_if_waiting_for_debugger
       
     </span>
   </a>
@@ -6016,6 +6038,65 @@ the script in.</p>
   &lt;span class=&quot;doc doc-labels&quot;&gt;
       &lt;small class=&quot;doc doc-label doc-label-module-attribute&quot;&gt;&lt;code&gt;module-attribute&lt;/code&gt;&lt;/small&gt;
   &lt;/span&gt; (&lt;code&gt;pydoll.protocol.runtime.methods.EnableCommand&lt;/code&gt;)" href="../../protocol/runtime/#pydoll.protocol.runtime.methods.EnableCommand">EnableCommand</a></code>
+                  </span>
+                </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="pydoll.commands.runtime_commands.RuntimeCommands.run_if_waiting_for_debugger" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">run_if_waiting_for_debugger</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-staticmethod"><code>staticmethod</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">run_if_waiting_for_debugger</span><span class="p">()</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Resumes a target that was paused on start via waitForDebuggerOnStart.</p>
+<p>Used after auto-attaching to a worker/service worker target so the
+target can continue execution once overrides have been applied.</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>RunIfWaitingForDebuggerCommand</code>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>Command to resume a paused target.</p>
+              </div>
+                <p>
+                  <span class="doc-returns-annotation">
+                    <b>TYPE:</b>
+                      <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;RunIfWaitingForDebuggerCommand&lt;/span&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-module-attribute&quot;&gt;&lt;code&gt;module-attribute&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt; (&lt;code&gt;pydoll.protocol.runtime.methods.RunIfWaitingForDebuggerCommand&lt;/code&gt;)" href="../../protocol/runtime/#pydoll.protocol.runtime.methods.RunIfWaitingForDebuggerCommand">RunIfWaitingForDebuggerCommand</a></code>
                   </span>
                 </p>
             </td>
