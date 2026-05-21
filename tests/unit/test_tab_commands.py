@@ -39,6 +39,13 @@ async def test_disable_event_domain_clears_flag_and_sends_command(
 
 
 @pytest.mark.asyncio
+async def test_enable_fetch_events_carries_handle_auth(fake_conn, fake_tab):
+    await fake_tab.enable_fetch_events(handle_auth=True)
+    assert fake_tab.fetch_events_enabled is True
+    assert fake_conn.last_command('Fetch.enable')['params']['handleAuthRequests'] is True
+
+
+@pytest.mark.asyncio
 async def test_intercept_file_chooser_toggles_flag_and_carries_enabled(fake_conn, fake_tab):
     await fake_tab.enable_intercept_file_chooser_dialog()
     assert fake_tab.intercept_file_chooser_dialog_enabled is True
@@ -192,6 +199,15 @@ async def test_lazy_api_properties_are_typed_and_cached(fake_tab):
     assert isinstance(fake_tab.keyboard, KeyboardAPI)
     assert fake_tab.keyboard is fake_tab.keyboard
     assert isinstance(fake_tab.mouse, MouseAPI)
+
+
+@pytest.mark.asyncio
+async def test_enable_auto_solve_cloudflare_registers_callback_and_enables_page_events(
+    fake_conn, fake_tab
+):
+    await fake_tab.enable_auto_solve_cloudflare_captcha()
+    assert fake_tab.page_events_enabled is True
+    assert fake_conn.callbacks_for('Page.loadEventFired')
 
 
 @pytest.mark.asyncio

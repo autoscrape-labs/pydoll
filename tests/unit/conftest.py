@@ -51,6 +51,14 @@ class FakeConnection:
             raise AssertionError(f'no command recorded for {method!r}')
         return commands[-1]
 
+    def callbacks_for(self, event_name: str) -> list:
+        """Callbacks currently registered for an event name."""
+        return [
+            data['callback']
+            for data in self._callbacks.values()
+            if data['event'] == event_name
+        ]
+
     async def execute_command(self, command: dict, timeout: int = 60) -> dict:
         """Record the command and return its configured (or empty) response."""
         self._command_id += 1

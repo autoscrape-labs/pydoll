@@ -79,6 +79,16 @@ async def test_go_to_navigates_waits_for_load_and_restores_page_events(cdp_serve
 
 
 @pytest.mark.asyncio
+async def test_go_to_preserves_page_events_when_already_enabled(cdp_server, fake_tab):
+    await fake_tab.enable_page_events()
+    navigation = asyncio.create_task(fake_tab.go_to('https://example.com'))
+    await _wait_until(lambda: cdp_server.commands_for('Page.navigate'))
+    await cdp_server.push_event('Page.loadEventFired', {})
+    await navigation
+    assert fake_tab.page_events_enabled is True
+
+
+@pytest.mark.asyncio
 async def test_refresh_reloads_waits_for_load_and_restores_page_events(cdp_server, fake_tab):
     reload = asyncio.create_task(fake_tab.refresh())
     await _wait_until(lambda: cdp_server.commands_for('Page.reload'))
