@@ -93,11 +93,20 @@ class TestChromeWindows:
 
     def test_navigator_js_contains_vendor(self):
         result = UserAgentParser.parse(CHROME_WINDOWS_UA)
-        assert "Navigator.prototype, 'vendor'" in result.navigator_override_js
+        assert "'vendor'" in result.navigator_override_js
 
     def test_navigator_js_contains_app_version(self):
         result = UserAgentParser.parse(CHROME_WINDOWS_UA)
-        assert "Navigator.prototype, 'appVersion'" in result.navigator_override_js
+        assert "'appVersion'" in result.navigator_override_js
+
+    def test_navigator_js_contains_platform(self):
+        result = UserAgentParser.parse(CHROME_WINDOWS_UA)
+        assert "'platform'" in result.navigator_override_js
+        assert result.platform in result.navigator_override_js
+
+    def test_navigator_js_uses_prototype_of_navigator(self):
+        result = UserAgentParser.parse(CHROME_WINDOWS_UA)
+        assert 'Object.getPrototypeOf(navigator)' in result.navigator_override_js
 
 
 # --- Chrome on macOS ---

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Worker User-Agent Override Test</title>
+  </head>
+  <body>
+    <h1 id="status">loading</h1>
+    <script>
+      window.__dedicatedResult = null;
+      window.__serviceWorkerResult = null;
+
+      function startDedicatedWorker() {
+        const worker = new Worker('dedicated_worker.js');
+        worker.onmessage = function (event) {
+          window.__dedicatedResult = event.data;
+        };
+        worker.postMessage('report');
+      }
+
+      async function startServiceWorker() {
+        const registration = await navigator.serviceWorker.register('service_worker.js');
+        await navigator.serviceWorker.ready;
+        const worker = registration.active;
+        const channel = new MessageChannel();
+        channel.port1.onmessage = function (event) {
+          window.__serviceWorkerResult = event.data;
+        };
+        worker.postMessage('report', [channel.port2]);
+      }
+
+      startDedicatedWorker();
+      startServiceWorker();
+      document.getElementById('status').textContent = 'ready';
+    </script>
+  </body>
+</html>

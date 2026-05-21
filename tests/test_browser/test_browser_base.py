@@ -32,6 +32,7 @@ from pydoll.exceptions import (
 
 from pydoll.protocol.network.types import RequestMethod, ErrorReason
 from pydoll.protocol.browser.types import DownloadBehavior, PermissionType
+from pydoll.utils.user_agent_parser import UserAgentParser
 
 class ConcreteBrowser(Browser):
     def _get_default_binary_location(self) -> str:
@@ -1431,10 +1432,12 @@ async def test_apply_user_agent_override_with_ua_set(mock_browser):
 
     tab = MagicMock(spec=Tab)
     tab._execute_command = AsyncMock()
+    tab.on = AsyncMock()
+    tab._connection_handler = MagicMock()
 
     await mock_browser._apply_user_agent_override(tab)
 
-    assert tab._execute_command.call_count == 2
+    assert tab._execute_command.call_count == 3
 
     emulation_call = tab._execute_command.call_args_list[0]
     command = emulation_call[0][0]
@@ -1446,8 +1449,18 @@ async def test_apply_user_agent_override_with_ua_set(mock_browser):
     js_call = tab._execute_command.call_args_list[1]
     js_command = js_call[0][0]
     assert js_command['method'] == 'Page.addScriptToEvaluateOnNewDocument'
-    assert "Navigator.prototype, 'vendor'" in js_command['params']['source']
-    assert "Navigator.prototype, 'appVersion'" in js_command['params']['source']
+    assert 'Object.getPrototypeOf(navigator)' in js_command['params']['source']
+    assert "'vendor'" in js_command['params']['source']
+    assert "'appVersion'" in js_command['params']['source']
+    assert "'platform'" in js_command['params']['source']
+
+    auto_attach_call = tab._execute_command.call_args_list[2]
+    auto_attach_command = auto_attach_call[0][0]
+    assert auto_attach_command['method'] == 'Target.setAutoAttach'
+    assert auto_attach_command['params']['autoAttach'] is True
+    assert auto_attach_command['params']['filter'] == [{'type': 'worker'}]
+    tab.on.assert_awaited_once()
+    assert tab.on.call_args[0][0] == 'Target.attachedToTarget'
 
 
 @pytest.mark.asyncio
@@ -1461,6 +1474,8 @@ async def test_apply_user_agent_override_metadata_consistency(mock_browser):
 
     tab = MagicMock(spec=Tab)
     tab._execute_command = AsyncMock()
+    tab.on = AsyncMock()
+    tab._connection_handler = MagicMock()
 
     await mock_browser._apply_user_agent_override(tab)
 
@@ -1474,6 +1489,135 @@ async def test_apply_user_agent_override_metadata_consistency(mock_browser):
     brand_names = [b['brand'] for b in brands]
     assert 'Chromium' in brand_names
     assert 'Google Chrome' in brand_names
+
+
+@pytest.mark.asyncio
+async def test_setup_worker_user_agent_override_no_ua(mock_browser):
+    await mock_browser._setup_worker_user_agent_override()
+
+    mock_browser._connection_handler.register_callback.assert_not_called()
+    mock_browser._connection_handler.execute_command.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_setup_worker_user_agent_override_registers_browser_level(mock_browser):
+    custom_ua = (
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+        'Chrome/120.0.6099.109 Safari/537.36'
+    )
+    mock_browser.options.add_argument(f'--user-agent={custom_ua}')
+
+    await mock_browser._setup_worker_user_agent_override()
+
+    mock_browser._connection_handler.register_callback.assert_awaited_once()
+    assert (
+        mock_browser._connection_handler.register_callback.call_args[0][0]
+        == 'Target.attachedToTarget'
+    )
+
+    auto_attach_command = mock_browser._connection_handler.execute_command.call_args[0][0]
+    assert auto_attach_command['method'] == 'Target.setAutoAttach'
+    assert auto_attach_command['params']['autoAttach'] is True
+    assert auto_attach_command['params']['waitForDebuggerOnStart'] is True
+    assert auto_attach_command['params']['filter'] == [
+        {'type': 'service_worker'},
+        {'type': 'shared_worker'},
+    ]
+
+
+@pytest.mark.asyncio
+async def test_worker_handler_overrides_injects_and_resumes(mock_browser):
+    custom_ua = (
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+        'Chrome/120.0.6099.109 Safari/537.36'
+    )
+    parsed = UserAgentParser.parse(custom_ua)
+    connection = MagicMock()
+    connection.execute_command = AsyncMock()
+
+    handler = Browser._build_worker_user_agent_handler(parsed, custom_ua, connection)
+    await handler({
+        'params': {
+            'sessionId': 'WORKER_SESSION',
+            'targetInfo': {'type': 'service_worker'},
+            'waitingForDebugger': True,
+        }
+    })
+
+    methods = [call[0][0]['method'] for call in connection.execute_command.call_args_list]
+    assert methods == [
+        'Emulation.setUserAgentOverride',
+        'Runtime.evaluate',
+        'Runtime.runIfWaitingForDebugger',
+    ]
+    for call in connection.execute_command.call_args_list:
+        assert call[0][0]['sessionId'] == 'WORKER_SESSION'
+
+
+@pytest.mark.asyncio
+async def test_worker_handler_skips_non_worker_but_resumes(mock_browser):
+    custom_ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.6099.109 Safari/537.36'
+    parsed = UserAgentParser.parse(custom_ua)
+    connection = MagicMock()
+    connection.execute_command = AsyncMock()
+
+    handler = Browser._build_worker_user_agent_handler(parsed, custom_ua, connection)
+    await handler({
+        'params': {
+            'sessionId': 'IFRAME_SESSION',
+            'targetInfo': {'type': 'iframe'},
+            'waitingForDebugger': True,
+        }
+    })
+
+    methods = [call[0][0]['method'] for call in connection.execute_command.call_args_list]
+    assert methods == ['Runtime.runIfWaitingForDebugger']
+
+
+@pytest.mark.asyncio
+async def test_worker_handler_resumes_even_if_override_fails(mock_browser):
+    custom_ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.6099.109 Safari/537.36'
+    parsed = UserAgentParser.parse(custom_ua)
+
+    def _fail_on_override(command, *args, **kwargs):
+        if command['method'] == 'Emulation.setUserAgentOverride':
+            raise RuntimeError('boom')
+        return {}
+
+    connection = MagicMock()
+    connection.execute_command = AsyncMock(side_effect=_fail_on_override)
+
+    handler = Browser._build_worker_user_agent_handler(parsed, custom_ua, connection)
+    await handler({
+        'params': {
+            'sessionId': 'WORKER_SESSION',
+            'targetInfo': {'type': 'worker'},
+            'waitingForDebugger': True,
+        }
+    })
+
+    methods = [call[0][0]['method'] for call in connection.execute_command.call_args_list]
+    assert 'Runtime.runIfWaitingForDebugger' in methods
+
+
+@pytest.mark.asyncio
+async def test_worker_handler_does_not_resume_when_not_waiting(mock_browser):
+    custom_ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.6099.109 Safari/537.36'
+    parsed = UserAgentParser.parse(custom_ua)
+    connection = MagicMock()
+    connection.execute_command = AsyncMock()
+
+    handler = Browser._build_worker_user_agent_handler(parsed, custom_ua, connection)
+    await handler({
+        'params': {
+            'sessionId': 'WORKER_SESSION',
+            'targetInfo': {'type': 'service_worker'},
+            'waitingForDebugger': False,
+        }
+    })
+
+    methods = [call[0][0]['method'] for call in connection.execute_command.call_args_list]
+    assert methods == ['Emulation.setUserAgentOverride', 'Runtime.evaluate']
 
 
 @pytest.mark.asyncio
