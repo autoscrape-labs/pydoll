@@ -6,13 +6,13 @@ that Pydoll correctly routes CDP commands through the right session
 handler when resolving nested iframes inside OOPIFs.
 """
 
-import asyncio
 import http.server
 import socket
 import threading
 from pathlib import Path
 
 import pytest
+from _waits import wait_for_element_text, wait_for_js_value
 
 from pydoll.browser.chromium import Chrome
 
@@ -105,8 +105,7 @@ class TestCrossOriginIframeResolution:
 
             assert await counter.text == '0'
             await btn.click()
-            await asyncio.sleep(0.3)
-            assert await counter.text == '1'
+            await wait_for_element_text(counter, '1')
 
 
 class TestNestedIframeInsideOopif:
@@ -150,11 +149,7 @@ class TestNestedIframeInsideOopif:
 
             input_el = await nested.find(id='nested-input', timeout=10)
             await input_el.type_text('hello from nested oopif')
-            await asyncio.sleep(0.3)
-            prop = await input_el.execute_script(
-                'return this.value', return_by_value=True
-            )
-            assert prop['result']['result']['value'] == 'hello from nested oopif'
+            await wait_for_js_value(input_el, 'this.value', 'hello from nested oopif')
 
 
 class TestShadowRootInsideOopif:
@@ -204,8 +199,7 @@ class TestShadowRootInsideOopif:
                     assert await counter.text == '0'
 
                     await btn.click()
-                    await asyncio.sleep(0.3)
-                    assert await counter.text == '1'
+                    await wait_for_element_text(counter, '1')
                     return
 
             pytest.fail('Shadow root inside OOPIF not found')
@@ -267,11 +261,7 @@ class TestIframeInsideShadowRootInsideOopif:
                         id='shadow-iframe-input', timeout=10
                     )
                     await input_el.type_text('deep nested text')
-                    await asyncio.sleep(0.3)
-                    prop = await input_el.execute_script(
-                        'return this.value', return_by_value=True
-                    )
-                    assert prop['result']['result']['value'] == 'deep nested text'
+                    await wait_for_js_value(input_el, 'this.value', 'deep nested text')
                     return
 
             pytest.fail('Shadow root inside OOPIF not found')

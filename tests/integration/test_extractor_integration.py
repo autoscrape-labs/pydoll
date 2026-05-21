@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
 from pathlib import Path
 from typing import Optional
 
@@ -219,9 +218,8 @@ class TestExtractSingle:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(FILE_URL)
-            await asyncio.sleep(0.5)
 
-            article = await tab.extract(SimpleArticle)
+            article = await tab.extract(SimpleArticle, timeout=5)
             assert article.title == 'Understanding Web Scraping'
             assert 'extracting data' in article.body
 
@@ -230,9 +228,8 @@ class TestExtractSingle:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(FILE_URL)
-            await asyncio.sleep(0.5)
 
-            article = await tab.extract(ArticleWithAttributes)
+            article = await tab.extract(ArticleWithAttributes, timeout=5)
             assert article.published_at == '2025-03-15'
             assert article.image_src == 'https://example.com/hero.jpg'
             assert article.image_alt == 'Hero image'
@@ -244,9 +241,8 @@ class TestExtractSingle:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(FILE_URL)
-            await asyncio.sleep(0.5)
 
-            article = await tab.extract(ArticleWithTags)
+            article = await tab.extract(ArticleWithTags, timeout=5)
             assert article.tags == ['python', 'automation', 'web']
 
     @pytest.mark.asyncio
@@ -254,9 +250,8 @@ class TestExtractSingle:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(FILE_URL)
-            await asyncio.sleep(0.5)
 
-            article = await tab.extract(ArticleWithTransform)
+            article = await tab.extract(ArticleWithTransform, timeout=5)
             assert article.price == 1234.56
 
     @pytest.mark.asyncio
@@ -264,9 +259,8 @@ class TestExtractSingle:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(FILE_URL)
-            await asyncio.sleep(0.5)
 
-            article = await tab.extract(ArticleWithNestedAuthor)
+            article = await tab.extract(ArticleWithNestedAuthor, timeout=5)
             assert article.title == 'Understanding Web Scraping'
             assert article.author.name == 'Jane Doe'
             assert article.author.avatar_url == 'https://example.com/jane.jpg'
@@ -277,9 +271,8 @@ class TestExtractSingle:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(FILE_URL)
-            await asyncio.sleep(0.5)
 
-            article = await tab.extract(ArticleWithOptional)
+            article = await tab.extract(ArticleWithOptional, timeout=5)
             assert article.title == 'Understanding Web Scraping'
             assert article.subtitle is None
             assert article.missing_with_default == 'fallback_value'
@@ -289,9 +282,8 @@ class TestExtractSingle:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(FILE_URL)
-            await asyncio.sleep(0.5)
 
-            result = await tab.extract(XPathModel)
+            result = await tab.extract(XPathModel, timeout=5)
             assert result.value == 'Found via XPath'
 
     @pytest.mark.asyncio
@@ -299,10 +291,9 @@ class TestExtractSingle:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(FILE_URL)
-            await asyncio.sleep(0.5)
 
             article = await tab.extract(
-                SimpleArticle, scope='#main-article'
+                SimpleArticle, scope='#main-article', timeout=5
             )
             assert article.title == 'Understanding Web Scraping'
 
@@ -311,9 +302,8 @@ class TestExtractSingle:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(FILE_URL)
-            await asyncio.sleep(0.5)
 
-            article = await tab.extract(DescriptionOnlyField)
+            article = await tab.extract(DescriptionOnlyField, timeout=5)
             assert article.title == 'Understanding Web Scraping'
             assert article.sentiment == 'unknown'
 
@@ -322,10 +312,9 @@ class TestExtractSingle:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(FILE_URL)
-            await asyncio.sleep(0.5)
 
             with pytest.raises(FieldExtractionFailed):
-                await tab.extract(RequiredFieldMissing)
+                await tab.extract(RequiredFieldMissing, timeout=5)
 
     @pytest.mark.asyncio
     async def test_extract_model_dump(self, ci_chrome_options):
@@ -333,9 +322,8 @@ class TestExtractSingle:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(FILE_URL)
-            await asyncio.sleep(0.5)
 
-            article = await tab.extract(ArticleWithNestedAuthor)
+            article = await tab.extract(ArticleWithNestedAuthor, timeout=5)
             data = article.model_dump()
             assert isinstance(data, dict)
             assert data['title'] == 'Understanding Web Scraping'
@@ -351,9 +339,8 @@ class TestExtractAll:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(FILE_URL)
-            await asyncio.sleep(0.5)
 
-            quotes = await tab.extract_all(QuoteModel, scope='.quote')
+            quotes = await tab.extract_all(QuoteModel, scope='.quote', timeout=5)
             assert len(quotes) == 3
             assert quotes[0].text == 'The only way to do great work is to love what you do.'
             assert quotes[0].author == 'Steve Jobs'
@@ -364,9 +351,8 @@ class TestExtractAll:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(FILE_URL)
-            await asyncio.sleep(0.5)
 
-            quotes = await tab.extract_all(QuoteWithYear, scope='.quote')
+            quotes = await tab.extract_all(QuoteWithYear, scope='.quote', timeout=5)
             assert len(quotes) == 3
             assert quotes[0].year == 2005
             assert quotes[1].year == 2001
@@ -377,10 +363,9 @@ class TestExtractAll:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(FILE_URL)
-            await asyncio.sleep(0.5)
 
             quotes = await tab.extract_all(
-                QuoteModel, scope='.quote', limit=2
+                QuoteModel, scope='.quote', limit=2, timeout=5
             )
             assert len(quotes) == 2
 
@@ -389,10 +374,9 @@ class TestExtractAll:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(FILE_URL)
-            await asyncio.sleep(0.5)
 
             products = await tab.extract_all(
-                ProductModel, scope='.product-card'
+                ProductModel, scope='.product-card', timeout=5
             )
             assert len(products) == 2
             assert products[0].name == 'Laptop Pro'
@@ -407,10 +391,9 @@ class TestExtractAll:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(FILE_URL)
-            await asyncio.sleep(0.5)
 
             results = await tab.extract_all(
-                QuoteModel, scope='.nonexistent-container'
+                QuoteModel, scope='.nonexistent-container', timeout=5
             )
             assert results == []
 
@@ -441,9 +424,8 @@ class TestEdgeCases:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(FILE_URL)
-            await asyncio.sleep(0.5)
 
-            article = await tab.extract(ExtendedArticle)
+            article = await tab.extract(ExtendedArticle, timeout=5)
             assert article.title == 'Understanding Web Scraping'
             assert 'extracting data' in article.body
 
@@ -453,9 +435,8 @@ class TestEdgeCases:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(FILE_URL)
-            await asyncio.sleep(0.5)
 
-            article = await tab.extract(ArticleWithBadTransform)
+            article = await tab.extract(ArticleWithBadTransform, timeout=5)
             assert article.title == 'Understanding Web Scraping'
             assert article.broken_price is None
 
@@ -465,9 +446,8 @@ class TestEdgeCases:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(FILE_URL)
-            await asyncio.sleep(0.5)
 
-            products = await tab.extract_all(ProductModel, scope='.product-card')
+            products = await tab.extract_all(ProductModel, scope='.product-card', timeout=5)
             assert len(products) == 2
             # Verify each product has correct nested data
             for product in products:
@@ -488,9 +468,8 @@ class TestEdgeCases:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(FILE_URL)
-            await asyncio.sleep(0.5)
 
-            result = await tab.extract(ModelWithEmptyList)
+            result = await tab.extract(ModelWithEmptyList, timeout=5)
             assert result.title == 'Understanding Web Scraping'
             assert result.items == []
 
@@ -500,9 +479,8 @@ class TestEdgeCases:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(FILE_URL)
-            await asyncio.sleep(0.5)
 
-            result = await tab.extract(PEP604OptionalModel)
+            result = await tab.extract(PEP604OptionalModel, timeout=5)
             assert result.title == 'Understanding Web Scraping'
             assert result.subtitle is None
 
@@ -512,10 +490,9 @@ class TestEdgeCases:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(FILE_URL)
-            await asyncio.sleep(0.5)
 
             article = await tab.extract(
-                MultiAuthorArticle, scope='#multi-author-article'
+                MultiAuthorArticle, scope='#multi-author-article', timeout=5
             )
             assert article.title == 'Collaborative Research Paper'
             assert len(article.contributors) == 3
@@ -570,9 +547,8 @@ class TestConcurrentExtraction:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(FILE_URL)
-            await asyncio.sleep(0.5)
 
-            article = await tab.extract(FullArticle)
+            article = await tab.extract(FullArticle, timeout=5)
             assert article.title == 'Understanding Web Scraping'
             assert article.author_name == 'Jane Doe'
             assert article.published == '2025-03-15'
@@ -587,9 +563,8 @@ class TestConcurrentExtraction:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(FILE_URL)
-            await asyncio.sleep(0.5)
 
-            quotes = await tab.extract_all(QuoteWithYear, scope='.quote')
+            quotes = await tab.extract_all(QuoteWithYear, scope='.quote', timeout=5)
             assert len(quotes) == 3
             # All quotes should have been extracted correctly
             assert quotes[0].year == 2005
@@ -604,9 +579,8 @@ class TestConcurrentExtraction:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(FILE_URL)
-            await asyncio.sleep(0.5)
 
-            products = await tab.extract_all(ProductModel, scope='.product-card')
+            products = await tab.extract_all(ProductModel, scope='.product-card', timeout=5)
             assert len(products) == 2
             # Both products extracted concurrently with nested meta
             assert products[0].name == 'Laptop Pro'
@@ -632,9 +606,8 @@ class TestConcurrentExtraction:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(FILE_URL)
-            await asyncio.sleep(0.5)
 
-            result = await tab.extract(MixedModel)
+            result = await tab.extract(MixedModel, timeout=5)
             assert result.title == 'Understanding Web Scraping'
             assert result.missing_1 is None
             assert 'extracting data' in result.body

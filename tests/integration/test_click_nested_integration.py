@@ -1,9 +1,9 @@
 """Integration tests for click() on nested elements (shadow DOM, iframes)."""
 
-import asyncio
 from pathlib import Path
 
 import pytest
+from _waits import wait_for_element_text
 
 from pydoll.browser.chromium import Chrome
 from pydoll.elements.web_element import WebElement
@@ -19,16 +19,15 @@ class TestClickRegularElement:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(TEST_PAGE)
-            await asyncio.sleep(0.5)
 
-            btn = await tab.find(id='regular-btn')
+            btn = await tab.find(id='regular-btn', timeout=5)
             counter = await tab.find(id='regular-btn-count')
 
             text_before = await counter.text
             assert text_before == '0'
 
             await btn.click()
-            await asyncio.sleep(0.2)
+            await wait_for_element_text(counter, '1')
 
             text_after = await counter.text
             assert text_after == '1'
@@ -38,14 +37,14 @@ class TestClickRegularElement:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(TEST_PAGE)
-            await asyncio.sleep(0.5)
 
-            btn = await tab.find(id='regular-btn')
+            btn = await tab.find(id='regular-btn', timeout=5)
             counter = await tab.find(id='regular-btn-count')
 
-            for i in range(3):
+            for _ in range(3):
                 await btn.click()
-                await asyncio.sleep(0.15)
+
+            await wait_for_element_text(counter, '3')
 
             text = await counter.text
             assert text == '3'
@@ -59,9 +58,8 @@ class TestClickInShadowRoot:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(TEST_PAGE)
-            await asyncio.sleep(0.5)
 
-            host = await tab.find(id='shadow-host')
+            host = await tab.find(id='shadow-host', timeout=5)
             shadow = await host.get_shadow_root()
 
             btn = await shadow.query('#shadow-btn')
@@ -71,7 +69,7 @@ class TestClickInShadowRoot:
             assert text_before == '0'
 
             await btn.click()
-            await asyncio.sleep(0.2)
+            await wait_for_element_text(counter, '1')
 
             text_after = await counter.text
             assert text_after == '1'
@@ -81,9 +79,8 @@ class TestClickInShadowRoot:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(TEST_PAGE)
-            await asyncio.sleep(0.5)
 
-            host = await tab.find(id='shadow-host')
+            host = await tab.find(id='shadow-host', timeout=5)
             shadow = await host.get_shadow_root()
 
             text_el = await shadow.query('.shadow-text')
@@ -100,9 +97,8 @@ class TestClickInNestedShadowRoots:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(TEST_PAGE)
-            await asyncio.sleep(0.5)
 
-            outer_host = await tab.find(id='nested-shadow-host')
+            outer_host = await tab.find(id='nested-shadow-host', timeout=5)
             outer_shadow = await outer_host.get_shadow_root()
 
             inner_host = await outer_shadow.query('#inner-shadow-host')
@@ -115,7 +111,7 @@ class TestClickInNestedShadowRoots:
             assert text_before == '0'
 
             await btn.click()
-            await asyncio.sleep(0.2)
+            await wait_for_element_text(counter, '1')
 
             text_after = await counter.text
             assert text_after == '1'
@@ -125,9 +121,8 @@ class TestClickInNestedShadowRoots:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(TEST_PAGE)
-            await asyncio.sleep(0.5)
 
-            outer_host = await tab.find(id='nested-shadow-host')
+            outer_host = await tab.find(id='nested-shadow-host', timeout=5)
             outer_shadow = await outer_host.get_shadow_root()
 
             outer_text = await outer_shadow.query('.outer-text')
@@ -148,19 +143,18 @@ class TestClickInIframe:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(TEST_PAGE)
-            await asyncio.sleep(1)
 
-            iframe = await tab.find(id='test-iframe')
+            iframe = await tab.find(id='test-iframe', timeout=5)
             assert iframe.is_iframe
 
-            btn = await iframe.find(id='iframe-btn')
+            btn = await iframe.find(id='iframe-btn', timeout=5)
             counter = await iframe.find(id='iframe-btn-count')
 
             text_before = await counter.text
             assert text_before == '0'
 
             await btn.click()
-            await asyncio.sleep(0.3)
+            await wait_for_element_text(counter, '1')
 
             text_after = await counter.text
             assert text_after == '1'
@@ -174,10 +168,9 @@ class TestClickInShadowRootInsideIframe:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(TEST_PAGE)
-            await asyncio.sleep(1)
 
-            iframe = await tab.find(id='test-iframe')
-            shadow_host = await iframe.find(id='shadow-host-in-iframe')
+            iframe = await tab.find(id='test-iframe', timeout=5)
+            shadow_host = await iframe.find(id='shadow-host-in-iframe', timeout=5)
             shadow = await shadow_host.get_shadow_root()
 
             btn = await shadow.query('#shadow-btn-in-iframe')
@@ -187,7 +180,7 @@ class TestClickInShadowRootInsideIframe:
             assert text_before == '0'
 
             await btn.click()
-            await asyncio.sleep(0.3)
+            await wait_for_element_text(counter, '1')
 
             text_after = await counter.text
             assert text_after == '1'
@@ -197,10 +190,9 @@ class TestClickInShadowRootInsideIframe:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(TEST_PAGE)
-            await asyncio.sleep(1)
 
-            iframe = await tab.find(id='test-iframe')
-            shadow_host = await iframe.find(id='shadow-host-in-iframe')
+            iframe = await tab.find(id='test-iframe', timeout=5)
+            shadow_host = await iframe.find(id='shadow-host-in-iframe', timeout=5)
             shadow = await shadow_host.get_shadow_root()
 
             text_el = await shadow.query('.shadow-text')

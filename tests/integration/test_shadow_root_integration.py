@@ -1,6 +1,5 @@
 """Integration tests for Shadow DOM support (open, closed, nested)."""
 
-import asyncio
 from pathlib import Path
 
 import pytest
@@ -22,9 +21,8 @@ class TestOpenShadowRoot:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(TEST_PAGE)
-            await asyncio.sleep(0.5)
 
-            host = await tab.find(id='open-host')
+            host = await tab.find(id='open-host', timeout=5)
             shadow = await host.get_shadow_root()
 
             assert isinstance(shadow, ShadowRoot)
@@ -36,9 +34,8 @@ class TestOpenShadowRoot:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(TEST_PAGE)
-            await asyncio.sleep(0.5)
 
-            host = await tab.find(id='open-host')
+            host = await tab.find(id='open-host', timeout=5)
             shadow = await host.get_shadow_root()
 
             text_el = await shadow.query('.open-text')
@@ -54,9 +51,8 @@ class TestOpenShadowRoot:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(TEST_PAGE)
-            await asyncio.sleep(0.5)
 
-            host = await tab.find(id='open-host')
+            host = await tab.find(id='open-host', timeout=5)
             shadow = await host.get_shadow_root()
 
             input_el = await shadow.query('input[type="email"]')
@@ -67,9 +63,8 @@ class TestOpenShadowRoot:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(TEST_PAGE)
-            await asyncio.sleep(0.5)
 
-            host = await tab.find(id='open-host')
+            host = await tab.find(id='open-host', timeout=5)
             shadow = await host.get_shadow_root()
 
             buttons = await shadow.query('.shadow-btn', find_all=True)
@@ -80,9 +75,8 @@ class TestOpenShadowRoot:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(TEST_PAGE)
-            await asyncio.sleep(0.5)
 
-            host = await tab.find(id='open-host')
+            host = await tab.find(id='open-host', timeout=5)
             shadow = await host.get_shadow_root()
 
             html = await shadow.inner_html
@@ -97,9 +91,8 @@ class TestClosedShadowRoot:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(TEST_PAGE)
-            await asyncio.sleep(0.5)
 
-            host = await tab.find(id='closed-host')
+            host = await tab.find(id='closed-host', timeout=5)
             shadow = await host.get_shadow_root()
 
             assert isinstance(shadow, ShadowRoot)
@@ -110,9 +103,8 @@ class TestClosedShadowRoot:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(TEST_PAGE)
-            await asyncio.sleep(0.5)
 
-            host = await tab.find(id='closed-host')
+            host = await tab.find(id='closed-host', timeout=5)
             shadow = await host.get_shadow_root()
 
             text_el = await shadow.query('.closed-text')
@@ -125,9 +117,8 @@ class TestClosedShadowRoot:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(TEST_PAGE)
-            await asyncio.sleep(0.5)
 
-            host = await tab.find(id='closed-host')
+            host = await tab.find(id='closed-host', timeout=5)
             shadow = await host.get_shadow_root()
 
             btn = await shadow.query('#closed-btn')
@@ -141,9 +132,8 @@ class TestClosedShadowRoot:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(TEST_PAGE)
-            await asyncio.sleep(0.5)
 
-            host = await tab.find(id='closed-host')
+            host = await tab.find(id='closed-host', timeout=5)
             shadow = await host.get_shadow_root()
 
             html = await shadow.inner_html
@@ -158,9 +148,8 @@ class TestNestedShadowRoots:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(TEST_PAGE)
-            await asyncio.sleep(0.5)
 
-            nested_host = await tab.find(id='nested-host')
+            nested_host = await tab.find(id='nested-host', timeout=5)
             outer_shadow = await nested_host.get_shadow_root()
             assert outer_shadow.mode == ShadowRootType.OPEN
 
@@ -188,8 +177,7 @@ class TestShadowRootNotPresent:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(TEST_PAGE)
-            await asyncio.sleep(0.5)
 
-            h1 = await tab.find(tag_name='h1')
+            h1 = await tab.find(tag_name='h1', timeout=5)
             with pytest.raises(ShadowRootNotFound):
                 await h1.get_shadow_root()

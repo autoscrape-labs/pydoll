@@ -1,12 +1,14 @@
 """Integration tests for core WebElement/Tab behaviors (non-iframe)."""
 
-import asyncio
 from pathlib import Path
 
 import pytest
 
+from _waits import wait_for_element_text, wait_for_js, wait_for_js_value
 from pydoll.browser.chromium import Chrome
 from pydoll.elements.web_element import WebElement
+
+PAGE = f'file://{(Path(__file__).parent / "pages" / "test_core_simple.html").absolute()}'
 
 
 class TestCoreFindQuery:
@@ -14,16 +16,12 @@ class TestCoreFindQuery:
 
     @pytest.mark.asyncio
     async def test_find_by_common_selectors(self, ci_chrome_options):
-        test_file = Path(__file__).parent / 'pages' / 'test_core_simple.html'
-        file_url = f'file://{test_file.absolute()}'
-
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
-            await tab.go_to(file_url)
-            await asyncio.sleep(0.5)
+            await tab.go_to(PAGE)
 
             # id
-            heading = await tab.find(id='main-heading')
+            heading = await tab.find(id='main-heading', timeout=5)
             assert heading is not None
             assert isinstance(heading, WebElement)
             assert heading.get_attribute('id') == 'main-heading'
@@ -45,16 +43,12 @@ class TestCoreFindQuery:
 
     @pytest.mark.asyncio
     async def test_query_css_and_xpath(self, ci_chrome_options):
-        test_file = Path(__file__).parent / 'pages' / 'test_core_simple.html'
-        file_url = f'file://{test_file.absolute()}'
-
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
-            await tab.go_to(file_url)
-            await asyncio.sleep(0.5)
+            await tab.go_to(PAGE)
 
             # CSS: list items
-            items = await tab.query('.list-item', find_all=True)
+            items = await tab.query('.list-item', find_all=True, timeout=5)
             assert items is not None
             assert len(items) == 3
 
@@ -77,111 +71,75 @@ class TestCoreClickAndInput:
 
     @pytest.mark.asyncio
     async def test_click_increments_counter(self, ci_chrome_options):
-        test_file = Path(__file__).parent / 'pages' / 'test_core_simple.html'
-        file_url = f'file://{test_file.absolute()}'
-
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
-            await tab.go_to(file_url)
-            await asyncio.sleep(0.5)
+            await tab.go_to(PAGE)
 
-            button = await tab.find(id='btn-1')
+            button = await tab.find(id='btn-1', timeout=5)
             counter = await tab.find(id='btn-1-count')
-
-            # before
-            before_text = await counter.text
-            assert before_text.strip() == '0'
+            assert (await counter.text).strip() == '0'
 
             await button.click()
-            await asyncio.sleep(0.2)
-            after_text = await counter.text
-            assert after_text.strip() == '1'
+            await wait_for_element_text(counter, '1')
 
             await button.click()
-            await asyncio.sleep(0.2)
-            after_text2 = await counter.text
-            assert after_text2.strip() == '2'
+            await wait_for_element_text(counter, '2')
 
     @pytest.mark.asyncio
     async def test_insert_text_input_and_textarea(self, ci_chrome_options):
-        test_file = Path(__file__).parent / 'pages' / 'test_core_simple.html'
-        file_url = f'file://{test_file.absolute()}'
-
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
-            await tab.go_to(file_url)
-            await asyncio.sleep(0.5)
+            await tab.go_to(PAGE)
 
-            # input
-            input_el = await tab.find(id='text-input')
+            input_el = await tab.find(id='text-input', timeout=5)
             await input_el.insert_text('Hello')
-            await asyncio.sleep(0.1)
-            assert 'Hello' in (input_el.get_attribute('value') or '')
+            await wait_for_js_value(input_el, 'this.value', 'Hello')
 
-            # textarea
             textarea = await tab.find(id='text-area')
             await textarea.insert_text('World')
-            await asyncio.sleep(0.1)
-            assert 'World' in (textarea.get_attribute('value') or '')
+            await wait_for_js_value(textarea, 'this.value', 'World')
 
     @pytest.mark.asyncio
     async def test_clear_input_and_textarea(self, ci_chrome_options):
         """Test clear() removes existing value from input and textarea."""
-        test_file = Path(__file__).parent / 'pages' / 'test_core_simple.html'
-        file_url = f'file://{test_file.absolute()}'
-
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
-            await tab.go_to(file_url)
-            await asyncio.sleep(0.5)
+            await tab.go_to(PAGE)
 
             # -- input: insert text, clear, verify empty, insert again --
-            input_el = await tab.find(id='text-input')
+            input_el = await tab.find(id='text-input', timeout=5)
             await input_el.insert_text('old value')
-            await asyncio.sleep(0.1)
+            await wait_for_js_value(input_el, 'this.value', 'old value')
 
             await input_el.clear()
-            await asyncio.sleep(0.1)
-            prop = await input_el.execute_script('return this.value', return_by_value=True)
-            assert prop['result']['result']['value'] == ''
+            await wait_for_js_value(input_el, 'this.value', '')
 
             await input_el.insert_text('new value')
-            await asyncio.sleep(0.1)
-            prop = await input_el.execute_script('return this.value', return_by_value=True)
-            assert prop['result']['result']['value'] == 'new value'
+            await wait_for_js_value(input_el, 'this.value', 'new value')
 
             # -- textarea: insert text, clear, verify empty --
             textarea = await tab.find(id='text-area')
             await textarea.insert_text('old message')
-            await asyncio.sleep(0.1)
+            await wait_for_js_value(textarea, 'this.value', 'old message')
 
             await textarea.clear()
-            await asyncio.sleep(0.1)
-            prop = await textarea.execute_script('return this.value', return_by_value=True)
-            assert prop['result']['result']['value'] == ''
+            await wait_for_js_value(textarea, 'this.value', '')
 
     @pytest.mark.asyncio
     async def test_select_option_click(self, ci_chrome_options):
-        test_file = Path(__file__).parent / 'pages' / 'test_core_simple.html'
-        file_url = f'file://{test_file.absolute()}'
-
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
-            await tab.go_to(file_url)
-            await asyncio.sleep(0.5)
+            await tab.go_to(PAGE)
 
-            select_el = await tab.find(id='simple-select')
+            select_el = await tab.find(id='simple-select', timeout=5)
             assert select_el is not None
 
             # click on option 'beta'
             opt_beta = await select_el.find(xpath='.//option[@value="beta"]')
             await opt_beta.click()
-            await asyncio.sleep(0.2)
 
             # verify using JS value read
-            prop = await select_el.execute_script('return this.value', return_by_value=True)
-            current_value = prop['result']['result']['value']
-            assert current_value == 'beta'
+            await wait_for_js_value(select_el, 'this.value', 'beta')
 
 
 class TestCoreTypeText:
@@ -190,61 +148,41 @@ class TestCoreTypeText:
     @pytest.mark.asyncio
     async def test_type_text_into_input(self, ci_chrome_options):
         """type_text should insert characters via keyboard events."""
-        test_file = Path(__file__).parent / 'pages' / 'test_core_simple.html'
-        file_url = f'file://{test_file.absolute()}'
-
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
-            await tab.go_to(file_url)
-            await asyncio.sleep(0.5)
+            await tab.go_to(PAGE)
 
-            input_el = await tab.find(id='text-input')
+            input_el = await tab.find(id='text-input', timeout=5)
             await input_el.type_text('hello123')
-            await asyncio.sleep(0.3)
 
-            prop = await input_el.execute_script('return this.value', return_by_value=True)
-            assert prop['result']['result']['value'] == 'hello123'
+            await wait_for_js_value(input_el, 'this.value', 'hello123')
 
     @pytest.mark.asyncio
     async def test_type_text_humanized_into_input(self, ci_chrome_options):
         """type_text with humanize=True should produce the same result."""
-        test_file = Path(__file__).parent / 'pages' / 'test_core_simple.html'
-        file_url = f'file://{test_file.absolute()}'
-
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
-            await tab.go_to(file_url)
-            await asyncio.sleep(0.5)
+            await tab.go_to(PAGE)
 
-            input_el = await tab.find(id='text-input')
+            input_el = await tab.find(id='text-input', timeout=5)
             await input_el.type_text('Test!', humanize=True)
-            await asyncio.sleep(0.3)
 
-            prop = await input_el.execute_script('return this.value', return_by_value=True)
-            value = prop['result']['result']['value']
-            # Humanized typing may introduce and correct typos,
-            # but the final value should be very close to the input.
-            # At minimum, length should be reasonable.
-            assert len(value) >= 3
+            # Humanized typing may introduce and self-correct typos; the final
+            # value should still be the intended text.
+            await wait_for_js_value(input_el, 'this.value', 'Test!')
 
     @pytest.mark.asyncio
     async def test_type_text_symbols_and_punctuation(self, ci_chrome_options):
         """type_text should handle symbols, digits, and punctuation."""
-        test_file = Path(__file__).parent / 'pages' / 'test_core_simple.html'
-        file_url = f'file://{test_file.absolute()}'
-
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
-            await tab.go_to(file_url)
-            await asyncio.sleep(0.5)
+            await tab.go_to(PAGE)
 
-            input_el = await tab.find(id='text-input')
+            input_el = await tab.find(id='text-input', timeout=5)
             test_text = 'user@example.com'
             await input_el.type_text(test_text)
-            await asyncio.sleep(0.3)
 
-            prop = await input_el.execute_script('return this.value', return_by_value=True)
-            assert prop['result']['result']['value'] == test_text
+            await wait_for_js_value(input_el, 'this.value', test_text)
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
@@ -259,19 +197,16 @@ class TestCoreTypeText:
     )
     async def test_type_text_all_character_groups(self, ci_chrome_options, text, label):
         """type_text should correctly type every mapped character group."""
-        test_file = Path(__file__).parent / 'pages' / 'test_core_simple.html'
-        file_url = f'file://{test_file.absolute()}'
-
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
-            await tab.go_to(file_url)
-            await asyncio.sleep(0.5)
+            await tab.go_to(PAGE)
 
-            input_el = await tab.find(id='text-input')
+            input_el = await tab.find(id='text-input', timeout=5)
             await input_el.type_text(text)
-            await asyncio.sleep(0.3)
 
-            prop = await input_el.execute_script('return this.value', return_by_value=True)
-            assert prop['result']['result']['value'] == text, f'Failed for {label}: {text!r}'
-
-
+            await wait_for_js(
+                input_el,
+                'this.value',
+                lambda value: value == text,
+                message=f'Failed for {label}: {text!r}',
+            )

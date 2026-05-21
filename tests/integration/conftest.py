@@ -30,16 +30,18 @@ class FakeCDPServer:
         self._received: list[dict] = []
         self._results: dict[str, dict] = {}
         self._hung_methods: set[str] = set()
+        self._total_connections = 0
 
     async def start(self) -> None:
         """Bind the server to an ephemeral loopback port."""
         self._server = await serve(self._handle_client, '127.0.0.1', 0)
 
     async def stop(self) -> None:
-        """Close the server and wait for it to release the port."""
+        """Close the server and wait for it to release the port (idempotent)."""
         if self._server is not None:
             self._server.close()
             await self._server.wait_closed()
+            self._server = None
 
     @property
     def port(self) -> int:
@@ -64,6 +66,11 @@ class FakeCDPServer:
     def active_connections(self) -> int:
         """Number of currently open client connections."""
         return len(self._connections)
+
+    @property
+    def total_connections(self) -> int:
+        """Cumulative number of client connections accepted over the server's life."""
+        return self._total_connections
 
     def set_result(self, method: str, result: dict) -> None:
         """Configure the result payload returned for a command method."""
@@ -92,6 +99,7 @@ class FakeCDPServer:
 
     async def _handle_client(self, connection: ServerConnection) -> None:
         self._connections.add(connection)
+        self._total_connections += 1
         try:
             async for raw in connection:
                 await self._respond(connection, raw)

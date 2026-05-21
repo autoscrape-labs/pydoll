@@ -93,14 +93,37 @@ def test_page_path():
 
 
 async def _wait_for_requests_done(tab, timeout=15):
-    """Poll the page until status shows 'done'."""
-    for _ in range(int(timeout / 0.5)):
-        await asyncio.sleep(0.5)
-        status_el = await tab.find(id='status')
+    """Poll the page until status shows 'done'. Checks first, then sleeps."""
+    loop = asyncio.get_event_loop()
+    deadline = loop.time() + timeout
+    while True:
+        status_el = await tab.find(id='status', timeout=5)
         text = await status_el.text
         if text == 'done':
             return True
-    return False
+        if loop.time() >= deadline:
+            return False
+        await asyncio.sleep(0.5)
+
+
+async def _wait_for_network_idle(tab, idle_for=0.6, timeout=15):
+    """Return once the count of performance resource entries stops growing for idle_for seconds."""
+    loop = asyncio.get_event_loop()
+    deadline = loop.time() + timeout
+    last_count, stable_since = -1, loop.time()
+    while True:
+        res = await tab.execute_script(
+            'return performance.getEntriesByType("resource").length', return_by_value=True
+        )
+        count = res['result']['result']['value']
+        now = loop.time()
+        if count != last_count:
+            last_count, stable_since = count, now
+        elif now - stable_since >= idle_for:
+            return
+        if now >= deadline:
+            return
+        await asyncio.sleep(0.1)
 
 
 class TestHarRecordIntegration:
@@ -117,7 +140,7 @@ class TestHarRecordIntegration:
             async with tab.request.record() as recording:
                 await tab.go_to(page_url)
                 assert await _wait_for_requests_done(tab), 'Page requests did not complete'
-                await asyncio.sleep(1)
+                await _wait_for_network_idle(tab)
 
             assert isinstance(recording, HarCapture)
             entries = recording.entries
@@ -144,7 +167,7 @@ class TestHarRecordIntegration:
             async with tab.request.record() as recording:
                 await tab.go_to(page_url)
                 assert await _wait_for_requests_done(tab), 'Page requests did not complete'
-                await asyncio.sleep(1)
+                await _wait_for_network_idle(tab)
 
             entries = recording.entries
             api_entries = [e for e in entries if '/api/' in e['request']['url']]
@@ -169,7 +192,7 @@ class TestHarRecordIntegration:
             async with tab.request.record() as recording:
                 await tab.go_to(page_url)
                 assert await _wait_for_requests_done(tab), 'Page requests did not complete'
-                await asyncio.sleep(1)
+                await _wait_for_network_idle(tab)
 
             entries = recording.entries
             users_entry = next(
@@ -199,7 +222,7 @@ class TestHarRecordIntegration:
             async with tab.request.record() as recording:
                 await tab.go_to(page_url)
                 assert await _wait_for_requests_done(tab), 'Page requests did not complete'
-                await asyncio.sleep(1)
+                await _wait_for_network_idle(tab)
 
             entries = recording.entries
             post_entry = next(
@@ -236,7 +259,7 @@ class TestHarRecordIntegration:
             async with tab.request.record() as recording:
                 await tab.go_to(page_url)
                 assert await _wait_for_requests_done(tab), 'Page requests did not complete'
-                await asyncio.sleep(1)
+                await _wait_for_network_idle(tab)
 
             entries = recording.entries
             users_entry = next(
@@ -268,7 +291,7 @@ class TestHarRecordIntegration:
             async with tab.request.record() as recording:
                 await tab.go_to(page_url)
                 assert await _wait_for_requests_done(tab), 'Page requests did not complete'
-                await asyncio.sleep(1)
+                await _wait_for_network_idle(tab)
 
             entries = recording.entries
             users_entry = next(
@@ -297,7 +320,7 @@ class TestHarSaveIntegration:
             async with tab.request.record() as recording:
                 await tab.go_to(page_url)
                 assert await _wait_for_requests_done(tab), 'Page requests did not complete'
-                await asyncio.sleep(1)
+                await _wait_for_network_idle(tab)
 
             har_path = tmp_path / 'test_output.har'
             recording.save(har_path)
@@ -325,7 +348,7 @@ class TestHarSaveIntegration:
             async with tab.request.record() as recording:
                 await tab.go_to(page_url)
                 assert await _wait_for_requests_done(tab), 'Page requests did not complete'
-                await asyncio.sleep(1)
+                await _wait_for_network_idle(tab)
 
             har_path = tmp_path / 'test_sorted.har'
             recording.save(har_path)
@@ -349,7 +372,7 @@ class TestHarSaveIntegration:
             async with tab.request.record() as recording:
                 await tab.go_to(page_url)
                 assert await _wait_for_requests_done(tab), 'Page requests did not complete'
-                await asyncio.sleep(1)
+                await _wait_for_network_idle(tab)
 
             har_path = tmp_path / 'test_fields.har'
             recording.save(har_path)

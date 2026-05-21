@@ -4,11 +4,11 @@ These tests use real HTML files and Chrome browser to test iframe interactions,
 element finding, and DOM manipulation within iframes.
 """
 
-import asyncio
 from pathlib import Path
 
 import pytest
 
+from _waits import wait_for_js, wait_for_js_value
 from pydoll.browser.chromium import Chrome
 from pydoll.elements.web_element import WebElement
 from pydoll.exceptions import ElementNotFound, InvalidIFrame
@@ -27,11 +27,8 @@ class TestSimpleIframeIntegration:
             tab = await browser.start()
             await tab.go_to(file_url)
 
-            # Wait for iframe to load
-            await asyncio.sleep(1)
-
             # Find the iframe element
-            iframe_element = await tab.find(id='simple-iframe')
+            iframe_element = await tab.find(id='simple-iframe', timeout=5)
             assert iframe_element is not None
             assert iframe_element.is_iframe
 
@@ -42,7 +39,7 @@ class TestSimpleIframeIntegration:
             assert iframe_context.execution_context_id is not None
 
             # Find element inside iframe
-            heading_in_iframe = await iframe_element.find(id='iframe-heading')
+            heading_in_iframe = await iframe_element.find(id='iframe-heading', timeout=5)
             assert heading_in_iframe is not None
             assert isinstance(heading_in_iframe, WebElement)
 
@@ -59,12 +56,11 @@ class TestSimpleIframeIntegration:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(1)
 
-            iframe_element = await tab.find(id='simple-iframe')
+            iframe_element = await tab.find(id='simple-iframe', timeout=5)
 
             # Find all links inside iframe
-            links = await iframe_element.query('.iframe-link', find_all=True)
+            links = await iframe_element.query('.iframe-link', find_all=True, timeout=5)
             assert len(links) == 3
 
             # Verify each link
@@ -81,12 +77,11 @@ class TestSimpleIframeIntegration:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(1)
 
-            iframe_element = await tab.find(id='simple-iframe')
+            iframe_element = await tab.find(id='simple-iframe', timeout=5)
 
             # Find by class
-            action_buttons = await iframe_element.query('.action-btn', find_all=True)
+            action_buttons = await iframe_element.query('.action-btn', find_all=True, timeout=5)
             assert len(action_buttons) >= 2  # At least 2 visible buttons
 
             # Find by tag
@@ -102,12 +97,11 @@ class TestSimpleIframeIntegration:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(1)
 
-            iframe_element = await tab.find(id='simple-iframe')
+            iframe_element = await tab.find(id='simple-iframe', timeout=5)
 
             # Find by XPath
-            paragraph = await iframe_element.find(xpath='//p[@id="iframe-paragraph"]')
+            paragraph = await iframe_element.find(xpath='//p[@id="iframe-paragraph"]', timeout=5)
             assert paragraph is not None
 
             text = await paragraph.text
@@ -122,12 +116,11 @@ class TestSimpleIframeIntegration:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(1)
 
-            iframe_element = await tab.find(id='simple-iframe')
+            iframe_element = await tab.find(id='simple-iframe', timeout=5)
 
             # Find input inside iframe
-            input_element = await iframe_element.find(id='iframe-input')
+            input_element = await iframe_element.find(id='iframe-input', timeout=5)
             assert input_element is not None
 
             # Insert text
@@ -147,12 +140,11 @@ class TestSimpleIframeIntegration:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(1)
 
-            iframe_element = await tab.find(id='simple-iframe')
+            iframe_element = await tab.find(id='simple-iframe', timeout=5)
 
             # Find textarea inside iframe
-            textarea = await iframe_element.find(id='iframe-textarea')
+            textarea = await iframe_element.find(id='iframe-textarea', timeout=5)
             assert textarea is not None
 
             # Insert new text (textarea initially empty)
@@ -172,17 +164,15 @@ class TestSimpleIframeIntegration:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(1)
 
-            iframe_element = await tab.find(id='simple-iframe')
+            iframe_element = await tab.find(id='simple-iframe', timeout=5)
 
             # Find button inside iframe
-            button = await iframe_element.find(id='iframe-button1')
+            button = await iframe_element.find(id='iframe-button1', timeout=5)
             assert button is not None
 
             # Click the button (should not raise exception)
             await button.click()
-            await asyncio.sleep(0.5)
 
     @pytest.mark.asyncio
     async def test_get_inner_html_of_iframe(self, ci_chrome_options):
@@ -193,9 +183,8 @@ class TestSimpleIframeIntegration:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(1)
 
-            iframe_element = await tab.find(id='simple-iframe')
+            iframe_element = await tab.find(id='simple-iframe', timeout=5)
 
             # Get inner HTML of the iframe
             inner_html = await iframe_element.inner_html
@@ -213,12 +202,11 @@ class TestSimpleIframeIntegration:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(1)
 
-            iframe_element = await tab.find(id='simple-iframe')
+            iframe_element = await tab.find(id='simple-iframe', timeout=5)
 
             # Find container inside iframe
-            container = await iframe_element.find(id='iframe-container')
+            container = await iframe_element.find(id='iframe-container', timeout=5)
             assert container is not None
 
             # Get inner HTML
@@ -236,12 +224,11 @@ class TestSimpleIframeIntegration:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(1)
 
-            iframe_element = await tab.find(id='simple-iframe')
+            iframe_element = await tab.find(id='simple-iframe', timeout=5)
 
             # Find list inside iframe
-            list_element = await iframe_element.find(id='iframe-list')
+            list_element = await iframe_element.find(id='iframe-list', timeout=5)
             assert list_element is not None
 
             # Get list items using tag filter to avoid relying on class attributes
@@ -257,12 +244,11 @@ class TestSimpleIframeIntegration:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(1)
 
-            iframe_element = await tab.find(id='simple-iframe')
+            iframe_element = await tab.find(id='simple-iframe', timeout=5)
 
             # Find visible button
-            visible_button = await iframe_element.find(id='iframe-button1')
+            visible_button = await iframe_element.find(id='iframe-button1', timeout=5)
             is_visible = await visible_button.is_visible()
             assert is_visible is True
 
@@ -284,15 +270,14 @@ class TestNestedIframeIntegration:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(1.5)
 
             # Find parent iframe
-            parent_iframe = await tab.find(id='parent-iframe')
+            parent_iframe = await tab.find(id='parent-iframe', timeout=5)
             assert parent_iframe is not None
             assert parent_iframe.is_iframe
 
             # Find element in parent iframe
-            parent_heading = await parent_iframe.find(id='parent-iframe-heading')
+            parent_heading = await parent_iframe.find(id='parent-iframe-heading', timeout=5)
             assert parent_heading is not None
 
             text = await parent_heading.text
@@ -307,13 +292,12 @@ class TestNestedIframeIntegration:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(1.5)
 
             # Find parent iframe
-            parent_iframe = await tab.find(id='parent-iframe')
+            parent_iframe = await tab.find(id='parent-iframe', timeout=5)
 
             # Find nested iframe inside parent iframe
-            nested_iframe = await parent_iframe.find(id='nested-iframe')
+            nested_iframe = await parent_iframe.find(id='nested-iframe', timeout=5)
             assert nested_iframe is not None
             assert nested_iframe.is_iframe
 
@@ -326,17 +310,16 @@ class TestNestedIframeIntegration:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(2)
 
             # Find parent iframe
-            parent_iframe = await tab.find(id='parent-iframe')
+            parent_iframe = await tab.find(id='parent-iframe', timeout=5)
 
             # Find nested iframe inside parent
-            nested_iframe = await parent_iframe.find(id='nested-iframe')
+            nested_iframe = await parent_iframe.find(id='nested-iframe', timeout=5)
             assert nested_iframe is not None
 
             # Find element in nested iframe
-            nested_heading = await nested_iframe.find(id='nested-iframe-heading')
+            nested_heading = await nested_iframe.find(id='nested-iframe-heading', timeout=5)
             assert nested_heading is not None
 
             text = await nested_heading.text
@@ -351,14 +334,13 @@ class TestNestedIframeIntegration:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(2)
 
             # Navigate to nested iframe
-            parent_iframe = await tab.find(id='parent-iframe')
-            nested_iframe = await parent_iframe.find(id='nested-iframe')
+            parent_iframe = await tab.find(id='parent-iframe', timeout=5)
+            nested_iframe = await parent_iframe.find(id='nested-iframe', timeout=5)
 
             # Find input in nested iframe
-            nested_input = await nested_iframe.find(id='nested-input')
+            nested_input = await nested_iframe.find(id='nested-input', timeout=5)
             assert nested_input is not None
 
             # Insert text
@@ -378,14 +360,13 @@ class TestNestedIframeIntegration:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(2)
 
             # Navigate to nested iframe
-            parent_iframe = await tab.find(id='parent-iframe')
-            nested_iframe = await parent_iframe.find(id='nested-iframe')
+            parent_iframe = await tab.find(id='parent-iframe', timeout=5)
+            nested_iframe = await parent_iframe.find(id='nested-iframe', timeout=5)
 
             # Find all links in nested iframe
-            links = await nested_iframe.query('a', find_all=True)
+            links = await nested_iframe.query('a', find_all=True, timeout=5)
             assert len(links) == 2
 
             # Verify link IDs
@@ -402,14 +383,13 @@ class TestNestedIframeIntegration:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(2)
 
             # Navigate to nested iframe
-            parent_iframe = await tab.find(id='parent-iframe')
-            nested_iframe = await parent_iframe.find(id='nested-iframe')
+            parent_iframe = await tab.find(id='parent-iframe', timeout=5)
+            nested_iframe = await parent_iframe.find(id='nested-iframe', timeout=5)
 
             # Fill form fields
-            username_input = await nested_iframe.find(id='nested-form-input')
+            username_input = await nested_iframe.find(id='nested-form-input', timeout=5)
             await username_input.insert_text('testuser')
 
             password_input = await nested_iframe.find(id='nested-form-password')
@@ -422,7 +402,6 @@ class TestNestedIframeIntegration:
             # Click submit button
             submit_button = await nested_iframe.find(id='nested-form-submit')
             await submit_button.click()
-            await asyncio.sleep(0.5)
 
 
 class TestIframeElementInteraction:
@@ -437,19 +416,18 @@ class TestIframeElementInteraction:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(1)
 
-            iframe_element = await tab.find(id='simple-iframe')
+            iframe_element = await tab.find(id='simple-iframe', timeout=5)
 
             # Find select element
-            select_element = await iframe_element.find(id='iframe-select')
+            select_element = await iframe_element.find(id='iframe-select', timeout=5)
             assert select_element is not None
 
             # Select option2 by clicking the option element
             option2 = await select_element.find(xpath='.//option[@value="option2"]')
             await option2.click()
-            await asyncio.sleep(0.2)
             # Verify via property read (execute_script)
+            await wait_for_js_value(select_element, 'this.value', 'option2')
             prop_val = await select_element.execute_script('return this.value', return_by_value=True)
             current_value = prop_val['result']['result']['value']
             assert current_value == 'option2'
@@ -457,7 +435,7 @@ class TestIframeElementInteraction:
             # Select different option (option3) by clicking it
             option3 = await select_element.find(xpath='.//option[@value="option3"]')
             await option3.click()
-            await asyncio.sleep(0.2)
+            await wait_for_js_value(select_element, 'this.value', 'option3')
             prop_val2 = await select_element.execute_script('return this.value', return_by_value=True)
             new_value = prop_val2['result']['result']['value']
             assert new_value == 'option3'
@@ -471,12 +449,11 @@ class TestIframeElementInteraction:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(1)
 
-            iframe_element = await tab.find(id='simple-iframe')
+            iframe_element = await tab.find(id='simple-iframe', timeout=5)
 
             # Get link attributes
-            link = await iframe_element.find(id='iframe-link1')
+            link = await iframe_element.find(id='iframe-link1', timeout=5)
             href = link.get_attribute('href')
             assert href is not None
             assert '#link1' in href
@@ -501,12 +478,11 @@ class TestIframeElementInteraction:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(1)
 
-            iframe_element = await tab.find(id='simple-iframe')
+            iframe_element = await tab.find(id='simple-iframe', timeout=5)
 
             # Find deeply nested element
-            deep_span = await iframe_element.find(id='deep-span')
+            deep_span = await iframe_element.find(id='deep-span', timeout=5)
             assert deep_span is not None
 
             text = await deep_span.text
@@ -522,9 +498,8 @@ class TestIframeElementInteraction:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(1)
 
-            iframe_element = await tab.find(id='simple-iframe')
+            iframe_element = await tab.find(id='simple-iframe', timeout=5)
 
             # Wait for element (should already exist)
             element = await iframe_element.find(
@@ -544,9 +519,8 @@ class TestIframeElementInteraction:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(1)
 
-            iframe_element = await tab.find(id='simple-iframe')
+            iframe_element = await tab.find(id='simple-iframe', timeout=5)
 
             # Try to find non-existent element
             with pytest.raises(ElementNotFound):
@@ -561,17 +535,14 @@ class TestIframeElementInteraction:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(1)
 
-            iframe_element = await tab.find(id='simple-iframe')
+            iframe_element = await tab.find(id='simple-iframe', timeout=5)
 
             # Find input and add text
-            input_elem = await iframe_element.find(id='iframe-input')
+            input_elem = await iframe_element.find(id='iframe-input', timeout=5)
             await input_elem.insert_text('Test text to clear')
-            await asyncio.sleep(0.3)
 
             await input_elem.insert_text('')
-            await asyncio.sleep(0.3)
             value = input_elem.get_attribute('value')
             assert value in ('', None)
 
@@ -585,17 +556,16 @@ class TestIframeElementInteraction:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(1)
 
             # Find main content (not in iframe)
-            main_heading = await tab.find(id='main-heading')
+            main_heading = await tab.find(id='main-heading', timeout=5)
             assert main_heading is not None
             main_text = await main_heading.text
             assert 'Main Page' in main_text
 
             # Find content in iframe
             iframe_element = await tab.find(id='simple-iframe')
-            iframe_heading = await iframe_element.find(id='iframe-heading')
+            iframe_heading = await iframe_element.find(id='iframe-heading', timeout=5)
             iframe_text = await iframe_heading.text
             assert 'Iframe Content' in iframe_text
 
@@ -611,16 +581,15 @@ class TestIframeElementInteraction:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(1)
 
-            iframe_element = await tab.find(id='simple-iframe')
+            iframe_element = await tab.find(id='simple-iframe', timeout=5)
 
             # Get context first time
             context1 = await iframe_element.iframe_context
             assert context1 is not None
 
             # Perform some operations
-            element1 = await iframe_element.find(id='iframe-heading')
+            element1 = await iframe_element.find(id='iframe-heading', timeout=5)
             await element1.text
 
             # Get context again
@@ -640,12 +609,11 @@ class TestIframeElementInteraction:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(1)
 
-            iframe_element = await tab.find(id='simple-iframe')
+            iframe_element = await tab.find(id='simple-iframe', timeout=5)
 
             # Get all list items
-            list_items = await iframe_element.query('.list-item', find_all=True)
+            list_items = await iframe_element.query('.list-item', find_all=True, timeout=5)
             assert len(list_items) == 3
 
             # Get text from each
@@ -672,10 +640,9 @@ class TestMultipleIframesSelection:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(1)
 
             # Find all iframes
-            all_iframes = await tab.find(tag_name='iframe', find_all=True)
+            all_iframes = await tab.find(tag_name='iframe', find_all=True, timeout=5)
             assert len(all_iframes) == 3, "Should have 3 iframes on the page"
 
             # Find specific iframe by ID
@@ -698,15 +665,14 @@ class TestMultipleIframesSelection:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(1)
 
             # Get the login iframe specifically
-            login_iframe = await tab.find(id='login-iframe')
-            
+            login_iframe = await tab.find(id='login-iframe', timeout=5)
+
             # Find elements inside the login iframe
             heading = await login_iframe.find(id='iframe-heading', timeout=5)
             assert heading is not None
-            
+
             text = await heading.text
             assert 'Iframe Content' in text
 
@@ -723,10 +689,9 @@ class TestMultipleIframesSelection:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(1)
 
             # Get two different iframes
-            cookie_iframe = await tab.find(id='cookie-iframe')
+            cookie_iframe = await tab.find(id='cookie-iframe', timeout=5)
             login_iframe = await tab.find(id='login-iframe')
 
             # Both should be iframes
@@ -743,10 +708,10 @@ class TestMultipleIframesSelection:
             # Both should be able to find elements in their respective content
             cookie_heading = await cookie_iframe.find(id='iframe-heading')
             login_heading = await login_iframe.find(id='iframe-heading')
-            
+
             assert cookie_heading is not None
             assert login_heading is not None
-            
+
             # The element object IDs should be different (different DOM instances)
             assert cookie_heading._object_id != login_heading._object_id
 
@@ -759,10 +724,9 @@ class TestMultipleIframesSelection:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(1)
 
             # Find iframe by data-purpose attribute using xpath
-            login_iframe = await tab.find(xpath='//iframe[@data-purpose="login"]')
+            login_iframe = await tab.find(xpath='//iframe[@data-purpose="login"]', timeout=5)
             assert login_iframe is not None
             assert login_iframe.get_attribute('id') == 'login-iframe'
 
@@ -779,21 +743,20 @@ class TestMultipleIframesSelection:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(1)
 
             # Find all iframes
-            all_iframes = await tab.find(tag_name='iframe', find_all=True)
+            all_iframes = await tab.find(tag_name='iframe', find_all=True, timeout=5)
             assert len(all_iframes) == 3
 
             # Each iframe should have accessible content
             for iframe in all_iframes:
                 assert iframe.is_iframe
-                
+
                 # Get context for each iframe
                 ctx = await iframe.iframe_context
                 assert ctx is not None
                 assert ctx.frame_id is not None
-                
+
                 # Each should have an iframe-heading
                 heading = await iframe.find(id='iframe-heading', raise_exc=False)
                 # At least the content iframes should have the heading
@@ -810,11 +773,10 @@ class TestMultipleIframesSelection:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(1)
 
             # First, find element in cookie iframe
-            cookie_iframe = await tab.find(id='cookie-iframe')
-            cookie_heading = await cookie_iframe.find(id='iframe-heading')
+            cookie_iframe = await tab.find(id='cookie-iframe', timeout=5)
+            cookie_heading = await cookie_iframe.find(id='iframe-heading', timeout=5)
             cookie_text = await cookie_heading.text
 
             # Then, find element in login iframe
@@ -846,9 +808,8 @@ class TestIframeEdgeCases:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(1)
 
-            iframe_element = await tab.find(id='simple-iframe')
+            iframe_element = await tab.find(id='simple-iframe', timeout=5)
 
             # Add dynamic content via JavaScript
             iframe_context = await iframe_element.iframe_context
@@ -861,10 +822,9 @@ class TestIframeEdgeCases:
                 """,
                 context_id=iframe_context.execution_context_id,
             )
-            await asyncio.sleep(0.5)
 
             # Find dynamically added element
-            dynamic_element = await iframe_element.find(id='dynamic-element')
+            dynamic_element = await iframe_element.find(id='dynamic-element', timeout=5)
             assert dynamic_element is not None
 
             text = await dynamic_element.text
@@ -879,20 +839,18 @@ class TestIframeEdgeCases:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(1)
 
             # Find iframe and element
-            iframe_element = await tab.find(id='simple-iframe')
-            element_before = await iframe_element.find(id='iframe-heading')
+            iframe_element = await tab.find(id='simple-iframe', timeout=5)
+            element_before = await iframe_element.find(id='iframe-heading', timeout=5)
             assert element_before is not None
 
             # Reload page
             await tab.refresh()
-            await asyncio.sleep(1)
 
             # Find iframe again (new instance)
-            iframe_element_after = await tab.find(id='simple-iframe')
-            element_after = await iframe_element_after.find(id='iframe-heading')
+            iframe_element_after = await tab.find(id='simple-iframe', timeout=5)
+            element_after = await iframe_element_after.find(id='iframe-heading', timeout=5)
             assert element_after is not None
 
             # Verify element is accessible
@@ -912,14 +870,13 @@ class TestIframeTypeText:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(1)
 
-            iframe_element = await tab.find(id='simple-iframe')
-            input_el = await iframe_element.find(id='iframe-input')
+            iframe_element = await tab.find(id='simple-iframe', timeout=5)
+            input_el = await iframe_element.find(id='iframe-input', timeout=5)
 
             await input_el.type_text('hello')
-            await asyncio.sleep(0.3)
 
+            await wait_for_js_value(input_el, 'this.value', 'hello')
             prop = await input_el.execute_script(
                 'return this.value', return_by_value=True
             )
@@ -934,20 +891,21 @@ class TestIframeTypeText:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(1)
 
-            iframe_element = await tab.find(id='simple-iframe')
-            input_el = await iframe_element.find(id='iframe-input')
+            iframe_element = await tab.find(id='simple-iframe', timeout=5)
+            input_el = await iframe_element.find(id='iframe-input', timeout=5)
 
             await input_el.type_text('Test', humanize=True)
-            await asyncio.sleep(0.3)
 
+            # Humanized typing may introduce and correct typos,
+            # but the final value should be non-empty.
+            await wait_for_js(
+                input_el, 'this.value', lambda value: len(value) >= 2
+            )
             prop = await input_el.execute_script(
                 'return this.value', return_by_value=True
             )
             value = prop['result']['result']['value']
-            # Humanized typing may introduce and correct typos,
-            # but the final value should be non-empty.
             assert len(value) >= 2
 
     @pytest.mark.asyncio
@@ -959,15 +917,14 @@ class TestIframeTypeText:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(1)
 
-            iframe_element = await tab.find(id='simple-iframe')
-            input_el = await iframe_element.find(id='iframe-email')
+            iframe_element = await tab.find(id='simple-iframe', timeout=5)
+            input_el = await iframe_element.find(id='iframe-email', timeout=5)
 
             test_text = 'user@test.com'
             await input_el.type_text(test_text)
-            await asyncio.sleep(0.3)
 
+            await wait_for_js_value(input_el, 'this.value', test_text)
             prop = await input_el.execute_script(
                 'return this.value', return_by_value=True
             )
@@ -986,7 +943,6 @@ class TestFrameElementIntegration:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(1)
 
             frame_element = await tab.find(id='left-frame', timeout=5)
             assert frame_element is not None
@@ -1002,7 +958,6 @@ class TestFrameElementIntegration:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(1)
 
             frame_element = await tab.find(id='left-frame', timeout=5)
             heading = await frame_element.find(id='frame-heading', timeout=5)
@@ -1020,7 +975,6 @@ class TestFrameElementIntegration:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(1)
 
             frame_element = await tab.find(id='left-frame', timeout=5)
             ctx = await frame_element.iframe_context
@@ -1037,7 +991,6 @@ class TestFrameElementIntegration:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(1)
 
             frame_element = await tab.find(id='left-frame', timeout=5)
             html = await frame_element.inner_html
@@ -1052,7 +1005,6 @@ class TestFrameElementIntegration:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(1)
 
             left_frame = await tab.find(id='left-frame', timeout=5)
             right_frame = await tab.find(id='right-frame', timeout=5)
@@ -1079,17 +1031,15 @@ class TestFrameElementIntegration:
         async with Chrome(options=ci_chrome_options) as browser:
             tab = await browser.start()
             await tab.go_to(file_url)
-            await asyncio.sleep(1)
 
             frame_element = await tab.find(id='left-frame', timeout=5)
             input_el = await frame_element.find(id='frame-input', timeout=5)
 
             test_text = 'hello frame'
             await input_el.type_text(test_text)
-            await asyncio.sleep(0.3)
 
+            await wait_for_js_value(input_el, 'this.value', test_text)
             prop = await input_el.execute_script(
                 'return this.value', return_by_value=True
             )
             assert prop['result']['result']['value'] == test_text
-

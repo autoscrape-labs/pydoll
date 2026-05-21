@@ -14,7 +14,7 @@ from typing import Callable
 import pytest
 
 from pydoll.connection import ConnectionHandler
-from pydoll.exceptions import WebSocketConnectionClosed
+from pydoll.exceptions import CommandExecutionTimeout, WebSocketConnectionClosed
 
 
 async def _wait_until(condition: Callable[[], bool], timeout: float = 2.0) -> None:
@@ -190,3 +190,178 @@ async def test_removed_callback_stops_firing(cdp_server):
         await handler.close()
 
     assert fired == []
+
+
+# --- Edge cases: what happens when the CDP peer closes the connection? ---
+
+
+@pytest.mark.asyncio
+async def test_command_times_out_when_server_never_responds(cdp_server):
+    """A command whose response never arrives raises CommandExecutionTimeout."""
+    cdp_server.hang('Page.navigate')
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address)
+    try:
+        with pytest.raises(CommandExecutionTimeout):
+            await handler.execute_command({'method': 'Page.navigate'}, timeout=0.3)
+    finally:
+        await handler.close()
+
+
+@pytest.mark.asyncio
+async def test_all_in_flight_commands_fail_when_connection_drops(cdp_server):
+    """Every pending command is failed (not left hanging) when the peer disconnects."""
+    cdp_server.hang('Page.navigate')
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address)
+    try:
+        pending = [
+            asyncio.create_task(handler.execute_command({'method': 'Page.navigate'}))
+            for _ in range(20)
+        ]
+        await _wait_until(lambda: len(cdp_server.commands_for('Page.navigate')) == 20)
+        await cdp_server.drop_connections()
+        results = await asyncio.gather(*pending, return_exceptions=True)
+    finally:
+        await handler.close()
+
+    assert len(results) == 20
+    assert all(isinstance(result, WebSocketConnectionClosed) for result in results)
+
+
+@pytest.mark.asyncio
+async def test_command_after_server_shutdown_raises_without_hanging(cdp_server):
+    """If the peer is gone entirely, the next command errors quickly instead of hanging."""
+    cdp_server.set_result('Page.enable', {})
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address)
+    try:
+        await handler.execute_command({'method': 'Page.enable'})
+        await cdp_server.stop()
+        with pytest.raises((OSError, WebSocketConnectionClosed)):
+            await asyncio.wait_for(
+                handler.execute_command({'method': 'Page.enable'}), timeout=5
+            )
+    finally:
+        await handler.close()
+
+
+@pytest.mark.asyncio
+async def test_reconnect_after_drop_opens_a_fresh_connection(cdp_server):
+    """After a drop, the handler transparently opens a brand-new socket."""
+    cdp_server.set_result('Page.enable', {})
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address)
+    try:
+        await handler.execute_command({'method': 'Page.enable'})
+        await _wait_until(lambda: cdp_server.total_connections == 1)
+        await cdp_server.drop_connections()
+
+        for _ in range(10):
+            try:
+                await handler.execute_command({'method': 'Page.enable'})
+                break
+            except WebSocketConnectionClosed:
+                await asyncio.sleep(0.05)
+    finally:
+        await handler.close()
+
+    assert cdp_server.total_connections >= 2
+
+
+@pytest.mark.asyncio
+async def test_close_fails_a_pending_command(cdp_server):
+    """Closing the handler while a command is in flight fails it instead of hanging."""
+    cdp_server.hang('Page.navigate')
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address)
+    pending = asyncio.create_task(handler.execute_command({'method': 'Page.navigate'}))
+    await _wait_until(lambda: cdp_server.commands_for('Page.navigate'))
+
+    await handler.close()
+
+    with pytest.raises(WebSocketConnectionClosed):
+        await pending
+
+
+@pytest.mark.asyncio
+async def test_close_is_idempotent(cdp_server):
+    """Closing twice is safe and does not raise."""
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address)
+    await handler.execute_command({'method': 'Page.enable'})
+    await handler.close()
+    await handler.close()
+
+
+@pytest.mark.asyncio
+async def test_event_callback_exception_does_not_stop_later_events(cdp_server):
+    """A raising event callback is isolated; subsequent events are still delivered."""
+    markers: list[dict] = []
+
+    async def boom(_event):
+        raise RuntimeError('callback boom')
+
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address)
+    try:
+        await handler.execute_command({'method': 'Page.enable'})
+        await handler.register_callback('Custom.boom', boom)
+        await handler.register_callback('Custom.marker', markers.append)
+        await cdp_server.push_event('Custom.boom')
+        await cdp_server.push_event('Custom.marker')
+        await _wait_until(lambda: len(markers) == 1)
+    finally:
+        await handler.close()
+
+    assert len(markers) == 1
+
+
+# --- Edge cases: what happens when the handler is bombarded with commands? ---
+
+
+@pytest.mark.asyncio
+async def test_high_concurrency_commands_all_resolve_with_unique_ids(cdp_server):
+    """300 commands fired at once all resolve and each carries a unique id."""
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address)
+    try:
+        results = await asyncio.gather(
+            *(handler.execute_command({'method': f'Domain.method{i}'}) for i in range(300))
+        )
+    finally:
+        await handler.close()
+
+    assert len(results) == 300
+    ids = [command['id'] for command in cdp_server.received_commands]
+    assert len(ids) == 300
+    assert len(set(ids)) == 300
+
+
+@pytest.mark.asyncio
+async def test_command_bombardment_does_not_drop_concurrent_events(cdp_server):
+    """A flood of commands does not starve the event stream; all events arrive."""
+    events: list[dict] = []
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address)
+    try:
+        await handler.execute_command({'method': 'Page.enable'})
+        await handler.register_callback('Stream.tick', events.append)
+
+        async def flood_commands():
+            await asyncio.gather(
+                *(handler.execute_command({'method': f'Domain.m{i}'}) for i in range(100))
+            )
+
+        async def flood_events():
+            for n in range(25):
+                await cdp_server.push_event('Stream.tick', {'n': n})
+
+        await asyncio.gather(flood_commands(), flood_events())
+        await _wait_until(lambda: len(events) == 25, timeout=5.0)
+    finally:
+        await handler.close()
+
+    assert len(events) == 25
+
+
+@pytest.mark.asyncio
+async def test_context_manager_runs_commands_and_has_repr(cdp_server):
+    """The async context manager yields a usable handler and closes it on exit."""
+    cdp_server.set_result('Browser.getVersion', {'ok': True})
+    async with ConnectionHandler(ws_address=cdp_server.ws_address) as handler:
+        result = await handler.execute_command({'method': 'Browser.getVersion'})
+        assert result['result'] == {'ok': True}
+        assert 'ConnectionHandler' in repr(handler)
+        assert 'ConnectionHandler' in str(handler)
