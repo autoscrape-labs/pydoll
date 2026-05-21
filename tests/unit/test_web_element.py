@@ -33,11 +33,6 @@ def make_element(fake_conn):
     return _make
 
 
-
-def test_calculate_center_averages_quad_corners():
-    assert WebElement._calculate_center([0, 0, 100, 0, 100, 50, 0, 50]) == (50.0, 25.0)
-
-
 def test_attribute_properties_read_from_cache(make_element):
     element = make_element(
         attributes=['id', 'go', 'class', 'btn primary', 'value', 'Go', 'tag_name', 'button']

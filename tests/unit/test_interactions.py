@@ -86,12 +86,30 @@ async def test_keyboard_type_text_types_each_character_in_order(fake_conn, fake_
     assert typed == ['h', 'i']
 
 
+@pytest.mark.parametrize(
+    'keys, expected_modifier',
+    [
+        ((Key.ALT, Key.A), 1),
+        ((Key.CONTROL, Key.A), 2),
+        ((Key.CONTROL, Key.SHIFT, Key.A), 10),
+    ],
+)
 @pytest.mark.asyncio
-async def test_keyboard_hotkey_applies_modifier_to_key(fake_conn, fake_tab):
-    await fake_tab.keyboard.hotkey(Key.CONTROL, Key.C)
-    down = _of_type(_key_events(fake_conn), 'keyDown')[0]
-    assert down['params']['key'] == 'C'
-    assert down['params']['modifiers'] == 2
+async def test_hotkey_applies_combined_modifier_to_key(fake_conn, fake_tab, keys, expected_modifier):
+    await fake_tab.keyboard.hotkey(*keys)
+    a_down = [
+        event
+        for event in _of_type(_key_events(fake_conn), 'keyDown')
+        if event['params']['key'] == 'A'
+    ]
+    assert a_down[0]['params']['modifiers'] == expected_modifier
+
+
+@pytest.mark.asyncio
+async def test_hotkey_without_modifier_keys_sends_no_modifier(fake_conn, fake_tab):
+    await fake_tab.keyboard.hotkey(Key.A, Key.B)
+    downs = _of_type(_key_events(fake_conn), 'keyDown')
+    assert all(event['params'].get('modifiers') in (None, 0) for event in downs)
 
 
 @pytest.mark.asyncio
@@ -112,3 +130,30 @@ async def test_scroll_to_top_issues_a_scroll(fake_conn, fake_tab):
 async def test_scroll_to_bottom_issues_a_scroll(fake_conn, fake_tab):
     await fake_tab.scroll.to_bottom(smooth=False)
     assert fake_conn.commands_for('Runtime.evaluate')
+
+
+@pytest.mark.parametrize(
+    'position, fragment',
+    [
+        (ScrollPosition.UP, 'top: -100'),
+        (ScrollPosition.DOWN, 'top: 100'),
+        (ScrollPosition.LEFT, 'left: -100'),
+        (ScrollPosition.RIGHT, 'left: 100'),
+    ],
+)
+@pytest.mark.asyncio
+async def test_scroll_by_sets_axis_and_signed_distance(fake_conn, fake_tab, position, fragment):
+    await fake_tab.scroll.by(position, 100, smooth=False)
+    expression = fake_conn.last_command('Runtime.evaluate')['params']['expression']
+    assert fragment in expression
+
+
+@pytest.mark.parametrize(
+    'smooth, expected',
+    [(True, "behavior = 'smooth'"), (False, "behavior = 'auto'")],
+)
+@pytest.mark.asyncio
+async def test_scroll_by_behavior_reflects_smooth_flag(fake_conn, fake_tab, smooth, expected):
+    await fake_tab.scroll.by(ScrollPosition.DOWN, 100, smooth=smooth)
+    expression = fake_conn.last_command('Runtime.evaluate')['params']['expression']
+    assert expected in expression
