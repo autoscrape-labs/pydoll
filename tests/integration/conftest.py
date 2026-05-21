@@ -9,6 +9,10 @@ import pytest_asyncio
 import websockets
 from websockets.asyncio.server import Server, ServerConnection, serve
 
+from pydoll.browser.chromium import Chrome
+from pydoll.browser.tab import Tab
+from pydoll.connection import ConnectionHandler
+
 
 class FakeCDPServer:
     """A real WebSocket server that speaks just enough CDP for tests.
@@ -51,6 +55,10 @@ class FakeCDPServer:
     def received_commands(self) -> list[dict]:
         """Every command frame received, in arrival order."""
         return list(self._received)
+
+    def commands_for(self, method: str) -> list[dict]:
+        """Every received command matching a CDP method, in arrival order."""
+        return [command for command in self._received if command.get('method') == method]
 
     @property
     def active_connections(self) -> int:
@@ -110,3 +118,19 @@ async def cdp_server():
         yield server
     finally:
         await server.stop()
+
+
+@pytest_asyncio.fixture
+async def fake_tab(cdp_server):
+    """A real Tab whose real ConnectionHandler is wired to the FakeCDPServer.
+
+    The Tab borrows an unstarted Chrome only for its options; every CDP message
+    travels over a real socket to the fake server. The handler is closed after
+    the test.
+    """
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address)
+    tab = Tab(browser=Chrome(), target_id='fake-tab', connection_handler=handler)
+    try:
+        yield tab
+    finally:
+        await handler.close()
