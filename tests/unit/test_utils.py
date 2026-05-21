@@ -13,9 +13,23 @@ from pydoll.utils import (
     get_browser_ws_address,
     has_return_outside_function,
     is_script_already_function,
+    normalize_synthetic_xpath,
     validate_browser_paths,
     extract_text_from_html,
 )
+
+
+def test_normalize_synthetic_xpath_extracts_inner_xpath():
+    assert normalize_synthetic_xpath('//*[@xpath="//div[@id=\'x\']"]') == "//div[@id='x']"
+
+
+def test_normalize_synthetic_xpath_passes_through_plain_selector():
+    assert normalize_synthetic_xpath('//div[@id="x"]') == '//div[@id="x"]'
+
+
+def test_normalize_synthetic_xpath_returns_input_when_unparseable():
+    assert normalize_synthetic_xpath("//*[@xpath='x']") == "//*[@xpath='x']"
+    assert normalize_synthetic_xpath('//*[@xpath="abc') == '//*[@xpath="abc'
 
 
 class TestUtils:

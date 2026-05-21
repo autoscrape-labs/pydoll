@@ -118,15 +118,35 @@ class TestRetryConfigCallCallback:
         """Test callback that doesn't accept instance argument."""
         # Callback that doesn't accept arguments
         callback_called = False
-        
+
         async def simple_callback():
             nonlocal callback_called
             callback_called = True
-        
+
         config = RetryConfig(on_retry=simple_callback)
         await config.call_callback(MagicMock())
-        
+
         assert callback_called
+
+    @pytest.mark.asyncio
+    async def test_callback_reraises_non_typeerror(self):
+        """A callback that fails with a non-TypeError propagates that error."""
+        async def boom(_instance):
+            raise ValueError('callback failed')
+
+        config = RetryConfig(on_retry=boom)
+        with pytest.raises(ValueError):
+            await config.call_callback(object())
+
+    @pytest.mark.asyncio
+    async def test_callback_reraises_inner_error_when_noarg_retry_also_fails(self):
+        """When the no-arg retry fallback itself fails, that inner error propagates."""
+        async def zero_arg_then_boom():
+            raise RuntimeError('inner failure')
+
+        config = RetryConfig(on_retry=zero_arg_then_boom)
+        with pytest.raises(RuntimeError):
+            await config.call_callback(object())
 
 
 class TestRetryDecoratorBasic:

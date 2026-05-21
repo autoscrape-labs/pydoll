@@ -73,3 +73,28 @@ def test_handle_cleanup_error_recovers_known_chrome_lock():
         (PermissionError, PermissionError(), None),
     )
     assert processed == ['/profile/CrashpadMetrics-active.pma']
+
+
+def test_handle_cleanup_error_recovers_safe_browsing_lock():
+    manager = TempDirectoryManager()
+    processed = []
+    manager.handle_cleanup_error(
+        processed.append,
+        '/profile/Safe Browsing/data',
+        (PermissionError, PermissionError(), None),
+    )
+    assert processed == ['/profile/Safe Browsing/data']
+
+
+def test_handle_cleanup_error_swallows_persistently_locked_chrome_file():
+    manager = TempDirectoryManager()
+
+    def always_locked(_path):
+        raise PermissionError()
+
+    # A known Chrome lock file that never unlocks is logged and ignored, not raised.
+    manager.handle_cleanup_error(
+        always_locked,
+        '/profile/CrashpadMetrics-active.pma',
+        (PermissionError, PermissionError(), None),
+    )
