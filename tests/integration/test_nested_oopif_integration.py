@@ -49,8 +49,8 @@ def cross_origin_servers():
 
         return H
 
-    srv_a = http.server.HTTPServer(('127.0.0.1', 0), _handler())
-    srv_b = http.server.HTTPServer(('127.0.0.1', 0), _handler())
+    srv_a = http.server.ThreadingHTTPServer(('127.0.0.1', 0), _handler())
+    srv_b = http.server.ThreadingHTTPServer(('127.0.0.1', 0), _handler())
     port_a = srv_a.server_address[1]
     port_b = srv_b.server_address[1]
 

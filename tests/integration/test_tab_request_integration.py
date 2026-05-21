@@ -11,7 +11,7 @@ from __future__ import annotations
 import json
 import socket
 import threading
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
 import pytest
@@ -170,7 +170,7 @@ class _RequestHandler(BaseHTTPRequestHandler):
 @pytest_asyncio.fixture
 async def request_tab(ci_chrome_options):
     port = _find_free_port()
-    server = HTTPServer(('127.0.0.1', port), _RequestHandler)
+    server = ThreadingHTTPServer(('127.0.0.1', port), _RequestHandler)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     base = f'http://127.0.0.1:{port}'

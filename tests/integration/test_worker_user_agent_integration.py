@@ -55,7 +55,7 @@ def worker_server():
         def __init__(self, *args, **kwargs):
             super().__init__(*args, directory=str(PAGES_DIR), **kwargs)
 
-    server = http.server.HTTPServer(('127.0.0.1', 0), _Handler)
+    server = http.server.ThreadingHTTPServer(('127.0.0.1', 0), _Handler)
     port = server.server_address[1]
     threading.Thread(target=server.serve_forever, daemon=True).start()
     _wait_for_server('127.0.0.1', port)

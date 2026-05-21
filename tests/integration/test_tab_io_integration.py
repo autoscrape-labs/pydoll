@@ -1,6 +1,6 @@
 """Real-Chrome integration tests for Tab I/O over a local HTTP server.
 
-A throwaway ``HTTPServer`` serves a small page wired to external assets (CSS with
+A throwaway ``ThreadingHTTPServer`` serves a small page wired to external assets (CSS with
 a ``url()`` background, JS and images) plus a downloadable attachment. Against it
 we exercise the heavy I/O paths that need a real origin and real network
 fetches: ``save_bundle`` (both rewrite and inline modes), ``expect_download``
@@ -16,7 +16,7 @@ import io
 import socket
 import threading
 import zipfile
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 import pytest
@@ -89,7 +89,7 @@ def _make_handler(*, absolute_assets: bool):
 
 def _serve(handler_cls):
     port = _find_free_port()
-    server = HTTPServer(('127.0.0.1', port), handler_cls)
+    server = ThreadingHTTPServer(('127.0.0.1', port), handler_cls)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     return server, thread, f'http://127.0.0.1:{port}'
