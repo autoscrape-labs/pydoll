@@ -12,7 +12,13 @@ from __future__ import annotations
 import pytest
 
 from pydoll.elements.web_element import WebElement
-from pydoll.exceptions import ElementNotInteractable
+from pydoll.exceptions import (
+    ElementNotAFileInput,
+    ElementNotInteractable,
+    ElementNotVisible,
+    InvalidFileExtension,
+    MissingScreenshotPath,
+)
 
 
 @pytest.fixture
@@ -103,6 +109,15 @@ async def test_click_dispatches_press_and_release_at_center(fake_conn, make_elem
 
 
 @pytest.mark.asyncio
+async def test_click_raises_when_element_not_visible(fake_conn, make_element):
+    element = make_element(attributes=['tag_name', 'button'])
+    fake_conn.set_response('Runtime.callFunctionOn', {'result': {'value': False}})
+    with pytest.raises(ElementNotVisible):
+        await element.click(hold_time=0)
+    assert fake_conn.commands_for('Input.dispatchMouseEvent') == []
+
+
+@pytest.mark.asyncio
 async def test_clear_updates_cached_value(fake_conn, make_element):
     element = make_element(attributes=['tag_name', 'input', 'value', 'old'])
     fake_conn.set_response('Runtime.callFunctionOn', {'result': {'value': True}})
@@ -142,3 +157,24 @@ async def test_execute_script_wraps_script_and_targets_object(fake_conn, make_el
     sent = fake_conn.last_command('Runtime.callFunctionOn')
     assert sent['params']['functionDeclaration'] == 'function(){ return this.textContent }'
     assert sent['params']['objectId'] == 'el-1'
+
+
+@pytest.mark.asyncio
+async def test_set_input_files_rejects_non_file_input(make_element):
+    text_input = make_element(attributes=['tag_name', 'input', 'type', 'text'])
+    with pytest.raises(ElementNotAFileInput):
+        await text_input.set_input_files('/tmp/file.txt')
+
+
+@pytest.mark.asyncio
+async def test_take_screenshot_without_path_or_base64_raises(make_element):
+    element = make_element()
+    with pytest.raises(MissingScreenshotPath):
+        await element.take_screenshot()
+
+
+@pytest.mark.asyncio
+async def test_take_screenshot_with_invalid_extension_raises(make_element):
+    element = make_element()
+    with pytest.raises(InvalidFileExtension):
+        await element.take_screenshot(path='shot.xyz')
