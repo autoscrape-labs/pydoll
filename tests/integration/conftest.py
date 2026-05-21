@@ -32,8 +32,8 @@ class FakeCDPServer:
         self._hung_methods: set[str] = set()
 
     async def start(self) -> None:
-        """Bind the server to an ephemeral localhost port."""
-        self._server = await serve(self._handle_client, 'localhost', 0)
+        """Bind the server to an ephemeral loopback port."""
+        self._server = await serve(self._handle_client, '127.0.0.1', 0)
 
     async def stop(self) -> None:
         """Close the server and wait for it to release the port."""
@@ -49,7 +49,7 @@ class FakeCDPServer:
     @property
     def ws_address(self) -> str:
         """WebSocket address to hand to ConnectionHandler(ws_address=...)."""
-        return f'ws://localhost:{self.port}'
+        return f'ws://127.0.0.1:{self.port}'
 
     @property
     def received_commands(self) -> list[dict]:
