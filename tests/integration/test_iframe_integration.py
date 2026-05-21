@@ -8,8 +8,9 @@ from pathlib import Path
 
 import pytest
 
-from _waits import wait_for_js, wait_for_js_value
+from _waits import wait_for_js, wait_for_js_value, wait_until
 from pydoll.browser.chromium import Chrome
+from pydoll.commands import RuntimeCommands
 from pydoll.elements.web_element import WebElement
 from pydoll.exceptions import ElementNotFound, InvalidIFrame
 
@@ -1043,3 +1044,124 @@ class TestFrameElementIntegration:
                 'return this.value', return_by_value=True
             )
             assert prop['result']['result']['value'] == test_text
+
+
+class TestIframeContextResolutionFailures:
+    """Integration tests for iframe context resolution failure paths.
+
+    These exercise the resolver's defensive branches with a real browser:
+    when the <iframe> element handle becomes stale (removed from the DOM or
+    its remote object released), context resolution must surface a clear
+    ``InvalidIFrame`` instead of silently returning a broken context.
+    """
+
+    @pytest.mark.asyncio
+    async def test_iframe_context_raises_after_iframe_removed_from_dom(
+        self, ci_chrome_options
+    ):
+        """Resolving context for an iframe removed from the DOM raises InvalidIFrame.
+
+        After removal ``DOM.describeNode`` still returns the (now detached)
+        node but with no ``frameId``; the owner lookup over the frame tree
+        finds no matching frame, so the resolver cannot determine a frameId
+        and raises.
+        """
+        test_file = Path(__file__).parent / 'pages' / 'test_iframe_simple.html'
+        file_url = f'file://{test_file.absolute()}'
+
+        async with Chrome(options=ci_chrome_options) as browser:
+            tab = await browser.start()
+            await tab.go_to(file_url)
+
+            iframe_element = await tab.find(id='simple-iframe', timeout=5)
+
+            # Sanity check: context resolves while the iframe is in the DOM.
+            ctx_before = await iframe_element.iframe_context
+            assert ctx_before is not None
+            assert ctx_before.frame_id is not None
+
+            # Remove the iframe from the DOM (round-trips, so the mutation is
+            # committed before resolution is attempted again).
+            await tab.execute_script(
+                "document.getElementById('simple-iframe').remove();"
+            )
+
+            async def context_resolution_fails() -> bool:
+                try:
+                    await iframe_element.iframe_context
+                    return False
+                except InvalidIFrame:
+                    return True
+
+            await wait_until(
+                context_resolution_fails,
+                timeout=5,
+                message='iframe_context did not raise after removal',
+            )
+
+            with pytest.raises(InvalidIFrame):
+                await iframe_element.iframe_context
+
+    @pytest.mark.asyncio
+    async def test_iframe_context_raises_when_remote_object_released(
+        self, ci_chrome_options
+    ):
+        """Releasing the iframe's remote object makes context resolution raise.
+
+        ``Runtime.releaseObject`` invalidates the element's ``objectId``; the
+        subsequent ``DOM.describeNode`` returns an error, the resolver falls
+        back to an empty node (no frameId, no backendNodeId) and ultimately
+        raises ``InvalidIFrame``.
+        """
+        test_file = Path(__file__).parent / 'pages' / 'test_iframe_simple.html'
+        file_url = f'file://{test_file.absolute()}'
+
+        async with Chrome(options=ci_chrome_options) as browser:
+            tab = await browser.start()
+            await tab.go_to(file_url)
+
+            iframe_element = await tab.find(id='simple-iframe', timeout=5)
+
+            await tab._connection_handler.execute_command(
+                RuntimeCommands.release_object(object_id=iframe_element._object_id)
+            )
+
+            with pytest.raises(InvalidIFrame):
+                await iframe_element.iframe_context
+
+    @pytest.mark.asyncio
+    async def test_no_src_iframe_resolves_about_blank_context(self, ci_chrome_options):
+        """A srcless <iframe> (about:blank) still resolves a usable context.
+
+        Its ``contentDocument.frameId`` is null, so resolution goes through the
+        frame-owner lookup (matching the iframe's backendNodeId against the
+        page frame tree) rather than the direct contentDocument path.
+        """
+        test_file = Path(__file__).parent / 'pages' / 'iframe_features.html'
+        file_url = f'file://{test_file.absolute()}'
+
+        async with Chrome(options=ci_chrome_options) as browser:
+            tab = await browser.start()
+            await tab.go_to(file_url)
+
+            iframe_element = await tab.find(id='frame-no-src', timeout=5)
+            assert iframe_element.is_iframe
+
+            ctx = await iframe_element.iframe_context
+            assert ctx is not None
+            assert ctx.frame_id is not None
+            assert ctx.execution_context_id is not None
+
+            # The resolved frame is the empty about:blank document; we can
+            # create elements in it via the resolved execution context.
+            await tab.execute_script(
+                """
+                const marker = document.createElement('div');
+                marker.id = 'about-blank-marker';
+                marker.textContent = 'blank ok';
+                document.body.appendChild(marker);
+                """,
+                context_id=ctx.execution_context_id,
+            )
+            marker = await iframe_element.find(id='about-blank-marker', timeout=5)
+            assert 'blank ok' in await marker.text

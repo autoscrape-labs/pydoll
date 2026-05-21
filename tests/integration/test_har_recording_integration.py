@@ -8,13 +8,18 @@ import asyncio
 import json
 import socket
 import threading
-from http.server import HTTPServer, BaseHTTPRequestHandler
+import time
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 import pytest
 
 from pydoll.browser.chromium import Chrome
 from pydoll.browser.requests.har_recorder import HarCapture
+from pydoll.protocol.network.events import NetworkEvent
+from pydoll.protocol.network.types import ResourceType
+
+from _waits import wait_for_element_text, wait_until
 
 
 def _find_free_port():
@@ -22,6 +27,33 @@ def _find_free_port():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind(('127.0.0.1', 0))
         return s.getsockname()[1]
+
+
+_TINY_PNG = bytes.fromhex(
+    '89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4'
+    '890000000d49444154789c63f8cfc0f01f0005000fff03d2c4d2700000000049454e44ae426082'
+)
+
+
+def _fetch_page(*fetch_calls):
+    """Build an HTML page served from the API origin that runs same-origin fetches.
+
+    Each entry in ``fetch_calls`` is a JS fetch() argument string. The page sets
+    ``#status`` to 'done' once every fetch settles, so tests can poll for it.
+    """
+    body = '\n'.join(f'      await fetch({call}).catch(() => {{}});' for call in fetch_calls)
+    return f"""<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>HAR same-origin</title></head>
+<body>
+  <div id="status">waiting</div>
+  <script>
+    async function run() {{
+{body}
+      document.getElementById('status').textContent = 'done';
+    }}
+    window.addEventListener('load', run);
+  </script>
+</body></html>"""
 
 
 class _TestAPIHandler(BaseHTTPRequestHandler):
@@ -36,6 +68,69 @@ class _TestAPIHandler(BaseHTTPRequestHandler):
             )
         elif self.path == '/api/data':
             self._respond(200, 'text/plain', 'Hello from the test server')
+        elif self.path == '/large':
+            self._respond(200, 'text/plain', 'x' * 200_000)
+        elif self.path == '/large-page':
+            self._respond(200, 'text/html', _fetch_page("'/large'"))
+        elif self.path == '/cookies-page':
+            self._respond(
+                200, 'text/html', _fetch_page("'/set-cookie'", "'/needs-cookie'")
+            )
+        elif self.path == '/redirect-page':
+            self._respond(200, 'text/html', _fetch_page("'/redirect'"))
+        elif self.path == '/filtered-page':
+            self._respond(
+                200, 'text/html', _fetch_page("'/api/data'", "'http://127.0.0.1:1/blocked'")
+            )
+        elif self.path.startswith('/image-page'):
+            self._respond(
+                200,
+                'text/html',
+                '<!DOCTYPE html><html><body><div id="status">waiting</div>'
+                '<img id="pic" src="/cacheable.png">'
+                '<script>const i=document.getElementById("pic");'
+                'i.addEventListener("load",()=>{document.getElementById("status")'
+                '.textContent="done";});'
+                'i.addEventListener("error",()=>{document.getElementById("status")'
+                '.textContent="done";});</script></body></html>',
+            )
+        elif self.path == '/pending-page':
+            self._respond(
+                200,
+                'text/html',
+                '<!DOCTYPE html><html><body><div id="status">started</div>'
+                '<script>fetch("/slow").catch(()=>{});</script></body></html>',
+            )
+        elif self.path == '/set-cookie':
+            self.send_response(200)
+            self.send_header('Content-Type', 'text/plain')
+            self.send_header('Set-Cookie', 'har_session=abc123; Path=/; HttpOnly')
+            self.send_header(
+                'Set-Cookie', 'har_secure=xyz789; Domain=127.0.0.1; Path=/; Secure'
+            )
+            self.end_headers()
+            self.wfile.write(b'cookie set')
+        elif self.path == '/needs-cookie':
+            cookie = self.headers.get('Cookie', '')
+            self._respond(200, 'text/plain', f'cookie={cookie}')
+        elif self.path == '/redirect':
+            self.send_response(302)
+            self.send_header('Location', '/api/data')
+            self.end_headers()
+        elif self.path == '/cacheable.png':
+            if self.headers.get('If-None-Match') == '"png-v1"':
+                self.send_response(304)
+                self.send_header('ETag', '"png-v1"')
+                self.end_headers()
+            else:
+                self.send_response(200)
+                self.send_header('Content-Type', 'image/png')
+                self.send_header('ETag', '"png-v1"')
+                self.send_header('Cache-Control', 'max-age=0, must-revalidate')
+                self.end_headers()
+                self.wfile.write(_TINY_PNG)
+        elif self.path == '/slow':
+            self._sleep_then_respond()
         else:
             self._respond(404, 'text/plain', 'Not Found')
 
@@ -54,13 +149,23 @@ class _TestAPIHandler(BaseHTTPRequestHandler):
         else:
             self._respond(404, 'text/plain', 'Not Found')
 
+    def _sleep_then_respond(self):
+        try:
+            time.sleep(30)
+            self._respond(200, 'text/plain', 'slow')
+        except (BrokenPipeError, ConnectionResetError, OSError):
+            pass
+
     def _respond(self, status, content_type, body):
         self.send_response(status)
         self.send_header('Content-Type', content_type)
         self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type')
         self.end_headers()
-        self.wfile.write(body.encode())
+        try:
+            self.wfile.write(body.encode())
+        except (BrokenPipeError, ConnectionResetError, OSError):
+            pass
 
     def do_OPTIONS(self):
         self.send_response(200)
@@ -75,9 +180,14 @@ class _TestAPIHandler(BaseHTTPRequestHandler):
 
 @pytest.fixture(scope='module')
 def api_server():
-    """Start a local HTTP server for the test module."""
+    """Start a local threaded HTTP server for the test module.
+
+    Threaded so a deliberately hung endpoint (``/slow``) cannot block other
+    requests or the shutdown handshake.
+    """
     port = _find_free_port()
-    server = HTTPServer(('127.0.0.1', port), _TestAPIHandler)
+    server = ThreadingHTTPServer(('127.0.0.1', port), _TestAPIHandler)
+    server.daemon_threads = True
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     yield f'http://127.0.0.1:{port}'
@@ -416,3 +526,329 @@ class TestHarSaveIntegration:
                 timings = entry['timings']
                 for field in ('blocked', 'dns', 'connect', 'ssl', 'send', 'wait', 'receive'):
                     assert field in timings
+
+
+def _origin_entry(recording, path_suffix, method='GET', status=None):
+    """Return the first recorded entry whose URL ends with *path_suffix*."""
+    for entry in recording.entries:
+        if not entry['request']['url'].endswith(path_suffix):
+            continue
+        if entry['request']['method'] != method:
+            continue
+        if status is not None and entry['response']['status'] != status:
+            continue
+        return entry
+    return None
+
+
+async def _coro(value):
+    """Wrap a synchronous boolean in a coroutine for wait_until predicates."""
+    return value
+
+
+class _RequestSentWaiter:
+    """Arm a listener for a ``Network.requestWillBeSent`` event before navigating.
+
+    In-flight requests never appear in ``performance.getEntriesByType('resource')``
+    (those entries materialize only after the resource finishes), and the in-page
+    ``fetch`` fires at parse time, so the listener must be registered *before*
+    navigation to avoid missing the event.
+    """
+
+    def __init__(self, tab, needle):
+        self._tab = tab
+        self._needle = needle
+        self._sent = asyncio.Event()
+        self._callback_id = None
+
+    async def arm(self):
+        def _on_sent(event):
+            if self._needle in event['params']['request']['url']:
+                self._sent.set()
+
+        self._callback_id = await self._tab.on(NetworkEvent.REQUEST_WILL_BE_SENT, _on_sent)
+
+    async def wait(self, timeout=10):
+        try:
+            await wait_until(
+                lambda: _coro(self._sent.is_set()),
+                timeout=timeout,
+                message=f'request {self._needle!r} not dispatched',
+            )
+        finally:
+            if self._callback_id is not None:
+                await self._tab.remove_callback(self._callback_id)
+
+
+class _LoadingFinishedWaiter:
+    """Arm a listener for the ``Network.loadingFinished`` of a specific request.
+
+    Used to leave the recorder's context manager the instant a body becomes
+    fetchable, so its asynchronous ``getResponseBody`` task is still in flight
+    when ``stop()`` awaits the pending body tasks.
+    """
+
+    def __init__(self, tab, needle):
+        self._tab = tab
+        self._needle = needle
+        self._request_ids = set()
+        self._finished = asyncio.Event()
+        self._sent_cb = None
+        self._finished_cb = None
+
+    async def arm(self):
+        def _on_sent(event):
+            if self._needle in event['params']['request']['url']:
+                self._request_ids.add(event['params']['requestId'])
+
+        def _on_finished(event):
+            if event['params']['requestId'] in self._request_ids:
+                self._finished.set()
+
+        self._sent_cb = await self._tab.on(NetworkEvent.REQUEST_WILL_BE_SENT, _on_sent)
+        self._finished_cb = await self._tab.on(NetworkEvent.LOADING_FINISHED, _on_finished)
+
+    async def wait(self, timeout=10):
+        try:
+            await wait_until(
+                lambda: _coro(self._finished.is_set()),
+                timeout=timeout,
+                message=f'loadingFinished for {self._needle!r} not observed',
+            )
+        finally:
+            for callback_id in (self._sent_cb, self._finished_cb):
+                if callback_id is not None:
+                    await self._tab.remove_callback(callback_id)
+
+
+class TestHarCookiesIntegration:
+    """Recording captures request and response cookies via ExtraInfo events."""
+
+    @pytest.mark.asyncio
+    async def test_record_captures_response_cookies(self, ci_chrome_options, api_server):
+        """A Set-Cookie response header is parsed into HAR response cookies."""
+        async with Chrome(options=ci_chrome_options) as browser:
+            tab = await browser.start()
+
+            async with tab.request.record() as recording:
+                await tab.go_to(f'{api_server}/cookies-page')
+                assert await _wait_for_requests_done(tab), 'Page requests did not complete'
+                await _wait_for_network_idle(tab)
+
+            set_cookie_entry = _origin_entry(recording, '/set-cookie')
+            assert set_cookie_entry is not None
+            resp_cookies = set_cookie_entry['response']['cookies']
+            by_name = {c['name']: c for c in resp_cookies}
+
+            assert 'har_session' in by_name
+            session = by_name['har_session']
+            assert session['value'] == 'abc123'
+            assert session.get('path') == '/'
+            assert session.get('httpOnly') is True
+
+            assert 'har_secure' in by_name
+            secure = by_name['har_secure']
+            assert secure['value'] == 'xyz789'
+            assert secure.get('secure') is True
+            assert secure.get('domain') == '127.0.0.1'
+
+    @pytest.mark.asyncio
+    async def test_record_captures_request_cookies(self, ci_chrome_options, api_server):
+        """A request that carries a Cookie header is parsed into HAR request cookies."""
+        async with Chrome(options=ci_chrome_options) as browser:
+            tab = await browser.start()
+
+            async with tab.request.record() as recording:
+                await tab.go_to(f'{api_server}/cookies-page')
+                assert await _wait_for_requests_done(tab), 'Page requests did not complete'
+                await _wait_for_network_idle(tab)
+
+            needs_cookie_entry = _origin_entry(recording, '/needs-cookie')
+            assert needs_cookie_entry is not None
+            req_cookies = needs_cookie_entry['request']['cookies']
+            assert any(c['name'] == 'har_session' for c in req_cookies)
+            session = next(c for c in req_cookies if c['name'] == 'har_session')
+            assert session['value'] == 'abc123'
+
+            body_text = needs_cookie_entry['response']['content'].get('text', '')
+            assert 'har_session=abc123' in body_text
+
+
+class TestHarRedirectIntegration:
+    """Recording captures redirect entries and the final destination."""
+
+    @pytest.mark.asyncio
+    async def test_record_captures_redirect_chain(self, ci_chrome_options, api_server):
+        """A 302 redirect produces a separate entry with redirectURL set."""
+        async with Chrome(options=ci_chrome_options) as browser:
+            tab = await browser.start()
+
+            async with tab.request.record() as recording:
+                await tab.go_to(f'{api_server}/redirect-page')
+                assert await _wait_for_requests_done(tab), 'Page requests did not complete'
+                await _wait_for_network_idle(tab)
+
+            redirect_entry = _origin_entry(recording, '/redirect', status=302)
+            assert redirect_entry is not None
+            assert redirect_entry['response']['redirectURL'] == '/api/data'
+
+            final_entry = _origin_entry(recording, '/api/data', status=200)
+            assert final_entry is not None
+            assert 'Hello from the test server' in final_entry['response']['content'].get(
+                'text', ''
+            )
+
+
+class TestHarResourceTypeFilter:
+    """Recording with resource_types only captures matching requests."""
+
+    @pytest.mark.asyncio
+    async def test_record_filters_by_resource_type(self, ci_chrome_options, api_server):
+        """Only Fetch/XHR requests are recorded; the document load is skipped."""
+        async with Chrome(options=ci_chrome_options) as browser:
+            tab = await browser.start()
+
+            async with tab.request.record(
+                resource_types=[ResourceType.FETCH, ResourceType.XHR]
+            ) as recording:
+                await tab.go_to(f'{api_server}/filtered-page')
+                assert await _wait_for_requests_done(tab), 'Page requests did not complete'
+                await _wait_for_network_idle(tab)
+
+            entries = recording.entries
+            assert len(entries) >= 1
+
+            # The document navigation (Document type) must not be recorded.
+            assert not any(e['request']['url'].endswith('/filtered-page') for e in entries)
+            # The fetch() to /api/data (Fetch type) must be recorded.
+            assert _origin_entry(recording, '/api/data', status=200) is not None
+            # Every recorded entry is a fetch/xhr resource type.
+            for entry in entries:
+                assert entry.get('_resourceType') in {'Fetch', 'XHR'}
+
+
+class TestHarNotModifiedIntegration:
+    """Recording captures 304 Not Modified responses with bodySize 0."""
+
+    @pytest.mark.asyncio
+    async def test_record_304_has_zero_body_size(self, ci_chrome_options, api_server):
+        """Re-requesting a cacheable image yields a 304 entry with bodySize 0."""
+        async with Chrome(options=ci_chrome_options) as browser:
+            tab = await browser.start()
+
+            async with tab.request.record() as recording:
+                await tab.go_to(f'{api_server}/image-page')
+                assert await _wait_for_requests_done(tab), 'First image load did not complete'
+                await _wait_for_network_idle(tab)
+                await tab.go_to(f'{api_server}/image-page?again')
+                assert await _wait_for_requests_done(tab), 'Second image load did not complete'
+                await _wait_for_network_idle(tab)
+
+            png_entries = [
+                e for e in recording.entries if e['request']['url'].endswith('/cacheable.png')
+            ]
+            assert len(png_entries) >= 2
+
+            statuses = [e['response']['status'] for e in png_entries]
+            assert 200 in statuses
+            assert 304 in statuses
+
+            not_modified = next(e for e in png_entries if e['response']['status'] == 304)
+            assert not_modified['response']['bodySize'] == 0
+
+
+class TestHarPendingAndFailedIntegration:
+    """Recording finalizes in-flight and failed requests at stop time."""
+
+    @pytest.mark.asyncio
+    async def test_record_flushes_pending_request(self, ci_chrome_options, api_server):
+        """A request still in flight at stop becomes an entry with status 0."""
+        async with Chrome(options=ci_chrome_options) as browser:
+            tab = await browser.start()
+
+            async with tab.request.record() as recording:
+                slow_waiter = _RequestSentWaiter(tab, '/slow')
+                await slow_waiter.arm()
+                await tab.go_to(f'{api_server}/pending-page')
+                status_el = await tab.find(id='status', timeout=5)
+                await wait_for_element_text(status_el, 'started')
+                await slow_waiter.wait()
+
+            slow_entry = _origin_entry(recording, '/slow', status=0)
+            assert slow_entry is not None
+            assert slow_entry['response']['statusText'] == '(pending)'
+
+    @pytest.mark.asyncio
+    async def test_record_captures_failed_request(self, ci_chrome_options, api_server):
+        """A request that fails (blocked port) is recorded with status 0."""
+        async with Chrome(options=ci_chrome_options) as browser:
+            tab = await browser.start()
+
+            async with tab.request.record() as recording:
+                await tab.go_to(f'{api_server}/filtered-page')
+                assert await _wait_for_requests_done(tab), 'Page requests did not complete'
+                await _wait_for_network_idle(tab)
+
+            failed_entry = _origin_entry(recording, '/blocked', status=0)
+            assert failed_entry is not None
+            assert failed_entry['response']['status'] == 0
+
+    @pytest.mark.asyncio
+    async def test_record_awaits_in_flight_body_fetch_on_stop(
+        self, ci_chrome_options, api_server
+    ):
+        """A body fetch still in flight at stop is awaited so its entry survives.
+
+        Leaving the context the instant loadingFinished fires guarantees the
+        asynchronous getResponseBody task has not completed (it needs a CDP
+        round-trip), so stop() must await the pending body task. The entry only
+        appears in the capture because _finalize_entry ran to completion during
+        that await; otherwise it would be lost.
+        """
+        async with Chrome(options=ci_chrome_options) as browser:
+            tab = await browser.start()
+
+            async with tab.request.record() as recording:
+                body_waiter = _LoadingFinishedWaiter(tab, '/large')
+                await body_waiter.arm()
+                await tab.go_to(f'{api_server}/large-page')
+                await body_waiter.wait()
+
+            large_entry = _origin_entry(recording, '/large', status=200)
+            assert large_entry is not None
+            assert large_entry['response']['status'] == 200
+            assert 'content' in large_entry['response']
+
+
+class TestHarToDictIntegration:
+    """The HarCapture.to_dict() export mirrors the saved HAR structure."""
+
+    @pytest.mark.asyncio
+    async def test_to_dict_matches_saved_file(
+        self, ci_chrome_options, api_server, test_page_path, tmp_path
+    ):
+        """to_dict() returns the same HAR 1.2 structure that save() writes."""
+        page_url = f'file://{test_page_path.absolute()}?base={api_server}'
+
+        async with Chrome(options=ci_chrome_options) as browser:
+            tab = await browser.start()
+
+            async with tab.request.record() as recording:
+                await tab.go_to(page_url)
+                assert await _wait_for_requests_done(tab), 'Page requests did not complete'
+                await _wait_for_network_idle(tab)
+
+            har_dict = recording.to_dict()
+            assert har_dict['log']['version'] == '1.2'
+            assert har_dict['log']['creator']['name'] == 'pydoll'
+            assert isinstance(har_dict['log']['creator']['version'], str)
+            assert har_dict['log']['creator']['version']
+
+            har_path = tmp_path / 'roundtrip.har'
+            recording.save(har_path)
+            with open(har_path, encoding='utf-8') as f:
+                saved = json.load(f)
+
+            in_memory_urls = [e['request']['url'] for e in har_dict['log']['entries']]
+            saved_urls = [e['request']['url'] for e in saved['log']['entries']]
+            assert in_memory_urls == saved_urls

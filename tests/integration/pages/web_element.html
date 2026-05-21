@@ -5,7 +5,9 @@
     <title>WebElement Test Page</title>
     <style>
         #hidden { display: none; }
+        #hidden-btn { display: none; }
         .spacer { height: 2000px; }
+        #contents-only { display: contents; }
     </style>
 </head>
 <body>
@@ -56,5 +58,46 @@
 
     <div class="spacer"></div>
     <button id="bottom-btn">Bottom</button>
+
+    <button id="hidden-btn">Cannot click me</button>
+
+    <button id="disabled-btn" disabled>Disabled but visible</button>
+
+    <div id="empty-parent"></div>
+
+    <div id="only-child-parent">
+        <span id="only-child">alone</span>
+    </div>
+
+    <select id="select-js">
+        <option value="x">X</option>
+        <option value="y" id="opt-y">Y</option>
+    </select>
+
+    <div id="contents-only"><span>no box model here</span></div>
+
+    <shadow-host id="shadow-host"></shadow-host>
+    <shadow-host id="shadow-host-late"></shadow-host>
+    <div id="no-shadow">plain div, no shadow root</div>
+
+    <script>
+        class ShadowHost extends HTMLElement {
+            connectedCallback() {
+                if (this.id === 'shadow-host' && !this.shadowRoot) {
+                    const root = this.attachShadow({ mode: 'open' });
+                    root.innerHTML = '<button id="shadow-btn">inside shadow</button>';
+                }
+            }
+        }
+        customElements.define('shadow-host', ShadowHost);
+
+        setTimeout(function () {
+            const host = document.getElementById('shadow-host-late');
+            if (host && !host.shadowRoot) {
+                const root = host.attachShadow({ mode: 'open' });
+                root.innerHTML = '<span id="late-shadow">late shadow content</span>';
+            }
+        }, 400);
+    </script>
 </body>
 </html>

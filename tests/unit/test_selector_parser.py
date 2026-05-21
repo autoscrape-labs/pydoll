@@ -78,3 +78,59 @@ def test_parse_iframe_segments_css_splits_on_iframe():
         (By.CSS_SELECTOR, 'iframe'),
         (By.CSS_SELECTOR, 'button'),
     ]
+
+
+@pytest.mark.parametrize(
+    'method, selector, fragment',
+    [
+        ('id', 'go', '#go'),
+        ('class_name', 'btn', '.btn'),
+        ('tag_name', 'div', 'div'),
+        ('css_selector', '.x > a', '.x > a'),
+        ('name', 'q', '@name='),
+        ('xpath', '//a[@id="x"]', '@id='),
+    ],
+)
+def test_build_text_expression_targets_each_selector_type(method, selector, fragment):
+    result = SelectorParser.build_text_expression(selector, method)
+    assert result is not None
+    assert fragment in result
+
+
+def test_parse_iframe_segments_xpath_splits_on_each_iframe():
+    assert SelectorParser.parse_iframe_segments_xpath('//iframe//div//iframe//span') == [
+        (By.XPATH, '//iframe'),
+        (By.XPATH, '//div//iframe'),
+        (By.XPATH, '//span'),
+    ]
+
+
+def test_parse_iframe_segments_xpath_trailing_iframe_is_not_a_split():
+    assert SelectorParser.parse_iframe_segments_xpath('//div//iframe') == [
+        (By.XPATH, '//div//iframe')
+    ]
+
+
+def test_parse_iframe_segments_xpath_without_steps_returns_single():
+    assert SelectorParser.parse_iframe_segments_xpath('/') == [(By.XPATH, '/')]
+
+
+@pytest.mark.parametrize(
+    'expression, expected',
+    [
+        ('div iframe button', [(By.CSS_SELECTOR, 'div iframe'), (By.CSS_SELECTOR, 'button')]),
+        ('iframe > button', [(By.CSS_SELECTOR, 'iframe'), (By.CSS_SELECTOR, 'button')]),
+        ('iframe + span', [(By.CSS_SELECTOR, 'iframe'), (By.CSS_SELECTOR, 'span')]),
+        ('iframe ~ p', [(By.CSS_SELECTOR, 'iframe'), (By.CSS_SELECTOR, 'p')]),
+    ],
+)
+def test_parse_iframe_segments_css_splits_with_combinators(expression, expected):
+    assert SelectorParser.parse_iframe_segments_css(expression) == expected
+
+
+def test_parse_iframe_segments_css_trailing_iframe_is_not_a_split():
+    assert SelectorParser.parse_iframe_segments_css('div iframe') == [(By.CSS_SELECTOR, 'div iframe')]
+
+
+def test_parse_iframe_segments_css_blank_returns_single():
+    assert SelectorParser.parse_iframe_segments_css('   ') == [(By.CSS_SELECTOR, '   ')]

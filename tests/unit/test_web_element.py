@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import pytest
 
+from pydoll.constants import By
 from pydoll.elements.web_element import WebElement
 from pydoll.exceptions import (
     ElementNotAFileInput,
@@ -175,3 +176,91 @@ async def test_take_screenshot_with_invalid_extension_raises(make_element):
     element = make_element()
     with pytest.raises(InvalidFileExtension):
         await element.take_screenshot(path='shot.xyz')
+
+
+def test_is_option_tag_reads_cached_tag_name(make_element):
+    assert make_element(attributes=['tag_name', 'option'])._is_option_tag() is True
+    assert make_element(attributes=['tag_name', 'div'])._is_option_tag() is False
+    assert make_element()._is_option_tag() is False
+
+
+@pytest.mark.asyncio
+async def test_is_option_element_uses_cached_tag_name(make_element):
+    option = make_element(attributes=['tag_name', 'option'])
+    button = make_element(attributes=['tag_name', 'button'])
+    assert await option._is_option_element() is True
+    assert await button._is_option_element() is False
+
+
+@pytest.mark.asyncio
+async def test_is_option_element_infers_from_tag_name_selector(fake_conn):
+    element = WebElement(
+        object_id='el-1',
+        connection_handler=fake_conn,
+        method=By.TAG_NAME,
+        selector='option',
+    )
+    assert await element._is_option_element() is True
+    assert fake_conn.commands_for('Runtime.callFunctionOn') == []
+
+
+@pytest.mark.asyncio
+async def test_is_option_element_infers_from_xpath_selector(fake_conn):
+    element = WebElement(
+        object_id='el-1',
+        connection_handler=fake_conn,
+        method=By.XPATH,
+        selector='//select/option[2]',
+    )
+    assert await element._is_option_element() is True
+    assert fake_conn.commands_for('Runtime.callFunctionOn') == []
+
+
+@pytest.mark.asyncio
+async def test_is_option_element_falls_back_to_js_and_caches_tag(fake_conn):
+    element = WebElement(
+        object_id='el-1',
+        connection_handler=fake_conn,
+        method=By.CSS_SELECTOR,
+        selector='#some-option',
+    )
+    fake_conn.set_response('Runtime.callFunctionOn', {'result': {'value': True}})
+    assert await element._is_option_element() is True
+    assert element.tag_name == 'option'
+
+
+@pytest.mark.asyncio
+async def test_is_option_element_js_fallback_returns_false(fake_conn):
+    element = WebElement(
+        object_id='el-1',
+        connection_handler=fake_conn,
+        method=By.CSS_SELECTOR,
+        selector='#not-an-option',
+    )
+    fake_conn.set_response('Runtime.callFunctionOn', {'result': {'value': False}})
+    assert await element._is_option_element() is False
+    assert element.tag_name is None
+
+
+@pytest.mark.asyncio
+async def test_get_children_returns_empty_when_script_yields_no_object(fake_conn, make_element):
+    element = make_element(attributes=['tag_name', 'div'])
+    fake_conn.set_response('Runtime.callFunctionOn', {'result': {'value': None}})
+    assert await element.get_children_elements() == []
+
+
+@pytest.mark.asyncio
+async def test_click_falls_back_to_js_bounds_when_box_model_missing(fake_conn, make_element):
+    element = make_element(attributes=['tag_name', 'button'])
+    fake_conn.set_response(
+        'Runtime.callFunctionOn',
+        {'result': {'value': '{"x": 10, "y": 20, "width": 40, "height": 30}'}},
+    )
+    fake_conn.set_response('DOM.getBoxModel', {})
+
+    await element.click(hold_time=0)
+
+    dispatched = fake_conn.commands_for('Input.dispatchMouseEvent')
+    pressed = [event for event in dispatched if event['params']['type'] == 'mousePressed']
+    assert pressed
+    assert (pressed[0]['params']['x'], pressed[0]['params']['y']) == (30, 35)

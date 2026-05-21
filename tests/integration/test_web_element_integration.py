@@ -17,6 +17,13 @@ import pytest_asyncio
 from pydoll.browser.chromium import Chrome
 from pydoll.constants import Key
 from pydoll.elements.web_element import WebElement
+from pydoll.exceptions import (
+    ElementNotFound,
+    ElementNotInteractable,
+    ElementNotVisible,
+    ShadowRootNotFound,
+    WaitElementTimeout,
+)
 
 PAGE_URL = f'file://{(Path(__file__).parent / "pages" / "web_element.html").absolute()}'
 
@@ -173,3 +180,159 @@ async def test_text_inner_html_and_bounds(element_tab):
     assert bounds['width'] > 0
     assert bounds['height'] > 0
     assert isinstance(await title.bounds, list)
+
+
+@pytest.mark.asyncio
+async def test_get_shadow_root_returns_traversable_root(element_tab):
+    host = await element_tab.find(id='shadow-host')
+    shadow_root = await host.get_shadow_root()
+    inner = await shadow_root.query('#shadow-btn')
+    assert (await inner.text) == 'inside shadow'
+
+
+@pytest.mark.asyncio
+async def test_get_shadow_root_raises_when_absent(element_tab):
+    plain = await element_tab.find(id='no-shadow')
+    with pytest.raises(ShadowRootNotFound):
+        await plain.get_shadow_root()
+
+
+@pytest.mark.asyncio
+async def test_get_shadow_root_with_timeout_waits_for_late_attachment(element_tab):
+    host = await element_tab.find(id='shadow-host-late')
+    shadow_root = await host.get_shadow_root(timeout=3)
+    inner = await shadow_root.query('#late-shadow')
+    assert (await inner.text) == 'late shadow content'
+
+
+@pytest.mark.asyncio
+async def test_get_shadow_root_with_timeout_raises_when_never_attached(element_tab):
+    plain = await element_tab.find(id='no-shadow')
+    with pytest.raises(WaitElementTimeout):
+        await plain.get_shadow_root(timeout=1)
+
+
+@pytest.mark.asyncio
+async def test_get_parent_element_raises_for_root_element(element_tab):
+    root = await element_tab.find(tag_name='html')
+    with pytest.raises(ElementNotFound):
+        await root.get_parent_element()
+
+
+@pytest.mark.asyncio
+async def test_humanized_click_triggers_dom_side_effect(element_tab):
+    button = await element_tab.find(id='btn')
+    await button.click(humanize=True)
+    counter = await element_tab.find(id='clicks')
+    assert (await counter.text) == '1'
+
+
+@pytest.mark.asyncio
+async def test_click_using_js_raises_when_element_not_interactable(element_tab):
+    disabled_button = await element_tab.find(id='disabled-btn')
+    assert await disabled_button.is_visible() is True
+    with pytest.raises(ElementNotInteractable):
+        await disabled_button.click_using_js()
+
+
+@pytest.mark.asyncio
+async def test_get_children_elements_raise_exc_when_empty(element_tab):
+    empty = await element_tab.find(id='empty-parent')
+    assert await empty.get_children_elements() == []
+    with pytest.raises(ElementNotFound):
+        await empty.get_children_elements(raise_exc=True)
+
+
+@pytest.mark.asyncio
+async def test_get_siblings_elements_raise_exc_when_alone(element_tab):
+    only_child = await element_tab.find(id='only-child')
+    assert await only_child.get_siblings_elements() == []
+    with pytest.raises(ElementNotFound):
+        await only_child.get_siblings_elements(raise_exc=True)
+
+
+@pytest.mark.asyncio
+async def test_take_screenshot_saves_file_to_disk(element_tab, tmp_path):
+    title = await element_tab.find(id='title')
+    destination = tmp_path / 'element.png'
+    result = await title.take_screenshot(path=destination)
+    assert result is None
+    assert destination.exists()
+    assert destination.stat().st_size > 100
+    assert destination.read_bytes().startswith(b'\x89PNG')
+
+
+@pytest.mark.asyncio
+async def test_take_screenshot_normalizes_jpg_extension(element_tab, tmp_path):
+    title = await element_tab.find(id='title')
+    destination = tmp_path / 'element.jpg'
+    await title.take_screenshot(path=str(destination))
+    assert destination.exists()
+    assert destination.read_bytes()[:3] == b'\xff\xd8\xff'
+
+
+@pytest.mark.asyncio
+async def test_wait_until_requires_a_condition(element_tab):
+    title = await element_tab.find(id='title')
+    with pytest.raises(ValueError):
+        await title.wait_until(timeout=1)
+
+
+@pytest.mark.asyncio
+async def test_wait_until_interactable_times_out_on_hidden_element(element_tab):
+    hidden = await element_tab.find(id='hidden')
+    with pytest.raises(WaitElementTimeout):
+        await hidden.wait_until(is_interactable=True, timeout=1)
+
+
+@pytest.mark.asyncio
+async def test_wait_until_interactable_returns_when_element_becomes_interactable(element_tab):
+    await element_tab.execute_script(
+        "var b = document.createElement('button');"
+        "b.id = 'delayed-btn';"
+        "b.textContent = 'soon';"
+        "b.style.display = 'none';"
+        "document.body.insertBefore(b, document.body.firstChild);"
+        "setTimeout(function () { b.style.display = 'block'; }, 800);"
+    )
+    button = await element_tab.find(id='delayed-btn')
+    await button.wait_until(is_visible=True, is_interactable=True, timeout=5)
+    assert await button.is_interactable() is True
+
+
+@pytest.mark.asyncio
+async def test_click_using_js_selects_option(element_tab):
+    option = await element_tab.find(id='opt-y')
+    await option.click_using_js()
+    value = await _live(element_tab, "document.getElementById('select-js').value")
+    assert value == 'y'
+
+
+@pytest.mark.asyncio
+async def test_click_using_js_raises_when_element_not_visible(element_tab):
+    hidden_button = await element_tab.find(id='hidden-btn')
+    with pytest.raises(ElementNotVisible):
+        await hidden_button.click_using_js()
+
+
+@pytest.mark.asyncio
+async def test_state_flags_false_after_context_invalidated(element_tab):
+    button = await element_tab.find(id='btn')
+    assert await button.is_visible() is True
+    await element_tab.go_to('about:blank')
+    assert await button.is_visible() is False
+    assert await button.is_on_top() is False
+    assert await button.is_interactable() is False
+
+
+@pytest.mark.asyncio
+async def test_iframe_context_is_none_for_non_iframe(element_tab):
+    title = await element_tab.find(id='title')
+    assert await title.iframe_context is None
+
+
+@pytest.mark.asyncio
+async def test_bounds_raises_key_error_for_element_without_box_model(element_tab):
+    contents_only = await element_tab.find(id='contents-only')
+    with pytest.raises(KeyError):
+        await contents_only.bounds
