@@ -58,6 +58,15 @@ exclude = ['tests', 'tests/*']
 pythonpath = "."
 addopts = '-p no:warnings'
 
+[tool.coverage.run]
+# Declarative layers are excluded from the coverage target: protocol event
+# TypedDicts carry no logic, and the command factories are thin CDP-dict builders
+# exercised through the methods that call them (1:1 tests would be tautological).
+omit = [
+    'pydoll/protocol/*/events.py',
+    'pydoll/commands/*.py',
+]
+
 [tool.taskipy.tasks]
 lint = 'ruff check .; ruff check . --diff'
 format = 'ruff check . --fix; ruff format .'
