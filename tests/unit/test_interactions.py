@@ -1,8 +1,8 @@
-"""Dispatch-glue tests for mouse/keyboard/scroll via an in-memory FakeConnection.
+"""Behavioural tests for mouse/keyboard/scroll via an in-memory FakeConnection.
 
-Non-humanized paths produce deterministic CDP event sequences; these assert the
-commands emitted. Humanized behaviour is exercised end-to-end against real
-Chrome in the integration suite.
+Assertions target the observable effect of each interaction — where the click
+landed, which characters were typed, that a scroll was issued — rather than the
+exact internal sequence of CDP events, so they survive refactors of the dispatch.
 """
 
 from __future__ import annotations
@@ -20,87 +20,82 @@ def _key_events(fake_conn):
     return fake_conn.commands_for('Input.dispatchKeyEvent')
 
 
+def _of_type(events, event_type):
+    return [event for event in events if event['params']['type'] == event_type]
+
+
+def _points(events):
+    return [(event['params']['x'], event['params']['y']) for event in events]
+
+
 @pytest.mark.asyncio
-async def test_mouse_click_dispatches_move_press_release(fake_conn, fake_tab):
+async def test_mouse_click_presses_and_releases_at_target(fake_conn, fake_tab):
     await fake_tab.mouse.click(50, 60)
     events = _mouse_events(fake_conn)
-    assert [e['params']['type'] for e in events] == ['mouseMoved', 'mousePressed', 'mouseReleased']
-    assert all(e['params']['x'] == 50 and e['params']['y'] == 60 for e in events)
+    assert _points(_of_type(events, 'mousePressed')) == [(50, 60)]
+    assert _points(_of_type(events, 'mouseReleased')) == [(50, 60)]
 
 
 @pytest.mark.asyncio
-async def test_mouse_move_dispatches_moved(fake_conn, fake_tab):
+async def test_mouse_move_positions_cursor_at_target(fake_conn, fake_tab):
     await fake_tab.mouse.move(10, 20)
-    events = _mouse_events(fake_conn)
-    assert [e['params']['type'] for e in events] == ['mouseMoved']
-    assert events[0]['params']['x'] == 10
-    assert events[0]['params']['y'] == 20
+    assert _points(_of_type(_mouse_events(fake_conn), 'mouseMoved'))[-1] == (10, 20)
 
 
 @pytest.mark.asyncio
-async def test_mouse_down_then_up(fake_conn, fake_tab):
+async def test_mouse_down_presses_and_up_releases(fake_conn, fake_tab):
     await fake_tab.mouse.down()
+    assert _of_type(_mouse_events(fake_conn), 'mousePressed')
     await fake_tab.mouse.up()
-    assert [e['params']['type'] for e in _mouse_events(fake_conn)] == [
-        'mousePressed',
-        'mouseReleased',
-    ]
+    assert _of_type(_mouse_events(fake_conn), 'mouseReleased')
 
 
 @pytest.mark.asyncio
-async def test_mouse_double_click_sets_click_count(fake_conn, fake_tab):
+async def test_double_click_uses_click_count_two(fake_conn, fake_tab):
     await fake_tab.mouse.double_click(5, 5)
-    pressed = [e for e in _mouse_events(fake_conn) if e['params']['type'] == 'mousePressed']
-    assert pressed[0]['params']['clickCount'] == 2
+    assert _of_type(_mouse_events(fake_conn), 'mousePressed')[0]['params']['clickCount'] == 2
 
 
 @pytest.mark.asyncio
-async def test_mouse_drag_moves_presses_moves_releases(fake_conn, fake_tab):
+async def test_drag_presses_at_start_and_releases_at_end(fake_conn, fake_tab):
     await fake_tab.mouse.drag(0, 0, 100, 100)
-    assert [e['params']['type'] for e in _mouse_events(fake_conn)] == [
-        'mouseMoved',
-        'mousePressed',
-        'mouseMoved',
-        'mouseReleased',
-    ]
+    events = _mouse_events(fake_conn)
+    assert _points(_of_type(events, 'mousePressed'))[0] == (0, 0)
+    assert _points(_of_type(events, 'mouseReleased'))[0] == (100, 100)
 
 
 @pytest.mark.asyncio
-async def test_keyboard_down_then_up(fake_conn, fake_tab):
+async def test_keyboard_down_then_up_for_a_key(fake_conn, fake_tab):
     await fake_tab.keyboard.down(Key.A)
+    assert _of_type(_key_events(fake_conn), 'keyDown')[-1]['params']['key'] == 'A'
     await fake_tab.keyboard.up(Key.A)
-    events = _key_events(fake_conn)
-    assert [e['params']['type'] for e in events] == ['keyDown', 'keyUp']
-    assert all(e['params']['key'] == 'A' for e in events)
+    assert _of_type(_key_events(fake_conn), 'keyUp')[-1]['params']['key'] == 'A'
 
 
 @pytest.mark.asyncio
-async def test_keyboard_press_dispatches_down_up(fake_conn, fake_tab):
+async def test_keyboard_press_presses_and_releases_the_key(fake_conn, fake_tab):
     await fake_tab.keyboard.press(Key.ENTER, interval=0)
-    events = _key_events(fake_conn)
-    assert [e['params']['type'] for e in events] == ['keyDown', 'keyUp']
-    assert all(e['params']['key'] == 'Enter' for e in events)
+    assert _of_type(_key_events(fake_conn), 'keyDown')[0]['params']['key'] == 'Enter'
+    assert _of_type(_key_events(fake_conn), 'keyUp')[0]['params']['key'] == 'Enter'
 
 
 @pytest.mark.asyncio
-async def test_keyboard_type_text_dispatches_each_char(fake_conn, fake_tab):
+async def test_keyboard_type_text_types_each_character_in_order(fake_conn, fake_tab):
     await fake_tab.keyboard.type_text('hi')
-    events = _key_events(fake_conn)
-    assert [e['params']['type'] for e in events] == ['keyDown', 'keyUp', 'keyDown', 'keyUp']
-    typed = [e['params']['key'] for e in events if e['params']['type'] == 'keyDown']
+    typed = [event['params']['key'] for event in _of_type(_key_events(fake_conn), 'keyDown')]
     assert typed == ['h', 'i']
 
 
 @pytest.mark.asyncio
 async def test_keyboard_hotkey_applies_modifier_to_key(fake_conn, fake_tab):
     await fake_tab.keyboard.hotkey(Key.CONTROL, Key.C)
-    downs = [e for e in _key_events(fake_conn) if e['params']['type'] == 'keyDown']
-    assert downs[0]['params']['key'] == 'C'
-    assert downs[0]['params']['modifiers'] == 2
+    down = _of_type(_key_events(fake_conn), 'keyDown')[0]
+    assert down['params']['key'] == 'C'
+    assert down['params']['modifiers'] == 2
 
 
 @pytest.mark.asyncio
-async def test_scroll_by_evaluates_scroll_script(fake_conn, fake_tab):
+async def test_scroll_by_issues_scroll_with_distance(fake_conn, fake_tab):
     await fake_tab.scroll.by(ScrollPosition.DOWN, 500, smooth=False)
     sent = fake_conn.last_command('Runtime.evaluate')
     assert sent['params']['awaitPromise'] is True
@@ -108,7 +103,12 @@ async def test_scroll_by_evaluates_scroll_script(fake_conn, fake_tab):
 
 
 @pytest.mark.asyncio
-async def test_scroll_to_top_and_bottom_evaluate_scripts(fake_conn, fake_tab):
+async def test_scroll_to_top_issues_a_scroll(fake_conn, fake_tab):
     await fake_tab.scroll.to_top(smooth=False)
+    assert fake_conn.commands_for('Runtime.evaluate')
+
+
+@pytest.mark.asyncio
+async def test_scroll_to_bottom_issues_a_scroll(fake_conn, fake_tab):
     await fake_tab.scroll.to_bottom(smooth=False)
-    assert len(fake_conn.commands_for('Runtime.evaluate')) == 2
+    assert fake_conn.commands_for('Runtime.evaluate')

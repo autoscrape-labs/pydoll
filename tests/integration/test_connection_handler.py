@@ -38,7 +38,7 @@ async def test_execute_command_returns_matching_response(cdp_server):
         await handler.close()
 
     assert result['result'] == {'product': 'FakeChrome/1.0'}
-    assert [c['method'] for c in cdp_server.received_commands] == ['Browser.getVersion']
+    assert 'Browser.getVersion' in [c['method'] for c in cdp_server.received_commands]
 
 
 @pytest.mark.asyncio

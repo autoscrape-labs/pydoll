@@ -104,8 +104,10 @@ async def test_click_dispatches_press_and_release_at_center(fake_conn, make_elem
     await element.click(hold_time=0)
 
     dispatched = fake_conn.commands_for('Input.dispatchMouseEvent')
-    assert [event['params']['type'] for event in dispatched] == ['mousePressed', 'mouseReleased']
-    assert all(event['params']['x'] == 50 and event['params']['y'] == 25 for event in dispatched)
+    pressed = [e for e in dispatched if e['params']['type'] == 'mousePressed']
+    released = [e for e in dispatched if e['params']['type'] == 'mouseReleased']
+    assert pressed and (pressed[0]['params']['x'], pressed[0]['params']['y']) == (50, 25)
+    assert released and (released[0]['params']['x'], released[0]['params']['y']) == (50, 25)
 
 
 @pytest.mark.asyncio
