@@ -151,10 +151,18 @@ def test_timing_property_can_be_replaced(fake_tab):
     assert mouse.timing is replacement
 
 
-def test_debug_property_toggles_and_resets_init(fake_tab):
+def test_debug_property_toggles(fake_tab):
     mouse = Mouse(fake_tab, timing=FAST)
     assert mouse.debug is False
-    mouse._debug_initialized = True
     mouse.debug = True
     assert mouse.debug is True
-    assert mouse._debug_initialized is False
+
+
+@pytest.mark.asyncio
+async def test_debug_overlay_recreated_on_every_draw_so_it_survives_navigation(fake_tab):
+    mouse = Mouse(fake_tab, timing=FAST, debug=True)
+    await mouse.click(50, 50, humanize=True)
+
+    overlay_scripts = [script for script in fake_tab.scripts if '__pydoll_mouse_debug' in script]
+    assert overlay_scripts
+    assert all('createElement' in script for script in overlay_scripts)

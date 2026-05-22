@@ -66,21 +66,23 @@ No WebDriver binaries or external dependencies required.
 
 ### 1. Stateful Automation & Evasion
 
-When you need to navigate, bypass challenges, or interact with dynamic UI, Pydoll's imperative API handles it with humanized timing by default.
+When you need to navigate, bypass challenges, or interact with dynamic UI, Pydoll's imperative API handles it. Pass `humanize=True` to add human-like timing for anti-bot evasion.
 
 ```python
 import asyncio
+
 from pydoll.browser import Chrome
 from pydoll.constants import Key
 
 async def google_search(query: str):
     async with Chrome() as browser:
         tab = await browser.start()
+        await browser.set_window_maximized()
+        tab.mouse.debug = True
         await tab.go_to('https://www.google.com')
-
         # Find elements and interact with human-like timing
         search_box = await tab.find(tag_name='textarea', name='q')
-        await search_box.insert_text(query)
+        await search_box.type_text(query, humanize=True)
         await tab.keyboard.press(Key.ENTER)
 
         first_result = await tab.find(
@@ -88,7 +90,8 @@ async def google_search(query: str):
             text='autoscrape-labs/pydoll',
             timeout=10,
         )
-        await first_result.click()
+        await first_result.click(humanize=True)
+        await asyncio.sleep(5)
         print(f"Page loaded: {await tab.title}")
 
 asyncio.run(google_search('pydoll site:github.com'))
@@ -96,9 +99,11 @@ asyncio.run(google_search('pydoll site:github.com'))
 
 ### 2. Structured Data Extraction
 
-Once you reach the target page, switch to the declarative engine. Define what you want with a model, and Pydoll extracts it — typed, validated, and ready to use.
+Once you reach the target page, switch to the declarative engine. Define what you want with a model, and Pydoll extracts it, typed, validated, and ready to use.
 
 ```python
+import asyncio
+
 from pydoll.browser.chromium import Chrome
 from pydoll.extractor import ExtractionModel, Field
 
@@ -106,7 +111,7 @@ class Quote(ExtractionModel):
     text: str = Field(selector='.text', description='The quote text')
     author: str = Field(selector='.author', description='Who said it')
     tags: list[str] = Field(selector='.tag', description='Tags')
-    year: int | None = Field(selector='.year', description='Year', default=None)
+
 
 async def extract_quotes():
     async with Chrome() as browser:
@@ -130,26 +135,51 @@ Models support CSS/XPath auto-detection, HTML attribute targeting, custom transf
 <br>
 
 ```python
+import asyncio
 from datetime import datetime
+
+from pydoll.browser.chromium import Chrome
 from pydoll.extractor import ExtractionModel, Field
+
 
 def parse_date(raw: str) -> datetime:
     return datetime.strptime(raw.strip(), '%B %d, %Y')
 
+
 class Author(ExtractionModel):
+    name: str = Field(selector='.author')
+    profile_url: str = Field(selector='a', attribute='href')
+
+
+class Quote(ExtractionModel):
+    text: str = Field(selector='.text')
+    author: Author = Field(selector='span:has(.author)', description='Nested model')
+    tags: list[str] = Field(selector='.tag')
+
+
+class AuthorBio(ExtractionModel):
     name: str = Field(selector='.author-title')
-    born: datetime = Field(
-        selector='.author-born-date',
-        transform=parse_date,
-    )
+    born: datetime = Field(selector='.author-born-date', transform=parse_date)
+    location: str = Field(selector='.author-born-location')
 
-class Article(ExtractionModel):
-    title: str = Field(selector='h1')
-    url: str = Field(selector='.source-link', attribute='href')
-    author: Author = Field(selector='.author-card', description='Nested model')
 
-article = await tab.extract(Article, timeout=5)
-article.author.born.year  # int — types are preserved all the way down
+async def scrape():
+    async with Chrome() as browser:
+        tab = await browser.start()
+
+        await tab.go_to('https://quotes.toscrape.com')
+        quotes = await tab.extract_all(Quote, scope='.quote', timeout=5)
+
+        author = quotes[0].author
+        print(author.name)         # Albert Einstein
+        print(author.profile_url)  # /author/Albert-Einstein, taken from the href attribute
+
+        await tab.go_to(f'https://quotes.toscrape.com{author.profile_url}/')
+        bio = await tab.extract(AuthorBio, scope='.author-details', timeout=5)
+        print(bio.born.year)       # 1879, an int. types are preserved all the way down
+
+
+asyncio.run(scrape())
 ```
 </details>
 
@@ -159,7 +189,7 @@ article.author.born.year  # int — types are preserved all the way down
 <summary><b>Humanized Mouse Movement</b></summary>
 <br>
 
-Mouse operations produce human-like cursor movement by default:
+Mouse operations can produce human-like cursor movement when you pass `humanize=True`:
 
 - **Bezier curve paths** with asymmetric control points
 - **Fitts's Law timing**: duration scales with distance
@@ -168,15 +198,15 @@ Mouse operations produce human-like cursor movement by default:
 - **Overshoot correction**: ~70% chance on fast movements, then corrects back
 
 ```python
-await tab.mouse.move(500, 300)
-await tab.mouse.click(500, 300)
-await tab.mouse.drag(100, 200, 500, 400)
+await tab.mouse.move(500, 300, humanize=True)
+await tab.mouse.click(500, 300, humanize=True)
+await tab.mouse.drag(100, 200, 500, 400, humanize=True)
 
 button = await tab.find(id='submit')
-await button.click()
+await button.click(humanize=True)
 
-# Opt out when speed matters
-await tab.mouse.click(500, 300, humanize=False)
+# Default is fast, non-humanized movement
+await tab.mouse.click(500, 300)
 ```
 
 [Mouse Control Docs](https://pydoll.tech/docs/features/automation/mouse-control/)
