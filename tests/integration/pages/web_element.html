@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebElement Test Page</title>
+    <style>
+        #hidden { display: none; }
+        #hidden-btn { display: none; }
+        .spacer { height: 2000px; }
+        #contents-only { display: contents; }
+    </style>
+</head>
+<body>
+    <h1 id="title">WebElement Test Page</h1>
+
+    <button id="btn" onclick="
+        document.getElementById('clicks').textContent =
+            String(parseInt(document.getElementById('clicks').textContent, 10) + 1)
+    ">Click me</button>
+    <span id="clicks">0</span>
+
+    <button id="js-btn" onclick="document.getElementById('js-clicks').textContent = 'clicked'">JS</button>
+    <span id="js-clicks"></span>
+
+    <input id="text-input" type="text" value="initial">
+
+    <input id="key-input" type="text">
+    <span id="key-log"></span>
+    <script>
+        document.getElementById('key-input').addEventListener('keydown', function (event) {
+            document.getElementById('key-log').textContent += event.key;
+        });
+    </script>
+
+    <input id="disabled-input" type="text" disabled>
+
+    <select id="select">
+        <option value="a">A</option>
+        <option value="b" id="opt-b">B</option>
+    </select>
+    <span id="select-value"></span>
+    <script>
+        document.getElementById('select').addEventListener('change', function (event) {
+            document.getElementById('select-value').textContent = event.target.value;
+        });
+    </script>
+
+    <input id="file-input" type="file">
+
+    <div id="hidden">hidden text</div>
+    <div id="visible">visible text</div>
+
+    <div id="parent">
+        <span id="c1" class="kid">one</span>
+        <span id="c2" class="kid">two</span>
+        <span id="c3" class="kid">three</span>
+    </div>
+
+    <div class="spacer"></div>
+    <button id="bottom-btn">Bottom</button>
+
+    <button id="hidden-btn">Cannot click me</button>
+
+    <button id="disabled-btn" disabled>Disabled but visible</button>
+
+    <div id="empty-parent"></div>
+
+    <div id="only-child-parent">
+        <span id="only-child">alone</span>
+    </div>
+
+    <select id="select-js">
+        <option value="x">X</option>
+        <option value="y" id="opt-y">Y</option>
+    </select>
+
+    <div id="contents-only"><span>no box model here</span></div>
+
+    <shadow-host id="shadow-host"></shadow-host>
+    <shadow-host id="shadow-host-late"></shadow-host>
+    <div id="no-shadow">plain div, no shadow root</div>
+
+    <script>
+        class ShadowHost extends HTMLElement {
+            connectedCallback() {
+                if (this.id === 'shadow-host' && !this.shadowRoot) {
+                    const root = this.attachShadow({ mode: 'open' });
+                    root.innerHTML = '<button id="shadow-btn">inside shadow</button>';
+                }
+            }
+        }
+        customElements.define('shadow-host', ShadowHost);
+
+        setTimeout(function () {
+            const host = document.getElementById('shadow-host-late');
+            if (host && !host.shadowRoot) {
+                const root = host.attachShadow({ mode: 'open' });
+                root.innerHTML = '<span id="late-shadow">late shadow content</span>';
+            }
+        }, 400);
+    </script>
+</body>
+</html>
