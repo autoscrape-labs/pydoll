@@ -42,7 +42,7 @@ from pydoll.protocol.cdp.browser.types import DownloadBehavior as CDPDownloadBeh
 from pydoll.protocol.cdp.fetch.events import FetchEvent
 from pydoll.protocol.cdp.fetch.types import AuthChallengeResponseType
 from pydoll.protocol.cdp.network.types import ErrorReason as CDPErrorReason
-from pydoll.protocol.events import CDP_DOMAIN_MAP, CDP_EVENT_MAP, Event
+from pydoll.protocol.events import CDP_EVENT_MAP, Event
 from pydoll.protocol.types import (
     BrowserVersion,
     Cookie,
@@ -545,8 +545,6 @@ class Browser:  # noqa: PLR0904
         if isinstance(event_name, Event):
             native_event = CDP_EVENT_MAP.get(event_name, event_name)
 
-        await self._auto_enable_domain(native_event)
-
         async def callback_wrapper(event):
             asyncio.create_task(callback(event))
 
@@ -558,28 +556,6 @@ class Browser:  # noqa: PLR0904
         return await self._connection_handler.register_callback(
             native_event, function_to_register, temporary
         )
-
-    async def _auto_enable_domain(self, event_name: str):
-        """Auto-enable the CDP domain for an event if not already enabled."""
-
-        domain_methods = {
-            'page': self._enable_page_events_if_needed,
-            'network': self._enable_network_events_if_needed,
-            'runtime': self._enable_runtime_events_if_needed,
-        }
-        for prefix, domain in CDP_DOMAIN_MAP.items():
-            if event_name.startswith(prefix) and domain in domain_methods:
-                await domain_methods[domain]()
-                return
-
-    async def _enable_page_events_if_needed(self):
-        pass
-
-    async def _enable_network_events_if_needed(self):
-        pass
-
-    async def _enable_runtime_events_if_needed(self):
-        pass
 
     async def remove_callback(self, callback_id: int):
         """Remove callback from browser."""

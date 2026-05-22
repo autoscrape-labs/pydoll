@@ -68,7 +68,7 @@ from pydoll.protocol.cdp.browser.types import DownloadBehavior, DownloadProgress
 from pydoll.protocol.cdp.dom.types import Node, ShadowRootType
 from pydoll.protocol.cdp.network.types import ResourceType
 from pydoll.protocol.cdp.page.events import PageEvent
-from pydoll.protocol.events import CDP_EVENT_MAP, Event
+from pydoll.protocol.events import CDP_DOMAIN_MAP, CDP_EVENT_MAP, Event
 from pydoll.protocol.cdp.page.types import FrameResourceTree, ScreenshotFormat
 from pydoll.protocol.cdp.runtime.methods import (
     CallFunctionOnResponse,
@@ -486,9 +486,6 @@ class Tab(CDPFindElementsMixin):
             )
 
         logger.info('Enabling Cloudflare captcha auto-solve')
-        if not self._page_events_enabled:
-            await self._enable_page_events()
-
         callback = partial(
             self._bypass_cloudflare,
             time_to_wait_captcha=time_to_wait_captcha,
@@ -1653,9 +1650,6 @@ class Tab(CDPFindElementsMixin):
 
         _before_page_events_enabled = self._page_events_enabled
 
-        if not _before_page_events_enabled:
-            await self._enable_page_events()
-
         logger.info('Expecting and bypassing Cloudflare captcha if present')
         callback_id = await self.on(PageEvent.LOAD_EVENT_FIRED, bypass_cloudflare)
 
@@ -1822,6 +1816,10 @@ class Tab(CDPFindElementsMixin):
     ) -> int:
         """Register event listener on this tab.
 
+        Registering a handler automatically enables the CDP domain the event
+        belongs to (e.g. ``Event.PAGE_LOADED`` enables the Page domain), so
+        callers don't need to enable it manually beforehand.
+
         Args:
             event_name: Event enum or native protocol event name.
             callback: Function called on event (sync or async).
@@ -1834,6 +1832,8 @@ class Tab(CDPFindElementsMixin):
         if isinstance(event_name, Event):
             native_event = CDP_EVENT_MAP.get(event_name, event_name)
 
+        await self._auto_enable_domain(native_event)
+
         async def callback_wrapper(event):
             asyncio.create_task(callback(event))
 
@@ -1845,6 +1845,31 @@ class Tab(CDPFindElementsMixin):
         return await self._connection_handler.register_callback(
             native_event, function_to_register, temporary
         )
+
+    async def _auto_enable_domain(self, event_name: str) -> None:
+        """Enable the CDP domain an event belongs to, if not already enabled.
+
+        Lets callers subscribe with ``on(Event.X)`` (or a native event name)
+        without manually enabling the underlying CDP domain first. Domains
+        that are already enabled are left untouched.
+        """
+        domain_setup: dict[str, tuple[bool, Callable[..., Awaitable[object]]]] = {
+            'page': (self._page_events_enabled, self._enable_page_events),
+            'network': (self._network_events_enabled, self._enable_network_events),
+            'fetch': (self._fetch_events_enabled, self._enable_fetch_events),
+            'dom': (self._dom_events_enabled, self._enable_dom_events),
+            'runtime': (self._runtime_events_enabled, self._enable_runtime_events),
+        }
+        for prefix, domain in CDP_DOMAIN_MAP.items():
+            if not event_name.startswith(prefix):
+                continue
+            setup = domain_setup.get(domain)
+            if setup is None:
+                return
+            already_enabled, enable = setup
+            if not already_enabled:
+                await enable()
+            return
 
     async def remove_callback(self, callback_id: int):
         """Remove callback from tab."""
