@@ -1,3 +1,18 @@
+## 2.23.0 (2026-05-22)
+
+### Feat
+
+- enhance connection resilience and event handling in ConnectionHandler and managers
+- implement User-Agent override propagation to worker contexts
+
+### Fix
+
+- avoid shared mutable default for WebElement attributes_list
+
+### Refactor
+
+- inject connection handler and managers for testability
+
 ## 2.22.1 (2026-04-10)
 
 ### Fix
