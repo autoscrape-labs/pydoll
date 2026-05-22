@@ -40,9 +40,9 @@ from pydoll.commands import (
 )
 from pydoll.connection import ConnectionHandler
 from pydoll.constants import By, PageLoadState
-from pydoll.elements.mixins.cdp_find_elements_mixin import CDPFindElementsMixin
 from pydoll.elements.cdp.shadow_root import ShadowRoot
 from pydoll.elements.cdp.web_element import WebElement
+from pydoll.elements.mixins.cdp_find_elements_mixin import CDPFindElementsMixin
 from pydoll.exceptions import (
     CommandExecutionTimeout,
     DownloadTimeout,
@@ -68,7 +68,6 @@ from pydoll.protocol.cdp.browser.types import DownloadBehavior, DownloadProgress
 from pydoll.protocol.cdp.dom.types import Node, ShadowRootType
 from pydoll.protocol.cdp.network.types import ResourceType
 from pydoll.protocol.cdp.page.events import PageEvent
-from pydoll.protocol.events import CDP_DOMAIN_MAP, CDP_EVENT_MAP, Event
 from pydoll.protocol.cdp.page.types import FrameResourceTree, ScreenshotFormat
 from pydoll.protocol.cdp.runtime.methods import (
     CallFunctionOnResponse,
@@ -77,6 +76,7 @@ from pydoll.protocol.cdp.runtime.methods import (
 )
 from pydoll.protocol.cdp.runtime.types import CallArgument
 from pydoll.protocol.cdp.target.types import TargetInfo
+from pydoll.protocol.events import CDP_DOMAIN_MAP, CDP_EVENT_MAP, Event
 from pydoll.utils import (
     decode_base64_to_bytes,
     has_return_outside_function,
@@ -91,7 +91,6 @@ from pydoll.utils.bundle import (
 
 if TYPE_CHECKING:
     from pydoll.browser.chromium.base import Browser
-    from pydoll.extractor.llm import ExtractionStrategy, LLMProvider
     from pydoll.extractor.model import ExtractionModel
     from pydoll.protocol.cdp.base import EmptyResponse, Response
     from pydoll.protocol.cdp.browser.events import (
@@ -195,7 +194,6 @@ class Tab(CDPFindElementsMixin):
             )
         )
 
-
     @property
     def request(self) -> Request:
         """
@@ -249,53 +247,12 @@ class Tab(CDPFindElementsMixin):
             self._extraction_engine = ExtractionEngine(self)
         return self._extraction_engine
 
-    @property
-    def llm_provider(self) -> Optional[LLMProvider]:
-        """Default LLM provider for extracting description-only fields.
-
-        Set this once to avoid passing llm_provider on every extract() call.
-
-        Example::
-
-            from pydoll.extractor.providers.openai import OpenAIProvider
-
-            tab.llm_provider = OpenAIProvider(api_key='sk-...')
-            article = await tab.extract(Article)  # uses the default provider
-        """
-        return self._extractor.llm_provider
-
-    @llm_provider.setter
-    def llm_provider(self, provider: Optional[LLMProvider]) -> None:
-        self._extractor.llm_provider = provider
-
-    @property
-    def extraction_strategy(self) -> ExtractionStrategy:
-        """Default extraction strategy for this tab.
-
-        - ``CSS`` (default): selectors only, fast and deterministic.
-        - ``LLM``: all fields via LLM, selectors ignored.
-        - ``AUTO``: selectors first, LLM for description-only fields.
-
-        Example::
-
-            from pydoll.extractor import ExtractionStrategy
-
-            tab.extraction_strategy = ExtractionStrategy.LLM
-        """
-        return self._extractor.extraction_strategy
-
-    @extraction_strategy.setter
-    def extraction_strategy(self, strategy: ExtractionStrategy) -> None:
-        self._extractor.extraction_strategy = strategy
-
     async def extract(
         self,
         model: type[T],
         *,
         scope: Optional[str] = None,
         timeout: int = 0,
-        llm_provider: Optional[LLMProvider] = None,
-        strategy: Optional[ExtractionStrategy] = None,
     ) -> T:
         """Extract structured data from the page into a typed model.
 
@@ -303,23 +260,15 @@ class Tab(CDPFindElementsMixin):
             model: ExtractionModel subclass defining the extraction schema.
             scope: Optional CSS/XPath selector to limit extraction region.
             timeout: Seconds to wait for elements (0 = no wait).
-            llm_provider: LLM provider override for this call.
-                Falls back to ``tab.llm_provider``.
-            strategy: Extraction strategy override for this call.
-                Falls back to ``tab.extraction_strategy`` (default: CSS).
 
         Returns:
             Populated model instance with extracted data.
 
         Raises:
             FieldExtractionFailed: If a required field cannot be extracted.
-            LLMProviderNotConfigured: If LLM-dependent fields exist
-                but no LLM provider is available.
+            InvalidExtractionModel: If model definition is invalid.
         """
-        return await self._extractor.extract(
-            model, scope=scope, timeout=timeout,
-            llm_provider=llm_provider, strategy=strategy,
-        )
+        return await self._extractor.extract(model, scope=scope, timeout=timeout)
 
     async def extract_all(
         self,
@@ -328,32 +277,22 @@ class Tab(CDPFindElementsMixin):
         scope: str,
         timeout: int = 0,
         limit: Optional[int] = None,
-        llm_provider: Optional[LLMProvider] = None,
-        strategy: Optional[ExtractionStrategy] = None,
     ) -> list[T]:
         """Extract multiple items from repeated containers on the page.
 
-        Each element matching ``scope`` generates one model instance.
-        Fields are resolved relative to each container (DOM or LLM per item).
+        Each element matching the scope selector generates one model instance.
+        Fields are resolved relative to each scope container.
 
         Args:
             model: ExtractionModel subclass defining the extraction schema.
             scope: CSS/XPath selector for the repeated container (required).
             timeout: Seconds to wait for elements (0 = no wait).
             limit: Maximum number of items to extract (None = all).
-            llm_provider: LLM provider override for this call.
-                Falls back to ``tab.llm_provider``.
-            strategy: Extraction strategy override for this call.
-                Falls back to ``tab.extraction_strategy`` (default: CSS).
 
         Returns:
             List of populated model instances.
         """
-        return await self._extractor.extract_all(
-            model, scope=scope, timeout=timeout, limit=limit,
-            llm_provider=llm_provider, strategy=strategy,
-        )
-
+        return await self._extractor.extract_all(model, scope=scope, timeout=timeout, limit=limit)
 
     @property
     async def current_url(self) -> str:
