@@ -5838,7 +5838,7 @@
 
 
 </h2>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">Tab</span><span class="p">(</span><span class="n">browser</span><span class="p">,</span> <span class="n">connection_port</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">target_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">browser_context_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ws_address</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">Tab</span><span class="p">(</span><span class="n">browser</span><span class="p">,</span> <span class="n">connection_port</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">target_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">browser_context_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ws_address</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">connection_handler</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents first">
@@ -5951,6 +5951,27 @@ like Cloudflare bypass.</p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
                       <code><span title="typing.Optional">Optional</span>[<span title="str">str</span>]</code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>None</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>connection_handler</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Pre-built connection handler; created from
+connection details when omitted (mainly for testing).</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;pydoll.connection.connection_handler.ConnectionHandler&lt;/span&gt; (&lt;code&gt;pydoll.connection.ConnectionHandler&lt;/code&gt;)" href="../../connection/connection/#pydoll.connection.connection_handler.ConnectionHandler">ConnectionHandler</a>]</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
