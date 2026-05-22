@@ -97,6 +97,11 @@ async def google_search(query: str):
 asyncio.run(google_search('pydoll site:github.com'))
 ```
 
+And this is the expected output:
+
+<img width="1980" height="1114" alt="2026-05-22 18-10-05 (1)" src="https://github.com/user-attachments/assets/ccf22ee9-3a96-4e49-b15e-5049361a0608" />
+
+
 ### 2. Structured Data Extraction
 
 Once you reach the target page, switch to the declarative engine. Define what you want with a model, and Pydoll extracts it, typed, validated, and ready to use.
