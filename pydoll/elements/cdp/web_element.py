@@ -90,7 +90,7 @@ class WebElement(CDPFindElementsMixin):  # noqa: PLR0904
         connection_handler: ConnectionHandler,
         method: Optional[str] = None,
         selector: Optional[str] = None,
-        attributes_list: list[str] = [],
+        attributes_list: Optional[list[str]] = None,
         mouse: Optional['MouseType'] = None,
     ):
         """
@@ -122,7 +122,7 @@ class WebElement(CDPFindElementsMixin):  # noqa: PLR0904
         self._mouse = mouse
         self._iframe_context: Optional[IFrameContext] = None
         self._iframe_resolver: Optional[IFrameContextResolver] = None
-        self._def_attributes(attributes_list)
+        self._def_attributes(attributes_list or [])
         logger.debug(
             f'WebElement initialized: object_id={self._object_id}, '
             f'method={self._search_method}, selector={self._selector}, '
@@ -605,7 +605,7 @@ class WebElement(CDPFindElementsMixin):  # noqa: PLR0904
             logger.info(
                 f'Clicking element (humanized): x={position_to_click[0]}, y={position_to_click[1]}'
             )
-            await self._mouse.click(position_to_click[0], position_to_click[1])
+            await self._mouse.click(position_to_click[0], position_to_click[1], humanize=True)
             return
 
         logger.info(

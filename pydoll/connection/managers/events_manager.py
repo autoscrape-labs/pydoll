@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import TYPE_CHECKING
+from contextlib import suppress
+from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     from typing import Any, Callable
@@ -14,16 +15,72 @@ class EventsManager:
     """
     Protocol-agnostic event callback registration and dispatch.
 
-    Handles event callback registration, triggering, and removal.
-    Protocol-specific tracking (network logs, dialogs) is handled
-    by EventTracker implementations.
+    Handles event callback registration, triggering, and removal. Events are
+    drained off a queue by a worker task so a slow callback never blocks the
+    WebSocket read loop. Protocol-specific tracking (network logs, dialogs)
+    lives in the EventTracker implementations, not here.
     """
 
     def __init__(self) -> None:
         """Initialize events manager with empty state."""
         self._event_callbacks: dict[int, dict] = {}
         self._callback_id = 0
+        self._event_queue: asyncio.Queue = asyncio.Queue()
+        self._worker_task: Optional[asyncio.Task] = None
         logger.info('EventsManager initialized')
+
+    def start(self) -> None:
+        """Start the event-processing worker if not already running.
+
+        Called when a connection is established. The worker drains queued events
+        in arrival order so event handling never blocks the WebSocket read loop.
+        Its lifetime is bound to the connection: stop() is invoked from the
+        receive loop's finally block, so the worker can never outlive the socket.
+        """
+        if self._worker_task is None or self._worker_task.done():
+            self._worker_task = asyncio.create_task(self._process_event_queue())
+
+    def enqueue_event(self, event_data: dict) -> None:
+        """Queue an event for ordered, non-blocking processing.
+
+        Queuing is O(1) and never awaits, so a slow event callback can never
+        delay delivery of command responses on the read loop.
+        """
+        self._event_queue.put_nowait(event_data)
+
+    async def stop(self) -> None:
+        """Cancel the worker, await its exit, and drop any queued events.
+
+        Awaiting the cancelled task is what prevents "Task was destroyed but it
+        is pending" warnings: the task is never garbage-collected while pending.
+        """
+        if self._worker_task and not self._worker_task.done():
+            self._worker_task.cancel()
+            with suppress(asyncio.CancelledError, Exception):
+                await self._worker_task
+        self._worker_task = None
+        self._clear_queue()
+
+    def _clear_queue(self) -> None:
+        """Discard events left over from a dead connection."""
+        while True:
+            try:
+                self._event_queue.get_nowait()
+            except asyncio.QueueEmpty:
+                break
+            else:
+                self._event_queue.task_done()
+
+    async def _process_event_queue(self) -> None:
+        """Drain queued events in order, isolating per-event failures."""
+        while True:
+            event_data = await self._event_queue.get()
+            try:
+                await self.process_event(event_data)
+            except Exception:
+                logger.exception('Error processing event')
+            finally:
+                self._event_queue.task_done()
 
     def register_callback(
         self, event_name: str, callback: Callable[[dict], Any], temporary: bool = False

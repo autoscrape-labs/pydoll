@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pydoll-python"
-version = "2.21.3"
+version = "2.23.0"
 description = "Pydoll is a library for automating chromium-based browsers without a WebDriver, offering realistic interactions."
 authors = ["Thalison Fernandes <thalissfernandes99@gmail.com>"]
 readme = "README.md"
@@ -11,7 +11,7 @@ include = ["pydoll/py.typed"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-websockets = "^14"
+websockets = ">=14,<17"
 aiohttp = "^3.9.5"
 aiofiles = "^25.1.0"
 typing_extensions = "^4.14.0"
@@ -57,6 +57,24 @@ exclude = ['tests', 'tests/*']
 [tool.pytest.ini_options]
 pythonpath = "."
 addopts = '-p no:warnings'
+
+[tool.coverage.run]
+# Declarative layers are excluded from the coverage target: protocol event
+# TypedDicts carry no logic, and the command factories are thin CDP-dict builders
+# exercised through the methods that call them (1:1 tests would be tautological).
+omit = [
+    'pydoll/protocol/*/events.py',
+    'pydoll/commands/*.py',
+]
+
+[tool.coverage.report]
+exclude_also = [
+    'if TYPE_CHECKING:',
+    'if __name__ == .__main__.:',
+    'raise NotImplementedError',
+    '@(abc\.)?abstractmethod',
+    '\.\.\.',
+]
 
 [tool.taskipy.tasks]
 lint = 'ruff check .; ruff check . --diff'

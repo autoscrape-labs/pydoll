@@ -38,6 +38,7 @@ if TYPE_CHECKING:
         ReleaseObjectCommand,
         ReleaseObjectGroupCommand,
         RemoveBindingCommand,
+        RunIfWaitingForDebuggerCommand,
         RunScriptCommand,
         SerializationOptions,
         SetAsyncCallStackDepthCommand,
@@ -222,6 +223,19 @@ class RuntimeCommands:
             EnableCommand: Command object to enable the runtime domain.
         """
         return Command(method=RuntimeMethod.ENABLE)
+
+    @staticmethod
+    def run_if_waiting_for_debugger() -> RunIfWaitingForDebuggerCommand:
+        """
+        Resumes a target that was paused on start via waitForDebuggerOnStart.
+
+        Used after auto-attaching to a worker/service worker target so the
+        target can continue execution once overrides have been applied.
+
+        Returns:
+            RunIfWaitingForDebuggerCommand: Command to resume a paused target.
+        """
+        return Command(method=RuntimeMethod.RUN_IF_WAITING_FOR_DEBUGGER)
 
     @staticmethod
     def evaluate(  # noqa: PLR0912

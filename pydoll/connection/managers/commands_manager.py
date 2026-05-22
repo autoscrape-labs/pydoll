@@ -44,10 +44,15 @@ class CommandsManager:
         return future
 
     def resolve_command(self, response_id: int, result: str):
-        """Resolve pending command with its result."""
-        if response_id in self._pending_commands:
-            self._pending_commands[response_id].set_result(result)
-            del self._pending_commands[response_id]
+        """Resolve pending command with its result.
+
+        A late response can arrive after the caller already timed out (its future
+        was cancelled by asyncio.wait_for) but before the command was removed.
+        Popping and checking done() avoids InvalidStateError in that window.
+        """
+        future = self._pending_commands.pop(response_id, None)
+        if future is not None and not future.done():
+            future.set_result(result)
             logger.debug(f'Resolved command future id={response_id}')
 
     def remove_pending_command(self, command_id: int):
@@ -55,3 +60,18 @@ class CommandsManager:
         if command_id in self._pending_commands:
             del self._pending_commands[command_id]
             logger.debug(f'Removed pending command id={command_id}')
+
+    def fail_all_pending(self, exc: BaseException):
+        """Fail every pending command future with the given exception and clear them.
+
+        Used when the connection is lost so in-flight commands raise immediately
+        instead of hanging until their individual timeout expires.
+        """
+        if not self._pending_commands:
+            return
+        pending = list(self._pending_commands.items())
+        self._pending_commands.clear()
+        for command_id, future in pending:
+            if not future.done():
+                future.set_exception(exc)
+        logger.debug(f'Failed {len(pending)} pending command(s): {type(exc).__name__}')

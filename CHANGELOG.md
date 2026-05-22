@@ -1,3 +1,62 @@
+## 2.23.0 (2026-05-22)
+
+### Feat
+
+- enhance connection resilience and event handling in ConnectionHandler and managers
+- implement User-Agent override propagation to worker contexts
+
+### Fix
+
+- avoid shared mutable default for WebElement attributes_list
+
+### Refactor
+
+- inject connection handler and managers for testability
+
+## 2.22.1 (2026-04-10)
+
+### Fix
+
+- **requests**: surface JavaScript fetch errors with descriptive messages
+- **requests**: surface JavaScript fetch errors with descriptive messages
+- **requests**: surface JavaScript fetch errors with descriptive messages
+- **requests**: surface JavaScript fetch errors with descriptive messages
+- **test**: await canceled receiver task to avoid pending-task leaks
+- add humanize to WebElement.click
+- update broken webelement-domain link in element-finding.md
+- update broken deep-dive links in core-concepts.md
+
+## 2.22.0 (2026-03-23)
+
+### Feat
+
+- **extractor**: integrate extract and extract_all into Tab
+- **extractor**: add module public API exports
+- **extractor**: add extraction engine with CSS/XPath support
+- **extractor**: add ExtractionModel base class
+- **extractor**: add Field descriptor and ExtractionMetadata
+- **extractor**: add extraction exception hierarchy
+- add pydantic as required dependency
+- add missing CDP enum values for AXPropertyName
+- add missing enum values for AXPropertyName
+- impl accesiblity domain
+
+### Fix
+
+- **test**: filter only DeprecationWarning in interval deprecated test
+- **extractor**: correct coroutine type annotation for mypy
+- **extractor**: resolve mypy type errors
+- detect navigation errors on same-URL refresh in go_to
+- use NavigateResponse type instead of dict with type ignore
+- add type annotation to satisfy mypy var-annotated check
+- add type annotation for navigate response
+- raise NavigationError when go_to fails
+
+### Refactor
+
+- **extractor**: parallelize list field extraction with asyncio.gather
+- **extractor**: use asyncio.gather for concurrent field extraction
+
 ## 2.21.3 (2026-03-14)
 
 ### Fix

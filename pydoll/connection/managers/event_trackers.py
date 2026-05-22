@@ -29,7 +29,7 @@ class BaseEventTracker(ABC):
         ...
 
     @abstractmethod
-    async def track(self, event_data: dict) -> None:
+    def track(self, event_data: dict) -> None:
         """Process event for built-in tracking."""
 
 
@@ -48,7 +48,7 @@ class CDPEventTracker(BaseEventTracker):
     def dialog(self) -> dict:
         return self._dialog
 
-    async def track(self, event_data: dict) -> None:
+    def track(self, event_data: dict) -> None:
         event_name = event_data.get('method', '')
 
         if 'Network.requestWillBeSent' in event_name:
@@ -83,7 +83,7 @@ class BiDiEventTracker(BaseEventTracker):
     def dialog(self) -> dict:
         return self._dialog
 
-    async def track(self, event_data: dict) -> None:
+    def track(self, event_data: dict) -> None:
         event_name = event_data.get('method', '')
 
         if event_name == 'network.beforeRequestSent':

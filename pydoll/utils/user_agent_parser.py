@@ -127,13 +127,16 @@ class UserAgentParser:
         )
         vendor = 'Google Inc.'
         app_version = UserAgentParser._build_app_version(user_agent)
+        platform = _PLATFORM_MAP.get(os_key, 'Win32')
 
         return ParsedUserAgent(
-            platform=_PLATFORM_MAP.get(os_key, 'Win32'),
+            platform=platform,
             vendor=vendor,
             app_version=app_version,
             user_agent_metadata=metadata,
-            navigator_override_js=UserAgentParser._build_navigator_override_js(vendor, app_version),
+            navigator_override_js=UserAgentParser._build_navigator_override_js(
+                vendor, app_version, platform
+            ),
         )
 
     @staticmethod
@@ -278,12 +281,27 @@ class UserAgentParser:
         return ''
 
     @staticmethod
-    def _build_navigator_override_js(vendor: str, app_version: str) -> str:
-        safe_vendor = vendor.replace("'", "\\'")
-        safe_app_version = app_version.replace('\\', '\\\\').replace("'", "\\'")
-        return (
-            "Object.defineProperty(Navigator.prototype, 'vendor', "
-            f"{{get: () => '{safe_vendor}'}});\n"
-            "Object.defineProperty(Navigator.prototype, 'appVersion', "
-            f"{{get: () => '{safe_app_version}'}});"
-        )
+    def _build_navigator_override_js(vendor: str, app_version: str, platform: str) -> str:
+        """Build JS aligning navigator properties with the spoofed User-Agent.
+
+        Reads the prototype via Object.getPrototypeOf(navigator) so the same
+        script works in both the page (Navigator) and worker (WorkerNavigator)
+        scopes, and only redefines properties that already exist to avoid
+        introducing anomalies such as navigator.vendor on WorkerNavigator,
+        which does not expose it.
+        """
+        overrides = {
+            'vendor': vendor,
+            'appVersion': app_version,
+            'platform': platform,
+        }
+        lines = ['(function () {', '  var proto = Object.getPrototypeOf(navigator);']
+        for prop, value in overrides.items():
+            safe_value = value.replace('\\', '\\\\').replace("'", "\\'")
+            lines.append(
+                f"  try {{ if ('{prop}' in navigator) {{ Object.defineProperty(proto, "
+                f"'{prop}', {{get: function () {{ return '{safe_value}'; }}, "
+                f'configurable: true}}); }} }} catch (e) {{}}'
+            )
+        lines.append('})();')
+        return '\n'.join(lines)

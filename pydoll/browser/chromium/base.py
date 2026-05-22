@@ -13,13 +13,13 @@ from random import randint
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, overload
 from urllib.parse import urlsplit, urlunsplit
 
+from pydoll.browser.chromium.tab import Tab
 from pydoll.browser.intercepted_request import InterceptedRequest
 from pydoll.browser.managers import (
     BrowserProcessManager,
     ProxyManager,
     TempDirectoryManager,
 )
-from pydoll.browser.chromium.tab import Tab
 from pydoll.commands import (
     BrowserCommands,
     EmulationCommands,
@@ -42,16 +42,17 @@ from pydoll.protocol.cdp.browser.types import DownloadBehavior as CDPDownloadBeh
 from pydoll.protocol.cdp.fetch.events import FetchEvent
 from pydoll.protocol.cdp.fetch.types import AuthChallengeResponseType
 from pydoll.protocol.cdp.network.types import ErrorReason as CDPErrorReason
+from pydoll.protocol.cdp.target.events import TargetEvent
+from pydoll.protocol.cdp.target.types import FilterEntry
 from pydoll.protocol.events import CDP_EVENT_MAP, Event
 from pydoll.protocol.types import (
     BrowserVersion,
     Cookie,
     CookieParam,
     DownloadBehavior,
-    Header,
     WindowBounds,
 )
-from pydoll.utils.user_agent_parser import UserAgentParser
+from pydoll.utils.user_agent_parser import ParsedUserAgent, UserAgentParser
 
 if TYPE_CHECKING:
     from tempfile import TemporaryDirectory
@@ -63,7 +64,7 @@ if TYPE_CHECKING:
         GetVersionResult,
         GetWindowForTargetResponse,
     )
-    from pydoll.protocol.cdp.browser.types import Bounds, PermissionType
+    from pydoll.protocol.cdp.browser.types import PermissionType
     from pydoll.protocol.cdp.fetch.events import RequestPausedEvent
     from pydoll.protocol.cdp.fetch.types import HeaderEntry
     from pydoll.protocol.cdp.network.types import (
@@ -95,6 +96,10 @@ class Browser:  # noqa: PLR0904
         self,
         options_manager: BrowserOptionsManagerProtocol,
         connection_port: Optional[int] = None,
+        proxy_manager: Optional[ProxyManager] = None,
+        browser_process_manager: Optional[BrowserProcessManager] = None,
+        temp_directory_manager: Optional[TempDirectoryManager] = None,
+        connection_handler: Optional[ConnectionHandler] = None,
     ):
         """
         Initialize browser instance with configuration.
@@ -103,18 +108,23 @@ class Browser:  # noqa: PLR0904
             options_manager: Manages browser options initialization and defaults.
                 Must implement initialize_options() and add_default_arguments().
             connection_port: CDP WebSocket port. Random port (9223-9322) if None.
+            proxy_manager: Proxy manager; built from options when omitted.
+            browser_process_manager: Process manager; default when omitted.
+            temp_directory_manager: Temp directory manager; default when omitted.
+            connection_handler: Browser-level connection handler; built from the
+                connection port when omitted (mainly for testing).
 
         Note:
             Call start() to actually launch the browser.
         """
         self._validate_connection_port(connection_port)
         self.options = options_manager.initialize_options()
-        self._proxy_manager = ProxyManager(self.options)
+        self._proxy_manager = proxy_manager or ProxyManager(self.options)
         self._connection_port = connection_port if connection_port else randint(9223, 9322)
-        self._browser_process_manager = BrowserProcessManager()
-        self._temp_directory_manager = TempDirectoryManager()
+        self._browser_process_manager = browser_process_manager or BrowserProcessManager()
+        self._temp_directory_manager = temp_directory_manager or TempDirectoryManager()
         self._ws_address: Optional[str] = None
-        self._connection_handler = ConnectionHandler(self._connection_port)
+        self._connection_handler = connection_handler or ConnectionHandler(self._connection_port)
         self._backup_preferences_dir = ''
         self._tabs_opened: dict[str, Tab] = {}
         self._context_proxy_auth: dict[str, tuple[str, str]] = {}
@@ -205,6 +215,7 @@ class Browser:  # noqa: PLR0904
         valid_tab_id = await self._get_valid_tab_id(await self._get_targets())
         tab = Tab(self, target_id=valid_tab_id, connection_port=self._connection_port)
         self._tabs_opened[valid_tab_id] = tab
+        await self._setup_worker_user_agent_override()
         await self._apply_user_agent_override(tab)
         logger.info(f'Initial tab attached: {valid_tab_id}')
         return tab
@@ -647,7 +658,9 @@ class Browser:  # noqa: PLR0904
     @staticmethod
     def _match_url_pattern(url: str, pattern: str) -> bool:
         """Simple URL pattern matching (supports * wildcard)."""
-        return fnmatch.fnmatch(url, f'*{pattern}*') if not pattern.startswith('http') else fnmatch.fnmatch(url, pattern)
+        if pattern.startswith('http'):
+            return fnmatch.fnmatch(url, pattern)
+        return fnmatch.fnmatch(url, f'*{pattern}*')
 
     async def _enable_fetch_events(
         self,
@@ -873,6 +886,90 @@ class Browser:  # noqa: PLR0904
                     run_immediately=True,
                 )
             )
+
+        await tab.on(
+            TargetEvent.ATTACHED_TO_TARGET,
+            self._build_worker_user_agent_handler(parsed, user_agent, tab._connection_handler),
+        )
+        await tab._execute_command(
+            TargetCommands.set_auto_attach(
+                auto_attach=True,
+                wait_for_debugger_on_start=True,
+                flatten=True,
+                filter=[FilterEntry(type='worker')],
+            )
+        )
+
+    async def _setup_worker_user_agent_override(self) -> None:
+        """Propagate the User-Agent override to out-of-page worker targets.
+
+        Emulation.setUserAgentOverride is scoped per target, so service and
+        shared workers (which live in the browser context, not the page) keep
+        the real navigator.platform and navigator.userAgentData unless the
+        override is reapplied to their own sessions. This auto-attaches to those
+        worker targets at browser level and replays the override before they run.
+        """
+        user_agent = self._get_user_agent_from_options()
+        if not user_agent:
+            return
+
+        parsed = UserAgentParser.parse(user_agent)
+        await self.on(
+            TargetEvent.ATTACHED_TO_TARGET,
+            self._build_worker_user_agent_handler(parsed, user_agent, self._connection_handler),
+        )
+        await self._execute_command(
+            TargetCommands.set_auto_attach(
+                auto_attach=True,
+                wait_for_debugger_on_start=True,
+                flatten=True,
+                filter=[FilterEntry(type='service_worker'), FilterEntry(type='shared_worker')],
+            )
+        )
+
+    @staticmethod
+    def _build_worker_user_agent_handler(
+        parsed: ParsedUserAgent,
+        user_agent: str,
+        connection_handler: ConnectionHandler,
+    ) -> Callable[[dict], Awaitable[None]]:
+        """Build an attachedToTarget handler that replays the UA override on workers.
+
+        The returned coroutine applies Emulation.setUserAgentOverride to each
+        attached worker session and always resumes targets paused via
+        waitForDebuggerOnStart, so a worker never hangs on attach.
+        """
+        worker_types = {'service_worker', 'shared_worker', 'worker'}
+
+        async def on_worker_attached(event: dict) -> None:
+            params = event['params']
+            session_id = params['sessionId']
+            target_type = params['targetInfo']['type']
+            try:
+                if target_type in worker_types:
+                    override = EmulationCommands.set_user_agent_override(
+                        user_agent=user_agent,
+                        platform=parsed.platform,
+                        user_agent_metadata=parsed.user_agent_metadata,
+                    )
+                    override['sessionId'] = session_id
+                    await connection_handler.execute_command(override)
+                    if parsed.navigator_override_js:
+                        inject = RuntimeCommands.evaluate(expression=parsed.navigator_override_js)
+                        inject['sessionId'] = session_id
+                        await connection_handler.execute_command(inject)
+            except Exception:
+                logger.exception(
+                    'Failed to apply User-Agent override to worker session %s', session_id
+                )
+            finally:
+                if params.get('waitingForDebugger'):
+                    resume = RuntimeCommands.run_if_waiting_for_debugger()
+                    resume['sessionId'] = session_id
+                    with suppress(Exception):
+                        await connection_handler.execute_command(resume)
+
+        return on_worker_attached
 
     def _get_user_agent_from_options(self) -> Optional[str]:
         """Extract User-Agent value from --user-agent= browser argument."""
