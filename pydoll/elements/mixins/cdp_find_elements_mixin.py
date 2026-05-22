@@ -201,13 +201,13 @@ class CDPFindElementsMixin(FindElementsMixin):
         return self._connection_handler, None
 
     async def _execute_command(
-        self, command: Command[T_CommandParams, T_CommandResponse]
+        self, command: Command[T_CommandParams, T_CommandResponse], timeout: int = 60
     ) -> T_CommandResponse:
         """Execute CDP command via resolved handler."""
         handler, session_id = self._resolve_routing()
         if session_id:
             command['sessionId'] = session_id
-        return await handler.execute_command(command, timeout=60)
+        return await handler.execute_command(command, timeout=timeout)
 
     def _get_find_element_command(
         self,

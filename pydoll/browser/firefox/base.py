@@ -3,31 +3,36 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
+import warnings
+from collections.abc import Sequence
 from random import randint
 from typing import TYPE_CHECKING, Optional, overload
 
+from pydoll.browser.firefox.tab import BiDiTab
 from pydoll.browser.intercepted_request import InterceptedRequest
 from pydoll.browser.managers import (
     BrowserProcessManager,
     ProxyManager,
     TempDirectoryManager,
 )
-from pydoll.browser.firefox.tab import BiDiTab
 from pydoll.commands.bidi.browser_commands import BrowserCommands
 from pydoll.commands.bidi.browsing_context_commands import BrowsingContextCommands
 from pydoll.commands.bidi.network_commands import NetworkCommands
+from pydoll.commands.bidi.permissions_commands import PermissionsCommands
 from pydoll.commands.bidi.session_commands import SessionCommands
 from pydoll.commands.bidi.storage_commands import StorageCommands
 from pydoll.connection.bidi_connection_handler import BiDiConnectionHandler
-from pydoll.exceptions import BrowserNotRunning, UnsupportedOperation
+from pydoll.exceptions import BrowserNotRunning
 from pydoll.protocol.bidi.base import Command, T_CommandParams, T_CommandResult
 from pydoll.protocol.bidi.browser.types import ClientWindowInfo
+from pydoll.protocol.bidi.permissions.types import PermissionDescriptor, PermissionState
 from pydoll.protocol.events import BIDI_EVENT_MAP, Event
 from pydoll.protocol.types import (
     BrowserVersion,
     Cookie,
     CookieParam,
     DownloadBehavior,
+    Permission,
     WindowBounds,
 )
 
@@ -37,6 +42,29 @@ if TYPE_CHECKING:
     from pydoll.browser.protocols import BrowserOptionsManagerProtocol
 
 logger = logging.getLogger(__name__)
+
+# Maps the portable Permission set to the W3C names BiDi understands. Permissions
+# absent here have no Firefox/BiDi equivalent and are skipped with a warning.
+_BIDI_PERMISSION_MAP: dict[Permission, str] = {
+    Permission.GEOLOCATION: 'geolocation',
+    Permission.NOTIFICATIONS: 'notifications',
+    Permission.CAMERA: 'camera',
+    Permission.MICROPHONE: 'microphone',
+    Permission.MIDI: 'midi',
+    Permission.BACKGROUND_SYNC: 'background-sync',
+    Permission.PERIODIC_BACKGROUND_SYNC: 'periodic-background-sync',
+    Permission.PERSISTENT_STORAGE: 'persistent-storage',
+    Permission.STORAGE_ACCESS: 'storage-access',
+    Permission.CLIPBOARD_READ: 'clipboard-read',
+    Permission.CLIPBOARD_WRITE: 'clipboard-write',
+    Permission.IDLE_DETECTION: 'idle-detection',
+    Permission.PAYMENT_HANDLER: 'payment-handler',
+    Permission.SCREEN_WAKE_LOCK: 'screen-wake-lock',
+    Permission.DISPLAY_CAPTURE: 'display-capture',
+    Permission.SPEAKER_SELECTION: 'speaker-selection',
+    Permission.WINDOW_MANAGEMENT: 'window-management',
+    Permission.LOCAL_FONTS: 'local-fonts',
+}
 
 
 class FirefoxBrowser:
@@ -57,6 +85,8 @@ class FirefoxBrowser:
             connection_port=self._connection_port,
         )
         self._session_id: Optional[str] = None
+        self._granted_permissions: list[tuple[str, str, Optional[str]]] = []
+        self._intercept_callbacks: dict[str, int] = {}
 
     async def __aenter__(self) -> FirefoxBrowser:
         return self
@@ -110,12 +140,16 @@ class FirefoxBrowser:
         """Close the WebSocket connection."""
         await self._connection_handler.close()
 
-    async def connect(self, ws_address: str):
+    async def connect(self, ws_address: str) -> BiDiTab:
         """Connect to an already running Firefox instance."""
         self._connection_handler._ws_address = ws_address
         await self._connection_handler._ensure_active_connection()
         response = await self._execute_command(SessionCommands.new())
         self._session_id = response['result']['sessionId']
+        tabs = await self.get_opened_tabs()
+        if tabs:
+            return tabs[0]
+        return await self.new_tab()
 
     async def create_browser_context(
         self,
@@ -131,6 +165,12 @@ class FirefoxBrowser:
         Returns:
             Context ID (UserContext ID).
         """
+        if proxy_bypass_list is not None:
+            warnings.warn(
+                'proxy_bypass_list is not supported by WebDriver BiDi and will be ignored.',
+                stacklevel=2,
+            )
+
         proxy = None
         if proxy_server:
             proxy = {
@@ -351,14 +391,6 @@ class FirefoxBrowser:
                 )
             )
 
-    async def get_window_id_for_tab(self, tab) -> str:
-        """Get the client window ID for a tab's context."""
-        contexts = await self.get_opened_tabs()
-        for ctx in contexts:
-            if ctx.get('clientWindow'):
-                return ctx['clientWindow']
-        raise UnsupportedOperation('No client window found.')
-
     @overload
     async def on(
         self,
@@ -489,7 +521,14 @@ class FirefoxBrowser:
             request_data = params.get('request', {})
             raw_headers = request_data.get('headers', [])
             headers_list = [
-                {'name': h['name'], 'value': h['value'].get('value', '') if isinstance(h['value'], dict) else h['value']}
+                {
+                    'name': h['name'],
+                    'value': (
+                        h['value'].get('value', '')
+                        if isinstance(h['value'], dict)
+                        else h['value']
+                    ),
+                }
                 for h in raw_headers
             ]
 
@@ -505,25 +544,93 @@ class FirefoxBrowser:
             )
             await callback(req)
 
-        await self._connection_handler.register_callback(
+        callback_id = await self._connection_handler.register_callback(
             'network.beforeRequestSent', _on_before_request_sent
         )
+        self._intercept_callbacks[intercept_id] = callback_id
         return intercept_id
 
     async def remove_intercept(self, intercept_id: str):
-        """Remove a request intercept."""
-
+        """Remove a request intercept and its registered handler."""
         await self._execute_command(
             NetworkCommands.remove_intercept(intercept=intercept_id)
         )
+        callback_id = self._intercept_callbacks.pop(intercept_id, None)
+        if callback_id is not None:
+            await self._connection_handler.remove_callback(callback_id)
 
-    async def grant_permissions(self, permissions, origin=None, browser_context_id=None):
-        """Not yet supported in BiDi."""
-        raise UnsupportedOperation('grant_permissions is not yet supported in BiDi.')
+    async def grant_permissions(
+        self,
+        permissions: Sequence[Permission],
+        origin: Optional[str] = None,
+        browser_context_id: Optional[str] = None,
+    ):
+        """Grant permissions for an origin via permissions.setPermission.
 
-    async def reset_permissions(self, browser_context_id=None):
-        """Not yet supported in BiDi."""
-        raise UnsupportedOperation('reset_permissions is not yet supported in BiDi.')
+        Permissions that Chromium supports but Firefox/BiDi does not are skipped
+        with a warning.
+
+        Args:
+            permissions: Permissions to grant.
+            origin: Origin to grant for. Required in BiDi (CDP allows all origins).
+            browser_context_id: UserContext to scope the permissions to.
+
+        Raises:
+            ValueError: If origin is not provided (BiDi requires an explicit origin).
+        """
+        if not origin:
+            raise ValueError('BiDi requires an explicit origin for grant_permissions.')
+        for permission in permissions:
+            bidi_name = _BIDI_PERMISSION_MAP.get(permission)
+            if bidi_name is None:
+                warnings.warn(
+                    f'Permission {permission.name} is not supported by Firefox/BiDi '
+                    'and was skipped.',
+                    stacklevel=2,
+                )
+                continue
+            await self._execute_command(
+                PermissionsCommands.set_permission(
+                    descriptor=PermissionDescriptor(name=bidi_name),
+                    state=PermissionState.GRANTED.value,
+                    origin=origin,
+                    user_context=browser_context_id,
+                )
+            )
+            self._granted_permissions.append((bidi_name, origin, browser_context_id))
+
+    async def reset_permissions(self, browser_context_id: Optional[str] = None):
+        """Reset permissions granted through this browser back to 'prompt'.
+
+        BiDi has no reset-all primitive, so only permissions granted via this
+        instance are reset (optionally filtered by browser_context_id).
+        """
+        remaining: list[tuple[str, str, Optional[str]]] = []
+        for name, origin, user_context in self._granted_permissions:
+            if browser_context_id is not None and user_context != browser_context_id:
+                remaining.append((name, origin, user_context))
+                continue
+            await self._execute_command(
+                PermissionsCommands.set_permission(
+                    descriptor=PermissionDescriptor(name=name),
+                    state=PermissionState.PROMPT.value,
+                    origin=origin,
+                    user_context=user_context,
+                )
+            )
+        self._granted_permissions = remaining
+
+    async def execute_protocol_command(
+        self,
+        command: Command[T_CommandParams, T_CommandResult],
+        timeout: int = 60,
+    ) -> T_CommandResult:
+        """Send a raw WebDriver BiDi command and return its typed result.
+
+        Escape hatch for BiDi features not covered by the portable API. Build the
+        command with the ``pydoll.commands.bidi.*`` builders.
+        """
+        return await self._execute_command(command, timeout)
 
     async def _execute_command(
         self,

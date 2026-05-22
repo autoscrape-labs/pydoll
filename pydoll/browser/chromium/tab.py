@@ -92,7 +92,13 @@ from pydoll.utils.bundle import (
 if TYPE_CHECKING:
     from pydoll.browser.chromium.base import Browser
     from pydoll.extractor.model import ExtractionModel
-    from pydoll.protocol.cdp.base import EmptyResponse, Response
+    from pydoll.protocol.cdp.base import (
+        Command,
+        EmptyResponse,
+        Response,
+        T_CommandParams,
+        T_CommandResponse,
+    )
     from pydoll.protocol.cdp.browser.events import (
         DownloadProgressEvent,
         DownloadWillBeginEvent,
@@ -1822,6 +1828,16 @@ class Tab(CDPFindElementsMixin):
         """Clear all registered event callbacks."""
         logger.debug('Clearing all callbacks from tab')
         await self._connection_handler.clear_callbacks()
+
+    async def execute_protocol_command(
+        self, command: Command[T_CommandParams, T_CommandResponse], timeout: int = 60
+    ) -> T_CommandResponse:
+        """Send a raw CDP command and return its typed response.
+
+        Escape hatch for CDP features not covered by the portable API. Build the
+        command with the ``pydoll.commands.cdp.*`` builders.
+        """
+        return await self._execute_command(command, timeout)
 
     def _get_connection_handler(self) -> ConnectionHandler:
         if self._ws_address:

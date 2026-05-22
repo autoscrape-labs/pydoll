@@ -55,11 +55,10 @@ class BrowserVersion(TypedDict):
 
 
 class DownloadBehavior(str, Enum):
-    """Download behavior options."""
+    """Download behavior options (portable subset across CDP and BiDi)."""
 
     ALLOW = 'allow'
     DENY = 'deny'
-    DEFAULT = 'default'
 
 
 class RequestMethod(str, Enum):
@@ -72,3 +71,51 @@ class RequestMethod(str, Enum):
     PATCH = 'PATCH'
     HEAD = 'HEAD'
     OPTIONS = 'OPTIONS'
+
+
+class Permission(str, Enum):
+    """Browser permission, portable across CDP and BiDi.
+
+    Covers the full set of permissions Chromium/CDP supports (the superset).
+    Member values are the CDP permission names; Chromium grants them directly,
+    while Firefox/BiDi maps the subset it supports to W3C names and warns when a
+    requested permission has no BiDi equivalent.
+    """
+
+    AR = 'ar'
+    MICROPHONE = 'audioCapture'
+    AUTOMATIC_FULLSCREEN = 'automaticFullscreen'
+    BACKGROUND_FETCH = 'backgroundFetch'
+    BACKGROUND_SYNC = 'backgroundSync'
+    CAMERA_PAN_TILT_ZOOM = 'cameraPanTiltZoom'
+    CAPTURED_SURFACE_CONTROL = 'capturedSurfaceControl'
+    CLIPBOARD_READ = 'clipboardReadWrite'
+    CLIPBOARD_WRITE = 'clipboardSanitizedWrite'
+    DISPLAY_CAPTURE = 'displayCapture'
+    PERSISTENT_STORAGE = 'durableStorage'
+    GEOLOCATION = 'geolocation'
+    HAND_TRACKING = 'handTracking'
+    IDLE_DETECTION = 'idleDetection'
+    KEYBOARD_LOCK = 'keyboardLock'
+    LOCAL_FONTS = 'localFonts'
+    LOCAL_NETWORK_ACCESS = 'localNetworkAccess'
+    MIDI = 'midi'
+    MIDI_SYSEX = 'midiSysex'
+    NFC = 'nfc'
+    NOTIFICATIONS = 'notifications'
+    PAYMENT_HANDLER = 'paymentHandler'
+    PERIODIC_BACKGROUND_SYNC = 'periodicBackgroundSync'
+    POINTER_LOCK = 'pointerLock'
+    PROTECTED_MEDIA_IDENTIFIER = 'protectedMediaIdentifier'
+    SENSORS = 'sensors'
+    SMART_CARD = 'smartCard'
+    SPEAKER_SELECTION = 'speakerSelection'
+    STORAGE_ACCESS = 'storageAccess'
+    TOP_LEVEL_STORAGE_ACCESS = 'topLevelStorageAccess'
+    CAMERA = 'videoCapture'
+    VR = 'vr'
+    SCREEN_WAKE_LOCK = 'wakeLockScreen'
+    SYSTEM_WAKE_LOCK = 'wakeLockSystem'
+    WEB_APP_INSTALLATION = 'webAppInstallation'
+    WEB_PRINTING = 'webPrinting'
+    WINDOW_MANAGEMENT = 'windowManagement'

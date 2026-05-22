@@ -7,6 +7,7 @@ import logging
 import os
 import shutil
 import warnings
+from collections.abc import Sequence
 from contextlib import suppress
 from functools import partial
 from random import randint
@@ -35,10 +36,12 @@ from pydoll.exceptions import (
     FailedToStartBrowser,
     InvalidConnectionPort,
     InvalidWebSocketAddress,
-    MissingTargetOrWebSocket,
     NoValidTabFound,
 )
-from pydoll.protocol.cdp.browser.types import DownloadBehavior as CDPDownloadBehavior
+from pydoll.protocol.cdp.browser.types import (
+    DownloadBehavior as CDPDownloadBehavior,
+)
+from pydoll.protocol.cdp.browser.types import PermissionType
 from pydoll.protocol.cdp.fetch.events import FetchEvent
 from pydoll.protocol.cdp.fetch.types import AuthChallengeResponseType
 from pydoll.protocol.cdp.network.types import ErrorReason as CDPErrorReason
@@ -50,6 +53,7 @@ from pydoll.protocol.types import (
     Cookie,
     CookieParam,
     DownloadBehavior,
+    Permission,
     WindowBounds,
 )
 from pydoll.utils.user_agent_parser import ParsedUserAgent, UserAgentParser
@@ -64,11 +68,9 @@ if TYPE_CHECKING:
         GetVersionResult,
         GetWindowForTargetResponse,
     )
-    from pydoll.protocol.cdp.browser.types import PermissionType
     from pydoll.protocol.cdp.fetch.events import RequestPausedEvent
     from pydoll.protocol.cdp.fetch.types import HeaderEntry
     from pydoll.protocol.cdp.network.types import (
-        ErrorReason,
         RequestMethod,
         ResourceType,
     )
@@ -128,6 +130,7 @@ class Browser:  # noqa: PLR0904
         self._backup_preferences_dir = ''
         self._tabs_opened: dict[str, Tab] = {}
         self._context_proxy_auth: dict[str, tuple[str, str]] = {}
+        self._intercept_callbacks: set[int] = set()
         logger.debug(
             f'Browser initialized: port={self._connection_port}, '
             f'headless={getattr(self.options, "headless", None)}'
@@ -403,7 +406,7 @@ class Browser:  # noqa: PLR0904
         Configure download handling.
 
         Args:
-            behavior: ALLOW (save to path), DENY (cancel), or DEFAULT.
+            behavior: ALLOW (save to path) or DENY (cancel).
             download_path: Required if behavior is ALLOW.
             browser_context_id: Context to apply to (default if None).
         """
@@ -461,14 +464,6 @@ class Browser:  # noqa: PLR0904
         logger.debug(f'Window id for target {target_id}: {response["result"]["windowId"]}')
         return response['result']['windowId']
 
-    async def get_window_id_for_tab(self, tab: Tab) -> int:
-        """Get window ID for tab (convenience method)."""
-        target_id = tab._target_id or (tab._ws_address.split('/')[-1] if tab._ws_address else None)
-        if not target_id:
-            logger.error('Missing target id or ws address for tab when getting window id')
-            raise MissingTargetOrWebSocket()
-        return await self._get_window_id_for_target(target_id)
-
     async def _get_window_id(self) -> int:
         """
         Get window ID for any valid tab.
@@ -506,7 +501,7 @@ class Browser:  # noqa: PLR0904
 
     async def grant_permissions(
         self,
-        permissions: list[PermissionType],
+        permissions: Sequence[Permission],
         origin: Optional[str] = None,
         browser_context_id: Optional[str] = None,
     ):
@@ -520,11 +515,12 @@ class Browser:  # noqa: PLR0904
             origin: Origin to grant to (all origins if None).
             browser_context_id: Context to apply to (default if None).
         """
+        cdp_permissions = [PermissionType(permission.value) for permission in permissions]
         logger.info(
             f'Granting permissions: {permissions} (origin={origin}, context={browser_context_id})',
         )
         return await self._execute_command(
-            BrowserCommands.grant_permissions(permissions, origin, browser_context_id)
+            BrowserCommands.grant_permissions(cdp_permissions, origin, browser_context_id)
         )
 
     async def reset_permissions(self, browser_context_id: Optional[str] = None):
@@ -649,11 +645,20 @@ class Browser:  # noqa: PLR0904
         callback_id = await self._connection_handler.register_callback(
             FetchEvent.REQUEST_PAUSED, _on_request_paused
         )
+        self._intercept_callbacks.add(callback_id)
         return str(callback_id)
 
     async def remove_intercept(self, intercept_id: str):
-        """Remove a request intercept."""
-        await self._connection_handler.remove_callback(int(intercept_id))
+        """Remove a request intercept.
+
+        Disables the Fetch domain once the last intercept is removed so requests
+        stop being paused (otherwise they hang with no handler to continue them).
+        """
+        callback_id = int(intercept_id)
+        await self._connection_handler.remove_callback(callback_id)
+        self._intercept_callbacks.discard(callback_id)
+        if not self._intercept_callbacks:
+            await self._disable_fetch_events()
 
     @staticmethod
     def _match_url_pattern(url: str, pattern: str) -> bool:
@@ -706,7 +711,7 @@ class Browser:  # noqa: PLR0904
         logger.debug('Disabling Runtime events')
         return await self._connection_handler.execute_command(RuntimeCommands.disable())
 
-    async def continue_request(
+    async def _continue_request(
         self,
         request_id: str,
         url: Optional[str] = None,
@@ -715,9 +720,7 @@ class Browser:  # noqa: PLR0904
         headers: Optional[list[HeaderEntry]] = None,
         intercept_response: Optional[bool] = None,
     ):
-        """
-        Continue paused request without modifications.
-        """
+        """Continue a paused request without modifications (internal, proxy auth flow)."""
         logger.debug(f'Continuing request: id={request_id}')
         return await self._execute_command(
             FetchCommands.continue_request(
@@ -727,34 +730,6 @@ class Browser:  # noqa: PLR0904
                 post_data=post_data,
                 headers=headers,
                 intercept_response=intercept_response,
-            )
-        )
-
-    async def fail_request(self, request_id: str, error_reason: ErrorReason):
-        """Fail request with error code."""
-        logger.debug(f'Failing request: id={request_id}, reason={error_reason}')
-        return await self._execute_command(FetchCommands.fail_request(request_id, error_reason))
-
-    async def fulfill_request(
-        self,
-        request_id: str,
-        response_code: int,
-        response_headers: Optional[list[HeaderEntry]] = None,
-        body: Optional[str] = None,
-        response_phrase: Optional[str] = None,
-    ):
-        """Fulfill request with response data."""
-        logger.debug(
-            f'Fulfilling request: id={request_id}, code={response_code}, '
-            f'headers={bool(response_headers)}, body={bool(body)}'
-        )
-        return await self._execute_command(
-            FetchCommands.fulfill_request(
-                request_id=request_id,
-                response_code=response_code,
-                response_headers=response_headers,
-                body=body,
-                response_phrase=response_phrase,
             )
         )
 
@@ -769,7 +744,7 @@ class Browser:  # noqa: PLR0904
         """Internal callback to continue paused requests."""
         request_id = event['params']['requestId']
         logger.debug(f'[Fetch] REQUEST_PAUSED -> continue: id={request_id}')
-        return await self.continue_request(request_id)
+        return await self._continue_request(request_id)
 
     async def _continue_request_with_auth_callback(
         self,
@@ -1058,6 +1033,16 @@ class Browser:  # noqa: PLR0904
             await asyncio.sleep(1)
 
         return False
+
+    async def execute_protocol_command(
+        self, command: Command[T_CommandParams, T_CommandResponse], timeout: int = 60
+    ) -> T_CommandResponse:
+        """Send a raw CDP command and return its typed response.
+
+        Escape hatch for CDP features not covered by the portable API. Build the
+        command with the ``pydoll.commands.cdp.*`` builders.
+        """
+        return await self._execute_command(command, timeout)
 
     async def _execute_command(
         self, command: Command[T_CommandParams, T_CommandResponse], timeout: int = 60

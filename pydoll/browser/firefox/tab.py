@@ -333,6 +333,18 @@ class BiDiTab(BidiFindElementsMixin):
         """Remove all registered event callbacks."""
         await self._connection_handler.clear_callbacks()
 
+    async def execute_protocol_command(
+        self,
+        command: Command[T_CommandParams, T_CommandResult],
+        timeout: int = 60,
+    ) -> T_CommandResult:
+        """Send a raw WebDriver BiDi command and return its typed result.
+
+        Escape hatch for BiDi features not covered by the portable API. Build the
+        command with the ``pydoll.commands.bidi.*`` builders.
+        """
+        return await self._execute_command(command, timeout)
+
     async def _execute_command(
         self,
         command: Command[T_CommandParams, T_CommandResult],
