@@ -14,6 +14,7 @@ from typing import Awaitable, Callable, Optional
 
 import pytest
 
+from pydoll.browser import Firefox
 from pydoll.browser.firefox.tab import BiDiTab
 
 
@@ -83,6 +84,10 @@ class FakeBiDiConnection:
         """Remove every registered callback."""
         self._callbacks.clear()
 
+    async def _ensure_active_connection(self) -> None:
+        """No-op: the fake has no real socket to (re)connect."""
+        return None
+
     async def ping(self) -> bool:
         """A fake connection is always responsive."""
         return True
@@ -102,3 +107,16 @@ def fake_bidi_conn() -> FakeBiDiConnection:
 def fake_bidi_tab(fake_bidi_conn) -> BiDiTab:
     """A real BiDiTab backed by an in-memory FakeBiDiConnection (no sockets)."""
     return BiDiTab('fake-context', fake_bidi_conn)
+
+
+@pytest.fixture
+def fake_bidi_browser(fake_bidi_conn) -> Firefox:
+    """A real Firefox browser with its handler swapped for the in-memory fake.
+
+    Lets the browser-level translate-only methods (cookies, contexts, windows,
+    permissions, interception) be tested without a real Firefox or sockets.
+    """
+    browser = Firefox()
+    browser._connection_handler = fake_bidi_conn
+    browser._session_id = 'fake-session'
+    return browser

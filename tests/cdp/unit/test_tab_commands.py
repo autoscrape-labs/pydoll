@@ -204,3 +204,14 @@ async def test_enable_auto_solve_cloudflare_registers_callback_and_enables_page_
 async def test_enable_auto_solve_cloudflare_warns_on_deprecated_args(fake_tab):
     with pytest.warns(DeprecationWarning):
         await fake_tab.enable_auto_solve_cloudflare_captcha(time_before_click=1.0)
+
+
+@pytest.mark.asyncio
+async def test_get_network_logs_returns_logs_when_enabled(fake_conn, fake_tab):
+    await fake_tab._enable_network_events()
+    fake_conn.network_logs.append(
+        {'method': 'Network.requestWillBeSent', 'params': {'request': {'url': 'http://x/api'}}}
+    )
+    assert await fake_tab.get_network_logs()
+    assert await fake_tab.get_network_logs(filter='/api')
+    assert await fake_tab.get_network_logs(filter='/nope') == []

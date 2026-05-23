@@ -216,3 +216,231 @@ async def test_enable_and_disable_runtime_events(browser, fake_conn):
 async def test_connect_rejects_invalid_ws_address(browser, bad_address):
     with pytest.raises(InvalidWebSocketAddress):
         await browser.connect(bad_address)
+
+
+@pytest.mark.asyncio
+async def test_intercept_requests_delivers_paused_request(browser, fake_conn):
+    fake_conn.set_response('Fetch.enable', {})
+    received = []
+
+    async def on_request(req):
+        received.append(req)
+
+    await browser.intercept_requests(on_request)
+    assert fake_conn.commands_for('Fetch.enable')
+
+    handler = fake_conn.callbacks_for('Fetch.requestPaused')[0]
+    await handler({'params': {
+        'requestId': 'r1',
+        'request': {'url': 'http://x/a', 'method': 'GET', 'headers': {'A': 'b'}},
+    }})
+    assert received and received[0].url == 'http://x/a'
+
+
+@pytest.mark.asyncio
+async def test_intercepted_request_continue_fail_respond(browser, fake_conn):
+    fake_conn.set_response('Fetch.enable', {})
+    received = []
+
+    async def on_request(req):
+        received.append(req)
+
+    await browser.intercept_requests(on_request)
+    handler = fake_conn.callbacks_for('Fetch.requestPaused')[0]
+    await handler({'params': {
+        'requestId': 'r1',
+        'request': {'url': 'http://x/a', 'method': 'GET', 'headers': {}},
+    }})
+    req = received[0]
+
+    await req.continue_()
+    assert fake_conn.commands_for('Fetch.continueRequest')
+    await req.fail()
+    assert fake_conn.commands_for('Fetch.failRequest')
+    await req.respond(status=200, body='ok')
+    assert fake_conn.commands_for('Fetch.fulfillRequest')
+
+
+@pytest.mark.asyncio
+async def test_intercept_url_pattern_auto_continues_non_matching(browser, fake_conn):
+    fake_conn.set_response('Fetch.enable', {})
+    received = []
+
+    async def on_request(req):
+        received.append(req)
+
+    await browser.intercept_requests(on_request, url_patterns=['/api/*'])
+    handler = fake_conn.callbacks_for('Fetch.requestPaused')[0]
+    await handler({'params': {
+        'requestId': 'r1',
+        'request': {'url': 'http://x/static.css', 'method': 'GET', 'headers': {}},
+    }})
+    assert received == []
+    assert fake_conn.commands_for('Fetch.continueRequest')
+
+
+@pytest.mark.asyncio
+async def test_remove_intercept_disables_fetch_when_last(browser, fake_conn):
+    fake_conn.set_response('Fetch.enable', {})
+
+    async def on_request(req):
+        return None
+
+    intercept_id = await browser.intercept_requests(on_request)
+    await browser.remove_intercept(intercept_id)
+    assert fake_conn.commands_for('Fetch.disable')
+
+
+@pytest.mark.asyncio
+async def test_worker_user_agent_handler_overrides_attached_worker(fake_conn):
+    from pydoll.utils.user_agent_parser import UserAgentParser
+
+    user_agent = (
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+        '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    )
+    parsed = UserAgentParser.parse(user_agent)
+    handler = Chrome._build_worker_user_agent_handler(parsed, user_agent, fake_conn)
+
+    await handler({'params': {
+        'sessionId': 's1',
+        'targetInfo': {'type': 'service_worker'},
+        'waitingForDebugger': True,
+    }})
+
+    override = fake_conn.commands_for('Emulation.setUserAgentOverride')
+    assert override and override[-1]['params']['userAgent'] == user_agent
+    assert fake_conn.commands_for('Runtime.runIfWaitingForDebugger')
+
+
+def test_set_browser_preferences_writes_user_data_dir(browser, tmp_path):
+    browser.options.browser_preferences = {'download': {'default_directory': '/tmp/dl'}}
+    (tmp_path / 'Default').mkdir()
+    browser._set_browser_preferences_in_user_data_dir(str(tmp_path))
+
+    import json
+
+    written = json.loads((tmp_path / 'Default' / 'Preferences').read_text())
+    assert written['download']['default_directory'] == '/tmp/dl'
+
+
+@pytest.mark.asyncio
+async def test_setup_worker_user_agent_override_auto_attaches_with_ua(browser, fake_conn):
+    browser.options.user_agent = (
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+        '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    )
+    await browser._setup_worker_user_agent_override()
+    assert fake_conn.commands_for('Target.setAutoAttach')
+
+
+@pytest.mark.asyncio
+async def test_setup_worker_user_agent_override_noop_without_ua(browser, fake_conn):
+    await browser._setup_worker_user_agent_override()
+    assert not fake_conn.commands_for('Target.setAutoAttach')
+
+
+def test_get_user_agent_from_options_reads_argument(browser):
+    browser.options.user_agent = 'CustomUA/9'
+    assert browser._get_user_agent_from_options() == 'CustomUA/9'
+
+
+def test_get_user_agent_from_options_none_when_unset(browser):
+    assert browser._get_user_agent_from_options() is None
+
+
+@pytest.mark.asyncio
+async def test_continue_request_callback_continues_paused(browser, fake_conn):
+    await browser._continue_request_callback({'params': {'requestId': 'r1'}})
+    assert fake_conn.last_command('Fetch.continueRequest')['params']['requestId'] == 'r1'
+
+
+@pytest.mark.asyncio
+async def test_continue_request_with_auth_provides_credentials(browser, fake_conn):
+    await browser._continue_request_with_auth_callback(
+        {'params': {'requestId': 'r1'}}, 'user', 'pass'
+    )
+    sent = fake_conn.last_command('Fetch.continueWithAuth')
+    assert sent['params']['authChallengeResponse']['username'] == 'user'
+    assert sent['params']['authChallengeResponse']['password'] == 'pass'
+    assert fake_conn.commands_for('Fetch.disable')
+
+
+@pytest.mark.asyncio
+async def test_setup_context_proxy_auth_enables_fetch_for_context(browser, fake_conn):
+    browser._context_proxy_auth['ctx-1'] = ('user', 'pass')
+    tab = Tab(browser, target_id='t1', connection_handler=fake_conn)
+    await browser._setup_context_proxy_auth_for_tab(tab, 'ctx-1')
+    assert fake_conn.commands_for('Fetch.enable')
+
+
+@pytest.mark.asyncio
+async def test_setup_context_proxy_auth_noop_without_credentials(browser, fake_conn):
+    tab = Tab(browser, target_id='t1', connection_handler=fake_conn)
+    await browser._setup_context_proxy_auth_for_tab(tab, None)
+    assert not fake_conn.commands_for('Fetch.enable')
+
+
+@pytest.mark.asyncio
+async def test_tab_continue_request_callback_continues(browser, fake_conn):
+    tab = Tab(browser, target_id='t1', connection_handler=fake_conn)
+    await browser._tab_continue_request_callback({'params': {'requestId': 'r1'}}, tab=tab)
+    assert fake_conn.last_command('Fetch.continueRequest')['params']['requestId'] == 'r1'
+
+
+@pytest.mark.asyncio
+async def test_tab_continue_request_with_auth_callback_provides_credentials(browser, fake_conn):
+    tab = Tab(browser, target_id='t1', connection_handler=fake_conn)
+    await browser._tab_continue_request_with_auth_callback(
+        {'params': {'requestId': 'r1'}}, tab=tab, proxy_username='u', proxy_password='p'
+    )
+    assert fake_conn.commands_for('Fetch.continueWithAuth')
+    assert fake_conn.commands_for('Fetch.disable')
+
+
+@pytest.mark.asyncio
+async def test_configure_proxy_sets_up_auth_handlers(browser, fake_conn):
+    await browser._configure_proxy(True, ('user', 'pass'))
+    assert fake_conn.commands_for('Fetch.enable')
+    assert fake_conn.callbacks_for('Fetch.requestPaused') or fake_conn.callbacks_for(
+        'Fetch.authRequired'
+    )
+
+
+@pytest.mark.asyncio
+async def test_configure_proxy_noop_when_not_private(browser, fake_conn):
+    await browser._configure_proxy(False, (None, None))
+    assert not fake_conn.commands_for('Fetch.enable')
+
+
+def test_edge_binary_location_unsupported_os(monkeypatch):
+    from pydoll.browser.chromium import Edge
+    from pydoll.exceptions import UnsupportedOS
+
+    monkeypatch.setattr('pydoll.browser.chromium.edge.platform.system', lambda: 'Plan9')
+    with pytest.raises(UnsupportedOS):
+        Edge._get_default_binary_location()
+
+
+def test_edge_binary_location_resolves_for_known_os(monkeypatch):
+    from pydoll.browser.chromium import Edge
+
+    monkeypatch.setattr('pydoll.browser.chromium.edge.platform.system', lambda: 'Linux')
+    monkeypatch.setattr(
+        'pydoll.browser.chromium.edge.validate_browser_paths', lambda paths: paths[0]
+    )
+    assert Edge._get_default_binary_location() == '/usr/bin/microsoft-edge'
+
+
+def test_setup_user_dir_writes_preferences_to_temp(browser):
+    import json
+    import os
+
+    browser.options.browser_preferences = {'download': {'default_directory': '/tmp/x'}}
+    browser._setup_user_dir()
+    user_data_dir = browser._get_user_data_dir()
+    assert user_data_dir
+    written = json.loads(
+        open(os.path.join(user_data_dir, 'Default', 'Preferences'), encoding='utf-8').read()
+    )
+    assert written['download']['default_directory'] == '/tmp/x'

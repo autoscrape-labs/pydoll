@@ -130,3 +130,66 @@ async def test_useragent_override_sets_ua_for_this_context(fake_bidi_conn, fake_
     command = fake_bidi_conn.last_command('emulation.setUserAgentOverride')
     assert command['params']['userAgent'] == 'CustomUA/1.0'
     assert command['params']['contexts'] == ['fake-context']
+
+
+def _one_node(conn, local_name='div'):
+    conn.set_result(
+        'browsingContext.locateNodes',
+        {'nodes': [{'type': 'node', 'sharedId': 's1', 'value': {
+            'localName': local_name, 'attributes': {}}}]},
+    )
+
+
+@pytest.mark.asyncio
+async def test_find_raises_when_not_found(fake_bidi_conn, fake_bidi_tab):
+    from pydoll.exceptions import ElementNotFound
+
+    fake_bidi_conn.set_result('browsingContext.locateNodes', {'nodes': []})
+    with pytest.raises(ElementNotFound):
+        await fake_bidi_tab.find(id='nope')
+
+
+@pytest.mark.asyncio
+async def test_find_returns_none_when_not_found_and_no_raise(fake_bidi_conn, fake_bidi_tab):
+    fake_bidi_conn.set_result('browsingContext.locateNodes', {'nodes': []})
+    assert await fake_bidi_tab.find(id='nope', raise_exc=False) is None
+
+
+@pytest.mark.asyncio
+async def test_find_all_empty_returns_empty_list(fake_bidi_conn, fake_bidi_tab):
+    fake_bidi_conn.set_result('browsingContext.locateNodes', {'nodes': []})
+    assert await fake_bidi_tab.find(tag_name='li', find_all=True, raise_exc=False) == []
+
+
+@pytest.mark.asyncio
+async def test_find_by_class_name_builds_css_locator(fake_bidi_conn, fake_bidi_tab):
+    _one_node(fake_bidi_conn)
+    await fake_bidi_tab.find(class_name='btn')
+    locator = fake_bidi_conn.last_command('browsingContext.locateNodes')['params']['locator']
+    assert locator == {'type': 'css', 'value': '.btn'}
+
+
+@pytest.mark.asyncio
+async def test_find_by_name_builds_xpath_locator(fake_bidi_conn, fake_bidi_tab):
+    _one_node(fake_bidi_conn)
+    await fake_bidi_tab.find(name='email')
+    locator = fake_bidi_conn.last_command('browsingContext.locateNodes')['params']['locator']
+    assert locator['type'] == 'xpath'
+    assert 'email' in locator['value']
+
+
+@pytest.mark.asyncio
+async def test_find_by_tag_name_builds_css_locator(fake_bidi_conn, fake_bidi_tab):
+    _one_node(fake_bidi_conn, local_name='section')
+    await fake_bidi_tab.find(tag_name='section')
+    locator = fake_bidi_conn.last_command('browsingContext.locateNodes')['params']['locator']
+    assert locator == {'type': 'css', 'value': 'section'}
+
+
+@pytest.mark.asyncio
+async def test_find_by_multiple_attributes_builds_css(fake_bidi_conn, fake_bidi_tab):
+    _one_node(fake_bidi_conn)
+    await fake_bidi_tab.find(tag_name='input', type='text')
+    locator = fake_bidi_conn.last_command('browsingContext.locateNodes')['params']['locator']
+    assert locator['type'] in ('css', 'xpath')
+    assert 'text' in locator['value']
