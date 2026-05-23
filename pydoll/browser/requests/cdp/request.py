@@ -11,7 +11,8 @@ from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING, Any, Callable, Union, cast
 
 from pydoll.browser.requests.base import BaseRequest
-from pydoll.browser.requests.cdp.har_recorder import HarCapture, HarRecorder
+from pydoll.browser.requests.cdp.har_recorder import HarRecorder
+from pydoll.browser.requests.har import HarCapture
 from pydoll.commands.cdp.runtime_commands import RuntimeCommands
 from pydoll.constants import Scripts
 from pydoll.protocol.cdp.network.events import (

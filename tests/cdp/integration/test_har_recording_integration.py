@@ -15,7 +15,7 @@ from pathlib import Path
 import pytest
 
 from pydoll.browser.chromium import Chrome
-from pydoll.browser.requests.cdp.har_recorder import HarCapture
+from pydoll.browser.requests import HarCapture
 from pydoll.protocol.cdp.network.types import ResourceType
 
 from _waits import wait_until

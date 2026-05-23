@@ -4,8 +4,8 @@ It allows making HTTP requests within the browser context, reusing cookies and h
 """
 
 from .bidi.request import BiDiRequest
-from .cdp.har_recorder import HarCapture
 from .cdp.request import Request
+from .har import HarCapture
 from .response import Response
 
 __all__ = ['BiDiRequest', 'HarCapture', 'Request', 'Response']

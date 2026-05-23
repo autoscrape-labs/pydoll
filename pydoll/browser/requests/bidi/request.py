@@ -10,9 +10,13 @@ from __future__ import annotations
 import asyncio
 import json as jsonlib
 import logging
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING, Any
 
 from pydoll.browser.requests.base import BaseRequest
+from pydoll.browser.requests.bidi.har_recorder import BiDiHarRecorder
+from pydoll.browser.requests.har import HarCapture
 from pydoll.commands.bidi.script_commands import ScriptCommands
 from pydoll.constants import Scripts
 from pydoll.protocol.bidi.script.types import ContextTarget
@@ -46,6 +50,31 @@ class BiDiRequest(BaseRequest['BiDiTab']):
         self._requests_sent: list[dict] = []
         self._requests_received: list[dict] = []
         self._target_url = ''
+
+    @asynccontextmanager
+    async def record(self) -> AsyncIterator[HarCapture]:
+        """Record network traffic as HAR.
+
+        Captures all network activity on the tab (request/response headers,
+        cookies, timings and response bodies via a BiDi data collector) and
+        produces a HarCapture for export.
+
+        Usage::
+
+            async with tab.request.record() as capture:
+                await tab.go_to('https://example.com')
+            capture.save('flow.har')
+
+        Yields:
+            HarCapture: Object with .save(), .to_dict(), and .entries.
+        """
+        recorder = BiDiHarRecorder(self.tab)
+        capture = HarCapture(recorder)
+        await recorder.start()
+        try:
+            yield capture
+        finally:
+            await recorder.stop()
 
     async def _execute_fetch_request(
         self, url: str, options: dict[str, Any]
