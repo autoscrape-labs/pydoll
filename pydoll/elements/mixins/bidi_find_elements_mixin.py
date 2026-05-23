@@ -139,4 +139,5 @@ class BidiFindElementsMixin(FindElementsMixin):
             tag_name=tag_name,
             method=by,
             selector=value,
+            mouse=getattr(self, '_mouse', None),
         )

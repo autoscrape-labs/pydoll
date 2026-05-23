@@ -9,19 +9,19 @@ from typing import TYPE_CHECKING, Optional, Union
 import aiofiles
 
 from pydoll.commands.bidi.browsing_context_commands import BrowsingContextCommands
+from pydoll.commands.bidi.input_commands import InputCommands
 from pydoll.commands.bidi.script_commands import ScriptCommands
 from pydoll.connection.bidi_connection_handler import BiDiConnectionHandler
 from pydoll.constants import By
 from pydoll.elements.mixins.bidi_find_elements_mixin import BidiFindElementsMixin
 from pydoll.exceptions import (
+    ElementNotFound,
     ElementNotInteractable,
     ElementNotVisible,
     MissingScreenshotPath,
     WaitElementTimeout,
 )
-from pydoll.protocol.bidi.base import Command, T_CommandParams, T_CommandResult
 from pydoll.protocol.bidi.browsing_context.types import (
-    BoxClipRectangle,
     ElementClipRectangle,
 )
 from pydoll.protocol.bidi.script.types import (
@@ -31,7 +31,7 @@ from pydoll.protocol.bidi.script.types import (
 )
 
 if TYPE_CHECKING:
-    from pydoll.protocol.bidi.script.types import NodeProperties
+    from pydoll.interactions.mouse import BiDiMouse
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +52,7 @@ class BiDiWebElement(BidiFindElementsMixin):
         tag_name: str,
         method: Optional[By] = None,
         selector: Optional[str] = None,
+        mouse: Optional[BiDiMouse] = None,
     ):
         self._shared_id = shared_id
         self._context_id = context_id
@@ -60,6 +61,7 @@ class BiDiWebElement(BidiFindElementsMixin):
         self._attributes['tag_name'] = tag_name
         self._search_method = method
         self._selector = selector
+        self._mouse = mouse
 
     @property
     def attributes(self) -> dict[str, str]:
@@ -147,6 +149,7 @@ class BiDiWebElement(BidiFindElementsMixin):
                 connection=self._connection_handler,
                 attributes=node_props.get('attributes', {}),
                 tag_name=node_props.get('localName', ''),
+                mouse=self._mouse,
             )
         raise ElementNotFound('Parent element not found')
 
@@ -232,11 +235,53 @@ class BiDiWebElement(BidiFindElementsMixin):
         hold_time: float = 0.1,
         humanize: bool = False,
     ):
-        """Click element using JavaScript click."""
+        """Click the element with a real, trusted pointer interaction.
+
+        Uses input.performActions so the events report isTrusted=true (like the
+        CDP path), instead of a synthetic JS click. Offsets are relative to the
+        element's center.
+
+        When humanize=True, delegates to the tab's shared mouse so the cursor
+        travels a Bezier curve (Fitts's Law timing, tremor, overshoot) from its
+        current position to the element center — identical humanization to the
+        CDP path. When humanize=False, the pointer jumps to the element and
+        clicks.
+        """
         await self.scroll_into_view()
         if not await self.is_visible():
             raise ElementNotVisible()
-        await self._call_on_element('(el) => el.click()')
+
+        if humanize and self._mouse is not None:
+            bounds = await self.get_bounds_using_js()
+            center_x = bounds['x'] + bounds['width'] / 2 + x_offset
+            center_y = bounds['y'] + bounds['height'] / 2 + y_offset
+            await self._mouse.click(center_x, center_y, humanize=True)
+            return
+
+        origin = {'type': 'element', 'element': {'sharedId': self._shared_id}}
+        await self._execute_command(
+            InputCommands.perform_actions(
+                context=self._context_id,
+                actions=[
+                    {
+                        'type': 'pointer',
+                        'id': 'mouse',
+                        'parameters': {'pointerType': 'mouse'},
+                        'actions': [
+                            {
+                                'type': 'pointerMove',
+                                'x': x_offset,
+                                'y': y_offset,
+                                'origin': origin,
+                            },
+                            {'type': 'pointerDown', 'button': 0},
+                            {'type': 'pause', 'duration': int(hold_time * 1000)},
+                            {'type': 'pointerUp', 'button': 0},
+                        ],
+                    }
+                ],
+            )
+        )
 
     async def focus(self):
         """Focus this element."""
@@ -279,8 +324,6 @@ class BiDiWebElement(BidiFindElementsMixin):
 
     async def set_input_files(self, files: Union[str, Path, list[Union[str, Path]]]):
         """Set files on a file input element."""
-        from pydoll.commands.bidi.input_commands import InputCommands
-
         if isinstance(files, (str, Path)):
             files = [files]
         file_paths = [str(f) for f in files]

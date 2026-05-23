@@ -13,6 +13,7 @@ from pydoll.commands.bidi.session_commands import SessionCommands
 from pydoll.commands.bidi.storage_commands import StorageCommands
 from pydoll.connection.bidi_connection_handler import BiDiConnectionHandler
 from pydoll.elements.mixins.bidi_find_elements_mixin import BidiFindElementsMixin
+from pydoll.interactions.mouse import BiDiMouse
 from pydoll.protocol.bidi.base import Command, T_CommandParams, T_CommandResult
 from pydoll.protocol.events import BIDI_EVENT_MAP, Event
 from pydoll.protocol.types import Cookie, CookieParam
@@ -38,6 +39,17 @@ class BiDiTab(BidiFindElementsMixin):
     ):
         self._context_id = context_id
         self._connection_handler = connection
+        self._mouse: BiDiMouse = BiDiMouse(self)
+
+    @property
+    def mouse(self) -> BiDiMouse:
+        """Mouse controller for this tab (real, trusted pointer input).
+
+        Shared with every element found through this tab so the cursor position
+        is preserved across interactions (humanized moves start where the last
+        one ended).
+        """
+        return self._mouse
 
     @property
     async def current_url(self) -> str:
