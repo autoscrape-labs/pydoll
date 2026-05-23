@@ -20,6 +20,7 @@ from pydoll.exceptions import (
     ElementNotVisible,
     IFrameNotFound,
     MissingScreenshotPath,
+    ShadowRootNotFound,
     WaitElementTimeout,
 )
 from pydoll.interactions.keyboard import BiDiKeyboard
@@ -33,6 +34,7 @@ from pydoll.protocol.bidi.script.types import (
 )
 
 if TYPE_CHECKING:
+    from pydoll.elements.bidi.shadow_root import BiDiShadowRoot
     from pydoll.interactions.mouse import BiDiMouse
 
 logger = logging.getLogger(__name__)
@@ -55,6 +57,8 @@ class BiDiWebElement(BidiFindElementsMixin):
         method: Optional[By] = None,
         selector: Optional[str] = None,
         mouse: Optional[BiDiMouse] = None,
+        shadow_root_id: Optional[str] = None,
+        shadow_root_mode: Optional[str] = None,
     ):
         self._shared_id = shared_id
         self._context_id = context_id
@@ -66,6 +70,8 @@ class BiDiWebElement(BidiFindElementsMixin):
         self._mouse = mouse
         self._keyboard: Optional[BiDiKeyboard] = None
         self._content_context: Optional[str] = None
+        self._shadow_root_id = shadow_root_id
+        self._shadow_root_mode = shadow_root_mode
 
     def _get_keyboard(self) -> BiDiKeyboard:
         """Get or create the keyboard controller bound to this element."""
@@ -190,6 +196,25 @@ class BiDiWebElement(BidiFindElementsMixin):
                 mouse=self._mouse,
             )
         raise ElementNotFound('Parent element not found')
+
+    async def get_shadow_root(self) -> BiDiShadowRoot:
+        """Return this element's shadow root (open or closed).
+
+        Raises:
+            ShadowRootNotFound: If the element has no shadow root.
+        """
+        if self._shadow_root_id is None:
+            raise ShadowRootNotFound()
+        from pydoll.elements.bidi.shadow_root import BiDiShadowRoot  # noqa: PLC0415
+
+        return BiDiShadowRoot(
+            shadow_root_id=self._shadow_root_id,
+            context_id=self._context_id,
+            connection=self._connection_handler,
+            mode=self._shadow_root_mode or 'open',
+            host_element=self,
+            mouse=self._mouse,
+        )
 
     async def take_screenshot(
         self,

@@ -138,6 +138,7 @@ class BidiFindElementsMixin(FindElementsMixin):
         node_props = node.get('value', {})
         attributes = node_props.get('attributes', {})
         tag_name = node_props.get('localName', '')
+        shadow_root = node_props.get('shadowRoot') or {}
 
         return create_bidi_web_element(
             shared_id=node.get('sharedId', ''),
@@ -148,4 +149,6 @@ class BidiFindElementsMixin(FindElementsMixin):
             method=by,
             selector=value,
             mouse=getattr(self, '_mouse', None),
+            shadow_root_id=shadow_root.get('sharedId'),
+            shadow_root_mode=(shadow_root.get('value') or {}).get('mode'),
         )
