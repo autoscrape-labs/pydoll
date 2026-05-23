@@ -8,7 +8,7 @@ from collections.abc import Mapping
 from contextlib import asynccontextmanager
 from pathlib import Path
 from tempfile import mkdtemp
-from typing import TYPE_CHECKING, Optional, Union, overload
+from typing import TYPE_CHECKING, Optional, TypeVar, Union, overload
 
 import aiofiles
 
@@ -17,12 +17,14 @@ from pydoll.commands.bidi.browser_commands import BrowserCommands
 from pydoll.commands.bidi.browsing_context_commands import BrowsingContextCommands
 from pydoll.commands.bidi.emulation_commands import EmulationCommands
 from pydoll.commands.bidi.input_commands import InputCommands as BiDiInputCommands
+from pydoll.commands.bidi.network_commands import NetworkCommands
 from pydoll.commands.bidi.script_commands import ScriptCommands
 from pydoll.commands.bidi.session_commands import SessionCommands
 from pydoll.commands.bidi.storage_commands import StorageCommands
 from pydoll.connection.bidi_connection_handler import BiDiConnectionHandler
 from pydoll.elements.mixins.bidi_find_elements_mixin import BidiFindElementsMixin
-from pydoll.exceptions import DownloadTimeout, ScriptExecutionError
+from pydoll.exceptions import DownloadTimeout, NetworkEventsNotEnabled, ScriptExecutionError
+from pydoll.extractor.engine import ExtractionEngine
 from pydoll.interactions.keyboard import BiDiKeyboard
 from pydoll.interactions.mouse import BiDiMouse
 from pydoll.interactions.scroll import BiDiScroll
@@ -30,7 +32,7 @@ from pydoll.protocol.bidi.base import Command, T_CommandParams, T_CommandResult
 from pydoll.protocol.bidi.browser.types import DownloadBehaviorAllowed
 from pydoll.protocol.bidi.browsing_context.types import ImageFormat, ReadinessState
 from pydoll.protocol.bidi.network.types import Cookie as BiDiCookie
-from pydoll.protocol.bidi.network.types import SameSite, StringValue
+from pydoll.protocol.bidi.network.types import DataType, SameSite, StringValue
 from pydoll.protocol.bidi.script.types import ContextTarget, NodeRemoteValue, SharedReference
 from pydoll.protocol.bidi.storage.types import BrowsingContextPartitionDescriptor, PartialCookie
 from pydoll.protocol.events import BIDI_EVENT_MAP, Event
@@ -41,8 +43,13 @@ if TYPE_CHECKING:
     from typing import Any, AsyncGenerator, Awaitable, Callable
 
     from pydoll.elements.bidi.shadow_root import BiDiShadowRoot
+    from pydoll.extractor.model import ExtractionModel
 
 logger = logging.getLogger(__name__)
+
+T = TypeVar('T', bound='ExtractionModel')
+
+_MAX_COLLECTED_BYTES = 50_000_000
 
 
 class BiDiTab(BidiFindElementsMixin):
@@ -64,6 +71,9 @@ class BiDiTab(BidiFindElementsMixin):
         self._keyboard: Optional[BiDiKeyboard] = None
         self._scroll: Optional[BiDiScroll] = None
         self._request: Optional[BiDiRequest] = None
+        self._extraction_engine: Optional[ExtractionEngine] = None
+        self._network_introspection_enabled = False
+        self._response_collector_id: Optional[str] = None
 
     @property
     def mouse(self) -> BiDiMouse:
@@ -95,6 +105,140 @@ class BiDiTab(BidiFindElementsMixin):
         if self._request is None:
             self._request = BiDiRequest(self)
         return self._request
+
+    @property
+    def _extractor(self) -> ExtractionEngine:
+        """Lazy-initialized extraction engine."""
+        if self._extraction_engine is None:
+            self._extraction_engine = ExtractionEngine(self)
+        return self._extraction_engine
+
+    async def extract(
+        self,
+        model: type[T],
+        *,
+        scope: Optional[str] = None,
+        timeout: int = 0,
+    ) -> T:
+        """Extract structured data from the page into a typed model.
+
+        Args:
+            model: ExtractionModel subclass defining the extraction schema.
+            scope: Optional CSS/XPath selector to limit the extraction region.
+            timeout: Seconds to wait for elements (0 = no wait).
+
+        Returns:
+            Populated model instance with extracted data.
+
+        Raises:
+            FieldExtractionFailed: If a required field cannot be extracted.
+        """
+        return await self._extractor.extract(model, scope=scope, timeout=timeout)
+
+    async def extract_all(
+        self,
+        model: type[T],
+        *,
+        scope: str,
+        timeout: int = 0,
+        limit: Optional[int] = None,
+    ) -> list[T]:
+        """Extract multiple items from repeated containers on the page.
+
+        Each element matching the scope selector generates one model instance,
+        with fields resolved relative to that container.
+
+        Args:
+            model: ExtractionModel subclass defining the extraction schema.
+            scope: CSS/XPath selector for the repeated container (required).
+            timeout: Seconds to wait for elements (0 = no wait).
+            limit: Maximum number of items to extract (None = all).
+
+        Returns:
+            List of populated model instances.
+        """
+        return await self._extractor.extract_all(
+            model, scope=scope, timeout=timeout, limit=limit
+        )
+
+    async def get_network_logs(self, filter: Optional[str] = None) -> list[dict]:
+        """Return captured network request logs for this tab.
+
+        Enables network introspection on first use (subscribes to
+        network.beforeRequestSent and starts a response data collector), so call
+        this before the traffic you want to capture. Returns the raw BiDi
+        beforeRequestSent events for this browsing context.
+
+        Args:
+            filter: If set, only logs whose request URL contains this substring.
+        """
+        await self._ensure_network_introspection()
+        logs = [
+            log
+            for log in self._connection_handler.network_logs
+            if log.get('params', {}).get('context') == self._context_id
+        ]
+        if filter:
+            logs = [
+                log
+                for log in logs
+                if filter in log['params'].get('request', {}).get('url', '')
+            ]
+        return logs
+
+    async def get_network_response_body(self, request_id: str) -> str:
+        """Return the response body for a captured request id, decoded to text.
+
+        BiDi retrieves bodies from a data collector, so network introspection must
+        have been enabled (via get_network_logs) before the response arrived.
+
+        Args:
+            request_id: The request id from a network log (params.request.request).
+
+        Raises:
+            NetworkEventsNotEnabled: If network introspection was never enabled.
+        """
+        if not self._network_introspection_enabled or not self._response_collector_id:
+            raise NetworkEventsNotEnabled(
+                'Network events must be enabled to get response body '
+                '(call get_network_logs() before the request)'
+            )
+        data = await self._execute_command(
+            NetworkCommands.get_data(
+                data_type=DataType.RESPONSE,
+                request=request_id,
+                collector=self._response_collector_id,
+            )
+        )
+        bytes_value = data['result']['bytes']
+        value = bytes_value.get('value', '')
+        if not isinstance(value, str):
+            return ''
+        if bytes_value.get('type') == 'base64':
+            return _b64.b64decode(value).decode('utf-8', 'replace')
+        return value
+
+    async def _ensure_network_introspection(self) -> None:
+        """Subscribe to request/response events and start a response collector (once).
+
+        The responseCompleted subscription is required for the data collector to
+        finalize response bodies — without it network.getData blocks.
+        """
+        if self._network_introspection_enabled:
+            return
+        await self._execute_command(
+            SessionCommands.subscribe(
+                events=['network.beforeRequestSent', 'network.responseCompleted'],
+                contexts=[self._context_id],
+            )
+        )
+        response = await self._execute_command(
+            NetworkCommands.add_data_collector(
+                data_types=[DataType.RESPONSE], max_encoded_data_size=_MAX_COLLECTED_BYTES
+            )
+        )
+        self._response_collector_id = response['result']['collector']
+        self._network_introspection_enabled = True
 
     @property
     async def current_url(self) -> str:
