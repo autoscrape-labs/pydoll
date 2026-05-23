@@ -7,6 +7,7 @@ import websockets
 
 from pydoll.connection.base_connection_handler import BaseConnectionHandler
 from pydoll.connection.managers.event_trackers import CDPEventTracker
+from pydoll.exceptions import InvalidConnectionPort
 from pydoll.utils import get_browser_ws_address
 
 if TYPE_CHECKING:
@@ -49,6 +50,8 @@ class CDPConnectionHandler(BaseConnectionHandler):
             logger.debug('Using provided WebSocket address')
             return self._ws_address
         if not self._page_id:
+            if self._connection_port is None:
+                raise InvalidConnectionPort()
             resolved = await self._ws_address_resolver(self._connection_port)
             logger.debug(f'Resolved browser-level WebSocket address: {resolved}')
             return resolved

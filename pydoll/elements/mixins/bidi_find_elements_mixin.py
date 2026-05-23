@@ -17,7 +17,7 @@ from pydoll.protocol.bidi.browsing_context.types import (
 
 if TYPE_CHECKING:
     from pydoll.elements.bidi.web_element import BiDiWebElement
-    from pydoll.protocol.bidi.script.types import NodeRemoteValue
+    from pydoll.protocol.bidi.script.types import NodeRemoteValue, SharedReference
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ def create_bidi_web_element(*args, **kwargs):
     return BiDiWebElement(*args, **kwargs)
 
 
-class BidiFindElementsMixin(FindElementsMixin):
+class BidiFindElementsMixin(FindElementsMixin['BiDiWebElement']):
     """BiDi-specific implementation of element finding.
 
     Uses browsingContext.locateNodes for element location.
@@ -40,7 +40,7 @@ class BidiFindElementsMixin(FindElementsMixin):
         _connection_handler: BiDiConnectionHandler
         _context_id: str
 
-    async def _resolve_locate_target(self) -> tuple[str, Optional[list[dict]]]:
+    async def _resolve_locate_target(self) -> tuple[str, Optional[list[SharedReference]]]:
         """Return the (browsing-context id, start nodes) to run locateNodes against.
 
         Default: this finder's own context, scoped to its sharedId when it is an
@@ -115,7 +115,7 @@ class BidiFindElementsMixin(FindElementsMixin):
             case _:
                 return CssLocator(type='css', value=value)
 
-    def _get_start_nodes(self) -> Optional[list[dict]]:
+    def _get_start_nodes(self) -> Optional[list[SharedReference]]:
         """Get start nodes for scoped search.
 
         Returns None for document-level search (Tab),
@@ -135,10 +135,11 @@ class BidiFindElementsMixin(FindElementsMixin):
         child context when searching inside an iframe), so the element operates
         in the right document.
         """
-        node_props = node.get('value', {})
-        attributes = node_props.get('attributes', {})
-        tag_name = node_props.get('localName', '')
-        shadow_root = node_props.get('shadowRoot') or {}
+        node_props = node.get('value')
+        attributes = node_props.get('attributes', {}) if node_props else {}
+        tag_name = node_props.get('localName', '') if node_props else ''
+        shadow_root = node_props.get('shadowRoot') if node_props else None
+        shadow_props = shadow_root.get('value') if shadow_root else None
 
         return create_bidi_web_element(
             shared_id=node.get('sharedId', ''),
@@ -149,6 +150,6 @@ class BidiFindElementsMixin(FindElementsMixin):
             method=by,
             selector=value,
             mouse=getattr(self, '_mouse', None),
-            shadow_root_id=shadow_root.get('sharedId'),
-            shadow_root_mode=(shadow_root.get('value') or {}).get('mode'),
+            shadow_root_id=shadow_root.get('sharedId') if shadow_root else None,
+            shadow_root_mode=shadow_props.get('mode') if shadow_props else None,
         )

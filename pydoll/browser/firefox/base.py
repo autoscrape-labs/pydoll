@@ -25,8 +25,23 @@ from pydoll.commands.bidi.storage_commands import StorageCommands
 from pydoll.connection.bidi_connection_handler import BiDiConnectionHandler
 from pydoll.exceptions import BrowserNotRunning
 from pydoll.protocol.bidi.base import Command, T_CommandParams, T_CommandResult
-from pydoll.protocol.bidi.browser.types import ClientWindowInfo
+from pydoll.protocol.bidi.browser.types import (
+    ClientWindowInfo,
+    ClientWindowState,
+    DownloadBehaviorAllowed,
+    DownloadBehaviorDenied,
+)
+from pydoll.protocol.bidi.browsing_context.types import CreateType
+from pydoll.protocol.bidi.network.types import (
+    InterceptPhase,
+    SameSite,
+    StringValue,
+    UrlPatternPattern,
+    UrlPatternString,
+)
 from pydoll.protocol.bidi.permissions.types import PermissionDescriptor, PermissionState
+from pydoll.protocol.bidi.session.types import ManualProxyConfiguration
+from pydoll.protocol.bidi.storage.types import PartialCookie, StorageKeyPartitionDescriptor
 from pydoll.protocol.events import BIDI_EVENT_MAP, Event
 from pydoll.protocol.types import (
     BrowserVersion,
@@ -227,13 +242,11 @@ class FirefoxBrowser:
                 stacklevel=2,
             )
 
-        proxy = None
+        proxy: Optional[ManualProxyConfiguration] = None
         if proxy_server:
-            proxy = {
-                'proxyType': 'manual',
-                'httpProxy': proxy_server,
-                'sslProxy': proxy_server,
-            }
+            proxy = ManualProxyConfiguration(
+                proxyType='manual', httpProxy=proxy_server, sslProxy=proxy_server
+            )
 
         response = await self._execute_command(
             BrowserCommands.create_user_context(proxy=proxy)
@@ -272,12 +285,8 @@ class FirefoxBrowser:
             url: URL to navigate to (empty for blank tab).
             browser_context_id: UserContext to create the tab in.
         """
-        params = {'type': 'tab'}
-        if browser_context_id:
-            params['userContext'] = browser_context_id
-
         response = await self._execute_command(
-            BrowsingContextCommands.create(**params)
+            BrowsingContextCommands.create(type=CreateType.TAB, user_context=browser_context_id)
         )
         context_id = response['result']['context']
         tab = BiDiTab(context_id, self._connection_handler)
@@ -318,13 +327,13 @@ class FirefoxBrowser:
             download_path: Required if behavior is ALLOW.
             browser_context_id: Context to apply to.
         """
+        bidi_behavior: DownloadBehaviorAllowed | DownloadBehaviorDenied
         if behavior == DownloadBehavior.ALLOW and download_path:
-            bidi_behavior = {
-                'type': 'allowed',
-                'destinationFolder': download_path,
-            }
+            bidi_behavior = DownloadBehaviorAllowed(
+                type='allowed', destinationFolder=download_path
+            )
         else:
-            bidi_behavior = {'type': 'denied'}
+            bidi_behavior = DownloadBehaviorDenied(type='denied')
 
         user_contexts = [browser_context_id] if browser_context_id else None
         await self._execute_command(
@@ -338,12 +347,11 @@ class FirefoxBrowser:
         self, browser_context_id: Optional[str] = None
     ):
         """Delete all cookies."""
-        partition = None
+        partition: Optional[StorageKeyPartitionDescriptor] = None
         if browser_context_id:
-            partition = {
-                'type': 'storageKey',
-                'userContext': browser_context_id,
-            }
+            partition = StorageKeyPartitionDescriptor(
+                type='storageKey', userContext=browser_context_id
+            )
         await self._execute_command(
             StorageCommands.delete_cookies(partition=partition)
         )
@@ -354,28 +362,27 @@ class FirefoxBrowser:
         browser_context_id: Optional[str] = None,
     ):
         """Set cookies."""
-        partition = None
+        partition: Optional[StorageKeyPartitionDescriptor] = None
         if browser_context_id:
-            partition = {
-                'type': 'storageKey',
-                'userContext': browser_context_id,
-            }
+            partition = StorageKeyPartitionDescriptor(
+                type='storageKey', userContext=browser_context_id
+            )
         for cookie in cookies:
-            bidi_cookie = {
-                'name': cookie['name'],
-                'value': {'type': 'string', 'value': cookie['value']},
-                'domain': cookie['domain'],
-            }
+            bidi_cookie = PartialCookie(
+                name=cookie['name'],
+                value=StringValue(type='string', value=cookie['value']),
+                domain=cookie['domain'],
+            )
             if 'path' in cookie:
                 bidi_cookie['path'] = cookie['path']
             if 'httpOnly' in cookie:
                 bidi_cookie['httpOnly'] = cookie['httpOnly']
             if 'secure' in cookie:
                 bidi_cookie['secure'] = cookie['secure']
-            if 'sameSite' in cookie:
-                bidi_cookie['sameSite'] = cookie['sameSite'].lower()
             if 'expiry' in cookie:
                 bidi_cookie['expiry'] = cookie['expiry']
+            if 'sameSite' in cookie:
+                bidi_cookie['sameSite'] = SameSite(cookie['sameSite'].lower())
             await self._execute_command(
                 StorageCommands.set_cookie(cookie=bidi_cookie, partition=partition)
             )
@@ -384,30 +391,15 @@ class FirefoxBrowser:
         self, browser_context_id: Optional[str] = None
     ) -> list[Cookie]:
         """Get all cookies."""
-        partition = None
+        partition: Optional[StorageKeyPartitionDescriptor] = None
         if browser_context_id:
-            partition = {
-                'type': 'storageKey',
-                'userContext': browser_context_id,
-            }
+            partition = StorageKeyPartitionDescriptor(
+                type='storageKey', userContext=browser_context_id
+            )
         response = await self._execute_command(
             StorageCommands.get_cookies(partition=partition)
         )
-        bidi_cookies = response['result']['cookies']
-        return [
-            Cookie(
-                name=c['name'],
-                value=c['value'].get('value', '') if isinstance(c['value'], dict) else c['value'],
-                domain=c['domain'],
-                path=c['path'],
-                size=c.get('size', 0),
-                httpOnly=c['httpOnly'],
-                secure=c['secure'],
-                sameSite=c['sameSite'],
-                **({'expiry': c['expiry']} if 'expiry' in c else {}),
-            )
-            for c in bidi_cookies
-        ]
+        return [BiDiTab._to_generic_cookie(c) for c in response['result']['cookies']]
 
     async def set_window_maximized(self):
         """Maximize browser window."""
@@ -442,7 +434,7 @@ class FirefoxBrowser:
             await self._execute_command(
                 BrowserCommands.set_client_window_state(
                     client_window=windows[0]['clientWindow'],
-                    state='normal',
+                    state=ClientWindowState.NORMAL,
                     **bounds,
                 )
             )
@@ -514,15 +506,13 @@ class FirefoxBrowser:
             Intercept ID for later removal.
         """
 
-        bidi_patterns = None
+        bidi_patterns: Optional[list[UrlPatternPattern | UrlPatternString]] = None
         if url_patterns:
-            bidi_patterns = [
-                {'type': 'string', 'pattern': p} for p in url_patterns
-            ]
+            bidi_patterns = [UrlPatternString(type='string', pattern=p) for p in url_patterns]
 
         response = await self._execute_command(
             NetworkCommands.add_intercept(
-                phases=['beforeRequestSent'],
+                phases=[InterceptPhase.BEFORE_REQUEST_SENT],
                 url_patterns=bidi_patterns,
             )
         )

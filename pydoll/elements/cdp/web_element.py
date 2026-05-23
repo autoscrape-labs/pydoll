@@ -344,7 +344,7 @@ class WebElement(CDPFindElementsMixin):  # noqa: PLR0904
         )
 
     async def get_children_elements(
-        self, max_depth: int = 1, tag_filter: list[str] = [], raise_exc: bool = False
+        self, max_depth: int = 1, tag_filter: Optional[list[str]] = None, raise_exc: bool = False
     ) -> list[WebElement]:
         """
         Retrieve all direct and nested child elements of this element.
@@ -367,7 +367,7 @@ class WebElement(CDPFindElementsMixin):  # noqa: PLR0904
             f'tag_filter={tag_filter}, raise_exc={raise_exc}'
         )
         children = await self._get_family_elements(
-            script=Scripts.GET_CHILDREN_NODE, max_depth=max_depth, tag_filter=tag_filter
+            script=Scripts.GET_CHILDREN_NODE, max_depth=max_depth, tag_filter=tag_filter or []
         )
         if not children and raise_exc:
             raise ElementNotFound(f'Child element not found for element: {self}')
@@ -375,7 +375,7 @@ class WebElement(CDPFindElementsMixin):  # noqa: PLR0904
         return children
 
     async def get_siblings_elements(
-        self, tag_filter: list[str] = [], raise_exc: bool = False
+        self, tag_filter: Optional[list[str]] = None, raise_exc: bool = False
     ) -> list[WebElement]:
         """
         Retrieve all sibling elements of this element (elements at the same DOM level).
@@ -394,7 +394,7 @@ class WebElement(CDPFindElementsMixin):  # noqa: PLR0904
         """
         logger.debug(f'Getting siblings: tag_filter={tag_filter}, raise_exc={raise_exc}')
         siblings = await self._get_family_elements(
-            script=Scripts.GET_SIBLINGS_NODE, tag_filter=tag_filter
+            script=Scripts.GET_SIBLINGS_NODE, tag_filter=tag_filter or []
         )
         if not siblings and raise_exc:
             raise ElementNotFound(f'Sibling element not found for element: {self}')

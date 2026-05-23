@@ -27,6 +27,7 @@ from pydoll.interactions.keyboard import BiDiKeyboard
 from pydoll.protocol.bidi.browsing_context.types import (
     ElementClipRectangle,
 )
+from pydoll.protocol.bidi.input.types import ElementOrigin, PointerType
 from pydoll.protocol.bidi.script.types import (
     ContextTarget,
     RemoteValue,
@@ -36,6 +37,7 @@ from pydoll.protocol.bidi.script.types import (
 if TYPE_CHECKING:
     from pydoll.elements.bidi.shadow_root import BiDiShadowRoot
     from pydoll.interactions.mouse import BiDiMouse
+    from pydoll.protocol.bidi.input.types import PointerMoveAction, PointerSourceActions
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +81,7 @@ class BiDiWebElement(BidiFindElementsMixin):
             self._keyboard = BiDiKeyboard(self)
         return self._keyboard
 
-    async def _resolve_locate_target(self) -> tuple[str, Optional[list[dict]]]:
+    async def _resolve_locate_target(self) -> tuple[str, Optional[list[SharedReference]]]:
         """Search inside an iframe's child context; otherwise scope to this element."""
         if self.is_iframe:
             return await self._get_content_context(), None
@@ -101,8 +103,13 @@ class BiDiWebElement(BidiFindElementsMixin):
                     arguments=[{'type': 'node', 'sharedId': self._shared_id}],
                 )
             )
-            context = response['result'].get('result', {}).get('value', {}).get('context')
-            if not context:
+            result = response['result']
+            context: object = None
+            if result['type'] == 'success':
+                value = result['result'].get('value')
+                if isinstance(value, dict):
+                    context = value.get('context')
+            if not isinstance(context, str) or not context:
                 raise IFrameNotFound('Could not resolve the iframe content browsing context')
             self._content_context = context
         return self._content_context
@@ -145,12 +152,12 @@ class BiDiWebElement(BidiFindElementsMixin):
     @property
     async def text(self) -> str:
         """Visible text content of the element."""
-        return await self._call_on_element('(el) => el.textContent || ""') or ''
+        return str(await self._call_on_element('(el) => el.textContent || ""') or '')
 
     @property
     async def inner_html(self) -> str:
         """HTML content of the element."""
-        return await self._call_on_element('(el) => el.outerHTML') or ''
+        return str(await self._call_on_element('(el) => el.outerHTML') or '')
 
     @property
     async def bounds(self) -> dict:
@@ -165,10 +172,11 @@ class BiDiWebElement(BidiFindElementsMixin):
 
     async def get_bounds_using_js(self) -> dict[str, int]:
         """Get element bounding box via JavaScript."""
-        return await self._call_on_element(
+        bounds = await self._call_on_element(
             '(el) => { const r = el.getBoundingClientRect();'
             ' return {x: r.x, y: r.y, width: r.width, height: r.height} }'
-        ) or {}
+        )
+        return bounds if isinstance(bounds, dict) else {}
 
     async def get_parent_element(self) -> BiDiWebElement:
         """Get parent element."""
@@ -181,21 +189,26 @@ class BiDiWebElement(BidiFindElementsMixin):
             )
         )
         result = response['result']
-        remote = result.get('result', {})
-        if remote.get('sharedId'):
-            from pydoll.elements.mixins.bidi_find_elements_mixin import (  # noqa: PLC0415
-                create_bidi_web_element,
-            )
-            node_props = remote.get('value', {})
-            return create_bidi_web_element(
-                shared_id=remote['sharedId'],
-                context_id=self._context_id,
-                connection=self._connection_handler,
-                attributes=node_props.get('attributes', {}),
-                tag_name=node_props.get('localName', ''),
-                mouse=self._mouse,
-            )
-        raise ElementNotFound('Parent element not found')
+        if result['type'] != 'success':
+            raise ElementNotFound('Parent element not found')
+        remote = result['result']
+        shared_id = remote.get('sharedId')
+        if not shared_id:
+            raise ElementNotFound('Parent element not found')
+        node_props = remote.get('value')
+        attributes = node_props.get('attributes', {}) if isinstance(node_props, dict) else {}
+        tag_name = node_props.get('localName', '') if isinstance(node_props, dict) else ''
+        from pydoll.elements.mixins.bidi_find_elements_mixin import (  # noqa: PLC0415
+            create_bidi_web_element,
+        )
+        return create_bidi_web_element(
+            shared_id=shared_id,
+            context_id=self._context_id,
+            connection=self._connection_handler,
+            attributes=attributes,
+            tag_name=tag_name,
+            mouse=self._mouse,
+        )
 
     async def get_shadow_root(self) -> BiDiShadowRoot:
         """Return this element's shadow root (open or closed).
@@ -215,6 +228,26 @@ class BiDiWebElement(BidiFindElementsMixin):
             host_element=self,
             mouse=self._mouse,
         )
+
+    async def get_children_elements(
+        self, max_depth: int = 1, tag_filter: Optional[list[str]] = None
+    ) -> list[BiDiWebElement]:
+        """Retrieve child elements (direct children when ``max_depth`` is 1, else descendants)."""
+        selector = ':scope > *' if max_depth == 1 else ':scope *'
+        found = await self.query(selector, find_all=True, raise_exc=False)
+        children = found if isinstance(found, list) else ([found] if found else [])
+        if tag_filter:
+            allowed = {tag.lower() for tag in tag_filter}
+            children = [c for c in children if (c.tag_name or '').lower() in allowed]
+        return children
+
+    async def get_siblings_elements(
+        self, tag_filter: Optional[list[str]] = None
+    ) -> list[BiDiWebElement]:
+        """Retrieve sibling elements (children of the same parent, excluding this element)."""
+        parent = await self.get_parent_element()
+        siblings = await parent.get_children_elements(max_depth=1, tag_filter=tag_filter)
+        return [s for s in siblings if s._shared_id != self._shared_id]
 
     async def take_screenshot(
         self,
@@ -321,29 +354,28 @@ class BiDiWebElement(BidiFindElementsMixin):
             await self._mouse.click(center_x, center_y, humanize=True)
             return
 
-        origin = {'type': 'element', 'element': {'sharedId': self._shared_id}}
+        origin = ElementOrigin(
+            type='element', element=SharedReference(sharedId=self._shared_id)
+        )
+        move: PointerMoveAction = {
+            'type': 'pointerMove',
+            'x': x_offset,
+            'y': y_offset,
+            'origin': origin,
+        }
+        source: PointerSourceActions = {
+            'type': 'pointer',
+            'id': 'mouse',
+            'parameters': {'pointerType': PointerType.MOUSE},
+            'actions': [
+                move,
+                {'type': 'pointerDown', 'button': 0},
+                {'type': 'pause', 'duration': int(hold_time * 1000)},
+                {'type': 'pointerUp', 'button': 0},
+            ],
+        }
         await self._execute_command(
-            InputCommands.perform_actions(
-                context=self._context_id,
-                actions=[
-                    {
-                        'type': 'pointer',
-                        'id': 'mouse',
-                        'parameters': {'pointerType': 'mouse'},
-                        'actions': [
-                            {
-                                'type': 'pointerMove',
-                                'x': x_offset,
-                                'y': y_offset,
-                                'origin': origin,
-                            },
-                            {'type': 'pointerDown', 'button': 0},
-                            {'type': 'pause', 'duration': int(hold_time * 1000)},
-                            {'type': 'pointerUp', 'button': 0},
-                        ],
-                    }
-                ],
-            )
+            InputCommands.perform_actions(context=self._context_id, actions=[source])
         )
 
     async def focus(self):
@@ -448,25 +480,23 @@ class BiDiWebElement(BidiFindElementsMixin):
         on_top = await self.is_on_top()
         return visible and on_top
 
-    async def execute_script(self, script: str, **kwargs) -> RemoteValue:
+    async def execute_script(self, script: str, await_promise: bool = False) -> RemoteValue:
         """Execute JavaScript with this element as first argument."""
         response = await self._execute_command(
             ScriptCommands.call_function(
                 function_declaration=script,
-                await_promise=kwargs.get('await_promise', False),
+                await_promise=await_promise,
                 target=ContextTarget(context=self._context_id),
                 arguments=[{'type': 'node', 'sharedId': self._shared_id}],
             )
         )
         result = response['result']
-        if result.get('type') == 'exception':
+        if result['type'] == 'exception':
             raise RuntimeError(result['exceptionDetails']['text'])
-        return result.get('result', {})
+        return result['result']
 
-    async def _call_on_element(
-        self, function_declaration: str, *extra_args: dict
-    ) -> RemoteValue:
-        """Call a JavaScript function with this element as first argument."""
+    async def _call_on_element(self, function_declaration: str, *extra_args: dict) -> object:
+        """Call a JavaScript function with this element and return its deserialized value."""
         arguments: list[dict] = [
             {'type': 'node', 'sharedId': self._shared_id},
             *extra_args,
@@ -482,7 +512,6 @@ class BiDiWebElement(BidiFindElementsMixin):
         from pydoll.browser.firefox.tab import BiDiTab  # noqa: PLC0415
 
         result = response['result']
-        if result.get('type') == 'exception':
+        if result['type'] == 'exception':
             raise RuntimeError(result['exceptionDetails']['text'])
-        remote_value = result.get('result', {})
-        return BiDiTab._deserialize_remote_value(remote_value)
+        return BiDiTab._deserialize_remote_value(result['result'])

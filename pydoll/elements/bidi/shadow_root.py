@@ -68,7 +68,10 @@ class BiDiShadowRoot(BidiFindElementsMixin):
                 arguments=[{'type': 'node', 'sharedId': self._shared_id}],
             )
         )
-        return response['result'].get('result', {}).get('value', '') or ''
+        result = response['result']
+        if result['type'] != 'success':
+            return ''
+        return str(result['result'].get('value') or '')
 
     def __repr__(self) -> str:
         return f'BiDiShadowRoot(mode={self._mode!r}, shared_id={self._shared_id!r})'

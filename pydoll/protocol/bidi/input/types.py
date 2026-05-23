@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Literal
 
 from typing_extensions import NotRequired, TypedDict
 
@@ -16,7 +17,7 @@ class PointerType(str, Enum):
 class ElementOrigin(TypedDict):
     """Element used as a coordinate origin."""
 
-    type: str  # "element"
+    type: Literal['element']
     element: SharedReference
 
 
@@ -45,35 +46,35 @@ class PointerCommonProperties(TypedDict, total=False):
 class PauseAction(TypedDict):
     """Pause action."""
 
-    type: str  # "pause"
+    type: Literal['pause']
     duration: NotRequired[int]
 
 
 class KeyDownAction(TypedDict):
     """Key down action."""
 
-    type: str  # "keyDown"
+    type: Literal['keyDown']
     value: str
 
 
 class KeyUpAction(TypedDict):
     """Key up action."""
 
-    type: str  # "keyUp"
+    type: Literal['keyUp']
     value: str
 
 
 class PointerUpAction(TypedDict):
     """Pointer up action."""
 
-    type: str  # "pointerUp"
+    type: Literal['pointerUp']
     button: int
 
 
 class PointerDownAction(TypedDict):
     """Pointer down action."""
 
-    type: str  # "pointerDown"
+    type: Literal['pointerDown']
     button: int
     width: NotRequired[int]
     height: NotRequired[int]
@@ -87,7 +88,7 @@ class PointerDownAction(TypedDict):
 class PointerMoveAction(TypedDict):
     """Pointer move action."""
 
-    type: str  # "pointerMove"
+    type: Literal['pointerMove']
     x: float
     y: float
     duration: NotRequired[int]
@@ -104,7 +105,7 @@ class PointerMoveAction(TypedDict):
 class WheelScrollAction(TypedDict):
     """Wheel scroll action."""
 
-    type: str  # "scroll"
+    type: Literal['scroll']
     x: int
     y: int
     deltaX: int
@@ -113,10 +114,20 @@ class WheelScrollAction(TypedDict):
     origin: NotRequired[Origin]
 
 
+KeyAction = PauseAction | KeyDownAction | KeyUpAction
+"""An action belonging to a key input source."""
+
+PointerAction = PauseAction | PointerDownAction | PointerUpAction | PointerMoveAction
+"""An action belonging to a pointer input source."""
+
+WheelAction = PauseAction | WheelScrollAction
+"""An action belonging to a wheel input source."""
+
+
 class NoneSourceActions(TypedDict):
     """None input source (pause only)."""
 
-    type: str  # "none"
+    type: Literal['none']
     id: str
     actions: list[PauseAction]
 
@@ -124,26 +135,26 @@ class NoneSourceActions(TypedDict):
 class KeySourceActions(TypedDict):
     """Key input source."""
 
-    type: str  # "key"
+    type: Literal['key']
     id: str
-    actions: list[PauseAction | KeyDownAction | KeyUpAction]
+    actions: list[KeyAction]
 
 
 class PointerSourceActions(TypedDict):
     """Pointer input source."""
 
-    type: str  # "pointer"
+    type: Literal['pointer']
     id: str
     parameters: NotRequired[PointerParameters]
-    actions: list[PauseAction | PointerDownAction | PointerUpAction | PointerMoveAction]
+    actions: list[PointerAction]
 
 
 class WheelSourceActions(TypedDict):
     """Wheel input source."""
 
-    type: str  # "wheel"
+    type: Literal['wheel']
     id: str
-    actions: list[PauseAction | WheelScrollAction]
+    actions: list[WheelAction]
 
 
 SourceActions = NoneSourceActions | KeySourceActions | PointerSourceActions | WheelSourceActions

@@ -28,8 +28,10 @@ from typing import (
 
 import aiofiles
 
+from pydoll.browser.chromium._cookies import to_cdp_cookie_params, to_generic_cookies
 from pydoll.browser.requests import Request
 from pydoll.commands import (
+    BrowserCommands,
     DomCommands,
     FetchCommands,
     NetworkCommands,
@@ -61,7 +63,8 @@ from pydoll.exceptions import (
 from pydoll.extractor.engine import ExtractionEngine
 from pydoll.interactions import KeyboardAPI, MouseAPI, ScrollAPI
 from pydoll.interactions.iframe import IFrameContext
-from pydoll.protocol.cdp.browser.types import DownloadBehavior, DownloadProgressState
+from pydoll.protocol.cdp.browser.types import DownloadBehavior as CDPDownloadBehavior
+from pydoll.protocol.cdp.browser.types import DownloadProgressState
 from pydoll.protocol.cdp.dom.types import Node, ShadowRootType
 from pydoll.protocol.cdp.network.types import ResourceType
 from pydoll.protocol.cdp.page.events import PageEvent
@@ -71,6 +74,7 @@ from pydoll.protocol.cdp.runtime.methods import (
 )
 from pydoll.protocol.cdp.target.types import TargetInfo
 from pydoll.protocol.events import CDP_DOMAIN_MAP, CDP_EVENT_MAP, Event
+from pydoll.protocol.types import DownloadBehavior
 from pydoll.utils import (
     decode_base64_to_bytes,
     has_return_outside_function,
@@ -791,14 +795,14 @@ class Tab(CDPFindElementsMixin):
             )
             cookies = response_storage['result']['cookies']
             logger.debug(f'Fetched {len(cookies)} cookies')
-            return cookies
+            return to_generic_cookies(cookies)
 
         response_network: NetworkGetCookiesResponse = await self._execute_command(
             NetworkCommands.get_cookies()
         )
         cookies = response_network['result']['cookies']
         logger.debug(f'Fetched {len(cookies)} cookies')
-        return cookies
+        return to_generic_cookies(cookies)
 
     async def get_network_response_body(self, request_id: str) -> str:
         """
@@ -858,7 +862,7 @@ class Tab(CDPFindElementsMixin):
         """
         logger.info(f'Setting {len(cookies)} cookies on current page')
         return await self._execute_command(
-            StorageCommands.set_cookies(cookies, self._browser_context_id)
+            StorageCommands.set_cookies(to_cdp_cookie_params(cookies), self._browser_context_id)
         )
 
     async def delete_all_cookies(self):
@@ -1115,8 +1119,7 @@ class Tab(CDPFindElementsMixin):
             return html
         except Exception:
             logger.debug('getResourceContent failed for document, falling back to JS')
-            html = await self.execute_script('return document.documentElement.outerHTML')
-            return cast(str, html)
+            return str(await self.execute_script('return document.documentElement.outerHTML') or '')
 
     async def _fetch_bundle_assets(
         self,
@@ -1519,9 +1522,11 @@ class Tab(CDPFindElementsMixin):
         download_dir: str,
     ) -> None:
         await self.remove_callback(cb_id_progress)
-        await self._browser.set_download_behavior(
-            behavior=DownloadBehavior.DEFAULT,
-            browser_context_id=self._browser_context_id,
+        await self._browser.execute_protocol_command(
+            BrowserCommands.set_download_behavior(
+                behavior=CDPDownloadBehavior.DEFAULT,
+                browser_context_id=self._browser_context_id,
+            )
         )
 
         if cleanup_dir:

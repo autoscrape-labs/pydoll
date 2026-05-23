@@ -23,6 +23,8 @@ if TYPE_CHECKING:
 
     from websockets.asyncio.client import connect as Connect
 
+    from pydoll.protocol.base import Command, T_CommandParams, T_CommandResponse
+
 logger = logging.getLogger(__name__)
 
 
@@ -94,16 +96,18 @@ class BaseConnectionHandler(ABC):
             return True
         return False
 
-    async def execute_command(self, command: dict, timeout: int = 60) -> dict:
+    async def execute_command(
+        self, command: Command[T_CommandParams, T_CommandResponse], timeout: int = 60
+    ) -> T_CommandResponse:
         """
         Send command and await response.
 
         Args:
-            command: Command dict to send.
+            command: Typed command to send (CDP or BiDi).
             timeout: Maximum seconds to wait for response.
 
         Returns:
-            Parsed response object.
+            Parsed response wrapper, typed as the command's response parameter.
 
         Raises:
             CommandExecutionTimeout: If browser doesn't respond within timeout.

@@ -18,6 +18,9 @@ from pydoll.constants import (
 )
 from pydoll.protocol.cdp.input.types import KeyEventType, KeyModifier
 
+if TYPE_CHECKING:
+    from pydoll.protocol.bidi.input.types import KeyAction, KeySourceActions
+
 logger = logging.getLogger(__name__)
 
 
@@ -605,12 +608,13 @@ class BiDiKeyboard(Keyboard):
     if TYPE_CHECKING:
         _executor: BiDiCommandExecutor
 
-    async def _dispatch_keys(self, actions: list[dict]) -> None:
+    async def _dispatch_keys(self, actions: list[KeyAction]) -> None:
         """Send a key-source action list through input.performActions."""
+        source: KeySourceActions = {'type': 'key', 'id': 'keyboard', 'actions': actions}
         await self._executor._execute_command(
             BiDiInputCommands.perform_actions(
                 context=self._executor._context_id,
-                actions=[{'type': 'key', 'id': 'keyboard', 'actions': actions}],
+                actions=[source],
             )
         )
 
@@ -623,7 +627,7 @@ class BiDiKeyboard(Keyboard):
         """Press and release a key, holding any modifiers around it."""
         mods = _bidi_modifier_values(modifiers)
         value = _bidi_key_value(key)
-        actions: list[dict] = [{'type': 'keyDown', 'value': m} for m in mods]
+        actions: list[KeyAction] = [{'type': 'keyDown', 'value': m} for m in mods]
         actions.append({'type': 'keyDown', 'value': value})
         actions.append({'type': 'pause', 'duration': int(interval * 1000)})
         actions.append({'type': 'keyUp', 'value': value})
@@ -632,7 +636,7 @@ class BiDiKeyboard(Keyboard):
 
     async def down(self, key: Key, modifiers: Optional[KeyModifier] = None) -> None:
         """Press a key (and any modifiers) down without releasing."""
-        actions: list[dict] = [
+        actions: list[KeyAction] = [
             {'type': 'keyDown', 'value': m} for m in _bidi_modifier_values(modifiers)
         ]
         actions.append({'type': 'keyDown', 'value': _bidi_key_value(key)})
@@ -648,7 +652,7 @@ class BiDiKeyboard(Keyboard):
         if key3 is not None:
             keys.append(key3)
         modifiers, non_modifiers = self._split_modifiers_and_keys(keys)
-        actions: list[dict] = [
+        actions: list[KeyAction] = [
             {'type': 'keyDown', 'value': _bidi_key_value(k)} for k in modifiers
         ]
         actions.extend({'type': 'keyDown', 'value': _bidi_key_value(k)} for k in non_modifiers)

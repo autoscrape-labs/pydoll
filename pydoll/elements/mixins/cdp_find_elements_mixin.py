@@ -36,7 +36,7 @@ def create_web_element(*args, **kwargs):
     return WebElement(*args, **kwargs)
 
 
-class CDPFindElementsMixin(FindElementsMixin):
+class CDPFindElementsMixin(FindElementsMixin['WebElement']):
     """CDP-specific implementation of element finding.
 
     Uses RuntimeCommands.evaluate/call_function_on for element location
@@ -134,7 +134,7 @@ class CDPFindElementsMixin(FindElementsMixin):
             response.append(query['value']['objectId'])
 
         inherited_context = iframe_context or getattr(self, '_iframe_context', None)
-        elements = []
+        elements: list[WebElement] = []
         for object_id in response:
             try:
                 node_description = await self._describe_node(object_id=object_id)

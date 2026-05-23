@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import base64 as _b64
 import logging
+from collections.abc import Mapping
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional, Union, overload
@@ -21,8 +22,11 @@ from pydoll.interactions.keyboard import BiDiKeyboard
 from pydoll.interactions.mouse import BiDiMouse
 from pydoll.interactions.scroll import BiDiScroll
 from pydoll.protocol.bidi.base import Command, T_CommandParams, T_CommandResult
-from pydoll.protocol.bidi.browsing_context.types import ImageFormat
-from pydoll.protocol.bidi.script.types import SharedReference
+from pydoll.protocol.bidi.browsing_context.types import ImageFormat, ReadinessState
+from pydoll.protocol.bidi.network.types import Cookie as BiDiCookie
+from pydoll.protocol.bidi.network.types import SameSite, StringValue
+from pydoll.protocol.bidi.script.types import ContextTarget, NodeRemoteValue, SharedReference
+from pydoll.protocol.bidi.storage.types import BrowsingContextPartitionDescriptor, PartialCookie
 from pydoll.protocol.events import BIDI_EVENT_MAP, Event
 from pydoll.protocol.types import Cookie, CookieParam
 from pydoll.utils import has_return_outside_function
@@ -81,20 +85,17 @@ class BiDiTab(BidiFindElementsMixin):
     @property
     async def current_url(self) -> str:
         """Get the current page URL."""
-        result = await self._evaluate_js('location.href')
-        return result.get('value', '')
+        return str(await self._evaluate_js('location.href') or '')
 
     @property
     async def page_source(self) -> str:
         """Get the HTML source of the current page."""
-        result = await self._evaluate_js('document.documentElement.outerHTML')
-        return result.get('value', '')
+        return str(await self._evaluate_js('document.documentElement.outerHTML') or '')
 
     @property
     async def title(self) -> str:
         """Get the current page title."""
-        result = await self._evaluate_js('document.title')
-        return result.get('value', '')
+        return str(await self._evaluate_js('document.title') or '')
 
     async def go_to(self, url: str, timeout: int = 300):
         """Navigate to a URL.
@@ -107,7 +108,7 @@ class BiDiTab(BidiFindElementsMixin):
             BrowsingContextCommands.navigate(
                 context=self._context_id,
                 url=url,
-                wait='complete',
+                wait=ReadinessState.COMPLETE,
             ),
             timeout=timeout,
         )
@@ -118,7 +119,7 @@ class BiDiTab(BidiFindElementsMixin):
             BrowsingContextCommands.reload(
                 context=self._context_id,
                 ignore_cache=ignore_cache,
-                wait='complete',
+                wait=ReadinessState.COMPLETE,
             )
         )
 
@@ -233,28 +234,31 @@ class BiDiTab(BidiFindElementsMixin):
         Raises:
             ScriptExecutionError: If the script throws.
         """
-        target = {'context': self._context_id}
+        target = ContextTarget(context=self._context_id)
         if args:
-            command = ScriptCommands.call_function(
-                function_declaration=script,
-                await_promise=True,
-                target=target,
-                arguments=[self._to_local_value(arg) for arg in args],
+            response = await self._execute_command(
+                ScriptCommands.call_function(
+                    function_declaration=script,
+                    await_promise=True,
+                    target=target,
+                    arguments=[self._to_local_value(arg) for arg in args],
+                )
             )
         else:
             expression = script
             if has_return_outside_function(script):
                 expression = f'(function() {{ {script} }})()'
-            command = ScriptCommands.evaluate(
-                expression=expression,
-                target=target,
-                await_promise=True,
+            response = await self._execute_command(
+                ScriptCommands.evaluate(
+                    expression=expression,
+                    target=target,
+                    await_promise=True,
+                )
             )
-        response = await self._execute_command(command)
         result = response['result']
-        if result.get('type') == 'exception':
+        if result['type'] == 'exception':
             raise ScriptExecutionError(result['exceptionDetails']['text'])
-        return self._deserialize_remote_value(result.get('result', {}))
+        return self._deserialize_remote_value(result['result'])
 
     @staticmethod
     def _to_local_value(value: object) -> dict:
@@ -278,46 +282,46 @@ class BiDiTab(BidiFindElementsMixin):
 
     async def get_cookies(self) -> list[Cookie]:
         """Get all cookies for this tab's context."""
-        partition = {
-            'type': 'context',
-            'context': self._context_id,
-        }
-        response = await self._execute_command(
-            StorageCommands.get_cookies(partition=partition)
+        partition = BrowsingContextPartitionDescriptor(type='context', context=self._context_id)
+        response = await self._execute_command(StorageCommands.get_cookies(partition=partition))
+        return [self._to_generic_cookie(c) for c in response['result']['cookies']]
+
+    @staticmethod
+    def _to_generic_cookie(cookie: BiDiCookie) -> Cookie:
+        """Convert a BiDi cookie to the protocol-agnostic Cookie type."""
+        result = Cookie(
+            name=cookie['name'],
+            value=cookie['value'].get('value', ''),
+            domain=cookie['domain'],
+            path=cookie['path'],
+            size=cookie['size'],
+            httpOnly=cookie['httpOnly'],
+            secure=cookie['secure'],
+            sameSite=cookie['sameSite'],
         )
-        bidi_cookies = response['result']['cookies']
-        return [
-            Cookie(
-                name=c['name'],
-                value=c['value'].get('value', '') if isinstance(c['value'], dict) else c['value'],
-                domain=c['domain'],
-                path=c['path'],
-                size=c.get('size', 0),
-                httpOnly=c['httpOnly'],
-                secure=c['secure'],
-                sameSite=c['sameSite'],
-                **({'expiry': c['expiry']} if 'expiry' in c else {}),
-            )
-            for c in bidi_cookies
-        ]
+        if 'expiry' in cookie:
+            result['expiry'] = cookie['expiry']
+        return result
 
     async def set_cookies(self, cookies: list[CookieParam]):
         """Set cookies for this tab's context."""
-        partition = {
-            'type': 'context',
-            'context': self._context_id,
-        }
+        partition = BrowsingContextPartitionDescriptor(type='context', context=self._context_id)
         for cookie in cookies:
-            bidi_cookie = {
-                'name': cookie['name'],
-                'value': {'type': 'string', 'value': cookie['value']},
-                'domain': cookie['domain'],
-            }
-            for key in ('path', 'httpOnly', 'secure', 'expiry'):
-                if key in cookie:
-                    bidi_cookie[key] = cookie[key]
+            bidi_cookie = PartialCookie(
+                name=cookie['name'],
+                value=StringValue(type='string', value=cookie['value']),
+                domain=cookie['domain'],
+            )
+            if 'path' in cookie:
+                bidi_cookie['path'] = cookie['path']
+            if 'httpOnly' in cookie:
+                bidi_cookie['httpOnly'] = cookie['httpOnly']
+            if 'secure' in cookie:
+                bidi_cookie['secure'] = cookie['secure']
+            if 'expiry' in cookie:
+                bidi_cookie['expiry'] = cookie['expiry']
             if 'sameSite' in cookie:
-                bidi_cookie['sameSite'] = cookie['sameSite'].lower()
+                bidi_cookie['sameSite'] = SameSite(cookie['sameSite'].lower())
             await self._execute_command(
                 StorageCommands.set_cookie(cookie=bidi_cookie, partition=partition)
             )
@@ -449,12 +453,16 @@ class BiDiTab(BidiFindElementsMixin):
         return roots
 
     @staticmethod
-    def _walk_shadow_roots(node: dict, out: list[tuple[str, Optional[str]]]) -> None:
+    def _walk_shadow_roots(node: NodeRemoteValue, out: list[tuple[str, Optional[str]]]) -> None:
         """Recursively collect (sharedId, mode) of every shadow root in a serialized tree."""
-        value = node.get('value', {})
+        value = node.get('value')
+        if value is None:
+            return
         shadow = value.get('shadowRoot')
         if shadow:
-            out.append((shadow.get('sharedId', ''), (shadow.get('value') or {}).get('mode')))
+            shadow_props = shadow.get('value')
+            mode = shadow_props.get('mode') if shadow_props else None
+            out.append((shadow.get('sharedId', ''), mode))
             BiDiTab._walk_shadow_roots(shadow, out)
         for child in value.get('children') or []:
             BiDiTab._walk_shadow_roots(child, out)
@@ -537,60 +545,83 @@ class BiDiTab(BidiFindElementsMixin):
         """Execute a BiDi command."""
         return await self._connection_handler.execute_command(command, timeout)
 
-    async def _evaluate_js(self, expression: str) -> dict:
-        """Evaluate a JavaScript expression and return the result value."""
+    async def _evaluate_js(self, expression: str) -> object:
+        """Evaluate a JavaScript expression and return its deserialized value."""
         response = await self._execute_command(
             ScriptCommands.evaluate(
                 expression=expression,
-                target={'context': self._context_id},
+                target=ContextTarget(context=self._context_id),
                 await_promise=False,
             )
         )
         result = response['result']
-        if result.get('type') == 'success':
-            return result.get('result', {})
-        return {}
+        if result['type'] == 'success':
+            return self._deserialize_remote_value(result['result'])
+        return None
 
     @staticmethod
-    def _deserialize_remote_value(remote_value: dict):  # noqa: PLR0911, PLR0912
+    def _deserialize_remote_value(  # noqa: PLR0911, PLR0912
+        remote_value: Mapping[str, object],
+    ) -> object:
         """Convert a BiDi RemoteValue to a Python value."""
         value_type = remote_value.get('type')
+        value = remote_value.get('value')
 
         if value_type in {'undefined', 'null'}:
             return None
         if value_type in {'string', 'boolean'}:
-            return remote_value.get('value')
+            return value
         if value_type == 'number':
-            val = remote_value.get('value')
-            if val == 'NaN':
+            if value == 'NaN':
                 return float('nan')
-            if val == '-0':
+            if value == '-0':
                 return -0.0
-            if val == 'Infinity':
+            if value == 'Infinity':
                 return float('inf')
-            if val == '-Infinity':
+            if value == '-Infinity':
                 return float('-inf')
-            return val
+            return value
         if value_type == 'bigint':
-            return int(remote_value.get('value', '0'))
-        if value_type == 'array':
-            items = remote_value.get('value', [])
-            return [BiDiTab._deserialize_remote_value(item) for item in items]
+            return int(value) if isinstance(value, (str, int)) else 0
+        if value_type in {'array', 'set'}:
+            return [
+                BiDiTab._deserialize_remote_value(item)
+                for item in (value if isinstance(value, list) else [])
+                if isinstance(item, Mapping)
+            ]
         if value_type in {'object', 'map'}:
-            pairs = remote_value.get('value', [])
-            return {
-                (k if isinstance(k, str) else BiDiTab._deserialize_remote_value(k)):
-                BiDiTab._deserialize_remote_value(v)
-                for k, v in pairs
-            }
-        if value_type == 'set':
-            items = remote_value.get('value', [])
-            return [BiDiTab._deserialize_remote_value(item) for item in items]
+            return BiDiTab._deserialize_remote_pairs(value)
         if value_type == 'date':
-            return remote_value.get('value')
+            return value
         if value_type == 'regexp':
-            val = remote_value.get('value', {})
-            return f'/{val.get("pattern", "")}/{val.get("flags", "")}'
+            pattern = value.get('pattern', '') if isinstance(value, Mapping) else ''
+            flags = value.get('flags', '') if isinstance(value, Mapping) else ''
+            return f'/{pattern}/{flags}'
         if value_type == 'node':
             return remote_value
-        return remote_value.get('value', remote_value)
+        return value if 'value' in remote_value else remote_value
+
+    @staticmethod
+    def _deserialize_remote_pairs(value: object) -> dict[object, object]:
+        """Deserialize a BiDi object/map value (a list of ``[key, value]`` pairs)."""
+        result: dict[object, object] = {}
+        if not isinstance(value, list):
+            return result
+        key_value_size = 2
+        for pair in value:
+            if not isinstance(pair, (list, tuple)) or len(pair) != key_value_size:
+                continue
+            raw_key, raw_value = pair
+            key = (
+                raw_key
+                if isinstance(raw_key, str)
+                else BiDiTab._deserialize_remote_value(raw_key)
+                if isinstance(raw_key, Mapping)
+                else raw_key
+            )
+            result[key] = (
+                BiDiTab._deserialize_remote_value(raw_value)
+                if isinstance(raw_value, Mapping)
+                else raw_value
+            )
+        return result

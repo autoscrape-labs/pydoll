@@ -134,7 +134,24 @@ async def test_new_tab_creates_and_tracks_tab(browser, fake_conn):
 async def test_set_and_get_cookies_round_trip(browser, fake_conn):
     await browser.set_cookies([{'name': 'a', 'value': '1'}])
     assert fake_conn.last_command('Storage.setCookies')['params']['cookies'][0]['name'] == 'a'
-    fake_conn.set_response('Storage.getCookies', {'cookies': [{'name': 'a', 'value': '1'}]})
+    fake_conn.set_response(
+        'Storage.getCookies',
+        {
+            'cookies': [
+                {
+                    'name': 'a',
+                    'value': '1',
+                    'domain': 'example.com',
+                    'path': '/',
+                    'expires': -1,
+                    'size': 2,
+                    'httpOnly': False,
+                    'secure': False,
+                    'session': True,
+                }
+            ]
+        },
+    )
     cookies = await browser.get_cookies()
     assert cookies[0]['name'] == 'a'
 

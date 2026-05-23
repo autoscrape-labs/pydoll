@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import TYPE_CHECKING, Optional, Union, overload
+from typing import TYPE_CHECKING, Generic, Optional, TypeVar, Union, overload
 
 from pydoll.constants import By
 from pydoll.elements.utils import SelectorParser
@@ -16,8 +16,10 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+T_Element = TypeVar('T_Element', bound='WebElementProtocol')
 
-class FindElementsMixin:
+
+class FindElementsMixin(Generic[T_Element]):
     """
     Mixin providing comprehensive element finding and waiting capabilities.
 
@@ -28,6 +30,18 @@ class FindElementsMixin:
     """
 
     _css_only: bool = False
+
+    async def _find_element(
+        self, by: By, value: str, raise_exc: bool = True
+    ) -> Optional[T_Element]:
+        """Locate the first matching element. Implemented per protocol (CDP/BiDi)."""
+        raise NotImplementedError
+
+    async def _find_elements(
+        self, by: By, value: str, raise_exc: bool = True
+    ) -> list[T_Element]:
+        """Locate all matching elements. Implemented per protocol (CDP/BiDi)."""
+        raise NotImplementedError
 
     @staticmethod
     def _build_text_expression(selector: str, method: str) -> Optional[str]:
@@ -46,7 +60,7 @@ class FindElementsMixin:
         find_all: Literal[False] = False,
         raise_exc: Literal[True] = True,
         **attributes,
-    ) -> WebElementProtocol: ...
+    ) -> T_Element: ...
 
     @overload
     async def find(
@@ -60,7 +74,7 @@ class FindElementsMixin:
         find_all: Literal[False] = False,
         raise_exc: Literal[False] = False,
         **attributes,
-    ) -> Optional[WebElementProtocol]: ...
+    ) -> Optional[T_Element]: ...
 
     @overload
     async def find(
@@ -74,7 +88,7 @@ class FindElementsMixin:
         find_all: Literal[True] = True,
         raise_exc: Literal[True] = True,
         **attributes,
-    ) -> list[WebElementProtocol]: ...
+    ) -> list[T_Element]: ...
 
     @overload
     async def find(
@@ -88,7 +102,7 @@ class FindElementsMixin:
         find_all: Literal[True] = True,
         raise_exc: Literal[False] = False,
         **attributes,
-    ) -> Optional[list[WebElementProtocol]]: ...
+    ) -> Optional[list[T_Element]]: ...
 
     @overload
     async def find(
@@ -102,7 +116,7 @@ class FindElementsMixin:
         find_all: bool = ...,
         raise_exc: bool = ...,
         **attributes,
-    ) -> Union[WebElementProtocol, list[WebElementProtocol], None]: ...
+    ) -> Union[T_Element, list[T_Element], None]: ...
 
     async def find(
         self,
@@ -115,7 +129,7 @@ class FindElementsMixin:
         find_all: bool = False,
         raise_exc: bool = True,
         **attributes: dict[str, str],
-    ) -> Union[WebElementProtocol, list[WebElementProtocol], None]:
+    ) -> Union[T_Element, list[T_Element], None]:
         """
         Find element(s) using combination of common HTML attributes.
 
@@ -180,7 +194,7 @@ class FindElementsMixin:
         timeout: int = ...,
         find_all: Literal[False] = False,
         raise_exc: Literal[True] = True,
-    ) -> WebElementProtocol: ...
+    ) -> T_Element: ...
 
     @overload
     async def query(
@@ -189,7 +203,7 @@ class FindElementsMixin:
         timeout: int = ...,
         find_all: Literal[False] = False,
         raise_exc: Literal[False] = False,
-    ) -> Optional[WebElementProtocol]: ...
+    ) -> Optional[T_Element]: ...
 
     @overload
     async def query(
@@ -198,7 +212,7 @@ class FindElementsMixin:
         timeout: int = ...,
         find_all: Literal[True] = True,
         raise_exc: Literal[True] = True,
-    ) -> list[WebElementProtocol]: ...
+    ) -> list[T_Element]: ...
 
     @overload
     async def query(
@@ -207,7 +221,7 @@ class FindElementsMixin:
         timeout: int = ...,
         find_all: Literal[True] = True,
         raise_exc: Literal[False] = False,
-    ) -> Optional[list[WebElementProtocol]]: ...
+    ) -> Optional[list[T_Element]]: ...
 
     @overload
     async def query(
@@ -216,11 +230,11 @@ class FindElementsMixin:
         timeout: int = ...,
         find_all: bool = ...,
         raise_exc: bool = ...,
-    ) -> Union[WebElementProtocol, list[WebElementProtocol], None]: ...
+    ) -> Union[T_Element, list[T_Element], None]: ...
 
     async def query(
         self, expression: str, timeout: int = 0, find_all: bool = False, raise_exc: bool = True
-    ) -> Union[WebElementProtocol, list[WebElementProtocol], None]:
+    ) -> Union[T_Element, list[T_Element], None]:
         """
         Find element(s) using raw CSS selector or XPath expression.
 
@@ -263,7 +277,7 @@ class FindElementsMixin:
         timeout: int = 0,
         find_all: bool = False,
         raise_exc: bool = True,
-    ) -> Union[WebElementProtocol, list[WebElementProtocol], None]:
+    ) -> Union[T_Element, list[T_Element], None]:
         """
         Core element finding method with optional waiting capability.
 
@@ -333,7 +347,7 @@ class FindElementsMixin:
         timeout: int,
         find_all: bool,
         raise_exc: bool,
-    ) -> Union[WebElementProtocol, list[WebElementProtocol], None]:
+    ) -> Union[T_Element, list[T_Element], None]:
         """
         Retry loop for iframe-crossing element searches.
 
@@ -381,7 +395,7 @@ class FindElementsMixin:
         self,
         segments: list[tuple[By, str]],
         find_all: bool,
-    ) -> Union[WebElementProtocol, list[WebElementProtocol], None]:
+    ) -> Union[T_Element, list[T_Element], None]:
         """
         Single attempt to walk iframe segments and find the target element.
 

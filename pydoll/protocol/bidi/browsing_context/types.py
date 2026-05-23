@@ -1,8 +1,14 @@
+from __future__ import annotations
+
 from enum import Enum
+from typing import TYPE_CHECKING
 
 from typing_extensions import NotRequired, TypedDict
 
 from pydoll.protocol.bidi.browser.types import ClientWindow, UserContext
+
+if TYPE_CHECKING:
+    from pydoll.protocol.bidi.script.types import SharedReference
 
 BrowsingContext = str
 """Unique identifier for a navigable (browsing context)."""
@@ -141,7 +147,7 @@ class ElementClipRectangle(TypedDict):
     """Clip rectangle defined by a DOM element reference."""
 
     type: str  # "element"
-    element: dict  # script.SharedReference
+    element: SharedReference
 
 
 ClipRectangle = BoxClipRectangle | ElementClipRectangle

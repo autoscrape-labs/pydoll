@@ -2,7 +2,9 @@ from typing import Generic, TypeVar
 
 from typing_extensions import NotRequired, TypedDict
 
-T_CommandParams = TypeVar('T_CommandParams')
+from pydoll.protocol.base import Command as Command  # noqa: PLC0414
+from pydoll.protocol.base import T_CommandParams as T_CommandParams  # noqa: PLC0414
+
 T_CommandResult = TypeVar('T_CommandResult')
 T_EventParams = TypeVar('T_EventParams')
 
@@ -17,20 +19,6 @@ class EmptyResult(TypedDict):
     """Empty result for commands that return no data."""
 
     pass
-
-
-class Command(TypedDict, Generic[T_CommandParams, T_CommandResult]):
-    """Base structure for all BiDi commands sent to the remote end.
-
-    Attributes:
-        id: Unique command identifier (js-uint: 0 to 9007199254740991)
-        method: The command method name (e.g. "session.status")
-        params: Parameters for the command
-    """
-
-    id: NotRequired[int]
-    method: str
-    params: T_CommandParams
 
 
 class CommandResponse(TypedDict, Generic[T_CommandResult]):

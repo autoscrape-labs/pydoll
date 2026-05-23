@@ -60,10 +60,27 @@ async def test_current_url_evaluates_location_and_returns_value(cdp_server, fake
 
 @pytest.mark.asyncio
 async def test_get_cookies_returns_parsed_cookies(cdp_server, fake_tab):
-    cookies = [{'name': 'session', 'value': 'abc'}]
-    cdp_server.set_result('Network.getCookies', {'cookies': cookies})
+    cdp_server.set_result(
+        'Network.getCookies',
+        {
+            'cookies': [
+                {
+                    'name': 'session',
+                    'value': 'abc',
+                    'domain': 'example.com',
+                    'path': '/',
+                    'expires': -1,
+                    'size': 10,
+                    'httpOnly': False,
+                    'secure': False,
+                    'session': True,
+                }
+            ]
+        },
+    )
     result = await fake_tab.get_cookies()
-    assert result == cookies
+    assert result[0]['name'] == 'session'
+    assert result[0]['value'] == 'abc'
     assert cdp_server.commands_for('Network.getCookies')
 
 

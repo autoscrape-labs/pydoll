@@ -14,6 +14,7 @@ from random import randint
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, overload
 from urllib.parse import urlsplit, urlunsplit
 
+from pydoll.browser.chromium._cookies import to_cdp_cookie_params, to_generic_cookies
 from pydoll.browser.chromium.tab import Tab
 from pydoll.browser.intercepted_request import InterceptedRequest
 from pydoll.browser.managers import (
@@ -38,10 +39,10 @@ from pydoll.exceptions import (
     InvalidWebSocketAddress,
     NoValidTabFound,
 )
+from pydoll.protocol.cdp.browser.types import Bounds, PermissionType
 from pydoll.protocol.cdp.browser.types import (
     DownloadBehavior as CDPDownloadBehavior,
 )
-from pydoll.protocol.cdp.browser.types import PermissionType
 from pydoll.protocol.cdp.fetch.events import FetchEvent
 from pydoll.protocol.cdp.fetch.types import AuthChallengeResponseType
 from pydoll.protocol.cdp.network.types import ErrorReason as CDPErrorReason
@@ -433,7 +434,9 @@ class Browser:  # noqa: PLR0904
     ):
         """Set multiple cookies in browser or context."""
         logger.debug(f'Setting {len(cookies)} cookies (context={browser_context_id})')
-        return await self._execute_command(StorageCommands.set_cookies(cookies, browser_context_id))
+        return await self._execute_command(
+            StorageCommands.set_cookies(to_cdp_cookie_params(cookies), browser_context_id)
+        )
 
     async def get_cookies(self, browser_context_id: Optional[str] = None) -> list[Cookie]:
         """Get all cookies from browser or context.
@@ -448,7 +451,7 @@ class Browser:  # noqa: PLR0904
         logger.debug(
             f'Retrieved {len(response["result"]["cookies"])} cookies (context={browser_context_id})'
         )
-        return response['result']['cookies']
+        return to_generic_cookies(response['result']['cookies'])
 
     async def get_version(self) -> BrowserVersion:
         """Get browser version information."""
@@ -501,7 +504,18 @@ class Browser:  # noqa: PLR0904
         """
         window_id = await self._get_window_id()
         logger.info(f'Setting window bounds: id={window_id}, bounds={bounds}')
-        return await self._execute_command(BrowserCommands.set_window_bounds(window_id, bounds))
+        cdp_bounds: Bounds = {}
+        if 'width' in bounds:
+            cdp_bounds['width'] = bounds['width']
+        if 'height' in bounds:
+            cdp_bounds['height'] = bounds['height']
+        if 'x' in bounds:
+            cdp_bounds['left'] = bounds['x']
+        if 'y' in bounds:
+            cdp_bounds['top'] = bounds['y']
+        return await self._execute_command(
+            BrowserCommands.set_window_bounds(window_id, cdp_bounds)
+        )
 
     async def grant_permissions(
         self,

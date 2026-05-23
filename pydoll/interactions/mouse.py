@@ -15,11 +15,18 @@ from pydoll.interactions.utils import (
     minimum_jerk,
     random_control_points,
 )
+from pydoll.protocol.bidi.input.types import PointerType
 from pydoll.protocol.cdp.input.types import MouseButton, MouseEventType
 
 if TYPE_CHECKING:
     from pydoll.browser.chromium.tab import Tab
     from pydoll.browser.firefox.tab import BiDiTab
+    from pydoll.protocol.bidi.input.types import (
+        PointerAction,
+        PointerMoveAction,
+        PointerSourceActions,
+        SourceActions,
+    )
 
 logger = logging.getLogger(__name__)
 
@@ -501,28 +508,29 @@ class BiDiMouse(Mouse):
         _tab: BiDiTab
 
     @staticmethod
-    def _pointer_source(actions: list[dict]) -> list[dict]:
-        return [
-            {
-                'type': 'pointer',
-                'id': 'mouse',
-                'parameters': {'pointerType': 'mouse'},
-                'actions': actions,
-            }
-        ]
+    def _pointer_source(actions: list[PointerAction]) -> list[SourceActions]:
+        source: PointerSourceActions = {
+            'type': 'pointer',
+            'id': 'mouse',
+            'parameters': {'pointerType': PointerType.MOUSE},
+            'actions': actions,
+        }
+        return [source]
+
+    @staticmethod
+    def _move_action(x: float, y: float) -> PointerMoveAction:
+        return {
+            'type': 'pointerMove',
+            'x': int(round(x)),
+            'y': int(round(y)),
+            'origin': 'viewport',
+        }
 
     async def _dispatch_move(self, x: float, y: float) -> None:
         await self._tab._execute_command(
             BiDiInputCommands.perform_actions(
                 context=self._tab._context_id,
-                actions=self._pointer_source([
-                    {
-                        'type': 'pointerMove',
-                        'x': int(round(x)),
-                        'y': int(round(y)),
-                        'origin': 'viewport',
-                    }
-                ]),
+                actions=self._pointer_source([self._move_action(x, y)]),
             )
         )
         self._position = (x, y)
@@ -535,20 +543,18 @@ class BiDiMouse(Mouse):
         button: MouseButton = MouseButton.LEFT,
         click_count: int = 1,
     ) -> None:
-        action_type = (
-            'pointerDown' if event_type == MouseEventType.MOUSE_PRESSED else 'pointerUp'
-        )
+        button_index = _BIDI_POINTER_BUTTON.get(button, 0)
+        press_or_release: PointerAction
+        if event_type == MouseEventType.MOUSE_PRESSED:
+            press_or_release = {'type': 'pointerDown', 'button': button_index}
+        else:
+            press_or_release = {'type': 'pointerUp', 'button': button_index}
         await self._tab._execute_command(
             BiDiInputCommands.perform_actions(
                 context=self._tab._context_id,
                 actions=self._pointer_source([
-                    {
-                        'type': 'pointerMove',
-                        'x': int(round(self._position[0])),
-                        'y': int(round(self._position[1])),
-                        'origin': 'viewport',
-                    },
-                    {'type': action_type, 'button': _BIDI_POINTER_BUTTON.get(button, 0)},
+                    self._move_action(self._position[0], self._position[1]),
+                    press_or_release,
                 ]),
             )
         )

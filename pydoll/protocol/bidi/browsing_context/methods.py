@@ -21,6 +21,11 @@ from pydoll.protocol.bidi.browsing_context.types import (
     ReadinessState,
     Viewport,
 )
+from pydoll.protocol.bidi.script.types import (
+    NodeRemoteValue,
+    SerializationOptions,
+    SharedReference,
+)
 
 
 class BrowsingContextMethod(str, Enum):
@@ -112,14 +117,14 @@ class LocateNodesParameters(TypedDict):
     context: BrowsingContext
     locator: Locator
     maxNodeCount: NotRequired[int]
-    serializationOptions: NotRequired[dict]  # script.SerializationOptions
-    startNodes: NotRequired[list[dict]]  # list of script.SharedReference
+    serializationOptions: NotRequired[SerializationOptions]
+    startNodes: NotRequired[list[SharedReference]]
 
 
 class LocateNodesResult(TypedDict):
     """Result for browsingContext.locateNodes command."""
 
-    nodes: list[dict]  # list of script.NodeRemoteValue
+    nodes: list[NodeRemoteValue]
 
 
 class NavigateParameters(TypedDict):

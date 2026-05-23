@@ -223,7 +223,7 @@ class TabProtocol(Protocol):
         find_all: bool = False,
         raise_exc: bool = True,
         **attributes: dict[str, str],
-    ) -> Union[WebElementProtocol, list[WebElementProtocol], None]: ...
+    ) -> Union[WebElementProtocol, Sequence[WebElementProtocol], None]: ...
 
     async def query(
         self,
@@ -231,7 +231,7 @@ class TabProtocol(Protocol):
         timeout: int = 0,
         find_all: bool = False,
         raise_exc: bool = True,
-    ) -> Union[WebElementProtocol, list[WebElementProtocol], None]: ...
+    ) -> Union[WebElementProtocol, Sequence[WebElementProtocol], None]: ...
 
     async def find_shadow_roots(
         self, timeout: float = 0

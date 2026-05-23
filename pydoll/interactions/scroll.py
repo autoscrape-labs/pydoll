@@ -14,6 +14,7 @@ from pydoll.protocol.cdp.input.types import MouseEventType
 if TYPE_CHECKING:
     from pydoll.browser.chromium.tab import Tab
     from pydoll.browser.firefox.tab import BiDiTab
+    from pydoll.protocol.bidi.input.types import WheelScrollAction, WheelSourceActions
 
 
 @dataclass(frozen=True)
@@ -387,25 +388,19 @@ class BiDiScroll(Scroll):
     async def _dispatch_scroll_event(self, delta_x: int, delta_y: int):
         """Dispatch a wheel scroll via input.performActions."""
         center_x, center_y = await self._get_viewport_center()
+        scroll: WheelScrollAction = {
+            'type': 'scroll',
+            'x': center_x,
+            'y': center_y,
+            'deltaX': delta_x,
+            'deltaY': delta_y,
+            'origin': 'viewport',
+        }
+        source: WheelSourceActions = {'type': 'wheel', 'id': 'wheel', 'actions': [scroll]}
         await self._tab._execute_command(
             BiDiInputCommands.perform_actions(
                 context=self._tab._context_id,
-                actions=[
-                    {
-                        'type': 'wheel',
-                        'id': 'wheel',
-                        'actions': [
-                            {
-                                'type': 'scroll',
-                                'x': center_x,
-                                'y': center_y,
-                                'deltaX': delta_x,
-                                'deltaY': delta_y,
-                                'origin': 'viewport',
-                            }
-                        ],
-                    }
-                ],
+                actions=[source],
             )
         )
 

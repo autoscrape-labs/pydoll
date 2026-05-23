@@ -4,11 +4,6 @@ import logging
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, cast
 
-from pydoll.protocol.cdp.page.events import (
-    JavascriptDialogOpeningEvent,
-    JavascriptDialogOpeningEventParams,
-)
-
 if TYPE_CHECKING:
     from pydoll.protocol.cdp.network.events import RequestWillBeSentEvent
 
@@ -38,7 +33,7 @@ class CDPEventTracker(BaseEventTracker):
 
     def __init__(self) -> None:
         self._network_logs: list[RequestWillBeSentEvent] = []
-        self._dialog: JavascriptDialogOpeningEvent = JavascriptDialogOpeningEvent()  # type: ignore
+        self._dialog: dict = {}
 
     @property
     def network_logs(self) -> list:
@@ -52,20 +47,14 @@ class CDPEventTracker(BaseEventTracker):
         event_name = event_data.get('method', '')
 
         if 'Network.requestWillBeSent' in event_name:
-            self._network_logs.append(event_data)
+            self._network_logs.append(cast('RequestWillBeSentEvent', event_data))
             self._network_logs = self._network_logs[-10000:]
 
         elif 'Page.javascriptDialogOpening' in event_name:
-            self._dialog = JavascriptDialogOpeningEvent(
-                method=event_data['method'],
-                params=cast(
-                    JavascriptDialogOpeningEventParams,
-                    event_data['params'],
-                ),
-            )
+            self._dialog = event_data
 
         elif 'Page.javascriptDialogClosed' in event_name:
-            self._dialog = JavascriptDialogOpeningEvent()  # type: ignore
+            self._dialog = {}
 
 
 class BiDiEventTracker(BaseEventTracker):

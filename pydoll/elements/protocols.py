@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Optional, Protocol, Union, runtime_checkable
 
@@ -25,7 +26,7 @@ class ShadowRootProtocol(Protocol):
         find_all: bool = False,
         raise_exc: bool = True,
         **attributes: dict[str, str],
-    ) -> Union[WebElementProtocol, list[WebElementProtocol], None]: ...
+    ) -> Union[WebElementProtocol, Sequence[WebElementProtocol], None]: ...
 
     async def query(
         self,
@@ -33,7 +34,7 @@ class ShadowRootProtocol(Protocol):
         timeout: int = 0,
         find_all: bool = False,
         raise_exc: bool = True,
-    ) -> Union[WebElementProtocol, list[WebElementProtocol], None]: ...
+    ) -> Union[WebElementProtocol, Sequence[WebElementProtocol], None]: ...
 
 
 @runtime_checkable
@@ -82,12 +83,12 @@ class WebElementProtocol(Protocol):
         self,
         max_depth: int = 1,
         tag_filter: Optional[list[str]] = None,
-    ) -> list[WebElementProtocol]: ...
+    ) -> Sequence[WebElementProtocol]: ...
 
     async def get_siblings_elements(
         self,
         tag_filter: Optional[list[str]] = None,
-    ) -> list[WebElementProtocol]: ...
+    ) -> Sequence[WebElementProtocol]: ...
 
     async def take_screenshot(
         self,
@@ -141,8 +142,25 @@ class WebElementProtocol(Protocol):
 
     async def is_interactable(self) -> bool: ...
 
-    async def execute_script(self, script: str, **kwargs) -> object: ...
+    async def execute_script(self, script: str) -> object: ...
 
-    async def find(self, **kwargs) -> object: ...
+    async def find(
+        self,
+        id: Optional[str] = None,
+        class_name: Optional[str] = None,
+        name: Optional[str] = None,
+        tag_name: Optional[str] = None,
+        text: Optional[str] = None,
+        timeout: int = 0,
+        find_all: bool = False,
+        raise_exc: bool = True,
+        **attributes: dict[str, str],
+    ) -> Union[WebElementProtocol, Sequence[WebElementProtocol], None]: ...
 
-    async def query(self, expression: str, **kwargs) -> object: ...
+    async def query(
+        self,
+        expression: str,
+        timeout: int = 0,
+        find_all: bool = False,
+        raise_exc: bool = True,
+    ) -> Union[WebElementProtocol, Sequence[WebElementProtocol], None]: ...

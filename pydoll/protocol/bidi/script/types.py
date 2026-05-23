@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Literal
 
 from typing_extensions import NotRequired, TypedDict
 
@@ -206,7 +207,7 @@ class ExceptionDetails(TypedDict):
 class EvaluateResultSuccess(TypedDict):
     """Successful script evaluation result."""
 
-    type: str  # "success"
+    type: Literal['success']
     result: RemoteValue
     realm: Realm
 
@@ -214,7 +215,7 @@ class EvaluateResultSuccess(TypedDict):
 class EvaluateResultException(TypedDict):
     """Exception script evaluation result."""
 
-    type: str  # "exception"
+    type: Literal['exception']
     exceptionDetails: ExceptionDetails
     realm: Realm
 
