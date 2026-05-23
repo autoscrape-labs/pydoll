@@ -12,10 +12,6 @@ from __future__ import annotations
 import asyncio
 
 import pytest
-import pytest_asyncio
-
-from pydoll.browser import Firefox
-from pydoll.browser.firefox.options import FirefoxOptions
 
 PAGE = "data:text/html,<input type='file' id='file-input'>"
 _FILES_LEN = "document.getElementById('file-input').files.length"
@@ -23,22 +19,6 @@ _FILE_NAME = (
     "(() => { const f = document.getElementById('file-input');"
     " return f.files.length ? f.files[0].name : null; })()"
 )
-
-
-@pytest.fixture
-def ci_firefox_options():
-    """Firefox options for headless CI runs."""
-    options = FirefoxOptions()
-    options.headless = True
-    options.start_timeout = 60
-    return options
-
-
-@pytest_asyncio.fixture
-async def tab(ci_firefox_options):
-    async with Firefox(options=ci_firefox_options) as browser:
-        page = await browser.start()
-        yield page
 
 
 async def _wait_file_set(tab, timeout: float = 5.0) -> None:

@@ -8,7 +8,7 @@ from _waits import wait_for_element_text
 from pydoll.browser.chromium import Chrome
 from pydoll.elements.cdp.web_element import WebElement
 
-TEST_PAGE = f'file://{(Path(__file__).parent / "pages" / "test_click_nested.html").absolute()}'
+TEST_PAGE = f'file://{(Path(__file__).parents[2] / "pages" / "test_click_nested.html").absolute()}'
 
 
 class TestClickRegularElement:

@@ -10,7 +10,7 @@ from pydoll.elements.cdp.web_element import WebElement
 from pydoll.exceptions import ShadowRootNotFound
 from pydoll.protocol.cdp.dom.types import ShadowRootType
 
-TEST_PAGE = f'file://{(Path(__file__).parent / "pages" / "shadow_dom_test.html").absolute()}'
+TEST_PAGE = f'file://{(Path(__file__).parents[2] / "pages" / "shadow_dom_test.html").absolute()}'
 
 
 class TestOpenShadowRoot:

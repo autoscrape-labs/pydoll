@@ -56,6 +56,7 @@ if TYPE_CHECKING:
     from typing import Any, Awaitable, Callable
 
     from pydoll.browser.protocols import BrowserOptionsManagerProtocol
+    from pydoll.protocol.bidi.session.methods import NewResultCapabilities
 
 logger = logging.getLogger(__name__)
 
@@ -139,6 +140,7 @@ class FirefoxBrowser:
             connection_port=self._connection_port,
         )
         self._session_id: Optional[str] = None
+        self._capabilities: NewResultCapabilities = {}
         self._granted_permissions: list[tuple[str, str, Optional[str]]] = []
         self._intercept_callbacks: dict[str, int] = {}
 
@@ -169,6 +171,7 @@ class FirefoxBrowser:
 
         response = await self._execute_command(SessionCommands.new())
         self._session_id = response['result']['sessionId']
+        self._capabilities = response['result']['capabilities']
         logger.info(f'BiDi session established: {self._session_id}')
 
         await self._apply_webdriver_stealth()
@@ -202,6 +205,7 @@ class FirefoxBrowser:
         await self._connection_handler._ensure_active_connection()
         response = await self._execute_command(SessionCommands.new())
         self._session_id = response['result']['sessionId']
+        self._capabilities = response['result']['capabilities']
         await self._apply_webdriver_stealth()
         tabs = await self.get_opened_tabs()
         if tabs:
@@ -297,9 +301,12 @@ class FirefoxBrowser:
         return tab
 
     async def get_version(self) -> BrowserVersion:
-        """Get browser version information."""
-        response = await self._execute_command(SessionCommands.new())
-        caps = response['result'].get('capabilities', {})
+        """Get browser version information from the session capabilities.
+
+        Capabilities are captured once when the BiDi session is created (session.new
+        can only be called once per session), so this reuses the cached values.
+        """
+        caps = self._capabilities
         return BrowserVersion(
             browserName=caps.get('browserName', ''),
             browserVersion=caps.get('browserVersion', ''),

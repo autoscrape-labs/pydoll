@@ -25,7 +25,7 @@ from pydoll.exceptions import (
     WaitElementTimeout,
 )
 
-PAGE_URL = f'file://{(Path(__file__).parent / "pages" / "web_element.html").absolute()}'
+PAGE_URL = f'file://{(Path(__file__).parents[2] / "pages" / "web_element.html").absolute()}'
 
 
 async def _live(element_or_tab, expression: str):

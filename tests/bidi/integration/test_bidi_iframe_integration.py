@@ -9,10 +9,7 @@ boundary) takes the same path through the shared segment walker.
 from __future__ import annotations
 
 import pytest
-import pytest_asyncio
 
-from pydoll.browser import Firefox
-from pydoll.browser.firefox.options import FirefoxOptions
 
 PAGE = (
     'data:text/html,'
@@ -20,20 +17,6 @@ PAGE = (
     "<p id='inner'>hi</p><b class='item'>1</b><b class='item'>2</b>"
     '"></iframe>'
 )
-
-
-@pytest.fixture
-def ci_firefox_options():
-    options = FirefoxOptions()
-    options.headless = True
-    options.start_timeout = 60
-    return options
-
-
-@pytest_asyncio.fixture
-async def tab(ci_firefox_options):
-    async with Firefox(options=ci_firefox_options) as browser:
-        yield await browser.start()
 
 
 class TestIframeTraversal:

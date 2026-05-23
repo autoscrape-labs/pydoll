@@ -20,7 +20,7 @@ import pytest
 
 from pydoll.browser.chromium import Chrome
 
-PAGES_DIR = Path(__file__).parent / 'pages' / 'worker_ua'
+PAGES_DIR = Path(__file__).parents[2] / 'pages' / 'worker_ua'
 
 SPOOFED_UA = (
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '

@@ -8,7 +8,7 @@ from _waits import wait_for_element_text, wait_for_js, wait_for_js_value
 from pydoll.browser.chromium import Chrome
 from pydoll.elements.cdp.web_element import WebElement
 
-PAGE = f'file://{(Path(__file__).parent / "pages" / "test_core_simple.html").absolute()}'
+PAGE = f'file://{(Path(__file__).parents[2] / "pages" / "test_core_simple.html").absolute()}'
 
 
 class TestCoreFindQuery:

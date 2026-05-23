@@ -324,6 +324,21 @@ class BiDiWebElement(BidiFindElementsMixin):
         if not result:
             raise ElementNotInteractable()
 
+    async def _click_option_tag(self) -> None:
+        """Select an ``<option>`` via JavaScript (it has no box for a trusted click)."""
+        await self._call_on_element(
+            '(el) => {'
+            '  const select = el.parentElement ? el.parentElement.closest("select") : null;'
+            '  if (!select) { return false; }'
+            '  for (const opt of select.options) { opt.selected = false; }'
+            '  el.selected = true;'
+            '  select.value = el.value;'
+            '  select.dispatchEvent(new Event("input", {bubbles: true}));'
+            '  select.dispatchEvent(new Event("change", {bubbles: true}));'
+            '  return true;'
+            '}'
+        )
+
     async def click(
         self,
         x_offset: int = 0,
@@ -342,7 +357,14 @@ class BiDiWebElement(BidiFindElementsMixin):
         current position to the element center — identical humanization to the
         CDP path. When humanize=False, the pointer jumps to the element and
         clicks.
+
+        ``<option>`` elements have no clickable box, so selection is delegated to
+        a JavaScript path (the same approach the CDP element takes).
         """
+        if (self.tag_name or '').lower() == 'option':
+            await self._click_option_tag()
+            return
+
         await self.scroll_into_view()
         if not await self.is_visible():
             raise ElementNotVisible()

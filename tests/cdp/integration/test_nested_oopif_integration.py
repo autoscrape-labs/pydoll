@@ -16,7 +16,7 @@ from _waits import wait_for_element_text, wait_for_js_value
 
 from pydoll.browser.chromium import Chrome
 
-PAGES_DIR = Path(__file__).parent / 'pages' / 'oopif'
+PAGES_DIR = Path(__file__).parents[2] / 'pages' / 'oopif'
 
 
 class _SilentHandler(http.server.SimpleHTTPRequestHandler):

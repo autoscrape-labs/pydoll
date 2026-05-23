@@ -21,7 +21,7 @@ class TestSimpleIframeIntegration:
     @pytest.mark.asyncio
     async def test_find_element_in_iframe_by_id(self, ci_chrome_options):
         """Test finding an element inside an iframe by id."""
-        test_file = Path(__file__).parent / 'pages' / 'test_iframe_simple.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_iframe_simple.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -51,7 +51,7 @@ class TestSimpleIframeIntegration:
     @pytest.mark.asyncio
     async def test_find_multiple_elements_in_iframe(self, ci_chrome_options):
         """Test finding multiple elements inside an iframe."""
-        test_file = Path(__file__).parent / 'pages' / 'test_iframe_simple.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_iframe_simple.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -72,7 +72,7 @@ class TestSimpleIframeIntegration:
     @pytest.mark.asyncio
     async def test_find_element_in_iframe_by_css_selector(self, ci_chrome_options):
         """Test finding elements in iframe using CSS selectors."""
-        test_file = Path(__file__).parent / 'pages' / 'test_iframe_simple.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_iframe_simple.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -92,7 +92,7 @@ class TestSimpleIframeIntegration:
     @pytest.mark.asyncio
     async def test_find_element_in_iframe_by_xpath(self, ci_chrome_options):
         """Test finding elements in iframe using XPath."""
-        test_file = Path(__file__).parent / 'pages' / 'test_iframe_simple.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_iframe_simple.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -111,7 +111,7 @@ class TestSimpleIframeIntegration:
     @pytest.mark.asyncio
     async def test_insert_text_in_iframe_input(self, ci_chrome_options):
         """Test inserting text into an input field inside an iframe."""
-        test_file = Path(__file__).parent / 'pages' / 'test_iframe_simple.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_iframe_simple.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -135,7 +135,7 @@ class TestSimpleIframeIntegration:
     @pytest.mark.asyncio
     async def test_insert_text_in_iframe_textarea(self, ci_chrome_options):
         """Test inserting text into a textarea inside an iframe."""
-        test_file = Path(__file__).parent / 'pages' / 'test_iframe_simple.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_iframe_simple.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -159,7 +159,7 @@ class TestSimpleIframeIntegration:
     @pytest.mark.asyncio
     async def test_click_button_in_iframe(self, ci_chrome_options):
         """Test clicking a button inside an iframe."""
-        test_file = Path(__file__).parent / 'pages' / 'test_iframe_simple.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_iframe_simple.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -178,7 +178,7 @@ class TestSimpleIframeIntegration:
     @pytest.mark.asyncio
     async def test_get_inner_html_of_iframe(self, ci_chrome_options):
         """Test getting inner HTML of an iframe element."""
-        test_file = Path(__file__).parent / 'pages' / 'test_iframe_simple.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_iframe_simple.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -197,7 +197,7 @@ class TestSimpleIframeIntegration:
     @pytest.mark.asyncio
     async def test_get_inner_html_of_element_in_iframe(self, ci_chrome_options):
         """Test getting inner HTML of an element inside an iframe."""
-        test_file = Path(__file__).parent / 'pages' / 'test_iframe_simple.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_iframe_simple.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -219,7 +219,7 @@ class TestSimpleIframeIntegration:
     @pytest.mark.asyncio
     async def test_get_children_elements_in_iframe(self, ci_chrome_options):
         """Test getting children elements of an element inside an iframe."""
-        test_file = Path(__file__).parent / 'pages' / 'test_iframe_simple.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_iframe_simple.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -239,7 +239,7 @@ class TestSimpleIframeIntegration:
     @pytest.mark.asyncio
     async def test_element_visibility_in_iframe(self, ci_chrome_options):
         """Test checking element visibility inside an iframe."""
-        test_file = Path(__file__).parent / 'pages' / 'test_iframe_simple.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_iframe_simple.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -265,7 +265,7 @@ class TestNestedIframeIntegration:
     @pytest.mark.asyncio
     async def test_find_element_in_parent_iframe(self, ci_chrome_options):
         """Test finding an element in parent iframe."""
-        test_file = Path(__file__).parent / 'pages' / 'test_iframe_nested.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_iframe_nested.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -287,7 +287,7 @@ class TestNestedIframeIntegration:
     @pytest.mark.asyncio
     async def test_find_nested_iframe_element(self, ci_chrome_options):
         """Test finding the nested iframe element inside parent iframe."""
-        test_file = Path(__file__).parent / 'pages' / 'test_iframe_nested.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_iframe_nested.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -305,7 +305,7 @@ class TestNestedIframeIntegration:
     @pytest.mark.asyncio
     async def test_find_element_in_nested_iframe(self, ci_chrome_options):
         """Test finding an element in nested iframe (iframe within iframe)."""
-        test_file = Path(__file__).parent / 'pages' / 'test_iframe_nested.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_iframe_nested.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -329,7 +329,7 @@ class TestNestedIframeIntegration:
     @pytest.mark.asyncio
     async def test_insert_text_in_nested_iframe(self, ci_chrome_options):
         """Test inserting text into input field in nested iframe."""
-        test_file = Path(__file__).parent / 'pages' / 'test_iframe_nested.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_iframe_nested.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -355,7 +355,7 @@ class TestNestedIframeIntegration:
     @pytest.mark.asyncio
     async def test_find_multiple_elements_in_nested_iframe(self, ci_chrome_options):
         """Test finding multiple elements in nested iframe."""
-        test_file = Path(__file__).parent / 'pages' / 'test_iframe_nested.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_iframe_nested.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -378,7 +378,7 @@ class TestNestedIframeIntegration:
     @pytest.mark.asyncio
     async def test_submit_form_in_nested_iframe(self, ci_chrome_options):
         """Test interacting with form elements in nested iframe."""
-        test_file = Path(__file__).parent / 'pages' / 'test_iframe_nested.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_iframe_nested.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -411,7 +411,7 @@ class TestIframeElementInteraction:
     @pytest.mark.asyncio
     async def test_select_option_in_iframe(self, ci_chrome_options):
         """Test selecting an option in a select element inside iframe."""
-        test_file = Path(__file__).parent / 'pages' / 'test_iframe_simple.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_iframe_simple.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -444,7 +444,7 @@ class TestIframeElementInteraction:
     @pytest.mark.asyncio
     async def test_get_attributes_from_iframe_elements(self, ci_chrome_options):
         """Test getting various attributes from elements in iframe."""
-        test_file = Path(__file__).parent / 'pages' / 'test_iframe_simple.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_iframe_simple.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -473,7 +473,7 @@ class TestIframeElementInteraction:
     @pytest.mark.asyncio
     async def test_deep_nested_element_search_in_iframe(self, ci_chrome_options):
         """Test finding deeply nested elements inside iframe."""
-        test_file = Path(__file__).parent / 'pages' / 'test_iframe_simple.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_iframe_simple.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -493,7 +493,7 @@ class TestIframeElementInteraction:
     @pytest.mark.asyncio
     async def test_wait_for_element_in_iframe(self, ci_chrome_options):
         """Test waiting for element to appear in iframe."""
-        test_file = Path(__file__).parent / 'pages' / 'test_iframe_simple.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_iframe_simple.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -514,7 +514,7 @@ class TestIframeElementInteraction:
     @pytest.mark.asyncio
     async def test_element_not_found_in_iframe(self, ci_chrome_options):
         """Test that ElementNotFound is raised for non-existent elements in iframe."""
-        test_file = Path(__file__).parent / 'pages' / 'test_iframe_simple.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_iframe_simple.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -530,7 +530,7 @@ class TestIframeElementInteraction:
     @pytest.mark.asyncio
     async def test_clear_input_in_iframe(self, ci_chrome_options):
         """Test clearing input field in iframe."""
-        test_file = Path(__file__).parent / 'pages' / 'test_iframe_simple.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_iframe_simple.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -551,7 +551,7 @@ class TestIframeElementInteraction:
     async def test_multiple_iframes_on_same_page(self, ci_chrome_options):
         """Test handling multiple iframes on the same page."""
         # Create a test page with multiple iframes
-        test_file = Path(__file__).parent / 'pages' / 'test_iframe_simple.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_iframe_simple.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -576,7 +576,7 @@ class TestIframeElementInteraction:
     @pytest.mark.asyncio
     async def test_iframe_context_persistence(self, ci_chrome_options):
         """Test that iframe context persists across multiple operations."""
-        test_file = Path(__file__).parent / 'pages' / 'test_iframe_simple.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_iframe_simple.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -604,7 +604,7 @@ class TestIframeElementInteraction:
     @pytest.mark.asyncio
     async def test_get_text_from_multiple_elements_in_iframe(self, ci_chrome_options):
         """Test getting text from multiple elements in iframe."""
-        test_file = Path(__file__).parent / 'pages' / 'test_iframe_simple.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_iframe_simple.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -635,7 +635,7 @@ class TestMultipleIframesSelection:
     @pytest.mark.asyncio
     async def test_find_specific_iframe_by_id_among_multiple(self, ci_chrome_options):
         """Test finding a specific iframe by ID when multiple iframes exist on the page."""
-        test_file = Path(__file__).parent / 'pages' / 'test_multiple_iframes.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_multiple_iframes.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -660,7 +660,7 @@ class TestMultipleIframesSelection:
     @pytest.mark.asyncio
     async def test_find_elements_in_correct_iframe_among_multiple(self, ci_chrome_options):
         """Test that elements are found in the correct iframe when multiple exist."""
-        test_file = Path(__file__).parent / 'pages' / 'test_multiple_iframes.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_multiple_iframes.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -684,7 +684,7 @@ class TestMultipleIframesSelection:
     @pytest.mark.asyncio
     async def test_different_iframes_have_different_contexts(self, ci_chrome_options):
         """Test that different iframes have distinct frame contexts even with same content."""
-        test_file = Path(__file__).parent / 'pages' / 'test_multiple_iframes.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_multiple_iframes.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -719,7 +719,7 @@ class TestMultipleIframesSelection:
     @pytest.mark.asyncio
     async def test_iframe_selection_by_data_attribute(self, ci_chrome_options):
         """Test selecting iframe by custom data attribute."""
-        test_file = Path(__file__).parent / 'pages' / 'test_multiple_iframes.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_multiple_iframes.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -738,7 +738,7 @@ class TestMultipleIframesSelection:
     @pytest.mark.asyncio
     async def test_iterate_over_multiple_iframes(self, ci_chrome_options):
         """Test iterating over multiple iframes and accessing each one's content."""
-        test_file = Path(__file__).parent / 'pages' / 'test_multiple_iframes.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_multiple_iframes.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -768,7 +768,7 @@ class TestMultipleIframesSelection:
     @pytest.mark.asyncio
     async def test_find_in_iframe_after_finding_in_another(self, ci_chrome_options):
         """Test finding elements in one iframe after finding in another."""
-        test_file = Path(__file__).parent / 'pages' / 'test_multiple_iframes.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_multiple_iframes.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -803,7 +803,7 @@ class TestIframeEdgeCases:
     @pytest.mark.asyncio
     async def test_dynamic_content_in_iframe(self, ci_chrome_options):
         """Test finding dynamically added content in iframe."""
-        test_file = Path(__file__).parent / 'pages' / 'test_iframe_simple.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_iframe_simple.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -836,7 +836,7 @@ class TestIframeEdgeCases:
     @pytest.mark.asyncio
     async def test_iframe_reload_handling(self, ci_chrome_options):
         """Test that iframe context is properly handled after page reload."""
-        test_file = Path(__file__).parent / 'pages' / 'test_iframe_simple.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_iframe_simple.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -867,7 +867,7 @@ class TestIframeTypeText:
     @pytest.mark.asyncio
     async def test_type_text_in_iframe_input(self, ci_chrome_options):
         """type_text should work inside an iframe input."""
-        test_file = Path(__file__).parent / 'pages' / 'test_iframe_simple.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_iframe_simple.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -888,7 +888,7 @@ class TestIframeTypeText:
     @pytest.mark.asyncio
     async def test_type_text_humanized_in_iframe_input(self, ci_chrome_options):
         """type_text with humanize=True should work inside an iframe."""
-        test_file = Path(__file__).parent / 'pages' / 'test_iframe_simple.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_iframe_simple.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -914,7 +914,7 @@ class TestIframeTypeText:
     @pytest.mark.asyncio
     async def test_type_text_email_in_iframe_input(self, ci_chrome_options):
         """type_text should handle symbols like @ and . inside iframe."""
-        test_file = Path(__file__).parent / 'pages' / 'test_iframe_simple.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_iframe_simple.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -940,7 +940,7 @@ class TestFrameElementIntegration:
     @pytest.mark.asyncio
     async def test_frame_element_is_iframe(self, ci_chrome_options):
         """Test that a <frame> element is recognized as an iframe."""
-        test_file = Path(__file__).parent / 'pages' / 'test_frameset.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_frameset.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -955,7 +955,7 @@ class TestFrameElementIntegration:
     @pytest.mark.asyncio
     async def test_find_element_inside_frame(self, ci_chrome_options):
         """Test finding an element inside a <frame> element."""
-        test_file = Path(__file__).parent / 'pages' / 'test_frameset.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_frameset.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -972,7 +972,7 @@ class TestFrameElementIntegration:
     @pytest.mark.asyncio
     async def test_frame_context_is_resolved(self, ci_chrome_options):
         """Test that iframe_context works for <frame> elements."""
-        test_file = Path(__file__).parent / 'pages' / 'test_frameset.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_frameset.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -988,7 +988,7 @@ class TestFrameElementIntegration:
     @pytest.mark.asyncio
     async def test_inner_html_of_frame(self, ci_chrome_options):
         """Test that inner_html works for <frame> elements."""
-        test_file = Path(__file__).parent / 'pages' / 'test_frameset.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_frameset.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -1002,7 +1002,7 @@ class TestFrameElementIntegration:
     @pytest.mark.asyncio
     async def test_multiple_frames_in_frameset(self, ci_chrome_options):
         """Test interacting with multiple <frame> elements in a frameset."""
-        test_file = Path(__file__).parent / 'pages' / 'test_frameset.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_frameset.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -1028,7 +1028,7 @@ class TestFrameElementIntegration:
     @pytest.mark.asyncio
     async def test_type_text_in_frame_input(self, ci_chrome_options):
         """Test typing text into an input inside a <frame> element."""
-        test_file = Path(__file__).parent / 'pages' / 'test_frameset.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_frameset.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -1068,7 +1068,7 @@ class TestIframeContextResolutionFailures:
         finds no matching frame, so the resolver cannot determine a frameId
         and raises.
         """
-        test_file = Path(__file__).parent / 'pages' / 'test_iframe_simple.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_iframe_simple.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -1115,7 +1115,7 @@ class TestIframeContextResolutionFailures:
         back to an empty node (no frameId, no backendNodeId) and ultimately
         raises ``InvalidIFrame``.
         """
-        test_file = Path(__file__).parent / 'pages' / 'test_iframe_simple.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'test_iframe_simple.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:
@@ -1139,7 +1139,7 @@ class TestIframeContextResolutionFailures:
         frame-owner lookup (matching the iframe's backendNodeId against the
         page frame tree) rather than the direct contentDocument path.
         """
-        test_file = Path(__file__).parent / 'pages' / 'iframe_features.html'
+        test_file = Path(__file__).parents[2] / 'pages' / 'iframe_features.html'
         file_url = f'file://{test_file.absolute()}'
 
         async with Chrome(options=ci_chrome_options) as browser:

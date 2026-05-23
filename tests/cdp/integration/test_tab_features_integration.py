@@ -23,7 +23,7 @@ from pydoll.exceptions import (
     WaitElementTimeout,
 )
 
-PAGES = Path(__file__).parent / 'pages'
+PAGES = Path(__file__).parents[2] / 'pages'
 
 PNG_MAGIC = b'\x89PNG\r\n\x1a\n'
 JPEG_MAGIC = b'\xff\xd8\xff'

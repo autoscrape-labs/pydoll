@@ -198,7 +198,7 @@ def api_server():
 @pytest.fixture(scope='module')
 def test_page_path():
     """Path to the HAR recording test HTML page."""
-    return Path(__file__).parent / 'pages' / 'test_har_recording.html'
+    return Path(__file__).parents[2] / 'pages' / 'test_har_recording.html'
 
 
 async def _wait_for_requests_done(tab, timeout=15):

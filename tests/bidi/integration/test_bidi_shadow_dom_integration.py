@@ -12,7 +12,6 @@ import pytest
 import pytest_asyncio
 
 from pydoll.browser import Firefox
-from pydoll.browser.firefox.options import FirefoxOptions
 from pydoll.exceptions import ShadowRootNotFound
 
 SETUP = """(() => {
@@ -26,16 +25,9 @@ SETUP = """(() => {
 })()"""
 
 
-@pytest.fixture
-def ci_firefox_options():
-    options = FirefoxOptions()
-    options.headless = True
-    options.start_timeout = 60
-    return options
-
-
 @pytest_asyncio.fixture
 async def tab(ci_firefox_options):
+    """A Firefox tab pre-loaded with open + closed shadow hosts (see SETUP)."""
     async with Firefox(options=ci_firefox_options) as browser:
         page = await browser.start()
         await page.go_to('data:text/html,<body></body>')
