@@ -397,7 +397,7 @@ new Promise((resolve) => {{
 })()
 """
 
-    GET_VIEWPORT_CENTER = 'JSON.stringify([window.innerWidth / 2, window.innerHeight / 2])'
+    GET_VIEWPORT_CENTER = '[window.innerWidth / 2, window.innerHeight / 2]'
 
     INSERT_TEXT = """
     function() {

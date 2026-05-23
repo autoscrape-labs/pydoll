@@ -17,6 +17,7 @@ from pydoll.elements.mixins.bidi_find_elements_mixin import BidiFindElementsMixi
 from pydoll.exceptions import ScriptExecutionError
 from pydoll.interactions.keyboard import BiDiKeyboard
 from pydoll.interactions.mouse import BiDiMouse
+from pydoll.interactions.scroll import BiDiScroll
 from pydoll.protocol.bidi.base import Command, T_CommandParams, T_CommandResult
 from pydoll.protocol.bidi.browsing_context.types import ImageFormat
 from pydoll.protocol.events import BIDI_EVENT_MAP, Event
@@ -46,6 +47,7 @@ class BiDiTab(BidiFindElementsMixin):
         self._connection_handler = connection
         self._mouse: BiDiMouse = BiDiMouse(self)
         self._keyboard: Optional[BiDiKeyboard] = None
+        self._scroll: Optional[BiDiScroll] = None
 
     @property
     def mouse(self) -> BiDiMouse:
@@ -63,6 +65,13 @@ class BiDiTab(BidiFindElementsMixin):
         if self._keyboard is None:
             self._keyboard = BiDiKeyboard(self)
         return self._keyboard
+
+    @property
+    def scroll(self) -> BiDiScroll:
+        """Scroll controller for this tab (humanized wheel via performActions)."""
+        if self._scroll is None:
+            self._scroll = BiDiScroll(self)
+        return self._scroll
 
     @property
     async def current_url(self) -> str:
