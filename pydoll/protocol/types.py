@@ -15,6 +15,7 @@ class CookieParam(TypedDict):
 
     name: str
     value: str
+    url: NotRequired[str]
     domain: str
     path: NotRequired[str]
     httpOnly: NotRequired[bool]

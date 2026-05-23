@@ -123,7 +123,7 @@ class TestFileChooserInterception:
         async with tab.expect_file_chooser(files=[upload]):
             await file_input.click()
 
-        assert tab.intercept_file_chooser_dialog_enabled is False
+        assert tab._intercept_file_chooser_dialog_enabled is False
 
 
 class TestFindShadowRootsTimeout:

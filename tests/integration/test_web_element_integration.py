@@ -30,8 +30,12 @@ PAGE_URL = f'file://{(Path(__file__).parent / "pages" / "web_element.html").abso
 
 async def _live(element_or_tab, expression: str):
     """Read a live JS value from an element or tab via execute_script."""
-    result = await element_or_tab.execute_script(f'return {expression}', return_by_value=True)
-    return result['result']['result']['value']
+    if isinstance(element_or_tab, WebElement):
+        result = await element_or_tab.execute_script(
+            f'return {expression}', return_by_value=True
+        )
+        return result['result']['result']['value']
+    return await element_or_tab.execute_script(f'return {expression}')
 
 
 @pytest_asyncio.fixture

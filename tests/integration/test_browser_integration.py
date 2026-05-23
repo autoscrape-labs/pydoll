@@ -21,8 +21,8 @@ async def test_start_returns_a_tab_and_reports_version(ci_chrome_options):
         tab = await browser.start()
         assert isinstance(tab, Tab)
         version = await browser.get_version()
-        assert 'product' in version
-        assert 'protocolVersion' in version
+        assert 'browserName' in version
+        assert 'browserVersion' in version
 
 
 @pytest.mark.asyncio
@@ -71,6 +71,6 @@ async def test_set_then_get_cookies_roundtrip(ci_chrome_options):
 async def test_get_targets_includes_a_page(ci_chrome_options):
     async with Chrome(options=ci_chrome_options) as browser:
         await browser.start()
-        targets = await browser.get_targets()
+        targets = await browser._get_targets()
         assert isinstance(targets, list)
         assert any(target.get('type') == 'page' for target in targets)

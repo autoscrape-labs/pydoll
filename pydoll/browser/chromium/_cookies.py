@@ -44,6 +44,8 @@ def to_cdp_cookie_params(cookies: list[CookieParam]) -> list[CDPCookieParam]:
 
 def _to_cdp_cookie_param(cookie: CookieParam) -> CDPCookieParam:
     result = CDPCookieParam(name=cookie['name'], value=cookie['value'])
+    if 'url' in cookie:
+        result['url'] = cookie['url']
     if 'domain' in cookie:
         result['domain'] = cookie['domain']
     if 'path' in cookie:

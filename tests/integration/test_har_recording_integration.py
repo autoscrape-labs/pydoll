@@ -221,10 +221,9 @@ async def _wait_for_network_idle(tab, idle_for=0.6, timeout=15):
     deadline = loop.time() + timeout
     last_count, stable_since = -1, loop.time()
     while True:
-        res = await tab.execute_script(
-            'return performance.getEntriesByType("resource").length', return_by_value=True
+        count = await tab.execute_script(
+            'return performance.getEntriesByType("resource").length'
         )
-        count = res['result']['result']['value']
         now = loop.time()
         if count != last_count:
             last_count, stable_since = count, now

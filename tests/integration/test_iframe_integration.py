@@ -814,14 +814,16 @@ class TestIframeEdgeCases:
 
             # Add dynamic content via JavaScript
             iframe_context = await iframe_element.iframe_context
-            await tab.execute_script(
-                """
+            await tab.execute_protocol_command(
+                RuntimeCommands.evaluate(
+                    expression="""
                 const div = document.createElement('div');
                 div.id = 'dynamic-element';
                 div.textContent = 'Dynamic Content';
                 document.body.appendChild(div);
                 """,
-                context_id=iframe_context.execution_context_id,
+                    context_id=iframe_context.execution_context_id,
+                )
             )
 
             # Find dynamically added element
@@ -1154,14 +1156,16 @@ class TestIframeContextResolutionFailures:
 
             # The resolved frame is the empty about:blank document; we can
             # create elements in it via the resolved execution context.
-            await tab.execute_script(
-                """
+            await tab.execute_protocol_command(
+                RuntimeCommands.evaluate(
+                    expression="""
                 const marker = document.createElement('div');
                 marker.id = 'about-blank-marker';
                 marker.textContent = 'blank ok';
                 document.body.appendChild(marker);
                 """,
-                context_id=ctx.execution_context_id,
+                    context_id=ctx.execution_context_id,
+                )
             )
             marker = await iframe_element.find(id='about-blank-marker', timeout=5)
             assert 'blank ok' in await marker.text

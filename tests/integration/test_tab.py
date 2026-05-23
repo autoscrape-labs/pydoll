@@ -34,10 +34,10 @@ async def _wait_until(condition: Callable[[], Any], timeout: float = 2.0) -> Any
 @pytest.mark.parametrize(
     'enable_method, command, flag',
     [
-        ('enable_page_events', 'Page.enable', 'page_events_enabled'),
-        ('enable_network_events', 'Network.enable', 'network_events_enabled'),
-        ('enable_dom_events', 'DOM.enable', 'dom_events_enabled'),
-        ('enable_runtime_events', 'Runtime.enable', 'runtime_events_enabled'),
+        ('_enable_page_events', 'Page.enable', '_page_events_enabled'),
+        ('_enable_network_events', 'Network.enable', '_network_events_enabled'),
+        ('_enable_dom_events', 'DOM.enable', '_dom_events_enabled'),
+        ('_enable_runtime_events', 'Runtime.enable', '_runtime_events_enabled'),
     ],
 )
 async def test_enable_event_domain_sets_flag_and_sends_command(
@@ -92,17 +92,17 @@ async def test_go_to_navigates_waits_for_load_and_restores_page_events(cdp_serve
     await navigation
     navigate = cdp_server.commands_for('Page.navigate')[-1]
     assert navigate['params']['url'] == 'https://example.com'
-    assert fake_tab.page_events_enabled is False
+    assert fake_tab._page_events_enabled is False
 
 
 @pytest.mark.asyncio
 async def test_go_to_preserves_page_events_when_already_enabled(cdp_server, fake_tab):
-    await fake_tab.enable_page_events()
+    await fake_tab._enable_page_events()
     navigation = asyncio.create_task(fake_tab.go_to('https://example.com'))
     await _wait_until(lambda: cdp_server.commands_for('Page.navigate'))
     await cdp_server.push_event('Page.loadEventFired', {})
     await navigation
-    assert fake_tab.page_events_enabled is True
+    assert fake_tab._page_events_enabled is True
 
 
 @pytest.mark.asyncio
@@ -112,13 +112,13 @@ async def test_refresh_reloads_waits_for_load_and_restores_page_events(cdp_serve
     await cdp_server.push_event('Page.loadEventFired', {})
     await reload
     assert cdp_server.commands_for('Page.reload')
-    assert fake_tab.page_events_enabled is False
+    assert fake_tab._page_events_enabled is False
 
 
 @pytest.mark.asyncio
 async def test_on_sync_callback_receives_pushed_event(cdp_server, fake_tab):
     received = []
-    await fake_tab.enable_page_events()
+    await fake_tab._enable_page_events()
     await fake_tab.on('Page.loadEventFired', received.append)
     await cdp_server.push_event('Page.loadEventFired', {'frame': 'main'})
     await _wait_until(lambda: received)
@@ -132,7 +132,7 @@ async def test_on_async_callback_receives_pushed_event(cdp_server, fake_tab):
     async def handler(event):
         received.append(event)
 
-    await fake_tab.enable_page_events()
+    await fake_tab._enable_page_events()
     await fake_tab.on('Page.loadEventFired', handler)
     await cdp_server.push_event('Page.loadEventFired', {'value': 1})
     await _wait_until(lambda: received)
@@ -143,7 +143,7 @@ async def test_on_async_callback_receives_pushed_event(cdp_server, fake_tab):
 async def test_temporary_callback_fires_once(cdp_server, fake_tab):
     received = []
     marker = []
-    await fake_tab.enable_page_events()
+    await fake_tab._enable_page_events()
     await fake_tab.on('Custom.event', received.append, temporary=True)
     await fake_tab.on('Custom.marker', marker.append)
     await cdp_server.push_event('Custom.event', {'n': 1})
@@ -158,7 +158,7 @@ async def test_temporary_callback_fires_once(cdp_server, fake_tab):
 async def test_remove_callback_stops_delivery(cdp_server, fake_tab):
     received = []
     marker = []
-    await fake_tab.enable_page_events()
+    await fake_tab._enable_page_events()
     callback_id = await fake_tab.on('Custom.event', received.append)
     await fake_tab.on('Custom.marker', marker.append)
     await fake_tab.remove_callback(callback_id)
@@ -171,7 +171,7 @@ async def test_remove_callback_stops_delivery(cdp_server, fake_tab):
 @pytest.mark.asyncio
 async def test_clear_callbacks_removes_all(cdp_server, fake_tab):
     received = []
-    await fake_tab.enable_page_events()
+    await fake_tab._enable_page_events()
     await fake_tab.on('Custom.event', received.append)
     await fake_tab.clear_callbacks()
     marker = []
@@ -184,7 +184,7 @@ async def test_clear_callbacks_removes_all(cdp_server, fake_tab):
 
 @pytest.mark.asyncio
 async def test_get_network_logs_records_and_filters_pushed_events(cdp_server, fake_tab):
-    await fake_tab.enable_network_events()
+    await fake_tab._enable_network_events()
     await cdp_server.push_event(
         'Network.requestWillBeSent',
         {'requestId': 'r1', 'request': {'url': 'https://example.com/api/users'}},
@@ -197,7 +197,7 @@ async def test_get_network_logs_records_and_filters_pushed_events(cdp_server, fa
 
 @pytest.mark.asyncio
 async def test_dialog_message_available_after_opening_event(cdp_server, fake_tab):
-    await fake_tab.enable_page_events()
+    await fake_tab._enable_page_events()
     await cdp_server.push_event(
         'Page.javascriptDialogOpening', {'message': 'Confirm?', 'type': 'confirm'}
     )
@@ -207,7 +207,7 @@ async def test_dialog_message_available_after_opening_event(cdp_server, fake_tab
 
 @pytest.mark.asyncio
 async def test_handle_dialog_sends_command_when_present(cdp_server, fake_tab):
-    await fake_tab.enable_page_events()
+    await fake_tab._enable_page_events()
     await cdp_server.push_event('Page.javascriptDialogOpening', {'message': 'x', 'type': 'alert'})
     await _wait_until(fake_tab.has_dialog)
     await fake_tab.handle_dialog(accept=True)

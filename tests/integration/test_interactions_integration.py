@@ -15,13 +15,18 @@ import pytest_asyncio
 
 from pydoll.browser.chromium import Chrome
 from pydoll.constants import ScrollPosition
+from pydoll.elements.cdp.web_element import WebElement
 
 PAGE_URL = f'file://{(Path(__file__).parent / "pages" / "web_element.html").absolute()}'
 
 
-async def _live(tab, expression: str):
-    result = await tab.execute_script(f'return {expression}', return_by_value=True)
-    return result['result']['result']['value']
+async def _live(element_or_tab, expression: str):
+    if isinstance(element_or_tab, WebElement):
+        result = await element_or_tab.execute_script(
+            f'return {expression}', return_by_value=True
+        )
+        return result['result']['result']['value']
+    return await element_or_tab.execute_script(f'return {expression}')
 
 
 @pytest_asyncio.fixture
