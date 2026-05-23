@@ -13,10 +13,10 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from pydoll.browser.chromium.base import Browser
-    from pydoll.browser.chromium.tab import Tab
+    from pydoll.browser.chromium.tab import Tab, _DownloadHandle
     from pydoll.browser.firefox.base import FirefoxBrowser
-    from pydoll.browser.firefox.tab import BiDiTab
-    from pydoll.browser.protocols import BrowserProtocol, TabProtocol
+    from pydoll.browser.firefox.tab import BiDiTab, _BiDiDownloadHandle
+    from pydoll.browser.protocols import BrowserProtocol, DownloadHandleProtocol, TabProtocol
     from pydoll.elements.bidi.shadow_root import BiDiShadowRoot
     from pydoll.elements.bidi.web_element import BiDiWebElement
     from pydoll.elements.cdp.shadow_root import ShadowRoot
@@ -28,6 +28,12 @@ if TYPE_CHECKING:
 
     def _bidi_tab_conforms(tab: BiDiTab) -> TabProtocol:
         return tab
+
+    def _cdp_download_handle_conforms(handle: _DownloadHandle) -> DownloadHandleProtocol:
+        return handle
+
+    def _bidi_download_handle_conforms(handle: _BiDiDownloadHandle) -> DownloadHandleProtocol:
+        return handle
 
     def _cdp_browser_conforms(browser: Browser) -> BrowserProtocol:
         return browser

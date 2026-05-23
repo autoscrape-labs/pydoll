@@ -3,13 +3,16 @@ from __future__ import annotations
 import asyncio
 import base64 as _b64
 import logging
+import shutil
 from collections.abc import Mapping
 from contextlib import asynccontextmanager
 from pathlib import Path
+from tempfile import mkdtemp
 from typing import TYPE_CHECKING, Optional, Union, overload
 
 import aiofiles
 
+from pydoll.commands.bidi.browser_commands import BrowserCommands
 from pydoll.commands.bidi.browsing_context_commands import BrowsingContextCommands
 from pydoll.commands.bidi.emulation_commands import EmulationCommands
 from pydoll.commands.bidi.input_commands import InputCommands as BiDiInputCommands
@@ -18,11 +21,12 @@ from pydoll.commands.bidi.session_commands import SessionCommands
 from pydoll.commands.bidi.storage_commands import StorageCommands
 from pydoll.connection.bidi_connection_handler import BiDiConnectionHandler
 from pydoll.elements.mixins.bidi_find_elements_mixin import BidiFindElementsMixin
-from pydoll.exceptions import ScriptExecutionError
+from pydoll.exceptions import DownloadTimeout, ScriptExecutionError
 from pydoll.interactions.keyboard import BiDiKeyboard
 from pydoll.interactions.mouse import BiDiMouse
 from pydoll.interactions.scroll import BiDiScroll
 from pydoll.protocol.bidi.base import Command, T_CommandParams, T_CommandResult
+from pydoll.protocol.bidi.browser.types import DownloadBehaviorAllowed
 from pydoll.protocol.bidi.browsing_context.types import ImageFormat, ReadinessState
 from pydoll.protocol.bidi.network.types import Cookie as BiDiCookie
 from pydoll.protocol.bidi.network.types import SameSite, StringValue
@@ -413,6 +417,118 @@ class BiDiTab(BidiFindElementsMixin):
         finally:
             await self.remove_callback(callback_id)
 
+    @asynccontextmanager
+    async def expect_download(
+        self,
+        keep_file_at: Optional[Union[str, Path]] = None,
+        timeout: Optional[float] = None,
+    ) -> AsyncGenerator[_BiDiDownloadHandle, None]:
+        """Capture a file download triggered inside the block (mirrors the CDP API).
+
+        Routes downloads to a directory and yields a handle to await completion
+        and read the file. BiDi reports the saved path directly on
+        browsingContext.downloadEnd, so no progress polling is needed.
+
+        Args:
+            keep_file_at: Directory to persist the file. If None, a temporary
+                directory is used and removed when the block exits.
+            timeout: Max seconds to wait for the download to finish (default 60).
+
+        Yields:
+            _BiDiDownloadHandle: reads the downloaded file (bytes/base64) and its path.
+        """
+        download_timeout = 60.0 if timeout is None else float(timeout)
+
+        cleanup_dir = False
+        if keep_file_at is None:
+            download_dir = mkdtemp(prefix='pydoll-download-')
+            cleanup_dir = True
+        else:
+            download_dir = str(Path(keep_file_at))
+            Path(download_dir).mkdir(parents=True, exist_ok=True)
+
+        logger.info(f'Expecting download (dir={download_dir}, timeout={download_timeout}s)')
+        await self._execute_command(
+            BrowserCommands.set_download_behavior(
+                download_behavior=DownloadBehaviorAllowed(
+                    type='allowed', destinationFolder=download_dir
+                )
+            )
+        )
+
+        loop = asyncio.get_event_loop()
+        will_begin: asyncio.Future[bool] = loop.create_future()
+        done: asyncio.Future[bool] = loop.create_future()
+        state: dict[str, Optional[str]] = {
+            'url': None,
+            'suggestedFilename': None,
+            'filePath': None,
+        }
+
+        async def on_will_begin(event: dict) -> None:
+            params = event['params']
+            if params.get('context') != self._context_id:
+                return
+            state['url'] = params.get('url')
+            state['suggestedFilename'] = params.get('suggestedFilename')
+            if not will_begin.done():
+                will_begin.set_result(True)
+            logger.info(
+                f'Download will begin: url={state["url"]}, filename={state["suggestedFilename"]}'
+            )
+
+        async def on_end(event: dict) -> None:
+            params = event['params']
+            if params.get('context') != self._context_id or params.get('status') != 'complete':
+                return
+            file_path = params.get('filepath')
+            suggested = state.get('suggestedFilename')
+            if not file_path and suggested:
+                file_path = str(Path(download_dir) / suggested)
+            state['filePath'] = file_path
+            if not done.done():
+                done.set_result(True)
+            logger.info(f'Download completed: {file_path}')
+
+        cb_will_begin = await self.on(Event.DOWNLOAD_STARTED, on_will_begin)
+        cb_end = await self.on(Event.DOWNLOAD_COMPLETED, on_end)
+
+        handle = _BiDiDownloadHandle(
+            state=state,
+            will_begin_future=will_begin,
+            done_future=done,
+            timeout=download_timeout,
+        )
+
+        try:
+            yield handle
+            try:
+                await asyncio.wait_for(done, timeout=download_timeout)
+            except asyncio.TimeoutError as exc:
+                raise DownloadTimeout() from exc
+        finally:
+            await self._cleanup_download_context(
+                [cb_will_begin, cb_end], cleanup_dir, state, download_dir
+            )
+
+    async def _cleanup_download_context(
+        self,
+        callback_ids: list[int],
+        cleanup_dir: bool,
+        state: dict[str, Optional[str]],
+        download_dir: str,
+    ) -> None:
+        for callback_id in callback_ids:
+            await self.remove_callback(callback_id)
+        await self._execute_command(
+            BrowserCommands.set_download_behavior(download_behavior=None)
+        )
+        if cleanup_dir:
+            file_path = state['filePath']
+            if file_path:
+                Path(file_path).unlink(missing_ok=True)
+            shutil.rmtree(download_dir, ignore_errors=True)
+
     @property
     def network_logs(self) -> list:
         """Access captured network logs."""
@@ -637,3 +753,41 @@ class BiDiTab(BidiFindElementsMixin):
                 else raw_value
             )
         return result
+
+
+class _BiDiDownloadHandle:
+    """Handle returned by BiDiTab.expect_download to access the downloaded file."""
+
+    def __init__(
+        self,
+        state: dict[str, Optional[str]],
+        will_begin_future: asyncio.Future[bool],
+        done_future: asyncio.Future[bool],
+        timeout: float,
+    ) -> None:
+        self._state = state
+        self._will_begin_future = will_begin_future
+        self._done_future = done_future
+        self._timeout = timeout
+
+    @property
+    def file_path(self) -> Optional[str]:
+        return self._state.get('filePath')
+
+    async def wait_started(self, timeout: Optional[float] = None) -> None:
+        await asyncio.wait_for(self._will_begin_future, timeout=timeout or self._timeout)
+
+    async def wait_finished(self, timeout: Optional[float] = None) -> None:
+        await asyncio.wait_for(self._done_future, timeout=timeout or self._timeout)
+
+    async def read_bytes(self) -> bytes:
+        await self.wait_finished()
+        file_path = self.file_path
+        if not file_path:
+            raise FileNotFoundError('Download file path not available')
+        async with aiofiles.open(file_path, 'rb') as f:
+            return await f.read()
+
+    async def read_base64(self) -> str:
+        data = await self.read_bytes()
+        return _b64.b64encode(data).decode('ascii')

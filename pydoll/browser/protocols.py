@@ -181,6 +181,26 @@ class BrowserProtocol(Protocol[T_Tab]):
 
 
 @runtime_checkable
+class DownloadHandleProtocol(Protocol):
+    """Handle to a download captured by ``Tab.expect_download`` (CDP and BiDi).
+
+    Yielded inside the ``expect_download`` block to await completion and read the
+    downloaded bytes, regardless of the underlying protocol.
+    """
+
+    @property
+    def file_path(self) -> Optional[str]: ...
+
+    async def wait_started(self, timeout: Optional[float] = None) -> None: ...
+
+    async def wait_finished(self, timeout: Optional[float] = None) -> None: ...
+
+    async def read_bytes(self) -> bytes: ...
+
+    async def read_base64(self) -> str: ...
+
+
+@runtime_checkable
 class TabProtocol(Protocol):
     """Portable tab-level contract shared by Tab (CDP) and BiDiTab (BiDi).
 
@@ -282,6 +302,12 @@ class TabProtocol(Protocol):
     def expect_file_chooser(
         self, files: Union[str, Path, list[Union[str, Path]]]
     ) -> AbstractAsyncContextManager[None]: ...
+
+    def expect_download(
+        self,
+        keep_file_at: Optional[Union[str, Path]] = None,
+        timeout: Optional[float] = None,
+    ) -> AbstractAsyncContextManager[DownloadHandleProtocol]: ...
 
     async def on(
         self,
