@@ -30,6 +30,8 @@ from pydoll.utils import has_return_outside_function
 if TYPE_CHECKING:
     from typing import Any, AsyncGenerator, Awaitable, Callable
 
+    from pydoll.elements.bidi.shadow_root import BiDiShadowRoot
+
 logger = logging.getLogger(__name__)
 
 
@@ -399,6 +401,63 @@ class BiDiTab(BidiFindElementsMixin):
     def network_logs(self) -> list:
         """Access captured network logs."""
         return self._connection_handler.network_logs
+
+    async def find_shadow_roots(self, timeout: float = 0) -> list[BiDiShadowRoot]:
+        """Find every shadow root in the page, open and closed (nested included).
+
+        Serializes the document subtree with includeShadowTree='all' (which reaches
+        closed roots, like CDP's pierce) and wraps each shadow root as a
+        BiDiShadowRoot. Mirrors the CDP Tab.find_shadow_roots.
+
+        Args:
+            timeout: Seconds to poll for shadow roots to appear (0 = single scan).
+        """
+        from pydoll.elements.bidi.shadow_root import BiDiShadowRoot  # noqa: PLC0415
+
+        start = asyncio.get_event_loop().time()
+        while True:
+            collected = await self._collect_shadow_roots()
+            if collected or not timeout:
+                return [
+                    BiDiShadowRoot(
+                        shadow_root_id=shared_id,
+                        context_id=self._context_id,
+                        connection=self._connection_handler,
+                        mode=mode or 'open',
+                        mouse=self._mouse,
+                    )
+                    for shared_id, mode in collected
+                ]
+            if asyncio.get_event_loop().time() - start > timeout:
+                return []
+            await asyncio.sleep(0.5)
+
+    async def _collect_shadow_roots(self) -> list[tuple[str, Optional[str]]]:
+        """Serialize the body subtree (including closed shadow trees) and collect roots."""
+        response = await self._execute_command(
+            BrowsingContextCommands.locate_nodes(
+                context=self._context_id,
+                locator={'type': 'css', 'value': 'body'},
+                max_node_count=1,
+                serialization_options={'includeShadowTree': 'all', 'maxDomDepth': None},
+            )
+        )
+        nodes = response['result']['nodes']
+        roots: list[tuple[str, Optional[str]]] = []
+        if nodes:
+            self._walk_shadow_roots(nodes[0], roots)
+        return roots
+
+    @staticmethod
+    def _walk_shadow_roots(node: dict, out: list[tuple[str, Optional[str]]]) -> None:
+        """Recursively collect (sharedId, mode) of every shadow root in a serialized tree."""
+        value = node.get('value', {})
+        shadow = value.get('shadowRoot')
+        if shadow:
+            out.append((shadow.get('sharedId', ''), (shadow.get('value') or {}).get('mode')))
+            BiDiTab._walk_shadow_roots(shadow, out)
+        for child in value.get('children') or []:
+            BiDiTab._walk_shadow_roots(child, out)
 
     @overload
     async def on(

@@ -503,7 +503,9 @@ class Tab(CDPFindElementsMixin):
         logger.debug('Tab closed and removed from browser registry')
         return result
 
-    async def find_shadow_roots(self, deep: bool = False, timeout: float = 0) -> list[ShadowRoot]:
+    async def find_shadow_roots(
+        self, timeout: float = 0, *, deep: bool = False
+    ) -> list[ShadowRoot]:
         """
         Find all shadow roots in the page.
 

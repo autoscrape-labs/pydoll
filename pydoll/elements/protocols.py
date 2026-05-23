@@ -5,6 +5,38 @@ from typing import Optional, Protocol, Union, runtime_checkable
 
 
 @runtime_checkable
+class ShadowRootProtocol(Protocol):
+    """Contract for shadow root finders across protocols (CDP, BiDi)."""
+
+    @property
+    def mode(self) -> str: ...
+
+    @property
+    async def inner_html(self) -> str: ...
+
+    async def find(
+        self,
+        id: Optional[str] = None,
+        class_name: Optional[str] = None,
+        name: Optional[str] = None,
+        tag_name: Optional[str] = None,
+        text: Optional[str] = None,
+        timeout: int = 0,
+        find_all: bool = False,
+        raise_exc: bool = True,
+        **attributes: dict[str, str],
+    ) -> Union[WebElementProtocol, list[WebElementProtocol], None]: ...
+
+    async def query(
+        self,
+        expression: str,
+        timeout: int = 0,
+        find_all: bool = False,
+        raise_exc: bool = True,
+    ) -> Union[WebElementProtocol, list[WebElementProtocol], None]: ...
+
+
+@runtime_checkable
 class WebElementProtocol(Protocol):
     """Contract for web element implementations across protocols (CDP, BiDi)."""
 
@@ -43,6 +75,8 @@ class WebElementProtocol(Protocol):
     async def get_bounds_using_js(self) -> dict[str, int]: ...
 
     async def get_parent_element(self) -> WebElementProtocol: ...
+
+    async def get_shadow_root(self) -> ShadowRootProtocol: ...
 
     async def get_children_elements(
         self,

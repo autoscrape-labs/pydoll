@@ -75,3 +75,9 @@ class TestShadowDom:
         plain = await tab.find(id='plain')
         with pytest.raises(ShadowRootNotFound):
             await plain.get_shadow_root()
+
+    @pytest.mark.asyncio
+    async def test_find_shadow_roots_collects_open_and_closed(self, tab):
+        roots = await tab.find_shadow_roots()
+        assert len(roots) == 2
+        assert {root.mode for root in roots} == {'open', 'closed'}

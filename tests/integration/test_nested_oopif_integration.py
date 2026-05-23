@@ -159,7 +159,7 @@ class TestShadowRootInsideOopif:
     async def test_find_shadow_roots_inside_oopif(
         self, ci_chrome_options, cross_origin_servers
     ):
-        """find_shadow_roots(True) should discover shadow roots across OOPIFs."""
+        """find_shadow_roots(deep=True) should discover shadow roots across OOPIFs."""
         port_a, port_b = cross_origin_servers
         url = f'http://127.0.0.1:{port_a}/oopif_main.html?port={port_b}'
 
@@ -168,7 +168,7 @@ class TestShadowRootInsideOopif:
             tab = await browser.start()
             await tab.go_to(url)
 
-            shadow_roots = await tab.find_shadow_roots(True, timeout=10)
+            shadow_roots = await tab.find_shadow_roots(timeout=10, deep=True)
             for sr in shadow_roots:
                 html = await sr.inner_html
                 if 'Shadow content inside OOPIF' in html:
@@ -190,7 +190,7 @@ class TestShadowRootInsideOopif:
             tab = await browser.start()
             await tab.go_to(url)
 
-            shadow_roots = await tab.find_shadow_roots(True, timeout=10)
+            shadow_roots = await tab.find_shadow_roots(timeout=10, deep=True)
             for sr in shadow_roots:
                 html = await sr.inner_html
                 if 'Shadow content inside OOPIF' in html:
@@ -224,7 +224,7 @@ class TestIframeInsideShadowRootInsideOopif:
             tab = await browser.start()
             await tab.go_to(url)
 
-            shadow_roots = await tab.find_shadow_roots(True, timeout=10)
+            shadow_roots = await tab.find_shadow_roots(timeout=10, deep=True)
             for sr in shadow_roots:
                 html = await sr.inner_html
                 if 'Shadow content inside OOPIF' in html:
@@ -252,7 +252,7 @@ class TestIframeInsideShadowRootInsideOopif:
             tab = await browser.start()
             await tab.go_to(url)
 
-            shadow_roots = await tab.find_shadow_roots(True, timeout=10)
+            shadow_roots = await tab.find_shadow_roots(timeout=10, deep=True)
             for sr in shadow_roots:
                 html = await sr.inner_html
                 if 'Shadow content inside OOPIF' in html:

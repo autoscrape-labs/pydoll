@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Optional, Protocol, TypeAlias, TypeVar, Union, runtime_checkable
 
 from pydoll.constants import PageLoadState
-from pydoll.elements.protocols import WebElementProtocol
+from pydoll.elements.protocols import ShadowRootProtocol, WebElementProtocol
 from pydoll.interactions.keyboard import Keyboard
 from pydoll.interactions.mouse import Mouse
 from pydoll.interactions.scroll import Scroll
@@ -180,11 +180,10 @@ class TabProtocol(Protocol):
 
     Models only the cross-protocol surface. Protocol-specific features live on the
     concrete tab classes and are intentionally absent here: CDP Fetch control
-    (continue/fail/fulfill_request), OOPIF iframes (get_frame), shadow-root traversal
-    (find_shadow_roots), network introspection (get_network_logs), the Cloudflare
-    auto-solver, save_bundle, the extractor (extract/extract_all), and the
-    execute_protocol_command escape hatch (typed per protocol). `scroll` is omitted
-    until the BiDi backend implements it.
+    (continue/fail/fulfill_request), OOPIF iframes (get_frame), network introspection
+    (get_network_logs), the Cloudflare auto-solver, save_bundle, the extractor
+    (extract/extract_all), and the execute_protocol_command escape hatch (typed per
+    protocol).
     """
 
     @property
@@ -233,6 +232,10 @@ class TabProtocol(Protocol):
         find_all: bool = False,
         raise_exc: bool = True,
     ) -> Union[WebElementProtocol, list[WebElementProtocol], None]: ...
+
+    async def find_shadow_roots(
+        self, timeout: float = 0
+    ) -> Sequence[ShadowRootProtocol]: ...
 
     async def execute_script(self, script: str, *args: object) -> object: ...
 
