@@ -78,6 +78,15 @@ async def test_useragent_override_changes_navigator_user_agent(ci_firefox_option
 
 
 @pytest.mark.asyncio
+async def test_options_user_agent_applied_at_start(ci_firefox_options):
+    ci_firefox_options.user_agent = 'StartUA/1.0'
+    async with Firefox(options=ci_firefox_options) as browser:
+        tab = await browser.start()
+        await tab.go_to('data:text/html,<p>ua</p>')
+        assert await tab.execute_script('return navigator.userAgent') == 'StartUA/1.0'
+
+
+@pytest.mark.asyncio
 async def test_browser_context_create_list_and_delete(ci_firefox_options):
     async with Firefox(options=ci_firefox_options) as browser:
         await browser.start()

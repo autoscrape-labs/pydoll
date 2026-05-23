@@ -360,6 +360,12 @@ class ChromiumOptions:
     @user_agent.setter
     def user_agent(self, user_agent: Optional[str]):
         self._user_agent = user_agent
+        self._arguments = [
+            argument for argument in self._arguments
+            if not argument.startswith('--user-agent=')
+        ]
+        if user_agent is not None:
+            self._arguments.append(f'--user-agent={user_agent}')
 
 
 class ChromiumOptionsManager:

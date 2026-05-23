@@ -272,3 +272,31 @@ def test_set_webrtc_leak_protection_false_twice():
     options.webrtc_leak_protection = False
     assert options.webrtc_leak_protection is False
     assert options.arguments == []
+
+
+def test_initial_user_agent_is_none():
+    options = Options()
+    assert options.user_agent is None
+
+
+def test_set_user_agent_adds_argument():
+    options = Options()
+    options.user_agent = 'CustomUA/1.0'
+    assert options.user_agent == 'CustomUA/1.0'
+    assert '--user-agent=CustomUA/1.0' in options.arguments
+
+
+def test_set_user_agent_replaces_previous_argument():
+    options = Options()
+    options.user_agent = 'First/1.0'
+    options.user_agent = 'Second/2.0'
+    assert options.user_agent == 'Second/2.0'
+    assert options.arguments == ['--user-agent=Second/2.0']
+
+
+def test_set_user_agent_none_removes_argument():
+    options = Options()
+    options.user_agent = 'CustomUA/1.0'
+    options.user_agent = None
+    assert options.user_agent is None
+    assert options.arguments == []

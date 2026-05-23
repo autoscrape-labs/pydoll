@@ -17,6 +17,7 @@ from pydoll.browser.managers import (
 )
 from pydoll.commands.bidi.browser_commands import BrowserCommands
 from pydoll.commands.bidi.browsing_context_commands import BrowsingContextCommands
+from pydoll.commands.bidi.emulation_commands import EmulationCommands
 from pydoll.commands.bidi.network_commands import NetworkCommands
 from pydoll.commands.bidi.permissions_commands import PermissionsCommands
 from pydoll.commands.bidi.script_commands import ScriptCommands
@@ -175,6 +176,7 @@ class FirefoxBrowser:
         logger.info(f'BiDi session established: {self._session_id}')
 
         await self._apply_webdriver_stealth()
+        await self._apply_user_agent_override()
 
         tabs = await self.get_opened_tabs()
         if tabs:
@@ -207,6 +209,7 @@ class FirefoxBrowser:
         self._session_id = response['result']['sessionId']
         self._capabilities = response['result']['capabilities']
         await self._apply_webdriver_stealth()
+        await self._apply_user_agent_override()
         tabs = await self.get_opened_tabs()
         if tabs:
             return tabs[0]
@@ -223,6 +226,22 @@ class FirefoxBrowser:
         await self._execute_command(
             ScriptCommands.add_preload_script(
                 function_declaration=_WEBDRIVER_STEALTH_SCRIPT
+            )
+        )
+
+    async def _apply_user_agent_override(self) -> None:
+        """Apply the configured User-Agent to the default user context.
+
+        Scoping the override to the default user context (rather than a single
+        browsing context) makes it apply to the initial tab and any tab opened
+        later in that context. No-ops when options.user_agent is unset.
+        """
+        user_agent = self.options.user_agent
+        if not user_agent:
+            return
+        await self._execute_command(
+            EmulationCommands.set_user_agent_override(
+                user_agent=user_agent, user_contexts=['default']
             )
         )
 

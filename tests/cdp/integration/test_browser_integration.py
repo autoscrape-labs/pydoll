@@ -74,3 +74,12 @@ async def test_get_targets_includes_a_page(ci_chrome_options):
         targets = await browser._get_targets()
         assert isinstance(targets, list)
         assert any(target.get('type') == 'page' for target in targets)
+
+
+@pytest.mark.asyncio
+async def test_options_user_agent_applied_at_start(ci_chrome_options):
+    ci_chrome_options.user_agent = 'StartUA/1.0'
+    async with Chrome(options=ci_chrome_options) as browser:
+        tab = await browser.start()
+        await tab.go_to('data:text/html,<p>ua</p>')
+        assert await tab.execute_script('return navigator.userAgent') == 'StartUA/1.0'
