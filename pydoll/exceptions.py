@@ -342,6 +342,12 @@ class InvalidScriptWithElement(ScriptException):
     message = 'Script contains "argument" but no element was provided'
 
 
+class ScriptExecutionError(ScriptException):
+    """Raised when JavaScript executed via execute_script throws."""
+
+    message = 'The executed script raised an error'
+
+
 class WrongPrefsDict(PydollException):
     """Raised when the prefs dict provided contains the 'prefs' key"""
 

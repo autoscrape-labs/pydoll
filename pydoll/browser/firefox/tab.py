@@ -3,7 +3,8 @@ from __future__ import annotations
 import asyncio
 import base64 as _b64
 import logging
-from typing import TYPE_CHECKING, Optional, overload
+from pathlib import Path
+from typing import TYPE_CHECKING, Optional, Union, overload
 
 import aiofiles
 
@@ -13,11 +14,14 @@ from pydoll.commands.bidi.session_commands import SessionCommands
 from pydoll.commands.bidi.storage_commands import StorageCommands
 from pydoll.connection.bidi_connection_handler import BiDiConnectionHandler
 from pydoll.elements.mixins.bidi_find_elements_mixin import BidiFindElementsMixin
+from pydoll.exceptions import ScriptExecutionError
 from pydoll.interactions.keyboard import BiDiKeyboard
 from pydoll.interactions.mouse import BiDiMouse
 from pydoll.protocol.bidi.base import Command, T_CommandParams, T_CommandResult
+from pydoll.protocol.bidi.browsing_context.types import ImageFormat
 from pydoll.protocol.events import BIDI_EVENT_MAP, Event
 from pydoll.protocol.types import Cookie, CookieParam
+from pydoll.utils import has_return_outside_function
 
 if TYPE_CHECKING:
     from typing import Any, Awaitable, Callable
@@ -118,21 +122,33 @@ class BiDiTab(BidiFindElementsMixin):
 
     async def take_screenshot(
         self,
-        path: Optional[str] = None,
+        path: Optional[Union[str, Path]] = None,
+        quality: int = 100,
+        beyond_viewport: bool = False,
         as_base64: bool = False,
     ) -> Optional[str]:
         """Capture a screenshot.
 
         Args:
-            path: File path to save the screenshot.
+            path: File path to save the screenshot (extension picks the format).
+            quality: JPEG quality 0-100 (only applied when saving as .jpg/.jpeg).
+            beyond_viewport: Capture the full page instead of just the viewport.
             as_base64: Return base64-encoded data instead of saving.
 
         Returns:
             Base64 string if as_base64=True, None otherwise.
         """
+        extension = Path(path).suffix.lstrip('.').lower() if path is not None else ''
+        if extension in {'jpg', 'jpeg'}:
+            image_format: ImageFormat = {'type': 'image/jpeg', 'quality': quality / 100}
+        else:
+            image_format = {'type': 'image/png'}
+
         response = await self._execute_command(
             BrowsingContextCommands.capture_screenshot(
                 context=self._context_id,
+                origin='document' if beyond_viewport else 'viewport',
+                format=image_format,
             )
         )
         data = response['result']['data']
@@ -141,15 +157,17 @@ class BiDiTab(BidiFindElementsMixin):
             return data
 
         if path:
-            async with aiofiles.open(path, 'wb') as f:
+            async with aiofiles.open(str(path), 'wb') as f:
                 await f.write(_b64.b64decode(data))
 
         return None
 
     async def print_to_pdf(
         self,
-        path: Optional[str] = None,
+        path: Optional[Union[str, Path]] = None,
         landscape: bool = False,
+        display_header_footer: bool = False,
+        print_background: bool = True,
         scale: float = 1.0,
         as_base64: bool = False,
     ) -> Optional[str]:
@@ -158,6 +176,9 @@ class BiDiTab(BidiFindElementsMixin):
         Args:
             path: File path to save the PDF.
             landscape: Use landscape orientation.
+            display_header_footer: Accepted for CDP parity; WebDriver BiDi has no
+                header/footer toggle, so it is ignored.
+            print_background: Include background graphics.
             scale: Scale factor (0.1 to 2.0).
             as_base64: Return base64-encoded data instead of saving.
 
@@ -170,6 +191,7 @@ class BiDiTab(BidiFindElementsMixin):
                 context=self._context_id,
                 orientation=orientation,
                 scale=scale,
+                background=print_background,
             )
         )
         data = response['result']['data']
@@ -178,32 +200,67 @@ class BiDiTab(BidiFindElementsMixin):
             return data
 
         if path:
-            async with aiofiles.open(path, 'wb') as f:
+            async with aiofiles.open(str(path), 'wb') as f:
                 await f.write(_b64.b64decode(data))
 
         return None
 
-    async def execute_script(self, script: str, *args, **kwargs):
-        """Execute JavaScript in this tab's context.
+    async def execute_script(self, script: str, *args: object) -> object:
+        """Execute JavaScript in this tab and return its deserialized result.
 
         Args:
-            script: JavaScript expression to evaluate.
+            script: JavaScript to run. With args, pass a function expression
+                (e.g. ``(a, b) => a + b``) — the args are forwarded to it.
+            *args: values forwarded to the script function.
 
         Returns:
-            The deserialized result of the script evaluation.
+            The script's return value as a Python object.
+
+        Raises:
+            ScriptExecutionError: If the script throws.
         """
-        response = await self._execute_command(
-            ScriptCommands.evaluate(
-                expression=script,
-                target={'context': self._context_id},
+        target = {'context': self._context_id}
+        if args:
+            command = ScriptCommands.call_function(
+                function_declaration=script,
+                await_promise=True,
+                target=target,
+                arguments=[self._to_local_value(arg) for arg in args],
+            )
+        else:
+            expression = script
+            if has_return_outside_function(script):
+                expression = f'(function() {{ {script} }})()'
+            command = ScriptCommands.evaluate(
+                expression=expression,
+                target=target,
                 await_promise=True,
             )
-        )
+        response = await self._execute_command(command)
         result = response['result']
         if result.get('type') == 'exception':
-            raise RuntimeError(result['exceptionDetails']['text'])
-        remote_value = result.get('result', {})
-        return self._deserialize_remote_value(remote_value)
+            raise ScriptExecutionError(result['exceptionDetails']['text'])
+        return self._deserialize_remote_value(result.get('result', {}))
+
+    @staticmethod
+    def _to_local_value(value: object) -> dict:
+        """Convert a Python value to a BiDi LocalValue for script arguments."""
+        if value is None:
+            return {'type': 'null'}
+        if isinstance(value, bool):
+            return {'type': 'boolean', 'value': value}
+        if isinstance(value, (int, float)):
+            return {'type': 'number', 'value': value}
+        if isinstance(value, str):
+            return {'type': 'string', 'value': value}
+        if isinstance(value, (list, tuple)):
+            return {'type': 'array', 'value': [BiDiTab._to_local_value(item) for item in value]}
+        if isinstance(value, dict):
+            return {
+                'type': 'object',
+                'value': [[key, BiDiTab._to_local_value(item)] for key, item in value.items()],
+            }
+        raise TypeError(f'Cannot serialize {type(value).__name__} as a BiDi script argument')
 
     async def get_cookies(self) -> list[Cookie]:
         """Get all cookies for this tab's context."""

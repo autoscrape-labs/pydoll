@@ -1,9 +1,13 @@
 from __future__ import annotations
 
 from collections.abc import Awaitable, Callable, Sequence
-from typing import TYPE_CHECKING, Optional, Protocol, TypeAlias, TypeVar, runtime_checkable
+from pathlib import Path
+from typing import TYPE_CHECKING, Optional, Protocol, TypeAlias, TypeVar, Union, runtime_checkable
 
 from pydoll.constants import PageLoadState
+from pydoll.elements.protocols import WebElementProtocol
+from pydoll.interactions.keyboard import Keyboard
+from pydoll.interactions.mouse import Mouse
 from pydoll.protocol.events import Event
 from pydoll.protocol.types import (
     BrowserVersion,
@@ -166,3 +170,106 @@ class BrowserProtocol(Protocol[T_Tab]):
     ) -> str: ...
 
     async def remove_intercept(self, intercept_id: str) -> None: ...
+
+
+@runtime_checkable
+class TabProtocol(Protocol):
+    """Portable tab-level contract shared by Tab (CDP) and BiDiTab (BiDi).
+
+    Models only the cross-protocol surface. Protocol-specific features live on the
+    concrete tab classes and are intentionally absent here: CDP Fetch control
+    (continue/fail/fulfill_request), OOPIF iframes (get_frame), shadow-root traversal
+    (find_shadow_roots), network introspection (get_network_logs), the Cloudflare
+    auto-solver, save_bundle, the extractor (extract/extract_all), and the
+    execute_protocol_command escape hatch (typed per protocol). `scroll` is omitted
+    until the BiDi backend implements it.
+    """
+
+    @property
+    def mouse(self) -> Mouse: ...
+
+    @property
+    def keyboard(self) -> Keyboard: ...
+
+    @property
+    async def current_url(self) -> str: ...
+
+    @property
+    async def page_source(self) -> str: ...
+
+    @property
+    async def title(self) -> str: ...
+
+    async def go_to(self, url: str, timeout: int = 300) -> None: ...
+
+    async def refresh(self, ignore_cache: bool = False) -> None: ...
+
+    async def close(self) -> None: ...
+
+    async def bring_to_front(self) -> None: ...
+
+    async def find(
+        self,
+        id: Optional[str] = None,
+        class_name: Optional[str] = None,
+        name: Optional[str] = None,
+        tag_name: Optional[str] = None,
+        text: Optional[str] = None,
+        timeout: int = 0,
+        find_all: bool = False,
+        raise_exc: bool = True,
+        **attributes: dict[str, str],
+    ) -> Union[WebElementProtocol, list[WebElementProtocol], None]: ...
+
+    async def query(
+        self,
+        expression: str,
+        timeout: int = 0,
+        find_all: bool = False,
+        raise_exc: bool = True,
+    ) -> Union[WebElementProtocol, list[WebElementProtocol], None]: ...
+
+    async def execute_script(self, script: str, *args: object) -> object: ...
+
+    async def take_screenshot(
+        self,
+        path: Optional[Union[str, Path]] = None,
+        quality: int = 100,
+        beyond_viewport: bool = False,
+        as_base64: bool = False,
+    ) -> Optional[str]: ...
+
+    async def print_to_pdf(
+        self,
+        path: Optional[Union[str, Path]] = None,
+        landscape: bool = False,
+        display_header_footer: bool = False,
+        print_background: bool = True,
+        scale: float = 1.0,
+        as_base64: bool = False,
+    ) -> Optional[str]: ...
+
+    async def get_cookies(self) -> list[Cookie]: ...
+
+    async def set_cookies(self, cookies: list[CookieParam]) -> None: ...
+
+    async def delete_all_cookies(self) -> None: ...
+
+    async def has_dialog(self) -> bool: ...
+
+    async def get_dialog_message(self) -> str: ...
+
+    async def handle_dialog(
+        self, accept: bool, prompt_text: Optional[str] = None
+    ) -> None: ...
+
+    async def on(
+        self,
+        event_name: Event | str,
+        callback: BrowserEventCallback,
+        temporary: bool = False,
+    ) -> int: ...
+
+    async def remove_callback(self, callback_id: int) -> None: ...
+
+    async def clear_callbacks(self) -> None: ...
