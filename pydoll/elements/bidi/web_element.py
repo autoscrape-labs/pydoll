@@ -21,6 +21,7 @@ from pydoll.exceptions import (
     MissingScreenshotPath,
     WaitElementTimeout,
 )
+from pydoll.interactions.keyboard import BiDiKeyboard
 from pydoll.protocol.bidi.browsing_context.types import (
     ElementClipRectangle,
 )
@@ -62,6 +63,13 @@ class BiDiWebElement(BidiFindElementsMixin):
         self._search_method = method
         self._selector = selector
         self._mouse = mouse
+        self._keyboard: Optional[BiDiKeyboard] = None
+
+    def _get_keyboard(self) -> BiDiKeyboard:
+        """Get or create the keyboard controller bound to this element."""
+        if self._keyboard is None:
+            self._keyboard = BiDiKeyboard(self)
+        return self._keyboard
 
     @property
     def attributes(self) -> dict[str, str]:
@@ -339,20 +347,18 @@ class BiDiWebElement(BidiFindElementsMixin):
         self,
         text: str,
         humanize: bool = False,
-        interval: float = 0.1,
+        interval: Optional[float] = None,
     ):
-        """Type text character by character."""
-        await self.focus()
-        for char in text:
-            await self._call_on_element(
-                '(el, c) => {'
-                '  el.value = (el.value || "") + c;'
-                '  el.dispatchEvent(new Event("input", {bubbles: true}));'
-                '}',
-                {'type': 'string', 'value': char},
-            )
-            if humanize:
-                await asyncio.sleep(interval)
+        """Type text into the element with real, trusted key events.
+
+        Clicks the element to focus it, then dispatches per-character
+        keyDown/keyUp through the BiDi keyboard so the events report
+        isTrusted=true (replacing the previous JS value assignment). humanize
+        adds human-like timing and occasional self-correcting typos.
+        """
+        await self.click(humanize=humanize)
+        keyboard = self._get_keyboard()
+        await keyboard.type_text(text, humanize=humanize, interval=interval)
 
     async def is_editable(self) -> bool:
         """Check if element accepts text input."""

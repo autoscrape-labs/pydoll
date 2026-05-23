@@ -13,6 +13,7 @@ from pydoll.commands.bidi.session_commands import SessionCommands
 from pydoll.commands.bidi.storage_commands import StorageCommands
 from pydoll.connection.bidi_connection_handler import BiDiConnectionHandler
 from pydoll.elements.mixins.bidi_find_elements_mixin import BidiFindElementsMixin
+from pydoll.interactions.keyboard import BiDiKeyboard
 from pydoll.interactions.mouse import BiDiMouse
 from pydoll.protocol.bidi.base import Command, T_CommandParams, T_CommandResult
 from pydoll.protocol.events import BIDI_EVENT_MAP, Event
@@ -40,6 +41,7 @@ class BiDiTab(BidiFindElementsMixin):
         self._context_id = context_id
         self._connection_handler = connection
         self._mouse: BiDiMouse = BiDiMouse(self)
+        self._keyboard: Optional[BiDiKeyboard] = None
 
     @property
     def mouse(self) -> BiDiMouse:
@@ -50,6 +52,13 @@ class BiDiTab(BidiFindElementsMixin):
         one ended).
         """
         return self._mouse
+
+    @property
+    def keyboard(self) -> BiDiKeyboard:
+        """Keyboard controller for this tab (real, trusted key input)."""
+        if self._keyboard is None:
+            self._keyboard = BiDiKeyboard(self)
+        return self._keyboard
 
     @property
     async def current_url(self) -> str:
