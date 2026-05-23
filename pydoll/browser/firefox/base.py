@@ -19,6 +19,7 @@ from pydoll.commands.bidi.browser_commands import BrowserCommands
 from pydoll.commands.bidi.browsing_context_commands import BrowsingContextCommands
 from pydoll.commands.bidi.network_commands import NetworkCommands
 from pydoll.commands.bidi.permissions_commands import PermissionsCommands
+from pydoll.commands.bidi.script_commands import ScriptCommands
 from pydoll.commands.bidi.session_commands import SessionCommands
 from pydoll.commands.bidi.storage_commands import StorageCommands
 from pydoll.connection.bidi_connection_handler import BiDiConnectionHandler
@@ -42,6 +43,44 @@ if TYPE_CHECKING:
     from pydoll.browser.protocols import BrowserOptionsManagerProtocol
 
 logger = logging.getLogger(__name__)
+
+# Preload that hides navigator.webdriver from pages. Redefines the getter on
+# Navigator.prototype to return false (a non-automated Firefox's value) with a
+# native-looking toString, in every realm before page scripts run. No-ops when the
+# browser already reports false (e.g. Camoufox / a binary-patched build).
+_WEBDRIVER_STEALTH_SCRIPT = r"""() => {
+  const proto = Object.getPrototypeOf(navigator);
+  if (!proto || !navigator.webdriver) {
+    return;
+  }
+  const NATIVE = 'function webdriver() {\n    [native code]\n}';
+  const fakeGet = function webdriver() { return false; };
+  const origToString = Function.prototype.toString;
+  let proxiedToString;
+  proxiedToString = new Proxy(origToString, {
+    apply(target, thisArg, args) {
+      if (thisArg === fakeGet) {
+        return NATIVE;
+      }
+      if (thisArg === proxiedToString) {
+        return Reflect.apply(target, origToString, []);
+      }
+      return Reflect.apply(target, thisArg, args);
+    },
+  });
+  Object.defineProperty(Function.prototype, 'toString', {
+    value: proxiedToString,
+    writable: true,
+    enumerable: false,
+    configurable: true,
+  });
+  Object.defineProperty(proto, 'webdriver', {
+    get: fakeGet,
+    set: undefined,
+    enumerable: true,
+    configurable: true,
+  });
+}"""
 
 # Maps the portable Permission set to the W3C names BiDi understands. Permissions
 # absent here have no Firefox/BiDi equivalent and are skipped with a warning.
@@ -117,6 +156,8 @@ class FirefoxBrowser:
         self._session_id = response['result']['sessionId']
         logger.info(f'BiDi session established: {self._session_id}')
 
+        await self._apply_webdriver_stealth()
+
         tabs = await self.get_opened_tabs()
         if tabs:
             return tabs[0]
@@ -146,10 +187,25 @@ class FirefoxBrowser:
         await self._connection_handler._ensure_active_connection()
         response = await self._execute_command(SessionCommands.new())
         self._session_id = response['result']['sessionId']
+        await self._apply_webdriver_stealth()
         tabs = await self.get_opened_tabs()
         if tabs:
             return tabs[0]
         return await self.new_tab()
+
+    async def _apply_webdriver_stealth(self) -> None:
+        """Hide navigator.webdriver from pages via a preload script.
+
+        Registered before navigation so it runs in every realm (page and
+        iframes) ahead of page scripts. Vanilla Firefox forces the flag to true
+        whenever the Remote Agent is active, so without this any BiDi-driven
+        page can read navigator.webdriver === true.
+        """
+        await self._execute_command(
+            ScriptCommands.add_preload_script(
+                function_declaration=_WEBDRIVER_STEALTH_SCRIPT
+            )
+        )
 
     async def create_browser_context(
         self,
