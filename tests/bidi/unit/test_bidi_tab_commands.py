@@ -122,3 +122,11 @@ async def test_set_cookies_sends_set_cookie_per_cookie(fake_bidi_conn, fake_bidi
 async def test_delete_all_cookies_sends_delete_cookies(fake_bidi_conn, fake_bidi_tab):
     await fake_bidi_tab.delete_all_cookies()
     assert fake_bidi_conn.commands_for('storage.deleteCookies')
+
+
+@pytest.mark.asyncio
+async def test_useragent_override_sets_ua_for_this_context(fake_bidi_conn, fake_bidi_tab):
+    await fake_bidi_tab.useragent_override('CustomUA/1.0')
+    command = fake_bidi_conn.last_command('emulation.setUserAgentOverride')
+    assert command['params']['userAgent'] == 'CustomUA/1.0'
+    assert command['params']['contexts'] == ['fake-context']

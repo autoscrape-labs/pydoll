@@ -69,6 +69,15 @@ async def test_get_opened_tabs_lists_open_contexts(ci_firefox_options):
 
 
 @pytest.mark.asyncio
+async def test_useragent_override_changes_navigator_user_agent(ci_firefox_options):
+    async with Firefox(options=ci_firefox_options) as browser:
+        tab = await browser.start()
+        await tab.useragent_override('CustomUA/9.9')
+        await tab.go_to('data:text/html,<p>ua</p>')
+        assert await tab.execute_script('return navigator.userAgent') == 'CustomUA/9.9'
+
+
+@pytest.mark.asyncio
 async def test_browser_context_create_list_and_delete(ci_firefox_options):
     async with Firefox(options=ci_firefox_options) as browser:
         await browser.start()

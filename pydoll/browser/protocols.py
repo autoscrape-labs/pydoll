@@ -61,6 +61,12 @@ class OptionsProtocol(Protocol):
     @page_load_state.setter
     def page_load_state(self, state: PageLoadState) -> None: ...
 
+    @property
+    def user_agent(self) -> Optional[str]: ...
+
+    @user_agent.setter
+    def user_agent(self, user_agent: Optional[str]) -> None: ...
+
 
 class BrowserOptionsManagerProtocol(Protocol):
     """Contract for browser options manager implementations."""
@@ -211,6 +217,8 @@ class TabProtocol(Protocol):
     async def close(self) -> None: ...
 
     async def bring_to_front(self) -> None: ...
+
+    async def useragent_override(self, user_agent: str) -> None: ...
 
     async def find(
         self,

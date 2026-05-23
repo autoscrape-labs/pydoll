@@ -525,9 +525,10 @@ class FirefoxBrowser:
         )
         intercept_id = response['result']['intercept']
 
-        await self._execute_command(
-            SessionCommands.subscribe(events=['network.beforeRequestSent'])
-        )
+        if not self._intercept_callbacks:
+            await self._execute_command(
+                SessionCommands.subscribe(events=['network.beforeRequestSent'])
+            )
 
         async def _bidi_continue(request_id, url=None, method=None, headers=None, **_):
             bidi_headers = None
@@ -604,13 +605,21 @@ class FirefoxBrowser:
         return intercept_id
 
     async def remove_intercept(self, intercept_id: str):
-        """Remove a request intercept and its registered handler."""
+        """Remove a request intercept and its registered handler.
+
+        Unsubscribes from ``network.beforeRequestSent`` once the last intercept is
+        removed, so the remote end stops emitting interception events.
+        """
         await self._execute_command(
             NetworkCommands.remove_intercept(intercept=intercept_id)
         )
         callback_id = self._intercept_callbacks.pop(intercept_id, None)
         if callback_id is not None:
             await self._connection_handler.remove_callback(callback_id)
+        if not self._intercept_callbacks:
+            await self._execute_command(
+                SessionCommands.unsubscribe_by_events(events=['network.beforeRequestSent'])
+            )
 
     async def grant_permissions(
         self,

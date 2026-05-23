@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, Optional, Union, overload
 import aiofiles
 
 from pydoll.commands.bidi.browsing_context_commands import BrowsingContextCommands
+from pydoll.commands.bidi.emulation_commands import EmulationCommands
 from pydoll.commands.bidi.input_commands import InputCommands as BiDiInputCommands
 from pydoll.commands.bidi.script_commands import ScriptCommands
 from pydoll.commands.bidi.session_commands import SessionCommands
@@ -120,6 +121,17 @@ class BiDiTab(BidiFindElementsMixin):
                 context=self._context_id,
                 ignore_cache=ignore_cache,
                 wait=ReadinessState.COMPLETE,
+            )
+        )
+
+    async def useragent_override(self, user_agent: str) -> None:
+        """Override the User-Agent string for this tab at runtime.
+
+        Uses emulation.setUserAgentOverride scoped to this browsing context.
+        """
+        await self._execute_command(
+            EmulationCommands.set_user_agent_override(
+                user_agent=user_agent, contexts=[self._context_id]
             )
         )
 

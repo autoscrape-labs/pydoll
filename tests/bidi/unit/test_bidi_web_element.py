@@ -50,6 +50,13 @@ async def test_text_calls_function_and_deserializes(fake_bidi_conn, fake_bidi_ta
 
 
 @pytest.mark.asyncio
+async def test_execute_script_returns_deserialized_value(fake_bidi_conn, fake_bidi_tab):
+    element = await _find(fake_bidi_tab, fake_bidi_conn, {})
+    fake_bidi_conn.set_result('script.callFunction', _success({'type': 'number', 'value': 7}))
+    assert await element.execute_script('(el) => 7') == 7
+
+
+@pytest.mark.asyncio
 async def test_click_dispatches_trusted_pointer_actions(fake_bidi_conn, fake_bidi_tab):
     element = await _find(fake_bidi_tab, fake_bidi_conn, {})
     # scroll_into_view + is_visible read truthy via callFunction

@@ -23,6 +23,7 @@ class FirefoxOptions:
         self._browser_preferences: dict = {}
         self._headless = False
         self._page_load_state = PageLoadState.COMPLETE
+        self._user_agent: Optional[str] = None
 
     @property
     def arguments(self) -> list[str]:
@@ -90,6 +91,15 @@ class FirefoxOptions:
     @page_load_state.setter
     def page_load_state(self, state: PageLoadState):
         self._page_load_state = state
+
+    @property
+    def user_agent(self) -> Optional[str]:
+        """User-Agent string to apply at browser start (None = browser default)."""
+        return self._user_agent
+
+    @user_agent.setter
+    def user_agent(self, user_agent: Optional[str]):
+        self._user_agent = user_agent
 
 
 class FirefoxOptionsManager:

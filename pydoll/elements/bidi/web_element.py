@@ -20,6 +20,7 @@ from pydoll.exceptions import (
     ElementNotVisible,
     IFrameNotFound,
     MissingScreenshotPath,
+    ScriptExecutionError,
     ShadowRootNotFound,
     WaitElementTimeout,
 )
@@ -30,7 +31,6 @@ from pydoll.protocol.bidi.browsing_context.types import (
 from pydoll.protocol.bidi.input.types import ElementOrigin, PointerType
 from pydoll.protocol.bidi.script.types import (
     ContextTarget,
-    RemoteValue,
     SharedReference,
 )
 
@@ -502,8 +502,14 @@ class BiDiWebElement(BidiFindElementsMixin):
         on_top = await self.is_on_top()
         return visible and on_top
 
-    async def execute_script(self, script: str, await_promise: bool = False) -> RemoteValue:
-        """Execute JavaScript with this element as first argument."""
+    async def execute_script(self, script: str, await_promise: bool = False) -> object:
+        """Execute JavaScript with this element as the first argument.
+
+        Returns the script's return value as a Python object (the BiDi RemoteValue
+        is deserialized), matching ``Tab.execute_script``.
+        """
+        from pydoll.browser.firefox.tab import BiDiTab  # noqa: PLC0415
+
         response = await self._execute_command(
             ScriptCommands.call_function(
                 function_declaration=script,
@@ -514,8 +520,8 @@ class BiDiWebElement(BidiFindElementsMixin):
         )
         result = response['result']
         if result['type'] == 'exception':
-            raise RuntimeError(result['exceptionDetails']['text'])
-        return result['result']
+            raise ScriptExecutionError(result['exceptionDetails']['text'])
+        return BiDiTab._deserialize_remote_value(result['result'])
 
     async def _call_on_element(self, function_declaration: str, *extra_args: dict) -> object:
         """Call a JavaScript function with this element and return its deserialized value."""

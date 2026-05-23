@@ -63,6 +63,13 @@ async def test_bring_to_front_sends_command(fake_conn, fake_tab):
 
 
 @pytest.mark.asyncio
+async def test_useragent_override_sets_emulation_override(fake_conn, fake_tab):
+    await fake_tab.useragent_override('CustomUA/1.0')
+    command = fake_conn.last_command('Emulation.setUserAgentOverride')
+    assert command['params']['userAgent'] == 'CustomUA/1.0'
+
+
+@pytest.mark.asyncio
 async def test_title_evaluates_document_title_and_returns_value(fake_conn, fake_tab):
     fake_conn.set_response('Runtime.evaluate', {'result': {'value': 'Hello'}})
     assert await fake_tab.title == 'Hello'

@@ -13,7 +13,7 @@ class Firefox(FirefoxBrowser):
     Usage:
         async with Firefox() as browser:
             await browser.start()
-            contexts = await browser.get_opened_contexts()
+            tabs = await browser.get_opened_tabs()
     """
 
     def __init__(

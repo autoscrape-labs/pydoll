@@ -33,6 +33,7 @@ from pydoll.browser.requests import Request
 from pydoll.commands import (
     BrowserCommands,
     DomCommands,
+    EmulationCommands,
     FetchCommands,
     NetworkCommands,
     PageCommands,
@@ -785,6 +786,16 @@ class Tab(CDPFindElementsMixin):
         """Brings the page to front."""
         logger.info('Bringing page to front')
         return await self._execute_command(PageCommands.bring_to_front())
+
+    async def useragent_override(self, user_agent: str) -> None:
+        """Override the User-Agent string for this tab at runtime.
+
+        Uses Emulation.setUserAgentOverride, which updates both the HTTP header
+        and navigator.userAgent for subsequent requests/navigations.
+        """
+        await self._execute_command(
+            EmulationCommands.set_user_agent_override(user_agent=user_agent)
+        )
 
     async def get_cookies(self) -> list[Cookie]:
         """Get all cookies accessible from current page."""
