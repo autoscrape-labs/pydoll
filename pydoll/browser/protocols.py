@@ -8,6 +8,7 @@ from pydoll.constants import PageLoadState
 from pydoll.elements.protocols import WebElementProtocol
 from pydoll.interactions.keyboard import Keyboard
 from pydoll.interactions.mouse import Mouse
+from pydoll.interactions.scroll import Scroll
 from pydoll.protocol.events import Event
 from pydoll.protocol.types import (
     BrowserVersion,
@@ -190,6 +191,9 @@ class TabProtocol(Protocol):
 
     @property
     def keyboard(self) -> Keyboard: ...
+
+    @property
+    def scroll(self) -> Scroll: ...
 
     @property
     async def current_url(self) -> str: ...

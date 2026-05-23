@@ -778,7 +778,7 @@ class Browser:  # noqa: PLR0904
         """Internal callback to continue paused requests at Tab level."""
         request_id = event['params']['requestId']
         logger.debug(f'[Tab Fetch] REQUEST_PAUSED -> continue: id={request_id}')
-        return await tab.continue_request(request_id)
+        return await tab._continue_request(request_id)
 
     @staticmethod
     async def _tab_continue_request_with_auth_callback(
@@ -793,7 +793,7 @@ class Browser:  # noqa: PLR0904
             f'[Tab Fetch] AUTH_REQUIRED -> provide credentials: id={request_id}, '
             f'user_set={bool(proxy_username)}'
         )
-        response: Response = await tab.continue_with_auth(
+        response: Response = await tab._continue_with_auth(
             request_id=request_id,
             auth_challenge_response=AuthChallengeResponseType.PROVIDE_CREDENTIALS,
             proxy_username=proxy_username,

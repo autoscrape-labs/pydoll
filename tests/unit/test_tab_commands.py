@@ -129,30 +129,13 @@ async def test_handle_dialog_raises_without_dialog(fake_tab):
 
 @pytest.mark.asyncio
 async def test_continue_request_carries_request_id(fake_conn, fake_tab):
-    await fake_tab.continue_request(request_id='r1')
+    await fake_tab._continue_request(request_id='r1')
     assert fake_conn.last_command('Fetch.continueRequest')['params']['requestId'] == 'r1'
 
 
 @pytest.mark.asyncio
-async def test_fail_request_carries_error_reason(fake_conn, fake_tab):
-    await fake_tab.fail_request('r1', ErrorReason.FAILED)
-    sent = fake_conn.last_command('Fetch.failRequest')
-    assert sent['params']['requestId'] == 'r1'
-    assert sent['params']['errorReason'] == 'Failed'
-
-
-@pytest.mark.asyncio
-async def test_fulfill_request_carries_response_code_and_body(fake_conn, fake_tab):
-    await fake_tab.fulfill_request(request_id='r1', response_code=200, body='ok')
-    sent = fake_conn.last_command('Fetch.fulfillRequest')
-    assert sent['params']['requestId'] == 'r1'
-    assert sent['params']['responseCode'] == 200
-    assert sent['params']['body'] == 'ok'
-
-
-@pytest.mark.asyncio
 async def test_continue_with_auth_carries_challenge_and_credentials(fake_conn, fake_tab):
-    await fake_tab.continue_with_auth(
+    await fake_tab._continue_with_auth(
         'r1',
         AuthChallengeResponseType.PROVIDE_CREDENTIALS,
         proxy_username='user',

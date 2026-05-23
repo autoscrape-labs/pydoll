@@ -20,7 +20,6 @@ from typing import (
     Awaitable,
     Callable,
     Optional,
-    TypeAlias,
     TypeVar,
     Union,
     cast,
@@ -47,15 +46,12 @@ from pydoll.elements.mixins.cdp_find_elements_mixin import CDPFindElementsMixin
 from pydoll.exceptions import (
     CommandExecutionTimeout,
     DownloadTimeout,
-    IFrameNotFound,
     InvalidFileExtension,
-    InvalidIFrame,
     InvalidTabInitialization,
     MissingScreenshotPath,
     NavigationError,
     NetworkEventsNotEnabled,
     NoDialogPresent,
-    NotAnIFrame,
     PageLoadTimeout,
     ScriptExecutionError,
     TopLevelTargetRequired,
@@ -111,7 +107,6 @@ if TYPE_CHECKING:
     from pydoll.protocol.cdp.network.methods import GetCookiesResponse as NetworkGetCookiesResponse
     from pydoll.protocol.cdp.network.methods import GetResponseBodyResponse
     from pydoll.protocol.cdp.network.types import (
-        ErrorReason,
         RequestMethod,
     )
     from pydoll.protocol.cdp.page.events import FileChooserOpenedEvent
@@ -128,8 +123,6 @@ if TYPE_CHECKING:
     from pydoll.protocol.types import Cookie, CookieParam
 
 logger = logging.getLogger(__name__)
-
-IFrame: TypeAlias = 'Tab'
 
 T = TypeVar('T', bound='ExtractionModel')
 
@@ -509,59 +502,6 @@ class Tab(CDPFindElementsMixin):
         self._browser._tabs_opened.pop(self._target_id)
         logger.debug('Tab closed and removed from browser registry')
         return result
-
-    async def get_frame(self, frame: 'WebElement') -> IFrame:
-        """
-        .. deprecated:: ?.?.?
-            Use iframe `WebElement` instances directly; this method will be removed in
-            a future version.
-
-        Get Tab object for interacting with iframe content.
-
-        Args:
-            frame: Tab representing the iframe tag.
-
-        Returns:
-            Tab instance configured for iframe interaction.
-
-        Raises:
-            NotAnIFrame: If element is not an iframe.
-            InvalidIFrame: If iframe lacks valid src attribute.
-            IFrameNotFound: If iframe target not found in browser.
-        """
-        warnings.warn(
-            'Tab.get_frame() is deprecated and will be removed in a future version. '
-            'Interact with iframe WebElements directly.',
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        logger.debug(f'Resolving iframe: tag={frame.tag_name}')
-        if not frame.tag_name == 'iframe':
-            raise NotAnIFrame
-
-        frame_url = frame.get_attribute('src')
-        logger.debug(f'Iframe src resolved: {frame_url}')
-        if not frame_url:
-            raise InvalidIFrame('The iframe does not have a valid src attribute')
-
-        targets = await self._browser._get_targets()
-        iframe_target = next((target for target in targets if target['url'] == frame_url), None)
-        if not iframe_target:
-            raise IFrameNotFound('The target for the iframe was not found')
-
-        target_id = iframe_target['targetId']
-        if target_id in self._browser._tabs_opened:
-            logger.debug(f'Iframe tab already tracked: {target_id}')
-            return self._browser._tabs_opened[target_id]
-
-        tab = Tab(
-            self._browser,
-            target_id=target_id,
-            connection_port=self._connection_port,
-        )
-        self._browser._tabs_opened[target_id] = tab
-        logger.debug(f'Iframe tab created and registered: {target_id}')
-        return tab
 
     async def find_shadow_roots(self, deep: bool = False, timeout: float = 0) -> list[ShadowRoot]:
         """
@@ -1303,8 +1243,7 @@ class Tab(CDPFindElementsMixin):
             raise ScriptExecutionError(message)
         return evaluate_result.get('result', {}).get('value')
 
-    # TODO: think about how to remove these duplications with the base class
-    async def continue_request(
+    async def _continue_request(
         self,
         request_id: str,
         url: Optional[str] = None,
@@ -1313,9 +1252,7 @@ class Tab(CDPFindElementsMixin):
         headers: Optional[list[HeaderEntry]] = None,
         intercept_response: Optional[bool] = None,
     ):
-        """
-        Continue paused request without modifications.
-        """
+        """Continue a paused request without modifications (internal; used by intercept)."""
         logger.debug(f'Continue request on tab: id={request_id}')
         return await self._execute_command(
             FetchCommands.continue_request(
@@ -1328,42 +1265,14 @@ class Tab(CDPFindElementsMixin):
             )
         )
 
-    async def fail_request(self, request_id: str, error_reason: ErrorReason):
-        """Fail request with error code."""
-        logger.debug(f'Fail request on tab: id={request_id}, reason={error_reason}')
-        return await self._execute_command(FetchCommands.fail_request(request_id, error_reason))
-
-    async def fulfill_request(
-        self,
-        request_id: str,
-        response_code: int,
-        response_headers: Optional[list[HeaderEntry]] = None,
-        body: Optional[str] = None,
-        response_phrase: Optional[str] = None,
-    ):
-        """Fulfill request with response data."""
-        logger.debug(
-            f'Fulfill request on tab: id={request_id}, code={response_code}, '
-            f'headers_set={bool(response_headers)}, body_set={bool(body)}'
-        )
-        return await self._execute_command(
-            FetchCommands.fulfill_request(
-                request_id=request_id,
-                response_code=response_code,
-                response_headers=response_headers,
-                body=body,
-                response_phrase=response_phrase,
-            )
-        )
-
-    async def continue_with_auth(
+    async def _continue_with_auth(
         self,
         request_id: str,
         auth_challenge_response: AuthChallengeResponseType,
         proxy_username: Optional[str] = None,
         proxy_password: Optional[str] = None,
     ):
-        """Continue a paused request replying to an authentication challenge.
+        """Continue a paused request replying to an authentication challenge (internal).
 
         Useful for proxy auth (407) or server auth (401) when Fetch is enabled
         with handle_auth=True.

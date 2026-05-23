@@ -102,29 +102,6 @@ class TestPrintToPdf:
             await tab.print_to_pdf()
 
 
-class TestGetFrameContract:
-    @pytest.mark.asyncio
-    async def test_non_iframe_element_is_rejected(self, tab):
-        await tab.go_to(_file_url('iframe_features.html'))
-        div = await tab.find(id='not-a-frame')
-        with pytest.raises(NotAnIFrame):
-            await tab.get_frame(div)
-
-    @pytest.mark.asyncio
-    async def test_iframe_without_src_is_rejected(self, tab):
-        await tab.go_to(_file_url('iframe_features.html'))
-        frame = await tab.find(id='frame-no-src')
-        with pytest.raises(InvalidIFrame):
-            await tab.get_frame(frame)
-
-    @pytest.mark.asyncio
-    async def test_same_origin_iframe_without_own_target_is_not_found(self, tab):
-        await tab.go_to(_file_url('iframe_features.html'))
-        frame = await tab.find(id='frame-same-origin')
-        with pytest.raises(IFrameNotFound):
-            await tab.get_frame(frame)
-
-
 class TestFileChooserInterception:
     @pytest.mark.asyncio
     async def test_uploaded_file_is_set_on_input(self, tab, tmp_path):
