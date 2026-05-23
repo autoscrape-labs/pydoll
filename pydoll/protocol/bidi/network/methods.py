@@ -166,7 +166,9 @@ class SetExtraHeadersParameters(TypedDict):
     userContexts: NotRequired[list[UserContext]]
 
 
-AddDataCollectorCommand = Command[AddDataCollectorParameters, CommandResponse[AddDataCollectorResult]]
+AddDataCollectorCommand = Command[
+    AddDataCollectorParameters, CommandResponse[AddDataCollectorResult]
+]
 AddDataCollectorResponse = CommandResponse[AddDataCollectorResult]
 
 AddInterceptCommand = Command[AddInterceptParameters, CommandResponse[AddInterceptResult]]

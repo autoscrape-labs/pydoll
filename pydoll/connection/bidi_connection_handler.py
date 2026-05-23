@@ -36,7 +36,7 @@ class BiDiConnectionHandler(BaseConnectionHandler):
             ws_connector=ws_connector,
         )
 
-    def _create_event_tracker(self) -> BiDiEventTracker:
+    def _create_event_tracker(self) -> BiDiEventTracker:  # noqa: PLR6301
         return BiDiEventTracker()
 
     async def _resolve_ws_address(self) -> str:
@@ -47,10 +47,10 @@ class BiDiConnectionHandler(BaseConnectionHandler):
         logger.debug(f'Resolved BiDi WebSocket address: {address}')
         return address
 
-    def _is_command_response(self, message: dict) -> bool:
-        return message.get('type') in ('success', 'error')
+    def _is_command_response(self, message: dict) -> bool:  # noqa: PLR6301
+        return message.get('type') in {'success', 'error'}
 
-    def _extract_error(self, message: dict) -> str | None:
+    def _extract_error(self, message: dict) -> str | None:  # noqa: PLR6301
         if message.get('type') == 'error':
             error_code = message.get('error', 'unknown_error')
             error_msg = message.get('message', '')

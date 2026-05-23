@@ -41,7 +41,7 @@ class CDPConnectionHandler(BaseConnectionHandler):
             ws_connector=ws_connector,
         )
 
-    def _create_event_tracker(self) -> CDPEventTracker:
+    def _create_event_tracker(self) -> CDPEventTracker:  # noqa: PLR6301
         return CDPEventTracker()
 
     async def _resolve_ws_address(self) -> str:
@@ -56,10 +56,10 @@ class CDPConnectionHandler(BaseConnectionHandler):
         logger.debug(f'Resolved page-level WebSocket address: {address}')
         return address
 
-    def _is_command_response(self, message: dict) -> bool:
+    def _is_command_response(self, message: dict) -> bool:  # noqa: PLR6301
         return 'id' in message and isinstance(message.get('id'), int)
 
-    def _extract_error(self, message: dict) -> str | None:
+    def _extract_error(self, message: dict) -> str | None:  # noqa: PLR6301
         error = message.get('error')
         if error:
             return error.get('message', str(error)) if isinstance(error, dict) else str(error)

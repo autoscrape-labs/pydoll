@@ -2,7 +2,6 @@ from enum import Enum
 
 from typing_extensions import NotRequired, TypedDict
 
-
 Subscription = str
 """Unique subscription identifier."""
 

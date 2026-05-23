@@ -1,6 +1,6 @@
 from enum import Enum
 
-from typing_extensions import NotRequired, TypedDict
+from typing_extensions import NotRequired
 
 from pydoll.protocol.bidi.base import BiDiEvent
 from pydoll.protocol.bidi.network.types import (

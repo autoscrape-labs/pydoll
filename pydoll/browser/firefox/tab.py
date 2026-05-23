@@ -455,13 +455,13 @@ class BiDiTab(BidiFindElementsMixin):
         return {}
 
     @staticmethod
-    def _deserialize_remote_value(remote_value: dict):
+    def _deserialize_remote_value(remote_value: dict):  # noqa: PLR0911, PLR0912
         """Convert a BiDi RemoteValue to a Python value."""
         value_type = remote_value.get('type')
 
-        if value_type in ('undefined', 'null'):
+        if value_type in {'undefined', 'null'}:
             return None
-        if value_type in ('string', 'boolean'):
+        if value_type in {'string', 'boolean'}:
             return remote_value.get('value')
         if value_type == 'number':
             val = remote_value.get('value')
@@ -479,7 +479,7 @@ class BiDiTab(BidiFindElementsMixin):
         if value_type == 'array':
             items = remote_value.get('value', [])
             return [BiDiTab._deserialize_remote_value(item) for item in items]
-        if value_type in ('object', 'map'):
+        if value_type in {'object', 'map'}:
             pairs = remote_value.get('value', [])
             return {
                 (k if isinstance(k, str) else BiDiTab._deserialize_remote_value(k)):

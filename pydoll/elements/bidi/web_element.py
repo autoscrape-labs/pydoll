@@ -147,7 +147,7 @@ class BiDiWebElement(BidiFindElementsMixin):
         result = response['result']
         remote = result.get('result', {})
         if remote.get('sharedId'):
-            from pydoll.elements.mixins.bidi_find_elements_mixin import (
+            from pydoll.elements.mixins.bidi_find_elements_mixin import (  # noqa: PLC0415
                 create_bidi_web_element,
             )
             node_props = remote.get('value', {})
@@ -424,7 +424,7 @@ class BiDiWebElement(BidiFindElementsMixin):
                 arguments=arguments,
             )
         )
-        from pydoll.browser.firefox.tab import BiDiTab
+        from pydoll.browser.firefox.tab import BiDiTab  # noqa: PLC0415
 
         result = response['result']
         if result.get('type') == 'exception':

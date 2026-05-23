@@ -1,6 +1,6 @@
 from enum import Enum
 
-from typing_extensions import NotRequired, TypedDict
+from typing_extensions import TypedDict
 
 ClientWindow = str
 """Unique identifier for a client window."""

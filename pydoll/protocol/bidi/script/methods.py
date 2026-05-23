@@ -96,7 +96,9 @@ class RemovePreloadScriptParameters(TypedDict):
     script: PreloadScript
 
 
-AddPreloadScriptCommand = Command[AddPreloadScriptParameters, CommandResponse[AddPreloadScriptResult]]
+AddPreloadScriptCommand = Command[
+    AddPreloadScriptParameters, CommandResponse[AddPreloadScriptResult]
+]
 AddPreloadScriptResponse = CommandResponse[AddPreloadScriptResult]
 
 DisownCommand = Command[DisownParameters, CommandResponse[EmptyResult]]

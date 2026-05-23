@@ -10,9 +10,7 @@ from pydoll.elements.mixins.find_elements_mixin import FindElementsMixin
 from pydoll.exceptions import ElementNotFound
 from pydoll.protocol.bidi.base import Command, T_CommandParams, T_CommandResult
 from pydoll.protocol.bidi.browsing_context.types import (
-    AccessibilityLocator,
     CssLocator,
-    InnerTextLocator,
     Locator,
     XPathLocator,
 )
@@ -94,7 +92,7 @@ class BidiFindElementsMixin(FindElementsMixin):
         return await self._connection_handler.execute_command(command, timeout)
 
     @staticmethod
-    def _build_locator(by: By, value: str) -> Locator:
+    def _build_locator(by: By, value: str) -> Locator:  # noqa: PLR0911
         """Convert By strategy + value to a BiDi Locator."""
         match by:
             case By.CSS_SELECTOR:

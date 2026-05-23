@@ -120,10 +120,14 @@ class SetUserAgentOverrideParameters(TypedDict):
     userContexts: NotRequired[list[UserContext]]
 
 
-SetForcedColorsModeThemeOverrideCommand = Command[SetForcedColorsModeThemeOverrideParameters, CommandResponse[EmptyResult]]
+SetForcedColorsModeThemeOverrideCommand = Command[
+    SetForcedColorsModeThemeOverrideParameters, CommandResponse[EmptyResult]
+]
 SetForcedColorsModeThemeOverrideResponse = CommandResponse[EmptyResult]
 
-SetGeolocationOverrideCommand = Command[SetGeolocationOverrideParameters, CommandResponse[EmptyResult]]
+SetGeolocationOverrideCommand = Command[
+    SetGeolocationOverrideParameters, CommandResponse[EmptyResult]
+]
 SetGeolocationOverrideResponse = CommandResponse[EmptyResult]
 
 SetLocaleOverrideCommand = Command[SetLocaleOverrideParameters, CommandResponse[EmptyResult]]
@@ -132,16 +136,22 @@ SetLocaleOverrideResponse = CommandResponse[EmptyResult]
 SetNetworkConditionsCommand = Command[SetNetworkConditionsParameters, CommandResponse[EmptyResult]]
 SetNetworkConditionsResponse = CommandResponse[EmptyResult]
 
-SetScreenOrientationOverrideCommand = Command[SetScreenOrientationOverrideParameters, CommandResponse[EmptyResult]]
+SetScreenOrientationOverrideCommand = Command[
+    SetScreenOrientationOverrideParameters, CommandResponse[EmptyResult]
+]
 SetScreenOrientationOverrideResponse = CommandResponse[EmptyResult]
 
-SetScreenSettingsOverrideCommand = Command[SetScreenSettingsOverrideParameters, CommandResponse[EmptyResult]]
+SetScreenSettingsOverrideCommand = Command[
+    SetScreenSettingsOverrideParameters, CommandResponse[EmptyResult]
+]
 SetScreenSettingsOverrideResponse = CommandResponse[EmptyResult]
 
 SetScriptingEnabledCommand = Command[SetScriptingEnabledParameters, CommandResponse[EmptyResult]]
 SetScriptingEnabledResponse = CommandResponse[EmptyResult]
 
-SetScrollbarTypeOverrideCommand = Command[SetScrollbarTypeOverrideParameters, CommandResponse[EmptyResult]]
+SetScrollbarTypeOverrideCommand = Command[
+    SetScrollbarTypeOverrideParameters, CommandResponse[EmptyResult]
+]
 SetScrollbarTypeOverrideResponse = CommandResponse[EmptyResult]
 
 SetTimezoneOverrideCommand = Command[SetTimezoneOverrideParameters, CommandResponse[EmptyResult]]

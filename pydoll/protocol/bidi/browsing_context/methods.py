@@ -191,7 +191,9 @@ class TraverseHistoryParameters(TypedDict):
 ActivateCommand = Command[ActivateParameters, CommandResponse[EmptyResult]]
 ActivateResponse = CommandResponse[EmptyResult]
 
-CaptureScreenshotCommand = Command[CaptureScreenshotParameters, CommandResponse[CaptureScreenshotResult]]
+CaptureScreenshotCommand = Command[
+    CaptureScreenshotParameters, CommandResponse[CaptureScreenshotResult]
+]
 CaptureScreenshotResponse = CommandResponse[CaptureScreenshotResult]
 
 CloseCommand = Command[CloseParameters, CommandResponse[EmptyResult]]

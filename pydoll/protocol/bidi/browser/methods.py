@@ -93,7 +93,9 @@ GetUserContextsResponse = CommandResponse[GetUserContextsResult]
 RemoveUserContextCommand = Command[RemoveUserContextParameters, CommandResponse[EmptyResult]]
 RemoveUserContextResponse = CommandResponse[EmptyResult]
 
-SetClientWindowStateCommand = Command[SetClientWindowStateParameters, CommandResponse[ClientWindowInfo]]
+SetClientWindowStateCommand = Command[
+    SetClientWindowStateParameters, CommandResponse[ClientWindowInfo]
+]
 SetClientWindowStateResponse = CommandResponse[ClientWindowInfo]
 
 SetDownloadBehaviorCommand = Command[SetDownloadBehaviorParameters, CommandResponse[EmptyResult]]
