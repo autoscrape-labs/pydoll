@@ -15,7 +15,6 @@ near-instant and overshoot/micro-pause can be forced without touching ``random``
 from __future__ import annotations
 
 import dataclasses
-import json
 
 import pytest
 
@@ -55,23 +54,18 @@ class FakeScrollPage:
                 self.wheel_events.append(params)
                 self.scroll_y = min(self.max_scroll, max(0.0, self.scroll_y + params['deltaY']))
             return {}
-        if method == 'Runtime.evaluate':
-            return self._evaluate(command['params']['expression'])
         return {}
 
-    def _evaluate(self, expression: str):
+    async def execute_script(self, expression: str, *args):
         if expression == Scripts.GET_VIEWPORT_CENTER:
             if self.broken_viewport:
-                value = 'not-json'
-            else:
-                value = json.dumps([self.viewport_width // 2, self.viewport_height // 2])
-        elif expression == Scripts.GET_SCROLL_Y:
-            value = self.scroll_y
-        elif expression == Scripts.GET_REMAINING_SCROLL_TO_BOTTOM:
-            value = self.max_scroll - self.scroll_y
-        else:
-            value = ''
-        return {'result': {'result': {'value': value}}}
+                return None
+            return [self.viewport_width // 2, self.viewport_height // 2]
+        if expression == Scripts.GET_SCROLL_Y:
+            return self.scroll_y
+        if expression == Scripts.GET_REMAINING_SCROLL_TO_BOTTOM:
+            return self.max_scroll - self.scroll_y
+        return None
 
 
 def _delta_ys(page: FakeScrollPage) -> list[int]:

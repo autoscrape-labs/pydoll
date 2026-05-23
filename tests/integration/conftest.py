@@ -10,7 +10,7 @@ import websockets
 from websockets.asyncio.server import Server, ServerConnection, serve
 
 from pydoll.browser.chromium import Chrome
-from pydoll.browser.tab import Tab
+from pydoll.browser.chromium.tab import Tab
 from pydoll.connection import ConnectionHandler
 
 

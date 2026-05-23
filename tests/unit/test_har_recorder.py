@@ -25,7 +25,7 @@ class _FakeTab:
     async def remove_callback(self, callback_id):
         self.removed.append(callback_id)
 
-    async def disable_network_events(self):
+    async def _disable_network_events(self):
         self.network_disabled = True
 
 

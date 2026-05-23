@@ -11,7 +11,7 @@ emit, which is deterministic and faithful to the real code path.
 from __future__ import annotations
 
 from pydoll.browser.requests.request import Request
-from pydoll.protocol.network.events import NetworkEvent
+from pydoll.protocol.cdp.network.events import NetworkEvent
 
 
 def _extra_info_event(set_cookie_value):

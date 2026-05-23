@@ -14,19 +14,19 @@ import pytest
 from pydoll.browser.requests import Request
 from pydoll.exceptions import NetworkEventsNotEnabled, NoDialogPresent
 from pydoll.interactions import KeyboardAPI, MouseAPI, ScrollAPI
-from pydoll.protocol.fetch.types import AuthChallengeResponseType
-from pydoll.protocol.network.types import ErrorReason
+from pydoll.protocol.cdp.fetch.types import AuthChallengeResponseType
+from pydoll.protocol.cdp.network.types import ErrorReason
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     'enable_method, disable_method, command, flag',
     [
-        ('enable_page_events', 'disable_page_events', 'Page.disable', 'page_events_enabled'),
-        ('enable_network_events', 'disable_network_events', 'Network.disable', 'network_events_enabled'),
-        ('enable_dom_events', 'disable_dom_events', 'DOM.disable', 'dom_events_enabled'),
-        ('enable_runtime_events', 'disable_runtime_events', 'Runtime.disable', 'runtime_events_enabled'),
-        ('enable_fetch_events', 'disable_fetch_events', 'Fetch.disable', 'fetch_events_enabled'),
+        ('_enable_page_events', '_disable_page_events', 'Page.disable', '_page_events_enabled'),
+        ('_enable_network_events', '_disable_network_events', 'Network.disable', '_network_events_enabled'),
+        ('_enable_dom_events', '_disable_dom_events', 'DOM.disable', '_dom_events_enabled'),
+        ('_enable_runtime_events', '_disable_runtime_events', 'Runtime.disable', '_runtime_events_enabled'),
+        ('_enable_fetch_events', '_disable_fetch_events', 'Fetch.disable', '_fetch_events_enabled'),
     ],
 )
 async def test_disable_event_domain_clears_flag_and_sends_command(
@@ -40,19 +40,19 @@ async def test_disable_event_domain_clears_flag_and_sends_command(
 
 @pytest.mark.asyncio
 async def test_enable_fetch_events_carries_handle_auth(fake_conn, fake_tab):
-    await fake_tab.enable_fetch_events(handle_auth=True)
-    assert fake_tab.fetch_events_enabled is True
+    await fake_tab._enable_fetch_events(handle_auth=True)
+    assert fake_tab._fetch_events_enabled is True
     assert fake_conn.last_command('Fetch.enable')['params']['handleAuthRequests'] is True
 
 
 @pytest.mark.asyncio
 async def test_intercept_file_chooser_toggles_flag_and_carries_enabled(fake_conn, fake_tab):
-    await fake_tab.enable_intercept_file_chooser_dialog()
-    assert fake_tab.intercept_file_chooser_dialog_enabled is True
+    await fake_tab._enable_intercept_file_chooser_dialog()
+    assert fake_tab._intercept_file_chooser_dialog_enabled is True
     assert fake_conn.last_command('Page.setInterceptFileChooserDialog')['params']['enabled'] is True
 
-    await fake_tab.disable_intercept_file_chooser_dialog()
-    assert fake_tab.intercept_file_chooser_dialog_enabled is False
+    await fake_tab._disable_intercept_file_chooser_dialog()
+    assert fake_tab._intercept_file_chooser_dialog_enabled is False
     assert fake_conn.last_command('Page.setInterceptFileChooserDialog')['params']['enabled'] is False
 
 
@@ -92,7 +92,7 @@ async def test_delete_all_cookies_sends_command(fake_conn, fake_tab):
 
 @pytest.mark.asyncio
 async def test_get_network_response_body_returns_body_and_carries_request_id(fake_conn, fake_tab):
-    await fake_tab.enable_network_events()
+    await fake_tab._enable_network_events()
     fake_conn.set_response('Network.getResponseBody', {'body': 'hello', 'base64Encoded': False})
     assert await fake_tab.get_network_response_body('req-1') == 'hello'
     assert fake_conn.last_command('Network.getResponseBody')['params']['requestId'] == 'req-1'
@@ -170,7 +170,7 @@ async def test_continue_with_auth_carries_challenge_and_credentials(fake_conn, f
 async def test_execute_script_evaluates_and_returns_result(fake_conn, fake_tab):
     fake_conn.set_response('Runtime.evaluate', {'result': {'type': 'number', 'value': 3}})
     result = await fake_tab.execute_script('1 + 2')
-    assert result['result']['result']['value'] == 3
+    assert result == 3
     assert fake_conn.last_command('Runtime.evaluate')['params']['expression'] == '1 + 2'
 
 
@@ -206,7 +206,7 @@ async def test_enable_auto_solve_cloudflare_registers_callback_and_enables_page_
     fake_conn, fake_tab
 ):
     await fake_tab.enable_auto_solve_cloudflare_captcha()
-    assert fake_tab.page_events_enabled is True
+    assert fake_tab._page_events_enabled is True
     assert fake_conn.callbacks_for('Page.loadEventFired')
 
 

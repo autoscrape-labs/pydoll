@@ -10,8 +10,8 @@ from __future__ import annotations
 
 import pytest
 
-from pydoll.elements.shadow_root import ShadowRoot
-from pydoll.protocol.dom.types import ShadowRootType
+from pydoll.elements.cdp.shadow_root import ShadowRoot
+from pydoll.protocol.cdp.dom.types import ShadowRootType
 
 
 def _shadow(fake_conn, mode=ShadowRootType.OPEN, host_element=None) -> ShadowRoot:

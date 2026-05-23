@@ -9,7 +9,7 @@ unknown URLs are left untouched while known ones are rewritten or inlined.
 
 from __future__ import annotations
 
-from pydoll.protocol.network.types import ResourceType
+from pydoll.protocol.cdp.network.types import ResourceType
 from pydoll.utils.bundle import (
     build_asset_filename,
     collect_frame_resources,

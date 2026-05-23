@@ -15,7 +15,7 @@ from typing import Awaitable, Callable, Optional
 import pytest
 
 from pydoll.browser.chromium import Chrome
-from pydoll.browser.tab import Tab
+from pydoll.browser.chromium.tab import Tab
 
 
 class FakeConnection:

@@ -7,7 +7,7 @@ tuple and the resulting (sanitized) arguments, never the parsing steps.
 from __future__ import annotations
 
 from pydoll.browser.managers import ProxyManager
-from pydoll.browser.options import ChromiumOptions
+from pydoll.browser.chromium.options import ChromiumOptions
 
 
 def _manager_with_args(*args) -> tuple[ProxyManager, ChromiumOptions]:

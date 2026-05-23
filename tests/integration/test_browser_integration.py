@@ -12,7 +12,7 @@ from __future__ import annotations
 import pytest
 
 from pydoll.browser.chromium import Chrome
-from pydoll.browser.tab import Tab
+from pydoll.browser.chromium.tab import Tab
 
 
 @pytest.mark.asyncio

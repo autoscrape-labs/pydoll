@@ -12,7 +12,7 @@ from __future__ import annotations
 import pytest
 
 from pydoll.constants import By
-from pydoll.elements.web_element import WebElement
+from pydoll.elements.cdp.web_element import WebElement
 from pydoll.exceptions import (
     ElementNotAFileInput,
     ElementNotInteractable,

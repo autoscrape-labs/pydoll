@@ -8,6 +8,7 @@ from typing import Callable
 import pytest
 
 from pydoll.connection.managers import EventsManager
+from pydoll.connection.managers.event_trackers import CDPEventTracker
 
 
 async def _wait_until(condition: Callable[[], bool], timeout: float = 2.0) -> None:
@@ -109,21 +110,21 @@ async def test_event_without_method_is_discarded():
 
 @pytest.mark.asyncio
 async def test_network_request_event_appended_to_logs():
-    manager = EventsManager()
+    manager = CDPEventTracker()
     event = {'method': 'Network.requestWillBeSent', 'params': {'requestId': 'r1'}}
-    await manager.process_event(event)
+    manager.track(event)
     assert list(manager.network_logs) == [event]
 
 
 @pytest.mark.asyncio
 async def test_dialog_state_tracks_open_and_close():
-    manager = EventsManager()
+    manager = CDPEventTracker()
     assert not manager.dialog
     opening = {'method': 'Page.javascriptDialogOpening', 'params': {'message': 'hi'}}
-    await manager.process_event(opening)
+    manager.track(opening)
     assert manager.dialog
     assert manager.dialog['params'] == {'message': 'hi'}
-    await manager.process_event({'method': 'Page.javascriptDialogClosed'})
+    manager.track({'method': 'Page.javascriptDialogClosed'})
     assert not manager.dialog
 
 

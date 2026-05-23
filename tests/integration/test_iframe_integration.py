@@ -11,7 +11,7 @@ import pytest
 from _waits import wait_for_js, wait_for_js_value, wait_until
 from pydoll.browser.chromium import Chrome
 from pydoll.commands import RuntimeCommands
-from pydoll.elements.web_element import WebElement
+from pydoll.elements.cdp.web_element import WebElement
 from pydoll.exceptions import ElementNotFound, InvalidIFrame
 
 

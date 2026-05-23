@@ -16,7 +16,7 @@ import pytest_asyncio
 
 from pydoll.browser.chromium import Chrome
 from pydoll.constants import Key
-from pydoll.elements.web_element import WebElement
+from pydoll.elements.cdp.web_element import WebElement
 from pydoll.exceptions import (
     ElementNotFound,
     ElementNotInteractable,

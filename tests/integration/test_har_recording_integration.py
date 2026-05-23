@@ -16,7 +16,7 @@ import pytest
 
 from pydoll.browser.chromium import Chrome
 from pydoll.browser.requests.har_recorder import HarCapture
-from pydoll.protocol.network.types import ResourceType
+from pydoll.protocol.cdp.network.types import ResourceType
 
 from _waits import wait_until
 

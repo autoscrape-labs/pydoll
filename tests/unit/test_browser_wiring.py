@@ -11,9 +11,9 @@ import pytest
 
 from pydoll.browser.chromium import Chrome
 from pydoll.browser.managers import BrowserProcessManager
-from pydoll.browser.managers.browser_options_manager import ChromiumOptionsManager
-from pydoll.browser.options import ChromiumOptions
-from pydoll.browser.tab import Tab
+from pydoll.browser.chromium.options import ChromiumOptionsManager
+from pydoll.browser.chromium.options import ChromiumOptions
+from pydoll.browser.chromium.tab import Tab
 from pydoll.exceptions import InvalidOptionsObject
 
 
