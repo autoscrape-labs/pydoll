@@ -401,6 +401,7 @@ class Browser:  # noqa: PLR0904
         behavior: DownloadBehavior,
         download_path: Optional[str] = None,
         browser_context_id: Optional[str] = None,
+        events_enabled: bool = False,
     ):
         """
         Configure download handling.
@@ -409,6 +410,8 @@ class Browser:  # noqa: PLR0904
             behavior: ALLOW (save to path) or DENY (cancel).
             download_path: Required if behavior is ALLOW.
             browser_context_id: Context to apply to (default if None).
+            events_enabled: Emit CDP download progress events (CDP-only extra; not
+                part of the portable contract).
         """
         cdp_behavior = CDPDownloadBehavior(behavior.value)
         return await self._execute_command(
@@ -416,6 +419,7 @@ class Browser:  # noqa: PLR0904
                 behavior=cdp_behavior,
                 download_path=download_path,
                 browser_context_id=browser_context_id,
+                events_enabled=events_enabled,
             )
         )
 
