@@ -12,12 +12,11 @@ from __future__ import annotations
 import base64
 import socket
 import threading
+from contextlib import suppress
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 import pytest
 import pytest_asyncio
-
-from pydoll.browser import Firefox
 
 DOWNLOAD_BODY = b'downloaded content from server'
 
@@ -58,25 +57,27 @@ class _DownloadHandler(BaseHTTPRequestHandler):
         pass
 
 
-@pytest_asyncio.fixture
-async def served_tab(ci_firefox_options):
+@pytest_asyncio.fixture(loop_scope='module')
+async def served_tab(firefox_browser):
     port = _find_free_port()
     server = ThreadingHTTPServer(('127.0.0.1', port), _DownloadHandler)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     base = f'http://127.0.0.1:{port}'
+    context_id = await firefox_browser.create_browser_context()
+    tab = await firefox_browser.new_tab(browser_context_id=context_id)
     try:
-        async with Firefox(options=ci_firefox_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(f'{base}/')
-            yield tab, base
+        await tab.go_to(f'{base}/')
+        yield tab, base
     finally:
+        with suppress(Exception):
+            await firefox_browser.delete_browser_context(context_id)
         server.shutdown()
         server.server_close()
         thread.join(timeout=5)
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope='module')
 async def test_download_to_temp_dir_is_readable_inside_context(served_tab):
     tab, _ = served_tab
     async with tab.expect_download(timeout=30) as handle:
@@ -87,7 +88,7 @@ async def test_download_to_temp_dir_is_readable_inside_context(served_tab):
         assert handle.file_path is not None
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope='module')
 async def test_download_base64_matches_bytes(served_tab):
     tab, _ = served_tab
     async with tab.expect_download(timeout=30) as handle:
@@ -97,7 +98,7 @@ async def test_download_base64_matches_bytes(served_tab):
     assert base64.b64decode(b64) == DOWNLOAD_BODY
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope='module')
 async def test_keep_file_at_persists_after_context(served_tab, tmp_path):
     tab, _ = served_tab
     target = tmp_path / 'downloads'

@@ -35,7 +35,7 @@ class Quote(ExtractionModel):
     author: str = Field(selector='.author', description='Author')
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope='module')
 async def test_extract_simple_fields(tab, page_url):
     await tab.go_to(page_url('test_extractor.html'))
     article = await tab.extract(SimpleArticle, timeout=5)
@@ -43,21 +43,21 @@ async def test_extract_simple_fields(tab, page_url):
     assert 'extracting data' in article.body
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope='module')
 async def test_extract_attribute(tab, page_url):
     await tab.go_to(page_url('test_extractor.html'))
     article = await tab.extract(ArticleWithDate, timeout=5)
     assert article.published_at == '2025-03-15'
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope='module')
 async def test_extract_list_field(tab, page_url):
     await tab.go_to(page_url('test_extractor.html'))
     article = await tab.extract(ArticleWithTags, timeout=5)
     assert article.tags == ['python', 'automation', 'web']
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope='module')
 async def test_extract_all_repeated_containers(tab, page_url):
     await tab.go_to(page_url('test_extractor.html'))
     quotes = await tab.extract_all(Quote, scope='.quote', timeout=5)

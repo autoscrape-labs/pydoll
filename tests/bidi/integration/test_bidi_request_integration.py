@@ -12,12 +12,11 @@ from __future__ import annotations
 import json as jsonlib
 import socket
 import threading
+from contextlib import suppress
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 import pytest
 import pytest_asyncio
-
-from pydoll.browser import Firefox
 
 
 def _free_port() -> int:
@@ -66,23 +65,25 @@ class _Handler(BaseHTTPRequestHandler):
         pass
 
 
-@pytest_asyncio.fixture
-async def served_tab(ci_firefox_options):
+@pytest_asyncio.fixture(loop_scope='module')
+async def served_tab(firefox_browser):
     port = _free_port()
     server = ThreadingHTTPServer(('127.0.0.1', port), _Handler)
     threading.Thread(target=server.serve_forever, daemon=True).start()
     base = f'http://127.0.0.1:{port}'
+    context_id = await firefox_browser.create_browser_context()
+    tab = await firefox_browser.new_tab(browser_context_id=context_id)
     try:
-        async with Firefox(options=ci_firefox_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(f'{base}/')
-            yield tab, base
+        await tab.go_to(f'{base}/')
+        yield tab, base
     finally:
+        with suppress(Exception):
+            await firefox_browser.delete_browser_context(context_id)
         server.shutdown()
         server.server_close()
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope='module')
 async def test_get_returns_status_and_json(served_tab):
     tab, base = served_tab
     response = await tab.request.get(f'{base}/json')
@@ -91,7 +92,7 @@ async def test_get_returns_status_and_json(served_tab):
     assert response.json() == {'method': 'GET', 'ok': True}
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope='module')
 async def test_post_json_body_reaches_server(served_tab):
     tab, base = served_tab
     response = await tab.request.post(f'{base}/json', json={'hello': 'world'})
@@ -100,7 +101,7 @@ async def test_post_json_body_reaches_server(served_tab):
     assert jsonlib.loads(response.json()['received']) == {'hello': 'world'}
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope='module')
 async def test_response_headers_captured_from_network_events(served_tab):
     tab, base = served_tab
     response = await tab.request.get(f'{base}/json')
@@ -108,14 +109,14 @@ async def test_response_headers_captured_from_network_events(served_tab):
     assert 'x-custom-resp' in header_names
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope='module')
 async def test_set_cookie_captured_including_httponly(served_tab):
     tab, base = served_tab
     response = await tab.request.get(f'{base}/json')
     assert any(c['name'] == 'sid' and c['value'] == 'xyz' for c in response.cookies)
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope='module')
 async def test_request_reuses_browser_session_cookies(served_tab):
     tab, base = served_tab
     await tab.request.get(f'{base}/json')  # server sets sid cookie

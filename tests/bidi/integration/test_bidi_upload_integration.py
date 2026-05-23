@@ -31,7 +31,7 @@ async def _wait_file_set(tab, timeout: float = 5.0) -> None:
 
 
 class TestFileUpload:
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(loop_scope='module')
     async def test_set_input_files_sets_file_on_input(self, tab, tmp_path):
         upload = tmp_path / 'proactive.txt'
         upload.write_text('payload')
@@ -43,7 +43,7 @@ class TestFileUpload:
         assert await tab.execute_script(_FILES_LEN) == 1
         assert await tab.execute_script(_FILE_NAME) == 'proactive.txt'
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(loop_scope='module')
     async def test_expect_file_chooser_fills_input_on_click(self, tab, tmp_path):
         upload = tmp_path / 'reactive.txt'
         upload.write_text('payload')

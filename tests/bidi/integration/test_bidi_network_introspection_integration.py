@@ -11,12 +11,12 @@ import asyncio
 import json as jsonlib
 import socket
 import threading
+from contextlib import suppress
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 import pytest
 import pytest_asyncio
 
-from pydoll.browser import Firefox
 from pydoll.exceptions import NetworkEventsNotEnabled
 
 _API_PAYLOAD = {'msg': 'Hello from introspection'}
@@ -60,17 +60,19 @@ class _Handler(BaseHTTPRequestHandler):
         pass
 
 
-@pytest_asyncio.fixture
-async def served_tab(ci_firefox_options):
+@pytest_asyncio.fixture(loop_scope='module')
+async def served_tab(firefox_browser):
     port = _free_port()
     server = ThreadingHTTPServer(('127.0.0.1', port), _Handler)
     threading.Thread(target=server.serve_forever, daemon=True).start()
     base = f'http://127.0.0.1:{port}'
+    context_id = await firefox_browser.create_browser_context()
+    tab = await firefox_browser.new_tab(browser_context_id=context_id)
     try:
-        async with Firefox(options=ci_firefox_options) as browser:
-            tab = await browser.start()
-            yield tab, base
+        yield tab, base
     finally:
+        with suppress(Exception):
+            await firefox_browser.delete_browser_context(context_id)
         server.shutdown()
         server.server_close()
 
@@ -88,7 +90,7 @@ async def _wait_for_page_fetch_done(tab, timeout: float = 10.0):
         await asyncio.sleep(0.1)
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope='module')
 async def test_get_network_logs_captures_requests(served_tab):
     tab, base = served_tab
     await tab.get_network_logs()  # enable capture before the traffic
@@ -100,7 +102,7 @@ async def test_get_network_logs_captures_requests(served_tab):
     assert any('/api/data' in u for u in urls)
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope='module')
 async def test_get_network_logs_filter(served_tab):
     tab, base = served_tab
     await tab.get_network_logs()
@@ -112,7 +114,7 @@ async def test_get_network_logs_filter(served_tab):
     assert all('/api/data' in log['params']['request']['url'] for log in logs)
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope='module')
 async def test_get_network_response_body(served_tab):
     tab, base = served_tab
     await tab.get_network_logs()  # enables the response data collector too
@@ -125,7 +127,7 @@ async def test_get_network_response_body(served_tab):
     assert 'Hello from introspection' in body
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope='module')
 async def test_get_network_response_body_requires_enable(served_tab):
     tab, _ = served_tab
     with pytest.raises(NetworkEventsNotEnabled):

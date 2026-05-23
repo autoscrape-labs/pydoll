@@ -13,12 +13,12 @@ import base64
 import json as jsonlib
 import socket
 import threading
+from contextlib import suppress
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 import pytest
 import pytest_asyncio
 
-from pydoll.browser import Firefox
 from pydoll.browser.requests import HarCapture
 
 _API_PAYLOAD = {'msg': 'Hello from BiDi', 'items': ['Alice', 'Bob']}
@@ -69,17 +69,19 @@ class _Handler(BaseHTTPRequestHandler):
         pass
 
 
-@pytest_asyncio.fixture
-async def served_tab(ci_firefox_options):
+@pytest_asyncio.fixture(loop_scope='module')
+async def served_tab(firefox_browser):
     port = _free_port()
     server = ThreadingHTTPServer(('127.0.0.1', port), _Handler)
     threading.Thread(target=server.serve_forever, daemon=True).start()
     base = f'http://127.0.0.1:{port}'
+    context_id = await firefox_browser.create_browser_context()
+    tab = await firefox_browser.new_tab(browser_context_id=context_id)
     try:
-        async with Firefox(options=ci_firefox_options) as browser:
-            tab = await browser.start()
-            yield tab, base
+        yield tab, base
     finally:
+        with suppress(Exception):
+            await firefox_browser.delete_browser_context(context_id)
         server.shutdown()
         server.server_close()
 
@@ -104,7 +106,7 @@ def _entry_text(entry: dict) -> str:
     return text
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope='module')
 async def test_record_captures_navigation_and_fetch(served_tab):
     tab, base = served_tab
     async with tab.request.record() as capture:
@@ -116,7 +118,7 @@ async def test_record_captures_navigation_and_fetch(served_tab):
     assert any('/api/data' in u for u in urls)
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope='module')
 async def test_record_captures_response_body(served_tab):
     tab, base = served_tab
     async with tab.request.record() as capture:
@@ -128,7 +130,7 @@ async def test_record_captures_response_body(served_tab):
     assert 'Hello from BiDi' in _entry_text(api_entry)
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope='module')
 async def test_record_captures_set_cookie(served_tab):
     tab, base = served_tab
     async with tab.request.record() as capture:
@@ -140,7 +142,7 @@ async def test_record_captures_set_cookie(served_tab):
     assert 'har' in cookie_names
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(loop_scope='module')
 async def test_save_writes_valid_har_file(served_tab, tmp_path):
     tab, base = served_tab
     async with tab.request.record() as capture:

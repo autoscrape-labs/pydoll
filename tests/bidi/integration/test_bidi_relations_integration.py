@@ -21,28 +21,28 @@ PAGE = (
 
 
 class TestElementRelations:
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(loop_scope='module')
     async def test_get_children_direct(self, tab):
         await tab.go_to(PAGE)
         parent = await tab.find(id='parent')
         children = await parent.get_children_elements()
         assert len(children) == 3
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(loop_scope='module')
     async def test_get_children_tag_filter(self, tab):
         await tab.go_to(PAGE)
         parent = await tab.find(id='parent')
         spans = await parent.get_children_elements(tag_filter=['span'])
         assert len(spans) == 2
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(loop_scope='module')
     async def test_get_siblings(self, tab):
         await tab.go_to(PAGE)
         first = await tab.find(id='first')
         siblings = await first.get_siblings_elements()
         assert len(siblings) == 2
 
-    @pytest.mark.asyncio
+    @pytest.mark.asyncio(loop_scope='module')
     async def test_get_siblings_tag_filter(self, tab):
         await tab.go_to(PAGE)
         first = await tab.find(id='first')
