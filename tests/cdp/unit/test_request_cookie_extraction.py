@@ -10,7 +10,7 @@ emit, which is deterministic and faithful to the real code path.
 
 from __future__ import annotations
 
-from pydoll.browser.requests.request import Request
+from pydoll.browser.requests.cdp.request import Request
 from pydoll.protocol.cdp.network.events import NetworkEvent
 
 

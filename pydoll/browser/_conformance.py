@@ -16,7 +16,14 @@ if TYPE_CHECKING:
     from pydoll.browser.chromium.tab import Tab, _DownloadHandle
     from pydoll.browser.firefox.base import FirefoxBrowser
     from pydoll.browser.firefox.tab import BiDiTab, _BiDiDownloadHandle
-    from pydoll.browser.protocols import BrowserProtocol, DownloadHandleProtocol, TabProtocol
+    from pydoll.browser.protocols import (
+        BrowserProtocol,
+        DownloadHandleProtocol,
+        RequestProtocol,
+        TabProtocol,
+    )
+    from pydoll.browser.requests.bidi.request import BiDiRequest
+    from pydoll.browser.requests.cdp.request import Request
     from pydoll.elements.bidi.shadow_root import BiDiShadowRoot
     from pydoll.elements.bidi.web_element import BiDiWebElement
     from pydoll.elements.cdp.shadow_root import ShadowRoot
@@ -34,6 +41,12 @@ if TYPE_CHECKING:
 
     def _bidi_download_handle_conforms(handle: _BiDiDownloadHandle) -> DownloadHandleProtocol:
         return handle
+
+    def _cdp_request_conforms(request: Request) -> RequestProtocol:
+        return request
+
+    def _bidi_request_conforms(request: BiDiRequest) -> RequestProtocol:
+        return request
 
     def _cdp_browser_conforms(browser: Browser) -> BrowserProtocol:
         return browser

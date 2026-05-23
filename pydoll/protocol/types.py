@@ -38,6 +38,13 @@ class Cookie(TypedDict):
     expiry: NotRequired[int]
 
 
+class ResponseCookie(TypedDict):
+    """A cookie set by a response, parsed (name/value) from a Set-Cookie header."""
+
+    name: str
+    value: str
+
+
 class WindowBounds(TypedDict, total=False):
     """Window position and dimensions."""
 

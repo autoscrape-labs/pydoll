@@ -10,7 +10,7 @@ against header dicts: deterministic and faithful to what the recorder runs.
 
 from __future__ import annotations
 
-from pydoll.browser.requests.har_recorder import HarRecorder
+from pydoll.browser.requests.cdp.har_recorder import HarRecorder
 
 
 def test_parse_request_cookies_splits_cookie_header():

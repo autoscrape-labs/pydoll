@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, Optional, Union, overload
 
 import aiofiles
 
+from pydoll.browser.requests.bidi.request import BiDiRequest
 from pydoll.commands.bidi.browser_commands import BrowserCommands
 from pydoll.commands.bidi.browsing_context_commands import BrowsingContextCommands
 from pydoll.commands.bidi.emulation_commands import EmulationCommands
@@ -62,6 +63,7 @@ class BiDiTab(BidiFindElementsMixin):
         self._mouse: BiDiMouse = BiDiMouse(self)
         self._keyboard: Optional[BiDiKeyboard] = None
         self._scroll: Optional[BiDiScroll] = None
+        self._request: Optional[BiDiRequest] = None
 
     @property
     def mouse(self) -> BiDiMouse:
@@ -86,6 +88,13 @@ class BiDiTab(BidiFindElementsMixin):
         if self._scroll is None:
             self._scroll = BiDiScroll(self)
         return self._scroll
+
+    @property
+    def request(self) -> BiDiRequest:
+        """HTTP client that runs in this tab's fetch context (cookies/session reused)."""
+        if self._request is None:
+            self._request = BiDiRequest(self)
+        return self._request
 
     @property
     async def current_url(self) -> str:

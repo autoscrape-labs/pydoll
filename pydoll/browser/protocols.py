@@ -3,7 +3,16 @@ from __future__ import annotations
 from collections.abc import Awaitable, Callable, Sequence
 from contextlib import AbstractAsyncContextManager
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional, Protocol, TypeAlias, TypeVar, Union, runtime_checkable
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Optional,
+    Protocol,
+    TypeAlias,
+    TypeVar,
+    Union,
+    runtime_checkable,
+)
 
 from pydoll.constants import PageLoadState
 from pydoll.elements.protocols import ShadowRootProtocol, WebElementProtocol
@@ -16,12 +25,14 @@ from pydoll.protocol.types import (
     Cookie,
     CookieParam,
     DownloadBehavior,
+    Header,
     Permission,
     WindowBounds,
 )
 
 if TYPE_CHECKING:
     from pydoll.browser.intercepted_request import InterceptedRequest
+    from pydoll.browser.requests.response import Response
 
 T_Tab = TypeVar('T_Tab')
 
@@ -201,6 +212,60 @@ class DownloadHandleProtocol(Protocol):
 
 
 @runtime_checkable
+class RequestProtocol(Protocol):
+    """Portable HTTP client that runs in a tab's fetch context (CDP and BiDi).
+
+    Mirrors the requests-library surface; every call reuses the browser's cookies
+    and session and returns a Response.
+    """
+
+    async def request(
+        self,
+        method: str,
+        url: str,
+        params: Optional[dict[str, str]] = None,
+        data: Optional[Union[dict, list, tuple, str, bytes]] = None,
+        json: Optional[dict[str, Any]] = None,
+        headers: Optional[list[Header]] = None,
+        **kwargs,
+    ) -> Response: ...
+
+    async def get(
+        self, url: str, params: Optional[dict[str, str]] = None, **kwargs
+    ) -> Response: ...
+
+    async def post(
+        self,
+        url: str,
+        data: Optional[Union[dict, list, tuple, str, bytes]] = None,
+        json: Optional[dict[str, Any]] = None,
+        **kwargs,
+    ) -> Response: ...
+
+    async def put(
+        self,
+        url: str,
+        data: Optional[Union[dict, list, tuple, str, bytes]] = None,
+        json: Optional[dict[str, Any]] = None,
+        **kwargs,
+    ) -> Response: ...
+
+    async def patch(
+        self,
+        url: str,
+        data: Optional[Union[dict, list, tuple, str, bytes]] = None,
+        json: Optional[dict[str, Any]] = None,
+        **kwargs,
+    ) -> Response: ...
+
+    async def delete(self, url: str, **kwargs) -> Response: ...
+
+    async def head(self, url: str, **kwargs) -> Response: ...
+
+    async def options(self, url: str, **kwargs) -> Response: ...
+
+
+@runtime_checkable
 class TabProtocol(Protocol):
     """Portable tab-level contract shared by Tab (CDP) and BiDiTab (BiDi).
 
@@ -220,6 +285,9 @@ class TabProtocol(Protocol):
 
     @property
     def scroll(self) -> Scroll: ...
+
+    @property
+    def request(self) -> RequestProtocol: ...
 
     @property
     async def current_url(self) -> str: ...

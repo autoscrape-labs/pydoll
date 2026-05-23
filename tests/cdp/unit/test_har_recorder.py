@@ -12,7 +12,7 @@ import asyncio
 
 import pytest
 
-from pydoll.browser.requests.har_recorder import HarRecorder
+from pydoll.browser.requests.cdp.har_recorder import HarRecorder
 
 
 class _FakeTab:
