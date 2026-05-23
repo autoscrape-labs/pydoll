@@ -40,17 +40,24 @@ class BidiFindElementsMixin(FindElementsMixin):
         _connection_handler: BiDiConnectionHandler
         _context_id: str
 
+    async def _resolve_locate_target(self) -> tuple[str, Optional[list[dict]]]:
+        """Return the (browsing-context id, start nodes) to run locateNodes against.
+
+        Default: this finder's own context, scoped to its sharedId when it is an
+        element. BiDiWebElement overrides this to descend into an iframe's child
+        browsing context, so an iframe is searched like a regular element.
+        """
+        return self._context_id, self._get_start_nodes()
+
     async def _find_element(
         self, by: By, value: str, raise_exc: bool = True
     ) -> Optional[BiDiWebElement]:
         """Find first element matching selector using BiDi locateNodes."""
-        locator = self._build_locator(by, value)
-        start_nodes = self._get_start_nodes()
-
+        context, start_nodes = await self._resolve_locate_target()
         response = await self._execute_command(
             BrowsingContextCommands.locate_nodes(
-                context=self._context_id,
-                locator=locator,
+                context=context,
+                locator=self._build_locator(by, value),
                 max_node_count=1,
                 start_nodes=start_nodes,
             )
@@ -60,19 +67,17 @@ class BidiFindElementsMixin(FindElementsMixin):
             if raise_exc:
                 raise ElementNotFound()
             return None
-        return self._create_element_from_node(nodes[0], by, value)
+        return self._create_element_from_node(nodes[0], by, value, context)
 
     async def _find_elements(
         self, by: By, value: str, raise_exc: bool = True
     ) -> list[BiDiWebElement]:
         """Find all elements matching selector using BiDi locateNodes."""
-        locator = self._build_locator(by, value)
-        start_nodes = self._get_start_nodes()
-
+        context, start_nodes = await self._resolve_locate_target()
         response = await self._execute_command(
             BrowsingContextCommands.locate_nodes(
-                context=self._context_id,
-                locator=locator,
+                context=context,
+                locator=self._build_locator(by, value),
                 start_nodes=start_nodes,
             )
         )
@@ -81,7 +86,7 @@ class BidiFindElementsMixin(FindElementsMixin):
             if raise_exc:
                 raise ElementNotFound()
             return []
-        return [self._create_element_from_node(node, by, value) for node in nodes]
+        return [self._create_element_from_node(node, by, value, context) for node in nodes]
 
     async def _execute_command(
         self,
@@ -122,16 +127,21 @@ class BidiFindElementsMixin(FindElementsMixin):
         return None
 
     def _create_element_from_node(
-        self, node: NodeRemoteValue, by: By, value: str
+        self, node: NodeRemoteValue, by: By, value: str, context: str
     ) -> BiDiWebElement:
-        """Create a BiDiWebElement from a locateNodes result node."""
+        """Create a BiDiWebElement from a locateNodes result node.
+
+        ``context`` is the browsing context the node was located in (the iframe's
+        child context when searching inside an iframe), so the element operates
+        in the right document.
+        """
         node_props = node.get('value', {})
         attributes = node_props.get('attributes', {})
         tag_name = node_props.get('localName', '')
 
         return create_bidi_web_element(
             shared_id=node.get('sharedId', ''),
-            context_id=self._context_id,
+            context_id=context,
             connection=self._connection_handler,
             attributes=attributes,
             tag_name=tag_name,

@@ -18,6 +18,7 @@ from pydoll.exceptions import (
     ElementNotFound,
     ElementNotInteractable,
     ElementNotVisible,
+    IFrameNotFound,
     MissingScreenshotPath,
     WaitElementTimeout,
 )
@@ -64,12 +65,41 @@ class BiDiWebElement(BidiFindElementsMixin):
         self._selector = selector
         self._mouse = mouse
         self._keyboard: Optional[BiDiKeyboard] = None
+        self._content_context: Optional[str] = None
 
     def _get_keyboard(self) -> BiDiKeyboard:
         """Get or create the keyboard controller bound to this element."""
         if self._keyboard is None:
             self._keyboard = BiDiKeyboard(self)
         return self._keyboard
+
+    async def _resolve_locate_target(self) -> tuple[str, Optional[list[dict]]]:
+        """Search inside an iframe's child context; otherwise scope to this element."""
+        if self.is_iframe:
+            return await self._get_content_context(), None
+        return self._context_id, self._get_start_nodes()
+
+    async def _get_content_context(self) -> str:
+        """Resolve (and cache) the child browsing context of this iframe element.
+
+        Reads ``el.contentWindow`` — in BiDi a window RemoteValue carries the
+        child browsing context id — so the iframe can be searched like a regular
+        element (works for same- and cross-origin frames).
+        """
+        if self._content_context is None:
+            response = await self._execute_command(
+                ScriptCommands.call_function(
+                    function_declaration='(el) => el.contentWindow',
+                    await_promise=False,
+                    target=ContextTarget(context=self._context_id),
+                    arguments=[{'type': 'node', 'sharedId': self._shared_id}],
+                )
+            )
+            context = response['result'].get('result', {}).get('value', {}).get('context')
+            if not context:
+                raise IFrameNotFound('Could not resolve the iframe content browsing context')
+            self._content_context = context
+        return self._content_context
 
     @property
     def attributes(self) -> dict[str, str]:
