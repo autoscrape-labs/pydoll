@@ -3,12 +3,14 @@ from __future__ import annotations
 import asyncio
 import base64 as _b64
 import logging
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional, Union, overload
 
 import aiofiles
 
 from pydoll.commands.bidi.browsing_context_commands import BrowsingContextCommands
+from pydoll.commands.bidi.input_commands import InputCommands as BiDiInputCommands
 from pydoll.commands.bidi.script_commands import ScriptCommands
 from pydoll.commands.bidi.session_commands import SessionCommands
 from pydoll.commands.bidi.storage_commands import StorageCommands
@@ -20,12 +22,13 @@ from pydoll.interactions.mouse import BiDiMouse
 from pydoll.interactions.scroll import BiDiScroll
 from pydoll.protocol.bidi.base import Command, T_CommandParams, T_CommandResult
 from pydoll.protocol.bidi.browsing_context.types import ImageFormat
+from pydoll.protocol.bidi.script.types import SharedReference
 from pydoll.protocol.events import BIDI_EVENT_MAP, Event
 from pydoll.protocol.types import Cookie, CookieParam
 from pydoll.utils import has_return_outside_function
 
 if TYPE_CHECKING:
-    from typing import Any, Awaitable, Callable
+    from typing import Any, AsyncGenerator, Awaitable, Callable
 
 logger = logging.getLogger(__name__)
 
@@ -356,6 +359,41 @@ class BiDiTab(BidiFindElementsMixin):
                 user_text=prompt_text,
             )
         )
+
+    @asynccontextmanager
+    async def expect_file_chooser(
+        self, files: Union[str, Path, list[Union[str, Path]]]
+    ) -> AsyncGenerator[None, None]:
+        """Automatically fill the next file chooser opened inside the block.
+
+        Subscribes to input.fileDialogOpened; when a file dialog opens (e.g. a
+        click on an ``<input type=file>``), sets the given files on the
+        originating element via input.setFiles — the real, trusted upload path
+        (mirrors the CDP expect_file_chooser).
+
+        Args:
+            files: File path(s) to upload.
+        """
+        file_list = [str(file) for file in files] if isinstance(files, list) else [str(files)]
+
+        async def event_handler(event: dict) -> None:
+            element = event.get('params', {}).get('element')
+            if element is None:
+                logger.warning('File dialog opened without an element reference; cannot set files')
+                return
+            await self._execute_command(
+                BiDiInputCommands.set_files(
+                    context=self._context_id,
+                    element=SharedReference(sharedId=element['sharedId']),
+                    files=file_list,
+                )
+            )
+
+        callback_id = await self.on(Event.FILE_CHOOSER_OPENED, event_handler)
+        try:
+            yield
+        finally:
+            await self.remove_callback(callback_id)
 
     @property
     def network_logs(self) -> list:

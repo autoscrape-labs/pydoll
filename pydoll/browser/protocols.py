@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Awaitable, Callable, Sequence
+from contextlib import AbstractAsyncContextManager
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional, Protocol, TypeAlias, TypeVar, Union, runtime_checkable
 
@@ -266,6 +267,10 @@ class TabProtocol(Protocol):
     async def handle_dialog(
         self, accept: bool, prompt_text: Optional[str] = None
     ) -> None: ...
+
+    def expect_file_chooser(
+        self, files: Union[str, Path, list[Union[str, Path]]]
+    ) -> AbstractAsyncContextManager[None]: ...
 
     async def on(
         self,

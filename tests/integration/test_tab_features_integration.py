@@ -18,11 +18,8 @@ import pytest_asyncio
 
 from pydoll.browser.chromium import Chrome
 from pydoll.exceptions import (
-    IFrameNotFound,
     InvalidFileExtension,
-    InvalidIFrame,
     MissingScreenshotPath,
-    NotAnIFrame,
     WaitElementTimeout,
 )
 
