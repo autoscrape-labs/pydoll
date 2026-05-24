@@ -55,16 +55,18 @@ docstring-code-line-length = 79
 exclude = ['tests', 'tests/*']
 
 [tool.pytest.ini_options]
-pythonpath = "."
+pythonpath = [".", "tests"]
 addopts = '-p no:warnings'
 
 [tool.coverage.run]
 # Declarative layers are excluded from the coverage target: protocol event
 # TypedDicts carry no logic, and the command factories are thin CDP-dict builders
 # exercised through the methods that call them (1:1 tests would be tautological).
+# Patterns are recursive — these modules live under per-domain subpackages
+# (e.g. protocol/cdp/page/events.py, commands/cdp/page_commands.py).
 omit = [
-    'pydoll/protocol/*/events.py',
-    'pydoll/commands/*.py',
+    'pydoll/protocol/**/events.py',
+    'pydoll/commands/**',
 ]
 
 [tool.coverage.report]

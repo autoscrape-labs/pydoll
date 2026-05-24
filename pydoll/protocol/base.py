@@ -1,57 +1,32 @@
 from typing import Generic, TypeVar
 
-# TODO: typeddict comes from typing_extensions
 from typing_extensions import NotRequired, TypedDict
 
 T_CommandParams = TypeVar('T_CommandParams')
 T_CommandResponse = TypeVar('T_CommandResponse')
-T_EventParams = TypeVar('T_EventParams')
-
-
-class EmptyParams(TypedDict):
-    """Empty parameters for commands."""
-
-    pass
-
-
-class EmptyResponse(TypedDict):
-    """Empty response for commands."""
-
-    pass
 
 
 class Command(TypedDict, Generic[T_CommandParams, T_CommandResponse]):
-    """Base structure for all commands.
+    """Wire structure shared by every CDP and BiDi command.
+
+    The first type parameter is the command's ``params`` payload. The second is
+    the full parsed response wrapper the remote end sends back (CDP
+    ``Response[Result]`` or BiDi ``CommandResponse[Result]``). ``id`` is assigned
+    by the connection layer right before the command is sent.
 
     Attributes:
-        method: The command method name
-        params: Optional dictionary of parameters for the command
-        sessionId: Optional target session identifier (flattened sessions)
+        id: Unique command identifier assigned at send time.
+        method: The command method name (e.g. "Target.getTargets", "script.evaluate").
+        params: Optional parameters payload for the command.
+        sessionId: Optional CDP flattened-session target identifier (unused by BiDi).
+        response: Phantom field, never set at runtime. It carries the response
+            type parameter into a structural position so ``execute_command`` can
+            recover and return it precisely; mypy cannot infer a TypedDict type
+            argument that appears in no field.
     """
 
     id: NotRequired[int]
     method: str
     params: NotRequired[T_CommandParams]
     sessionId: NotRequired[str]
-
-
-class Response(TypedDict, Generic[T_CommandResponse]):
-    """Base structure for all responses.
-
-    Attributes:
-        id: The ID that matches the command ID
-        result: The result data for the command
-        sessionId: Optional target session identifier (flattened sessions)
-    """
-
-    id: int
-    result: T_CommandResponse
-    sessionId: NotRequired[str]
-
-
-class CDPEvent(TypedDict, Generic[T_EventParams]):
-    """Base structure for all events."""
-
-    method: str
-    params: NotRequired[T_EventParams]
-    sessionId: NotRequired[str]
+    response: NotRequired[T_CommandResponse]

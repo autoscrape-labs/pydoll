@@ -97,6 +97,12 @@ class MissingTargetOrWebSocket(BrowserException):
     message = 'Tab has no target ID or WebSocket address'
 
 
+class UnsupportedOperation(BrowserException):
+    """Raised when a method is not supported by the current browser."""
+
+    message = 'This operation is not supported by this browser'
+
+
 class ProtocolException(PydollException):
     """Base class for exceptions related to CDP protocol communication."""
 
@@ -334,6 +340,12 @@ class InvalidScriptWithElement(ScriptException):
     """Raised when a script contains 'argument' but no element is provided."""
 
     message = 'Script contains "argument" but no element was provided'
+
+
+class ScriptExecutionError(ScriptException):
+    """Raised when JavaScript executed via execute_script throws."""
+
+    message = 'The executed script raised an error'
 
 
 class WrongPrefsDict(PydollException):

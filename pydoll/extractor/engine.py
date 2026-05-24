@@ -5,21 +5,33 @@ from __future__ import annotations
 import asyncio
 import logging
 import types
-from collections.abc import Coroutine
-from typing import TYPE_CHECKING, Optional, TypeVar, Union, get_args, get_origin
+from collections.abc import Coroutine, Sequence
+from typing import Optional, Protocol, TypeVar, Union, get_args, get_origin
 
-from pydoll.elements.mixins.find_elements_mixin import FindElementsMixin
-from pydoll.elements.web_element import WebElement
+from pydoll.elements.protocols import WebElementProtocol
 from pydoll.extractor.exceptions import FieldExtractionFailed
 from pydoll.extractor.field import ExtractionMetadata
 from pydoll.extractor.model import ExtractionModel
 
-if TYPE_CHECKING:
-    from pydoll.browser.tab import Tab
-
 logger = logging.getLogger(__name__)
 
 T = TypeVar('T', bound='ExtractionModel')
+
+
+class _SupportsQuery(Protocol):
+    """A queryable scope (a tab or an element) — the part the engine needs.
+
+    Satisfied structurally by both CDP and BiDi tabs and elements, so the engine
+    is protocol-agnostic.
+    """
+
+    async def query(
+        self,
+        expression: str,
+        timeout: int = 0,
+        find_all: bool = False,
+        raise_exc: bool = True,
+    ) -> Union[WebElementProtocol, Sequence[WebElementProtocol], None]: ...
 
 
 class ExtractionEngine:
@@ -29,7 +41,7 @@ class ExtractionEngine:
     Users do not interact with it directly.
     """
 
-    def __init__(self, tab: Tab) -> None:
+    def __init__(self, tab: _SupportsQuery) -> None:
         self._tab = tab
 
     async def extract(
@@ -52,10 +64,10 @@ class ExtractionEngine:
         Raises:
             FieldExtractionFailed: If a required field cannot be extracted.
         """
-        context: FindElementsMixin = self._tab
+        context: _SupportsQuery = self._tab
         if scope is not None:
             result = await self._tab.query(scope, timeout=timeout)
-            if not isinstance(result, WebElement):
+            if not isinstance(result, WebElementProtocol):
                 raise ValueError(
                     f'Expected a single element for scope "{scope}", got {type(result)}'
                 )
@@ -89,7 +101,9 @@ class ExtractionEngine:
         if found is None or not found:
             return []
 
-        containers: list[WebElement] = found if isinstance(found, list) else [found]
+        containers: list[WebElementProtocol] = (
+            list(found) if isinstance(found, Sequence) else [found]
+        )
 
         if limit is not None:
             containers = containers[:limit]
@@ -103,7 +117,7 @@ class ExtractionEngine:
     async def _extract_fields(
         self,
         model: type[T],
-        context: FindElementsMixin,
+        context: _SupportsQuery,
         timeout: int,
     ) -> dict[str, Union[str, int, float, bool, list[str], object]]:
         """Extract all fields from the DOM concurrently.
@@ -157,7 +171,7 @@ class ExtractionEngine:
         self,
         metadata: ExtractionMetadata,
         annotation: type,
-        context: FindElementsMixin,
+        context: _SupportsQuery,
         timeout: int,
     ) -> Union[str, int, float, bool, list[str], object]:
         """Extract a single field value from the DOM.
@@ -188,7 +202,7 @@ class ExtractionEngine:
         self,
         metadata: ExtractionMetadata,
         annotation: type,
-        context: FindElementsMixin,
+        context: _SupportsQuery,
         timeout: int,
     ) -> list[Union[str, int, float, bool, object]]:
         """Extract a list of values from multiple matching elements."""
@@ -200,7 +214,9 @@ class ExtractionEngine:
         if found is None or not found:
             return []
 
-        elements: list[WebElement] = found if isinstance(found, list) else [found]
+        elements: list[WebElementProtocol] = (
+            list(found) if isinstance(found, Sequence) else [found]
+        )
         inner_type = _get_inner_type(annotation)
 
         if _is_extraction_model(inner_type):
@@ -216,7 +232,7 @@ class ExtractionEngine:
         self,
         metadata: ExtractionMetadata,
         model: type[T],
-        context: FindElementsMixin,
+        context: _SupportsQuery,
         timeout: int,
     ) -> T:
         """Extract a nested ExtractionModel by scoping to the selector element."""
@@ -225,7 +241,7 @@ class ExtractionEngine:
             raise FieldExtractionFailed('Nested model field has no selector')
 
         result = await context.query(selector, timeout=timeout, raise_exc=True)
-        if not isinstance(result, WebElement):
+        if not isinstance(result, WebElementProtocol):
             raise ValueError(f'Expected a single element for "{selector}", got {type(result)}')
         values = await self._extract_fields(model, result, timeout)
         return _build_instance(model, values)
@@ -233,7 +249,7 @@ class ExtractionEngine:
 
 async def _extract_scalar_field(
     metadata: ExtractionMetadata,
-    context: FindElementsMixin,
+    context: _SupportsQuery,
     timeout: int,
 ) -> Union[str, int, float, bool, object]:
     """Extract a single scalar value from the DOM."""
@@ -242,14 +258,14 @@ async def _extract_scalar_field(
         raise FieldExtractionFailed('Scalar field has no selector')
 
     result = await context.query(selector, timeout=timeout, raise_exc=True)
-    if not isinstance(result, WebElement):
+    if not isinstance(result, WebElementProtocol):
         raise ValueError(f'Expected a single element for "{selector}", got {type(result)}')
     raw = await _extract_value(result, metadata)
     return _apply_transform(raw, metadata)
 
 
 async def _extract_value(
-    element: WebElement,
+    element: WebElementProtocol,
     metadata: ExtractionMetadata,
 ) -> str:
     """Read raw string value from a WebElement.

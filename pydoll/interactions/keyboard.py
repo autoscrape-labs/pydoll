@@ -5,9 +5,10 @@ import logging
 import random
 import warnings
 from dataclasses import dataclass
-from typing import Any, Optional, Protocol, cast
+from typing import TYPE_CHECKING, Any, Optional, Protocol, cast
 
 from pydoll.commands import InputCommands
+from pydoll.commands.bidi.input_commands import InputCommands as BiDiInputCommands
 from pydoll.constants import (
     CHAR_TO_KEY_INFO,
     DEFAULT_TYPO_PROBABILITY,
@@ -15,7 +16,10 @@ from pydoll.constants import (
     Key,
     TypoType,
 )
-from pydoll.protocol.input.types import KeyEventType, KeyModifier
+from pydoll.protocol.cdp.input.types import KeyEventType, KeyModifier
+
+if TYPE_CHECKING:
+    from pydoll.protocol.bidi.input.types import KeyAction, KeySourceActions
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +28,12 @@ class CommandExecutor(Protocol):
     """Protocol for objects that can execute CDP commands."""
 
     async def _execute_command(self, command: Any) -> Any: ...
+
+
+class BiDiCommandExecutor(CommandExecutor, Protocol):
+    """Executor that also exposes a BiDi browsing-context id (Tab or element)."""
+
+    _context_id: str
 
 
 @dataclass(frozen=True)
@@ -487,6 +497,180 @@ class Keyboard:
 
         value = sum(modifier_map.get(mod, 0) for mod in modifiers)
         return cast(KeyModifier, value) if value > 0 else None
+
+
+_WEBDRIVER_KEY_VALUE: dict[str, str] = {
+    'Backspace': '',
+    'Tab': '',
+    'Enter': '',
+    'Shift': '',
+    'Control': '',
+    'Alt': '',
+    'Pause': '',
+    'Escape': '',
+    'Space': ' ',
+    'PageUp': '',
+    'PageDown': '',
+    'End': '',
+    'Home': '',
+    'ArrowLeft': '',
+    'ArrowUp': '',
+    'ArrowRight': '',
+    'ArrowDown': '',
+    'Insert': '',
+    'Delete': '',
+    'Semicolon': ';',
+    'EqualSign': '=',
+    'Comma': ',',
+    'Minus': '-',
+    'Period': '.',
+    'Slash': '/',
+    'GraveAccent': '`',
+    'BracketLeft': '[',
+    'Backslash': '\\',
+    'BracketRight': ']',
+    'Quote': "'",
+    'Meta': '',
+    'MetaRight': '',
+    'Numpad0': '',
+    'Numpad1': '',
+    'Numpad2': '',
+    'Numpad3': '',
+    'Numpad4': '',
+    'Numpad5': '',
+    'Numpad6': '',
+    'Numpad7': '',
+    'Numpad8': '',
+    'Numpad9': '',
+    'NumpadMultiply': '',
+    'NumpadAdd': '',
+    'NumpadSubtract': '',
+    'NumpadDecimal': '',
+    'NumpadDivide': '',
+    'F1': '',
+    'F2': '',
+    'F3': '',
+    'F4': '',
+    'F5': '',
+    'F6': '',
+    'F7': '',
+    'F8': '',
+    'F9': '',
+    'F10': '',
+    'F11': '',
+    'F12': '',
+}
+
+
+def _bidi_key_value(key: Key) -> str:
+    """Resolve a Key to the single Unicode value WebDriver BiDi expects.
+
+    Special keys map to WebDriver Private-Use-Area code points; letters map to
+    their lowercase character; digits and symbol keys map to the literal char.
+    """
+    name = key[0]
+    if name in _WEBDRIVER_KEY_VALUE:
+        return _WEBDRIVER_KEY_VALUE[name]
+    if len(name) == 1 and name.isalpha():
+        return name.lower()
+    if len(name) == 1:
+        return name
+    raise ValueError(f'Key {name!r} has no WebDriver BiDi key value mapping')
+
+
+def _bidi_modifier_values(modifiers: Optional[KeyModifier]) -> list[str]:
+    """Decode a CDP modifier bitmask into the WebDriver modifier key values."""
+    if not modifiers:
+        return []
+    bits = int(modifiers)
+    values: list[str] = []
+    if bits & KeyModifier.SHIFT:
+        values.append(_WEBDRIVER_KEY_VALUE['Shift'])
+    if bits & KeyModifier.CTRL:
+        values.append(_WEBDRIVER_KEY_VALUE['Control'])
+    if bits & KeyModifier.ALT:
+        values.append(_WEBDRIVER_KEY_VALUE['Alt'])
+    if bits & KeyModifier.META:
+        values.append(_WEBDRIVER_KEY_VALUE['Meta'])
+    return values
+
+
+class BiDiKeyboard(Keyboard):
+    """Keyboard controller for Firefox via WebDriver BiDi input.performActions.
+
+    Reuses every humanized-typing primitive from Keyboard (typo simulation,
+    variable delays, timing) unchanged and only swaps the dispatch backend, so
+    the resulting key events report isTrusted=true. BiDi has no modifier
+    bitmask, so modifiers are pressed and released as real keys around the
+    target key.
+    """
+
+    if TYPE_CHECKING:
+        _executor: BiDiCommandExecutor
+
+    async def _dispatch_keys(self, actions: list[KeyAction]) -> None:
+        """Send a key-source action list through input.performActions."""
+        source: KeySourceActions = {'type': 'key', 'id': 'keyboard', 'actions': actions}
+        await self._executor._execute_command(
+            BiDiInputCommands.perform_actions(
+                context=self._executor._context_id,
+                actions=[source],
+            )
+        )
+
+    async def press(
+        self,
+        key: Key,
+        modifiers: Optional[KeyModifier] = None,
+        interval: float = 0.1,
+    ) -> None:
+        """Press and release a key, holding any modifiers around it."""
+        mods = _bidi_modifier_values(modifiers)
+        value = _bidi_key_value(key)
+        actions: list[KeyAction] = [{'type': 'keyDown', 'value': m} for m in mods]
+        actions.append({'type': 'keyDown', 'value': value})
+        actions.append({'type': 'pause', 'duration': int(interval * 1000)})
+        actions.append({'type': 'keyUp', 'value': value})
+        actions.extend({'type': 'keyUp', 'value': m} for m in reversed(mods))
+        await self._dispatch_keys(actions)
+
+    async def down(self, key: Key, modifiers: Optional[KeyModifier] = None) -> None:
+        """Press a key (and any modifiers) down without releasing."""
+        actions: list[KeyAction] = [
+            {'type': 'keyDown', 'value': m} for m in _bidi_modifier_values(modifiers)
+        ]
+        actions.append({'type': 'keyDown', 'value': _bidi_key_value(key)})
+        await self._dispatch_keys(actions)
+
+    async def up(self, key: Key) -> None:
+        """Release a previously pressed key."""
+        await self._dispatch_keys([{'type': 'keyUp', 'value': _bidi_key_value(key)}])
+
+    async def hotkey(self, key1: Key, key2: Key, key3: Optional[Key] = None) -> None:
+        """Execute a key combination, pressing modifiers as real keys."""
+        keys = [key1, key2]
+        if key3 is not None:
+            keys.append(key3)
+        modifiers, non_modifiers = self._split_modifiers_and_keys(keys)
+        actions: list[KeyAction] = [
+            {'type': 'keyDown', 'value': _bidi_key_value(k)} for k in modifiers
+        ]
+        actions.extend({'type': 'keyDown', 'value': _bidi_key_value(k)} for k in non_modifiers)
+        actions.extend(
+            {'type': 'keyUp', 'value': _bidi_key_value(k)} for k in reversed(non_modifiers)
+        )
+        actions.extend(
+            {'type': 'keyUp', 'value': _bidi_key_value(k)} for k in reversed(modifiers)
+        )
+        await self._dispatch_keys(actions)
+
+    async def _type_char(self, char: str) -> None:
+        """Type a single character via a trusted keyDown/keyUp pair."""
+        await self._ensure_focus()
+        await self._dispatch_keys([
+            {'type': 'keyDown', 'value': char},
+            {'type': 'keyUp', 'value': char},
+        ])
 
 
 KeyboardAPI = Keyboard
