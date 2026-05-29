@@ -103,6 +103,12 @@ class ProtocolException(PydollException):
     message = 'A protocol error occurred'
 
 
+class BiDiCommandError(ProtocolException):
+    """Raised when a WebDriver BiDi command returns an error response."""
+
+    message = 'BiDi command returned an error'
+
+
 class TopLevelTargetRequired(ProtocolException):
     """Raised when a command can only be executed on top-level targets."""
 
