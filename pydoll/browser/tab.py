@@ -2007,6 +2007,13 @@ class Tab(FindElementsMixin):
         Traverses shadow roots to locate the Cloudflare iframe, navigates into
         it, and clicks the actual checkbox element (``span.cb-i``).
         """
+        response: EvaluateResponse = await self._execute_command(
+            RuntimeCommands.evaluate('document.documentElement.outerHTML')
+        )
+        htmlSrc = response['result']['result']['value']
+        if "cloudflare" not in htmlSrc.lower():
+            return
+
         try:
             timeout_int = int(time_to_wait_captcha)
             shadow_root = await self._find_cloudflare_shadow_root(
@@ -2017,6 +2024,7 @@ class Tab(FindElementsMixin):
             inner_shadow = await body.get_shadow_root(timeout=time_to_wait_captcha)
             checkbox = await inner_shadow.query(_CLOUDFLARE_CHECKBOX_SELECTOR, timeout=timeout_int)
             await checkbox.click()
+            await asyncio.sleep(5)
         except Exception as exc:
             logger.error(f'Error in cloudflare bypass: {exc}')
 
