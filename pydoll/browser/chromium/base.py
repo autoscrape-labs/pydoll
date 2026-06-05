@@ -224,10 +224,10 @@ class Browser(ABC):  # noqa: PLR0904
         """
         if not await self._is_browser_running():
             logger.error('Stop called but browser is not running')
-            raise BrowserNotRunning()
-
-        logger.info('Stopping browser process')
-        await self._execute_command(BrowserCommands.close())
+            #raise BrowserNotRunning()
+        else:
+            logger.info('Stopping browser process')
+            await self._execute_command(BrowserCommands.close())
         self._browser_process_manager.stop_process()
         await self._connection_handler.close()
         await asyncio.sleep(0.5 if os.name == 'nt' else 0.1)
