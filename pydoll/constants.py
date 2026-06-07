@@ -253,8 +253,10 @@ class Scripts:
             // Extract cookies from set-cookie header
             const cookies = document.cookie;
             const responseClone = response.clone();
-            const content = await responseClone.arrayBuffer();
-            let text = await response.text();
+            const [content, text] = await Promise.all([
+                responseClone.arrayBuffer(),
+                response.text()
+            ]);
             const possiblePrefixes = [")]}}'\\n", ")]}}'\\n", ")]}}\\n"];
             for (let prefix of possiblePrefixes) {{
                 if (text.startsWith(prefix)) {{
