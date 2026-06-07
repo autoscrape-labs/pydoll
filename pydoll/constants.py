@@ -270,11 +270,11 @@ class Scripts:
                     jsonData = JSON.parse(text);
                     text = JSON.stringify(jsonData);
                 }} catch (e) {{
+                    // Return raw bytes if parsing fails
                     jsonData = null;
-                    // Keep original text if parsing fails
                 }}
             }} else {{
-                // For non-JSON, keep original text handling
+                // For non-JSON, return raw bytes
                 jsonData = null;
             }}
 
