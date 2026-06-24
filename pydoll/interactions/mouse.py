@@ -74,24 +74,19 @@ class Mouse:
     tremor, and overshoot correction.
     """
 
-    _DEBUG_INIT_JS = """
-    (() => {
-        if (document.getElementById('__pydoll_mouse_debug')) return;
-        const canvas = document.createElement('canvas');
-        canvas.id = '__pydoll_mouse_debug';
-        canvas.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;'
-            + 'pointer-events:none;z-index:2147483647;';
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        document.body.appendChild(canvas);
-        window.__pydoll_debug_ctx = canvas.getContext('2d');
-    })();
-    """
-
     _DEBUG_DOT_JS = """
     (() => {{
-        const ctx = window.__pydoll_debug_ctx;
-        if (!ctx) return;
+        let canvas = document.getElementById('__pydoll_mouse_debug');
+        if (!canvas) {{
+            canvas = document.createElement('canvas');
+            canvas.id = '__pydoll_mouse_debug';
+            canvas.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;'
+                + 'pointer-events:none;z-index:2147483647;';
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            document.body.appendChild(canvas);
+        }}
+        const ctx = canvas.getContext('2d');
         ctx.beginPath();
         ctx.arc({x}, {y}, {radius}, 0, 2 * Math.PI);
         ctx.fillStyle = '{color}';
@@ -117,7 +112,6 @@ class Mouse:
         self._timing = timing or MouseTimingConfig()
         self._position: tuple[float, float] = (0.0, 0.0)
         self._debug = debug
-        self._debug_initialized = False
 
     @property
     def timing(self) -> MouseTimingConfig:
@@ -142,7 +136,6 @@ class Mouse:
     def debug(self, value: bool) -> None:
         """Set whether to draw debug dots on the page."""
         self._debug = value
-        self._debug_initialized = False
 
     async def move(
         self,
@@ -475,11 +468,12 @@ class Mouse:
             )
 
     async def _debug_draw_dot(self, x: float, y: float, radius: int, color: str) -> None:
-        """Draw a debug dot on the page overlay canvas."""
-        if not self._debug_initialized:
-            await self._tab._execute_command(RuntimeCommands.evaluate(self._DEBUG_INIT_JS))
-            self._debug_initialized = True
+        """Draw a debug dot, recreating the overlay canvas if the page lacks one.
 
+        The canvas lives in the page DOM, so it is destroyed on every navigation.
+        Each dot re-creates it when missing, keeping the overlay visible across
+        page loads instead of vanishing after the first navigation.
+        """
         script = self._DEBUG_DOT_JS.format(
             x=int(round(x)), y=int(round(y)), radius=radius, color=color
         )

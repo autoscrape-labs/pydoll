@@ -150,6 +150,7 @@ class Tab(FindElementsMixin):
         target_id: Optional[str] = None,
         browser_context_id: Optional[str] = None,
         ws_address: Optional[str] = None,
+        connection_handler: Optional[ConnectionHandler] = None,
     ):
         """
         Initialize tab controller for existing browser tab.
@@ -160,6 +161,8 @@ class Tab(FindElementsMixin):
             target_id: CDP target identifier for this tab.
             browser_context_id: Optional browser context ID.
             ws_address: Optional WebSocket address for this tab.
+            connection_handler: Pre-built connection handler; created from
+                connection details when omitted (mainly for testing).
         """
         if not any([connection_port, target_id, ws_address]):
             raise InvalidTabInitialization()
@@ -169,7 +172,7 @@ class Tab(FindElementsMixin):
         self._target_id = target_id
         self._ws_address = ws_address
         self._browser_context_id = browser_context_id
-        self._connection_handler = self._get_connection_handler()
+        self._connection_handler = connection_handler or self._get_connection_handler()
         self._page_events_enabled = False
         self._network_events_enabled = False
         self._fetch_events_enabled = False

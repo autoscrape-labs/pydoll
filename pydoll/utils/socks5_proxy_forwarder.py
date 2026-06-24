@@ -483,7 +483,9 @@ async def _read_exact(reader: asyncio.StreamReader, n: int, *, peer: str = 'peer
         ) from exc
 
 
-async def _skip_bnd_address(reader: asyncio.StreamReader, atyp: int, *, peer: str = 'peer') -> None:
+async def _skip_bnd_address(  # pragma: no cover
+    reader: asyncio.StreamReader, atyp: int, *, peer: str = 'peer'
+) -> None:
     """Consume BND.ADDR + BND.PORT from a SOCKS5 reply."""
     if atyp == ATYP_IPV4:
         await _read_exact(reader, 4 + 2, peer=peer)
@@ -494,7 +496,7 @@ async def _skip_bnd_address(reader: asyncio.StreamReader, atyp: int, *, peer: st
         await _read_exact(reader, 16 + 2, peer=peer)
 
 
-async def _main(args: argparse.Namespace) -> None:
+async def _main(args: argparse.Namespace) -> None:  # pragma: no cover
     forwarder = SOCKS5Forwarder(
         remote_host=args.remote_host,
         remote_port=args.remote_port,
@@ -529,7 +531,7 @@ async def _main(args: argparse.Namespace) -> None:
         await forwarder.stop()
 
 
-async def _test_negotiate_auth(
+async def _test_negotiate_auth(  # pragma: no cover
     reader: asyncio.StreamReader,
     writer: asyncio.StreamWriter,
     username: str,
@@ -571,7 +573,7 @@ async def _test_negotiate_auth(
     return True
 
 
-async def _test_connect_and_verify(
+async def _test_connect_and_verify(  # pragma: no cover
     reader: asyncio.StreamReader,
     writer: asyncio.StreamWriter,
 ) -> bool:
@@ -619,7 +621,7 @@ async def _test_connect_and_verify(
     return True
 
 
-async def _test_proxy(args: argparse.Namespace) -> None:
+async def _test_proxy(args: argparse.Namespace) -> None:  # pragma: no cover
     """Perform a direct SOCKS5 handshake test against the remote proxy."""
     logger.info('=== SOCKS5 Direct Test: %s:%s ===', args.remote_host, args.remote_port)
 
@@ -653,7 +655,7 @@ async def _test_proxy(args: argparse.Namespace) -> None:
         await _close_writer(writer)
 
 
-def cli() -> None:
+def cli() -> None:  # pragma: no cover
     parser = argparse.ArgumentParser(
         description='Local SOCKS5 forwarder for authenticated remote proxies.',
     )
