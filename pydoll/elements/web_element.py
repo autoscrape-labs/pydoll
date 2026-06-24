@@ -201,7 +201,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         Returns coordinates in CSS pixels relative to document origin.
         """
         command = DomCommands.get_box_model(object_id=self._object_id)
-        response: GetBoxModelResponse = await self._execute_command(cast(Command, command))
+        response: GetBoxModelResponse = await self._execute_command(command)
         content = response['result']['model']['content']
         logger.debug(f'Bounds retrieved (points={len(content)})')
         return content
@@ -218,9 +218,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
             return response.get('result', {}).get('result', {}).get('value', '')
 
         command = DomCommands.get_outer_html(object_id=self._object_id)
-        response_get_outer_html: GetOuterHTMLResponse = await self._execute_command(
-            cast(Command, command)
-        )
+        response_get_outer_html: GetOuterHTMLResponse = await self._execute_command(command)
         return response_get_outer_html['result']['outerHTML']
 
     @property
@@ -486,7 +484,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         """Scroll element into visible viewport."""
         command = DomCommands.scroll_into_view_if_needed(object_id=self._object_id)
         logger.info(f'Scrolling element into view: object_id={self._object_id}')
-        await self._execute_command(cast(Command, command))
+        await self._execute_command(command)
 
     async def wait_until(
         self,
@@ -934,7 +932,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
             unique_context_id=unique_context_id,
             serialization_options=serialization_options,
         )
-        return await self._execute_command(cast(Command, command))
+        return await self._execute_command(command)
 
     def __repr__(self):
         """String representation showing attributes and object ID."""
