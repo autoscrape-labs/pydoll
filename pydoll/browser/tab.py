@@ -131,7 +131,7 @@ T = TypeVar('T', bound='ExtractionModel')
 
 _CLOUDFLARE_CHALLENGE_DOMAIN = 'challenges.cloudflare.com'
 _CLOUDFLARE_IFRAME_SELECTOR = f'iframe[src*="{_CLOUDFLARE_CHALLENGE_DOMAIN}"]'
-_CLOUDFLARE_CHECKBOX_SELECTOR = 'span.cb-i'
+_CLOUDFLARE_CHECKBOX_SELECTOR = 'input'
 
 
 class Tab(FindElementsMixin):
