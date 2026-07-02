@@ -1842,7 +1842,7 @@ class Tab(FindElementsMixin):
             'Using port/target for connection handler: '
             f'port={self._connection_port}, target_id={self._target_id}'
         )
-        return ConnectionHandler(self._connection_port, self._target_id)
+        return ConnectionHandler(connection_port=self._connection_port, page_id=self._target_id)
 
     @staticmethod
     def _get_evaluate_command(
