@@ -10,12 +10,11 @@ async def example_with_context_manager():
     This waits for the captcha to be processed before continuing.
     """
     browser = Chrome()
-    await browser.start()
-    page = await browser.get_page()
+    page = await browser.start()
 
     print('Using context manager approach...')
     async with page.expect_and_bypass_cloudflare_captcha():
-        await page.go_to('https://www.planetminecraft.com/account/sign_in/')
+        await page.go_to('https://peet.ws/turnstile-test/managed.html')
         print('Page loaded, waiting for captcha to be handled...')
 
     print('Captcha handling completed, now we can continue...')
