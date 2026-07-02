@@ -114,7 +114,7 @@ def decode_base64_to_bytes(image: str) -> bytes:
     return base64.b64decode(image.encode('utf-8'))
 
 
-async def get_browser_ws_address(port: int) -> str:
+async def get_browser_ws_address(host: str, port: int) -> str:
     """
     Fetches the WebSocket address for the browser instance.
 
@@ -128,7 +128,7 @@ async def get_browser_ws_address(port: int) -> str:
     """
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.get(f'http://localhost:{port}/json/version') as response:
+            async with session.get(f'http://{host}:{port}/json/version') as response:
                 response.raise_for_status()
                 data = await response.json()
                 return data['webSocketDebuggerUrl']

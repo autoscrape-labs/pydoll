@@ -5,6 +5,7 @@ import json
 import logging
 from contextlib import suppress
 from typing import TYPE_CHECKING, cast
+from urllib.parse import urlparse
 
 import websockets
 from websockets.asyncio.client import ClientConnection
@@ -38,9 +39,10 @@ class ConnectionHandler:
 
     def __init__(
         self,
+        connection_host: Optional[str] = "localhost",
         connection_port: Optional[int] = None,
         page_id: Optional[str] = None,
-        ws_address_resolver: Callable[[int], Coroutine[Any, Any, str]] = get_browser_ws_address,
+        ws_address_resolver: Callable[[str, int], Coroutine[Any, Any, str]] = get_browser_ws_address,
         ws_connector: type[Connect] = websockets.connect,
         ws_address: Optional[str] = None,
     ):
@@ -54,6 +56,7 @@ class ConnectionHandler:
             ws_connector: WebSocket connection factory (mainly for testing).
             ws_address: WebSocket address. It has priority over connection_port and page_id.
         """
+        self._connection_host = connection_host
         self._connection_port = connection_port
         self._page_id = page_id
         self._ws_address_resolver = ws_address_resolver
@@ -69,6 +72,11 @@ class ConnectionHandler:
             f'Init params: port={self._connection_port}, page_id={self._page_id}, '
             f'ws_address_set={bool(self._ws_address)}'
         )
+
+        if self._ws_address:
+            parsed_url = urlparse(self._ws_address)
+            self._connection_host = parsed_url.hostname
+            self._connection_port = parsed_url.port
 
     @property
     def network_logs(self):
@@ -243,10 +251,10 @@ class ConnectionHandler:
             logger.debug('Using provided WebSocket address')
             return self._ws_address
         if not self._page_id:
-            resolved = await self._ws_address_resolver(self._connection_port)
+            resolved = await self._ws_address_resolver(self._connection_host, self._connection_port)
             logger.debug(f'Resolved browser-level WebSocket address: {resolved}')
             return resolved
-        address = f'ws://localhost:{self._connection_port}/devtools/page/{self._page_id}'
+        address = f'ws://{self._connection_host}:{self._connection_port}/devtools/page/{self._page_id}'
         logger.debug(f'Resolved page-level WebSocket address: {address}')
         return address
 

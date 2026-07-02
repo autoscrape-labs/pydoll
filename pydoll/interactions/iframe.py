@@ -272,7 +272,8 @@ class IFrameContextResolver:
         parent context.
         """
         browser_handler = ConnectionHandler(
-            connection_port=self._element._connection_handler._connection_port
+            connection_host=self._element._connection_handler._connection_host,
+            connection_port=self._element._connection_handler._connection_port,
         )
         targets_response: GetTargetsResponse = await browser_handler.execute_command(
             TargetCommands.get_targets()

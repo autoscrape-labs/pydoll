@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+from urllib.parse import urlparse
 import json
 import logging
 import os
@@ -116,7 +117,7 @@ class Browser(ABC):  # noqa: PLR0904
         self._browser_process_manager = browser_process_manager or BrowserProcessManager()
         self._temp_directory_manager = temp_directory_manager or TempDirectoryManager()
         self._ws_address: Optional[str] = None
-        self._connection_handler = connection_handler or ConnectionHandler(self._connection_port)
+        self._connection_handler = connection_handler or ConnectionHandler(connection_port=self._connection_port)
         self._backup_preferences_dir = ''
         self._tabs_opened: dict[str, Tab] = {}
         self._context_proxy_auth: dict[str, tuple[str, str]] = {}
@@ -1060,7 +1061,12 @@ class Browser(ABC):  # noqa: PLR0904
         """Setup WebSocket address for browser."""
         self._validate_ws_address(ws_address)
         self._ws_address = ws_address
+
+        parsed_url = urlparse(ws_address)
         self._connection_handler._ws_address = self._ws_address
+        self._connection_handler._connection_host = parsed_url.hostname
+        self._connection_handler._connection_port = parsed_url.port
+
         await self._connection_handler._ensure_active_connection()
         logger.info('WebSocket address set for browser-level connection')
 
