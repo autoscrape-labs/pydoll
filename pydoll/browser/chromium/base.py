@@ -223,17 +223,18 @@ class Browser(ABC):  # noqa: PLR0904
         Raises:
             BrowserNotRunning: If the browser is not currently running.
         """
-        if not await self._is_browser_running(timeout=3):
-            logger.error('Stop called but browser is not running')
-            #raise BrowserNotRunning()
-        else:
-            logger.info('Stopping browser process')
-            await self._execute_command(BrowserCommands.close())
-        self._browser_process_manager.stop_process()
-        await self._connection_handler.close()
-        await asyncio.sleep(0.5 if os.name == 'nt' else 0.1)
-        self._temp_directory_manager.cleanup()
-        logger.info('Browser process stopped and resources cleaned up')
+        try:
+            if not await self._is_browser_running(timeout=3):
+                raise BrowserNotRunning()
+            else:
+                logger.info('Stopping browser process')
+                await self._execute_command(BrowserCommands.close())
+        finally:
+            self._browser_process_manager.stop_process()
+            await self._connection_handler.close()
+            await asyncio.sleep(0.5 if os.name == 'nt' else 0.1)
+            self._temp_directory_manager.cleanup()
+            logger.info('Browser process stopped and resources cleaned up')
 
     async def close(self):
         """
