@@ -79,7 +79,7 @@ class TestUtils:
                 f'http://localhost:{port}/json/version',
                 payload={'webSocketDebuggerUrl': expected_url},
             )
-            result = await get_browser_ws_address(port)
+            result = await get_browser_ws_address("localhost", port)
             assert result == expected_url
 
     @pytest.mark.asyncio
@@ -97,7 +97,7 @@ class TestUtils:
                     f'http://localhost:{port}/json/version',
                     exception=aiohttp.ClientError,
                 )
-                await get_browser_ws_address(port)
+                await get_browser_ws_address("localhost", port)
 
     @pytest.mark.asyncio
     async def test_missing_websocket_url(self):
@@ -114,7 +114,7 @@ class TestUtils:
                 payload={'someOtherKey': 'value'},
             )
             with pytest.raises(exceptions.InvalidResponse):
-                await get_browser_ws_address(port)
+                await get_browser_ws_address("localhost", port)
 
     @pytest.mark.asyncio
     async def test_http_error_status(self):
@@ -131,7 +131,7 @@ class TestUtils:
                     f'http://localhost:{port}/json/version',
                     status=404
                 )
-                await get_browser_ws_address(port)
+                await get_browser_ws_address("localhost", port)
 
     @pytest.mark.asyncio
     async def test_custom_port(self):
@@ -147,7 +147,7 @@ class TestUtils:
                 f'http://localhost:{port}/json/version',
                 payload={'webSocketDebuggerUrl': expected_url},
             )
-            result = await get_browser_ws_address(port)
+            result = await get_browser_ws_address("localhost", port)
             assert result == expected_url
 
     def test_validate_browser_paths_success(self):
