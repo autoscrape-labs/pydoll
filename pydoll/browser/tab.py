@@ -2007,14 +2007,14 @@ class Tab(FindElementsMixin):
         Traverses shadow roots to locate the Cloudflare iframe, navigates into
         it, and clicks the actual checkbox element (``span.cb-i``).
         """
-        response: EvaluateResponse = await self._execute_command(
-            RuntimeCommands.evaluate('document.documentElement.outerHTML')
-        )
-        htmlSrc = response['result']['result']['value']
-        if "cloudflare" not in htmlSrc.lower():
-            return
-
         try:
+            response: EvaluateResponse = await self._execute_command(
+                RuntimeCommands.evaluate('document.documentElement.outerHTML')
+            )
+            htmlSrc = response['result']['result']['value']
+            if "cloudflare" not in htmlSrc.lower():
+                return
+
             timeout_int = int(time_to_wait_captcha)
             shadow_root = await self._find_cloudflare_shadow_root(
                 timeout=time_to_wait_captcha,
