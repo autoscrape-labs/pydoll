@@ -225,6 +225,7 @@ class Browser(ABC):  # noqa: PLR0904
         """
         try:
             if not await self._is_browser_running(timeout=3):
+                logger.error('Stop called but browser is not running')
                 raise BrowserNotRunning()
             else:
                 logger.info('Stopping browser process')
