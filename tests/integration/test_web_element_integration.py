@@ -79,12 +79,6 @@ async def test_insert_text_and_clear_update_value(element_tab):
     assert await _live(field, 'this.value') == ''
 
 
-@pytest.mark.xfail(
-    reason='insert_text caches the inserted text as the whole value; on a non-empty '
-    'field the real DOM value is the existing text plus the insertion, so the '
-    'cached element.value diverges from the DOM',
-    strict=False,
-)
 @pytest.mark.asyncio
 async def test_insert_text_cached_value_matches_dom_on_nonempty_field(element_tab):
     field = await element_tab.find(id='text-input')

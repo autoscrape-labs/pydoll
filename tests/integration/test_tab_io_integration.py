@@ -181,12 +181,6 @@ class TestSaveBundle:
         with pytest.raises(InvalidFileExtension):
             await tab.save_bundle(str(tmp_path / 'bundle.tar'))
 
-    @pytest.mark.xfail(
-        reason='BUG: rewrite_html_urls does a literal string replace of absolute resource '
-        'URLs, so relative/root-relative HTML asset refs are bundled but never rewritten, '
-        'leaving index.html pointing at the original (broken offline) URLs.',
-        strict=True,
-    )
     @pytest.mark.asyncio
     async def test_relative_html_urls_are_rewritten(self, relative_served_tab, tmp_path):
         tab, _ = relative_served_tab
