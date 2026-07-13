@@ -31,6 +31,12 @@ class IFrameContext:
     session_handler: Optional[ConnectionHandler] = None
     session_id: Optional[str] = None
 
+    async def close(self) -> None:
+        """Close the session handler if one was created for this context."""
+        if self.session_handler is not None:
+            await self.session_handler.close()
+            self.session_handler = None
+
 
 class IFrameContextResolver:
     """Resolves iframe context for WebElement."""
@@ -251,7 +257,7 @@ class IFrameContextResolver:
             current_document_url or resolved_url,
         )
 
-    async def _resolve_oopif_by_parent(
+    async def _resolve_oopif_by_parent(  # noqa: PLR0912
         self,
         content_frame_id: str,
         backend_node_id: Optional[int],
@@ -274,51 +280,42 @@ class IFrameContextResolver:
         browser_handler = ConnectionHandler(
             connection_port=self._element._connection_handler._connection_port
         )
-        targets_response: GetTargetsResponse = await browser_handler.execute_command(
-            TargetCommands.get_targets()
-        )
-        target_infos = targets_response.get('result', {}).get('targetInfos', [])
-
-        # The handler/session that can resolve DOM.getFrameOwner for the
-        # element's context.  When the <iframe> lives inside a nested OOPIF
-        # the Tab-level handler has no visibility; we must route through the
-        # session that originally found the element.
-        owner_handler = base_handler or self._element._connection_handler
-        owner_session_id = base_session_id
-
-        direct_children = [
-            target_info
-            for target_info in target_infos
-            if target_info.get('type') in {'iframe', 'page'}
-            and target_info.get('parentFrameId') == content_frame_id
-        ]
-
-        is_single_child = len(direct_children) == 1
-        for child_target in direct_children:
-            attach_response: AttachToTargetResponse = await browser_handler.execute_command(
-                TargetCommands.attach_to_target(target_id=child_target['targetId'], flatten=True)
+        try:
+            targets_response: GetTargetsResponse = await browser_handler.execute_command(
+                TargetCommands.get_targets()
             )
-            attached_session_id = attach_response.get('result', {}).get('sessionId')
-            if not attached_session_id:
-                continue
+            target_infos = targets_response.get('result', {}).get('targetInfos', [])
 
-            frame_tree = await self._get_frame_tree_for(browser_handler, attached_session_id)
-            root_frame = (frame_tree or {}).get('frame', {})
-            root_frame_id = root_frame.get('id', '')
+            # The handler/session that can resolve DOM.getFrameOwner for the
+            # element's context.  When the <iframe> lives inside a nested OOPIF
+            # the Tab-level handler has no visibility; we must route through the
+            # session that originally found the element.
+            owner_handler = base_handler or self._element._connection_handler
+            owner_session_id = base_session_id
 
-            if is_single_child and root_frame_id and backend_node_id is None:
-                return (
-                    browser_handler,
-                    attached_session_id,
-                    root_frame_id,
-                    root_frame.get('url'),
+            direct_children = [
+                target_info
+                for target_info in target_infos
+                if target_info.get('type') in {'iframe', 'page'}
+                and target_info.get('parentFrameId') == content_frame_id
+            ]
+
+            is_single_child = len(direct_children) == 1
+            for child_target in direct_children:
+                attach_response: AttachToTargetResponse = await browser_handler.execute_command(
+                    TargetCommands.attach_to_target(
+                        target_id=child_target['targetId'], flatten=True
+                    )
                 )
+                attached_session_id = attach_response.get('result', {}).get('sessionId')
+                if not attached_session_id:
+                    continue
 
-            if root_frame_id and backend_node_id is not None:
-                owner_backend_id = await self._owner_backend_for(
-                    owner_handler, owner_session_id, root_frame_id
-                )
-                if owner_backend_id == backend_node_id:
+                frame_tree = await self._get_frame_tree_for(browser_handler, attached_session_id)
+                root_frame = (frame_tree or {}).get('frame', {})
+                root_frame_id = root_frame.get('id', '')
+
+                if is_single_child and root_frame_id and backend_node_id is None:
                     return (
                         browser_handler,
                         attached_session_id,
@@ -326,39 +323,39 @@ class IFrameContextResolver:
                         root_frame.get('url'),
                     )
 
-        for target_info in target_infos:
-            if target_info.get('type') not in {'iframe', 'page'}:
-                continue
-            attach_response = await browser_handler.execute_command(
-                TargetCommands.attach_to_target(
-                    target_id=target_info.get('targetId', ''), flatten=True
-                )
-            )
-            attached_session_id = attach_response.get('result', {}).get('sessionId')
-            if not attached_session_id:
-                continue
+                if root_frame_id and backend_node_id is not None:
+                    owner_backend_id = await self._owner_backend_for(
+                        owner_handler, owner_session_id, root_frame_id
+                    )
+                    if owner_backend_id == backend_node_id:
+                        return (
+                            browser_handler,
+                            attached_session_id,
+                            root_frame_id,
+                            root_frame.get('url'),
+                        )
 
-            frame_tree = await self._get_frame_tree_for(browser_handler, attached_session_id)
-            root_frame = (frame_tree or {}).get('frame', {})
-            root_frame_id = root_frame.get('id', '')
-
-            # Direct match: the <iframe> element's frameId (content_frame_id)
-            # equals this target's root frame ID.  This handles nested OOPIFs
-            # where DOM.getFrameOwner cannot be resolved through the main
-            # page handler.
-            if root_frame_id and root_frame_id == content_frame_id:
-                return (
-                    browser_handler,
-                    attached_session_id,
-                    root_frame_id,
-                    root_frame.get('url'),
+            for target_info in target_infos:
+                if target_info.get('type') not in {'iframe', 'page'}:
+                    continue
+                attach_response = await browser_handler.execute_command(
+                    TargetCommands.attach_to_target(
+                        target_id=target_info.get('targetId', ''), flatten=True
+                    )
                 )
+                attached_session_id = attach_response.get('result', {}).get('sessionId')
+                if not attached_session_id:
+                    continue
 
-            if root_frame_id and backend_node_id is not None:
-                owner_backend_id = await self._owner_backend_for(
-                    owner_handler, owner_session_id, root_frame_id
-                )
-                if owner_backend_id == backend_node_id:
+                frame_tree = await self._get_frame_tree_for(browser_handler, attached_session_id)
+                root_frame = (frame_tree or {}).get('frame', {})
+                root_frame_id = root_frame.get('id', '')
+
+                # Direct match: the <iframe> element's frameId (content_frame_id)
+                # equals this target's root frame ID.  This handles nested OOPIFs
+                # where DOM.getFrameOwner cannot be resolved through the main
+                # page handler.
+                if root_frame_id and root_frame_id == content_frame_id:
                     return (
                         browser_handler,
                         attached_session_id,
@@ -366,11 +363,27 @@ class IFrameContextResolver:
                         root_frame.get('url'),
                     )
 
-            child_frame_id = self._find_child_by_parent(frame_tree, content_frame_id)
-            if child_frame_id:
-                return browser_handler, attached_session_id, child_frame_id, None
+                if root_frame_id and backend_node_id is not None:
+                    owner_backend_id = await self._owner_backend_for(
+                        owner_handler, owner_session_id, root_frame_id
+                    )
+                    if owner_backend_id == backend_node_id:
+                        return (
+                            browser_handler,
+                            attached_session_id,
+                            root_frame_id,
+                            root_frame.get('url'),
+                        )
 
-        return None, None, None, None
+                child_frame_id = self._find_child_by_parent(frame_tree, content_frame_id)
+                if child_frame_id:
+                    return browser_handler, attached_session_id, child_frame_id, None
+
+            await browser_handler.close()
+            return None, None, None, None
+        except Exception:
+            await browser_handler.close()
+            raise
 
     @staticmethod
     def _find_child_by_parent(tree: FrameTree, parent_id: str) -> Optional[str]:
