@@ -690,9 +690,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
             # insertText appends at cursor, so the result may differ from
             # the inserted text when the field already had content.
             try:
-                live_result = await self.execute_script(
-                    'return this.value', return_by_value=True
-                )
+                live_result = await self.execute_script('return this.value', return_by_value=True)
                 self._attributes['value'] = (
                     live_result.get('result', {}).get('result', {}).get('value', text)
                 )

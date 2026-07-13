@@ -715,9 +715,7 @@ class Tab(FindElementsMixin):
 
             shadow_roots: list[ShadowRoot] = []
             for target in iframe_targets:
-                roots = await self._collect_shadow_roots_from_oopif_target(
-                    target, browser_handler
-                )
+                roots = await self._collect_shadow_roots_from_oopif_target(target, browser_handler)
                 shadow_roots.extend(roots)
 
             logger.debug(f'Found {len(shadow_roots)} shadow roots in OOPIFs')
