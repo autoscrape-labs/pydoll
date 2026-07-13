@@ -4,6 +4,7 @@ import os
 import re
 from html import unescape
 from html.parser import HTMLParser
+from pathlib import Path
 
 import aiohttp
 
@@ -140,6 +141,20 @@ async def get_browser_ws_address(port: int) -> str:
         raise InvalidResponse(f'Failed to get browser ws address: {e}')
 
 
+def _is_executable(path: str) -> bool:
+    """Check if a path points to an executable file.
+
+    On Windows, uses PATHEXT to validate the file extension.
+    On Unix, uses the execute permission bit.
+    """
+    if not os.path.isfile(path):
+        return False
+    if os.name == 'nt':
+        pathext = {ext.lower() for ext in os.environ.get('PATHEXT', '').split(os.pathsep)}
+        return Path(path).suffix.lower() in pathext
+    return os.access(path, os.X_OK)
+
+
 def validate_browser_paths(paths: list[str]) -> str:
     """
     Validates potential browser executable paths and returns the first valid one.
@@ -159,7 +174,7 @@ def validate_browser_paths(paths: list[str]) -> str:
         InvalidBrowserPath: If the browser executable is not found at the path.
     """
     for path in paths:
-        if os.path.isfile(path) and os.access(path, os.X_OK):
+        if _is_executable(path):
             return path
     raise InvalidBrowserPath(f'No valid browser path found in: {paths}')
 
