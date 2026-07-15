@@ -88,7 +88,7 @@ def retry(
         exponential_backoff (bool): If True, increase the delay exponentially
 
     Usage:
-        @retry_on_exception(
+        @retry(
             max_retries=3,
             exceptions=[ValueError, TypeError],
             delay=1

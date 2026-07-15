@@ -136,6 +136,9 @@ class Browser(ABC):  # noqa: PLR0904
         if self._backup_preferences_dir:
             logger.debug(f'Restoring backup preferences directory: {self._backup_preferences_dir}')
             user_data_dir = self._get_user_data_dir()
+            if user_data_dir is None:
+                logger.warning("Cannot restore preferences: user data dir not found")
+                return
             shutil.copy2(
                 self._backup_preferences_dir,
                 os.path.join(user_data_dir, 'Default', 'Preferences'),
@@ -165,6 +168,10 @@ class Browser(ABC):  # noqa: PLR0904
         await self._setup_ws_address(ws_address)
         tabs = await self.get_opened_tabs()
         logger.info(f'Connected. Tabs available: {len(tabs)}')
+        if not tabs:
+            raise RuntimeError(
+                "Browser connected but no tabs are open"
+            )
         return tabs[0]
 
     async def start(self, headless: bool = False) -> Tab:
