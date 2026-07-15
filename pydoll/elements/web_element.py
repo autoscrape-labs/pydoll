@@ -684,9 +684,10 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         # Keep cached attributes coherent for common cases (e.g., input value)
         # This avoids forcing a DOM round-trip for simple assertions.
         if self._attributes.get('tag_name', '').lower() in {'input', 'textarea'}:
-            # When inserting into an empty field, resulting value equals inserted text.
-            # For complex cases (non-empty with caret), tests usually check non-empty.
-            self._attributes['value'] = text
+            # Invalidate cached value — the DOM now holds `existing + inserted`
+            # which we can't reconstruct from `text` alone. A subsequent .value
+            # read will fetch it fresh from the DOM.
+            self._attributes.pop('value', None)
 
     async def set_input_files(self, files: str | Path | list[str | Path]):
         """
