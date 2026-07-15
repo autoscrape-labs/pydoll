@@ -406,8 +406,19 @@ new Promise((resolve) => {{
 
         // Standard input/textarea
         if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-            const start = el.selectionStart || el.value.length;
-            const end = el.selectionEnd || el.value.length;
+            el.focus();
+            let start = el.selectionStart;
+            let end = el.selectionEnd;
+            const hasSelection = start !== end;
+            // When inserting empty text with no selection, select all first
+            // so the field is cleared (matches user expectation for insertText('')).
+            if (!hasSelection && text === '') {
+                el.select();
+                start = 0;
+                end = el.value.length;
+            }
+            start = start ?? el.value.length;
+            end = end ?? el.value.length;
             const before = el.value.substring(0, start);
             const after = el.value.substring(end);
             el.value = before + text + after;
