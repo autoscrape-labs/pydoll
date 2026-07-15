@@ -242,13 +242,16 @@ class IFrameContextResolver:
             content_frame_id, backend_node_id, base_handler, base_session_id
         )
 
-        if session_handler and session_id and resolved_url:
+        if session_handler and session_id:
             return (
                 session_handler,
                 session_id,
                 resolved_frame_id or current_frame_id,
                 resolved_url or current_document_url,
             )
+
+        if session_handler:
+            await session_handler.close()
 
         return (
             None,

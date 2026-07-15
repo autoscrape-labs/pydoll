@@ -361,11 +361,12 @@ class Browser(ABC):  # noqa: PLR0904
             for target in targets
             if target['type'] == 'page' and 'extension' not in target['url']
         ]
-        all_target_ids = [target['targetId'] for target in valid_tab_targets]
+        all_target_ids = {target['targetId'] for target in valid_tab_targets}
+        # Prune stale entries: close tabs whose IDs no longer appear in targets.
+        for stale_id in set(self._tabs_opened.keys()) - all_target_ids:
+            del self._tabs_opened[stale_id]
         existing_target_ids = list(self._tabs_opened.keys())
-        remaining_target_ids = [
-            target_id for target_id in all_target_ids if target_id not in existing_target_ids
-        ]
+        remaining_target_ids = list(all_target_ids - set(existing_target_ids))
         existing_tabs = [self._tabs_opened[target_id] for target_id in existing_target_ids]
         new_tabs = []
         for target_id in reversed(remaining_target_ids):
