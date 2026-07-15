@@ -242,7 +242,7 @@ class IFrameContextResolver:
             content_frame_id, backend_node_id, base_handler, base_session_id
         )
 
-        if session_handler and session_id:
+        if session_handler and session_id and resolved_url:
             return (
                 session_handler,
                 session_id,
