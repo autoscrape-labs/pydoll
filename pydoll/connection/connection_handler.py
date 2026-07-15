@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import time
 import json
 import logging
 from contextlib import suppress
@@ -117,10 +118,10 @@ class ConnectionHandler:
                 f'Sending command: id={command.get("id")}, method={command.get("method")}, '
                 f'timeout={timeout}s'
             )
-            start = asyncio.get_event_loop().time()
+            start = time.monotonic()
             await ws.send(command_str)
             response: str = await asyncio.wait_for(future, timeout)
-            elapsed = asyncio.get_event_loop().time() - start
+            elapsed = time.monotonic() - start
             logger.debug(f'Command completed: id={command.get("id")} in {elapsed:.3f}s')
             return json.loads(response)
         except asyncio.TimeoutError:

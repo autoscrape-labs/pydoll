@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import time
 import base64 as _b64
 import contextlib
 import io
@@ -624,13 +625,13 @@ class Tab(FindElementsMixin):
         if not timeout:
             return await self._collect_all_shadow_roots(deep)
 
-        start_time = asyncio.get_event_loop().time()
+        start_time = time.monotonic()
         while True:
             shadow_roots = await self._collect_all_shadow_roots(deep)
             if shadow_roots:
                 return shadow_roots
 
-            if asyncio.get_event_loop().time() - start_time > timeout:
+            if time.monotonic() - start_time > timeout:
                 raise WaitElementTimeout(
                     f'Timed out after {timeout}s waiting for shadow roots in page'
                 )
@@ -1681,7 +1682,7 @@ class Tab(FindElementsMixin):
             _page_events_was_enabled = False
             await self.enable_page_events()
 
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         will_begin: asyncio.Future[bool] = loop.create_future()
         done: asyncio.Future[bool] = loop.create_future()
         state: dict[str, Any] = {
@@ -1983,7 +1984,7 @@ class Tab(FindElementsMixin):
             WaitElementTimeout: If no matching shadow root is found within
                 *timeout* seconds.
         """
-        start_time = asyncio.get_event_loop().time()
+        start_time = time.monotonic()
         while True:
             shadow_roots = await self.find_shadow_roots(deep=False)
             for sr in shadow_roots:
@@ -1991,7 +1992,7 @@ class Tab(FindElementsMixin):
                 if _CLOUDFLARE_CHALLENGE_DOMAIN in html:
                     return sr
 
-            if asyncio.get_event_loop().time() - start_time > timeout:
+            if time.monotonic() - start_time > timeout:
                 raise WaitElementTimeout(
                     f'Timed out after {timeout}s waiting for Cloudflare Turnstile shadow root'
                 )

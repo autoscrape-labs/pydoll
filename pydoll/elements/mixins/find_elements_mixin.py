@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import time
 import logging
 from typing import TYPE_CHECKING, Optional, Union, cast, overload
 
@@ -334,7 +335,7 @@ class FindElementsMixin:
             return await self._find_across_iframes(segments, timeout, find_all, raise_exc)
 
         find_method = self._find_element if not find_all else self._find_elements
-        start_time = asyncio.get_event_loop().time()
+        start_time = time.monotonic()
 
         if not timeout:
             logger.debug('No timeout specified; performing single attempt')
@@ -349,7 +350,7 @@ class FindElementsMixin:
                     logger.debug('Found 1 element within timeout window')
                 return element
 
-            if asyncio.get_event_loop().time() - start_time > timeout:
+            if time.monotonic() - start_time > timeout:
                 if raise_exc:
                     logger.error('Timeout while waiting for elements')
                     raise WaitElementTimeout(
@@ -387,7 +388,7 @@ class FindElementsMixin:
             ElementNotFound: If ``timeout=0``, nothing found, and ``raise_exc=True``.
             WaitElementTimeout: If timeout expires and ``raise_exc=True``.
         """
-        start_time = asyncio.get_event_loop().time()
+        start_time = time.monotonic()
         selector_repr = ' -> '.join(seg for _, seg in segments)
 
         while True:
@@ -400,7 +401,7 @@ class FindElementsMixin:
                     raise ElementNotFound(f'Element not found across iframes: {selector_repr}')
                 return [] if find_all else None
 
-            if asyncio.get_event_loop().time() - start_time > timeout:
+            if time.monotonic() - start_time > timeout:
                 if raise_exc:
                     raise WaitElementTimeout(
                         f'Timed out after {timeout}s waiting for element '

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import time
 import json
 import logging
 import warnings
@@ -299,14 +300,14 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         if not timeout:
             return await self._get_shadow_root()
 
-        start_time = asyncio.get_event_loop().time()
+        start_time = time.monotonic()
         while True:
             try:
                 return await self._get_shadow_root()
             except ShadowRootNotFound:
                 pass
 
-            if asyncio.get_event_loop().time() - start_time > timeout:
+            if time.monotonic() - start_time > timeout:
                 raise WaitElementTimeout(
                     f'Timed out after {timeout}s waiting for shadow root on element'
                 )
@@ -512,7 +513,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
             f'Waiting for element: visible={is_visible}, '
             f'interactable={is_interactable}, timeout={timeout}s'
         )
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         start_time = loop.time()
         while True:
             results = await asyncio.gather(*(check() for check in checks))
