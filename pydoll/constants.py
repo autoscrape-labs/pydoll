@@ -252,30 +252,27 @@ class Scripts:
 
             // Extract cookies from set-cookie header
             const cookies = document.cookie;
-            let text = await response.text();
-            const possiblePrefixes = [")]}}'\\n", ")]}}'\\n", ")]}}\\n"];
-            for (let prefix of possiblePrefixes) {{
-                if (text.startsWith(prefix)) {{
-                    text = text.substring(prefix.length);
-                    break;
-                }}
-            }}
-            let content, jsonData;
+            const buffer = await response.arrayBuffer();
+            const possiblePrefixes = [")]}}'\\n", ")]}}'\\n", ")}}}\\n"];
+            let text = '';
+            let jsonData = null;
             const contentType = response.headers.get('content-type') || '';
 
             if (contentType.includes('application/json')) {{
+                const decoder = new TextDecoder('utf-8');
+                text = decoder.decode(buffer);
+                for (let prefix of possiblePrefixes) {{
+                    if (text.startsWith(prefix)) {{
+                        text = text.substring(prefix.length);
+                        break;
+                    }}
+                }}
                 try {{
                     jsonData = JSON.parse(text);
                     text = JSON.stringify(jsonData);
                 }} catch (e) {{
                     jsonData = null;
-                    // Keep original text if parsing fails
                 }}
-                content = new TextEncoder().encode(text).buffer;
-            }} else {{
-                // For non-JSON, keep original text handling
-                content = new TextEncoder().encode(text).buffer;
-                jsonData = null;
             }}
 
             return {{
@@ -284,7 +281,7 @@ class Scripts:
                 url: response.url,
                 headers: headers,
                 cookies: cookies,
-                content: Array.from(new Uint8Array(content)),
+                content: Array.from(new Uint8Array(buffer)),
                 text: text,
                 json: jsonData
             }};
