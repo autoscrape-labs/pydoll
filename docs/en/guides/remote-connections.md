@@ -74,6 +74,49 @@ asyncio.run(main())
 
 For a browser on another machine, replace `localhost` with the server's address and query `http://<host>:9222/json/version` from the client.
 
+## Custom host and secure connections
+
+When the debugging endpoint is not plain `ws://localhost:<port>` (a browser bound to another
+interface, or one served over TLS), pass the location explicitly and Pydoll derives the right
+`ws://` or `wss://` URL:
+
+```python
+from pydoll.connection import ConnectionHandler
+
+connection = ConnectionHandler(
+    connection_host='192.168.1.50',
+    connection_port=9222,
+    page_id='<targetId>',
+)
+```
+
+`use_secure=True` switches the scheme to `wss://` (and to `https://` when resolving the browser
+address):
+
+```python
+connection = ConnectionHandler(
+    connection_host='browser.internal',
+    connection_port=443,
+    page_id='<targetId>',
+    use_secure=True,
+)
+```
+
+`Chrome` and `Edge` accept the same `connection_host`, `connection_port`, and `use_secure`
+parameters, which are used for every tab they open.
+
+If you resolve the browser address yourself, `get_browser_ws_address` takes the same information
+as a typed mapping instead of a bare port:
+
+```python
+from pydoll.connection.types import WSAddressResolverParams
+from pydoll.utils import get_browser_ws_address
+
+ws_address = await get_browser_ws_address(
+    WSAddressResolverParams(host='192.168.1.50', port=9222, use_secure=False)
+)
+```
+
 ## Run Chrome in a container
 
 In Docker, start Chrome headless with the debugging port bound and a large enough shared-memory segment (Chrome uses `/dev/shm`, and Docker's 64MB default is too small):
