@@ -763,7 +763,10 @@ async def _resolve_oopif_by_parent(
 ) -> tuple[Optional[ConnectionHandler], Optional[str], Optional[str], Optional[str]]:
     """Resolve an OOPIF using the content frame id."""
     browser_handler = ConnectionHandler(
-        connection_port=self._element._connection_handler._connection_port
+        connection_host=self._element._connection_handler._connection_host,
+        connection_port=self._element._connection_handler._connection_port,
+        use_secure=self._element._connection_handler._use_secure,
+        ws_address=self._element._connection_handler._ws_address,
     )
     targets_response: GetTargetsResponse = await browser_handler.execute_command(
         TargetCommands.get_targets()

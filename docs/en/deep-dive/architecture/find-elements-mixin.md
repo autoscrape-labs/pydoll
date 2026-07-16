@@ -113,8 +113,12 @@ class FindElementsMixin:
 ```python
 # Tab: Document-level searches
 class Tab(FindElementsMixin):
-    def __init__(self, browser, target_id, connection_port):
-        self._connection_handler = ConnectionHandler(connection_port)
+    def __init__(self, browser, target_id, connection_host, connection_port, use_secure):
+        self._connection_handler = ConnectionHandler(
+            connection_host=connection_host,
+            connection_port=connection_port,
+            use_secure=use_secure,
+        )
         # No _object_id → searches from document root
 
 # WebElement: Element-relative searches

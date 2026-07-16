@@ -98,7 +98,9 @@ class Tab:
 ```python
 self._target_id: str              # Unique CDP identifier
 self._browser_context_id: Optional[str]  # Isolation context
+self._connection_host: int        # WebSocket host
 self._connection_port: int        # WebSocket port
+self._use_secure: int             # Secure WebSocket connection (wss://)
 ```
 
 **Design decision:** `target_id` is the **primary identifier**, not the Tab instance itself. This enables:

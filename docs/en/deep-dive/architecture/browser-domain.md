@@ -66,7 +66,7 @@ The ConnectionHandler is the **communication bridge** between Pydoll and the bro
 class Browser:
     def __init__(self, ...):
         # ConnectionHandler is initialized with port or WebSocket address
-        self._connection_handler = ConnectionHandler(self._connection_port)
+        self._connection_handler = ConnectionHandler(connection_port=self._connection_port)
     
     async def _execute_command(self, command, timeout=10):
         """All CDP commands flow through the connection handler."""
@@ -239,7 +239,9 @@ class Browser(ABC):
     def __init__(
         self,
         options_manager: BrowserOptionsManager,
+        connection_host: Optional[int] = None,
         connection_port: Optional[int] = None,
+        use_secure: bool = False,
     ):
         # 1. Validate parameters
         self._validate_connection_port(connection_port)
@@ -248,13 +250,19 @@ class Browser(ABC):
         self.options = options_manager.initialize_options()
         
         # 3. Determine CDP port (random if not specified)
+        self._connection_host = connection_host or 'localhost'
         self._connection_port = connection_port or randint(9223, 9322)
+        self._use_secure = use_secure
         
         # 4. Initialize specialized managers
         self._proxy_manager = ProxyManager(self.options)
         self._browser_process_manager = BrowserProcessManager()
         self._temp_directory_manager = TempDirectoryManager()
-        self._connection_handler = ConnectionHandler(self._connection_port)
+        self._connection_handler = ConnectionHandler(
+            connection_host=self._connection_host,
+            connection_port=self._connection_port,
+            use_secure=self._use_secure,
+        )
         
         # 5. Initialize state tracking
         self._tabs_opened: dict[str, Tab] = {}
