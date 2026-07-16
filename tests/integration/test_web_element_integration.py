@@ -419,3 +419,9 @@ async def test_insert_text_falls_back_to_append_when_selection_read_throws(eleme
     live = await _live(field, 'this.value')
     assert live == 'before after'
     assert field.value == 'before after'
+
+    # Empty text should clear the field, not leave it unchanged
+    await field.insert_text('')
+    live = await _live(field, 'this.value')
+    assert live == ''
+    assert field.value == ''

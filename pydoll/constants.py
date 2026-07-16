@@ -413,7 +413,7 @@ new Promise((resolve) => {{
                 end = el.selectionEnd;
             } catch (e) {
                 // Unsupported input type (number, email, range, etc.)
-                el.value += text;
+                el.value = text ? el.value + text : '';
                 el.dispatchEvent(new Event('input', { bubbles: true }));
                 el.dispatchEvent(new Event('change', { bubbles: true }));
                 return true;
