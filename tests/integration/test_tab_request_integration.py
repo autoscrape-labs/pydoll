@@ -342,7 +342,7 @@ async def test_binary_response_exposes_content_bytes(request_tab):
     assert response.status_code == 200
     assert isinstance(response.content, bytes)
     assert len(response.content) > 0
-    assert response.content == response.text.encode('utf-8')
+    assert response.content == PNG_1PX
 
 
 @pytest.mark.asyncio

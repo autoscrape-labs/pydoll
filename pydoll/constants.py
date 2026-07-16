@@ -252,7 +252,11 @@ class Scripts:
 
             // Extract cookies from set-cookie header
             const cookies = document.cookie;
-            let text = await response.text();
+            const responseClone = response.clone();
+            const [content, text] = await Promise.all([
+                responseClone.arrayBuffer(),
+                response.text()
+            ]);
             const possiblePrefixes = [")]}}'\\n", ")]}}'\\n", ")]}}\\n"];
             for (let prefix of possiblePrefixes) {{
                 if (text.startsWith(prefix)) {{
@@ -260,7 +264,7 @@ class Scripts:
                     break;
                 }}
             }}
-            let content, jsonData;
+            let jsonData;
             const contentType = response.headers.get('content-type') || '';
 
             if (contentType.includes('application/json')) {{
@@ -268,13 +272,11 @@ class Scripts:
                     jsonData = JSON.parse(text);
                     text = JSON.stringify(jsonData);
                 }} catch (e) {{
+                    // Return raw bytes if parsing fails
                     jsonData = null;
-                    // Keep original text if parsing fails
                 }}
-                content = new TextEncoder().encode(text).buffer;
             }} else {{
-                // For non-JSON, keep original text handling
-                content = new TextEncoder().encode(text).buffer;
+                // For non-JSON, return raw bytes
                 jsonData = null;
             }}
 
