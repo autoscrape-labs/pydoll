@@ -1980,18 +1980,21 @@ class Tab(FindElementsMixin):
         return None
 
     @staticmethod
-    async def _click_cloudflare_checkbox(shadow_root: ShadowRoot, timeout: int) -> None:
+    async def _click_cloudflare_checkbox(shadow_root: ShadowRoot) -> None:
         """Traverse the Turnstile widget and click its verification checkbox.
 
         Navigates shadow root -> challenge iframe -> body -> inner shadow root
-        and clicks the ``input[type="checkbox"]`` element. Any node captured
-        along the way may go stale while Cloudflare re-renders the iframe, so
-        callers are expected to retry on failure.
+        and clicks the ``input[type="checkbox"]`` element. Every step fails
+        fast (``timeout=0``): any node captured here can go stale while
+        Cloudflare re-renders the iframe, and polling locally on a stale node
+        both wastes time and can let four sequential waits overrun the caller's
+        deadline. Failing fast lets ``_bypass_cloudflare`` restart the whole
+        traversal from the top on its next poll.
         """
-        iframe = await shadow_root.query(_CLOUDFLARE_IFRAME_SELECTOR, timeout=timeout)
-        body = await iframe.find(tag_name='body', timeout=timeout)
-        inner_shadow = await body.get_shadow_root(timeout=timeout)
-        checkbox = await inner_shadow.query(_CLOUDFLARE_CHECKBOX_SELECTOR, timeout=timeout)
+        iframe = await shadow_root.query(_CLOUDFLARE_IFRAME_SELECTOR, timeout=0)
+        body = await iframe.find(tag_name='body', timeout=0)
+        inner_shadow = await body.get_shadow_root(timeout=0)
+        checkbox = await inner_shadow.query(_CLOUDFLARE_CHECKBOX_SELECTOR, timeout=0)
         await checkbox.click()
 
     async def _bypass_cloudflare(
@@ -2014,8 +2017,7 @@ class Tab(FindElementsMixin):
             try:
                 shadow_root = await self._find_cloudflare_shadow_root()
                 if shadow_root is not None:
-                    remaining = max(1, int(deadline - loop.time()))
-                    await self._click_cloudflare_checkbox(shadow_root, remaining)
+                    await self._click_cloudflare_checkbox(shadow_root)
                     return
             except Exception as exc:
                 last_error = exc
