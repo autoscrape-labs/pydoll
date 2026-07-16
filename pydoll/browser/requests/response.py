@@ -7,8 +7,7 @@ from typing import TYPE_CHECKING, Any, Optional, Union
 from pydoll.exceptions import HTTPError
 
 if TYPE_CHECKING:
-    from pydoll.protocol.fetch.types import HeaderEntry
-    from pydoll.protocol.network.types import CookieParam
+    from pydoll.protocol.types import Header, ResponseCookie
 
 logger = logging.getLogger(__name__)
 
@@ -41,9 +40,9 @@ class Response:
         content: bytes = b'',
         text: str = '',
         json: Optional[dict[str, Any]] = None,
-        response_headers: Optional[list[HeaderEntry]] = None,
-        request_headers: Optional[list[HeaderEntry]] = None,
-        cookies: Optional[list[CookieParam]] = None,
+        response_headers: Optional[list[Header]] = None,
+        request_headers: Optional[list[Header]] = None,
+        cookies: Optional[list[ResponseCookie]] = None,
         url: str = '',
     ):
         """Initialize a new Response instance with browser fetch results.
@@ -92,7 +91,7 @@ class Response:
         return self._ok
 
     @property
-    def cookies(self) -> list[CookieParam]:
+    def cookies(self) -> list[ResponseCookie]:
         """Get cookies that were set by the server during this response.
 
         Returns:
@@ -107,7 +106,7 @@ class Response:
         return self._cookies
 
     @property
-    def request_headers(self) -> list[HeaderEntry]:
+    def request_headers(self) -> list[Header]:
         """Get headers that were actually sent in the HTTP request.
 
         Returns:
@@ -122,7 +121,7 @@ class Response:
         return self._request_headers
 
     @property
-    def headers(self) -> list[HeaderEntry]:
+    def headers(self) -> list[Header]:
         """Get headers received from the server in the HTTP response.
 
         Returns:

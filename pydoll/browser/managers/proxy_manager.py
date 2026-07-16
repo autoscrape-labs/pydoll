@@ -4,7 +4,7 @@ import logging
 from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
-    from pydoll.browser.options import Options
+    from pydoll.browser.protocols import OptionsProtocol
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +17,7 @@ class ProxyManager:
     information, and sanitizes command-line arguments.
     """
 
-    def __init__(self, options: Options):
+    def __init__(self, options: OptionsProtocol):
         """
         Initialize proxy manager with browser options.
 

@@ -1,19 +1,20 @@
 from __future__ import annotations
 
 import asyncio
-import json
 import random
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional
 
-from pydoll.commands import InputCommands, RuntimeCommands
+from pydoll.commands import InputCommands
+from pydoll.commands.bidi.input_commands import InputCommands as BiDiInputCommands
 from pydoll.constants import Scripts, ScrollPosition
 from pydoll.interactions.utils import CubicBezier
-from pydoll.protocol.input.types import MouseEventType
-from pydoll.protocol.runtime.methods import EvaluateResponse
+from pydoll.protocol.cdp.input.types import MouseEventType
 
 if TYPE_CHECKING:
-    from pydoll.browser.tab import Tab
+    from pydoll.browser.chromium.tab import Tab
+    from pydoll.browser.firefox.tab import BiDiTab
+    from pydoll.protocol.bidi.input.types import WheelScrollAction, WheelSourceActions
 
 
 @dataclass(frozen=True)
@@ -49,7 +50,7 @@ class Scroll:
 
     def __init__(
         self,
-        tab: Tab,
+        tab: Tab | BiDiTab,
         timing: Optional[ScrollTimingConfig] = None,
     ):
         """
@@ -314,30 +315,21 @@ class Scroll:
 
     async def _get_viewport_center(self) -> tuple[int, int]:
         """Get the center coordinates of the viewport."""
-        command = RuntimeCommands.evaluate(expression=Scripts.GET_VIEWPORT_CENTER)
-        result: EvaluateResponse = await self._tab._execute_command(command)
-
-        value_str = result.get('result', {}).get('result', {}).get('value', '[]')
+        value = await self._tab.execute_script(Scripts.GET_VIEWPORT_CENTER)
         expected_dimensions = 2
-        try:
-            value = json.loads(value_str)
-            if value and isinstance(value, list) and len(value) == expected_dimensions:
-                return (int(value[0]), int(value[1]))
-        except (json.JSONDecodeError, TypeError):
-            pass
+        if isinstance(value, list) and len(value) == expected_dimensions:
+            return (int(value[0]), int(value[1]))
         return (400, 300)
 
     async def _get_current_scroll_y(self) -> float:
         """Get current vertical scroll position."""
-        command = RuntimeCommands.evaluate(expression=Scripts.GET_SCROLL_Y)
-        result: EvaluateResponse = await self._tab._execute_command(command)
-        return float(result.get('result', {}).get('result', {}).get('value', 0))
+        value = await self._tab.execute_script(Scripts.GET_SCROLL_Y)
+        return float(value) if isinstance(value, (int, float)) else 0.0
 
     async def _get_remaining_scroll_to_bottom(self) -> float:
         """Get remaining distance to scroll to reach the bottom."""
-        command = RuntimeCommands.evaluate(expression=Scripts.GET_REMAINING_SCROLL_TO_BOTTOM)
-        result: EvaluateResponse = await self._tab._execute_command(command)
-        return float(result.get('result', {}).get('result', {}).get('value', 0))
+        value = await self._tab.execute_script(Scripts.GET_REMAINING_SCROLL_TO_BOTTOM)
+        return float(value) if isinstance(value, (int, float)) else 0.0
 
     @staticmethod
     def _get_axis_and_distance(
@@ -377,14 +369,40 @@ class Scroll:
         return 'smooth' if smooth else 'auto'
 
     async def _execute_script_await_promise(self, script: str):
-        """
-        Execute JavaScript and await promise resolution.
+        """Execute JavaScript (awaiting any returned Promise) via the agnostic tab API."""
+        return await self._tab.execute_script(script)
 
-        Args:
-            script: JavaScript code that returns a Promise.
-        """
-        command = RuntimeCommands.evaluate(expression=script, await_promise=True)
-        return await self._tab._execute_command(command)
+
+class BiDiScroll(Scroll):
+    """Scroll controller for Firefox via WebDriver BiDi input.performActions.
+
+    Reuses all humanized-scroll physics from Scroll (Bezier easing, momentum,
+    jitter, micro-pauses, overshoot) unchanged and only swaps the wheel dispatch
+    to input.performActions; the JS helpers run through the protocol-agnostic
+    Tab.execute_script.
+    """
+
+    if TYPE_CHECKING:
+        _tab: BiDiTab
+
+    async def _dispatch_scroll_event(self, delta_x: int, delta_y: int):
+        """Dispatch a wheel scroll via input.performActions."""
+        center_x, center_y = await self._get_viewport_center()
+        scroll: WheelScrollAction = {
+            'type': 'scroll',
+            'x': center_x,
+            'y': center_y,
+            'deltaX': delta_x,
+            'deltaY': delta_y,
+            'origin': 'viewport',
+        }
+        source: WheelSourceActions = {'type': 'wheel', 'id': 'wheel', 'actions': [scroll]}
+        await self._tab._execute_command(
+            BiDiInputCommands.perform_actions(
+                context=self._tab._context_id,
+                actions=[source],
+            )
+        )
 
 
 # Backward compatibility alias

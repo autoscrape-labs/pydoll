@@ -31,7 +31,7 @@ Usage with Pydoll:
     import asyncio
     from pydoll.utils import SOCKS5Forwarder
     from pydoll.browser.chromium import Chrome
-    from pydoll.browser.options import ChromiumOptions
+    from pydoll.browser.chromium.options import ChromiumOptions
 
     async def main():
         forwarder = SOCKS5Forwarder(

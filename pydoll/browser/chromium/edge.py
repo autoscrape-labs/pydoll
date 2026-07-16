@@ -5,12 +5,12 @@ import platform
 from typing import TYPE_CHECKING, Optional
 
 from pydoll.browser.chromium.base import Browser
-from pydoll.browser.managers import ChromiumOptionsManager
+from pydoll.browser.chromium.options import ChromiumOptionsManager
 from pydoll.exceptions import UnsupportedOS
 from pydoll.utils import validate_browser_paths
 
 if TYPE_CHECKING:
-    from pydoll.browser.options import Options
+    from pydoll.browser.chromium.options import ChromiumOptions
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ class Edge(Browser):
 
     def __init__(
         self,
-        options: Optional[Options] = None,
+        options: Optional[ChromiumOptions] = None,
         connection_port: Optional[int] = None,
     ):
         """

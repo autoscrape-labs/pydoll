@@ -8,16 +8,25 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional
 
 from pydoll.commands import InputCommands, RuntimeCommands
+from pydoll.commands.bidi.input_commands import InputCommands as BiDiInputCommands
 from pydoll.interactions.utils import (
     bezier_2d,
     fitts_duration,
     minimum_jerk,
     random_control_points,
 )
-from pydoll.protocol.input.types import MouseButton, MouseEventType
+from pydoll.protocol.bidi.input.types import PointerType
+from pydoll.protocol.cdp.input.types import MouseButton, MouseEventType
 
 if TYPE_CHECKING:
-    from pydoll.browser.tab import Tab
+    from pydoll.browser.chromium.tab import Tab
+    from pydoll.browser.firefox.tab import BiDiTab
+    from pydoll.protocol.bidi.input.types import (
+        PointerAction,
+        PointerMoveAction,
+        PointerSourceActions,
+        SourceActions,
+    )
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +105,7 @@ class Mouse:
 
     def __init__(
         self,
-        tab: Tab,
+        tab: Tab | BiDiTab,
         timing: Optional[MouseTimingConfig] = None,
         debug: bool = False,
     ):
@@ -478,6 +487,87 @@ class Mouse:
             x=int(round(x)), y=int(round(y)), radius=radius, color=color
         )
         await self._tab._execute_command(RuntimeCommands.evaluate(script))
+
+
+_BIDI_POINTER_BUTTON: dict[MouseButton, int] = {
+    MouseButton.LEFT: 0,
+    MouseButton.MIDDLE: 1,
+    MouseButton.RIGHT: 2,
+}
+
+
+class BiDiMouse(Mouse):
+    """Mouse controller for Firefox via WebDriver BiDi input.performActions.
+
+    Reuses every humanized-movement primitive from Mouse (Bezier path, Fitts's
+    Law timing, minimum-jerk, tremor, overshoot) unchanged and only swaps the
+    dispatch backend, so the resulting pointer events report isTrusted=true.
+    """
+
+    if TYPE_CHECKING:
+        _tab: BiDiTab
+
+    @staticmethod
+    def _pointer_source(actions: list[PointerAction]) -> list[SourceActions]:
+        source: PointerSourceActions = {
+            'type': 'pointer',
+            'id': 'mouse',
+            'parameters': {'pointerType': PointerType.MOUSE},
+            'actions': actions,
+        }
+        return [source]
+
+    @staticmethod
+    def _move_action(x: float, y: float) -> PointerMoveAction:
+        return {
+            'type': 'pointerMove',
+            'x': int(round(x)),
+            'y': int(round(y)),
+            'origin': 'viewport',
+        }
+
+    async def _dispatch_move(self, x: float, y: float) -> None:
+        await self._tab._execute_command(
+            BiDiInputCommands.perform_actions(
+                context=self._tab._context_id,
+                actions=self._pointer_source([self._move_action(x, y)]),
+            )
+        )
+        self._position = (x, y)
+        if self._debug:
+            await self._debug_draw_dot(x, y, radius=2, color='rgba(0,150,255,0.6)')
+
+    async def _dispatch_button(
+        self,
+        event_type: MouseEventType,
+        button: MouseButton = MouseButton.LEFT,
+        click_count: int = 1,
+    ) -> None:
+        button_index = _BIDI_POINTER_BUTTON.get(button, 0)
+        press_or_release: PointerAction
+        if event_type == MouseEventType.MOUSE_PRESSED:
+            press_or_release = {'type': 'pointerDown', 'button': button_index}
+        else:
+            press_or_release = {'type': 'pointerUp', 'button': button_index}
+        await self._tab._execute_command(
+            BiDiInputCommands.perform_actions(
+                context=self._tab._context_id,
+                actions=self._pointer_source([
+                    self._move_action(self._position[0], self._position[1]),
+                    press_or_release,
+                ]),
+            )
+        )
+        if self._debug and event_type == MouseEventType.MOUSE_PRESSED:
+            await self._debug_draw_dot(
+                self._position[0], self._position[1], radius=6, color='rgba(255,50,50,0.9)'
+            )
+
+    async def _debug_draw_dot(self, x: float, y: float, radius: int, color: str) -> None:
+        script = self._DEBUG_DOT_JS.format(
+            x=int(round(x)), y=int(round(y)), radius=radius, color=color
+        )
+        await self._tab.execute_script(script)
 
 
 MouseAPI = Mouse
