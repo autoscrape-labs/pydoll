@@ -407,8 +407,17 @@ new Promise((resolve) => {{
         // Standard input/textarea
         if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
             el.focus();
-            let start = el.selectionStart;
-            let end = el.selectionEnd;
+            let start, end;
+            try {
+                start = el.selectionStart;
+                end = el.selectionEnd;
+            } catch (e) {
+                // Unsupported input type (number, email, range, etc.)
+                el.value += text;
+                el.dispatchEvent(new Event('input', { bubbles: true }));
+                el.dispatchEvent(new Event('change', { bubbles: true }));
+                return true;
+            }
             const hasSelection = start !== end;
             // When inserting empty text with no selection, select all first
             // so the field is cleared (matches user expectation for insertText('')).
@@ -422,7 +431,9 @@ new Promise((resolve) => {{
             const before = el.value.substring(0, start);
             const after = el.value.substring(end);
             el.value = before + text + after;
-            el.selectionStart = el.selectionEnd = start + text.length;
+            try {
+                el.selectionStart = el.selectionEnd = start + text.length;
+            } catch (e) {}
             el.dispatchEvent(new Event('input', { bubbles: true }));
             el.dispatchEvent(new Event('change', { bubbles: true }));
             return true;
