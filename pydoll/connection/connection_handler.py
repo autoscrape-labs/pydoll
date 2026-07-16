@@ -63,6 +63,7 @@ class ConnectionHandler:
         self._command_manager = CommandsManager()
         self._events_handler = EventsManager()
         self._receive_task: Optional[asyncio.Task] = None
+        self._connection_lock = asyncio.Lock()
         logger.info('ConnectionHandler initialized.')
         logger.debug(
             f'Init params: port={self._connection_port}, page_id={self._page_id}, '
@@ -72,7 +73,7 @@ class ConnectionHandler:
     @property
     def network_logs(self):
         """Access captured network request and response logs."""
-        return self._events_handler.network_logs
+        return list(self._events_handler.network_logs)
 
     @property
     def dialog(self):
@@ -130,6 +131,7 @@ class ConnectionHandler:
             )
             raise CommandExecutionTimeout()
         except websockets.ConnectionClosed:
+            self._command_manager.remove_pending_command(command['id'])
             await self._handle_connection_loss()
             logger.warning(f'WebSocket connection closed during command: id={command.get("id")}')
             raise WebSocketConnectionClosed()
@@ -174,30 +176,66 @@ class ConnectionHandler:
     async def close(self):
         """Close WebSocket connection and release resources."""
         await self.clear_callbacks()
-        if self._ws_connection is None:
-            logger.debug('Close called but no active WebSocket connection')
-            return
+        await self._events_handler.stop()
 
-        with suppress(websockets.ConnectionClosed):
-            await self._ws_connection.close()
+        if self._receive_task and not self._receive_task.done():
+            self._receive_task.cancel()
+            with suppress(asyncio.CancelledError, Exception):
+                await self._receive_task
+
+        if self._ws_connection is not None:
+            with suppress(websockets.ConnectionClosed, Exception):
+                await self._ws_connection.close()
         logger.info('WebSocket connection closed.')
 
+    def _is_connection_healthy(self) -> bool:
+        """Return True only if the socket is open AND a live reader task is draining it.
+
+        A socket that is still open but whose receive task has died (e.g. an
+        oversized frame or a malformed event killed the loop) is NOT healthy:
+        nothing would deliver responses, so commands would silently time out.
+        """
+        return (
+            self._ws_connection is not None
+            and self._ws_connection.state is State.OPEN
+            and self._receive_task is not None
+            and not self._receive_task.done()
+        )
+
     async def _ensure_active_connection(self):
-        """Ensure active connection exists, establishing new one if needed."""
-        if self._ws_connection is None or self._ws_connection.state is State.CLOSED:
-            logger.debug('No active WebSocket connection; establishing new one')
-            await self._establish_new_connection()
+        """Ensure a healthy connection exists, establishing a new one if needed."""
+        if self._is_connection_healthy():
+            return
+        async with self._connection_lock:
+            if not self._is_connection_healthy():
+                logger.debug('No healthy WebSocket connection; establishing new one')
+                await self._establish_new_connection()
 
     async def _establish_new_connection(self):
         """Create fresh WebSocket connection and start event listening."""
+        await self._teardown_connection()
         ws_address = await self._resolve_ws_address()
         logger.info(f'Connecting to {ws_address}')
         self._ws_connection = await self._ws_connector(
             ws_address,
-            max_size=1024 * 1024 * 10,  # 10MB
+            max_size=None,
         )
+        self._events_handler.start()
         self._receive_task = asyncio.create_task(self._receive_events())
         logger.debug('WebSocket connection established')
+
+    async def _teardown_connection(self):
+        """Cancel the receive task and close any existing socket before reconnecting."""
+        if self._receive_task and not self._receive_task.done():
+            self._receive_task.cancel()
+            with suppress(asyncio.CancelledError, Exception):
+                await self._receive_task
+        self._receive_task = None
+
+        if self._ws_connection is not None and self._ws_connection.state is not State.CLOSED:
+            with suppress(Exception):
+                await self._ws_connection.close()
+        self._ws_connection = None
 
     async def _resolve_ws_address(self):
         """Determine correct WebSocket address based on page ID."""
@@ -213,26 +251,32 @@ class ConnectionHandler:
         return address
 
     async def _handle_connection_loss(self):
-        """Clean up resources after connection loss."""
-        if self._ws_connection and self._ws_connection.state is not State.CLOSED:
-            await self._ws_connection.close()
-        self._ws_connection = None
-
-        if self._receive_task and not self._receive_task.done():
-            self._receive_task.cancel()
-
+        """Fail in-flight commands and clean up resources after connection loss."""
+        self._command_manager.fail_all_pending(WebSocketConnectionClosed())
+        await self._teardown_connection()
         logger.info('Connection resources cleaned up')
 
     async def _receive_events(self):
-        """Main loop for receiving and processing WebSocket messages."""
+        """Main loop for receiving and processing WebSocket messages.
+
+        A single unparseable/malformed message is logged and skipped so it can
+        never kill the reader. When the loop exits for any reason, all in-flight
+        commands are failed so callers raise immediately instead of hanging
+        until their timeout expires on a connection nobody is reading.
+        """
         try:
             async for raw_message in self._incoming_messages():
-                await self._process_single_message(raw_message)
+                try:
+                    self._process_single_message(raw_message)
+                except Exception:
+                    logger.exception('Error processing WebSocket message; skipping')
         except websockets.ConnectionClosed as e:
-            logger.info(f'Connection closed gracefully: {e}')
-        except Exception as e:
-            logger.error(f'Unexpected error in event loop: {e}')
-            raise
+            logger.info(f'WebSocket connection closed: {e}')
+        except Exception:
+            logger.exception('Fatal error in WebSocket receive loop')
+        finally:
+            self._command_manager.fail_all_pending(WebSocketConnectionClosed())
+            await self._events_handler.stop()
 
     async def _incoming_messages(self) -> AsyncGenerator[Union[str, bytes], None]:
         """Generator yielding raw messages from WebSocket connection."""
@@ -241,18 +285,21 @@ class ConnectionHandler:
         while ws.state is not State.CLOSED:
             yield await ws.recv()
 
-    async def _process_single_message(self, raw_message: str):
-        """Process single raw WebSocket message."""
+    def _process_single_message(self, raw_message: str):
+        """Route a single raw WebSocket message.
+
+        Command responses are resolved inline (fast, synchronous) so they are
+        never delayed by event processing; events are handed to the
+        EventsManager queue for ordered, non-blocking handling.
+        """
         message = self._parse_message(raw_message)
         if not message:
             return
 
         if self._is_command_response(message):
-            message = cast(Response, message)
-            await self._handle_command_message(message)
+            self._handle_command_message(cast(Response, message))
         else:
-            message = cast(CDPEvent, message)
-            await self._handle_event_message(message)
+            self._events_handler.enqueue_event(cast(CDPEvent, message))
 
     @staticmethod
     def _parse_message(raw_message: str) -> Union[CDPEvent, Response, None]:
@@ -268,16 +315,10 @@ class ConnectionHandler:
         """Determine if message is command response or event notification."""
         return 'id' in message and isinstance(message.get('id'), int)
 
-    async def _handle_command_message(self, message: Response):
-        """Process command response messages."""
+    def _handle_command_message(self, message: Response):
+        """Resolve the pending future for a command response."""
         logger.debug(f'Processing command response: {message.get("id")}')
         self._command_manager.resolve_command(message['id'], json.dumps(message))
-
-    async def _handle_event_message(self, message: CDPEvent):
-        """Process event notification messages."""
-        event_type = message.get('method', 'unknown-event')
-        logger.debug(f'Processing {event_type} event')
-        await self._events_handler.process_event(message)
 
     def __repr__(self):
         """String representation for debugging."""

@@ -26,7 +26,6 @@ from pydoll.exceptions import (
     ElementNotAFileInput,
     ElementNotFound,
     ElementNotInteractable,
-    ElementNotVisible,
     InvalidFileExtension,
     InvalidIFrame,
     MissingScreenshotPath,
@@ -90,7 +89,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         connection_handler: ConnectionHandler,
         method: Optional[str] = None,
         selector: Optional[str] = None,
-        attributes_list: list[str] = [],
+        attributes_list: Optional[list[str]] = None,
         mouse: Optional['MouseType'] = None,
     ):
         """
@@ -122,7 +121,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         self._mouse = mouse
         self._iframe_context: Optional[IFrameContext] = None
         self._iframe_resolver: Optional[IFrameContextResolver] = None
-        self._def_attributes(attributes_list)
+        self._def_attributes(attributes_list or [])
         logger.debug(
             f'WebElement initialized: object_id={self._object_id}, '
             f'method={self._search_method}, selector={self._selector}, '
@@ -489,6 +488,9 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
     ):
         """Wait for element to meet specified conditions.
 
+        With ``timeout=0`` the conditions are checked once and, if not met,
+        ``WaitElementTimeout`` is raised immediately (no polling).
+
         Raises:
             ValueError: If neither ``is_visible`` nor ``is_interactable`` is True.
             WaitElementTimeout: If the condition is not met within ``timeout``.
@@ -520,7 +522,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
                 logger.info(f'Element condition satisfied: {condition_msg}')
                 return
 
-            if timeout and loop.time() - start_time > timeout:
+            if loop.time() - start_time >= timeout:
                 logger.error(f'Timeout waiting for element to become {condition_msg}')
                 raise WaitElementTimeout(f'Timed out waiting for element to become {condition_msg}')
 
@@ -536,8 +538,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
 
         Raises:
             ValueError: If timeout is negative.
-            ElementNotVisible: If element is not visible and no timeout specified.
-            WaitElementTimeout: If element not visible within timeout.
+            WaitElementTimeout: If element does not become visible within timeout.
             ElementNotInteractable: If element couldn't be clicked.
 
         Note:
@@ -551,12 +552,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
             return await self._click_option_tag()
 
         await self.scroll_into_view()
-
-        if not await self.is_visible():
-            if timeout > 0:
-                await self.wait_until(is_visible=True, timeout=timeout)
-            else:
-                raise ElementNotVisible()
+        await self.wait_until(is_visible=True, timeout=timeout)
 
         logger.info(f'Clicking element via JS: object_id={self._object_id}')
         result = await self.execute_script(Scripts.CLICK, return_by_value=True)
@@ -588,8 +584,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
 
         Raises:
             ValueError: If timeout is negative.
-            ElementNotVisible: If element is not visible and no timeout specified.
-            WaitElementTimeout: If element not visible within timeout.
+            WaitElementTimeout: If element does not become visible within timeout.
 
         Note:
             For <option> elements, delegates to specialized JavaScript approach.
@@ -601,13 +596,8 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         if await self._is_option_element():
             return await self._click_option_tag()
 
-        if not await self.is_visible():
-            if timeout > 0:
-                await self.wait_until(is_visible=True, timeout=timeout)
-            else:
-                raise ElementNotVisible()
-
         await self.scroll_into_view()
+        await self.wait_until(is_visible=True, timeout=timeout)
 
         try:
             element_bounds = await self.bounds
