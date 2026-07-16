@@ -54,6 +54,8 @@ logger = logging.getLogger(__name__)
 
 _PYDOLL_CREATOR_NAME = 'pydoll'
 _HTTP_NOT_MODIFIED = 304
+_BODY_FETCH_ATTEMPTS = 5
+_BODY_FETCH_RETRY_DELAY = 0.1
 
 
 def _get_pydoll_version() -> str:
@@ -265,7 +267,8 @@ class HarRecorder:
         if not pending:
             return
 
-        body, base64_encoded = await self._fetch_response_body(request_id)
+        expects_body = pending.get('body_bytes', -1) > 0
+        body, base64_encoded = await self._fetch_response_body(request_id, expects_body)
         pending['response_body'] = body
         pending['response_body_base64'] = base64_encoded
 
@@ -302,20 +305,43 @@ class HarRecorder:
             self._entries.append(entry)
         logger.debug('HAR: flushed pending entries')
 
-    async def _fetch_response_body(self, request_id: str) -> tuple[str, bool]:
+    async def _fetch_response_body(
+        self, request_id: str, expects_body: bool = False
+    ) -> tuple[str, bool]:
         """Fetch the response body via Network.getResponseBody.
+
+        The DevTools body buffer is occasionally not ready the instant
+        loadingFinished fires (seen intermittently on Windows). When the
+        dataReceived events already told us a body exists (``expects_body``),
+        retry briefly on an errored or empty result instead of silently
+        recording an empty body.
 
         Returns:
             Tuple of (body_text, is_base64_encoded). Returns ('', False) on failure.
         """
-        try:
-            command = NetworkCommands.get_response_body(request_id)
-            response: GetResponseBodyResponse = await self._tab._execute_command(command)
-            body_result = response['result']
-            return body_result['body'], body_result['base64Encoded']
-        except Exception:
-            logger.debug('HAR: failed to fetch response body for %s', request_id)
-            return '', False
+        attempts = _BODY_FETCH_ATTEMPTS if expects_body else 1
+        for attempt in range(attempts):
+            try:
+                command = NetworkCommands.get_response_body(request_id)
+                response: GetResponseBodyResponse = await self._tab._execute_command(command)
+                body_result = response['result']
+                body, base64_encoded = body_result['body'], body_result['base64Encoded']
+                if body or not expects_body:
+                    return body, base64_encoded
+            except Exception:
+                logger.debug(
+                    'HAR: failed to fetch response body for %s (attempt %d/%d)',
+                    request_id,
+                    attempt + 1,
+                    attempts,
+                )
+            if attempt + 1 < attempts:
+                await asyncio.sleep(_BODY_FETCH_RETRY_DELAY)
+
+        logger.debug(
+            'HAR: response body unavailable for %s after %d attempt(s)', request_id, attempts
+        )
+        return '', False
 
     def _build_entry(self, pending: dict[str, Any]) -> HarEntry:
         """Build a HAR entry from accumulated pending data."""
