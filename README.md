@@ -5,7 +5,6 @@
 
 <p align="center">
     <a href="https://github.com/autoscrape-labs/pydoll/stargazers"><img src="https://img.shields.io/github/stars/autoscrape-labs/pydoll?style=social"></a>
-    <a href="https://pypi.org/project/pydoll-python/"><img src="https://img.shields.io/pypi/dm/pydoll-python?color=blue&label=downloads" alt="PyPI downloads"></a>
     <a href="https://codecov.io/gh/autoscrape-labs/pydoll" >
         <img src="https://codecov.io/gh/autoscrape-labs/pydoll/graph/badge.svg?token=40I938OGM9"/>
     </a>
@@ -56,8 +55,9 @@
 <sub>Read a full review of Pydoll on <b><a href="https://substack.thewebscraping.club/p/pydoll-webdriver-scraping?utm_source=github&utm_medium=repo&utm_campaign=pydoll">The Web Scraping Club</a></b>, the #1 newsletter dedicated to web scraping.</sub>
 
 <a href="https://go.nodemaven.com/pydoll">
-    <img width="100%" height="300" alt="Nodemaven Proxy" src="https://github.com/user-attachments/assets/7e2eb0b7-99a7-4d9c-9ff0-b28bd41d7189" />
+    <img width="100%" alt="nodemaven" src="https://github.com/user-attachments/assets/fbde0385-0334-4f8a-a0fc-9b1eb54e049c" />
 </a>
+
 
 <sub>The most reliable proxy provider with the Highest Quality IP on the market. Best solution for automation, web scraping, SEO research, and social media management. </sub>
 
