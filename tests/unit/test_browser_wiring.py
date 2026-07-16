@@ -89,3 +89,18 @@ async def test_browser_start_and_stop_orchestrate_process_and_connection(fake_co
 
     await browser.stop()
     assert fake_process.terminated is True
+
+
+def test_browser_default_use_secure_is_false():
+    browser = Chrome()
+    assert browser._use_secure is False
+
+
+def test_browser_use_secure_true_stored():
+    browser = Chrome(use_secure=True)
+    assert browser._use_secure is True
+
+
+def test_browser_use_secure_passed_to_connection_handler():
+    browser = Chrome(use_secure=True)
+    assert browser._connection_handler._use_secure is True

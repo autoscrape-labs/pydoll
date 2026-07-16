@@ -89,6 +89,10 @@ class FakeConnection:
         """Remove every registered callback."""
         self._callbacks.clear()
 
+    async def _ensure_active_connection(self) -> None:
+        """Record invocation (no real socket to establish)."""
+        self._ensure_active_connection_called = True
+
     async def ping(self) -> bool:
         """A fake connection is always responsive."""
         return True

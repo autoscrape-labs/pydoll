@@ -281,7 +281,10 @@ class IFrameContextResolver:
         parent context.
         """
         browser_handler = ConnectionHandler(
-            connection_port=self._element._connection_handler._connection_port
+            connection_host=self._element._connection_handler._connection_host,
+            connection_port=self._element._connection_handler._connection_port,
+            ws_address=self._element._connection_handler._ws_address,
+            use_secure=self._element._connection_handler._use_secure,
         )
         try:
             return await self._try_resolve_oopif(
