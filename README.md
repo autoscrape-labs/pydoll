@@ -26,6 +26,11 @@ Pydoll automates Chromium-based browsers (Chrome, Edge) by connecting directly t
 
 It combines a high-level API for stealthy automation with low-level CDP access for fine-grained control over network, fingerprinting, and browser behavior. And with its new **Pydantic-powered extraction engine**, it maps the DOM directly to structured Python objects, delivering an unmatched Developer Experience (DX).
 
+> [!NOTE]
+> **A word from the maintainer.** Pydoll is currently maintained by a single person, and I'm a bit stretched at the moment, so new releases and replies to issues may take a little longer than usual. To be clear: **the project is not dead, and it is not going anywhere.** Development continues; it's just moving at a calmer pace for now.
+>
+> If Pydoll is useful to you, the best way to help is to **[star the repository](https://github.com/autoscrape-labs/pydoll)**. It genuinely strengthens the project and its reach. And if you're able to, please consider **[sponsoring the work](https://github.com/sponsors/thalissonvs)**. Every star and every sponsorship helps keep Pydoll alive and moving forward. Thank you! 🙏
+
 ### Top Sponsors
 
 <a href="https://substack.thewebscraping.club/p/pydoll-webdriver-scraping?utm_source=github&utm_medium=repo&utm_campaign=pydoll">
