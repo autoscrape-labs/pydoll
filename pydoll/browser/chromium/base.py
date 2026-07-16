@@ -87,11 +87,13 @@ class Browser(ABC):  # noqa: PLR0904
     def __init__(
         self,
         options_manager: BrowserOptionsManager,
+        connection_host: Optional[str] = None,
         connection_port: Optional[int] = None,
         proxy_manager: Optional[ProxyManager] = None,
         browser_process_manager: Optional[BrowserProcessManager] = None,
         temp_directory_manager: Optional[TempDirectoryManager] = None,
         connection_handler: Optional[ConnectionHandler] = None,
+        use_secure: bool = False,
     ):
         """
         Initialize browser instance with configuration.
@@ -99,12 +101,14 @@ class Browser(ABC):  # noqa: PLR0904
         Args:
             options_manager: Manages browser options initialization and defaults.
                 Must implement initialize_options() and add_default_arguments().
+            connection_host: CDP WebSocket host that will listen to requests.
             connection_port: CDP WebSocket port. Random port (9223-9322) if None.
             proxy_manager: Proxy manager; built from options when omitted.
             browser_process_manager: Process manager; default when omitted.
             temp_directory_manager: Temp directory manager; default when omitted.
             connection_handler: Browser-level connection handler; built from the
                 connection port when omitted (mainly for testing).
+            use_secure: Use secure WebSocket (wss://).
 
         Note:
             Call start() to actually launch the browser.
@@ -112,17 +116,23 @@ class Browser(ABC):  # noqa: PLR0904
         self._validate_connection_port(connection_port)
         self.options = options_manager.initialize_options()
         self._proxy_manager = proxy_manager or ProxyManager(self.options)
+        self._connection_host = connection_host or 'localhost'
         self._connection_port = connection_port if connection_port else randint(9223, 9322)
         self._browser_process_manager = browser_process_manager or BrowserProcessManager()
         self._temp_directory_manager = temp_directory_manager or TempDirectoryManager()
         self._ws_address: Optional[str] = None
-        self._connection_handler = connection_handler or ConnectionHandler(self._connection_port)
+        self._use_secure = use_secure
+        self._connection_handler = connection_handler or ConnectionHandler(
+            connection_host=self._connection_host,
+            connection_port=self._connection_port,
+            use_secure=self._use_secure,
+        )
         self._backup_preferences_dir = ''
         self._tabs_opened: dict[str, Tab] = {}
         self._context_proxy_auth: dict[str, tuple[str, str]] = {}
         logger.debug(
-            f'Browser initialized: port={self._connection_port}, '
-            f'headless={getattr(self.options, "headless", None)}'
+            f'Browser initialized: host={self._connection_host}, port={self._connection_port}, '
+            f'use_secure={self._use_secure}, headless={getattr(self.options, "headless", None)}'
         )
 
     async def __aenter__(self) -> 'Browser':
@@ -1046,15 +1056,13 @@ class Browser(ABC):  # noqa: PLR0904
     @staticmethod
     def _validate_ws_address(ws_address: str):
         """Validate WebSocket address."""
-        min_slashes = 4
         if not ws_address.startswith(('ws://', 'wss://')):
             logger.error('Invalid WebSocket address: missing ws:// or wss:// prefix')
             raise InvalidWebSocketAddress('WebSocket address must start with ws:// or wss://')
-        if len(ws_address.split('/')) < min_slashes:
-            logger.error('Invalid WebSocket address: not enough slashes')
-            raise InvalidWebSocketAddress(
-                f'WebSocket address must contain at least {min_slashes} slashes'
-            )
+        parsed = urlsplit(ws_address)
+        if not parsed.hostname:
+            logger.error(f'Invalid WebSocket address: no hostname in {ws_address}')
+            raise InvalidWebSocketAddress('WebSocket address must contain a valid hostname')
 
     async def _setup_ws_address(self, ws_address: str):
         """Setup WebSocket address for browser."""
@@ -1084,7 +1092,9 @@ class Browser(ABC):  # noqa: PLR0904
         if self._ws_address:
             kwargs['ws_address'] = self._get_tab_ws_address(target_id)
         else:
+            kwargs['connection_host'] = self._connection_host
             kwargs['connection_port'] = self._connection_port
+            kwargs['use_secure'] = self._use_secure
         logger.debug(f'Tab kwargs resolved for {target_id}: using_ws={bool(self._ws_address)}')
         return kwargs
 

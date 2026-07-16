@@ -7,6 +7,7 @@ import sys
 from unittest.mock import patch
 
 from pydoll import exceptions
+from pydoll.connection.types import WSAddressResolverParams
 from pydoll.utils import (
     clean_script_for_analysis,
     decode_base64_to_bytes,
@@ -79,7 +80,7 @@ class TestUtils:
                 f'http://localhost:{port}/json/version',
                 payload={'webSocketDebuggerUrl': expected_url},
             )
-            result = await get_browser_ws_address(port)
+            result = await get_browser_ws_address(WSAddressResolverParams(host='localhost', port=port, use_secure=False))
             assert result == expected_url
 
     @pytest.mark.asyncio
@@ -97,7 +98,7 @@ class TestUtils:
                     f'http://localhost:{port}/json/version',
                     exception=aiohttp.ClientError,
                 )
-                await get_browser_ws_address(port)
+                await get_browser_ws_address(WSAddressResolverParams(host='localhost', port=port, use_secure=False))
 
     @pytest.mark.asyncio
     async def test_missing_websocket_url(self):
@@ -114,7 +115,7 @@ class TestUtils:
                 payload={'someOtherKey': 'value'},
             )
             with pytest.raises(exceptions.InvalidResponse):
-                await get_browser_ws_address(port)
+                await get_browser_ws_address(WSAddressResolverParams(host='localhost', port=port, use_secure=False))
 
     @pytest.mark.asyncio
     async def test_http_error_status(self):
@@ -131,7 +132,7 @@ class TestUtils:
                     f'http://localhost:{port}/json/version',
                     status=404
                 )
-                await get_browser_ws_address(port)
+                await get_browser_ws_address(WSAddressResolverParams(host='localhost', port=port, use_secure=False))
 
     @pytest.mark.asyncio
     async def test_custom_port(self):
@@ -147,7 +148,7 @@ class TestUtils:
                 f'http://localhost:{port}/json/version',
                 payload={'webSocketDebuggerUrl': expected_url},
             )
-            result = await get_browser_ws_address(port)
+            result = await get_browser_ws_address(WSAddressResolverParams(host='localhost', port=port, use_secure=False))
             assert result == expected_url
 
     def test_validate_browser_paths_success(self):
