@@ -23,6 +23,7 @@ from pydoll.constants import (
 from pydoll.elements.mixins import FindElementsMixin
 from pydoll.elements.shadow_root import ShadowRoot
 from pydoll.exceptions import (
+    CommandExecutionTimeout,
     ElementNotAFileInput,
     ElementNotFound,
     ElementNotInteractable,
@@ -32,6 +33,7 @@ from pydoll.exceptions import (
     MissingScreenshotPath,
     ShadowRootNotFound,
     WaitElementTimeout,
+    WebSocketConnectionClosed,
 )
 from pydoll.interactions.iframe import IFrameContext, IFrameContextResolver
 from pydoll.interactions.keyboard import Keyboard
@@ -694,7 +696,13 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
                 self._attributes['value'] = (
                     live_result.get('result', {}).get('result', {}).get('value', text)
                 )
-            except Exception:
+            except (
+                KeyError,
+                TypeError,
+                AttributeError,
+                CommandExecutionTimeout,
+                WebSocketConnectionClosed,
+            ):
                 self._attributes['value'] = text
 
     async def set_input_files(self, files: str | Path | list[str | Path]):
