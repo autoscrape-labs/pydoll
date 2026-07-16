@@ -1,10 +1,11 @@
 <p align="center">
     <img src="https://github.com/user-attachments/assets/2c380638-b04a-4b04-b1c8-2958e4237a94" alt="Pydoll Logo" /> <br>
 </p>
-<p align="center">Async-native, fully typed, built for evasion and performance.</p>
+<p align="center">The stealth-first browser automation library for Python.<br>No WebDriver, no <code>navigator.webdriver</code> flag, built to look human.</p>
 
 <p align="center">
     <a href="https://github.com/autoscrape-labs/pydoll/stargazers"><img src="https://img.shields.io/github/stars/autoscrape-labs/pydoll?style=social"></a>
+    <a href="https://pypi.org/project/pydoll-python/"><img src="https://img.shields.io/pypi/dm/pydoll-python?color=blue&label=downloads" alt="PyPI downloads"></a>
     <a href="https://codecov.io/gh/autoscrape-labs/pydoll" >
         <img src="https://codecov.io/gh/autoscrape-labs/pydoll/graph/badge.svg?token=40I938OGM9"/>
     </a>
@@ -22,14 +23,29 @@
     <a href="#support">Support</a>
 </p>
 
-Pydoll automates Chromium-based browsers (Chrome, Edge) by connecting directly to the Chrome DevTools Protocol over WebSocket. **No WebDriver binary, no `navigator.webdriver` flag, no compatibility issues.**
 
-It combines a high-level API for stealthy automation with low-level CDP access for fine-grained control over network, fingerprinting, and browser behavior. And with its new **Pydantic-powered extraction engine**, it maps the DOM directly to structured Python objects, delivering an unmatched Developer Experience (DX).
+
+**Pydoll is a stealth-first browser automation library for Python.** It talks straight to the Chrome DevTools Protocol over WebSocket, so there's no WebDriver binary and no `navigator.webdriver` flag to give you away. It clicks, types, and scrolls like a real person, which is often enough to sail through the bot-protection that stops ordinary automation cold. All of it behind a clean, async-native, fully typed API.
+
+<div align="center">
+  <h3>Be a good human, give it a star ⭐</h3>
+  <sub>No star, no bug fixes. Just kidding. Or not.</sub>
+</div>
+
+### Why Pydoll?
+
+- **Looks human, not like a bot**: Human-like [mouse movement](https://pydoll.tech/docs/features/automation/mouse-control/) (Bezier curves), realistic typing, and scroll physics. Enough to pass behavioral challenges like Cloudflare Turnstile or reCAPTCHA v3, depending on your browser and IP reputation.
+- **Zero WebDrivers**: A direct CDP connection over WebSocket. No driver binary, no `navigator.webdriver` flag, no version-matching headaches.
+- **Stealth built in**: Realistic interactions plus granular [browser preference](https://pydoll.tech/docs/features/configuration/browser-preferences/) control for fingerprint management.
+- **Async and typed**: Built on `asyncio` from the ground up, 100% type-checked with `mypy`. Full IDE autocompletion and static error checking.
+- **Network control**: [Intercept](https://pydoll.tech/docs/features/network/interception/) requests to block ads/trackers, [monitor](https://pydoll.tech/docs/features/network/monitoring/) traffic for API discovery, and make [authenticated HTTP requests](https://pydoll.tech/docs/features/network/http-requests/) that inherit the browser session.
+- **Shadow DOM and iframes**: Full support for [shadow roots](https://pydoll.tech/docs/deep-dive/architecture/shadow-dom/) (including closed) and cross-origin iframes. Discover, query, and interact with elements inside them using the same API.
+- **Structured extraction**: Define a [Pydantic](https://docs.pydantic.dev/) model, call `tab.extract()`, and get typed, validated data back. No manual element-by-element querying.
 
 > [!NOTE]
 > **A word from the maintainer.** Pydoll is currently maintained by a single person, and I'm a bit stretched at the moment, so new releases and replies to issues may take a little longer than usual. To be clear: **the project is not dead, and it is not going anywhere.** Development continues; it's just moving at a calmer pace for now.
 >
-> If Pydoll is useful to you, the best way to help is to **[star the repository](https://github.com/autoscrape-labs/pydoll)**. It genuinely strengthens the project and its reach. And if you're able to, please consider **[sponsoring the work](https://github.com/sponsors/thalissonvs)**. Every star and every sponsorship helps keep Pydoll alive and moving forward. Thank you! 🙏
+> **A goal to aim for:** once the project reaches **10k stars**, I plan to ship **Firefox support**, a big step that opens up a whole new range of possibilities for the library. Momentum like that is exactly the kind of incentive that makes a feature this large worth taking on, so if you'd like to see it happen, that's the push it needs.
 
 ### Top Sponsors
 
@@ -58,14 +74,6 @@ It combines a high-level API for stealthy automation with low-level CDP access f
 
 <sub>[Learn more about our sponsors](SPONSORS.md) &middot; [Become a sponsor](https://github.com/sponsors/thalissonvs)</sub>
 
-### Why Pydoll
-
-- **Structured extraction**: Define a [Pydantic](https://docs.pydantic.dev/) model, call `tab.extract()`, get typed and validated data back. No manual element-by-element querying.
-- **Async and typed**: Built on `asyncio` from the ground up, 100% type-checked with `mypy`. Full IDE autocompletion and static error checking.
-- **Stealth built in**: Human-like mouse movement, realistic typing, and granular [browser preference](https://pydoll.tech/docs/features/configuration/browser-preferences/) control for fingerprint management.
-- **Network control**: [Intercept](https://pydoll.tech/docs/features/network/interception/) requests to block ads/trackers, [monitor](https://pydoll.tech/docs/features/network/monitoring/) traffic for API discovery, and make [authenticated HTTP requests](https://pydoll.tech/docs/features/network/http-requests/) that inherit the browser session.
-- **Shadow DOM and iframes**: Full support for [shadow roots](https://pydoll.tech/docs/deep-dive/architecture/shadow-dom/) (including closed) and cross-origin iframes. Discover, query, and interact with elements inside them using the same API.
-
 ## Installation
 
 ```bash
@@ -76,9 +84,40 @@ No WebDriver binaries or external dependencies required.
 
 ## Getting Started
 
-### 1. Stateful Automation & Evasion
+### 1. Solving Cloudflare Turnstile
 
-When you need to navigate, bypass challenges, or interact with dynamic UI, Pydoll's imperative API handles it. Pass `humanize=True` to add human-like timing for anti-bot evasion.
+Pydoll gets you past Cloudflare Turnstile the same way a person does: by placing a realistic, humanized click on the widget. It simulates a real user (humanized clicks and movements) and works to make the browser look genuine, so Turnstile assigns a high enough trust score to accept the click. Whether it succeeds depends on your browser and IP reputation.
+
+```python
+import asyncio
+
+from pydoll.browser.chromium import Chrome
+
+async def solve_turnstile():
+    async with Chrome() as browser:
+        tab = await browser.start()
+
+        # Waits for the Turnstile widget, performs a realistic click,
+        # and continues once it settles.
+        async with tab.expect_and_bypass_cloudflare_captcha():
+            await tab.go_to('https://site-with-turnstile.com')
+
+        print('Turnstile handled, continuing...')
+
+asyncio.run(solve_turnstile())
+```
+
+<p align="center">
+  <img src="public/images/cloudflare-example.gif" alt="Pydoll passing a Cloudflare Turnstile challenge with a humanized click" width="720" />
+</p>
+<p align="center"><sub>Pydoll getting past a Cloudflare Turnstile challenge with a realistic, humanized click.</sub></p>
+
+> [!NOTE]
+> Despite the method name, this isn't a magic bypass. Pydoll performs the same click a real user would; whether it passes depends on your environment (browser fingerprint and IP reputation). See the [Turnstile docs](https://pydoll.tech/docs/features/advanced/behavioral-captcha-bypass/) for details.
+
+### 2. Stealthy Automation
+
+When you need to navigate, get past challenges, or interact with dynamic UI, Pydoll's imperative API handles it. Pass `humanize=True` to add human-like timing for anti-bot evasion.
 
 ```python
 import asyncio
@@ -109,14 +148,17 @@ async def google_search(query: str):
 asyncio.run(google_search('pydoll site:github.com'))
 ```
 
-And this is the expected output:
+<p align="center">
+  <img width="100%" alt="Pydoll running a humanized Google search" src="https://github.com/user-attachments/assets/ccf22ee9-3a96-4e49-b15e-5049361a0608" />
+</p>
 
-<img width="1980" height="1114" alt="2026-05-22 18-10-05 (1)" src="https://github.com/user-attachments/assets/ccf22ee9-3a96-4e49-b15e-5049361a0608" />
+## Features
 
+<details>
+<summary><b>Structured Data Extraction (Pydantic)</b></summary>
+<br>
 
-### 2. Structured Data Extraction
-
-Once you reach the target page, switch to the declarative engine. Define what you want with a model, and Pydoll extracts it, typed, validated, and ready to use.
+Define what you want with a [Pydantic](https://docs.pydantic.dev/) model and Pydoll maps the DOM straight into typed, validated Python objects, no manual element-by-element querying. Models support CSS/XPath auto-detection, HTML attribute targeting, custom transforms, and nested models.
 
 ```python
 import asyncio
@@ -139,68 +181,11 @@ async def extract_quotes():
 
         for q in quotes:
             print(f'{q.author}: {q.text}')  # fully typed, IDE autocomplete works
-            print(q.tags)                    # list[str], not a raw element
             print(q.model_dump_json())       # pydantic serialization built-in
 
 asyncio.run(extract_quotes())
 ```
-
-Models support CSS/XPath auto-detection, HTML attribute targeting, custom transforms, and nested models.
-
-<details>
-<summary><b>Nested models, transforms, and attribute extraction</b></summary>
-<br>
-
-```python
-import asyncio
-from datetime import datetime
-
-from pydoll.browser.chromium import Chrome
-from pydoll.extractor import ExtractionModel, Field
-
-
-def parse_date(raw: str) -> datetime:
-    return datetime.strptime(raw.strip(), '%B %d, %Y')
-
-
-class Author(ExtractionModel):
-    name: str = Field(selector='.author')
-    profile_url: str = Field(selector='a', attribute='href')
-
-
-class Quote(ExtractionModel):
-    text: str = Field(selector='.text')
-    author: Author = Field(selector='span:has(.author)', description='Nested model')
-    tags: list[str] = Field(selector='.tag')
-
-
-class AuthorBio(ExtractionModel):
-    name: str = Field(selector='.author-title')
-    born: datetime = Field(selector='.author-born-date', transform=parse_date)
-    location: str = Field(selector='.author-born-location')
-
-
-async def scrape():
-    async with Chrome() as browser:
-        tab = await browser.start()
-
-        await tab.go_to('https://quotes.toscrape.com')
-        quotes = await tab.extract_all(Quote, scope='.quote', timeout=5)
-
-        author = quotes[0].author
-        print(author.name)         # Albert Einstein
-        print(author.profile_url)  # /author/Albert-Einstein, taken from the href attribute
-
-        await tab.go_to(f'https://quotes.toscrape.com{author.profile_url}/')
-        bio = await tab.extract(AuthorBio, scope='.author-details', timeout=5)
-        print(bio.born.year)       # 1879, an int. types are preserved all the way down
-
-
-asyncio.run(scrape())
-```
 </details>
-
-## Features
 
 <details>
 <summary><b>Humanized Mouse Movement</b></summary>
