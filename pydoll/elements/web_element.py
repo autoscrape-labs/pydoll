@@ -27,7 +27,6 @@ from pydoll.exceptions import (
     ElementNotAFileInput,
     ElementNotFound,
     ElementNotInteractable,
-    ElementNotVisible,
     InvalidFileExtension,
     InvalidIFrame,
     MissingScreenshotPath,
@@ -494,6 +493,9 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
     ):
         """Wait for element to meet specified conditions.
 
+        With ``timeout=0`` the conditions are checked once and, if not met,
+        ``WaitElementTimeout`` is raised immediately (no polling).
+
         Raises:
             ValueError: If neither ``is_visible`` nor ``is_interactable`` is True.
             WaitElementTimeout: If the condition is not met within ``timeout``.
@@ -525,31 +527,37 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
                 logger.info(f'Element condition satisfied: {condition_msg}')
                 return
 
-            if timeout and loop.time() - start_time > timeout:
+            if loop.time() - start_time >= timeout:
                 logger.error(f'Timeout waiting for element to become {condition_msg}')
                 raise WaitElementTimeout(f'Timed out waiting for element to become {condition_msg}')
 
             await asyncio.sleep(0.5)
 
-    async def click_using_js(self):
+    async def click_using_js(self, timeout: int = 0):
         """
         Click element using JavaScript click() method.
 
+        Args:
+            timeout: Maximum seconds to wait for element to become visible.
+                When 0, raises immediately if not visible.
+
         Raises:
-            ElementNotVisible: If element is not visible.
+            ValueError: If timeout is negative.
+            WaitElementTimeout: If element does not become visible within timeout.
             ElementNotInteractable: If element couldn't be clicked.
 
         Note:
             For <option> elements, uses specialized selection approach.
             Element is automatically scrolled into view.
         """
+        if timeout < 0:
+            raise ValueError('timeout must be greater than or equal to 0')
+
         if await self._is_option_element():
             return await self._click_option_tag()
 
+        await self.wait_until(is_visible=True, timeout=timeout)
         await self.scroll_into_view()
-
-        if not await self.is_visible():
-            raise ElementNotVisible()
 
         logger.info(f'Clicking element via JS: object_id={self._object_id}')
         result = await self.execute_script(Scripts.CLICK, return_by_value=True)
@@ -563,6 +571,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         y_offset: int = 0,
         hold_time: float = 0.1,
         humanize: bool = False,
+        timeout: int = 0,
     ):
         """
         Click element using simulated mouse events.
@@ -575,20 +584,24 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
                 Bezier curve movement from the current tracked position to the
                 element center before clicking. When False, dispatches raw CDP
                 mousePressed/mouseReleased events directly.
+            timeout: Maximum seconds to wait for element to become visible.
+                When 0, raises immediately if not visible.
 
         Raises:
-            ElementNotVisible: If element is not visible.
+            ValueError: If timeout is negative.
+            WaitElementTimeout: If element does not become visible within timeout.
 
         Note:
             For <option> elements, delegates to specialized JavaScript approach.
             Element is automatically scrolled into view.
         """
+        if timeout < 0:
+            raise ValueError('timeout must be greater than or equal to 0')
+
         if await self._is_option_element():
             return await self._click_option_tag()
 
-        if not await self.is_visible():
-            raise ElementNotVisible()
-
+        await self.wait_until(is_visible=True, timeout=timeout)
         await self.scroll_into_view()
 
         try:

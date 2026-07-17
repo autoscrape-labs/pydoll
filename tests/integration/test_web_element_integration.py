@@ -20,7 +20,6 @@ from pydoll.elements.web_element import WebElement
 from pydoll.exceptions import (
     ElementNotFound,
     ElementNotInteractable,
-    ElementNotVisible,
     ShadowRootNotFound,
     WaitElementTimeout,
 )
@@ -305,8 +304,38 @@ async def test_click_using_js_selects_option(element_tab):
 @pytest.mark.asyncio
 async def test_click_using_js_raises_when_element_not_visible(element_tab):
     hidden_button = await element_tab.find(id='hidden-btn')
-    with pytest.raises(ElementNotVisible):
+    with pytest.raises(WaitElementTimeout):
         await hidden_button.click_using_js()
+
+
+@pytest.mark.asyncio
+async def test_click_raises_when_element_not_visible(element_tab):
+    hidden_button = await element_tab.find(id='hidden-btn')
+    with pytest.raises(WaitElementTimeout):
+        await hidden_button.click()
+
+
+@pytest.mark.asyncio
+async def test_click_waits_for_element_to_become_visible(element_tab):
+    late_button = await element_tab.find(id='late-btn')
+    await late_button.click(timeout=3)
+    result = await element_tab.find(id='late-clicks')
+    assert (await result.text) == 'clicked'
+
+
+@pytest.mark.asyncio
+async def test_click_using_js_waits_for_element_to_become_visible(element_tab):
+    late_button = await element_tab.find(id='late-btn')
+    await late_button.click_using_js(timeout=3)
+    result = await element_tab.find(id='late-clicks')
+    assert (await result.text) == 'clicked'
+
+
+@pytest.mark.asyncio
+async def test_click_times_out_when_element_never_becomes_visible(element_tab):
+    hidden_button = await element_tab.find(id='hidden-btn')
+    with pytest.raises(WaitElementTimeout):
+        await hidden_button.click(timeout=1)
 
 
 @pytest.mark.asyncio
