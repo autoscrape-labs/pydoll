@@ -119,7 +119,6 @@ if TYPE_CHECKING:
         NavigateResponse,
         PrintToPDFResponse,
     )
-    from pydoll.protocol.runtime.methods import CallFunctionOnResponse, EvaluateResponse
     from pydoll.protocol.storage.methods import GetCookiesResponse as StorageGetCookiesResponse
     from pydoll.protocol.target.methods import AttachToTargetResponse, GetTargetsResponse
 
@@ -146,32 +145,38 @@ class Tab(FindElementsMixin):
     def __init__(
         self,
         browser: Browser,
+        connection_host: Optional[str] = None,
         connection_port: Optional[int] = None,
         target_id: Optional[str] = None,
         browser_context_id: Optional[str] = None,
         ws_address: Optional[str] = None,
         connection_handler: Optional[ConnectionHandler] = None,
+        use_secure: bool = False,
     ):
         """
         Initialize tab controller for existing browser tab.
 
         Args:
             browser: Browser instance that created this tab.
+            connection_host: CDP WebSocket host.
             connection_port: CDP WebSocket port.
             target_id: CDP target identifier for this tab.
             browser_context_id: Optional browser context ID.
             ws_address: Optional WebSocket address for this tab.
             connection_handler: Pre-built connection handler; created from
                 connection details when omitted (mainly for testing).
+            use_secure: Use secure WebSocket (wss://).
         """
         if not any([connection_port, target_id, ws_address]):
             raise InvalidTabInitialization()
 
         self._browser = browser
+        self._connection_host = connection_host
         self._connection_port = connection_port
         self._target_id = target_id
         self._ws_address = ws_address
         self._browser_context_id = browser_context_id
+        self._use_secure = use_secure
         self._connection_handler = connection_handler or self._get_connection_handler()
         self._page_events_enabled = False
         self._network_events_enabled = False
@@ -189,7 +194,9 @@ class Tab(FindElementsMixin):
             (
                 f'Tab initialized: target_id={self._target_id}, '
                 f'ws_address_set={bool(self._ws_address)}, '
-                f'context_id={self._browser_context_id}, port={self._connection_port}'
+                f'context_id={self._browser_context_id}, '
+                f'host={self._connection_host}, port={self._connection_port}, '
+                f'use_secure={self._use_secure}'
             )
         )
 
@@ -700,7 +707,12 @@ class Tab(FindElementsMixin):
 
     async def _collect_oopif_shadow_roots(self) -> list[ShadowRoot]:
         """Discover shadow roots inside cross-origin iframes (OOPIFs)."""
-        browser_handler = ConnectionHandler(connection_port=self._connection_port)
+        browser_handler = ConnectionHandler(
+            connection_host=self._connection_host,
+            connection_port=self._connection_port,
+            ws_address=self._ws_address,
+            use_secure=self._use_secure,
+        )
         targets_response: GetTargetsResponse = await browser_handler.execute_command(
             TargetCommands.get_targets()
         )
@@ -1840,9 +1852,15 @@ class Tab(FindElementsMixin):
             return ConnectionHandler(ws_address=self._ws_address)
         logger.debug(
             'Using port/target for connection handler: '
-            f'port={self._connection_port}, target_id={self._target_id}'
+            f'host={self._connection_host}, port={self._connection_port}, '
+            f'use_secure={self._use_secure}, target_id={self._target_id}'
         )
-        return ConnectionHandler(self._connection_port, self._target_id)
+        return ConnectionHandler(
+            connection_host=self._connection_host,
+            connection_port=self._connection_port,
+            page_id=self._target_id,
+            use_secure=self._use_secure,
+        )
 
     @staticmethod
     def _get_evaluate_command(

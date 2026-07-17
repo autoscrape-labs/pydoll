@@ -217,8 +217,27 @@ async def test_enable_and_disable_runtime_events(browser, fake_conn):
     assert fake_conn.commands_for('Runtime.disable')
 
 
-@pytest.mark.parametrize('bad_address', ['http://not-a-ws', 'ws://tooshort'])
+@pytest.mark.parametrize('bad_address', ['http://not-a-ws', 'ws://'])
 @pytest.mark.asyncio
 async def test_connect_rejects_invalid_ws_address(browser, bad_address):
     with pytest.raises(InvalidWebSocketAddress):
         await browser.connect(bad_address)
+
+
+@pytest.mark.parametrize('valid_address', ['ws://tooshort'])
+@pytest.mark.asyncio
+async def test_connect_accepts_short_address_with_host(browser, fake_conn, valid_address):
+    """Short URLs with a valid hostname should NOT raise InvalidWebSocketAddress."""
+    fake_conn.set_response(
+        'Target.getTargets',
+        {'targetInfos': [{'targetId': 'tab-1', 'type': 'page', 'url': 'about:blank'}]},
+    )
+    try:
+        await browser.connect(valid_address)
+    except InvalidWebSocketAddress:
+        pytest.fail(f'{valid_address} should not raise InvalidWebSocketAddress')
+    except Exception as e:
+        pytest.fail(f'Unknown issue occurred while testing short address: {e}')
+    assert fake_conn._ensure_active_connection_called, (
+        '_ensure_active_connection was not called during connect'
+    )

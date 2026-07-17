@@ -378,3 +378,21 @@ async def test_context_manager_runs_commands_and_has_repr(cdp_server):
         assert result['result'] == {'ok': True}
         assert 'ConnectionHandler' in repr(handler)
         assert 'ConnectionHandler' in str(handler)
+
+
+@pytest.mark.asyncio
+async def test_resolves_page_level_address_from_explicit_host_port_and_page_id(cdp_server):
+    """A handler given a host + port + page_id + use_secure resolves and connects via the page-level devtools path."""
+    cdp_server.set_result('Page.enable', {})
+    handler = ConnectionHandler(
+        connection_host='localhost',
+        connection_port=cdp_server.port,
+        page_id='abc',
+        use_secure=False,
+    )
+    try:
+        result = await handler.execute_command({'method': 'Page.enable'})
+        assert result['result'] == {}
+        assert cdp_server.total_connections >= 1
+    finally:
+        await handler.close()

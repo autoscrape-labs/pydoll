@@ -120,10 +120,15 @@ The `ConnectionHandler` class is designed to manage both command execution and e
 ```python
 def __init__(
     self,
-    connection_port: int,
-    page_id: str = 'browser',
-    ws_address_resolver: Callable[[int], str] = get_browser_ws_address,
+    connection_host: Optional[str] = None,
+    connection_port: Optional[int] = None,
+    page_id: Optional[str] = None,
+    ws_address_resolver: Callable[
+        [WSAddressResolverParams], Coroutine[Any, Any, str]
+    ] = get_browser_ws_address,
     ws_connector: Callable = websockets.connect,
+    ws_address: Optional[str] = None,
+    use_secure: bool = False,
 ):
     # Initialize components...
 ```
@@ -132,10 +137,13 @@ The ConnectionHandler accepts several parameters:
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
+| `connection_host` | `str` | Host where the browser's CDP endpoint is listening |
 | `connection_port` | `int` | Port number where the browser's CDP endpoint is listening |
 | `page_id` | `str` | Identifier for the specific page/target (use 'browser' for browser-level connections) |
-| `ws_address_resolver` | `Callable` | Function to resolve the WebSocket URL from the port number |
+| `ws_address_resolver` | `Callable` | Function to resolve the WebSocket URL from the `WSAddressResolverParams` |
 | `ws_connector` | `Callable` | Function to establish the WebSocket connection |
+| `ws_address` | `str` | WebSocket address of browser's CDP endpoint for use with remote connections |
+| `use_secure` | `bool` | Whether to establish a secure connection to the browser's CDP endpoint |
 
 ### Internal Components
 
@@ -148,7 +156,9 @@ The ConnectionHandler orchestrates three primary components:
 ```mermaid
 classDiagram
     class ConnectionHandler {
+        -_connection_host: str
         -_connection_port: int
+        -_use_secure: bool
         -_page_id: str
         -_ws_connection
         -_command_manager: CommandManager

@@ -7,6 +7,7 @@ from html.parser import HTMLParser
 
 import aiohttp
 
+from pydoll.connection.types import WSAddressResolverParams
 from pydoll.exceptions import InvalidBrowserPath, InvalidResponse, NetworkError
 
 logger = logging.getLogger(__name__)
@@ -114,9 +115,12 @@ def decode_base64_to_bytes(image: str) -> bytes:
     return base64.b64decode(image.encode('utf-8'))
 
 
-async def get_browser_ws_address(port: int) -> str:
+async def get_browser_ws_address(params: WSAddressResolverParams) -> str:
     """
     Fetches the WebSocket address for the browser instance.
+
+    Args:
+        params: :class:`WSAddressResolverParams`
 
     Returns:
         str: The WebSocket address for the browser.
@@ -126,9 +130,18 @@ async def get_browser_ws_address(port: int) -> str:
             or missing data.
         InvalidResponse: If the response is not valid JSON.
     """
+    scheme = 'https' if params['use_secure'] else 'http'
+    host = params['host']
+    if host and ':' in host:
+        host = f'[{host}]'
+    port = params['port']
+    if port is None:
+        port = 443 if params['use_secure'] else 80
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.get(f'http://localhost:{port}/json/version') as response:
+            async with session.get(
+                f'{scheme}://{host}:{port}/json/version'
+            ) as response:
                 response.raise_for_status()
                 data = await response.json()
                 return data['webSocketDebuggerUrl']
