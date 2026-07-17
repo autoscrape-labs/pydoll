@@ -551,8 +551,8 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         if await self._is_option_element():
             return await self._click_option_tag()
 
-        await self.scroll_into_view()
         await self.wait_until(is_visible=True, timeout=timeout)
+        await self.scroll_into_view()
 
         logger.info(f'Clicking element via JS: object_id={self._object_id}')
         result = await self.execute_script(Scripts.CLICK, return_by_value=True)
@@ -596,8 +596,8 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         if await self._is_option_element():
             return await self._click_option_tag()
 
-        await self.scroll_into_view()
         await self.wait_until(is_visible=True, timeout=timeout)
+        await self.scroll_into_view()
 
         try:
             element_bounds = await self.bounds
