@@ -131,7 +131,7 @@ T = TypeVar('T', bound='ExtractionModel')
 
 _CLOUDFLARE_CHALLENGE_DOMAIN = 'challenges.cloudflare.com'
 _CLOUDFLARE_IFRAME_SELECTOR = f'iframe[src*="{_CLOUDFLARE_CHALLENGE_DOMAIN}"]'
-_CLOUDFLARE_CHECKBOX_SELECTOR = 'span.cb-i'
+_CLOUDFLARE_CHECKBOX_SELECTOR = 'input[type="checkbox"]'
 
 
 class Tab(FindElementsMixin):
@@ -1969,36 +1969,36 @@ class Tab(FindElementsMixin):
                 with contextlib.suppress(Exception):
                     await self.disable_page_events()
 
-    async def _find_cloudflare_shadow_root(self, timeout: float) -> ShadowRoot:
-        """Poll for the Cloudflare Turnstile shadow root.
+    async def _find_cloudflare_shadow_root(self) -> Optional[ShadowRoot]:
+        """Return the Cloudflare Turnstile shadow root if currently present.
 
-        Repeatedly calls ``find_shadow_roots(deep=False)`` and checks each
-        shadow root's ``inner_html`` for the Cloudflare challenge domain.
-
-        Args:
-            timeout: Maximum seconds to wait for the shadow root.
-
-        Returns:
-            The first ShadowRoot whose inner HTML contains
-            ``challenges.cloudflare.com``.
-
-        Raises:
-            WaitElementTimeout: If no matching shadow root is found within
-                *timeout* seconds.
+        Performs a single scan of the page's shadow roots and returns the first
+        one whose ``inner_html`` references ``challenges.cloudflare.com``, or
+        ``None`` when the challenge widget has not been injected yet.
         """
-        start_time = asyncio.get_running_loop().time()
-        while True:
-            shadow_roots = await self.find_shadow_roots(deep=False)
-            for sr in shadow_roots:
-                html = await sr.inner_html
-                if _CLOUDFLARE_CHALLENGE_DOMAIN in html:
-                    return sr
+        for shadow_root in await self.find_shadow_roots(deep=False):
+            with contextlib.suppress(Exception):
+                if _CLOUDFLARE_CHALLENGE_DOMAIN in await shadow_root.inner_html:
+                    return shadow_root
+        return None
 
-            if asyncio.get_running_loop().time() - start_time > timeout:
-                raise WaitElementTimeout(
-                    f'Timed out after {timeout}s waiting for Cloudflare Turnstile shadow root'
-                )
-            await asyncio.sleep(0.5)
+    @staticmethod
+    async def _click_cloudflare_checkbox(shadow_root: ShadowRoot) -> None:
+        """Traverse the Turnstile widget and click its verification checkbox.
+
+        Navigates shadow root -> challenge iframe -> body -> inner shadow root
+        and clicks the ``input[type="checkbox"]`` element. Every step fails
+        fast (``timeout=0``): any node captured here can go stale while
+        Cloudflare re-renders the iframe, and polling locally on a stale node
+        both wastes time and can let four sequential waits overrun the caller's
+        deadline. Failing fast lets ``_bypass_cloudflare`` restart the whole
+        traversal from the top on its next poll.
+        """
+        iframe = await shadow_root.query(_CLOUDFLARE_IFRAME_SELECTOR, timeout=0)
+        body = await iframe.find(tag_name='body', timeout=0)
+        inner_shadow = await body.get_shadow_root(timeout=0)
+        checkbox = await inner_shadow.query(_CLOUDFLARE_CHECKBOX_SELECTOR, timeout=0)
+        await checkbox.click()
 
     async def _bypass_cloudflare(
         self,
@@ -2007,21 +2007,31 @@ class Tab(FindElementsMixin):
     ) -> None:
         """Attempt to bypass Cloudflare Turnstile captcha via shadow root traversal.
 
-        Traverses shadow roots to locate the Cloudflare iframe, navigates into
-        it, and clicks the actual checkbox element (``span.cb-i``).
+        Polls for the challenge widget and clicks its checkbox, retrying the
+        whole traversal until *time_to_wait_captcha* elapses. Retrying is
+        required because Cloudflare injects the widget after the load event and
+        re-renders the challenge iframe during its proof-of-work, which
+        invalidates any node captured mid-traversal.
         """
-        try:
-            timeout_int = int(time_to_wait_captcha)
-            shadow_root = await self._find_cloudflare_shadow_root(
-                timeout=time_to_wait_captcha,
-            )
-            iframe = await shadow_root.query(_CLOUDFLARE_IFRAME_SELECTOR, timeout=timeout_int)
-            body = await iframe.find(tag_name='body', timeout=timeout_int)
-            inner_shadow = await body.get_shadow_root(timeout=time_to_wait_captcha)
-            checkbox = await inner_shadow.query(_CLOUDFLARE_CHECKBOX_SELECTOR, timeout=timeout_int)
-            await checkbox.click()
-        except Exception as exc:
-            logger.error(f'Error in cloudflare bypass: {exc}')
+        loop = asyncio.get_event_loop()
+        deadline = loop.time() + time_to_wait_captcha
+        last_error: Optional[Exception] = None
+        while True:
+            try:
+                shadow_root = await self._find_cloudflare_shadow_root()
+                if shadow_root is not None:
+                    await self._click_cloudflare_checkbox(shadow_root)
+                    return
+            except Exception as exc:
+                last_error = exc
+                logger.debug(f'Cloudflare bypass attempt failed, retrying: {exc}')
+
+            if loop.time() >= deadline:
+                break
+            await asyncio.sleep(0.5)
+
+        if last_error is not None:
+            logger.error(f'Error in cloudflare bypass: {last_error}')
 
 
 class _DownloadHandle:

@@ -72,3 +72,56 @@ async def test_stop_flushes_in_flight_request_as_pending_entry():
     assert entry['request']['url'] == 'http://x/slow'
     assert entry['response']['status'] == 0
     assert entry['response']['statusText'] == '(pending)'
+
+
+class _BodyTab(_FakeTab):
+    """Fake tab whose getResponseBody returns empty until a given attempt."""
+
+    def __init__(self, body: str, ready_on_attempt: int):
+        super().__init__()
+        self._body = body
+        self._ready_on_attempt = ready_on_attempt
+        self.body_calls = 0
+
+    async def _execute_command(self, command):
+        self.body_calls += 1
+        if self.body_calls < self._ready_on_attempt:
+            return {'result': {'body': '', 'base64Encoded': False}}
+        return {'result': {'body': self._body, 'base64Encoded': False}}
+
+
+@pytest.mark.asyncio
+async def test_fetch_response_body_retries_until_body_available():
+    """A body arriving a few attempts late (Windows race) is still captured."""
+    tab = _BodyTab('Hello from the test server', ready_on_attempt=3)
+    recorder = HarRecorder(tab=tab)
+
+    body, is_base64 = await recorder._fetch_response_body('r1', expects_body=True)
+
+    assert body == 'Hello from the test server'
+    assert is_base64 is False
+    assert tab.body_calls == 3
+
+
+@pytest.mark.asyncio
+async def test_fetch_response_body_no_retry_when_body_not_expected():
+    """A legitimately empty body must not incur retries (204/redirect/etc)."""
+    tab = _BodyTab('never', ready_on_attempt=99)
+    recorder = HarRecorder(tab=tab)
+
+    body, is_base64 = await recorder._fetch_response_body('r1', expects_body=False)
+
+    assert body == ''
+    assert tab.body_calls == 1
+
+
+@pytest.mark.asyncio
+async def test_fetch_response_body_gives_up_after_max_attempts():
+    """When the body never materializes, fall back to empty without hanging."""
+    tab = _BodyTab('never', ready_on_attempt=99)
+    recorder = HarRecorder(tab=tab)
+
+    body, _ = await recorder._fetch_response_body('r1', expects_body=True)
+
+    assert body == ''
+    assert tab.body_calls == 5
