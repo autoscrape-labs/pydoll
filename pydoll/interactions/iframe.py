@@ -31,6 +31,12 @@ class IFrameContext:
     session_handler: Optional[ConnectionHandler] = None
     session_id: Optional[str] = None
 
+    async def close(self) -> None:
+        """Close the session handler if one was created for this context."""
+        if self.session_handler is not None:
+            await self.session_handler.close()
+            self.session_handler = None
+
 
 class IFrameContextResolver:
     """Resolves iframe context for WebElement."""
@@ -244,6 +250,9 @@ class IFrameContextResolver:
                 resolved_url or current_document_url,
             )
 
+        if session_handler:
+            await session_handler.close()
+
         return (
             None,
             None,
@@ -274,6 +283,27 @@ class IFrameContextResolver:
         browser_handler = ConnectionHandler(
             connection_port=self._element._connection_handler._connection_port
         )
+        try:
+            return await self._try_resolve_oopif(
+                browser_handler,
+                content_frame_id,
+                backend_node_id,
+                base_handler,
+                base_session_id,
+            )
+        except Exception:
+            await browser_handler.close()
+            raise
+
+    async def _try_resolve_oopif(
+        self,
+        browser_handler: ConnectionHandler,
+        content_frame_id: str,
+        backend_node_id: Optional[int],
+        base_handler: Optional[ConnectionHandler],
+        base_session_id: Optional[str],
+    ) -> tuple[Optional[ConnectionHandler], Optional[str], Optional[str], Optional[str]]:
+        """Core logic for OOPIF resolution. Caller owns the handler lifecycle."""
         targets_response: GetTargetsResponse = await browser_handler.execute_command(
             TargetCommands.get_targets()
         )
@@ -370,6 +400,7 @@ class IFrameContextResolver:
             if child_frame_id:
                 return browser_handler, attached_session_id, child_frame_id, None
 
+        await browser_handler.close()
         return None, None, None, None
 
     @staticmethod

@@ -79,12 +79,6 @@ async def test_insert_text_and_clear_update_value(element_tab):
     assert await _live(field, 'this.value') == ''
 
 
-@pytest.mark.xfail(
-    reason='insert_text caches the inserted text as the whole value; on a non-empty '
-    'field the real DOM value is the existing text plus the insertion, so the '
-    'cached element.value diverges from the DOM',
-    strict=False,
-)
 @pytest.mark.asyncio
 async def test_insert_text_cached_value_matches_dom_on_nonempty_field(element_tab):
     field = await element_tab.find(id='text-input')
@@ -336,3 +330,98 @@ async def test_bounds_raises_key_error_for_element_without_box_model(element_tab
     contents_only = await element_tab.find(id='contents-only')
     with pytest.raises(KeyError):
         await contents_only.bounds
+
+
+# --- insert_text on input types where selectionStart/selectionEnd throw ---
+
+
+@pytest.mark.asyncio
+async def test_insert_text_on_number_input_does_not_raise(element_tab):
+    """type=number inputs throw InvalidStateError on selectionStart/selectionEnd.
+
+    The guarded INSERT_TEXT JS must catch this and still update the value.
+    """
+    field = await element_tab.find(id='number-input')
+    await field.insert_text('99')
+    assert await _live(field, 'this.value') == '4299'
+    assert field.value == '4299'
+
+
+@pytest.mark.asyncio
+async def test_insert_text_on_email_input_does_not_raise(element_tab):
+    """type=email inputs also lack selection APIs in some browsers."""
+    field = await element_tab.find(id='email-input')
+    await field.insert_text('+tag')
+    assert await _live(field, 'this.value') == 'user@example.com+tag'
+    assert field.value == 'user@example.com+tag'
+
+
+@pytest.mark.asyncio
+async def test_insert_text_on_text_input_still_restores_selection(element_tab):
+    """Normal text inputs must continue to support selection restoration."""
+    field = await element_tab.find(id='text-input')
+    await field.clear()
+    await field.insert_text('hello')
+    # Place cursor in the middle, then insert
+    await field.execute_script(
+        "this.selectionStart = this.selectionEnd = 2; return null",
+        return_by_value=True,
+    )
+    await field.insert_text('XY')
+    live = await _live(field, 'this.value')
+    assert live == 'heXYllo'
+    assert field.value == 'heXYllo'
+
+
+@pytest.mark.asyncio
+async def test_insert_text_empty_on_number_input_clears_via_select_all(element_tab):
+    """Empty insert on a non-selectable input still runs the select-all path.
+
+    el.select() is a no-op on number inputs, so start=0/end=length causes
+    the value to be replaced with '' (before='' + text='' + after='').
+    """
+    field = await element_tab.find(id='number-input')
+    # Reset to known value via JS directly (can't clear() on number input)
+    await field.execute_script("this.value = '7'", return_by_value=True)
+    await field.insert_text('')
+    live = await _live(field, 'this.value')
+    assert live == ''
+    assert field.value == ''
+
+
+@pytest.mark.asyncio
+async def test_insert_text_falls_back_to_append_when_selection_read_throws(element_tab):
+    """Simulate browsers that throw on reading selectionStart/selectionEnd.
+
+    Chromium returns null for non-selectable inputs, but some browsers (e.g.
+    Firefox) throw InvalidStateError on the read. Shadow the getters to throw,
+    then verify insert_text falls back to the append-only path (first catch
+    block, constants.py lines 414-419).
+    """
+    field = await element_tab.find(id='text-input')
+    await field.clear()
+    await field.execute_script("this.value = 'before'", return_by_value=True)
+
+    # Shadow selectionStart/selectionEnd with throwing getters
+    await field.execute_script(r"""
+        Object.defineProperty(this, 'selectionStart', {
+            get: function() { throw new DOMException('no selection', 'InvalidStateError'); },
+            configurable: true
+        });
+        Object.defineProperty(this, 'selectionEnd', {
+            get: function() { throw new DOMException('no selection', 'InvalidStateError'); },
+            configurable: true
+        });
+    """)
+
+    await field.insert_text(' after')
+
+    live = await _live(field, 'this.value')
+    assert live == 'before after'
+    assert field.value == 'before after'
+
+    # Empty text should clear the field, not leave it unchanged
+    await field.insert_text('')
+    live = await _live(field, 'this.value')
+    assert live == ''
+    assert field.value == ''

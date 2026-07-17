@@ -11,7 +11,7 @@ async def example_with_context_manager():
     """
     browser = Chrome()
     await browser.start()
-    page = await browser.get_page()
+    page = await browser.new_tab()
 
     print('Using context manager approach...')
     async with page.expect_and_bypass_cloudflare_captcha():
@@ -32,7 +32,7 @@ async def example_with_enable_disable():
     """
     browser = Chrome()
     await browser.start()
-    page = await browser.get_page()
+    page = await browser.new_tab()
 
     print('Using enable/disable approach...')
 

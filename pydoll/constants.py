@@ -408,12 +408,34 @@ new Promise((resolve) => {{
 
         // Standard input/textarea
         if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-            const start = el.selectionStart || el.value.length;
-            const end = el.selectionEnd || el.value.length;
+            el.focus();
+            let start, end;
+            try {
+                start = el.selectionStart;
+                end = el.selectionEnd;
+            } catch (e) {
+                // Unsupported input type (number, email, range, etc.)
+                el.value = text ? el.value + text : '';
+                el.dispatchEvent(new Event('input', { bubbles: true }));
+                el.dispatchEvent(new Event('change', { bubbles: true }));
+                return true;
+            }
+            const hasSelection = start !== end;
+            // When inserting empty text with no selection, select all first
+            // so the field is cleared (matches user expectation for insertText('')).
+            if (!hasSelection && text === '') {
+                el.select();
+                start = 0;
+                end = el.value.length;
+            }
+            start = start ?? el.value.length;
+            end = end ?? el.value.length;
             const before = el.value.substring(0, start);
             const after = el.value.substring(end);
             el.value = before + text + after;
-            el.selectionStart = el.selectionEnd = start + text.length;
+            try {
+                el.selectionStart = el.selectionEnd = start + text.length;
+            } catch (e) {}
             el.dispatchEvent(new Event('input', { bubbles: true }));
             el.dispatchEvent(new Event('change', { bubbles: true }));
             return true;

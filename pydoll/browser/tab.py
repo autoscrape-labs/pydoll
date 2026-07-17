@@ -624,13 +624,13 @@ class Tab(FindElementsMixin):
         if not timeout:
             return await self._collect_all_shadow_roots(deep)
 
-        start_time = asyncio.get_event_loop().time()
+        start_time = asyncio.get_running_loop().time()
         while True:
             shadow_roots = await self._collect_all_shadow_roots(deep)
             if shadow_roots:
                 return shadow_roots
 
-            if asyncio.get_event_loop().time() - start_time > timeout:
+            if asyncio.get_running_loop().time() - start_time > timeout:
                 raise WaitElementTimeout(
                     f'Timed out after {timeout}s waiting for shadow roots in page'
                 )
@@ -701,24 +701,27 @@ class Tab(FindElementsMixin):
     async def _collect_oopif_shadow_roots(self) -> list[ShadowRoot]:
         """Discover shadow roots inside cross-origin iframes (OOPIFs)."""
         browser_handler = ConnectionHandler(connection_port=self._connection_port)
-        targets_response: GetTargetsResponse = await browser_handler.execute_command(
-            TargetCommands.get_targets()
-        )
+        try:
+            targets_response: GetTargetsResponse = await browser_handler.execute_command(
+                TargetCommands.get_targets()
+            )
 
-        target_infos = targets_response.get('result', {}).get('targetInfos', [])
-        iframe_targets = [t for t in target_infos if t.get('type') == 'iframe']
+            target_infos = targets_response.get('result', {}).get('targetInfos', [])
+            iframe_targets = [t for t in target_infos if t.get('type') == 'iframe']
 
-        if not iframe_targets:
-            logger.debug('No OOPIF targets found')
-            return []
+            if not iframe_targets:
+                logger.debug('No OOPIF targets found')
+                return []
 
-        shadow_roots: list[ShadowRoot] = []
-        for target in iframe_targets:
-            roots = await self._collect_shadow_roots_from_oopif_target(target, browser_handler)
-            shadow_roots.extend(roots)
+            shadow_roots: list[ShadowRoot] = []
+            for target in iframe_targets:
+                roots = await self._collect_shadow_roots_from_oopif_target(target, browser_handler)
+                shadow_roots.extend(roots)
 
-        logger.debug(f'Found {len(shadow_roots)} shadow roots in OOPIFs')
-        return shadow_roots
+            logger.debug(f'Found {len(shadow_roots)} shadow roots in OOPIFs')
+            return shadow_roots
+        finally:
+            await browser_handler.close()
 
     async def _collect_shadow_roots_from_oopif_target(
         self,
@@ -1681,7 +1684,7 @@ class Tab(FindElementsMixin):
             _page_events_was_enabled = False
             await self.enable_page_events()
 
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         will_begin: asyncio.Future[bool] = loop.create_future()
         done: asyncio.Future[bool] = loop.create_future()
         state: dict[str, Any] = {

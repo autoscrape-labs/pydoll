@@ -166,13 +166,27 @@ def rewrite_html_urls(
     html: str,
     asset_map: dict[str, tuple[str, bytes, str, ResourceType]],
 ) -> str:
-    """Rewrite asset URLs in HTML to point to local assets/ directory."""
-    for url, (filename, data, mime, rtype) in asset_map.items():
+    """Rewrite asset URLs in HTML to point to local assets/ directory.
+
+    Handles both absolute URLs (https://...) and root-relative paths (/style.css)
+    by deriving the path component from each absolute URL and replacing it too.
+    """
+    replacements: dict[str, str] = {}
+    for url, (filename, data, mime, rtype) in list(asset_map.items()):
         if rtype == ResourceType.STYLESHEET:
             css_text = data.decode('utf-8', errors='replace')
             rewritten_css = rewrite_css_urls(css_text, url, asset_map)
             asset_map[url] = (filename, rewritten_css.encode('utf-8'), mime, rtype)
-        html = html.replace(url, f'assets/{filename}')
+
+        replacements[url] = f'assets/{filename}'
+        parsed = urlparse(url)
+        if parsed.path and parsed.path != '/':
+            replacements[parsed.path] = f'assets/{filename}'
+
+    # Apply longest-first to prevent shorter paths from corrupting longer ones.
+    for old_str in sorted(replacements, key=len, reverse=True):
+        html = html.replace(old_str, replacements[old_str])
+
     return html
 
 

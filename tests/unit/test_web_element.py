@@ -134,9 +134,39 @@ async def test_clear_raises_when_element_rejects_input(fake_conn, make_element):
 @pytest.mark.asyncio
 async def test_insert_text_updates_cached_value(fake_conn, make_element):
     element = make_element(attributes=['tag_name', 'input'])
-    fake_conn.set_response('Runtime.callFunctionOn', {'result': {'value': True}})
+    # insert_text makes two Runtime.callFunctionOn calls:
+    # 1. INSERT_TEXT script → returns True (success)
+    # 2. read this.value → returns the actual DOM value
+    call_count = 0
+
+    async def patched_execute(command, timeout=60):
+        nonlocal call_count
+        call_count += 1
+        if call_count == 1:
+            return {'id': 1, 'result': {'result': {'type': 'boolean', 'value': True}}}
+        return {'id': 2, 'result': {'result': {'type': 'string', 'value': 'hello'}}}
+
+    fake_conn.execute_command = patched_execute
     await element.insert_text('hello')
     assert element.value == 'hello'
+
+
+@pytest.mark.asyncio
+async def test_insert_text_cache_falls_back_when_reread_fails(fake_conn, make_element):
+    """When the re-read of this.value fails, the except block sets value = text."""
+    element = make_element(attributes=['tag_name', 'input'])
+    call_count = 0
+
+    async def patched_execute(command, timeout=60):
+        nonlocal call_count
+        call_count += 1
+        if call_count == 1:
+            return {'id': 1, 'result': {'result': {'type': 'boolean', 'value': True}}}
+        raise KeyError('result')
+
+    fake_conn.execute_command = patched_execute
+    await element.insert_text('fallback')
+    assert element.value == 'fallback'
 
 
 @pytest.mark.asyncio
