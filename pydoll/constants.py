@@ -253,7 +253,7 @@ class Scripts:
             // Extract cookies from set-cookie header
             const cookies = document.cookie;
             const responseClone = response.clone();
-            const [content, text] = await Promise.all([
+            let [content, text] = await Promise.all([
                 responseClone.arrayBuffer(),
                 response.text()
             ]);
