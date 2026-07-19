@@ -1,10 +1,14 @@
 from contextlib import suppress
+from typing import Any, Optional, cast
 
 from pydoll.browser.interfaces import Options
+from pydoll.browser.preference_types import PREFERENCE_SCHEMA, BrowserPreferences
 from pydoll.constants import PageLoadState
 from pydoll.exceptions import (
     ArgumentAlreadyExistsInOptions,
     ArgumentNotFoundInOptions,
+    InvalidPreferencePath,
+    InvalidPreferenceValue,
     WrongPrefsDict,
 )
 
@@ -24,13 +28,13 @@ class ChromiumOptions(Options):
         Sets up an empty list for command-line arguments and a string
         for the binary location of the browser.
         """
-        self._arguments = []
-        self._binary_location = ''
-        self._start_timeout = 10
-        self._browser_preferences = {}
-        self._headless = False
-        self._webrtc_leak_protection = False
-        self._page_load_state = PageLoadState.COMPLETE
+        self._arguments: list[str] = []
+        self._binary_location: str = ''
+        self._start_timeout: int = 10
+        self._browser_preferences: dict[str, Any] = {}
+        self._headless: bool = False
+        self._webrtc_leak_protection: bool = False
+        self._page_load_state: PageLoadState = PageLoadState.COMPLETE
 
     @property
     def arguments(self) -> list[str]:
@@ -122,16 +126,18 @@ class ChromiumOptions(Options):
         self._arguments.remove(argument)
 
     @property
-    def browser_preferences(self) -> dict:
-        return self._browser_preferences
+    def browser_preferences(self) -> BrowserPreferences:
+        return cast(BrowserPreferences, self._browser_preferences)
 
     @browser_preferences.setter
-    def browser_preferences(self, preferences: dict):
+    def browser_preferences(self, preferences: BrowserPreferences):
         if not isinstance(preferences, dict):
             raise ValueError('The experimental options value must be a dict.')
 
         if preferences.get('prefs'):
-            raise WrongPrefsDict
+            # deixar o WrongPrefsDict, mas com mensagem para ficar menos genérico
+            raise WrongPrefsDict("Top-level key 'prefs' is not allowed in browser preferences.")
+        # merge com preferências existentes
         self._browser_preferences = {**self._browser_preferences, **preferences}
 
     def _set_pref_path(self, path: list, value):
@@ -144,10 +150,64 @@ class ChromiumOptions(Options):
                     path (e.g., ['plugins', 'always_open_pdf_externally'])
             value -- The value to set at the given path
         """
-        d = self._browser_preferences
+        # validation will be handled in the updated implementation below
+        # (kept for backward-compatibility if callers rely on signature)
+        self._validate_pref_path(path)
+        self._validate_pref_value(path, value)
+
+        d = cast(dict[str, Any], self._browser_preferences)
         for key in path[:-1]:
             d = d.setdefault(key, {})
         d[path[-1]] = value
+
+    @staticmethod
+    def _validate_pref_path(path: list[str]) -> None:
+        """
+        Validate that the provided path exists in the PREFERENCE_SCHEMA.
+        Raises InvalidPreferencePath when any segment is invalid.
+        """
+        node = PREFERENCE_SCHEMA
+        for key in path:
+            if isinstance(node, dict) and key in node:
+                node = node[key]
+            else:
+                raise InvalidPreferencePath(f'Invalid preference path: {".".join(path)}')
+
+    @staticmethod
+    def _validate_pref_value(path: list[str], value: Any) -> None:
+        """
+        Validate the value type for the final segment in path against PREFERENCE_SCHEMA.
+        Supports recursive validation for nested dictionaries.
+        Raises InvalidPreferenceValue or InvalidPreferencePath on validation failure.
+        """
+        node = PREFERENCE_SCHEMA
+        # Walk to the parent node (assumes path is valid from _validate_pref_path)
+        for key in path[:-1]:
+            node = node[key]
+
+        final_key = path[-1]
+        expected = node[final_key]
+
+        if isinstance(expected, dict):
+            # Expected is a subschema dict; value must be a dict and match the schema
+            if not isinstance(value, dict):
+                raise InvalidPreferenceValue(
+                    f'Invalid value type for {".".join(path)}: '
+                    f'expected dict, got {type(value).__name__}'
+                )
+            # Recursively validate each key-value in the value dict
+            for k, v in value.items():
+                if k not in expected:
+                    raise InvalidPreferencePath(
+                        f'Invalid key "{k}" in preference path {".".join(path)}'
+                    )
+                ChromiumOptions._validate_pref_value(path + [k], v)
+        elif not isinstance(value, expected):
+            # Expected is a primitive type; check isinstance
+            raise InvalidPreferenceValue(
+                f'Invalid value type for {".".join(path)}: '
+                f'expected {expected.__name__}, got {type(value).__name__}'
+            )
 
     def _get_pref_path(self, path: list):
         """
@@ -160,6 +220,12 @@ class ChromiumOptions(Options):
         Returns:
             The value at the given path, or None if path doesn't exist
         """
+        # validate path structure first; if invalid, raise a clear exception
+        try:
+            self._validate_pref_path(path)
+        except InvalidPreferencePath:
+            raise
+
         nested_preferences = self._browser_preferences
         with suppress(KeyError, TypeError):
             for key in path:
@@ -190,8 +256,9 @@ class ChromiumOptions(Options):
         self._set_pref_path(['intl', 'accept_languages'], languages)
 
     @property
-    def prompt_for_download(self) -> bool:
-        return self._get_pref_path(['download', 'prompt_for_download'])
+    def prompt_for_download(self) -> Optional[bool]:
+        val = self._get_pref_path(['download', 'prompt_for_download'])
+        return val if isinstance(val, bool) else None
 
     @prompt_for_download.setter
     def prompt_for_download(self, enabled: bool):
@@ -224,8 +291,9 @@ class ChromiumOptions(Options):
         )
 
     @property
-    def password_manager_enabled(self) -> bool:
-        return self._get_pref_path(['profile', 'password_manager_enabled'])
+    def password_manager_enabled(self) -> Optional[bool]:
+        val = self._get_pref_path(['profile', 'password_manager_enabled'])
+        return val if isinstance(val, bool) else None
 
     @password_manager_enabled.setter
     def password_manager_enabled(self, enabled: bool):
@@ -238,7 +306,7 @@ class ChromiumOptions(Options):
             enabled: If True, the password manager is active.
         """
         self._set_pref_path(['profile', 'password_manager_enabled'], enabled)
-        self._set_pref_path(['credentials_enable_service'], enabled)
+        self._browser_preferences['credentials_enable_service'] = enabled
 
     @property
     def block_notifications(self) -> bool:
@@ -292,8 +360,9 @@ class ChromiumOptions(Options):
         )
 
     @property
-    def open_pdf_externally(self) -> bool:
-        return self._get_pref_path(['plugins', 'always_open_pdf_externally'])
+    def open_pdf_externally(self) -> Optional[bool]:
+        val = self._get_pref_path(['plugins', 'always_open_pdf_externally'])
+        return val if isinstance(val, bool) else None
 
     @open_pdf_externally.setter
     def open_pdf_externally(self, enabled: bool):
@@ -316,9 +385,8 @@ class ChromiumOptions(Options):
         self._headless = headless
         has_argument = '--headless' in self.arguments
         methods_map = {True: self.add_argument, False: self.remove_argument}
-        if headless == has_argument:
-            return
-        methods_map[headless]('--headless')
+        if headless != has_argument:
+            methods_map[headless]('--headless')
 
     @property
     def webrtc_leak_protection(self) -> bool:
