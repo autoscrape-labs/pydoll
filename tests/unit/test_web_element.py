@@ -61,6 +61,12 @@ def test_is_iframe_reflects_tag_name(make_element):
     assert make_element(attributes=['tag_name', 'div']).is_iframe is False
 
 
+def test_iframe_context_docstring_escapes_iframe_tag():
+    docstring = WebElement.iframe_context.fget.__doc__
+    assert docstring is not None
+    assert '``<iframe>``' in docstring
+
+
 def test_attributes_returns_a_copy(make_element):
     element = make_element(attributes=['id', 'x'])
     snapshot = element.attributes
