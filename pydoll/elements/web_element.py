@@ -225,7 +225,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
     @property
     async def iframe_context(self) -> Optional[IFrameContext]:
         """
-        Return the resolved iframe context for this element when it is an <iframe>.
+        Return the resolved iframe context for this element when it is an ``<iframe>``.
 
         The context includes: frame_id, document_url, execution_context_id,
         document_object_id and, for OOPIF targets, the session_id and
