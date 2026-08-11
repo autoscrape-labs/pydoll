@@ -54,7 +54,7 @@
 
 <sub>Read a full review of Pydoll on <b><a href="https://substack.thewebscraping.club/p/pydoll-webdriver-scraping?utm_source=github&utm_medium=repo&utm_campaign=pydoll">The Web Scraping Club</a></b>, the #1 newsletter dedicated to web scraping.</sub>
 
-<a href="https://go.nodemaven.com/pydoll">
+<a href="https://go.nodemaven.com/pydollgh">
     <img width="100%" alt="nodemaven" src="https://github.com/user-attachments/assets/fbde0385-0334-4f8a-a0fc-9b1eb54e049c" />
 </a>
 
