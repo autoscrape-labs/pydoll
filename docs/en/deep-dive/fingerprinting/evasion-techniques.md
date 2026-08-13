@@ -75,65 +75,36 @@ This sets both the `Accept-Language` HTTP header and `navigator.language` / `nav
 
 ### Timezone Override
 
-Pydoll does not currently wrap CDP's `Emulation.setTimezoneOverride` command, so timezone override requires JavaScript injection. The critical APIs to override are `Intl.DateTimeFormat().resolvedOptions().timeZone` and `Date.prototype.getTimezoneOffset()`:
+Pydoll wraps CDP's `Emulation.setTimezoneOverride` through `EmulationCommands.set_timezone_override`. The browser applies the change natively, so `Intl.DateTimeFormat().resolvedOptions().timeZone` and `Date.prototype.getTimezoneOffset()` report the new zone with no JavaScript getter for a detection script to inspect:
 
 ```python
-async def set_timezone(tab, timezone_id: str, offset_minutes: int):
-    """
-    Override timezone via JavaScript.
+from pydoll.commands.emulation_commands import EmulationCommands
 
-    Args:
-        timezone_id: IANA timezone name (e.g., 'Asia/Tokyo')
-        offset_minutes: UTC offset in minutes (e.g., -540 for JST)
-    """
-    script = f'''
-        const _origDTF = Intl.DateTimeFormat;
-        Intl.DateTimeFormat = function(...args) {{
-            const opts = args[1] || {{}};
-            opts.timeZone = '{timezone_id}';
-            return new _origDTF(args[0], opts);
-        }};
-        Object.defineProperty(Intl.DateTimeFormat, 'prototype', {{
-            value: _origDTF.prototype
-        }});
-        Date.prototype.getTimezoneOffset = function() {{ return {offset_minutes}; }};
-    '''
-    await tab.execute_script(script)
+await tab._execute_command(EmulationCommands.set_timezone_override('Asia/Tokyo'))
 ```
 
-!!! warning "`execute_script` vs `addScriptToEvaluateOnNewDocument`"
-    `tab.execute_script()` runs JavaScript in the current page context. If the page navigates, the override is lost. For overrides that must persist across navigations, use CDP's `Page.addScriptToEvaluateOnNewDocument`, which injects the script before any page JavaScript runs on every new document load. Pydoll uses this internally for User-Agent overrides. For timezone, you can send the CDP command directly:
-
-    ```python
-    await tab._connection_handler.execute_command(
-        'Page.addScriptToEvaluateOnNewDocument',
-        {'source': script}
-    )
-    ```
+Prefer the native command over JavaScript injection. Replacing `Intl.DateTimeFormat` or `Date.prototype.getTimezoneOffset` with a hand-written function is itself detectable under `toString` introspection, whereas the native override leaves both genuinely untouched.
 
 ### Geolocation Override
 
-For sites that request geolocation permission, the Geolocation API can be overridden via JavaScript:
+Pydoll wraps CDP's `Emulation.setGeolocationOverride` through `EmulationCommands.set_geolocation_override`. This overrides the position the Geolocation API returns natively, without patching `navigator.geolocation`:
 
 ```python
-async def set_geolocation(tab, latitude: float, longitude: float):
-    script = f'''
-        navigator.geolocation.getCurrentPosition = function(success) {{
-            success({{
-                coords: {{
-                    latitude: {latitude}, longitude: {longitude},
-                    accuracy: 1, altitude: null, altitudeAccuracy: null,
-                    heading: null, speed: null
-                }},
-                timestamp: Date.now()
-            }});
-        }};
-        navigator.geolocation.watchPosition = function(success) {{
-            return navigator.geolocation.getCurrentPosition(success);
-        }};
-    '''
-    await tab.execute_script(script)
+from pydoll.commands.emulation_commands import EmulationCommands
+
+await tab._execute_command(
+    EmulationCommands.set_geolocation_override(
+        latitude=35.6762,
+        longitude=139.6503,
+        accuracy=100,
+    )
+)
 ```
+
+As with the timezone, keep the coordinates consistent with the timezone and the egress IP.
+
+!!! tip "Apply timezone, locale and geolocation together"
+    Timezone rarely travels alone: it has to agree with the locale, the geolocation, and the IP. `tab.apply_fingerprint()` applies all of them (plus User-Agent and Client Hints) from a single profile in one coherent step, which is the recommended way to keep every layer consistent. See [Fingerprint Injection](../../features/advanced/fingerprint-injection.md).
 
 ## WebRTC Leak Protection
 

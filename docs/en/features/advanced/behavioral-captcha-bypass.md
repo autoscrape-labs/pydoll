@@ -206,6 +206,9 @@ async def stealth_configuration():
 asyncio.run(stealth_configuration())
 ```
 
+!!! danger "Using `apply_fingerprint()` with Turnstile? Match the browser version"
+    If you combine this interaction with [fingerprint injection](fingerprint-injection.md), the fingerprint's Chrome version **must** match the real Chrome binary you drive. Turnstile cross-references the version you claim (User-Agent and Client Hints) against the version it observes in the unspoofable TLS/HTTP2 handshake and JavaScript engine. A profile claiming Chrome 145 on a Chrome 151 binary is a contradiction no real browser produces, and Turnstile stays stuck on "Just a moment…" even non-headless. Align the profile to `await browser.get_version()` first. See [Fingerprint Injection → Chrome Version Mismatch](fingerprint-injection.md#case-study-a-chrome-version-mismatch-triggering-cloudflares-challenge).
+
 ### 3. Behavioral Patterns
 
 Captcha systems analyze how you interact with the page:

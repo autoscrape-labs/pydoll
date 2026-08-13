@@ -6,6 +6,14 @@ from pydoll.protocol.emulation.types import UserAgentBrandVersion, UserAgentMeta
 _CHROME_RE = re.compile(r'Chrome/(\d+)\.(\d+)\.(\d+)\.(\d+)')
 _EDGE_RE = re.compile(r'Edg/(\d+)\.(\d+)\.(\d+)\.(\d+)')
 
+# Token-reduction patterns: collapse a full 4-part Chrome/Edge build number
+# (e.g. 145.0.7632.75) down to the frozen "MAJOR.0.0.0" form. This is the only
+# form modern Chrome exposes in navigator.userAgent / the User-Agent header
+# after the Chromium User-Agent reduction; the real build number lives solely
+# in the Sec-CH-UA-Full-Version[-List] Client Hints.
+_CHROME_VERSION_TOKEN_RE = re.compile(r'(Chrome/)(\d+)\.\d+\.\d+\.\d+')
+_EDGE_VERSION_TOKEN_RE = re.compile(r'(Edg/)(\d+)\.\d+\.\d+\.\d+')
+
 _GREASE_BRANDS = [
     'Not/A)Brand',
     'Not A;Brand',
@@ -14,7 +22,8 @@ _GREASE_BRANDS = [
     'Not=A?Brand',
 ]
 
-_GREASE_MODULO = 100
+# Real Chrome pins the greased brand to a fixed version, not the browser major.
+_GREASE_VERSION = '99'
 
 _PLATFORM_MAP = {
     'windows': 'Win32',
@@ -94,6 +103,7 @@ class ParsedUserAgent:
     app_version: str
     user_agent_metadata: UserAgentMetadata
     navigator_override_js: str = field(default='', repr=False)
+    reduced_user_agent: str = ''
 
 
 class UserAgentParser:
@@ -128,6 +138,7 @@ class UserAgentParser:
         vendor = 'Google Inc.'
         app_version = UserAgentParser._build_app_version(user_agent)
         platform = _PLATFORM_MAP.get(os_key, 'Win32')
+        reduced_user_agent = UserAgentParser._reduce_user_agent(user_agent)
 
         return ParsedUserAgent(
             platform=platform,
@@ -137,7 +148,23 @@ class UserAgentParser:
             navigator_override_js=UserAgentParser._build_navigator_override_js(
                 vendor, app_version, platform
             ),
+            reduced_user_agent=reduced_user_agent,
         )
+
+    @staticmethod
+    def _reduce_user_agent(user_agent: str) -> str:
+        """Collapse Chrome/Edge build numbers to the frozen ``MAJOR.0.0.0`` form.
+
+        After the Chromium User-Agent reduction, ``navigator.userAgent`` (and
+        the ``User-Agent`` header) only ever expose ``Chrome/<MAJOR>.0.0.0`` -
+        the real 4-part build number (e.g. ``145.0.7632.75``) appears solely in
+        the ``Sec-CH-UA-Full-Version[-List]`` Client Hints. The fingerprint
+        catalog keeps the full build in the UA string as the single source of
+        truth (so the full version list stays correct); this reduces it so the
+        emulated ``navigator.userAgent`` matches what real Chrome reports.
+        """
+        reduced = _CHROME_VERSION_TOKEN_RE.sub(r'\g<1>\g<2>.0.0.0', user_agent)
+        return _EDGE_VERSION_TOKEN_RE.sub(r'\g<1>\g<2>.0.0.0', reduced)
 
     @staticmethod
     def _build_metadata(
@@ -156,6 +183,7 @@ class UserAgentParser:
             mobile=is_mobile,
             brands=UserAgentParser._build_brands(browser_name, major_version),
             fullVersionList=UserAgentParser._build_full_version_list(browser_name, full_version),
+            fullVersion=full_version,
             bitness='64',
             wow64=False,
         )
@@ -231,14 +259,15 @@ class UserAgentParser:
 
     @staticmethod
     def _build_grease(major_int: int) -> tuple[str, str, str]:
-        """Build GREASE brand, short version, and full version."""
+        """Build GREASE brand and its (fixed) short and full versions.
+
+        Real Chrome pins the greased brand to a fixed version (``99``), it is NOT
+        derived from the browser major. Using ``major % 100`` produced values like
+        ``45`` that no real Chrome emits.
+        """
         grease_index = major_int % len(_GREASE_BRANDS)
         brand = _GREASE_BRANDS[grease_index]
-        short_ver = str(major_int % _GREASE_MODULO) if major_int >= _GREASE_MODULO else '99'
-        full_ver = (
-            f'{major_int % _GREASE_MODULO}.0.0.0' if major_int >= _GREASE_MODULO else '99.0.0.0'
-        )
-        return brand, short_ver, full_ver
+        return brand, _GREASE_VERSION, f'{_GREASE_VERSION}.0.0.0'
 
     @staticmethod
     def _build_brands(browser_name: str, major_version: str) -> list[UserAgentBrandVersion]:
@@ -247,11 +276,11 @@ class UserAgentParser:
 
         brands: list[UserAgentBrandVersion] = [
             UserAgentBrandVersion(brand=grease_brand, version=grease_version),
-            UserAgentBrandVersion(brand='Chromium', version=major_version),
         ]
-
+        # Real Chrome orders the branded entry before Chromium.
         if browser_name in {'Google Chrome', 'Microsoft Edge'}:
             brands.append(UserAgentBrandVersion(brand=browser_name, version=major_version))
+        brands.append(UserAgentBrandVersion(brand='Chromium', version=major_version))
 
         return brands
 
@@ -265,11 +294,10 @@ class UserAgentParser:
 
         versions: list[UserAgentBrandVersion] = [
             UserAgentBrandVersion(brand=grease_brand, version=grease_full_version),
-            UserAgentBrandVersion(brand='Chromium', version=full_version),
         ]
-
         if browser_name in {'Google Chrome', 'Microsoft Edge'}:
             versions.append(UserAgentBrandVersion(brand=browser_name, version=full_version))
+        versions.append(UserAgentBrandVersion(brand='Chromium', version=full_version))
 
         return versions
 
