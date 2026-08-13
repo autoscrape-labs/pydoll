@@ -20,6 +20,7 @@ from pydoll.elements.web_element import WebElement
 from pydoll.exceptions import (
     ElementNotFound,
     ElementNotInteractable,
+    ElementNotVisible,
     ShadowRootNotFound,
     WaitElementTimeout,
 )
@@ -310,14 +311,14 @@ async def test_click_using_js_selects_option(element_tab):
 @pytest.mark.asyncio
 async def test_click_using_js_raises_when_element_not_visible(element_tab):
     hidden_button = await element_tab.find(id='hidden-btn')
-    with pytest.raises(WaitElementTimeout):
+    with pytest.raises(ElementNotVisible):
         await hidden_button.click_using_js()
 
 
 @pytest.mark.asyncio
 async def test_click_raises_when_element_not_visible(element_tab):
     hidden_button = await element_tab.find(id='hidden-btn')
-    with pytest.raises(WaitElementTimeout):
+    with pytest.raises(ElementNotVisible):
         await hidden_button.click()
 
 

@@ -26,6 +26,7 @@ from pydoll.exceptions import (
     ElementNotAFileInput,
     ElementNotFound,
     ElementNotInteractable,
+    ElementNotVisible,
     InvalidFileExtension,
     InvalidIFrame,
     MissingScreenshotPath,
@@ -538,7 +539,8 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
 
         Raises:
             ValueError: If timeout is negative.
-            WaitElementTimeout: If element does not become visible within timeout.
+            ElementNotVisible: If element is not visible and timeout is 0.
+            WaitElementTimeout: If element does not become visible within a positive timeout.
             ElementNotInteractable: If element couldn't be clicked.
 
         Note:
@@ -551,7 +553,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         if await self._is_option_element():
             return await self._click_option_tag()
 
-        await self.wait_until(is_visible=True, timeout=timeout)
+        await self._wait_until_visible_for_click(timeout)
         await self.scroll_into_view()
 
         logger.info(f'Clicking element via JS: object_id={self._object_id}')
@@ -584,7 +586,8 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
 
         Raises:
             ValueError: If timeout is negative.
-            WaitElementTimeout: If element does not become visible within timeout.
+            ElementNotVisible: If element is not visible and timeout is 0.
+            WaitElementTimeout: If element does not become visible within a positive timeout.
 
         Note:
             For <option> elements, delegates to specialized JavaScript approach.
@@ -596,7 +599,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         if await self._is_option_element():
             return await self._click_option_tag()
 
-        await self.wait_until(is_visible=True, timeout=timeout)
+        await self._wait_until_visible_for_click(timeout)
         await self.scroll_into_view()
 
         try:
@@ -978,6 +981,15 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
                 return_by_value=True,
             )
         )
+
+    async def _wait_until_visible_for_click(self, timeout: int):
+        """Preserve immediate-click errors while supporting explicit waits."""
+        if timeout == 0:
+            if not await self.is_visible():
+                raise ElementNotVisible()
+            return
+
+        await self.wait_until(is_visible=True, timeout=timeout)
 
     async def _get_family_elements(
         self, script: str, max_depth: int = 1, tag_filter: list[str] = []

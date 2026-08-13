@@ -16,9 +16,9 @@ from pydoll.elements.web_element import WebElement
 from pydoll.exceptions import (
     ElementNotAFileInput,
     ElementNotInteractable,
+    ElementNotVisible,
     InvalidFileExtension,
     MissingScreenshotPath,
-    WaitElementTimeout,
 )
 
 
@@ -110,7 +110,7 @@ async def test_click_dispatches_press_and_release_at_center(fake_conn, make_elem
 async def test_click_raises_when_element_not_visible(fake_conn, make_element):
     element = make_element(attributes=['tag_name', 'button'])
     fake_conn.set_response('Runtime.callFunctionOn', {'result': {'value': False}})
-    with pytest.raises(WaitElementTimeout):
+    with pytest.raises(ElementNotVisible):
         await element.click(hold_time=0)
     assert fake_conn.commands_for('Input.dispatchMouseEvent') == []
 
@@ -119,7 +119,7 @@ async def test_click_raises_when_element_not_visible(fake_conn, make_element):
 async def test_click_using_js_raises_when_element_not_visible(fake_conn, make_element):
     element = make_element(attributes=['tag_name', 'button'])
     fake_conn.set_response('Runtime.callFunctionOn', {'result': {'value': False}})
-    with pytest.raises(WaitElementTimeout):
+    with pytest.raises(ElementNotVisible):
         await element.click_using_js()
 
 
