@@ -118,8 +118,16 @@ const _patchM = (obj, prop, fn) => {
   } catch (e) {}
 };
 const _gp = (o, p, v) => {
-  try { Object.defineProperty(o, p, {get: () => v, enumerable: true, configurable: true}); }
-  catch (e) {}
+  try {
+    // Same computed-name + _mark path as _defG so the getter's ``toString``
+    // resolves to native and its ``.name`` is ``get <p>`` with no own prototype.
+    // Unlike _defG this defines on the given (instance) object and has no
+    // original native getter to delegate to (these are freshly created props).
+    const _h = { get [p]() { return v; } };
+    const _g = Object.getOwnPropertyDescriptor(_h, p).get;
+    _mark(_g);
+    Object.defineProperty(o, p, {get: _g, enumerable: true, configurable: true});
+  } catch (e) {}
 };
 const NP = Object.getPrototypeOf(navigator);
 """
@@ -498,8 +506,8 @@ for (let i = 0; i < {audio_in}; i++) devices.push(makeDev('audioinput'));
 for (let i = 0; i < {audio_out}; i++) devices.push(makeDev('audiooutput'));
 for (let i = 0; i < {video_in}; i++) devices.push(makeDev('videoinput'));
 
-if (navigator.mediaDevices) {{
-  _patchM(navigator.mediaDevices, 'enumerateDevices', function enumerateDevices() {{
+if (typeof MediaDevices !== 'undefined' && MediaDevices.prototype.enumerateDevices) {{
+  _patchM(MediaDevices.prototype, 'enumerateDevices', function enumerateDevices() {{
     return Promise.resolve(devices.slice());
   }});
 }}"""
@@ -532,8 +540,10 @@ const fakeVoices = voicesData.map((v, idx) => {{
   return voice;
 }});
 
-if (typeof speechSynthesis !== 'undefined') {{
-  _patchM(speechSynthesis, 'getVoices', function getVoices() {{ return fakeVoices.slice(); }});
+if (typeof SpeechSynthesis !== 'undefined' && SpeechSynthesis.prototype.getVoices) {{
+  _patchM(SpeechSynthesis.prototype, 'getVoices', function getVoices() {{
+    return fakeVoices.slice();
+  }});
 }}"""
 
 
@@ -642,10 +652,10 @@ def _build_permissions_js(perms: PermissionsFingerprint) -> str:
         return ''
     overrides_json = json.dumps(overrides)
     return (
-        'if (navigator.permissions) {\n'
+        'if (typeof Permissions !== "undefined" && Permissions.prototype.query) {\n'
         f'  const overrides = {overrides_json};\n'
-        '  const origQuery = navigator.permissions.query.bind(navigator.permissions);\n'
-        '  _patchM(navigator.permissions, "query", function query(desc) {\n'
+        '  const origQuery = Permissions.prototype.query;\n'
+        '  _patchM(Permissions.prototype, "query", function query(desc) {\n'
         '    const name = desc && desc.name;\n'
         '    if (name && overrides[name] !== undefined) {\n'
         '      return Promise.resolve({\n'
@@ -657,7 +667,7 @@ def _build_permissions_js(perms: PermissionsFingerprint) -> str:
         '        dispatchEvent: function() { return true; },\n'
         '      });\n'
         '    }\n'
-        '    return origQuery(desc);\n'
+        '    return origQuery.call(this, desc);\n'
         '  });\n'
         '}'
     )

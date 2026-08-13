@@ -122,6 +122,7 @@ class Browser(ABC):  # noqa: PLR0904
         self._tabs_opened: dict[str, Tab] = {}
         self._context_proxy_auth: dict[str, tuple[str, str]] = {}
         self._context_fingerprints: dict[Optional[str], 'FingerprintConfig'] = {}
+        self._context_worker_callbacks: dict[Optional[str], int] = {}
         logger.debug(
             f'Browser initialized: port={self._connection_port}, '
             f'headless={getattr(self.options, "headless", None)}'
@@ -297,6 +298,9 @@ class Browser(ABC):  # noqa: PLR0904
         logger.info(f'Deleting browser context: {browser_context_id}')
         self._context_proxy_auth.pop(browser_context_id, None)
         self._context_fingerprints.pop(browser_context_id, None)
+        worker_callback_id = self._context_worker_callbacks.pop(browser_context_id, None)
+        if worker_callback_id is not None:
+            await self.remove_callback(worker_callback_id)
         return await self._execute_command(
             TargetCommands.dispose_browser_context(browser_context_id)
         )

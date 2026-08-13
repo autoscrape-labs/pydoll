@@ -95,6 +95,8 @@ class TempDirectoryManager:
             '/local storage/',
             '\\local storage\\leveldb\\',
             '/local storage/leveldb/',
+            '\\session storage\\',
+            '/session storage/',
             'leveldb',
             'indexeddb',
         ]
@@ -131,24 +133,33 @@ class TempDirectoryManager:
         """
         for temp_dir in self._temp_dirs:
             logger.info(f'Cleaning up temp directory: {temp_dir.name}')
-            shutil.rmtree(temp_dir.name, onerror=self.handle_cleanup_error)
-            remaining = Path(temp_dir.name)
-            if not remaining.exists():
-                continue
-
-            for attempt in range(10):
-                time.sleep(0.2)
-                try:
-                    shutil.rmtree(temp_dir.name, onerror=self.handle_cleanup_error)
-                except Exception:  # noqa: BLE001 - best-effort cleanup
-                    pass
-                if not remaining.exists():
-                    logger.debug(
-                        f'Temp directory removed after retry #{attempt + 1}: {temp_dir.name}'
-                    )
-                    break
-            if remaining.exists():
-                logger.warning(
-                    f'Temp directory still present after retries (leftover files may remain): '
-                    f'{temp_dir.name}'
-                )
+            try:
+                shutil.rmtree(temp_dir.name, onerror=self.handle_cleanup_error)
+                remaining = Path(temp_dir.name)
+                if remaining.exists():
+                    for attempt in range(10):
+                        time.sleep(0.2)
+                        try:
+                            shutil.rmtree(temp_dir.name, onerror=self.handle_cleanup_error)
+                        except Exception:  # noqa: BLE001 - best-effort cleanup
+                            pass
+                        if not remaining.exists():
+                            logger.debug(
+                                f'Temp directory removed after retry #{attempt + 1}: '
+                                f'{temp_dir.name}'
+                            )
+                            break
+                    if remaining.exists():
+                        logger.warning(
+                            'Temp directory still present after retries (leftover files may '
+                            f'remain): {temp_dir.name}'
+                        )
+            finally:
+                # Disarm TemporaryDirectory's own weakref finalizer: it re-runs an
+                # UNGUARDED shutil.rmtree at GC/interpreter exit, which on Windows
+                # crashes with WinError 32 on files Chrome still holds briefly (e.g.
+                # ``Session Storage/LOG``). We have already cleaned up above with the
+                # locked-file-aware handler, so the built-in pass must not fire again.
+                finalizer = getattr(temp_dir, '_finalizer', None)
+                if finalizer is not None:
+                    finalizer.detach()

@@ -186,6 +186,7 @@ class Tab(FindElementsMixin):
         self._runtime_events_enabled = False
         self._intercept_file_chooser_dialog_enabled = False
         self._cloudflare_captcha_callback_id: Optional[int] = None
+        self._fingerprint_applier: Optional[FingerprintApplier] = None
         self._request: Optional[Request] = None
         self._scroll: Optional[ScrollAPI] = None
         self._keyboard: Optional[KeyboardAPI] = None
@@ -965,17 +966,19 @@ class Tab(FindElementsMixin):
     async def apply_fingerprint(self, fingerprint: FingerprintConfig) -> None:
         """Apply a browser fingerprint profile to this tab.
 
-        Delegates to :class:`FingerprintApplier`, which overrides browser
-        identity signals via CDP commands and JavaScript injection and replays
-        them on Web Worker targets. Call before navigating to any page for full
-        effect, since JS overrides register via
+        Delegates to a per-tab :class:`FingerprintApplier` (created once and
+        reused), which overrides browser identity signals via CDP commands and
+        JavaScript injection and replays them on Web Worker targets. Call before
+        navigating to any page for full effect, since JS overrides register via
         ``Page.addScriptToEvaluateOnNewDocument``.
 
         Args:
             fingerprint: Fingerprint configuration. Only specified fields
                 are overridden; unspecified fields keep real browser values.
         """
-        await FingerprintApplier(self).apply(fingerprint)
+        if self._fingerprint_applier is None:
+            self._fingerprint_applier = FingerprintApplier(self)
+        await self._fingerprint_applier.apply(fingerprint)
 
     async def go_to(self, url: str, timeout: int = 300):
         """

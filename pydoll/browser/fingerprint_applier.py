@@ -60,6 +60,7 @@ class FingerprintApplier:
 
     def __init__(self, tab: 'Tab') -> None:
         self._tab = tab
+        self._applied: Optional[FingerprintConfig] = None
 
     async def apply(self, fingerprint: FingerprintConfig) -> None:
         """Apply a browser fingerprint profile to the tab.
@@ -90,6 +91,10 @@ class FingerprintApplier:
                 are overridden; unspecified fields keep real browser values.
         """
         tab = self._tab
+        if self._applied == fingerprint:
+            logger.debug('Fingerprint already applied to this tab; skipping (idempotent)')
+            return
+
         logger.info('Applying fingerprint profile to tab')
 
         context_already_set = self._register_context(fingerprint)
@@ -110,6 +115,7 @@ class FingerprintApplier:
             mobile = parsed.user_agent_metadata['mobile'] if parsed else False
 
         if parsed is not None:
+            self._warn_on_user_agent_option_conflict(fingerprint['user_agent'])
             await self._apply_user_agent(parsed, accept_language, mobile=mobile)
         if 'timezone' in fingerprint:
             await tab._execute_command(
@@ -157,7 +163,27 @@ class FingerprintApplier:
             mobile=mobile,
             setup_browser_scope=not context_already_set,
         )
+        self._applied = fingerprint
         logger.info('Fingerprint profile applied')
+
+    def _warn_on_user_agent_option_conflict(self, fingerprint_user_agent: str) -> None:
+        """Warn when a ``--user-agent`` option contradicts the fingerprint UA.
+
+        The options-based ``--user-agent`` handling
+        (``_apply_user_agent_override`` / ``_setup_worker_user_agent_override``)
+        registers its own worker ``ATTACHED_TO_TARGET`` handlers. Combining it
+        with a fingerprint carrying a *different* User-Agent stacks a second,
+        conflicting worker override, so the two disagree on what a worker reports.
+        The fingerprint owns the page User-Agent, but the option handler may still
+        fire on workers, so setting both is a misconfiguration.
+        """
+        options_user_agent = self._tab._browser._get_user_agent_from_options()
+        if options_user_agent and options_user_agent != fingerprint_user_agent:
+            logger.warning(
+                'A --user-agent browser option is set and differs from the fingerprint '
+                "User-Agent; don't combine --user-agent with apply_fingerprint (the "
+                'fingerprint owns the User-Agent, but the option may still override workers).'
+            )
 
     def _register_context(self, fingerprint: FingerprintConfig) -> bool:
         """Register a fingerprint for this tab's browser context.
@@ -238,7 +264,8 @@ class FingerprintApplier:
             worker_js,
             scope_context_id=scope_context_id,
         )
-        await tab._browser.on(TargetEvent.ATTACHED_TO_TARGET, browser_handler)
+        callback_id = await tab._browser.on(TargetEvent.ATTACHED_TO_TARGET, browser_handler)
+        tab._browser._context_worker_callbacks[tab._browser_context_id] = callback_id
         await browser_conn.execute_command(
             TargetCommands.set_auto_attach(
                 auto_attach=True,
@@ -427,6 +454,13 @@ class FingerprintApplier:
     ) -> None:
         """Apply device metrics override from screen fingerprint config.
 
+        When ``inner_width`` / ``inner_height`` are omitted, the layout-size
+        (``width`` / ``height``) override is disabled by passing ``0`` so the real
+        window drives ``window.innerWidth`` / ``innerHeight``, instead of forcing
+        them to the full screen size (which yields ``innerWidth == screen.width``,
+        a headless-like tell). The ``screen.width`` / ``screen.height`` overrides
+        (``screen_width`` / ``screen_height``) are applied regardless.
+
         Args:
             screen: Screen fingerprint configuration.
             mobile: Whether to emulate a mobile device.
@@ -441,8 +475,8 @@ class FingerprintApplier:
                     angle=screen.get('orientation_angle', 0),
                 )
 
-        viewport_width = screen.get('inner_width', screen['width'])
-        viewport_height = screen.get('inner_height', screen['height'])
+        viewport_width = screen.get('inner_width', 0)
+        viewport_height = screen.get('inner_height', 0)
 
         await self._tab._execute_command(
             EmulationCommands.set_device_metrics_override(
