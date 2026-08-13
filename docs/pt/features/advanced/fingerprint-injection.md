@@ -176,17 +176,10 @@ Durante os testes, aplicar um perfil de fingerprint dos EUA fez uma busca simple
 
 Todos os três são lidos por sistemas anti-abuso, e todos os três têm que concordar com o fuso horário e o IP. Corrigir o perfil para um locale brasileiro (batendo com o IP e o sistema) removeu o bloqueio sem mudar mais nada.
 
-<!-- PLACEHOLDER: substitua por uma captura de tela do captcha do Google produzido pelo fingerprint inconsistente (locale dos EUA em IP do BR). Arquivo sugerido: docs/resources/images/fingerprint-inconsistent-captcha.png -->
 <p align="center">
-  <img src="../../resources/images/fingerprint-inconsistent-captcha.png" alt="Google servindo um captcha porque o locale dos EUA do fingerprint injetado contradiz o IP de saída brasileiro" width="720" />
+  <img src="../../../../resources/images/fingerprint-inconsistent-captcha.png" alt="Google servindo um captcha porque o locale dos EUA do fingerprint injetado contradiz o IP de saída brasileiro" width="720" />
 </p>
 <p align="center"><sub>Fingerprint inconsistente: um locale dos EUA sobre um IP brasileiro. O Google retorna um captcha.</sub></p>
-
-<!-- PLACEHOLDER: substitua por uma captura de tela de uma página normal de resultados do Google após o locale ser alinhado ao IP. Arquivo sugerido: docs/resources/images/fingerprint-consistent-pass.png -->
-<p align="center">
-  <img src="../../resources/images/fingerprint-consistent-pass.png" alt="Google retornando resultados normais de busca quando o locale do fingerprint bate com o país do IP de saída" width="720" />
-</p>
-<p align="center"><sub>Fingerprint consistente: locale, fuso horário e IP todos concordam. A busca passa.</sub></p>
 
 !!! danger "A lição"
     Um fingerprint que passa em todos os testes de fingerprinting ainda pode ser bloqueado se **uma** camada contradiz seu ambiente. Detecção é sobre correlação, não sobre qualquer valor isolado. Alinhe `locale`, `timezone` e geolocalização ao seu IP de saída antes de culpar o fingerprint.
@@ -249,18 +242,6 @@ Tudo que o `apply_fingerprint()` controla diz Windows de forma coerente; a únic
 **Por que não dá pra falsificar via CDP.** O TTL, o window scaling e a ordem das opções TCP vêm do kernel do host, não do navegador. Nenhum override de JavaScript ou de CDP toca neles. A renderização real de GPU e as métricas de texto (CoreText no macOS) também são do host. Por isso um perfil de outro SO não passa só com spoofing de fingerprint, e ferramentas que forjam TLS (curl_cffi, tls-client) não ajudam: o problema não é o TLS, e elas continuam usando o stack TCP/IP do kernel do host.
 
 **O conserto.** Case o SO (e a família de GPU) do perfil com o host real. Neste Mac, use um perfil macOS/Apple; rode perfis Windows/NVIDIA em um host Windows. Um proxy de encaminhamento (SOCKS5/HTTP CONNECT) também reoriginam a conexão TCP a partir do kernel do proxy, então o SO que o Cloudflare passa a observar é o do host do proxy: para passar como Windows, o proxy precisa rodar em Windows (um proxy Linux daria uma assinatura Linux, ainda incompatível com um User-Agent Windows). Não é o GPU, o canvas ou as fontes que precisam de ajuste, é o SO declarado que precisa bater com o kernel que origina os pacotes.
-
-<!-- PLACEHOLDER: substitua por uma captura do desafio gerenciado do Cloudflare travado ("Um momento…") produzido por um perfil Windows dirigido em um host macOS. Arquivo sugerido: docs/resources/images/fingerprint-os-mismatch-challenge.png -->
-<p align="center">
-  <img src="../../resources/images/fingerprint-os-mismatch-challenge.png" alt="Cloudflare travado na tela intermediária porque o perfil declara Windows enquanto o host é macOS" width="720" />
-</p>
-<p align="center"><sub>Perfil Windows em um host macOS: o TCP/IP do kernel diz macOS, o User-Agent diz Windows. O Cloudflare mantém o desafio.</sub></p>
-
-<!-- PLACEHOLDER: substitua por uma captura da página liberada após usar o perfil cujo SO bate com o host. Arquivo sugerido: docs/resources/images/fingerprint-os-match-pass.png -->
-<p align="center">
-  <img src="../../resources/images/fingerprint-os-match-pass.png" alt="Cloudflare liberado quando o SO do perfil bate com o host macOS" width="720" />
-</p>
-<p align="center"><sub>Perfil macOS em um host macOS: todas as camadas concordam. O desafio libera.</sub></p>
 
 !!! danger "A regra de SO"
     Você não pode declarar um SO que a máquina não roda. O stack TCP/IP do kernel e a renderização real do host revelam o SO verdadeiro em camadas que o CDP não alcança. Escolha o perfil cujo SO bate com o host (perfil macOS em um Mac, Windows em Windows), e não tente falsificar Windows sobre hardware Apple só com fingerprint de navegador.

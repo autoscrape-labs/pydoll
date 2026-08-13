@@ -176,17 +176,10 @@ During testing, applying a US fingerprint profile made a plain Google search sta
 
 All three are read by anti-abuse systems, and all three have to agree with the timezone and the IP. Fixing the profile to a Brazilian locale (matching the IP and OS) removed the block without changing anything else.
 
-<!-- PLACEHOLDER: replace with a screenshot of the Google captcha produced by the inconsistent (US-locale-on-BR-IP) fingerprint. Suggested file: docs/resources/images/fingerprint-inconsistent-captcha.png -->
 <p align="center">
-  <img src="../../resources/images/fingerprint-inconsistent-captcha.png" alt="Google serving a captcha because the injected fingerprint's US locale contradicts the Brazilian egress IP" width="720" />
+  <img src="../../../resources/images/fingerprint-inconsistent-captcha.png" alt="Google serving a captcha because the injected fingerprint's US locale contradicts the Brazilian egress IP" width="720" />
 </p>
 <p align="center"><sub>Inconsistent fingerprint: a US locale over a Brazilian IP. Google returns a captcha.</sub></p>
-
-<!-- PLACEHOLDER: replace with a screenshot of a normal Google results page after the locale was matched to the IP. Suggested file: docs/resources/images/fingerprint-consistent-pass.png -->
-<p align="center">
-  <img src="../../resources/images/fingerprint-consistent-pass.png" alt="Google returning normal search results once the fingerprint locale matches the egress IP country" width="720" />
-</p>
-<p align="center"><sub>Consistent fingerprint: locale, timezone, and IP all agree. The search goes through.</sub></p>
 
 !!! danger "The takeaway"
     A fingerprint that passes every fingerprinting test can still get you blocked if **one** layer contradicts your environment. Detection is about correlation, not any single value. Match `locale`, `timezone`, and geolocation to your egress IP before blaming the fingerprint.
@@ -249,18 +242,6 @@ Everything `apply_fingerprint()` controls says Windows consistently; the one rem
 **Why it cannot be spoofed through CDP.** The TTL, window scaling, and TCP option order come from the host kernel, not the browser. No JavaScript or CDP override touches them. The real GPU rendering and text metrics (CoreText on macOS) are the host's too. That is why a foreign-OS profile cannot pass on browser-fingerprint spoofing alone, and why TLS-forging tools (curl_cffi, tls-client) do not help: the problem is not TLS, and they still use the host kernel's TCP/IP stack.
 
 **The fix.** Match the profile's OS (and GPU family) to the real host. On this Mac, use a macOS/Apple profile; run Windows/NVIDIA profiles on a Windows host. A forwarding proxy (SOCKS5/HTTP CONNECT) re-originates the TCP connection from the proxy's kernel, so the OS Cloudflare observes becomes the proxy host's: to pass as Windows, the proxy must run on Windows (a Linux proxy would give a Linux signature, still inconsistent with a Windows User-Agent). It is not the GPU, canvas, or fonts that need tuning, it is the advertised OS that must match the kernel originating the packets.
-
-<!-- PLACEHOLDER: replace with a screenshot of Cloudflare's managed challenge stuck ("Just a moment…") produced by a Windows profile driven on a macOS host. Suggested file: docs/resources/images/fingerprint-os-mismatch-challenge.png -->
-<p align="center">
-  <img src="../../resources/images/fingerprint-os-mismatch-challenge.png" alt="Cloudflare stuck on the interstitial because the profile advertises Windows while the host is macOS" width="720" />
-</p>
-<p align="center"><sub>Windows profile on a macOS host: the kernel TCP/IP says macOS, the User-Agent says Windows. Cloudflare keeps the challenge.</sub></p>
-
-<!-- PLACEHOLDER: replace with a screenshot of the page cleared after using the profile whose OS matches the host. Suggested file: docs/resources/images/fingerprint-os-match-pass.png -->
-<p align="center">
-  <img src="../../resources/images/fingerprint-os-match-pass.png" alt="Cloudflare cleared when the profile's OS matches the macOS host" width="720" />
-</p>
-<p align="center"><sub>macOS profile on a macOS host: every layer agrees. The challenge clears.</sub></p>
 
 !!! danger "The OS rule"
     You cannot advertise an OS the machine does not run. The kernel TCP/IP stack and the host's real rendering reveal the true OS in layers CDP cannot reach. Pick the profile whose OS matches the host (a macOS profile on a Mac, Windows on Windows), and do not try to spoof Windows over Apple hardware with browser fingerprinting alone.
