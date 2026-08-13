@@ -153,10 +153,11 @@ asyncio.run(headless_google_search())
 
 Um fingerprint é tão forte quanto sua camada mais fraca, e sistemas anti-bot correlacionam sinais de todas elas. Um navegador que renderiza como macOS enquanto seu `Accept-Language` diz português do Brasil, seu fuso horário diz Tóquio e seu IP geolocaliza na Alemanha é *mais* suspeito do que um navegador que você nunca tocou.
 
-O `apply_fingerprint()` mantém as camadas **que ele controla** internamente consistentes. Você é dono das duas que ele não controla:
+O `apply_fingerprint()` mantém as camadas **que ele controla** internamente consistentes. Você é dono das três que ele não controla:
 
 1. **O binário do Chrome que você dirige.** O fingerprint da camada de rede (TLS JA3/JA4, `SETTINGS` do HTTP/2) é produzido pelo navegador real e não pode ser falsificado via CDP, e nem a versão verdadeira do engine JavaScript. Um perfil declarando Chrome 145 precisa rodar em um binário Chrome 145, ou o User-Agent contradiz o handshake real. É exatamente isso que bloqueia o Cloudflare Turnstile, veja [Estudo de Caso: uma Incompatibilidade de Versão do Chrome Disparando o Desafio do Cloudflare](#case-study-a-chrome-version-mismatch-triggering-cloudflares-challenge).
 2. **A geografia do seu IP de saída.** O header `Accept-Language` e o fuso horário são cruzados com o país do IP. Uma identidade dos EUA em um IP brasileiro é uma contradição (é exatamente a falha documentada em [Estudo de Caso: uma Incompatibilidade de Locale Disparando o Captcha do Google](#case-study-a-locale-mismatch-triggering-googles-captcha)).
+3. **O sistema operacional real da máquina.** O stack TCP/IP do kernel é uma assinatura passiva de SO (ex.: TTL inicial 64 no macOS/Linux vs 128 no Windows), e a renderização real de GPU e de texto também revela o SO verdadeiro. Nenhum dos dois é alcançável via CDP. Um perfil declarando Windows dirigido em um Mac é uma contradição de SO que o desafio gerenciado do Cloudflare bloqueia, veja [Estudo de Caso: uma Incompatibilidade de SO Disparando o Desafio Gerenciado do Cloudflare](#case-study-an-os-mismatch-triggering-cloudflares-managed-challenge).
 
 !!! tip "A Regra de Ouro"
     **Cada camada deve contar a mesma história.** Veja [Fingerprinting do Navegador](../../deep-dive/fingerprinting/index.md) para o princípio e [Técnicas de Evasão, Consistência de Fuso Horário e Locale](../../deep-dive/fingerprinting/evasion-techniques.md) para como locale, fuso horário e geolocalização do IP são correlacionados.
@@ -219,6 +220,50 @@ Em `examples/fingerprints.py`, as constantes `CHROME_DESKTOP` / `CHROME_MOBILE` 
 
 !!! danger "A regra para Cloudflare + fingerprint"
     Um fingerprint cuja versão do Chrome não bate com o binário real **será** desafiado pelo Turnstile, com ou sem interface. Alinhe a versão do perfil ao `browser.get_version()` antes de combinar a injeção de fingerprint com a interação do Cloudflare.
+
+## Estudo de Caso: uma Incompatibilidade de SO Disparando o Desafio Gerenciado do Cloudflare {#case-study-an-os-mismatch-triggering-cloudflares-managed-challenge}
+
+Depois de alinhar a versão do Chrome (o caso acima), um segundo perfil ainda falhava. A causa é mais fundamental: você não pode declarar um SO que a máquina não roda.
+
+**A observação.** Neste host (Apple Silicon, Chrome 151 real, IP brasileiro), o perfil `macos_m3_new_york` passa no Cloudflare, e o `windows11_rtx3060_nyc` falha (trava em "Um momento…"). As versões do Chrome já batem (ambos 151), então não é o caso acima. E o perfil que falha é justamente o **geograficamente consistente** com o IP brasileiro, enquanto o que passa é uma identidade dos EUA sobre o IP do BR, então também não é locale. A única diferença que importa é o **SO**: um passa como macOS (batendo com o host), o outro como Windows.
+
+**A bissecção.** Partindo do perfil que passa e mutando em direção ao que falha, um eixo por vez, o resultado seguiu **exclusivamente o SO declarado no User-Agent**:
+
+- Trocar só o User-Agent/plataforma de Windows para macOS no perfil que falha: **passa**.
+- Trocar só o User-Agent/plataforma de macOS para Windows no perfil que passa: **falha**.
+- Trocar por um User-Agent Linux: **também falha**.
+- Trocar GPU/WebGL (string do renderer, params, extensões), canvas, fontes, tela, hardware, áudio, voz, geo e locale: **nenhum flipa o resultado**.
+
+Qualquer SO diferente de macOS falha neste host macOS; qualquer identidade macOS passa. O GPU não importa: um perfil macOS declarando uma GPU NVIDIA passa, e um perfil Windows declarando a GPU Apple real falha.
+
+**A camada onde isso acontece.** Medindo o que cada camada de fato reporta ao servidor, sob os dois perfis, no mesmo Chrome:
+
+- **TCP/IP (inspoofável):** o servidor observa o mesmo TTL para os dois perfis, implicando TTL inicial **64** (família macOS/Unix). Um host Windows emitiria 128. O stack do kernel diz "macOS" independente do User-Agent.
+- **TLS (JA3/JA4):** varia por conexão (toggle da extensão de padding do Chrome); o mesmo baseline sem fingerprint produz as duas variantes. Não codifica o SO.
+- **HTTP/2 (fingerprint Akamai):** idêntico entre os perfis. Não codifica o SO.
+- **Client Hints:** totalmente sobrescritos para o SO declarado (sob Windows, `architecture` reporta `x86`, sem vazar o `arm` real).
+- **Canvas/WebGL:** o hash da imagem renderizada é **idêntico** entre os perfis (são pixels da GPU Apple real nos dois). A imagem renderizada não é o diferenciador.
+
+Tudo que o `apply_fingerprint()` controla diz Windows de forma coerente; a única camada que sobra, o TCP/IP do kernel, diz macOS. O desafio gerenciado do Cloudflare cruza o SO que você **declara** (User-Agent + Client Hints) com o SO que ele consegue **observar** (a assinatura passiva do stack) e mantém a tela intermediária quando eles não batem.
+
+**Por que não dá pra falsificar via CDP.** O TTL, o window scaling e a ordem das opções TCP vêm do kernel do host, não do navegador. Nenhum override de JavaScript ou de CDP toca neles. A renderização real de GPU e as métricas de texto (CoreText no macOS) também são do host. Por isso um perfil de outro SO não passa só com spoofing de fingerprint, e ferramentas que forjam TLS (curl_cffi, tls-client) não ajudam: o problema não é o TLS, e elas continuam usando o stack TCP/IP do kernel do host.
+
+**O conserto.** Case o SO (e a família de GPU) do perfil com o host real. Neste Mac, use um perfil macOS/Apple; rode perfis Windows/NVIDIA em um host Windows. Um proxy de encaminhamento (SOCKS5/HTTP CONNECT) também reoriginam a conexão TCP a partir do kernel do proxy, então o SO que o Cloudflare passa a observar é o do host do proxy: para passar como Windows, o proxy precisa rodar em Windows (um proxy Linux daria uma assinatura Linux, ainda incompatível com um User-Agent Windows). Não é o GPU, o canvas ou as fontes que precisam de ajuste, é o SO declarado que precisa bater com o kernel que origina os pacotes.
+
+<!-- PLACEHOLDER: substitua por uma captura do desafio gerenciado do Cloudflare travado ("Um momento…") produzido por um perfil Windows dirigido em um host macOS. Arquivo sugerido: docs/resources/images/fingerprint-os-mismatch-challenge.png -->
+<p align="center">
+  <img src="../../resources/images/fingerprint-os-mismatch-challenge.png" alt="Cloudflare travado na tela intermediária porque o perfil declara Windows enquanto o host é macOS" width="720" />
+</p>
+<p align="center"><sub>Perfil Windows em um host macOS: o TCP/IP do kernel diz macOS, o User-Agent diz Windows. O Cloudflare mantém o desafio.</sub></p>
+
+<!-- PLACEHOLDER: substitua por uma captura da página liberada após usar o perfil cujo SO bate com o host. Arquivo sugerido: docs/resources/images/fingerprint-os-match-pass.png -->
+<p align="center">
+  <img src="../../resources/images/fingerprint-os-match-pass.png" alt="Cloudflare liberado quando o SO do perfil bate com o host macOS" width="720" />
+</p>
+<p align="center"><sub>Perfil macOS em um host macOS: todas as camadas concordam. O desafio libera.</sub></p>
+
+!!! danger "A regra de SO"
+    Você não pode declarar um SO que a máquina não roda. O stack TCP/IP do kernel e a renderização real do host revelam o SO verdadeiro em camadas que o CDP não alcança. Escolha o perfil cujo SO bate com o host (perfil macOS em um Mac, Windows em Windows), e não tente falsificar Windows sobre hardware Apple só com fingerprint de navegador.
 
 ## Múltiplos Fingerprints e Contextos de Navegador
 

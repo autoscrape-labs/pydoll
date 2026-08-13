@@ -153,10 +153,11 @@ asyncio.run(headless_google_search())
 
 A fingerprint is only as strong as its weakest layer, and anti-bot systems correlate signals across all of them. A browser that renders as macOS while its `Accept-Language` says Brazilian Portuguese, its timezone says Tokyo, and its IP geolocates to Germany is *more* suspicious than a browser you never touched.
 
-`apply_fingerprint()` keeps the layers **it controls** internally consistent. You own the two it cannot:
+`apply_fingerprint()` keeps the layers **it controls** internally consistent. You own the three it cannot:
 
 1. **The Chrome binary you drive.** The network-layer fingerprint (TLS JA3/JA4, HTTP/2 `SETTINGS`) is produced by the real browser and cannot be spoofed through CDP, and neither can the JavaScript engine's true version. A profile claiming Chrome 145 must run on a Chrome 145 binary, or the User-Agent contradicts the real handshake. This is exactly what blocks Cloudflare Turnstile, see [Case Study: a Chrome Version Mismatch Triggering Cloudflare's Challenge](#case-study-a-chrome-version-mismatch-triggering-cloudflares-challenge).
 2. **The geography of your egress IP.** The `Accept-Language` header and timezone are cross-referenced against the IP's country. A US identity on a Brazilian IP is a contradiction (this is exactly the failure documented in [Case Study: a Locale Mismatch Triggering Google's Captcha](#case-study-a-locale-mismatch-triggering-googles-captcha)).
+3. **The host machine's real OS.** The kernel's TCP/IP stack is a passive OS fingerprint (e.g. initial TTL 64 on macOS/Linux vs 128 on Windows), and the real GPU/text rendering also betrays the true OS. Neither is reachable through CDP. A Windows profile driven on a Mac is an OS contradiction that Cloudflare's managed challenge blocks, see [Case Study: an OS Mismatch Triggering Cloudflare's Managed Challenge](#case-study-an-os-mismatch-triggering-cloudflares-managed-challenge).
 
 !!! tip "The Golden Rule"
     **Every layer must tell the same story.** See [Browser Fingerprinting](../../deep-dive/fingerprinting/index.md) for the principle and [Evasion Techniques → Timezone and Locale Consistency](../../deep-dive/fingerprinting/evasion-techniques.md) for how locale, timezone, and IP geolocation are correlated.
@@ -219,6 +220,50 @@ In `examples/fingerprints.py`, the `CHROME_DESKTOP` / `CHROME_MOBILE` constants 
 
 !!! danger "The rule for Cloudflare + fingerprint"
     A fingerprint whose Chrome version does not match the real binary **will** be challenged by Turnstile, headful or headless. Align the profile's version to `browser.get_version()` before pairing fingerprint injection with the Cloudflare interaction.
+
+## Case Study: an OS Mismatch Triggering Cloudflare's Managed Challenge {#case-study-an-os-mismatch-triggering-cloudflares-managed-challenge}
+
+After aligning the Chrome version (the case above), a second profile still failed. The cause is more fundamental: you cannot advertise an OS the machine does not run.
+
+**The observation.** On this host (Apple Silicon, real Chrome 151, Brazilian IP), the `macos_m3_new_york` profile passes Cloudflare, and `windows11_rtx3060_nyc` fails (stuck on "Just a moment…"). The Chrome versions already match (both 151), so it is not the case above. And the failing profile is the one that is **geographically consistent** with the Brazilian IP, while the passing one is a US identity over the BR IP, so it is not locale either. The only difference that matters is the **OS**: one passes as macOS (matching the host), the other as Windows.
+
+**The bisection.** Starting from the passing profile and mutating it toward the failing one, one axis at a time, the outcome tracked **only the OS advertised in the User-Agent**:
+
+- Swapping just the User-Agent/platform from Windows to macOS on the failing profile: **passes**.
+- Swapping just the User-Agent/platform from macOS to Windows on the passing profile: **fails**.
+- Swapping to a Linux User-Agent: **also fails**.
+- Swapping GPU/WebGL (renderer string, params, extensions), canvas, fonts, screen, hardware, audio, voices, geo, and locale: **none flip the outcome**.
+
+Any OS other than macOS fails on this macOS host; any macOS identity passes. The GPU is irrelevant: a macOS profile advertising an NVIDIA GPU passes, and a Windows profile advertising the real Apple GPU fails.
+
+**The layer where it happens.** Measuring what each layer actually reports to the server, under both profiles, on the same Chrome:
+
+- **TCP/IP (unspoofable):** the server observes the same TTL for both profiles, implying an initial TTL of **64** (the macOS/Unix family). A Windows host would emit 128. The kernel stack says "macOS" no matter what the User-Agent claims.
+- **TLS (JA3/JA4):** varies per connection (Chrome's padding-extension toggle); the same baseline with no fingerprint produces both variants. It does not encode the OS.
+- **HTTP/2 (Akamai fingerprint):** identical between the profiles. It does not encode the OS.
+- **Client Hints:** fully overridden to the advertised OS (under Windows, `architecture` reports `x86`, with no `arm` leak).
+- **Canvas/WebGL:** the rendered-image hash is **identical** between the profiles (they are real Apple GPU pixels in both). The rendered image is not the differentiator.
+
+Everything `apply_fingerprint()` controls says Windows consistently; the one remaining layer, the kernel TCP/IP stack, says macOS. Cloudflare's managed challenge cross-references the OS you **advertise** (User-Agent + Client Hints) against the OS it can **observe** (the passive stack signature) and keeps the interstitial up when they disagree.
+
+**Why it cannot be spoofed through CDP.** The TTL, window scaling, and TCP option order come from the host kernel, not the browser. No JavaScript or CDP override touches them. The real GPU rendering and text metrics (CoreText on macOS) are the host's too. That is why a foreign-OS profile cannot pass on browser-fingerprint spoofing alone, and why TLS-forging tools (curl_cffi, tls-client) do not help: the problem is not TLS, and they still use the host kernel's TCP/IP stack.
+
+**The fix.** Match the profile's OS (and GPU family) to the real host. On this Mac, use a macOS/Apple profile; run Windows/NVIDIA profiles on a Windows host. A forwarding proxy (SOCKS5/HTTP CONNECT) re-originates the TCP connection from the proxy's kernel, so the OS Cloudflare observes becomes the proxy host's: to pass as Windows, the proxy must run on Windows (a Linux proxy would give a Linux signature, still inconsistent with a Windows User-Agent). It is not the GPU, canvas, or fonts that need tuning, it is the advertised OS that must match the kernel originating the packets.
+
+<!-- PLACEHOLDER: replace with a screenshot of Cloudflare's managed challenge stuck ("Just a moment…") produced by a Windows profile driven on a macOS host. Suggested file: docs/resources/images/fingerprint-os-mismatch-challenge.png -->
+<p align="center">
+  <img src="../../resources/images/fingerprint-os-mismatch-challenge.png" alt="Cloudflare stuck on the interstitial because the profile advertises Windows while the host is macOS" width="720" />
+</p>
+<p align="center"><sub>Windows profile on a macOS host: the kernel TCP/IP says macOS, the User-Agent says Windows. Cloudflare keeps the challenge.</sub></p>
+
+<!-- PLACEHOLDER: replace with a screenshot of the page cleared after using the profile whose OS matches the host. Suggested file: docs/resources/images/fingerprint-os-match-pass.png -->
+<p align="center">
+  <img src="../../resources/images/fingerprint-os-match-pass.png" alt="Cloudflare cleared when the profile's OS matches the macOS host" width="720" />
+</p>
+<p align="center"><sub>macOS profile on a macOS host: every layer agrees. The challenge clears.</sub></p>
+
+!!! danger "The OS rule"
+    You cannot advertise an OS the machine does not run. The kernel TCP/IP stack and the host's real rendering reveal the true OS in layers CDP cannot reach. Pick the profile whose OS matches the host (a macOS profile on a Mac, Windows on Windows), and do not try to spoof Windows over Apple hardware with browser fingerprinting alone.
 
 ## Multiple Fingerprints and Browser Contexts
 

@@ -153,10 +153,11 @@ asyncio.run(headless_google_search())
 
 指纹的强度取决于其最薄弱的一层，而反机器人系统会跨所有层关联信号。一个渲染为 macOS，却在 `Accept-Language` 中说巴西葡萄牙语、时区说东京、IP 地理定位在德国的浏览器，比一个你从未碰过的浏览器*更*可疑。
 
-`apply_fingerprint()` 保持**它所控制的**各层内部一致。你负责它无法控制的两层：
+`apply_fingerprint()` 保持**它所控制的**各层内部一致。你负责它无法控制的三层：
 
 1. **你所驱动的 Chrome 二进制文件。** 网络层指纹（TLS JA3/JA4、HTTP/2 `SETTINGS`）由真实浏览器产生，无法通过 CDP 伪造，JavaScript 引擎的真实版本也无法。一个声明 Chrome 145 的配置必须运行在 Chrome 145 二进制文件上，否则 User-Agent 会与真实握手矛盾。这正是阻止 Cloudflare Turnstile 的原因，见[案例研究：Chrome 版本不匹配触发 Cloudflare 的挑战](#case-study-a-chrome-version-mismatch-triggering-cloudflares-challenge)。
 2. **你出口 IP 的地理位置。** `Accept-Language` 头和时区会与 IP 的国家交叉核对。美国身份出现在巴西 IP 上是一个矛盾（这正是[案例研究：Locale 不匹配触发 Google 的验证码](#case-study-a-locale-mismatch-triggering-googles-captcha)中记录的失败）。
+3. **主机的真实操作系统。** 内核的 TCP/IP 栈是一种被动操作系统指纹（例如，macOS/Linux 上初始 TTL 为 64，而 Windows 为 128），真实的 GPU/文本渲染同样会暴露真实的操作系统。两者都无法通过 CDP 触及。在 Mac 上驱动一个声明 Windows 的配置是一个操作系统矛盾，Cloudflare 的托管挑战会因此拦截它，见[案例研究：操作系统不匹配触发 Cloudflare 的托管挑战](#case-study-an-os-mismatch-triggering-cloudflares-managed-challenge)。
 
 !!! tip "黄金法则"
     **每一层都必须讲述同一个故事。** 关于这一原则见[浏览器指纹识别](../../deep-dive/fingerprinting/index.md)，关于 locale、时区和 IP 地理位置如何被关联见[规避技术，时区与 Locale 一致性](../../deep-dive/fingerprinting/evasion-techniques.md)。
@@ -219,6 +220,50 @@ async with Chrome() as browser:
 
 !!! danger "Cloudflare + 指纹的规则"
     一个 Chrome 版本与真实二进制文件不匹配的指纹**将会**被 Turnstile 挑战，无论有无界面。在把指纹注入与 Cloudflare 交互搭配之前，先让配置的版本与 `browser.get_version()` 对齐。
+
+## 案例研究：操作系统不匹配触发 Cloudflare 的托管挑战 {#case-study-an-os-mismatch-triggering-cloudflares-managed-challenge}
+
+在对齐 Chrome 版本（上面的案例）之后，第二个配置仍然失败。原因更为根本：你无法声明一个机器并不运行的操作系统。
+
+**观察。** 在这台主机上（Apple Silicon、真实 Chrome 151、巴西 IP），`macos_m3_new_york` 配置通过 Cloudflare，而 `windows11_rtx3060_nyc` 失败（卡在"Um momento…"）。Chrome 版本已经匹配（都是 151），所以不是上面那个案例。而失败的那个配置恰恰是与巴西 IP **在地理上一致**的，通过的那个反而是覆盖在巴西 IP 之上的美国身份，所以也不是 locale。唯一重要的区别是**操作系统**：一个作为 macOS 通过（与主机匹配），另一个作为 Windows。
+
+**二分。** 从通过的配置出发，一次一个轴地朝失败的配置变异，结果**只跟随 User-Agent 中声明的操作系统**：
+
+- 在失败的配置上只把 User-Agent/平台从 Windows 换成 macOS：**通过**。
+- 在通过的配置上只把 User-Agent/平台从 macOS 换成 Windows：**失败**。
+- 换成 Linux User-Agent：**同样失败**。
+- 换 GPU/WebGL（renderer 字符串、参数、扩展）、canvas、字体、屏幕、硬件、音频、语音、地理位置和 locale：**没有一个能翻转结果**。
+
+在这台 macOS 主机上，任何非 macOS 的操作系统都失败；任何 macOS 身份都通过。GPU 无关紧要：一个声明 NVIDIA GPU 的 macOS 配置通过，而一个声明真实 Apple GPU 的 Windows 配置失败。
+
+**它发生在哪一层。** 在同一个 Chrome 上，测量两个配置下每一层实际向服务器报告的内容：
+
+- **TCP/IP（无法伪造）：** 服务器为两个配置观察到相同的 TTL，推断出初始 TTL 为 **64**（macOS/Unix 家族）。Windows 主机会发出 128。无论 User-Agent 声称什么，内核栈都说"macOS"。
+- **TLS（JA3/JA4）：** 每次连接都在变化（Chrome 的 padding 扩展切换）；同一个未加指纹的基线会产生两种变体。它不编码操作系统。
+- **HTTP/2（Akamai 指纹）：** 两个配置之间完全相同。它不编码操作系统。
+- **Client Hints：** 完全覆盖为所声明的操作系统（在 Windows 下，`architecture` 报告 `x86`，没有泄露真实的 `arm`）。
+- **Canvas/WebGL：** 渲染图像的哈希在两个配置之间**完全相同**（两者都是真实 Apple GPU 的像素）。渲染图像不是区分点。
+
+`apply_fingerprint()` 所控制的一切都一致地说 Windows；唯一剩下的一层，即内核 TCP/IP 栈，说 macOS。Cloudflare 的托管挑战会把你**声明**的操作系统（User-Agent + Client Hints）与它能**观察**到的操作系统（被动栈签名）交叉核对，当它们不一致时保持中间页。
+
+**为什么无法通过 CDP 伪造。** TTL、窗口缩放和 TCP 选项顺序来自主机内核，而非浏览器。没有任何 JavaScript 或 CDP 覆盖能触及它们。真实的 GPU 渲染和文本度量（macOS 上的 CoreText）也属于主机。这就是为什么一个外来操作系统的配置无法仅靠浏览器指纹伪造通过，也是为什么伪造 TLS 的工具（curl_cffi、tls-client）没有帮助：问题不在 TLS，而它们仍然使用主机内核的 TCP/IP 栈。
+
+**修复。** 让配置的操作系统（和 GPU 家族）与真实主机匹配。在这台 Mac 上，使用 macOS/Apple 配置；在 Windows 主机上运行 Windows/NVIDIA 配置。转发代理（SOCKS5/HTTP CONNECT）会从代理的内核重新发起 TCP 连接，因此 Cloudflare 观察到的操作系统变成代理主机的操作系统：要作为 Windows 通过，代理必须运行在 Windows 上（Linux 代理会给出 Linux 签名，仍与 Windows User-Agent 不一致）。需要调整的不是 GPU、canvas 或字体，而是声明的操作系统必须与发起数据包的内核匹配。
+
+<!-- PLACEHOLDER: 替换为在 macOS 主机上驱动 Windows 配置时，Cloudflare 托管挑战卡住（"Um momento…"）的截图。建议文件：docs/resources/images/fingerprint-os-mismatch-challenge.png -->
+<p align="center">
+  <img src="../../resources/images/fingerprint-os-mismatch-challenge.png" alt="因为配置声明 Windows 而主机是 macOS，Cloudflare 卡在中间页上" width="720" />
+</p>
+<p align="center"><sub>macOS 主机上的 Windows 配置：内核 TCP/IP 说 macOS，User-Agent 说 Windows。Cloudflare 保持挑战。</sub></p>
+
+<!-- PLACEHOLDER: 替换为使用操作系统与主机匹配的配置后页面放行的截图。建议文件：docs/resources/images/fingerprint-os-match-pass.png -->
+<p align="center">
+  <img src="../../resources/images/fingerprint-os-match-pass.png" alt="当配置的操作系统与 macOS 主机匹配时 Cloudflare 放行" width="720" />
+</p>
+<p align="center"><sub>macOS 主机上的 macOS 配置：每一层都一致。挑战放行。</sub></p>
+
+!!! danger "操作系统规则"
+    你无法声明一个机器并不运行的操作系统。内核 TCP/IP 栈和主机的真实渲染会在 CDP 无法触及的层暴露真实操作系统。选择操作系统与主机匹配的配置（Mac 上用 macOS 配置，Windows 上用 Windows），不要试图仅靠浏览器指纹在 Apple 硬件上伪造 Windows。
 
 ## 多个指纹与浏览器上下文
 
