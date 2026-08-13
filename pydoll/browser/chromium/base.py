@@ -121,9 +121,6 @@ class Browser(ABC):  # noqa: PLR0904
         self._backup_preferences_dir = ''
         self._tabs_opened: dict[str, Tab] = {}
         self._context_proxy_auth: dict[str, tuple[str, str]] = {}
-        # Fingerprint applied per browser context (None key = default context).
-        # A context holds one identity because its service/shared workers are
-        # shared across its tabs; applying a different one raises.
         self._context_fingerprints: dict[Optional[str], 'FingerprintConfig'] = {}
         logger.debug(
             f'Browser initialized: port={self._connection_port}, '
