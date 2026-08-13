@@ -11,7 +11,7 @@
         <link rel="canonical" href="https://pydoll.tech/docs/zh/features/advanced/behavioral-captcha-bypass/">
       
       
-        <link rel="prev" href="../../configuration/proxy/">
+        <link rel="prev" href="../fingerprint-injection/">
       
       
         <link rel="next" href="../event-system/">
@@ -1432,6 +1432,8 @@
       
         
       
+        
+      
     
     
     
@@ -1479,6 +1481,34 @@
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fingerprint-injection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    指纹注入
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -1653,7 +1683,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_8" class="md-nav__link">
+  <a href="#what-determines-success" class="md-nav__link">
     <span class="md-ellipsis">
       
         什么决定成功？
@@ -1703,7 +1733,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_9" class="md-nav__link">
+  <a href="#_8" class="md-nav__link">
     <span class="md-ellipsis">
       
         故障排除
@@ -1715,7 +1745,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#_10" class="md-nav__link">
+  <a href="#_9" class="md-nav__link">
     <span class="md-ellipsis">
       
         验证码未被点击
@@ -1726,7 +1756,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#_11" class="md-nav__link">
+  <a href="#_10" class="md-nav__link">
     <span class="md-ellipsis">
       
         验证码被点击但显示挑战
@@ -1737,7 +1767,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#_12" class="md-nav__link">
+  <a href="#_11" class="md-nav__link">
     <span class="md-ellipsis">
       
         "访问被拒绝"或立即阻止
@@ -1764,7 +1794,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_13" class="md-nav__link">
+  <a href="#_12" class="md-nav__link">
     <span class="md-ellipsis">
       
         最佳实践
@@ -1775,7 +1805,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_14" class="md-nav__link">
+  <a href="#_13" class="md-nav__link">
     <span class="md-ellipsis">
       
         道德准则
@@ -1786,7 +1816,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_15" class="md-nav__link">
+  <a href="#_14" class="md-nav__link">
     <span class="md-ellipsis">
       
         另请参阅
@@ -4643,7 +4673,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_8" class="md-nav__link">
+  <a href="#what-determines-success" class="md-nav__link">
     <span class="md-ellipsis">
       
         什么决定成功？
@@ -4693,7 +4723,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_9" class="md-nav__link">
+  <a href="#_8" class="md-nav__link">
     <span class="md-ellipsis">
       
         故障排除
@@ -4705,7 +4735,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#_10" class="md-nav__link">
+  <a href="#_9" class="md-nav__link">
     <span class="md-ellipsis">
       
         验证码未被点击
@@ -4716,7 +4746,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#_11" class="md-nav__link">
+  <a href="#_10" class="md-nav__link">
     <span class="md-ellipsis">
       
         验证码被点击但显示挑战
@@ -4727,7 +4757,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#_12" class="md-nav__link">
+  <a href="#_11" class="md-nav__link">
     <span class="md-ellipsis">
       
         "访问被拒绝"或立即阻止
@@ -4754,7 +4784,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_13" class="md-nav__link">
+  <a href="#_12" class="md-nav__link">
     <span class="md-ellipsis">
       
         最佳实践
@@ -4765,7 +4795,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_14" class="md-nav__link">
+  <a href="#_13" class="md-nav__link">
     <span class="md-ellipsis">
       
         道德准则
@@ -4776,7 +4806,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_15" class="md-nav__link">
+  <a href="#_14" class="md-nav__link">
     <span class="md-ellipsis">
       
         另请参阅
@@ -4847,7 +4877,7 @@
     
     
       <li class="md-path__item">
-        <a href="./" class="md-path__link">
+        <a href="../fingerprint-injection/" class="md-path__link">
           
   <span class="md-ellipsis">
     高级功能
@@ -5020,7 +5050,7 @@
 </ul>
 <p>如果您的分数太低，某些站点可能会显示 reCAPTCHA v2 挑战（Pydoll <strong>无法解决</strong>）。</p>
 </div>
-<h2 id="_8">什么决定成功？</h2>
+<h2 id="what-determines-success">什么决定成功？</h2>
 <p>验证码交互的成功<strong>完全取决于您的环境</strong>，而不是 Pydoll。验证码系统分析：</p>
 <h3 id="1-ip">1. IP 声誉（最关键）</h3>
 <table>
@@ -5123,8 +5153,8 @@
 </ul>
 <p>理解这些概念可以帮助您构建更真实的自动化，实现更高的成功率。</p>
 </div>
-<h2 id="_9">故障排除</h2>
-<h3 id="_10">验证码未被点击</h3>
+<h2 id="_8">故障排除</h2>
+<h3 id="_9">验证码未被点击</h3>
 <p><strong>症状</strong>：验证码出现但从未被点击，页面停留在挑战上。</p>
 <p><strong>可能的原因：</strong></p>
 <ol>
@@ -5145,7 +5175,7 @@
 </span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>
 </span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">troubleshooting_example</span><span class="p">())</span>
 </span></code></pre></div>
-<h3 id="_11">验证码被点击但显示挑战</h3>
+<h3 id="_10">验证码被点击但显示挑战</h3>
 <p><strong>症状</strong>：复选框短暂显示勾号，然后呈现图像/拼图挑战。</p>
 <p><strong>根本原因</strong>：您的环境的信任分数太低。</p>
 <p><strong>解决方案：</strong></p>
@@ -5155,7 +5185,7 @@
 <li>添加更真实的行为模式（滚动、鼠标移动、延迟）</li>
 <li><strong>注意</strong>：Pydoll 无法自行解决挑战 — 如果您需要自动验证码解决，请考虑集成 <strong><a href="https://dashboard.capsolver.com/passport/register?inviteCode=WPhTbOsbXEpc">CapSolver</a></strong></li>
 </ul>
-<h3 id="_12">"访问被拒绝"或立即阻止</h3>
+<h3 id="_11">"访问被拒绝"或立即阻止</h3>
 <p><strong>症状</strong>：站点立即显示"访问被拒绝"或阻止您而不显示验证码。</p>
 <p><strong>根本原因</strong>：<strong>您的 IP 地址被标记。</strong></p>
 <p><strong>解决方案：</strong></p>
@@ -5192,7 +5222,7 @@
 </span></code></pre></div></p>
 </li>
 </ol>
-<h2 id="_13">最佳实践</h2>
+<h2 id="_12">最佳实践</h2>
 <ol>
 <li><strong>使用住宅代理</strong>：IP 声誉是最关键的因素</li>
 <li><strong>配置隐蔽选项</strong>：移除自动化指示器</li>
@@ -5201,7 +5231,7 @@
 <li><strong>优雅地处理失败</strong>：当无法通过验证码时有备用逻辑</li>
 <li><strong>测试您的环境</strong>：在自动化前验证 IP 声誉和浏览器指纹</li>
 </ol>
-<h2 id="_14">道德准则</h2>
+<h2 id="_13">道德准则</h2>
 <div class="admonition danger">
 <p class="admonition-title">服务条款和法律合规</p>
 <p>即使技术上可行，与验证码交互也可能违反网站的服务条款。在自动化任何网站之前<strong>始终检查并尊重服务条款</strong>。</p>
@@ -5216,7 +5246,7 @@
 - 拒绝服务攻击或激进抓取
 - 任何违反服务条款的活动</p>
 </div>
-<h2 id="_15">另请参阅</h2>
+<h2 id="_14">另请参阅</h2>
 <ul>
 <li><strong><a href="../../configuration/browser-options/">浏览器选项</a></strong> - 隐蔽配置</li>
 <li><strong><a href="../../configuration/browser-preferences/">浏览器首选项</a></strong> - 高级指纹识别</li>

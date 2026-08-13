@@ -1410,6 +1410,8 @@
       
         
       
+        
+      
     
     
     
@@ -1456,6 +1458,34 @@
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/advanced/fingerprint-injection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fingerprint Injection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -3451,6 +3481,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pydoll.browser.tab.Tab.apply_fingerprint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;apply_fingerprint
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pydoll.browser.tab.Tab.go_to" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -5435,6 +5476,17 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;delete_all_cookies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.browser.tab.Tab.apply_fingerprint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;apply_fingerprint
       
     </span>
   </a>
@@ -7831,6 +7883,64 @@ within the specified duration.</p>
     <div class="doc doc-contents ">
 
         <p>Delete all cookies from current browser context.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="pydoll.browser.tab.Tab.apply_fingerprint" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">apply_fingerprint</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">apply_fingerprint</span><span class="p">(</span><span class="n">fingerprint</span><span class="p">)</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Apply a browser fingerprint profile to this tab.</p>
+<p>Delegates to a per-tab :class:<code>FingerprintApplier</code> (created once and
+reused), which overrides browser identity signals via CDP commands and
+JavaScript injection and replays them on Web Worker targets. Call before
+navigating to any page for full effect, since JS overrides register via
+<code>Page.addScriptToEvaluateOnNewDocument</code>.</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>fingerprint</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Fingerprint configuration. Only specified fields
+are overridden; unspecified fields keep real browser values.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="pydoll.protocol.fingerprint.types.FingerprintConfig">FingerprintConfig</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     </div>

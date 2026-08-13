@@ -1412,6 +1412,8 @@
       
         
       
+        
+      
     
     
     
@@ -1458,6 +1460,34 @@
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../features/advanced/fingerprint-injection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    指纹注入
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -4613,6 +4643,34 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pydoll.exceptions.FingerprintContextConflict" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;FingerprintContextConflict
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" FingerprintContextConflict">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.exceptions.FingerprintContextConflict.message" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;message
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pydoll.exceptions.ProtocolException" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -6255,6 +6313,34 @@
         
           <li class="md-nav__item">
   <a href="#pydoll.exceptions.MissingTargetOrWebSocket.message" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;message
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.exceptions.FingerprintContextConflict" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;FingerprintContextConflict
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" FingerprintContextConflict">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.exceptions.FingerprintContextConflict.message" class="md-nav__link">
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;message
@@ -8559,6 +8645,82 @@ Each category uses a base class to provide common functionality for related exce
 
 </h4>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">message</span> <span class="o">=</span> <span class="s1">&#39;Tab has no target ID or WebSocket address&#39;</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pydoll.exceptions.FingerprintContextConflict" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">FingerprintContextConflict</span>
+
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">FingerprintContextConflict</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;BrowserException&lt;/span&gt; (&lt;code&gt;pydoll.exceptions.BrowserException&lt;/code&gt;)" href="../../../../api/core/exceptions/#pydoll.exceptions.BrowserException">BrowserException</a></code></p>
+
+
+
+        <p>Raised when a different fingerprint is applied within one browser context.</p>
+<p>Service and shared workers are shared across all tabs of a browser context,
+so a single context can only carry one fingerprint identity. Use a separate
+browser context per identity (<code>Browser.create_browser_context()</code> +
+<code>Browser.new_tab(browser_context_id=...)</code>).</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="pydoll.exceptions.FingerprintContextConflict.message" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">message</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">message</span> <span class="o">=</span> <span class="s1">&#39;A different fingerprint is already applied to this browser context. Multiple fingerprints are only supported across separate browser contexts: create one context per identity via Browser.create_browser_context() and open each tab with new_tab(browser_context_id=...).&#39;</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">

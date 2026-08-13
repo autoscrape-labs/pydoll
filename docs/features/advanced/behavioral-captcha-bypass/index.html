@@ -11,7 +11,7 @@
         <link rel="canonical" href="https://pydoll.tech/docs/features/advanced/behavioral-captcha-bypass/">
       
       
-        <link rel="prev" href="../../configuration/proxy/">
+        <link rel="prev" href="../fingerprint-injection/">
       
       
         <link rel="next" href="../event-system/">
@@ -1430,6 +1430,8 @@
       
         
       
+        
+      
     
     
     
@@ -1477,6 +1479,34 @@
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fingerprint-injection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fingerprint Injection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -4845,7 +4875,7 @@
     
     
       <li class="md-path__item">
-        <a href="./" class="md-path__link">
+        <a href="../fingerprint-injection/" class="md-path__link">
           
   <span class="md-ellipsis">
     Advanced
@@ -5089,6 +5119,10 @@
 </span><span id="__span-4-28"><a id="__codelineno-4-28" name="__codelineno-4-28" href="#__codelineno-4-28"></a>
 </span><span id="__span-4-29"><a id="__codelineno-4-29" name="__codelineno-4-29" href="#__codelineno-4-29"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">stealth_configuration</span><span class="p">())</span>
 </span></code></pre></div>
+<div class="admonition danger">
+<p class="admonition-title">Using <code>apply_fingerprint()</code> with Turnstile? Match the browser version</p>
+<p>If you combine this interaction with <a href="../fingerprint-injection/">fingerprint injection</a>, the fingerprint's Chrome version <strong>must</strong> match the real Chrome binary you drive. Turnstile cross-references the version you claim (User-Agent and Client Hints) against the version it observes in the unspoofable TLS/HTTP2 handshake and JavaScript engine. A profile claiming Chrome 145 on a Chrome 151 binary is a contradiction no real browser produces, and Turnstile stays stuck on "Just a moment…" even non-headless. Align the profile to <code>await browser.get_version()</code> first. See <a href="../fingerprint-injection/#case-study-a-chrome-version-mismatch-triggering-cloudflares-challenge">Fingerprint Injection → Chrome Version Mismatch</a>.</p>
+</div>
 <h3 id="3-behavioral-patterns">3. Behavioral Patterns</h3>
 <p>Captcha systems analyze how you interact with the page:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">realistic_behavior</span><span class="p">():</span>
