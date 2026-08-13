@@ -33,6 +33,7 @@
 
 ### Why Pydoll?
 
+- **Native fingerprint injection**: Make the browser report a fully consistent identity with [`tab.apply_fingerprint()`](#2-fingerprint-injection): User-Agent, Client Hints, `navigator`, WebGL, canvas, screen, fonts, timezone and locale, all aligned. The injected overrides survive `toString` and prototype introspection and propagate into Web Workers, with **zero detections** across CreepJS, SannySoft, BrowserScan and BrowserLeaks.
 - **Looks human, not like a bot**: Human-like [mouse movement](https://pydoll.tech/docs/features/automation/mouse-control/) (Bezier curves), realistic typing, and scroll physics. Enough to pass behavioral challenges like Cloudflare Turnstile or reCAPTCHA v3, depending on your browser and IP reputation.
 - **Zero WebDrivers**: A direct CDP connection over WebSocket. No driver binary, no `navigator.webdriver` flag, no version-matching headaches.
 - **Stealth built in**: Realistic interactions plus granular [browser preference](https://pydoll.tech/docs/features/configuration/browser-preferences/) control for fingerprint management.
@@ -84,40 +85,9 @@ No WebDriver binaries or external dependencies required.
 
 ## Getting Started
 
-### 1. Solving Cloudflare Turnstile
+### 1. Stealthy Automation
 
-Pydoll gets you past Cloudflare Turnstile the same way a person does: by placing a realistic, humanized click on the widget. It simulates a real user (humanized clicks and movements) and works to make the browser look genuine, so Turnstile assigns a high enough trust score to accept the click. Whether it succeeds depends on your browser and IP reputation.
-
-```python
-import asyncio
-
-from pydoll.browser.chromium import Chrome
-
-async def solve_turnstile():
-    async with Chrome() as browser:
-        tab = await browser.start()
-
-        # Waits for the Turnstile widget, performs a realistic click,
-        # and continues once it settles.
-        async with tab.expect_and_bypass_cloudflare_captcha():
-            await tab.go_to('https://site-with-turnstile.com')
-
-        print('Turnstile handled, continuing...')
-
-asyncio.run(solve_turnstile())
-```
-
-<p align="center">
-  <img src="public/images/cloudflare-example.gif" alt="Pydoll passing a Cloudflare Turnstile challenge with a humanized click" width="720" />
-</p>
-<p align="center"><sub>Pydoll getting past a Cloudflare Turnstile challenge with a realistic, humanized click.</sub></p>
-
-> [!NOTE]
-> Despite the method name, this isn't a magic bypass. Pydoll performs the same click a real user would; whether it passes depends on your environment (browser fingerprint and IP reputation). See the [Turnstile docs](https://pydoll.tech/docs/features/advanced/behavioral-captcha-bypass/) for details.
-
-### 2. Stealthy Automation
-
-When you need to navigate, get past challenges, or interact with dynamic UI, Pydoll's imperative API handles it. Pass `humanize=True` to add human-like timing for anti-bot evasion.
+The imperative API handles the basics: start a browser, navigate, find elements, and interact with them. Pass `humanize=True` to add human-like timing for anti-bot evasion.
 
 ```python
 import asyncio
@@ -151,6 +121,86 @@ asyncio.run(google_search('pydoll site:github.com'))
 <p align="center">
   <img width="100%" alt="Pydoll running a humanized Google search" src="https://github.com/user-attachments/assets/ccf22ee9-3a96-4e49-b15e-5049361a0608" />
 </p>
+
+### 2. Fingerprint Injection
+
+Beyond acting human, Pydoll can make the browser *report* a different, fully consistent identity. `tab.apply_fingerprint()` overrides the whole surface fingerprinting scripts read (User-Agent and Client Hints, `navigator`, WebGL, canvas, screen, fonts, timezone and locale) and aligns every layer so the browser tells one coherent story.
+
+The hard part of spoofing a fingerprint is not changing the values, it is not getting caught changing them. Modern anti-bot scripts inspect *how* a property was defined: a naive `Object.defineProperty` leaves a fake `toString`, an own-property where a prototype getter should be, or an override that a phantom `iframe` or a Web Worker can see straight through. Pydoll resolves all of this: injected getters are indistinguishable from native ones under `toString` and prototype introspection, and the same identity is replayed inside dedicated, shared and service workers.
+
+It also neutralizes the classic **headless** tells (most importantly the SwiftShader WebGL renderer that gives away a GPU-less browser), so `headless=True` automation is no longer flagged as headless. That is what lets a plain Google search run in headless mode without being blocked. (Cloudflare Turnstile in headless is still under study.)
+
+```python
+import asyncio
+
+from pydoll.browser.chromium import Chrome
+
+from examples.fingerprints import FINGERPRINTS
+
+async def spoof_fingerprint():
+    async with Chrome() as browser:
+        tab = await browser.start()
+
+        # Apply before navigating: the JS overrides register on every new document.
+        await tab.apply_fingerprint(FINGERPRINTS['windows11_rtx3060_nyc'])
+
+        await tab.go_to('https://abrahamjuliot.github.io/creepjs/')
+        print('Fingerprint applied.')
+        await asyncio.sleep(5)
+
+asyncio.run(spoof_fingerprint())
+```
+
+Verified with **zero detections** across the major fingerprint and bot-detection suites:
+
+| Test site | What it checks | Result |
+| --- | --- | --- |
+| [CreepJS](https://abrahamjuliot.github.io/creepjs/) | Lie detection, prototype / `toString` tampering, workers, fonts | No detection |
+| [SannySoft](https://bot.sannysoft.com/) | Headless and bot signals | No detection |
+| [AreYouHeadless](https://arh.antoinevastel.com/bots/areyouheadless) | Headless detection | No detection |
+| [BrowserScan](https://www.browserscan.net/bot-detection) | Bot-detection suite | No detection |
+| [BrowserLeaks WebGL](https://browserleaks.com/webgl) | WebGL vendor / renderer / hash | No detection |
+| [BrowserLeaks JavaScript](https://browserleaks.com/javascript) | `navigator` / JS environment | No detection |
+| [BrowserLeaks Canvas](https://browserleaks.com/canvas) | Canvas fingerprint | No detection |
+| [BrowserLeaks WebRTC](https://browserleaks.com/webrtc) | WebRTC IP leak | No detection |
+
+**Consistency is the whole game.** A fingerprint is only as strong as its weakest layer, and anti-bot systems correlate signals across all of them. A browser that renders as macOS while its `Accept-Language` says Brazilian Portuguese, its timezone says Tokyo, and its IP geolocates to Germany is *more* suspicious than a browser you never touched. Every layer has to tell the same story. `apply_fingerprint()` keeps the layers it controls internally consistent, but you own the rest: the profile must match the real Chrome binary you drive (the network-layer TLS / HTTP2 fingerprint is authentic and cannot be spoofed) and the geography of your egress IP or proxy. The deep dive on [browser fingerprinting](https://pydoll.tech/docs/deep-dive/fingerprinting/) (see "The Golden Rule": *every layer must tell the same story*) and the [Timezone and Locale Consistency](https://pydoll.tech/docs/deep-dive/fingerprinting/evasion-techniques/) section spell out why a locale that contradicts the IP gets you blocked.
+
+> [!IMPORTANT]
+> **Pydoll does not generate or ship fingerprints.** The profiles in [`examples/fingerprints.py`](examples/fingerprints.py) exist only as a reference for how coherent a profile has to be and the shape of the [`FingerprintConfig`](pydoll/protocol/fingerprint/types.py) you inject. Bring your own.
+
+[Fingerprint Injection Docs](https://pydoll.tech/docs/features/advanced/fingerprint-injection/)
+
+### 3. Solving Cloudflare Turnstile
+
+Pydoll gets you past Cloudflare Turnstile the same way a person does: by placing a realistic, humanized click on the widget. It simulates a real user (humanized clicks and movements) and works to make the browser look genuine, so Turnstile assigns a high enough trust score to accept the click. Whether it succeeds depends on your browser and IP reputation.
+
+```python
+import asyncio
+
+from pydoll.browser.chromium import Chrome
+
+async def solve_turnstile():
+    async with Chrome() as browser:
+        tab = await browser.start()
+
+        # Waits for the Turnstile widget, performs a realistic click,
+        # and continues once it settles.
+        async with tab.expect_and_bypass_cloudflare_captcha():
+            await tab.go_to('https://site-with-turnstile.com')
+
+        print('Turnstile handled, continuing...')
+
+asyncio.run(solve_turnstile())
+```
+
+<p align="center">
+  <img src="public/images/cloudflare-example.gif" alt="Pydoll passing a Cloudflare Turnstile challenge with a humanized click" width="720" />
+</p>
+<p align="center"><sub>Pydoll getting past a Cloudflare Turnstile challenge with a realistic, humanized click.</sub></p>
+
+> [!NOTE]
+> Despite the method name, this isn't a magic bypass. Pydoll performs the same click a real user would; whether it passes depends on your environment (browser fingerprint and IP reputation). See the [Turnstile docs](https://pydoll.tech/docs/features/advanced/behavioral-captcha-bypass/) for details.
 
 ## Features
 

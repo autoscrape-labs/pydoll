@@ -8,7 +8,7 @@ import logging
 import shutil
 import warnings
 import zipfile
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, suppress
 from functools import partial
 from pathlib import Path
 from tempfile import mkdtemp
@@ -31,6 +31,7 @@ import aiofiles
 from pydoll.browser.requests import Request
 from pydoll.commands import (
     DomCommands,
+    EmulationCommands,
     FetchCommands,
     NetworkCommands,
     PageCommands,
@@ -46,6 +47,7 @@ from pydoll.elements.web_element import WebElement
 from pydoll.exceptions import (
     CommandExecutionTimeout,
     DownloadTimeout,
+    FingerprintContextConflict,
     IFrameNotFound,
     InvalidFileExtension,
     InvalidIFrame,
@@ -66,6 +68,10 @@ from pydoll.interactions import KeyboardAPI, MouseAPI, ScrollAPI
 from pydoll.interactions.iframe import IFrameContext
 from pydoll.protocol.browser.types import DownloadBehavior, DownloadProgressState
 from pydoll.protocol.dom.types import Node, ShadowRootType
+from pydoll.protocol.emulation.types import (
+    ScreenOrientation,
+    ScreenOrientationType,
+)
 from pydoll.protocol.network.types import ResourceType
 from pydoll.protocol.page.events import PageEvent
 from pydoll.protocol.page.types import FrameResourceTree, ScreenshotFormat
@@ -75,8 +81,10 @@ from pydoll.protocol.runtime.methods import (
     SerializationOptions,
 )
 from pydoll.protocol.runtime.types import CallArgument
-from pydoll.protocol.target.types import TargetInfo
+from pydoll.protocol.target.events import TargetEvent
+from pydoll.protocol.target.types import FilterEntry, TargetInfo
 from pydoll.utils import (
+    UserAgentParser,
     decode_base64_to_bytes,
     has_return_outside_function,
 )
@@ -87,11 +95,12 @@ from pydoll.utils.bundle import (
     inline_all_assets,
     rewrite_html_urls,
 )
+from pydoll.utils.fingerprint_builder import build_fingerprint_js, build_fingerprint_worker_js
 
 if TYPE_CHECKING:
     from pydoll.browser.chromium.base import Browser
     from pydoll.extractor.model import ExtractionModel
-    from pydoll.protocol.base import EmptyResponse, Response
+    from pydoll.protocol.base import Command, EmptyResponse, Response
     from pydoll.protocol.browser.events import (
         DownloadProgressEvent,
         DownloadWillBeginEvent,
@@ -102,6 +111,7 @@ if TYPE_CHECKING:
         ResolveNodeResponse,
     )
     from pydoll.protocol.fetch.types import AuthChallengeResponseType, HeaderEntry, RequestStage
+    from pydoll.protocol.fingerprint.types import FingerprintConfig, ScreenFingerprint
     from pydoll.protocol.network.events import RequestWillBeSentEvent
     from pydoll.protocol.network.methods import GetCookiesResponse as NetworkGetCookiesResponse
     from pydoll.protocol.network.methods import GetResponseBodyResponse
@@ -121,9 +131,16 @@ if TYPE_CHECKING:
     )
     from pydoll.protocol.runtime.methods import CallFunctionOnResponse, EvaluateResponse
     from pydoll.protocol.storage.methods import GetCookiesResponse as StorageGetCookiesResponse
-    from pydoll.protocol.target.methods import AttachToTargetResponse, GetTargetsResponse
+    from pydoll.protocol.target.methods import (
+        AttachToTargetResponse,
+        GetTargetInfoResponse,
+        GetTargetsResponse,
+    )
+    from pydoll.utils.user_agent_parser import ParsedUserAgent
 
 logger = logging.getLogger(__name__)
+
+_NO_WORKER_SCOPE = object()
 
 IFrame: TypeAlias = 'Tab'
 
@@ -955,6 +972,408 @@ class Tab(FindElementsMixin):
         """Delete all cookies from current browser context."""
         logger.info('Clearing all cookies from current browser context')
         return await self._execute_command(StorageCommands.clear_cookies(self._browser_context_id))
+
+    async def apply_fingerprint(self, fingerprint: FingerprintConfig) -> None:
+        """Apply a browser fingerprint profile to this tab.
+
+        Overrides browser identity signals via CDP commands and JavaScript
+        injection. Must be called before navigating to any page for full
+        effect, since JS overrides are registered via
+        ``Page.addScriptToEvaluateOnNewDocument``.
+
+        CDP-level overrides (applied immediately):
+            - User-Agent string + Client Hints (``Emulation.setUserAgentOverride``)
+            - Timezone (``Emulation.setTimezoneOverride``)
+            - Geolocation (``Emulation.setGeolocationOverride``)
+            - Device metrics / screen (``Emulation.setDeviceMetricsOverride``)
+            - Locale (``Emulation.setLocaleOverride``)
+
+        JS-level overrides (injected on every new document):
+            - Navigator properties, hardware, WebGL, screen extras,
+              plugins, media devices, audio, speech, locale/languages
+
+        The same overrides are also replayed on Web Worker targets, which have
+        their own ``WorkerNavigator`` and would otherwise leak the real
+        User-Agent, platform, ``hardwareConcurrency``, ``deviceMemory`` and
+        languages.
+
+        Args:
+            fingerprint: Fingerprint configuration. Only specified fields
+                are overridden; unspecified fields keep real browser values.
+        """
+        logger.info('Applying fingerprint profile to tab')
+
+        context_already_set = self._register_fingerprint_context(fingerprint)
+
+        if not self.page_events_enabled:
+            await self.enable_page_events()
+
+        accept_language = self._build_accept_language(fingerprint)
+
+        parsed = (
+            UserAgentParser.parse(fingerprint['user_agent'])
+            if 'user_agent' in fingerprint
+            else None
+        )
+
+        mobile = fingerprint.get('mobile')
+        if mobile is None:
+            mobile = parsed.user_agent_metadata['mobile'] if parsed else False
+
+        if parsed is not None:
+            await self._apply_fingerprint_user_agent(parsed, accept_language, mobile=mobile)
+        if 'timezone' in fingerprint:
+            await self._execute_command(
+                EmulationCommands.set_timezone_override(fingerprint['timezone'])
+            )
+        if 'geolocation' in fingerprint:
+            geo = fingerprint['geolocation']
+            await self._execute_command(
+                EmulationCommands.set_geolocation_override(
+                    latitude=geo['latitude'],
+                    longitude=geo['longitude'],
+                    accuracy=geo.get('accuracy'),
+                )
+            )
+        if 'screen' in fingerprint:
+            await self._apply_fingerprint_device_metrics(fingerprint['screen'], mobile=mobile)
+        if 'hardware' in fingerprint and 'hardware_concurrency' in fingerprint['hardware']:
+            await self._execute_command(
+                EmulationCommands.set_hardware_concurrency_override(
+                    fingerprint['hardware']['hardware_concurrency']
+                )
+            )
+        if 'locale' in fingerprint:
+            languages = fingerprint['locale']['languages']
+            if languages:
+                await self._execute_command(
+                    EmulationCommands.set_locale_override(languages[0].replace('-', '_'))
+                )
+
+        identity_ua = parsed.reduced_user_agent if parsed else ''
+        identity_platform = parsed.platform if parsed else ''
+        js = build_fingerprint_js(fingerprint, user_agent=identity_ua, platform=identity_platform)
+        if js:
+            await self._execute_command(
+                PageCommands.add_script_to_evaluate_on_new_document(
+                    source=js,
+                    run_immediately=True,
+                )
+            )
+
+        await self._setup_fingerprint_worker_override(
+            fingerprint,
+            parsed,
+            accept_language,
+            mobile=mobile,
+            setup_browser_scope=not context_already_set,
+        )
+        logger.info('Fingerprint profile applied')
+
+    def _register_fingerprint_context(self, fingerprint: FingerprintConfig) -> bool:
+        """Register a fingerprint for this tab's browser context.
+
+        Returns whether the context was already registered (so browser-scoped
+        worker setup can be skipped as a no-op). Raises if a *different*
+        fingerprint is already applied to the context.
+
+        Raises:
+            FingerprintContextConflict: If the context already carries a
+                different fingerprint (its service/shared workers are shared
+                across tabs, so a context holds a single identity).
+        """
+        registry = self._browser._context_fingerprints
+        existing = registry.get(self._browser_context_id)
+        if existing is not None and existing != fingerprint:
+            raise FingerprintContextConflict()
+        already_set = self._browser_context_id in registry
+        registry[self._browser_context_id] = fingerprint
+        return already_set
+
+    # Per-session worker CDP commands use a short timeout so a slow or
+    # unresponsive worker target can never block resuming the worker.
+    _WORKER_COMMAND_TIMEOUT = 5
+
+    async def _setup_fingerprint_worker_override(
+        self,
+        fingerprint: FingerprintConfig,
+        parsed: 'Optional[ParsedUserAgent]',
+        accept_language: Optional[str],
+        mobile: bool,
+        setup_browser_scope: bool = True,
+    ) -> None:
+        """Auto-attach to every Web Worker type and replay the fingerprint on it.
+
+        Workers keep their own ``WorkerNavigator``: CDP overrides scoped to the
+        page session and ``addScriptToEvaluateOnNewDocument`` do not reach them,
+        so each worker is attached (paused on start), overridden, then resumed.
+
+        Dedicated workers are children of the page target and are driven over the
+        tab connection, so they are always set up (once per tab). Service and
+        shared workers are browser-scoped targets whose sessions only answer over
+        the browser connection; that handler is registered once per browser
+        context (``setup_browser_scope``), scoped to this context, to avoid
+        stacking a handler for every tab in the same context.
+        """
+        worker_js = build_fingerprint_worker_js(
+            fingerprint,
+            platform=parsed.platform if parsed else '',
+            user_agent=parsed.reduced_user_agent if parsed else '',
+        )
+        hardware_concurrency = fingerprint.get('hardware', {}).get('hardware_concurrency')
+
+        tab_conn = self._connection_handler
+        tab_handler = self._build_fingerprint_worker_handler(
+            tab_conn, {'worker'}, parsed, accept_language, mobile, hardware_concurrency, worker_js
+        )
+        await self.on(TargetEvent.ATTACHED_TO_TARGET, tab_handler)
+        await self._execute_command(
+            TargetCommands.set_auto_attach(
+                auto_attach=True,
+                wait_for_debugger_on_start=True,
+                flatten=True,
+                filter=[FilterEntry(type='worker')],
+            )
+        )
+
+        if not setup_browser_scope:
+            return
+
+        scope_context_id = await self._resolve_browser_context_id()
+        browser_conn = self._browser._connection_handler
+        browser_handler = self._build_fingerprint_worker_handler(
+            browser_conn,
+            {'service_worker', 'shared_worker'},
+            parsed,
+            accept_language,
+            mobile,
+            hardware_concurrency,
+            worker_js,
+            scope_context_id=scope_context_id,
+        )
+        await self._browser.on(TargetEvent.ATTACHED_TO_TARGET, browser_handler)
+        await browser_conn.execute_command(
+            TargetCommands.set_auto_attach(
+                auto_attach=True,
+                wait_for_debugger_on_start=True,
+                flatten=True,
+                filter=[FilterEntry(type='service_worker'), FilterEntry(type='shared_worker')],
+            )
+        )
+
+    async def _resolve_browser_context_id(self) -> object:
+        """Resolve this tab's concrete browser context id for scoping workers.
+
+        ``self._browser_context_id`` is ``None`` for the default context, but a
+        worker's ``targetInfo.browserContextId`` carries the concrete
+        default-context id, so scoping by the stored ``None`` would never match
+        and every default-context service/shared worker would be skipped (leaking
+        the real identity). This reads the concrete id from the tab's own target.
+        Falls back to ``_NO_WORKER_SCOPE`` (no scoping) if it cannot be resolved,
+        so workers are still overridden rather than skipped.
+        """
+        if not self._target_id:
+            return _NO_WORKER_SCOPE
+        try:
+            response: GetTargetInfoResponse = await self._execute_command(
+                TargetCommands.get_target_info(self._target_id)
+            )
+            return response['result']['targetInfo'].get('browserContextId', _NO_WORKER_SCOPE)
+        except (CommandExecutionTimeout, WebSocketConnectionClosed) as exc:
+            logger.debug('Could not resolve browser context id for worker scope: %s', exc)
+            return _NO_WORKER_SCOPE
+        except KeyError as exc:
+            logger.debug('Unexpected getTargetInfo response, missing key %s', exc)
+            return _NO_WORKER_SCOPE
+
+    def _build_fingerprint_worker_handler(
+        self,
+        connection: ConnectionHandler,
+        worker_types: set[str],
+        parsed: 'Optional[ParsedUserAgent]',
+        accept_language: Optional[str],
+        mobile: bool,
+        hardware_concurrency: Optional[int],
+        worker_js: str,
+        scope_context_id: object = _NO_WORKER_SCOPE,
+    ) -> 'Callable[[dict], Awaitable[None]]':
+        """Build an attachedToTarget handler that replays the fingerprint on workers.
+
+        The returned coroutine reapplies the User-Agent / hardwareConcurrency CDP
+        overrides and injects the worker fingerprint JS on each attached worker
+        session whose type is in ``worker_types``, over ``connection``, then always
+        resumes targets paused via ``waitForDebuggerOnStart`` so a worker never
+        hangs on attach.
+
+        ``scope_context_id`` scopes a browser-wide handler to a single browser
+        context: service and shared workers are browser-global targets, so a
+        handler registered on the browser connection sees every context's workers.
+        When set (including to ``None`` for the default context), the fingerprint
+        is applied only to workers whose ``browserContextId`` matches, so
+        different tabs in different contexts get their own identity without
+        cross-contamination. The worker is still resumed regardless of match, so a
+        worker from another context never hangs. Left unset (``_NO_WORKER_SCOPE``)
+        for tab-scoped dedicated workers, which are already isolated to this tab.
+        """
+
+        async def on_worker_attached(event: dict) -> None:
+            params = event['params']
+            session_id = params['sessionId']
+            try:
+                target_info = params['targetInfo']
+                in_scope = (
+                    scope_context_id is _NO_WORKER_SCOPE
+                    or target_info.get('browserContextId') == scope_context_id
+                )
+                if target_info['type'] in worker_types and in_scope:
+                    await self._apply_worker_fingerprint_session(
+                        connection,
+                        session_id,
+                        parsed,
+                        accept_language,
+                        mobile,
+                        hardware_concurrency,
+                        worker_js,
+                    )
+            except (CommandExecutionTimeout, WebSocketConnectionClosed, KeyError) as exc:
+                logger.debug('Skipped fingerprint on worker session %s: %s', session_id, exc)
+            finally:
+                if params.get('waitingForDebugger'):
+                    resume = RuntimeCommands.run_if_waiting_for_debugger()
+                    resume['sessionId'] = session_id
+                    with suppress(CommandExecutionTimeout, WebSocketConnectionClosed):
+                        await connection.execute_command(
+                            resume, timeout=self._WORKER_COMMAND_TIMEOUT
+                        )
+
+        return on_worker_attached
+
+    async def _apply_worker_fingerprint_session(
+        self,
+        connection: ConnectionHandler,
+        session_id: str,
+        parsed: 'Optional[ParsedUserAgent]',
+        accept_language: Optional[str],
+        mobile: bool,
+        hardware_concurrency: Optional[int],
+        worker_js: str,
+    ) -> None:
+        """Replay UA / hardwareConcurrency / JS overrides on a single worker session."""
+        commands: list[Command] = []
+        if parsed is not None:
+            metadata = parsed.user_agent_metadata
+            metadata['mobile'] = mobile
+            commands.append(
+                EmulationCommands.set_user_agent_override(
+                    user_agent=parsed.reduced_user_agent,
+                    accept_language=accept_language,
+                    platform=parsed.platform,
+                    user_agent_metadata=metadata,
+                )
+            )
+        if hardware_concurrency is not None:
+            commands.append(
+                EmulationCommands.set_hardware_concurrency_override(hardware_concurrency)
+            )
+        if worker_js:
+            commands.append(RuntimeCommands.evaluate(expression=worker_js))
+        for command in commands:
+            command['sessionId'] = session_id
+            await connection.execute_command(command, timeout=self._WORKER_COMMAND_TIMEOUT)
+
+    @staticmethod
+    def _build_accept_language(fingerprint: FingerprintConfig) -> Optional[str]:
+        """Build the Accept-Language value passed to CDP from locale config.
+
+        Returns a plain, unweighted language list (e.g. ``'en-US,en'``). CDP's
+        ``Emulation.setUserAgentOverride.acceptLanguage`` computes the ``q`` values
+        itself, so a pre-weighted string here yields a malformed header with
+        doubled ``q`` values (``en-US,en;q=0.9;q=0.9``) that no real browser emits.
+        """
+        if 'locale' not in fingerprint:
+            return None
+        languages = fingerprint['locale'].get('languages', [])
+        if not languages:
+            return None
+        return ','.join(languages)
+
+    async def _apply_fingerprint_user_agent(
+        self,
+        parsed: 'ParsedUserAgent',
+        accept_language: Optional[str] = None,
+        mobile: bool = False,
+    ) -> None:
+        """Apply user-agent override from an already-parsed User-Agent.
+
+        Exposes the reduced UA (``Chrome/MAJOR.0.0.0``) as ``navigator.userAgent``
+        and the ``User-Agent`` header, matching what real Chrome sends after UA
+        reduction. The true build number survives in
+        ``metadata['fullVersionList']`` (``Sec-CH-UA-Full-Version-List``), so all
+        layers stay mutually consistent.
+
+        ``Emulation.setUserAgentOverride`` sets ``navigator.platform``,
+        ``navigator.appVersion`` and ``navigator.vendor`` natively from the
+        overridden UA / platform, so no JavaScript getter is injected for them
+        (a JS getter would replace the genuinely native one and become
+        detectable under ``toString`` introspection).
+
+        Args:
+            parsed: Parsed User-Agent metadata (from ``UserAgentParser.parse``).
+            accept_language: Accept-Language header value.
+            mobile: Whether to emulate a mobile device. Propagated to
+                Client Hints (``Sec-CH-UA-Mobile``).
+        """
+        metadata = parsed.user_agent_metadata
+        metadata['mobile'] = mobile
+        await self._execute_command(
+            EmulationCommands.set_user_agent_override(
+                user_agent=parsed.reduced_user_agent,
+                accept_language=accept_language,
+                platform=parsed.platform,
+                user_agent_metadata=metadata,
+            )
+        )
+
+    _ORIENTATION_CDP_MAP: dict[str, ScreenOrientationType] = {
+        'portrait-primary': ScreenOrientationType.PORTRAIT_PRIMARY,
+        'portrait-secondary': ScreenOrientationType.PORTRAIT_SECONDARY,
+        'landscape-primary': ScreenOrientationType.LANDSCAPE_PRIMARY,
+        'landscape-secondary': ScreenOrientationType.LANDSCAPE_SECONDARY,
+    }
+
+    async def _apply_fingerprint_device_metrics(
+        self, screen: ScreenFingerprint, mobile: bool = False
+    ) -> None:
+        """Apply device metrics override from screen fingerprint config.
+
+        Args:
+            screen: Screen fingerprint configuration.
+            mobile: Whether to emulate a mobile device.
+        """
+        screen_orientation: Optional[ScreenOrientation] = None
+        orientation_type = screen.get('orientation_type')
+        if orientation_type:
+            cdp_type = self._ORIENTATION_CDP_MAP.get(orientation_type)
+            if cdp_type:
+                screen_orientation = ScreenOrientation(
+                    type=cdp_type,
+                    angle=screen.get('orientation_angle', 0),
+                )
+
+        viewport_width = screen.get('inner_width', screen['width'])
+        viewport_height = screen.get('inner_height', screen['height'])
+
+        await self._execute_command(
+            EmulationCommands.set_device_metrics_override(
+                width=viewport_width,
+                height=viewport_height,
+                device_scale_factor=screen.get('device_pixel_ratio', 0),
+                mobile=mobile,
+                screen_width=screen['width'],
+                screen_height=screen['height'],
+                screen_orientation=screen_orientation,
+            )
+        )
 
     async def go_to(self, url: str, timeout: int = 300):
         """

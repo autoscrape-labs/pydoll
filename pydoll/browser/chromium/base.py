@@ -57,6 +57,7 @@ if TYPE_CHECKING:
     from pydoll.protocol.browser.types import Bounds, PermissionType
     from pydoll.protocol.fetch.events import RequestPausedEvent
     from pydoll.protocol.fetch.types import HeaderEntry
+    from pydoll.protocol.fingerprint.types import FingerprintConfig
     from pydoll.protocol.network.types import (
         Cookie,
         CookieParam,
@@ -120,6 +121,10 @@ class Browser(ABC):  # noqa: PLR0904
         self._backup_preferences_dir = ''
         self._tabs_opened: dict[str, Tab] = {}
         self._context_proxy_auth: dict[str, tuple[str, str]] = {}
+        # Fingerprint applied per browser context (None key = default context).
+        # A context holds one identity because its service/shared workers are
+        # shared across its tabs; applying a different one raises.
+        self._context_fingerprints: dict[Optional[str], 'FingerprintConfig'] = {}
         logger.debug(
             f'Browser initialized: port={self._connection_port}, '
             f'headless={getattr(self.options, "headless", None)}'
@@ -293,6 +298,8 @@ class Browser(ABC):  # noqa: PLR0904
             Closes all associated tabs immediately.
         """
         logger.info(f'Deleting browser context: {browser_context_id}')
+        self._context_proxy_auth.pop(browser_context_id, None)
+        self._context_fingerprints.pop(browser_context_id, None)
         return await self._execute_command(
             TargetCommands.dispose_browser_context(browser_context_id)
         )

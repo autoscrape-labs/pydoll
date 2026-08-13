@@ -97,6 +97,23 @@ class MissingTargetOrWebSocket(BrowserException):
     message = 'Tab has no target ID or WebSocket address'
 
 
+class FingerprintContextConflict(BrowserException):
+    """Raised when a different fingerprint is applied within one browser context.
+
+    Service and shared workers are shared across all tabs of a browser context,
+    so a single context can only carry one fingerprint identity. Use a separate
+    browser context per identity (``Browser.create_browser_context()`` +
+    ``Browser.new_tab(browser_context_id=...)``).
+    """
+
+    message = (
+        'A different fingerprint is already applied to this browser context. '
+        'Multiple fingerprints are only supported across separate browser contexts: '
+        'create one context per identity via Browser.create_browser_context() and '
+        'open each tab with new_tab(browser_context_id=...).'
+    )
+
+
 class ProtocolException(PydollException):
     """Base class for exceptions related to CDP protocol communication."""
 

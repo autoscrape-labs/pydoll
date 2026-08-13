@@ -35,6 +35,7 @@ nav:
           - Browser Preferences: features/configuration/browser-preferences.md
           - Proxy Configuration: features/configuration/proxy.md
       - Advanced:
+          - Fingerprint Injection: features/advanced/fingerprint-injection.md
           - Behavioral Captcha Bypass: features/advanced/behavioral-captcha-bypass.md
           - Event System: features/advanced/event-system.md
           - Remote Connections: features/advanced/remote-connections.md
@@ -200,6 +201,7 @@ plugins:
             Browser Preferences: 浏览器偏好设置
             Proxy Configuration: 代理配置
             Advanced: 高级功能
+            Fingerprint Injection: 指纹注入
             Behavioral Captcha Bypass: 行为验证码绕过
             Event System: 事件系统
             Remote Connections: 远程连接
@@ -302,6 +304,7 @@ plugins:
             Browser Preferences: Preferências do Navegador
             Proxy Configuration: Configuração de Proxy
             Advanced: Avançado
+            Fingerprint Injection: Injeção de Fingerprint
             Behavioral Captcha Bypass: Bypass de Captcha Comportamental
             Event System: Sistema de Eventos
             Remote Connections: Conexões Remotas

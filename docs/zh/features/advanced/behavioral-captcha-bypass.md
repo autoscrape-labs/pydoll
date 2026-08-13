@@ -152,7 +152,7 @@ asyncio.run(recaptcha_v3_example())
     
     如果您的分数太低，某些站点可能会显示 reCAPTCHA v2 挑战（Pydoll **无法解决**）。
 
-## 什么决定成功？
+## 什么决定成功？ {#what-determines-success}
 
 验证码交互的成功**完全取决于您的环境**，而不是 Pydoll。验证码系统分析：
 

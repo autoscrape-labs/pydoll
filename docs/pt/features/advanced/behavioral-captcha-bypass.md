@@ -152,7 +152,7 @@ asyncio.run(recaptcha_v3_example())
     
     Se sua pontuação for muito baixa, alguns sites podem mostrar um desafio reCAPTCHA v2 (que o Pydoll **não pode resolver**).
 
-## O que Determina o Sucesso?
+## O que Determina o Sucesso? {#what-determines-success}
 
 O sucesso da interação com o captcha depende **inteiramente do seu ambiente**, não do Pydoll. O sistema de captcha analisa:
 
