@@ -363,8 +363,8 @@ const SPONSORS = [
     name: 'NodeMaven',
     url: 'https://go.nodemaven.com/pydollgh',
     logo: '/images/nodemaven-logo.svg',
-    width: 40,
-    height: 40
+    width: 56,
+    height: 56
   },
   {
     name: 'Swiftproxy',
