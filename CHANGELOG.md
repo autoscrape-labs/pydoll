@@ -1,3 +1,34 @@
+## 2.24.0 (2026-08-13)
+
+### Feat
+
+- enhance fingerprint application and management with new features and tests
+- implement fingerprint injection subsystem
+- add browser fingerprint injection
+
+### Fix
+
+- **js**: clear field on empty text in selection-read exception fallback
+- narrow bare except in insert_text cache re-read
+- **js**: guard selection restore for unsupported input types in INSERT_TEXT
+- **test**: test_clear_input_in_iframe
+- **test**: test_find_element_in_parent_iframe
+- resolve resource leaks and improve URL rewriting logic
+- **examples**: use new_tab instead of removed get_page method
+- **decorators**: correct docstring example to use @retry
+- **utils**: use PATHEXT for executable validation on Windows
+- **bundle**: rewrite root-relative URLs in HTML bundles
+- **browser**: guard empty tabs and None user_data_dir in Browser
+- replace deprecated asyncio.get_event_loop with get_running_loop
+- **browser**: close ConnectionHandler in OOPIF and iframe resolution
+- change const to let for content and text variables
+- update request to return raw data instead of encoded text
+
+### Refactor
+
+- remove outdated comments on fingerprint context handling
+- **iframe**: extract _try_resolve_oopif to narrow try block
+
 ## 2.23.1 (2026-07-16)
 
 ### Fix

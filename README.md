@@ -157,7 +157,6 @@ Verified with **zero detections** across the major fingerprint and bot-detection
 | --- | --- | --- |
 | [CreepJS](https://abrahamjuliot.github.io/creepjs/) | Lie detection, prototype / `toString` tampering, workers, fonts | No detection |
 | [SannySoft](https://bot.sannysoft.com/) | Headless and bot signals | No detection |
-| [AreYouHeadless](https://arh.antoinevastel.com/bots/areyouheadless) | Headless detection | No detection |
 | [BrowserScan](https://www.browserscan.net/bot-detection) | Bot-detection suite | No detection |
 | [BrowserLeaks WebGL](https://browserleaks.com/webgl) | WebGL vendor / renderer / hash | No detection |
 | [BrowserLeaks JavaScript](https://browserleaks.com/javascript) | `navigator` / JS environment | No detection |
