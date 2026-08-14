@@ -294,8 +294,11 @@ O apoio dos patrocinadores é essencial para manter o projeto vivo, em constante
   <a href="https://www.testmuai.com/?utm_medium=sponsor&utm_source=pydoll" target="_blank" rel="noopener nofollow sponsored">
     <img src="../resources/images/logo-lamda-test.svg" alt="LambdaTest" />
   </a>
-  <a href="https://dashboard.capsolver.com/passport/register?inviteCode=WPhTbOsbXEpc" target="_blank" rel="noopener nofollow sponsored">
-    <img src="../resources/images/capsolver-logo.png" alt="CapSolver" />
+  <a href="https://go.nodemaven.com/pydollgh" target="_blank" rel="noopener nofollow sponsored">
+    <img src="../resources/images/nodemaven-logo.svg" alt="NodeMaven" />
+  </a>
+  <a href="https://www.swiftproxy.net/?ref=pydoll" target="_blank" rel="noopener nofollow sponsored">
+    <img src="../resources/images/swiftproxy-logo.png" alt="Swiftproxy" />
   </a>
 </div>
 

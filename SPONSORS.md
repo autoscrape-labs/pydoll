@@ -24,24 +24,14 @@ Pydoll is proudly sponsored by **[Thordata](https://www.thordata.com/?ls=github&
 
 ---
 
-<a href="https://dashboard.capsolver.com/passport/register?inviteCode=WPhTbOsbXEpc">
-<img alt="CapSolver" src="public/images/capsolver.jpeg" />
-</a>
-
-Pydoll excels at behavioral evasion, but it doesn't solve captchas. That's where **[CapSolver](https://dashboard.capsolver.com/passport/register?inviteCode=WPhTbOsbXEpc)** comes in. An AI-powered service that handles reCAPTCHA, Cloudflare challenges, and more, seamlessly integrating with your automation workflows.
-
-**[Register with our invite code](https://dashboard.capsolver.com/passport/register?inviteCode=WPhTbOsbXEpc)** and use code **PYDOLL** to get an extra **6% balance bonus**.
-
----
-
-<a href="https://go.nodemaven.com/pydoll">
+<a href="https://go.nodemaven.com/pydollgh">
 <img width="100%" height="280" alt="nodemaven" src="https://github.com/user-attachments/assets/c29378e2-48aa-4eec-a896-3a493f30bf48" />
 </a>
 
-[NodeMaven](https://go.nodemaven.com/pydoll): The most reliable proxy provider with the Highest Quality IP on the market.
+[NodeMaven](https://go.nodemaven.com/pydollgh): The most reliable proxy provider with the Highest Quality IP on the market.
 Best solution for automation, web scraping, SEO research, and social media management.  
 
-Why [NodeMaven](https://go.nodemaven.com/pydoll)?
+Why [NodeMaven](https://go.nodemaven.com/pydollgh)?
 
 - 99.9% uptime
 - Sticky sessions up to 7 days
@@ -53,6 +43,16 @@ Why [NodeMaven](https://go.nodemaven.com/pydoll)?
 Special codes for PYDOLL users:
   - PYDOLL35 - 35% off to Mobile and Residential Proxies
   - PYDOLL40 - 40% off to ISP (Static) Proxies
+
+---
+
+<a href="https://www.swiftproxy.net/?ref=pydoll">
+<img alt="Swiftproxy" src="public/images/swiftproxy-banner.png" />
+</a>
+
+Pydoll is also sponsored by **[Swiftproxy](https://www.swiftproxy.net/?ref=pydoll)**: a proxy provider for web scraping and automation.
+
+**[Sign up through our link](https://www.swiftproxy.net/?ref=pydoll)** to support the project.
 
 ---
 

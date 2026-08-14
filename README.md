@@ -68,8 +68,8 @@
 <table>
   <tr>
     <td><a href="https://www.thordata.com/?ls=github&lk=pydoll"><img src="public/images/Thordata-logo.png" height="30" alt="Thordata" /></a></td>
-    <td><a href="https://dashboard.capsolver.com/passport/register?inviteCode=WPhTbOsbXEpc"><img src="public/images/capsolver-logo.png" height="40" alt="CapSolver" /></a></td>
     <td><a href="https://www.testmuai.com/?utm_medium=sponsor&utm_source=pydoll"><img src="public/images/logo-lamda-test.svg" height="30" width="130" alt="LambdaTest" /></a></td>
+    <td><a href="https://www.swiftproxy.net/?ref=pydoll"><img src="public/images/swiftproxy-logo.png" height="30" alt="Swiftproxy" /></a></td>
   </tr>
 </table>
 

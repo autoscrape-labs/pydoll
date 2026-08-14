@@ -360,11 +360,18 @@ const SPONSORS = [
     height: 45
   },
   {
-    name: 'CapSolver',
-    url: 'https://dashboard.capsolver.com/passport/register?inviteCode=WPhTbOsbXEpc',
-    logo: '/images/capsolver-logo.png',
-    width: 200,
-    height: 45
+    name: 'NodeMaven',
+    url: 'https://go.nodemaven.com/pydollgh',
+    logo: '/images/nodemaven-logo.svg',
+    width: 40,
+    height: 40
+  },
+  {
+    name: 'Swiftproxy',
+    url: 'https://www.swiftproxy.net/?ref=pydoll',
+    logo: '/images/swiftproxy-logo.png',
+    width: 160,
+    height: 40
   }
 ]
 

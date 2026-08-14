@@ -179,8 +179,12 @@
   width: 160px !important;
 }
 
-.md-typeset .sponsors-grid img[alt="CapSolver"] {
+.md-typeset .sponsors-grid img[alt="NodeMaven"] {
   height: 60px !important;
+}
+
+.md-typeset .sponsors-grid img[alt="Swiftproxy"] {
+  height: 40px !important;
 }
 
 /* ===== MELHORIAS DE LINKS PARA MODO ESCURO ===== */
