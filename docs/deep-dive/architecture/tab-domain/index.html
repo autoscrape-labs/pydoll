@@ -5271,7 +5271,7 @@
 <h2 id="content-capture-cdp-target-restrictions">Content Capture: CDP Target Restrictions</h2>
 <p><strong>Critical limitation:</strong> <code>Page.captureScreenshot</code> only works on <strong>top-level targets</strong>. Iframe tabs fail silently (no <code>data</code> field in response).</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">try</span><span class="p">:</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span class="n">screenshot_data</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s1">&#39;result&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span class="n">screenshot_data</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s1">'result'</span><span class="p">][</span><span class="s1">'data'</span><span class="p">]</span>
 </span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
 </span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="k">raise</span> <span class="n">TopLevelTargetRequired</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>  <span class="c1"># Guide users to WebElement.take_screenshot()</span>
 </span></code></pre></div>

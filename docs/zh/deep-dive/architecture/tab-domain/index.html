@@ -5273,7 +5273,7 @@
 <h2 id="cdp_1">内容捕获：CDP 目标限制</h2>
 <p><strong>关键限制：</strong> <code>Page.captureScreenshot</code> 仅适用于<strong>顶级目标</strong>。Iframe 标签页静默失败（响应中没有 <code>data</code> 字段）。</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">try</span><span class="p">:</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span class="n">screenshot_data</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s1">&#39;result&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span class="n">screenshot_data</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s1">'result'</span><span class="p">][</span><span class="s1">'data'</span><span class="p">]</span>
 </span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
 </span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="k">raise</span> <span class="n">TopLevelTargetRequired</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>  <span class="c1"># 引导用户使用 WebElement.take_screenshot()</span>
 </span></code></pre></div>

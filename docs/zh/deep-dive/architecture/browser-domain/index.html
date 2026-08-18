@@ -5338,15 +5338,15 @@
 <h3 id="_3">层次结构与抽象</h3>
 <p>浏览器域被实现为一个<strong>抽象基类</strong>，定义了所有浏览器实现的契约：</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">Browser</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract base class for browser automation via CDP.&quot;&quot;&quot;</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="sd">"""Abstract base class for browser automation via CDP."""</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="nd">@abstractmethod</span>
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_get_default_binary_location</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;子类必须提供特定于浏览器的可执行文件路径。&quot;&quot;&quot;</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">        </span><span class="sd">"""子类必须提供特定于浏览器的可执行文件路径。"""</span>
 </span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>        <span class="k">pass</span>
 </span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>
 </span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">headless</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tab</span><span class="p">:</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;所有浏览器共享的具体实现。&quot;&quot;&quot;</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">        </span><span class="sd">"""所有浏览器共享的具体实现。"""</span>
 </span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>        <span class="c1"># 1. 解析二进制位置</span>
 </span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>        <span class="c1"># 2. 设置用户数据目录</span>
 </span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>        <span class="c1"># 3. 启动浏览器进程</span>
@@ -5371,7 +5371,7 @@
 </span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_connection_handler</span> <span class="o">=</span> <span class="n">ConnectionHandler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_connection_port</span><span class="p">)</span>
 </span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
 </span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_execute_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;所有 CDP 命令都通过连接处理器流动。&quot;&quot;&quot;</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">        </span><span class="sd">"""所有 CDP 命令都通过连接处理器流动。"""</span>
 </span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connection_handler</span><span class="o">.</span><span class="n">execute_command</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
 </span></code></pre></div>
 <div class="admonition info">
@@ -5382,20 +5382,20 @@
 <p>BrowserProcessManager 处理<strong>操作系统进程生命周期</strong>：</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">BrowserProcessManager</span><span class="p">:</span>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">start_browser_process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">binary</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">arguments</span><span class="p">):</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">        </span><span class="sd">"""</span>
 </span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="sd">        1. 使用二进制路径 + 参数构造命令行</span>
 </span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="sd">        2. 使用适当的 stdio 处理生成子进程</span>
 </span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="sd">        3. 监控进程启动</span>
 </span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="sd">        4. 存储进程句柄以供后续终止</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="sd">        """</span>
 </span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>
 </span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">stop_process</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">        </span><span class="sd">"""</span>
 </span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="sd">        1. 尝试优雅终止（SIGTERM）</span>
 </span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="sd">        2. 等待进程退出</span>
 </span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="sd">        3. 如果超时则强制终止（SIGKILL）</span>
 </span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="sd">        4. 清理进程资源</span>
-</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="sd">        """</span>
 </span></code></pre></div>
 <p><strong>为什么要分离进程管理？</strong></p>
 <ul>
@@ -5409,12 +5409,12 @@
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">...</span><span class="p">):</span>
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_tabs_opened</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tab</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 </span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">new_tab</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">browser_context_id</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tab</span><span class="p">:</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">new_tab</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span> <span class="n">browser_context_id</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tab</span><span class="p">:</span>
 </span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>        <span class="c1"># 通过 CDP 创建目标</span>
 </span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_command</span><span class="p">(</span>
 </span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>            <span class="n">TargetCommands</span><span class="o">.</span><span class="n">create_target</span><span class="p">(</span><span class="n">browser_context_id</span><span class="o">=</span><span class="n">browser_context_id</span><span class="p">)</span>
 </span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>        <span class="p">)</span>
-</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>        <span class="n">target_id</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s1">&#39;result&#39;</span><span class="p">][</span><span class="s1">&#39;targetId&#39;</span><span class="p">]</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>        <span class="n">target_id</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s1">'result'</span><span class="p">][</span><span class="s1">'targetId'</span><span class="p">]</span>
 </span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>
 </span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>        <span class="c1"># 检查标签页是否已存在于注册表中</span>
 </span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>        <span class="k">if</span> <span class="n">target_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tabs_opened</span><span class="p">:</span>
@@ -5458,7 +5458,7 @@
 </span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_command</span><span class="p">(</span>
 </span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>        <span class="n">TargetCommands</span><span class="o">.</span><span class="n">create_browser_context</span><span class="p">(</span><span class="n">proxy_server</span><span class="o">=</span><span class="n">sanitized_proxy</span><span class="p">)</span>
 </span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span class="p">)</span>
-</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>    <span class="n">context_id</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s1">&#39;result&#39;</span><span class="p">][</span><span class="s1">&#39;browserContextId&#39;</span><span class="p">]</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>    <span class="n">context_id</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s1">'result'</span><span class="p">][</span><span class="s1">'browserContextId'</span><span class="p">]</span>
 </span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>
 </span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>    <span class="k">if</span> <span class="n">extracted_auth</span><span class="p">:</span>
 </span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_context_proxy_auth</span><span class="p">[</span><span class="n">context_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">extracted_auth</span>  <span class="c1"># 按上下文存储</span>
@@ -5703,11 +5703,11 @@
 <div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># 步骤 1：创建隔离的浏览上下文</span>
 </span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_command</span><span class="p">(</span>
 </span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>    <span class="n">TargetCommands</span><span class="o">.</span><span class="n">create_browser_context</span><span class="p">(</span>
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>        <span class="n">proxy_server</span><span class="o">=</span><span class="s1">&#39;http://proxy.example.com:8080&#39;</span><span class="p">,</span>
-</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>        <span class="n">proxy_bypass_list</span><span class="o">=</span><span class="s1">&#39;localhost,127.0.0.1&#39;</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>        <span class="n">proxy_server</span><span class="o">=</span><span class="s1">'http://proxy.example.com:8080'</span><span class="p">,</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>        <span class="n">proxy_bypass_list</span><span class="o">=</span><span class="s1">'localhost,127.0.0.1'</span>
 </span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>    <span class="p">)</span>
 </span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="p">)</span>
-</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="n">context_id</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s1">&#39;result&#39;</span><span class="p">][</span><span class="s1">&#39;browserContextId&#39;</span><span class="p">]</span>
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="n">context_id</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s1">'result'</span><span class="p">][</span><span class="s1">'browserContextId'</span><span class="p">]</span>
 </span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>
 </span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="c1"># 步骤 2：在该上下文中创建目标（页面）</span>
 </span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_command</span><span class="p">(</span>
@@ -5715,7 +5715,7 @@
 </span><span id="__span-9-13"><a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a>        <span class="n">browser_context_id</span><span class="o">=</span><span class="n">context_id</span>  <span class="c1"># 将目标绑定到上下文</span>
 </span><span id="__span-9-14"><a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a>    <span class="p">)</span>
 </span><span id="__span-9-15"><a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a><span class="p">)</span>
-</span><span id="__span-9-16"><a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a><span class="n">target_id</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s1">&#39;result&#39;</span><span class="p">][</span><span class="s1">&#39;targetId&#39;</span><span class="p">]</span>
+</span><span id="__span-9-16"><a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a><span class="n">target_id</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s1">'result'</span><span class="p">][</span><span class="s1">'targetId'</span><span class="p">]</span>
 </span></code></pre></div>
 <p><strong>关键细节：</strong><code>browser_context_id</code> 参数<strong>将目标绑定到上下文的隔离边界</strong>。没有它，目标将在默认上下文中创建。</p>
 <h3 id="_17">有头模式下的窗口实体化</h3>
@@ -5761,10 +5761,10 @@
 <p>浏览器域支持跨所有标签页和上下文操作的<strong>浏览器级事件监听器</strong>。这与标签页级事件不同。</p>
 <h3 id="_20">浏览器与标签页事件作用域</h3>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># 浏览器级事件：适用于所有标签页</span>
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="s1">&#39;Target.targetCreated&#39;</span><span class="p">,</span> <span class="n">handle_new_target</span><span class="p">)</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="s1">'Target.targetCreated'</span><span class="p">,</span> <span class="n">handle_new_target</span><span class="p">)</span>
 </span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>
 </span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="c1"># 标签页级事件：适用于一个标签页</span>
-</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="s1">&#39;Page.loadEventFired&#39;</span><span class="p">,</span> <span class="n">handle_page_load</span><span class="p">)</span>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="s1">'Page.loadEventFired'</span><span class="p">,</span> <span class="n">handle_page_load</span><span class="p">)</span>
 </span></code></pre></div>
 <p><strong>架构差异：</strong></p>
 <ul>
@@ -5775,11 +5775,11 @@
 <p>Fetch 域可以在<strong>浏览器和标签页</strong>两个级别启用，具有不同的作用域：</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="c1"># 浏览器级 Fetch：拦截所有标签页的请求</span>
 </span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">enable_fetch_events</span><span class="p">(</span><span class="n">handle_auth_requests</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="s1">&#39;Fetch.requestPaused&#39;</span><span class="p">,</span> <span class="n">handle_request</span><span class="p">)</span>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="s1">'Fetch.requestPaused'</span><span class="p">,</span> <span class="n">handle_request</span><span class="p">)</span>
 </span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>
 </span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="c1"># 标签页级 Fetch：拦截一个标签页的请求</span>
 </span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">enable_fetch_events</span><span class="p">(</span><span class="n">handle_auth_requests</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="s1">&#39;Fetch.requestPaused&#39;</span><span class="p">,</span> <span class="n">handle_request</span><span class="p">)</span>
+</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">on</span><span class="p">(</span><span class="s1">'Fetch.requestPaused'</span><span class="p">,</span> <span class="n">handle_request</span><span class="p">)</span>
 </span></code></pre></div>
 <p><strong>何时使用每种方式：</strong></p>
 <table>
@@ -5820,11 +5820,11 @@
 <h3 id="_21">命令路由</h3>
 <p>所有 CDP 命令都通过浏览器的连接处理器流动：</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_execute_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
-</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="sd">    将命令路由到适当的连接：</span>
 </span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="sd">    - 浏览器级命令 → 浏览器 WebSocket</span>
 </span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="sd">    - 标签页级命令 → 委托给 Tab 实例</span>
-</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="sd">    """</span>
 </span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>    <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connection_handler</span><span class="o">.</span><span class="n">execute_command</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
 </span></code></pre></div>
 <p>这种集中式路由实现：</p>
@@ -5864,7 +5864,7 @@
 <p>浏览器域提供<strong>编程式权限控制</strong>，绕过浏览器提示：</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">grant_permissions</span><span class="p">(</span>
 </span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>    <span class="p">[</span><span class="n">PermissionType</span><span class="o">.</span><span class="n">GEOLOCATION</span><span class="p">,</span> <span class="n">PermissionType</span><span class="o">.</span><span class="n">NOTIFICATIONS</span><span class="p">],</span>
-</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>    <span class="n">origin</span><span class="o">=</span><span class="s1">&#39;https://example.com&#39;</span><span class="p">,</span>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>    <span class="n">origin</span><span class="o">=</span><span class="s1">'https://example.com'</span><span class="p">,</span>
 </span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>    <span class="n">browser_context_id</span><span class="o">=</span><span class="n">context_id</span>
 </span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="p">)</span>
 </span></code></pre></div>
@@ -5879,7 +5879,7 @@
 <p>下载行为通过 <code>Browser.setDownloadBehavior</code> 命令配置：</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">set_download_behavior</span><span class="p">(</span>
 </span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>    <span class="n">behavior</span><span class="o">=</span><span class="n">DownloadBehavior</span><span class="o">.</span><span class="n">ALLOW</span><span class="p">,</span>
-</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>    <span class="n">download_path</span><span class="o">=</span><span class="s1">&#39;/path/to/downloads&#39;</span><span class="p">,</span>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>    <span class="n">download_path</span><span class="o">=</span><span class="s1">'/path/to/downloads'</span><span class="p">,</span>
 </span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>    <span class="n">events_enabled</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># 发出下载进度事件</span>
 </span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>    <span class="n">browser_context_id</span><span class="o">=</span><span class="n">context_id</span>
 </span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="p">)</span>
@@ -5894,9 +5894,9 @@
 <p>窗口操作应用于目标的<strong>物理操作系统窗口</strong>：</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="n">window_id</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">get_window_id_for_target</span><span class="p">(</span><span class="n">target_id</span><span class="p">)</span>
 </span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">set_window_bounds</span><span class="p">({</span>
-</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>    <span class="s1">&#39;left&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="s1">&#39;top&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
-</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>    <span class="s1">&#39;width&#39;</span><span class="p">:</span> <span class="mi">1920</span><span class="p">,</span> <span class="s1">&#39;height&#39;</span><span class="p">:</span> <span class="mi">1080</span><span class="p">,</span>
-</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>    <span class="s1">&#39;windowState&#39;</span><span class="p">:</span> <span class="s1">&#39;normal&#39;</span>  <span class="c1"># 或 &#39;minimized&#39;、&#39;maximized&#39;、&#39;fullscreen&#39;</span>
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>    <span class="s1">'left'</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="s1">'top'</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>    <span class="s1">'width'</span><span class="p">:</span> <span class="mi">1920</span><span class="p">,</span> <span class="s1">'height'</span><span class="p">:</span> <span class="mi">1080</span><span class="p">,</span>
+</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>    <span class="s1">'windowState'</span><span class="p">:</span> <span class="s1">'normal'</span>  <span class="c1"># 或 'minimized'、'maximized'、'fullscreen'</span>
 </span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="p">})</span>
 </span></code></pre></div>
 <p><strong>实现细节：</strong></p>

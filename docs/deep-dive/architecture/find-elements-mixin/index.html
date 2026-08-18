@@ -4984,14 +4984,14 @@
 <h2 id="mixin-pattern-design-philosophy">Mixin Pattern: Design Philosophy</h2>
 <h3 id="what-is-a-mixin">What is a Mixin?</h3>
 <p>A mixin is a class designed to <strong>provide methods to other classes</strong> without being a base class in a traditional inheritance hierarchy. Unlike standard inheritance (which models "is-a" relationships), mixins model <strong>"can-do" capabilities</strong>.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Traditional inheritance: &quot;is-a&quot;</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Traditional inheritance: "is-a"</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">Animal</span><span class="p">:</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">breathe</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="o">...</span>
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="k">class</span><span class="w"> </span><span class="nc">Dog</span><span class="p">(</span><span class="n">Animal</span><span class="p">):</span>  <span class="c1"># Dog IS-A Animal</span>
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">bark</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="o">...</span>
 </span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="c1"># Mixin pattern: &quot;can-do&quot;</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="c1"># Mixin pattern: "can-do"</span>
 </span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="k">class</span><span class="w"> </span><span class="nc">FlyableMixin</span><span class="p">:</span>
 </span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">fly</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="o">...</span>
 </span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>
@@ -5052,13 +5052,13 @@
 <h3 id="class-structure">Class Structure</h3>
 <p>The FindElementsMixin uses <strong>dependency injection</strong> to work with any class that provides a <code>_connection_handler</code>:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">FindElementsMixin</span><span class="p">:</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="sd">    Mixin providing element finding capabilities.</span>
 </span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
 </span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="sd">    Assumes the consuming class has:</span>
 </span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="sd">    - _connection_handler: ConnectionHandler instance for CDP commands</span>
 </span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="sd">    - _object_id: Optional[str] for context-relative searches (WebElement only)</span>
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="sd">    """</span>
 </span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>
 </span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
 </span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>        <span class="n">_connection_handler</span><span class="p">:</span> <span class="n">ConnectionHandler</span>  <span class="c1"># Type hint, not actual attribute</span>
@@ -5090,7 +5090,7 @@
 <h3 id="context-detection">Context Detection</h3>
 <p>The mixin dynamically detects search context:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_find_element</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">by</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">raise_exc</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_object_id&#39;</span><span class="p">):</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'_object_id'</span><span class="p">):</span>
 </span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>        <span class="c1"># Relative search: call JavaScript function on THIS element</span>
 </span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>        <span class="n">command</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_find_element_command</span><span class="p">(</span><span class="n">by</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_object_id</span><span class="p">)</span>
 </span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="k">else</span><span class="p">:</span>
@@ -5142,10 +5142,10 @@
 <li>
 <p><strong>Kwargs over positional By enum</strong>:
    <div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Pydoll (intuitive)</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s1">&#39;submit&#39;</span><span class="p">,</span> <span class="n">class_name</span><span class="o">=</span><span class="s1">&#39;primary&#39;</span><span class="p">)</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s1">'submit'</span><span class="p">,</span> <span class="n">class_name</span><span class="o">=</span><span class="s1">'primary'</span><span class="p">)</span>
 </span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
 </span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="c1"># Selenium (verbose)</span>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="n">driver</span><span class="o">.</span><span class="n">find_element</span><span class="p">(</span><span class="n">By</span><span class="o">.</span><span class="n">ID</span><span class="p">,</span> <span class="s1">&#39;submit&#39;</span><span class="p">)</span>  <span class="c1"># Can&#39;t combine attributes easily</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="n">driver</span><span class="o">.</span><span class="n">find_element</span><span class="p">(</span><span class="n">By</span><span class="o">.</span><span class="n">ID</span><span class="p">,</span> <span class="s1">'submit'</span><span class="p">)</span>  <span class="c1"># Can't combine attributes easily</span>
 </span></code></pre></div></p>
 </li>
 <li>
@@ -5157,8 +5157,8 @@
 </li>
 <li>
 <p><strong><code>**attributes</code> for extensibility</strong>:
-   <div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">data_testid</span><span class="o">=</span><span class="s1">&#39;submit-btn&#39;</span><span class="p">,</span> <span class="n">aria_label</span><span class="o">=</span><span class="s1">&#39;Submit form&#39;</span><span class="p">)</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="c1"># Builds: //\*[@data-testid=&#39;submit-btn&#39; and @aria-label=&#39;Submit form&#39;]</span>
+   <div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">data_testid</span><span class="o">=</span><span class="s1">'submit-btn'</span><span class="p">,</span> <span class="n">aria_label</span><span class="o">=</span><span class="s1">'Submit form'</span><span class="p">)</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="c1"># Builds: //\*[@data-testid='submit-btn' and @aria-label='Submit form']</span>
 </span></code></pre></div></p>
 </li>
 </ol>
@@ -5182,10 +5182,10 @@
 <li>
 <p><strong>Auto-detect CSS vs XPath</strong>:
    <div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># XPath detection (starts with / or ./)</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;//div[@id=&#39;content&#39;]&quot;</span><span class="p">)</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">"//div[@id='content']"</span><span class="p">)</span>
 </span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
 </span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="c1"># CSS detection (default)</span>
-</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;div#content &gt; p.intro&quot;</span><span class="p">)</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">"div#content &gt; p.intro"</span><span class="p">)</span>
 </span></code></pre></div></p>
 </li>
 <li>
@@ -5204,13 +5204,13 @@
 <h3 id="overload-pattern-for-type-safety">Overload Pattern for Type Safety</h3>
 <p>Both methods use <code>@overload</code> to provide <strong>precise return types</strong>:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># IDE knows return type is WebElement</span>
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="n">element</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s1">&#39;submit&#39;</span><span class="p">)</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="n">element</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s1">'submit'</span><span class="p">)</span>
 </span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>
 </span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="c1"># IDE knows return type is list[WebElement]</span>
-</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="n">elements</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">class_name</span><span class="o">=</span><span class="s1">&#39;item&#39;</span><span class="p">,</span> <span class="n">find_all</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="n">elements</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">class_name</span><span class="o">=</span><span class="s1">'item'</span><span class="p">,</span> <span class="n">find_all</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>
 </span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="c1"># IDE knows return type is Optional[WebElement]</span>
-</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="n">maybe_element</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s1">&#39;optional&#39;</span><span class="p">,</span> <span class="n">raise_exc</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="n">maybe_element</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s1">'optional'</span><span class="p">,</span> <span class="n">raise_exc</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </span></code></pre></div>
 <p>This is critical for IDE autocomplete and type checking. See <a href="./typing-system.md">Type System Deep Dive</a> for details.</p>
 <h2 id="selector-resolution-architecture">Selector Resolution Architecture</h2>
@@ -5266,21 +5266,21 @@
 <h3 id="key-architectural-decisions">Key Architectural Decisions</h3>
 <p><strong>1. Single vs Multiple Attributes</strong></p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># Single attribute → Direct selector (fast)</span>
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s1">&#39;username&#39;</span><span class="p">)</span>  <span class="c1"># Uses By.ID → getElementById()</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s1">'username'</span><span class="p">)</span>  <span class="c1"># Uses By.ID → getElementById()</span>
 </span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>
 </span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="c1"># Multiple attributes → XPath (flexible)</span>
-</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">tag_name</span><span class="o">=</span><span class="s1">&#39;input&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;password&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;pwd&#39;</span><span class="p">)</span>
-</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="c1"># → //input[@type=&#39;password&#39; and @name=&#39;pwd&#39;]</span>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">tag_name</span><span class="o">=</span><span class="s1">'input'</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s1">'password'</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'pwd'</span><span class="p">)</span>
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="c1"># → //input[@type='password' and @name='pwd']</span>
 </span></code></pre></div>
 <p><strong>Why this matters:</strong>
 - Native methods (<code>getElementById</code>, <code>getElementsByClassName</code>) are 10-50% faster than XPath
 - XPath overhead is acceptable when combining attributes (no alternative)</p>
 <p><strong>2. Auto-Detection of Selector Type</strong></p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;//div&quot;</span><span class="p">)</span>       <span class="c1"># Starts with / → XPath</span>
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;#login&quot;</span><span class="p">)</span>      <span class="c1"># Default → CSS</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">"//div"</span><span class="p">)</span>       <span class="c1"># Starts with / → XPath</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">"#login"</span><span class="p">)</span>      <span class="c1"># Default → CSS</span>
 </span></code></pre></div>
 <p><strong>Implementation:</strong>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="k">if</span> <span class="n">expression</span><span class="o">.</span><span class="n">startswith</span><span class="p">((</span><span class="s1">&#39;./&#39;</span><span class="p">,</span> <span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="s1">&#39;(/&#39;</span><span class="p">)):</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="k">if</span> <span class="n">expression</span><span class="o">.</span><span class="n">startswith</span><span class="p">((</span><span class="s1">'./'</span><span class="p">,</span> <span class="s1">'/'</span><span class="p">,</span> <span class="s1">'(/'</span><span class="p">)):</span>
 </span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>    <span class="k">return</span> <span class="n">By</span><span class="o">.</span><span class="n">XPATH</span>
 </span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="k">return</span> <span class="n">By</span><span class="o">.</span><span class="n">CSS_SELECTOR</span>
 </span></code></pre></div></p>
@@ -5291,7 +5291,7 @@
 </span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="c1"># For WebElement: .//div (relative to element, not document)</span>
 </span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>
 </span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">_ensure_relative_xpath</span><span class="p">(</span><span class="n">xpath</span><span class="p">):</span>
-</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>    <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;.</span><span class="si">{</span><span class="n">xpath</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">xpath</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="n">xpath</span>
+</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>    <span class="k">return</span> <span class="sa">f</span><span class="s1">'.</span><span class="si">{</span><span class="n">xpath</span><span class="si">}</span><span class="s1">'</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">xpath</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">'.'</span><span class="p">)</span> <span class="k">else</span> <span class="n">xpath</span>
 </span></code></pre></div>
 <p>Without this, <code>element.find()</code> would search from document root.</p>
 <h2 id="cdp-command-generation">CDP Command Generation</h2>
@@ -5336,14 +5336,14 @@
 <h3 id="javascript-templates">JavaScript Templates</h3>
 <p>Pydoll uses pre-defined templates for consistency and performance:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="c1"># CSS selectors</span>
-</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="n">Scripts</span><span class="o">.</span><span class="n">QUERY_SELECTOR</span> <span class="o">=</span> <span class="s1">&#39;document.querySelector(&quot;</span><span class="si">{selector}</span><span class="s1">&quot;)&#39;</span>
-</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="n">Scripts</span><span class="o">.</span><span class="n">RELATIVE_QUERY_SELECTOR</span> <span class="o">=</span> <span class="s1">&#39;this.querySelector(&quot;</span><span class="si">{selector}</span><span class="s1">&quot;)&#39;</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="n">Scripts</span><span class="o">.</span><span class="n">QUERY_SELECTOR</span> <span class="o">=</span> <span class="s1">'document.querySelector("</span><span class="si">{selector}</span><span class="s1">")'</span>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="n">Scripts</span><span class="o">.</span><span class="n">RELATIVE_QUERY_SELECTOR</span> <span class="o">=</span> <span class="s1">'this.querySelector("</span><span class="si">{selector}</span><span class="s1">")'</span>
 </span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>
 </span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="c1"># XPath expressions</span>
-</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="n">Scripts</span><span class="o">.</span><span class="n">FIND_XPATH_ELEMENT</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span>
-</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="s1">    document.evaluate(&quot;</span><span class="si">{escaped_value}</span><span class="s1">&quot;, document, null,</span>
+</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="n">Scripts</span><span class="o">.</span><span class="n">FIND_XPATH_ELEMENT</span> <span class="o">=</span> <span class="s1">'''</span>
+</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="s1">    document.evaluate("</span><span class="si">{escaped_value}</span><span class="s1">", document, null,</span>
 </span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span class="s1">                      XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue</span>
-</span><span id="__span-16-9"><a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a><span class="s1">&#39;&#39;&#39;</span>
+</span><span id="__span-16-9"><a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a><span class="s1">'''</span>
 </span></code></pre></div>
 <p>Templates avoid runtime string concatenation and centralize JavaScript code.</p>
 <h2 id="object-id-resolution-and-webelement-creation">Object ID Resolution and WebElement Creation</h2>
@@ -5361,10 +5361,10 @@
 <h2 id="architectural-insights-and-design-tradeoffs">Architectural Insights and Design Tradeoffs</h2>
 <h3 id="why-kwargs-instead-of-by-enum">Why Kwargs Instead of By Enum?</h3>
 <p><strong>Pydoll's choice:</strong>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s1">&#39;submit&#39;</span><span class="p">,</span> <span class="n">class_name</span><span class="o">=</span><span class="s1">&#39;primary&#39;</span><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s1">'submit'</span><span class="p">,</span> <span class="n">class_name</span><span class="o">=</span><span class="s1">'primary'</span><span class="p">)</span>
 </span></code></pre></div></p>
 <p><strong>Selenium's approach:</strong>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="n">driver</span><span class="o">.</span><span class="n">find_element</span><span class="p">(</span><span class="n">By</span><span class="o">.</span><span class="n">ID</span><span class="p">,</span> <span class="s1">&#39;submit&#39;</span><span class="p">)</span>  <span class="c1"># Can&#39;t combine attributes</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="n">driver</span><span class="o">.</span><span class="n">find_element</span><span class="p">(</span><span class="n">By</span><span class="o">.</span><span class="n">ID</span><span class="p">,</span> <span class="s1">'submit'</span><span class="p">)</span>  <span class="c1"># Can't combine attributes</span>
 </span></code></pre></div></p>
 <p><strong>Rationale:</strong></p>
 <ul>
@@ -5375,9 +5375,9 @@
 <p><strong>Tradeoff:</strong> Kwargs are less explicit about selector strategy. Solved by documentation and logging.</p>
 <h3 id="why-auto-detect-css-vs-xpath">Why Auto-Detect CSS vs XPath?</h3>
 <p>The <code>_get_expression_type()</code> heuristic eliminates user burden:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;//div&quot;</span><span class="p">)</span>       <span class="c1"># Auto: XPath</span>
-</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;#login&quot;</span><span class="p">)</span>      <span class="c1"># Auto: CSS</span>
-</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;div &gt; p&quot;</span><span class="p">)</span>     <span class="c1"># Auto: CSS</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">"//div"</span><span class="p">)</span>       <span class="c1"># Auto: XPath</span>
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">"#login"</span><span class="p">)</span>      <span class="c1"># Auto: CSS</span>
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">"div &gt; p"</span><span class="p">)</span>     <span class="c1"># Auto: CSS</span>
 </span></code></pre></div>
 <p><strong>Benefits:</strong></p>
 <ul>
@@ -5388,7 +5388,7 @@
 <h3 id="circular-import-prevention-create_web_element">Circular Import Prevention: create_web_element()</h3>
 <p>The mixin uses a <strong>factory function</strong> to avoid circular imports:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">create_web_element</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Dynamically import WebElement at runtime.&quot;&quot;&quot;</span>
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="w">    </span><span class="sd">"""Dynamically import WebElement at runtime."""</span>
 </span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>    <span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.elements.web_element</span><span class="w"> </span><span class="kn">import</span> <span class="n">WebElement</span>  <span class="c1"># Late import</span>
 </span><span id="__span-20-4"><a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>    <span class="k">return</span> <span class="n">WebElement</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 </span></code></pre></div>
@@ -5401,7 +5401,7 @@
 <p><strong>Solution:</strong> Late import inside factory function. Import only executes when function is called, breaking the cycle.</p>
 <h3 id="hasattr-for-context-detection-elegant-or-hacky">hasattr() for Context Detection: Elegant or Hacky?</h3>
 <p>The mixin uses <code>hasattr(self, '_object_id')</code> to detect Tab vs WebElement:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_object_id&#39;</span><span class="p">):</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'_object_id'</span><span class="p">):</span>
 </span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>    <span class="c1"># WebElement: element-relative search</span>
 </span><span id="__span-21-3"><a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="k">else</span><span class="p">:</span>
 </span><span id="__span-21-4"><a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a>    <span class="c1"># Tab: document-level search</span>
