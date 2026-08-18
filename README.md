@@ -55,14 +55,6 @@
 
 <sub>Read a full review of Pydoll on <b><a href="https://substack.thewebscraping.club/p/pydoll-webdriver-scraping?utm_source=github&utm_medium=repo&utm_campaign=pydoll">The Web Scraping Club</a></b>, the #1 newsletter dedicated to web scraping.</sub>
 
-<a href="https://go.nodemaven.com/pydollaugust">
-    <img width="100%" alt="nodemaven" src="public/images/novamaven-banner.png" />
-</a>
-
-
-<sub>The most reliable proxy provider with the Highest Quality IP on the market. Best solution for automation, web scraping, SEO research, and social media management. </sub>
-
-
 <a href="https://www.coreclaw.com/?utm_source=github&utm_medium=referral&utm_campaign=pydoll&utm_term=&utm_id=pydoll">
     <img width="100%" alt="CoreClaw" src="public/images/banner-corecrawl.png" />
 </a>
@@ -79,6 +71,7 @@
     <td><a href="https://www.thordata.com/?ls=github&lk=pydoll"><img src="public/images/Thordata-logo.png" height="30" alt="Thordata" /></a></td>
     <td><a href="https://www.testmuai.com/?utm_medium=sponsor&utm_source=pydoll"><img src="public/images/logo-lamda-test.svg" height="30" width="130" alt="LambdaTest" /></a></td>
     <td><a href="https://www.swiftproxy.net/?ref=pydoll"><img src="public/images/swiftproxy-logo.png" height="30" alt="Swiftproxy" /></a></td>
+    <td><a href="https://go.nodemaven.com/pydollaugust"><img src="public/images/logo-nodemaven.svg" height="30" alt="NodeMaven" /></a></td>
   </tr>
 </table>
 
