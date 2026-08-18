@@ -122,6 +122,28 @@ async def test_click_raises_when_element_not_visible(fake_conn, make_element):
 
 
 @pytest.mark.asyncio
+async def test_click_using_js_raises_when_element_not_visible(fake_conn, make_element):
+    element = make_element(attributes=['tag_name', 'button'])
+    fake_conn.set_response('Runtime.callFunctionOn', {'result': {'value': False}})
+    with pytest.raises(ElementNotVisible):
+        await element.click_using_js()
+
+
+@pytest.mark.asyncio
+async def test_click_negative_timeout_raises(make_element):
+    element = make_element(attributes=['tag_name', 'button'])
+    with pytest.raises(ValueError, match='timeout must be greater than or equal to 0'):
+        await element.click(timeout=-1)
+
+
+@pytest.mark.asyncio
+async def test_click_using_js_negative_timeout_raises(make_element):
+    element = make_element(attributes=['tag_name', 'button'])
+    with pytest.raises(ValueError, match='timeout must be greater than or equal to 0'):
+        await element.click_using_js(timeout=-1)
+
+
+@pytest.mark.asyncio
 async def test_clear_updates_cached_value(fake_conn, make_element):
     element = make_element(attributes=['tag_name', 'input', 'value', 'old'])
     fake_conn.set_response('Runtime.callFunctionOn', {'result': {'value': True}})
