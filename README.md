@@ -55,18 +55,27 @@
 
 <sub>Read a full review of Pydoll on <b><a href="https://substack.thewebscraping.club/p/pydoll-webdriver-scraping?utm_source=github&utm_medium=repo&utm_campaign=pydoll">The Web Scraping Club</a></b>, the #1 newsletter dedicated to web scraping.</sub>
 
-<a href="https://go.nodemaven.com/pydollgh">
-    <img width="100%" alt="nodemaven" src="https://github.com/user-attachments/assets/fbde0385-0334-4f8a-a0fc-9b1eb54e049c" />
+<a href="https://go.nodemaven.com/pydollaugust">
+    <img width="100%" alt="nodemaven" src="public/images/novamaven-banner.png" />
 </a>
 
 
 <sub>The most reliable proxy provider with the Highest Quality IP on the market. Best solution for automation, web scraping, SEO research, and social media management. </sub>
 
 
+<a href="https://www.coreclaw.com/?utm_source=github&utm_medium=referral&utm_campaign=pydoll&utm_term=&utm_id=pydoll">
+    <img width="100%" alt="CoreClaw" src="public/images/banner-corecrawl.png" />
+</a>
+
+
+<sub>CoreClaw turns Amazon, TikTok, Google Maps, Instagram & 100+ more sites into clean, structured data, ready for your leads, dashboards, or API. No maintenance. No broken scrapers. Just clean data, on demand.</sub>
+
+
 ### Sponsors
 
 <table>
   <tr>
+    <td><a href="https://proxy-seller.com/?partner=8DES01TZ1QGWR3"><img src="public/images/proxy-seller-logo-white.svg" height="30" alt="Proxy-Seller" /></a></td>
     <td><a href="https://www.thordata.com/?ls=github&lk=pydoll"><img src="public/images/Thordata-logo.png" height="30" alt="Thordata" /></a></td>
     <td><a href="https://www.testmuai.com/?utm_medium=sponsor&utm_source=pydoll"><img src="public/images/logo-lamda-test.svg" height="30" width="130" alt="LambdaTest" /></a></td>
     <td><a href="https://www.swiftproxy.net/?ref=pydoll"><img src="public/images/swiftproxy-logo.png" height="30" alt="Swiftproxy" /></a></td>

@@ -12,7 +12,36 @@ Read a full review of Pydoll on **[The Web Scraping Club](https://substack.thewe
 
 ---
 
+<a href="https://www.coreclaw.com/?utm_source=github&utm_medium=referral&utm_campaign=pydoll&utm_term=&utm_id=pydoll">
+<img alt="CoreClaw" src="public/images/banner-corecrawl.png" />
+</a>
+
+**[CoreClaw](https://www.coreclaw.com/?utm_source=github&utm_medium=referral&utm_campaign=pydoll&utm_term=&utm_id=pydoll)** turns Amazon, TikTok, Google Maps, Instagram & 100+ more sites into clean, structured data, ready for your leads, dashboards, or API. No maintenance. No broken scrapers. Just clean data, on demand.
+
+---
+
 ## Sponsors
+
+<a href="https://proxy-seller.com/?partner=8DES01TZ1QGWR3">
+<img alt="Proxy-Seller" src="public/images/banner-proxy-seller.png" />
+</a>
+
+**[Proxy-Seller](https://proxy-seller.com/?partner=8DES01TZ1QGWR3) - Premium Proxies for AI Agents, Scraping & Automation** 🎁 Use code **PYDOLL** for **15% OFF** IPv4, IPv6, ISP & Residential proxies + **10% OFF** Mobile
+
+**Why Choose Proxy-Seller?**
+
+- 🌍 40M+ IPs across 220+ countries with city/ISP-level targeting
+- 📶 Residential, ISP, Datacenter (IPv4/IPv6) & 4G/5G Mobile proxies
+- ⚡ Up to 1 Gbps speed with 99% uptime
+- 🔄 Flexible rotation: time-based, request-based, or sticky sessions
+- 🛠️ Ready-made API for Python, Node.js, PHP, Java & Golang
+- 🔒 SOCKS5 & HTTP(S) with login/pass or IP whitelisting
+- 🎭 Perfect pairing with Camoufox for stealth automation
+- 🕐 24/7 support + 24-hour refund & replacement policy
+
+Trusted by 500,000+ clients since 2014. Built for scraping, AI agents, ad verification, and SEO automation.
+
+---
 
 <a href="https://www.thordata.com/?ls=github&lk=pydoll">
 <img alt="Thordata" src="public/images/thordata.png" />
@@ -24,23 +53,21 @@ Pydoll is proudly sponsored by **[Thordata](https://www.thordata.com/?ls=github&
 
 ---
 
-<a href="https://go.nodemaven.com/pydollgh">
-<img width="100%" height="280" alt="nodemaven" src="https://github.com/user-attachments/assets/c29378e2-48aa-4eec-a896-3a493f30bf48" />
+<a href="https://go.nodemaven.com/pydollaugust">
+<img width="100%" alt="nodemaven" src="public/images/novamaven-banner.png" />
 </a>
 
-[NodeMaven](https://go.nodemaven.com/pydollgh): The most reliable proxy provider with the Highest Quality IP on the market.
-Best solution for automation, web scraping, SEO research, and social media management.  
+[NodeMaven](https://go.nodemaven.com/pydollaugust): The most efficient proxy provider for Web Scraping and Automation with the Highest Quality IP on the market.
 
-Why [NodeMaven](https://go.nodemaven.com/pydollgh)?
+Why [NodeMaven](https://go.nodemaven.com/pydollaugust)?
 
+- ZIP targeting
 - 99.9% uptime
-- Sticky sessions up to 7 days
 - IP filtering: all proxies have fraud score <97%
 - No KYC required
-- Cashback on traffic - burn GB and earn up to 10% back
+- Unique free tools: Proxy Bandwidth Checker, Meta Tag Checker, IP Lookup and others!
 
-
-Special codes for PYDOLL users:
+Special codes for Pydoll users:
   - PYDOLL35 - 35% off to Mobile and Residential Proxies
   - PYDOLL40 - 40% off to ISP (Static) Proxies
 
