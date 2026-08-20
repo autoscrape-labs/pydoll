@@ -12,11 +12,19 @@ Read a full review of Pydoll on **[The Web Scraping Club](https://substack.thewe
 
 ---
 
-<a href="https://www.coreclaw.com/?utm_source=github&utm_medium=referral&utm_campaign=pydoll&utm_term=&utm_id=pydoll">
-<img alt="CoreClaw" src="public/images/banner-corecrawl.png" />
+<a href="https://go.nodemaven.com/pydollaugust">
+<img width="100%" alt="NodeMaven" src="public/images/nodemaven-banner.png" />
 </a>
 
-**[CoreClaw](https://www.coreclaw.com/?utm_source=github&utm_medium=referral&utm_campaign=pydoll&utm_term=&utm_id=pydoll)** turns Amazon, TikTok, Google Maps, Instagram & 100+ more sites into clean, structured data, ready for your leads, dashboards, or API. No maintenance. No broken scrapers. Just clean data, on demand.
+**[NodeMaven](https://go.nodemaven.com/pydollaugust)** is the most efficient proxy provider for web scraping and automation, with the highest quality IPs on the market: ZIP targeting, 99.9% uptime, IP filtering (every proxy has a fraud score below 97%), no KYC required, and unique free tools like the Proxy Bandwidth Checker, Meta Tag Checker and IP Lookup. Pydoll users get exclusive discounts: use code **PYDOLL35** for 35% off Mobile and Residential proxies, or **PYDOLL40** for 40% off ISP (Static) proxies.
+
+---
+
+<a href="https://niuproxy.com/?utm_source=pydoll&utm_medium=pydoll&ref=pydoll">
+<img width="100%" alt="NiuProxy" src="public/images/niuproxy-banner.png" />
+</a>
+
+**[NiuProxy](https://niuproxy.com/?utm_source=pydoll&utm_medium=pydoll&ref=pydoll)** offers rotating residential proxies with a special deal for Pydoll users: 10TB at &#36;0.35/GB or 1TB at &#36;0.50/GB. Use code **PAY2** for 10% off your recharge.
 
 ---
 
@@ -50,26 +58,6 @@ Trusted by 500,000+ clients since 2014. Built for scraping, AI agents, ad verifi
 Pydoll is proudly sponsored by **[Thordata](https://www.thordata.com/?ls=github&lk=pydoll)**: a residential proxy network built for serious web scraping and automation. With **190+ real residential and ISP locations**, fully encrypted connections, and infrastructure optimized for high-performance workflows, Thordata is an excellent choice for scaling your Pydoll automations.
 
 **[Sign up through our link](https://www.thordata.com/?ls=github&lk=pydoll)** to support the project and get **1GB free** to get started.
-
----
-
-<a href="https://go.nodemaven.com/pydollaugust">
-<img width="100%" alt="nodemaven" src="public/images/novamaven-banner.png" />
-</a>
-
-[NodeMaven](https://go.nodemaven.com/pydollaugust): The most efficient proxy provider for Web Scraping and Automation with the Highest Quality IP on the market.
-
-Why [NodeMaven](https://go.nodemaven.com/pydollaugust)?
-
-- ZIP targeting
-- 99.9% uptime
-- IP filtering: all proxies have fraud score <97%
-- No KYC required
-- Unique free tools: Proxy Bandwidth Checker, Meta Tag Checker, IP Lookup and others!
-
-Special codes for Pydoll users:
-  - PYDOLL35 - 35% off to Mobile and Residential Proxies
-  - PYDOLL40 - 40% off to ISP (Static) Proxies
 
 ---
 

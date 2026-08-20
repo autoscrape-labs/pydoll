@@ -55,12 +55,17 @@
 
 <sub>Read a full review of Pydoll on <b><a href="https://substack.thewebscraping.club/p/pydoll-webdriver-scraping?utm_source=github&utm_medium=repo&utm_campaign=pydoll">The Web Scraping Club</a></b>, the #1 newsletter dedicated to web scraping.</sub>
 
-<a href="https://www.coreclaw.com/?utm_source=github&utm_medium=referral&utm_campaign=pydoll&utm_term=&utm_id=pydoll">
-    <img width="100%" alt="CoreClaw" src="public/images/banner-corecrawl.png" />
+<a href="https://go.nodemaven.com/pydollaugust">
+    <img width="100%" alt="NodeMaven" src="public/images/nodemaven-banner.png" />
 </a>
 
+<sub><b><a href="https://go.nodemaven.com/pydollaugust">NodeMaven</a></b> is the most efficient proxy provider for web scraping and automation: ZIP targeting, 99.9% uptime, filtered high-quality IPs and no KYC required. Use code <b>PYDOLL35</b> for 35% off Mobile and Residential proxies, or <b>PYDOLL40</b> for 40% off ISP (Static) proxies.</sub>
 
-<sub>CoreClaw turns Amazon, TikTok, Google Maps, Instagram & 100+ more sites into clean, structured data, ready for your leads, dashboards, or API. No maintenance. No broken scrapers. Just clean data, on demand.</sub>
+<a href="https://niuproxy.com/?utm_source=pydoll&utm_medium=pydoll&ref=pydoll">
+    <img width="100%" alt="NiuProxy" src="public/images/niuproxy-banner.png" />
+</a>
+
+<sub><b><a href="https://niuproxy.com/?utm_source=pydoll&utm_medium=pydoll&ref=pydoll">NiuProxy</a></b> offers rotating residential proxies with a special deal for Pydoll users: 10TB at &#36;0.35/GB or 1TB at &#36;0.50/GB. Use code <b>PAY2</b> for 10% off your recharge.</sub>
 
 
 ### Sponsors
@@ -71,7 +76,6 @@
     <td><a href="https://www.thordata.com/?ls=github&lk=pydoll"><img src="public/images/Thordata-logo.png" height="30" alt="Thordata" /></a></td>
     <td><a href="https://www.testmuai.com/?utm_medium=sponsor&utm_source=pydoll"><img src="public/images/logo-lamda-test.svg" height="30" width="130" alt="LambdaTest" /></a></td>
     <td><a href="https://www.swiftproxy.net/?ref=pydoll"><img src="public/images/swiftproxy-logo.png" height="30" alt="Swiftproxy" /></a></td>
-    <td><a href="https://go.nodemaven.com/pydollaugust"><img src="public/images/logo-nodemaven.svg" height="30" alt="NodeMaven" /></a></td>
   </tr>
 </table>
 
