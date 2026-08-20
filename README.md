@@ -49,35 +49,65 @@
 
 ### Top Sponsors
 
-<a href="https://substack.thewebscraping.club/p/pydoll-webdriver-scraping?utm_source=github&utm_medium=repo&utm_campaign=pydoll">
-    <img src="public/images/banner-the-webscraping-club.png" alt="The Web Scraping Club" />
-</a>
-
-<sub>Read a full review of Pydoll on <b><a href="https://substack.thewebscraping.club/p/pydoll-webdriver-scraping?utm_source=github&utm_medium=repo&utm_campaign=pydoll">The Web Scraping Club</a></b>, the #1 newsletter dedicated to web scraping.</sub>
-<br><br>
-
-<a href="https://go.nodemaven.com/pydollaugust">
-    <img width="100%" alt="NodeMaven" src="public/images/nodemaven-banner.png" />
-</a>
-
-<sub><b><a href="https://go.nodemaven.com/pydollaugust">NodeMaven</a></b> is the most efficient proxy provider for web scraping and automation: ZIP targeting, 99.9% uptime, filtered high-quality IPs and no KYC required. Use code <b>PYDOLL35</b> for 35% off Mobile and Residential proxies, or <b>PYDOLL40</b> for 40% off ISP (Static) proxies.</sub>
-<br><br>
-
-<a href="https://niuproxy.com/?utm_source=pydoll&utm_medium=pydoll&ref=pydoll">
-    <img width="100%" alt="NiuProxy" src="public/images/niuproxy-banner.png" />
-</a>
-
-<sub><b><a href="https://niuproxy.com/?utm_source=pydoll&utm_medium=pydoll&ref=pydoll">NiuProxy</a></b> offers rotating residential proxies with a special deal for Pydoll users: 10TB at &#36;0.35/GB or 1TB at &#36;0.50/GB. Use code <b>PAY2</b> for 10% off your recharge.</sub>
-<br><br>
+<table>
+  <tr>
+    <td width="300" align="center" valign="middle">
+      <a href="https://substack.thewebscraping.club/p/pydoll-webdriver-scraping?utm_source=github&utm_medium=repo&utm_campaign=pydoll"><img src="public/images/banner-the-webscraping-club.png" width="280" alt="The Web Scraping Club" /></a>
+    </td>
+    <td valign="middle">
+      <b><a href="https://substack.thewebscraping.club/p/pydoll-webdriver-scraping?utm_source=github&utm_medium=repo&utm_campaign=pydoll">The Web Scraping Club</a></b><br />
+      <sub>The #1 newsletter dedicated to web scraping. Read their full, independent review of Pydoll.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="300" align="center" valign="middle">
+      <a href="https://go.nodemaven.com/pydollaugust"><img src="public/images/nodemaven-banner.png" width="280" alt="NodeMaven" /></a>
+    </td>
+    <td valign="middle">
+      <b><a href="https://go.nodemaven.com/pydollaugust">NodeMaven</a></b><br />
+      <sub>The most efficient proxy provider for web scraping and automation: ZIP targeting, 99.9% uptime, filtered high-quality IPs, no KYC. Use <code>PYDOLL35</code> for 35% off Mobile &amp; Residential, or <code>PYDOLL40</code> for 40% off ISP (Static) proxies.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="300" align="center" valign="middle">
+      <a href="https://niuproxy.com/?utm_source=pydoll&utm_medium=pydoll&ref=pydoll"><img src="public/images/niuproxy-banner.png" width="280" alt="NiuProxy" /></a>
+    </td>
+    <td valign="middle">
+      <b><a href="https://niuproxy.com/?utm_source=pydoll&utm_medium=pydoll&ref=pydoll">NiuProxy</a></b><br />
+      <sub>Rotating residential proxies with a special deal for Pydoll users: 10TB at &#36;0.35/GB or 1TB at &#36;0.50/GB. Use <code>PAY2</code> for 10% off your recharge.</sub>
+    </td>
+  </tr>
+</table>
 
 ### Sponsors
 
 <table>
   <tr>
-    <td><a href="https://proxy-seller.com/?partner=8DES01TZ1QGWR3"><img src="public/images/proxy-seller-logo-white.svg" height="30" alt="Proxy-Seller" /></a></td>
-    <td><a href="https://www.thordata.com/?ls=github&lk=pydoll"><img src="public/images/Thordata-logo.png" height="30" alt="Thordata" /></a></td>
-    <td><a href="https://www.testmuai.com/?utm_medium=sponsor&utm_source=pydoll"><img src="public/images/logo-lamda-test.svg" height="30" width="130" alt="LambdaTest" /></a></td>
-    <td><a href="https://www.swiftproxy.net/?ref=pydoll"><img src="public/images/swiftproxy-logo.png" height="30" alt="Swiftproxy" /></a></td>
+    <td align="center" valign="middle" width="20%">
+      <a href="https://proxy-seller.com/?partner=8DES01TZ1QGWR3"><img src="public/images/proxy-seller-logo-white.svg" height="30" alt="Proxy-Seller" /></a>
+      <br />
+      <sub><code>PYDOLL</code> 15% off</sub>
+    </td>
+    <td align="center" valign="middle" width="20%">
+      <a href="https://www.thordata.com/?ls=github&lk=pydoll"><img src="public/images/Thordata-logo.png" height="30" alt="Thordata" /></a>
+      <br />
+      <sub><b>1GB free</b> via our link</sub>
+    </td>
+    <td align="center" valign="middle" width="20%">
+      <a href="https://www.testmuai.com/?utm_medium=sponsor&utm_source=pydoll"><img src="public/images/logo-lamda-test.svg" height="30" width="130" alt="TestMu AI by LambdaTest" /></a>
+      <br />
+      <sub>AI-native testing cloud</sub>
+    </td>
+    <td align="center" valign="middle" width="20%">
+      <a href="https://www.swiftproxy.net/?ref=pydoll"><img src="public/images/swiftproxy-logo.png" height="30" alt="Swiftproxy" /></a>
+      <br />
+      <sub>Proxies for automation</sub>
+    </td>
+    <td align="center" valign="middle" width="20%">
+      <a href="https://github.com/sponsors/thalissonvs"><b>➕ Your logo here</b></a>
+      <br />
+      <sub>Become a sponsor</sub>
+    </td>
   </tr>
 </table>
 
