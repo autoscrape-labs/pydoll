@@ -277,33 +277,69 @@ typing_extensions = "^4.14.0"
 
 ## 顶级赞助商
 
-<a href="https://substack.thewebscraping.club/p/pydoll-webdriver-scraping?utm_source=github&utm_medium=repo&utm_campaign=pydoll" target="_blank" rel="noopener nofollow sponsored">
-  <img src="../resources/images/banner-the-webscraping-club.png" alt="The Web Scraping Club" />
-</a>
-
-<sub>在 <b><a href="https://substack.thewebscraping.club/p/pydoll-webdriver-scraping?utm_source=github&utm_medium=repo&utm_campaign=pydoll" target="_blank" rel="noopener nofollow sponsored">The Web Scraping Club</a></b> 上阅读 Pydoll 的完整评测，这是排名第一的网页抓取专属通讯。</sub>
+<div class="sponsor-grid-top">
+  <a class="sponsor-card" href="https://substack.thewebscraping.club/p/pydoll-webdriver-scraping?utm_source=github&utm_medium=repo&utm_campaign=pydoll" target="_blank" rel="noopener nofollow sponsored">
+    <span class="sponsor-banner"><img src="../resources/images/banner-the-webscraping-club.png" alt="The Web Scraping Club" /></span>
+    <span class="sponsor-body">
+      <span class="sponsor-name">The Web Scraping Club</span>
+      <span class="sponsor-desc">排名第一的网页抓取专属通讯，阅读他们对 Pydoll 的完整评测。</span>
+    </span>
+  </a>
+  <a class="sponsor-card" href="https://go.nodemaven.com/pydollaugust" target="_blank" rel="noopener nofollow sponsored">
+    <span class="sponsor-banner"><img src="../resources/images/nodemaven-banner.png" alt="NodeMaven" /></span>
+    <span class="sponsor-body">
+      <span class="sponsor-name">NodeMaven</span>
+      <span class="sponsor-desc">面向抓取与自动化的高质量代理：ZIP 定位、99.9% 在线率、无需 KYC。</span>
+      <span class="sponsor-chips">
+        <span class="sponsor-chip"><code>PYDOLL35</code> 优惠 35%</span>
+        <span class="sponsor-chip"><code>PYDOLL40</code> ISP 优惠 40%</span>
+      </span>
+    </span>
+  </a>
+  <a class="sponsor-card" href="https://niuproxy.com/?utm_source=pydoll&utm_medium=pydoll&ref=pydoll" target="_blank" rel="noopener nofollow sponsored">
+    <span class="sponsor-banner sponsor-banner--niuproxy"><img src="../resources/images/niuproxy-banner.jpg" alt="NiuProxy" /></span>
+    <span class="sponsor-body">
+      <span class="sponsor-name">NiuProxy</span>
+      <span class="sponsor-desc">轮换住宅代理：Pydoll 用户专享 10TB $0.35/GB 或 1TB $0.50/GB。</span>
+      <span class="sponsor-chips">
+        <span class="sponsor-chip"><code>PAY2</code> 充值优惠 10%</span>
+      </span>
+    </span>
+  </a>
+</div>
 
 ## 赞助商
 
 赞助商的支持对于项目的持续发展至关重要。每一份合作都能帮助我们覆盖基础成本、推动新功能迭代，并保证项目长期维护与更新。非常感谢所有相信并支持 Pydoll 的伙伴！
 
-<div class="sponsors-grid">
-  <a href="https://www.thordata.com/?ls=github&lk=pydoll" target="_blank" rel="noopener nofollow sponsored">
-    <img src="../resources/images/Thordata-logo.png" alt="Thordata" />
+<div class="sponsor-grid-mini">
+  <a class="sponsor-card sponsor-tile" href="https://proxy-seller.com/?partner=8DES01TZ1QGWR3" target="_blank" rel="noopener nofollow sponsored">
+    <span class="sponsor-tile-logo"><img src="../resources/images/proxy-seller-logo-white.svg" alt="Proxy-Seller" /></span>
+    <span class="sponsor-desc">面向 AI 代理、抓取与自动化的优质代理</span>
+    <span class="sponsor-chip"><code>PYDOLL</code> 优惠 15%</span>
   </a>
-  <a href="https://www.testmuai.com/?utm_medium=sponsor&utm_source=pydoll" target="_blank" rel="noopener nofollow sponsored">
-    <img src="../resources/images/logo-lamda-test.svg" alt="LambdaTest" />
+  <a class="sponsor-card sponsor-tile" href="https://www.thordata.com/?ls=github&lk=pydoll" target="_blank" rel="noopener nofollow sponsored">
+    <span class="sponsor-tile-logo"><img src="../resources/images/Thordata-logo.png" alt="Thordata" /></span>
+    <span class="sponsor-desc">覆盖 190+ 地区的住宅代理网络</span>
+    <span class="sponsor-desc">通过我们的链接获得 <b>1GB 免费流量</b></span>
   </a>
-  <a href="https://go.nodemaven.com/pydollgh" target="_blank" rel="noopener nofollow sponsored">
-    <img src="../resources/images/nodemaven-logo.svg" alt="NodeMaven" />
+  <a class="sponsor-card sponsor-tile" href="https://www.testmuai.com/?utm_medium=sponsor&utm_source=pydoll" target="_blank" rel="noopener nofollow sponsored">
+    <span class="sponsor-tile-logo"><img src="../resources/images/logo-lamda-test.svg" alt="TestMu AI by LambdaTest" /></span>
+    <span class="sponsor-desc">LambdaTest 出品的 AI 原生测试云</span>
   </a>
-  <a href="https://www.swiftproxy.net/?ref=pydoll" target="_blank" rel="noopener nofollow sponsored">
-    <img src="../resources/images/swiftproxy-logo.png" alt="Swiftproxy" />
+  <a class="sponsor-card sponsor-tile" href="https://www.swiftproxy.net/?ref=pydoll" target="_blank" rel="noopener nofollow sponsored">
+    <span class="sponsor-tile-logo"><img src="../resources/images/swiftproxy-logo.png" alt="Swiftproxy" /></span>
+    <span class="sponsor-desc">面向网页抓取与自动化的代理</span>
+  </a>
+  <a class="sponsor-card sponsor-tile sponsor-tile--ghost" href="https://github.com/sponsors/thalissonvs" target="_blank" rel="noopener">
+    <span class="sponsor-ghost-plus">+</span>
+    <span class="sponsor-name">您的 Logo</span>
+    <span class="sponsor-desc">成为赞助商</span>
   </a>
 </div>
 
 <p>
-  <a href="https://github.com/sponsors/thalissonvs" target="_blank" rel="noopener">成为赞助商</a>
+  <a class="sponsor-cta" href="https://github.com/sponsors/thalissonvs" target="_blank" rel="noopener">&#10084;&#65039; 成为赞助商</a>
 </p>
 
 ## 许可证
