@@ -196,8 +196,14 @@
       .token.punctuation { color: #89ddff !important; }
       .token.builtin { color: #ffcb6b !important; }
       .token.class-name { color: #ffcb6b !important; }
-      /* NodeMaven sponsor logo (square lockup): a bit taller so the wordmark stays legible */
-      #sponsorsGrid img[alt="NodeMaven"] { max-height: 3.5rem !important; }
+      /* Sponsor cards: subtle lift + indigo glow on hover, banner zoom */
+      .sponsor-card { transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease; }
+      .sponsor-card:hover { box-shadow: 0 10px 30px rgba(99,102,241,0.15); transform: translateY(-2px); }
+      .sponsor-card .banner-media img { transition: transform .35s ease; }
+      .sponsor-card:hover .banner-media img { transform: scale(1.02); }
+      @media (prefers-reduced-motion: reduce) {
+        .sponsor-card, .sponsor-card .banner-media img { transition: none !important; }
+      }
     </style>
   </head>
   <body class="bg-slate-950 text-slate-100 antialiased">
@@ -602,18 +608,138 @@ asyncio.run(main())
 
     <!-- Sponsors -->
     <section id="sponsors" class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-      <div class="reveal rounded-xl border border-white/10 bg-slate-900/60 p-5 sm:p-6">
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 class="text-2xl font-bold tracking-tight">Sponsors</h2>
-            <p class="mt-1 text-sm text-slate-300">Companies and partners supporting Pydoll.</p>
-          </div>
-          <div>
-            <a href="https://github.com/sponsors/thalissonvs" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-md bg-yellow-500 px-3 py-2 text-sm font-semibold text-slate-900 hover:bg-yellow-400">Become a sponsor</a>
-          </div>
+
+      <div class="reveal flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-brand-400">Sponsors</p>
+          <h2 class="mt-2 text-3xl font-bold tracking-tight">The companies funding Pydoll</h2>
+          <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-300">Their support keeps the project maintained and growing, and every deal below is exclusive to Pydoll users.</p>
         </div>
-        <ul id="sponsorsGrid" class="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 items-center"></ul>
+        <a href="https://github.com/sponsors/thalissonvs" target="_blank" rel="noopener" class="inline-flex shrink-0 items-center gap-2 rounded-md bg-yellow-500 px-4 py-2.5 text-sm font-semibold text-slate-900 shadow hover:bg-yellow-400">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+          Become a sponsor
+        </a>
       </div>
+
+      <div class="reveal mt-10 flex items-center gap-4">
+        <h3 class="shrink-0 text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Top sponsors</h3>
+        <div class="h-px w-full bg-white/10"></div>
+      </div>
+
+      <div class="mt-6 grid gap-6 md:grid-cols-3">
+
+        <a href="https://substack.thewebscraping.club/p/pydoll-webdriver-scraping?utm_source=github&utm_medium=repo&utm_campaign=pydoll" target="_blank" rel="noopener nofollow sponsored"
+           class="sponsor-card reveal group flex flex-col overflow-hidden rounded-xl border border-white/10 bg-slate-900/40 hover:border-white/25">
+          <div class="banner-media flex h-32 items-center overflow-hidden border-b border-white/10 bg-white">
+            <img src="/images/banner-the-webscraping-club.png" alt="The Web Scraping Club" loading="lazy" decoding="async" class="h-full w-full object-contain" width="1300" height="307" />
+          </div>
+          <div class="flex flex-1 flex-col gap-2.5 p-5">
+            <h4 class="text-base font-semibold">The Web Scraping Club</h4>
+            <p class="text-sm leading-6 text-slate-300">The #1 newsletter dedicated to web scraping. Read their full review of Pydoll.</p>
+            <span class="mt-auto inline-flex items-center gap-1.5 pt-2 text-sm font-semibold text-brand-300 group-hover:text-brand-200">
+              Read the review
+              <svg class="h-4 w-4 transition-transform group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </span>
+          </div>
+        </a>
+
+        <a href="https://go.nodemaven.com/pydollaugust" target="_blank" rel="noopener nofollow sponsored"
+           class="sponsor-card reveal group flex flex-col overflow-hidden rounded-xl border border-white/10 bg-slate-900/40 hover:border-white/25">
+          <div class="banner-media flex h-32 items-center overflow-hidden border-b border-white/10 bg-white">
+            <img src="/images/nodemaven-banner.png" alt="NodeMaven" loading="lazy" decoding="async" class="h-full w-full object-contain" width="1140" height="420" />
+          </div>
+          <div class="flex flex-1 flex-col gap-2.5 p-5">
+            <h4 class="text-base font-semibold">NodeMaven</h4>
+            <p class="text-sm leading-6 text-slate-300">High-quality proxies for scraping and automation. ZIP targeting, 99.9% uptime, no KYC.</p>
+            <div class="mt-auto flex flex-wrap gap-2 pt-2">
+              <span class="inline-flex items-center gap-1.5 rounded-md border border-dashed border-yellow-500/40 bg-yellow-500/[0.06] px-2 py-1">
+                <code class="font-mono text-[11px] font-bold text-yellow-300">PYDOLL35</code>
+                <span class="text-[11px] text-slate-300">35% off</span>
+              </span>
+              <span class="inline-flex items-center gap-1.5 rounded-md border border-dashed border-yellow-500/40 bg-yellow-500/[0.06] px-2 py-1">
+                <code class="font-mono text-[11px] font-bold text-yellow-300">PYDOLL40</code>
+                <span class="text-[11px] text-slate-300">40% off ISP</span>
+              </span>
+            </div>
+          </div>
+        </a>
+
+        <a href="https://niuproxy.com/?utm_source=pydoll&utm_medium=pydoll&ref=pydoll" target="_blank" rel="noopener nofollow sponsored"
+           class="sponsor-card reveal group flex flex-col overflow-hidden rounded-xl border border-white/10 bg-slate-900/40 hover:border-white/25">
+          <div class="banner-media flex h-32 items-center overflow-hidden border-b border-white/10 bg-gradient-to-b from-[#0a0f52] to-[#0d24ad]">
+            <img src="/images/niuproxy-banner.png" alt="NiuProxy" loading="lazy" decoding="async" class="h-full w-full object-contain" width="2058" height="764" />
+          </div>
+          <div class="flex flex-1 flex-col gap-2.5 p-5">
+            <h4 class="text-base font-semibold">NiuProxy</h4>
+            <p class="text-sm leading-6 text-slate-300">Rotating residential proxies: 10TB at $0.35/GB or 1TB at $0.50/GB for Pydoll users.</p>
+            <div class="mt-auto flex flex-wrap gap-2 pt-2">
+              <span class="inline-flex items-center gap-1.5 rounded-md border border-dashed border-yellow-500/40 bg-yellow-500/[0.06] px-2 py-1">
+                <code class="font-mono text-[11px] font-bold text-yellow-300">PAY2</code>
+                <span class="text-[11px] text-slate-300">10% off recharge</span>
+              </span>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div class="reveal mt-12 flex items-center gap-4">
+        <h3 class="shrink-0 text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Sponsors</h3>
+        <div class="h-px w-full bg-white/10"></div>
+      </div>
+
+      <ul class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <li>
+          <a href="https://proxy-seller.com/?partner=8DES01TZ1QGWR3" target="_blank" rel="noopener nofollow sponsored"
+             class="sponsor-card reveal group flex h-full flex-col items-center justify-between gap-3 rounded-xl border border-white/10 bg-slate-900/40 p-5 text-center hover:border-white/25">
+            <div class="flex min-h-[3rem] items-center">
+              <img src="/images/proxy-seller-logo-white.svg" alt="Proxy-Seller" loading="lazy" decoding="async" class="max-h-7 w-auto" width="163" height="33" />
+            </div>
+            <p class="text-xs leading-5 text-slate-400">Premium proxies for AI agents, scraping &amp; automation</p>
+            <span class="inline-flex items-center gap-1.5 rounded-md border border-dashed border-yellow-500/40 bg-yellow-500/[0.06] px-2 py-1">
+              <code class="font-mono text-[11px] font-bold text-yellow-300">PYDOLL</code>
+              <span class="text-[11px] text-slate-300">15% off</span>
+            </span>
+          </a>
+        </li>
+        <li>
+          <a href="https://www.thordata.com/?ls=github&lk=pydoll" target="_blank" rel="noopener nofollow sponsored"
+             class="sponsor-card reveal group flex h-full flex-col items-center justify-between gap-3 rounded-xl border border-white/10 bg-slate-900/40 p-5 text-center hover:border-white/25">
+            <div class="flex min-h-[3rem] items-center">
+              <img src="/images/Thordata-logo.png" alt="Thordata" loading="lazy" decoding="async" class="max-h-7 w-auto" width="755" height="160" />
+            </div>
+            <p class="text-xs leading-5 text-slate-400">Residential proxy network with 190+ locations</p>
+            <span class="text-[11px] font-medium text-slate-300">1GB free via our link</span>
+          </a>
+        </li>
+        <li>
+          <a href="https://www.testmuai.com/?utm_medium=sponsor&utm_source=pydoll" target="_blank" rel="noopener nofollow sponsored"
+             class="sponsor-card reveal group flex h-full flex-col items-center justify-between gap-3 rounded-xl border border-white/10 bg-slate-900/40 p-5 text-center hover:border-white/25">
+            <div class="flex min-h-[3rem] items-center">
+              <img src="/images/logo-lamda-test.svg" alt="TestMu AI by LambdaTest" loading="lazy" decoding="async" class="max-h-7 w-auto" width="392" height="61" />
+            </div>
+            <p class="text-xs leading-5 text-slate-400">AI-native testing cloud by LambdaTest</p>
+            <span class="text-[11px] font-medium text-slate-500">testmuai.com</span>
+          </a>
+        </li>
+        <li>
+          <a href="https://www.swiftproxy.net/?ref=pydoll" target="_blank" rel="noopener nofollow sponsored"
+             class="sponsor-card reveal group flex h-full flex-col items-center justify-between gap-3 rounded-xl border border-white/10 bg-slate-900/40 p-5 text-center hover:border-white/25">
+            <div class="flex min-h-[3rem] items-center">
+              <img src="/images/swiftproxy-logo.png" alt="Swiftproxy" loading="lazy" decoding="async" class="max-h-7 w-auto" width="600" height="150" />
+            </div>
+            <p class="text-xs leading-5 text-slate-400">Proxies for web scraping &amp; automation</p>
+            <span class="text-[11px] font-medium text-slate-500">swiftproxy.net</span>
+          </a>
+        </li>
+        <li>
+          <a href="https://github.com/sponsors/thalissonvs" target="_blank" rel="noopener"
+             class="reveal group flex h-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-white/15 bg-transparent p-5 text-center transition-colors hover:border-yellow-500/50 hover:bg-yellow-500/[0.04]">
+            <svg class="h-6 w-6 text-slate-500 transition-colors group-hover:text-yellow-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span class="text-sm font-semibold text-slate-300 group-hover:text-white">Your logo here</span>
+            <span class="text-xs text-slate-500">Become a sponsor</span>
+          </a>
+        </li>
+      </ul>
     </section>
 
 
