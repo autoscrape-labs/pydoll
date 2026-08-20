@@ -57,14 +57,14 @@
 <br><br>
 
 <a href="https://go.nodemaven.com/pydollaugust">
-    <img width="100%" alt="NodeMaven" src="public/images/nodemaven-banner.png" />
+    <img width="100%" height="280px" alt="NodeMaven" src="public/images/nodemaven-banner.png" />
 </a>
 
 <sub><b><a href="https://go.nodemaven.com/pydollaugust">NodeMaven</a></b> is the most efficient proxy provider for web scraping and automation: ZIP targeting, 99.9% uptime, filtered high-quality IPs and no KYC required. Use code <b>PYDOLL35</b> for 35% off Mobile and Residential proxies, or <b>PYDOLL40</b> for 40% off ISP (Static) proxies.</sub>
 <br><br>
 
 <a href="https://niuproxy.com/?utm_source=pydoll&utm_medium=pydoll&ref=pydoll">
-    <img width="100%" alt="NiuProxy" src="public/images/niuproxy-banner.png" />
+    <img width="100%" height="280px" alt="NiuProxy" src="public/images/niuproxy-banner.png" />
 </a>
 
 <sub><b><a href="https://niuproxy.com/?utm_source=pydoll&utm_medium=pydoll&ref=pydoll">NiuProxy</a></b> offers rotating residential proxies with a special deal for Pydoll users: 10TB at &#36;0.35/GB or 1TB at &#36;0.50/GB. Use code <b>PAY2</b> for 10% off your recharge.</sub>
