@@ -231,7 +231,7 @@ asyncio.run(solve_turnstile())
 ```
 
 <p align="center">
-  <img src="public/images/cloudflare-example.gif" alt="Pydoll passing a Cloudflare Turnstile challenge with a humanized click" width="720" />
+  <img src="public/images/cloudflare-turnstile.gif" alt="Pydoll passing a Cloudflare Turnstile challenge with a humanized click" width="720" />
 </p>
 <p align="center"><sub>Pydoll getting past a Cloudflare Turnstile challenge with a realistic, humanized click.</sub></p>
 
