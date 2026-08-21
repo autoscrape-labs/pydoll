@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Turnstile bypass flow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+<style>
+  :root{
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;--panel2:#191c20;
+    --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
+    --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--pass:#35e0a1;--amber:#f5b544;--danger:#ff6b6b;
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
+  .widget{border:1px solid var(--line);padding:16px 18px}
+  .win{border:1px solid var(--line2);border-radius:9px;overflow:hidden;background:var(--panel)}
+  .chrome{display:flex;align-items:center;gap:9px;height:32px;padding:0 11px;background:var(--panel2);border-bottom:1px solid var(--line)}
+  .lights{display:flex;gap:6px}.lights i{width:9px;height:9px;border-radius:50%;display:block}
+  .lights i.r{background:#ff5f57}.lights i.y{background:#febc2e}.lights i.g{background:#28c840}
+  .chrome .tag{font-family:var(--mono);font-size:11px;color:var(--dim)}
+  .toolbar{display:flex;align-items:center;padding:7px 11px;border-bottom:1px solid var(--line);background:var(--panel2)}
+  .url{flex:1;display:flex;align-items:center;gap:7px;background:var(--bg2);border:1px solid var(--line);padding:5px 10px;font-family:var(--mono);font-size:11px;color:var(--dim)}
+  .url svg{width:11px;height:11px;color:var(--pass);flex:none}
+  .page{position:relative;min-height:150px;display:flex;align-items:center;justify-content:center;padding:18px;overflow:hidden}
+  .msg{font-family:var(--mono);font-size:12.5px;color:var(--dim);text-align:center}
+  .msg .spin{display:inline-block;width:14px;height:14px;border:2px solid var(--line2);border-top-color:var(--indigo);border-radius:50%;animation:spin .7s linear infinite;vertical-align:-3px;margin-right:8px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .msg.ok{color:var(--pass)} .msg.bad{color:var(--danger)}
+  /* turnstile widget */
+  .ts{display:flex;align-items:center;gap:12px;border:1px solid var(--line2);background:var(--bg2);padding:12px 15px;min-width:250px}
+  .ts .box{width:22px;height:22px;border:2px solid var(--line2);display:grid;place-items:center;transition:.2s}
+  .ts .box svg{width:14px;height:14px;opacity:0;transition:opacity .2s;color:var(--pass)}
+  .ts.checked .box{border-color:var(--pass)} .ts.checked .box svg{opacity:1}
+  .ts .lbl{font-family:var(--mono);font-size:12px;color:var(--ink)}
+  .ts .cf{margin-left:auto;font-family:var(--mono);font-size:9px;color:var(--faint);text-align:right;line-height:1.3}
+  .cursor{position:absolute;width:15px;height:15px;left:0;top:0;pointer-events:none;opacity:0;transition:transform .8s cubic-bezier(.4,0,.2,1),opacity .2s;z-index:3}
+  .cursor svg{width:15px;height:15px;fill:var(--ink);stroke:#000;stroke-width:.6}
+  .ripple{position:absolute;width:10px;height:10px;border:2px solid var(--pass);border-radius:50%;opacity:0;pointer-events:none;z-index:2}
+  .ripple.go{animation:rip .5s ease-out}
+  @keyframes rip{0%{opacity:.9;transform:scale(.4)}100%{opacity:0;transform:scale(3.4)}}
+  .controls{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:center}
+  button{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:8px 12px;cursor:pointer;transition:.15s}
+  button:hover{border-color:var(--indigo);color:#fff}
+  button:disabled{opacity:.5;cursor:default}
+  .ipwrap{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;color:var(--faint)}
+  #ipBtn{padding:6px 10px}
+  #ipBtn.res{color:var(--pass);border-color:rgba(53,224,161,.4)}
+  #ipBtn.dc{color:var(--danger);border-color:rgba(255,107,107,.4)}
+  .caption{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-left:auto;min-height:16px;text-align:right}
+  @media (prefers-reduced-motion:reduce){.cursor{transition:opacity .2s}.spin{animation:none}}
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="win">
+    <div class="chrome"><span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span><span class="tag">a site behind Turnstile</span></div>
+    <div class="toolbar"><span class="url"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>https://protected-site.com</span></div>
+    <div class="page" id="page">
+      <div class="msg" id="msg">Ready. Navigate to trigger the challenge.</div>
+      <div class="ripple" id="ripple"></div>
+      <div class="cursor" id="cursor"><svg viewBox="0 0 24 24"><path d="M4 2l0 17 4.6-4.4 2.7 6 2.1-.9-2.7-6 6-0.2z"/></svg></div>
+    </div>
+  </div>
+  <div class="controls">
+    <button id="run">Navigate (bypass Turnstile)</button>
+    <span class="ipwrap">your IP: <button id="ipBtn" class="res">residential</button></span>
+    <span class="caption" id="caption"></span>
+  </div>
+</div>
+
+<script>
+(function(){
+  var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  var U=function(ms){return reduce?0:ms;};
+  var page=document.getElementById('page'),msg=document.getElementById('msg'),cursor=document.getElementById('cursor'),ripple=document.getElementById('ripple');
+  var runBtn=document.getElementById('run'),ipBtn=document.getElementById('ipBtn'),caption=document.getElementById('caption');
+  var timers=[],busy=false,residential=true;
+
+  function clearT(){timers.forEach(clearTimeout);timers=[];}
+  function show(html,cls){ msg.className='msg'+(cls?(' '+cls):''); msg.innerHTML=html; msg.style.display=''; }
+  function reset(){ clearT(); var ts=page.querySelector('.ts'); if(ts)ts.remove(); cursor.style.opacity='0'; cursor.style.transition='none'; cursor.style.transform='translate(20px,120px)'; ripple.classList.remove('go'); caption.textContent=''; }
+
+  function run(){
+    if(busy)return;busy=true;runBtn.disabled=true;reset();
+    show('<span class="spin"></span>Checking your browser...');
+    timers.push(setTimeout(function(){
+      // show turnstile widget
+      msg.style.display='none';
+      var ts=document.createElement('div');ts.className='ts';
+      ts.innerHTML='<span class="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span><span class="lbl">Verify you are human</span><span class="cf">CLOUDFLARE<br>Turnstile</span>';
+      page.appendChild(ts);
+      // move cursor to the checkbox
+      timers.push(setTimeout(function(){
+        var pr=page.getBoundingClientRect(), br=ts.querySelector('.box').getBoundingClientRect();
+        var x=br.left-pr.left+br.width/2-4, y=br.top-pr.top+br.height/2-2;
+        cursor.style.opacity='1';
+        requestAnimationFrame(function(){ cursor.style.transition='transform '+U(820)+'ms cubic-bezier(.4,0,.2,1),opacity .2s'; cursor.style.transform='translate('+x+'px,'+y+'px)'; });
+        timers.push(setTimeout(function(){
+          ts.classList.add('checked');
+          ripple.style.left=x+'px';ripple.style.top=y+'px';ripple.classList.remove('go');void ripple.offsetWidth;ripple.classList.add('go');
+          timers.push(setTimeout(function(){
+            ts.querySelector('.lbl').textContent='Verifying...';
+            timers.push(setTimeout(function(){
+              ts.remove(); cursor.style.opacity='0';
+              if(residential){ show('Challenge passed. Protected content loaded.','ok'); caption.innerHTML='the click was accepted by a clean residential IP'; }
+              else { show('Turnstile did not accept the click. Your IP looks like a datacenter.','bad'); caption.innerHTML='Pydoll clicked it; the IP reputation failed the check'; }
+              busy=false;runBtn.disabled=false;
+            },U(950)));
+          },U(520)));
+        },U(880)));
+      },U(520)));
+    },U(950)));
+  }
+  runBtn.addEventListener('click',run);
+  ipBtn.addEventListener('click',function(){ if(busy)return; residential=!residential; ipBtn.textContent=residential?'residential':'datacenter'; ipBtn.className=residential?'res':'dc'; });
+})();
+</script>
+<script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>
+</body>
+</html>

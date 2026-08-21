@@ -2,17 +2,6 @@
     <img src="../resources/images/logo.png" alt="Pydoll Logo" /> <br><br>
 </p>
 
-<p align="center">
-    <a href="https://codecov.io/gh/autoscrape-labs/pydoll">
-        <img src="https://codecov.io/gh/autoscrape-labs/pydoll/graph/badge.svg?token=40I938OGM9"/>
-    </a>
-    <img src="https://github.com/thalissonvs/pydoll/actions/workflows/tests.yml/badge.svg" alt="Testes">
-    <img src="https://github.com/thalissonvs/pydoll/actions/workflows/ruff-ci.yml/badge.svg" alt="Ruff CI">
-    <img src="https://github.com/thalissonvs/pydoll/actions/workflows/release.yml/badge.svg" alt="Release">
-    <img src="https://github.com/thalissonvs/pydoll/actions/workflows/mypy.yml/badge.svg" alt="MyPy CI">
-</p>
-
-
 # Bem-vindo ao Pydoll
 
 Olá! Obrigado por conferir o Pydoll, a próxima geração de automação de navegadores para Python. Se você está cansado de lidar com webdrivers e procura uma maneira mais suave e confiável de automatizar navegadores, você está no lugar certo.

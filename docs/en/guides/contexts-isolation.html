@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Browser contexts are isolated</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+<style>
+  :root{
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;--panel2:#191c20;
+    --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
+    --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--pass:#35e0a1;--amber:#f5b544;
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
+  .widget{border:1px solid var(--line);padding:16px 18px}
+  .wins{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:560px){.wins{grid-template-columns:1fr}}
+
+  .win{border:1px solid var(--line2);border-radius:9px;overflow:hidden;background:var(--panel)}
+  .win.a{--accent:var(--indigo);--accent2:var(--indigo2)}
+  .win.b{--accent:var(--amber);--accent2:#ffcf76}
+  .chrome{display:flex;align-items:center;gap:9px;height:32px;padding:0 11px;background:var(--panel2);border-bottom:1px solid var(--line)}
+  .lights{display:flex;gap:6px}
+  .lights i{width:9px;height:9px;border-radius:50%;display:block}
+  .lights i.r{background:#ff5f57}.lights i.y{background:#febc2e}.lights i.g{background:#28c840}
+  .chrome .tag{font-family:var(--mono);font-size:11px;color:var(--dim)}
+  .toolbar{display:flex;align-items:center;padding:7px 10px;border-bottom:1px solid var(--line);background:var(--panel2)}
+  .url{flex:1;display:flex;align-items:center;gap:7px;background:var(--bg2);border:1px solid var(--line);padding:5px 9px;font-family:var(--mono);font-size:10.5px;color:var(--dim)}
+  .url svg{width:10px;height:10px;color:var(--pass);flex:none}
+  .page{padding:16px 15px;min-height:104px;display:flex;flex-direction:column;gap:13px}
+  .acct{display:flex;align-items:center;gap:11px}
+  .avatar{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--line2);display:grid;place-items:center;color:var(--faint);transition:.3s}
+  .avatar svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8}
+  .win.on .avatar{border-color:var(--accent);color:var(--accent);background:color-mix(in srgb, var(--accent) 12%, transparent)}
+  .who{font-family:var(--mono);font-size:12px;color:var(--faint)}
+  .who b{color:var(--ink);font-weight:500}
+  .win.on .who{color:var(--dim)}
+  .cookies{display:flex;gap:6px;flex-wrap:wrap;min-height:24px;align-content:flex-start}
+  .cookies:empty::before{content:'no session cookie';font-family:var(--mono);font-size:10.5px;font-style:italic;color:var(--faint)}
+  .chip{background:var(--panel2);border:1px solid var(--accent);color:var(--ink);padding:3px 8px;font-family:var(--mono);font-size:10.5px;opacity:0;transform:translateY(4px);transition:opacity .25s,transform .25s}
+  .chip.show{opacity:1;transform:none}
+
+  .controls{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;align-items:center}
+  button{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:8px 12px;cursor:pointer;transition:.15s}
+  button:hover{border-color:var(--indigo);color:#fff}
+  .caption{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-left:auto;min-height:16px}
+  .caption b{color:var(--pass);font-weight:500}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="wins">
+    <div class="win a" id="winA">
+      <div class="chrome"><span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span><span class="tag">context A</span></div>
+      <div class="toolbar"><span class="url"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>shop.example/account</span></div>
+      <div class="page">
+        <div class="acct"><span class="avatar"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 12 0v1"/></svg></span><span class="who" id="whoA">signed out</span></div>
+        <div class="cookies" id="jarA"></div>
+      </div>
+    </div>
+    <div class="win b" id="winB">
+      <div class="chrome"><span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span><span class="tag">context B</span></div>
+      <div class="toolbar"><span class="url"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>shop.example/account</span></div>
+      <div class="page">
+        <div class="acct"><span class="avatar"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 12 0v1"/></svg></span><span class="who" id="whoB">signed out</span></div>
+        <div class="cookies" id="jarB"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button id="loginA">Log in on Context A</button>
+    <button id="loginB">Log in on Context B</button>
+    <button id="reset">Reset</button>
+    <span class="caption" id="caption"></span>
+  </div>
+</div>
+
+<script>
+(function(){
+  var winA=document.getElementById('winA'),winB=document.getElementById('winB');
+  var whoA=document.getElementById('whoA'),whoB=document.getElementById('whoB');
+  var jarA=document.getElementById('jarA'),jarB=document.getElementById('jarB');
+  var caption=document.getElementById('caption');
+  function login(win,who,jar,name,token,other){
+    if(win.classList.contains('on'))return;
+    win.classList.add('on');
+    who.innerHTML='signed in as <b>'+name+'</b>';
+    var chip=document.createElement('span');chip.className='chip';chip.textContent='session='+token;jar.appendChild(chip);
+    requestAnimationFrame(function(){chip.classList.add('show');});
+    caption.innerHTML='Context '+(win.id.slice(-1))+' now has a session. <b>'+other+' is untouched.</b>';
+  }
+  document.getElementById('loginA').addEventListener('click',function(){login(winA,whoA,jarA,'alice','a1b2c3','Context B');});
+  document.getElementById('loginB').addEventListener('click',function(){login(winB,whoB,jarB,'bob','x9y8z7','Context A');});
+  document.getElementById('reset').addEventListener('click',function(){
+    [winA,winB].forEach(function(w){w.classList.remove('on');});
+    whoA.textContent='signed out';whoB.textContent='signed out';jarA.innerHTML='';jarB.innerHTML='';caption.textContent='';
+  });
+})();
+</script>
+<script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>
+</body>
+</html>

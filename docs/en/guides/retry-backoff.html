@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Retry with backoff</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+<style>
+  :root{
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;
+    --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
+    --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--pass:#35e0a1;--amber:#f5b544;--danger:#ff6b6b;
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
+  .widget{border:1px solid var(--line);padding:16px 18px}
+  .top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:4px}
+  .mode{font-family:var(--mono);font-size:12px;color:var(--dim)}
+  .timer{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:600;font-size:22px;color:var(--ink)}
+
+  .axis{position:relative;height:104px;margin:16px 0 2px;padding:0 40px}
+  .track{position:relative;height:100%}
+  .axis-line{position:absolute;left:0;right:0;top:54px;height:2px;background:var(--line2)}
+  .fillline{position:absolute;top:54px;left:0;height:2px;width:0;background:var(--indigo);opacity:.55}
+  .cursor{position:absolute;top:32px;height:44px;width:1px;background:var(--indigo);left:0;opacity:0;box-shadow:0 0 8px 1px rgba(110,123,255,.5)}
+  .cursor::after{content:"";position:absolute;top:20px;left:-3px;width:7px;height:7px;border-radius:50%;background:var(--indigo)}
+
+  .mk{position:absolute;top:54px;transform:translate(-50%,-50%)}
+  .mk .dot{width:26px;height:26px;border:1.5px solid var(--line2);background:var(--bg);display:grid;place-items:center;
+    font-family:var(--mono);font-size:12px;color:var(--dim);opacity:0;transform:scale(.5);
+    transition:opacity .25s,transform .25s,border-color .25s,color .25s,box-shadow .25s}
+  .mk.show .dot{opacity:1;transform:none}
+  .mk.fail .dot{border-color:var(--danger);color:var(--danger)}
+  .mk.ok .dot{border-color:var(--pass);color:var(--pass);box-shadow:0 0 0 4px rgba(53,224,161,.16)}
+  .mk .lbl{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);white-space:nowrap;
+    font-family:var(--mono);font-size:10px;color:var(--faint);opacity:0;transition:opacity .25s}
+  .mk.show .lbl{opacity:1}
+  .mk.fail .lbl{color:var(--danger)}
+  .mk.ok .lbl{color:var(--pass)}
+  .mk .time{position:absolute;top:30px;left:50%;transform:translateX(-50%);white-space:nowrap;
+    font-family:var(--mono);font-size:10px;color:var(--faint);opacity:0;transition:opacity .25s}
+  .mk.show .time{opacity:1}
+
+  .controls{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;align-items:center}
+  button{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:8px 12px;cursor:pointer;transition:.15s}
+  button:hover{border-color:var(--indigo);color:#fff}
+  button.active{background:rgba(110,123,255,.14);border-color:var(--indigo);color:#fff}
+  button:disabled{opacity:.5;cursor:default}
+  .caption{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-left:auto;min-height:16px}
+  .caption b{color:var(--pass);font-weight:500}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="top">
+    <div class="mode" id="mode">Pick a strategy. The call fails and retries until it succeeds.</div>
+    <div class="timer" id="timer">0.0s</div>
+  </div>
+
+  <div class="axis"><div class="track" id="track">
+    <div class="axis-line"></div>
+    <div class="fillline" id="fill"></div>
+    <div class="cursor" id="cursor"></div>
+    <div id="marks"></div>
+  </div></div>
+
+  <div class="controls">
+    <button id="fixed">Fixed delay</button>
+    <button id="exp">Exponential backoff</button>
+    <span class="caption" id="caption"></span>
+  </div>
+</div>
+
+<script>
+(function(){
+  var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  var UNIT=reduce?0:430;
+  var TIMES={ fixed:[0,1,2,3], exp:[0,2,6,14] };
+  var LBLS={ fixed:['call','retry +1s','retry +1s','retry +1s'], exp:['call','retry +2s','retry +4s','retry +8s'] };
+  var marks=document.getElementById('marks'),cursor=document.getElementById('cursor'),fill=document.getElementById('fill');
+  var timer=document.getElementById('timer'),mode=document.getElementById('mode'),caption=document.getElementById('caption');
+  var fixedBtn=document.getElementById('fixed'),expBtn=document.getElementById('exp');
+  var raf=null,timeouts=[];
+
+  function buildMarks(kind){
+    marks.innerHTML='';var arr=TIMES[kind],lbl=LBLS[kind],total=arr[arr.length-1],nodes=[];
+    for(var i=0;i<arr.length;i++){
+      var mk=document.createElement('div');mk.className='mk';mk.style.left=(arr[i]/total*100)+'%';
+      mk.innerHTML='<div class="lbl">'+lbl[i]+'</div><div class="dot">'+(i+1)+'</div><div class="time">'+arr[i]+'s</div>';
+      marks.appendChild(mk);nodes.push(mk);
+    }
+    return nodes;
+  }
+  function reset(){ if(raf)cancelAnimationFrame(raf); timeouts.forEach(clearTimeout);timeouts=[]; timer.textContent='0.0s';caption.innerHTML='';
+    cursor.style.transition='none';cursor.style.left='0';cursor.style.opacity='0'; fill.style.transition='none';fill.style.width='0'; }
+  function runTimer(totalSec){
+    var start=performance.now();
+    function tick(now){var el=Math.min((now-start)/UNIT,totalSec);timer.textContent=el.toFixed(1)+'s';if((now-start)<totalSec*UNIT)raf=requestAnimationFrame(tick);else timer.textContent=totalSec.toFixed(1)+'s';}
+    if(UNIT===0){timer.textContent=totalSec.toFixed(1)+'s';return;}
+    raf=requestAnimationFrame(tick);
+  }
+  function run(kind){
+    reset();
+    var nodes=buildMarks(kind); var arr=TIMES[kind]; var total=arr[arr.length-1];
+    fixedBtn.classList.toggle('active',kind==='fixed'); expBtn.classList.toggle('active',kind==='exp');
+    fixedBtn.disabled=true; expBtn.disabled=true;
+    mode.textContent = kind==='exp' ? 'exponential backoff: the wait doubles each retry (2s, 4s, 8s)' : 'fixed delay: the wait stays the same (1s each)';
+    runTimer(total);
+    requestAnimationFrame(function(){
+      cursor.style.opacity='1';
+      cursor.style.transition='left '+(total*UNIT)+'ms linear';
+      fill.style.transition='width '+(total*UNIT)+'ms linear';
+      cursor.style.left='100%'; fill.style.width='100%';
+    });
+    nodes.forEach(function(mk,i){
+      timeouts.push(setTimeout(function(){
+        mk.classList.add('show');
+        if(i===nodes.length-1){ mk.classList.add('ok'); caption.innerHTML='succeeded on attempt <b>'+(i+1)+'</b>, after <b>'+total+'s</b>'; cursor.style.opacity='0'; fixedBtn.disabled=false; expBtn.disabled=false; }
+        else { mk.classList.add('fail'); }
+      }, arr[i]*UNIT));
+    });
+  }
+  buildMarks('fixed');
+  fixedBtn.addEventListener('click',function(){run('fixed');});
+  expBtn.addEventListener('click',function(){run('exp');});
+})();
+</script>
+<script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>
+</body>
+</html>

@@ -1,19 +1,11 @@
-# Building Proxy Servers
+# Building a proxy server
 
-This document implements HTTP and SOCKS5 proxy servers from scratch in Python using asyncio. The goal is not production readiness but protocol comprehension: seeing how each byte is parsed, where security boundaries lie, and why certain design decisions exist in real proxy software.
+The clearest way to understand what a proxy does is to build one. This page implements an HTTP proxy and a SOCKS5 proxy from scratch in Python with asyncio, so you can see how each byte is parsed, where the security boundaries are, and why real proxy software makes the choices it does. To use a proxy with Pydoll rather than build one, see [Proxies](../../guides/proxies.md); Pydoll also ships a `SOCKS5Forwarder` in `pydoll.utils`, so you don't have to build the authenticated-SOCKS5 case yourself.
 
-!!! info "Module Navigation"
-    - [Network Fundamentals](./network-fundamentals.md): TCP/IP, UDP, WebRTC
-    - [HTTP/HTTPS Proxies](./http-proxies.md): Application-layer proxying
-    - [SOCKS Proxies](./socks-proxies.md): Session-layer proxying
-    - [Proxy Detection](./proxy-detection.md): Detection techniques and evasion
+!!! warning "Educational code"
+    These implementations favor clarity over robustness. They lack connection limits, access control, and many error-recovery paths a production proxy needs. Do not expose them to untrusted networks.
 
-    For practical proxy usage in Pydoll, see [Proxy Configuration](../../features/configuration/proxy.md).
-
-!!! warning "Educational Code"
-    These implementations prioritize clarity over robustness. They lack connection limits, access control lists, and many error recovery paths that a production proxy requires. Do not expose them to untrusted networks.
-
-## HTTP Proxy
+## HTTP proxy
 
 An HTTP proxy operates in two modes. For plaintext HTTP, it receives the full request (with an absolute-form URL like `GET http://example.com/path HTTP/1.1`), rewrites the request-target to origin-form (`GET /path HTTP/1.1`), connects to the target server, forwards the request, and pipes the response back. For HTTPS, the client sends a `CONNECT host:port` request, the proxy opens a TCP connection to the target, responds with `200 Connection Established`, and then blindly relays bytes in both directions without inspecting the encrypted content.
 
@@ -227,7 +219,7 @@ A few protocol details worth understanding. HTTP headers are encoded as ISO-8859
 !!! warning "SSRF Risk"
     This implementation does not validate destination addresses. A client could request `CONNECT 127.0.0.1:6379` to reach a local Redis instance, or `CONNECT 169.254.169.254:80` to access cloud instance metadata (AWS, GCP, Azure). Any proxy exposed to untrusted clients must validate destinations against a deny list of private and link-local ranges (`127.0.0.0/8`, `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `169.254.0.0/16`, `::1`, `fc00::/7`).
 
-## SOCKS5 Proxy
+## SOCKS5 proxy
 
 A SOCKS5 proxy operates at a lower level than HTTP. It uses a binary protocol defined in RFC 1928, consisting of three phases: method negotiation, optional authentication, and the connection request. The proxy does not parse HTTP at all. Once the tunnel is established, it relays raw bytes without understanding what protocol flows through it.
 
@@ -400,7 +392,7 @@ When the address type is `0x03` (domain name), the proxy resolves DNS itself via
 
 The `_reply` method fills `BND.ADDR` and `BND.PORT` with the actual local socket address after a successful connection, as RFC 1928 requires. Many SOCKS5 implementations return `0.0.0.0:0` here because most clients ignore these fields for CONNECT commands, but filling them correctly costs nothing and avoids a protocol violation.
 
-## Running Both Proxies
+## Running both proxies
 
 ```python
 async def main():
@@ -428,7 +420,7 @@ curl -x http://user:pass@localhost:8080 https://httpbin.org/ip
 curl --socks5 localhost:1080 --proxy-user user:pass https://httpbin.org/ip
 ```
 
-## What the Code Does Not Handle
+## What the code does not handle
 
 These implementations omit several things that production proxies handle. Understanding what is missing is as instructive as understanding what is present.
 
@@ -442,7 +434,7 @@ The HTTP proxy does not add a `Via` header. RFC 9110 Section 7.6.3 requires inte
 
 Neither proxy implements graceful shutdown. When the server stops, active tunnels are terminated abruptly rather than being drained. Production proxies track active connections and wait for them to complete (with a deadline) before shutting down.
 
-## Proxy Chaining
+## Proxy chaining
 
 Chaining proxies means routing traffic through multiple proxies in sequence: client to proxy A, proxy A to proxy B, proxy B to the target server. Each proxy in the chain only knows its immediate neighbors, not the full path.
 
@@ -457,6 +449,12 @@ Client --> Proxy A (SOCKS5) --> Proxy B (SOCKS5) --> Target
 ```
 
 Chaining a SOCKS5 proxy through another SOCKS5 proxy works by having proxy A treat proxy B as the target. The client connects to proxy A and sends a CONNECT request for proxy B's address. Once that tunnel is established, the client sends a second SOCKS5 handshake through the tunnel, this time requesting the real target. Proxy A sees traffic flowing to proxy B but cannot read it if the inner connection is encrypted.
+
+## Related
+
+- [Network fundamentals](network-fundamentals.md): the layers this code moves bytes across.
+- [HTTP/HTTPS proxies](http-proxies.md) and [SOCKS proxies](socks-proxies.md): the protocols implemented here.
+- [Proxies](../../guides/proxies.md): configuring a proxy in Pydoll instead of building one.
 
 ## References
 

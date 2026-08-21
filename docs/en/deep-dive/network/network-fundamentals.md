@@ -1,21 +1,14 @@
-# Network Fundamentals
+# Network fundamentals
 
-This document covers the foundational network protocols that power the internet and how they can expose or protect your identity in automation scenarios. A working understanding of TCP, UDP, the OSI model, and WebRTC will make proxy configuration far less mysterious and far more effective.
+Every request your browser makes travels through a layered network stack, and each layer decides what a proxy can see, change, or hide, and what can still leak your real identity. Understanding the stack is what makes proxy behavior predictable instead of mysterious. This page walks the layers, the TCP and UDP protocols, and WebRTC, the most common source of IP leaks in proxied automation.
 
-!!! info "Module Navigation"
-    - [Network & Security Overview](./index.md): Module introduction and learning path
-    - [HTTP/HTTPS Proxies](./http-proxies.md): Application-layer proxying
-    - [SOCKS Proxies](./socks-proxies.md): Session-layer proxying
+For the practical setup, see [Proxies](../../guides/proxies.md). For how these lower layers are turned into a fingerprint, see [Network fingerprinting](../fingerprinting/network-fingerprinting.md).
 
-    For practical Pydoll usage, see [Proxy Configuration](../../features/configuration/proxy.md) and [Browser Options](../../features/configuration/browser-options.md).
+## The network stack
 
-## The Network Stack
+Proxies operate at different layers, and the layer determines their reach. Lower-layer characteristics can fingerprint your real system even through a flawless higher-layer proxy, so it helps to see where each protocol sits.
 
-Every HTTP request your browser makes travels through a layered network stack. Each layer has specific responsibilities, protocols, and security implications. Proxies operate at different layers, and the layer determines what the proxy can see, modify, and hide. Network characteristics at lower layers can fingerprint your real system even through proxies, so understanding the stack helps you see where identity leaks happen and how to prevent them.
-
-### The OSI Model
-
-The OSI (Open Systems Interconnection) model, developed by ISO in 1984, provides a conceptual framework for understanding how network protocols interact. Real-world networks use the TCP/IP model (which predates OSI and has only 4 layers), but OSI terminology remains the standard way to describe where proxies operate and what they can access.
+The OSI model (7 layers) is a teaching reference; real networks run the TCP/IP model (4 layers). OSI terminology is still how people describe where a proxy operates, so it is worth knowing.
 
 ```mermaid
 graph TD
@@ -30,391 +23,167 @@ graph TD
     L7 --> L6 --> L5 --> L4 --> L3 --> L2 --> L1
 ```
 
-Layer 7 (Application) is where user-facing protocols live: HTTP, HTTPS, FTP, SMTP, and DNS all operate here. This layer contains the actual data your application cares about, such as HTML documents, JSON responses, and file transfers. HTTP proxies operate at this layer, which gives them full visibility into request and response content.
+The layers that matter for automation:
 
-Layer 6 (Presentation) handles data format translation, encryption, and compression. SSL/TLS is commonly associated with this layer for its encryption role, though in practice TLS straddles Layers 4 through 6 and does not map cleanly to any single OSI layer. What matters for automation is that HTTPS encryption happens here, encrypting Layer 7 data before it moves down the stack.
+- **Layer 7, Application.** HTTP, HTTPS, FTP, SMTP, DNS. The actual data your code cares about. HTTP proxies sit here with full visibility into requests and responses.
+- **Layer 6, Presentation.** Encryption and compression. TLS is associated with this layer, though in practice it straddles Layers 4 to 6.
+- **Layer 5, Session.** SOCKS proxies sit here, below the application layer, which makes them protocol-agnostic.
+- **Layer 4, Transport.** TCP (reliable) and UDP (fast). Ports, flow control, error correction. Every proxy relies on this layer to move data.
+- **Layer 3, Network.** IP addressing and routing. Your real IP lives here, and it is what a proxy substitutes.
+- **Layer 2, Data Link.** Ethernet and Wi-Fi, MAC addresses. Visible only on the local segment, not to remote servers (though IPv6 SLAAC can embed the MAC in the address).
+- **Layer 1, Physical.** Cables and radio. Rarely relevant to automation.
 
-Layer 5 (Session) manages connections between applications. SOCKS proxies operate here, below the application layer but above transport. This position makes SOCKS protocol-agnostic: it can proxy any Layer 7 protocol (HTTP, FTP, SMTP, SSH) without needing to understand their specifics.
+### How the layer decides what a proxy can do
 
-Layer 4 (Transport) provides end-to-end data delivery. TCP (connection-oriented, reliable) and UDP (connectionless, fast) are the dominant protocols here. This layer handles port numbers, flow control, and error correction. All proxies ultimately rely on Layer 4 for actual data transmission.
+An HTTP/HTTPS proxy at Layer 7 understands HTTP, so it can read and rewrite URLs, headers, cookies, and bodies, cache by HTTP semantics, and inject headers. In exchange it only speaks HTTP, and inspecting HTTPS means terminating TLS (decrypt, re-encrypt).
 
-Layer 3 (Network) handles routing and addressing between networks. IP (Internet Protocol) operates here, managing IP addresses and routing decisions. This is where your real IP address lives, and where proxies aim to substitute it.
+A SOCKS proxy at Layer 5 sits below the application, so it is protocol-agnostic: it forwards any Layer 7 protocol untouched, passes HTTPS through encrypted end to end, and SOCKS5 can also carry UDP. The cost is no application-layer visibility: it can filter by IP and port, not by URL or content.
 
-Layer 2 (Data Link) manages communication on the same physical network segment. Ethernet, Wi-Fi, and PPP operate here, handling MAC addresses and frame transmission. MAC addresses are only visible on the local network segment and are not directly accessible by remote servers, though they can be exposed through protocols like IPv6 SLAAC (which embeds the MAC in the address).
+!!! note "The tradeoff"
+    Higher layers give more content control but less protocol flexibility; lower layers give the reverse. Choose an HTTP proxy for content control, a SOCKS proxy for protocol flexibility or end-to-end encryption.
 
-Layer 1 (Physical) is the actual hardware: cables, radio waves, and voltage levels. Rarely relevant to software automation.
+### The layer-leak problem
 
-!!! tip "OSI vs TCP/IP"
-    The TCP/IP model (4 layers: Link, Internet, Transport, Application) is what networks actually use. OSI (7 layers) is a teaching tool and reference model. When people say "Layer 7 proxy," they are using OSI terminology, but the actual implementation runs on TCP/IP.
+Even a perfect Layer 7 proxy cannot change what lower layers reveal. Your operating system's TCP stack at Layer 4 has a fingerprint (window size, options order, TTL), and IP header fields at Layer 3 reveal OS and topology. If you present a Windows User-Agent while your Linux kernel's TCP fingerprint says otherwise, a system that correlates the two flags the mismatch. This is why [network fingerprinting](../fingerprinting/network-fingerprinting.md) is dangerous: it operates below the proxy.
 
-### How Layer Positioning Affects Proxies
+## TCP and UDP
 
-The layer where a proxy operates determines what it can and cannot do.
+At Layer 4, two protocols dominate, with opposite priorities: reliability versus speed.
 
-HTTP/HTTPS proxies operate at Layer 7 (Application). Because they understand HTTP, they can read and modify URLs, headers, cookies, and request bodies. They can cache responses intelligently based on HTTP semantics, filter content by URL or keyword, and inject authentication headers. The trade-off is that they only understand HTTP. They cannot proxy FTP, SMTP, SSH, or other protocols, and inspecting HTTPS content requires TLS termination, which means decrypting and re-encrypting the traffic.
-
-SOCKS proxies operate at Layer 5 (Session). Because they sit below the application layer, they are protocol-agnostic and can proxy any Layer 7 protocol without modification. HTTPS traffic passes through encrypted end-to-end, since the SOCKS proxy never needs to decrypt it. SOCKS5 also supports UDP, enabling it to proxy DNS queries, VoIP, and other UDP-based protocols. The trade-off is that SOCKS proxies have no visibility into application-layer data: they cannot cache, filter by URL, or inspect content. They can only filter by IP and port.
-
-!!! note "The Fundamental Tradeoff"
-    Higher layers (Layer 7) give you more control but less flexibility. Lower layers (Layer 5) give you less control but more flexibility. Choose HTTP proxies when you need content control, and SOCKS proxies when you need protocol flexibility or end-to-end encryption.
-
-### The Layer Leak Problem
-
-Even with a perfect Layer 7 proxy, lower-layer characteristics can expose your real identity. Your operating system's TCP stack at Layer 4 has a unique fingerprint defined by window size, options order, and TTL values. IP header fields at Layer 3 such as TTL and fragmentation behavior reveal your OS and network topology.
-
-For example, if you configure a proxy to present a "Windows 10" User-Agent but your actual Linux system's TCP fingerprint contradicts this at Layer 4, sophisticated detection systems can flag this inconsistency as a strong bot indicator. This is why network-level fingerprinting (covered in [Network Fingerprinting](../fingerprinting/network-fingerprinting.md)) is so dangerous: it operates below the proxy layer, exposing your real system even when application-layer proxying is flawless.
-
-## TCP vs UDP
-
-At Layer 4 (Transport), two fundamentally different protocols dominate internet communication. They represent opposite design philosophies: reliability versus speed.
-
-TCP is connection-oriented. Think of it like a phone call: you establish a connection, verify the other party is listening, exchange data reliably, then hang up. Every byte is acknowledged, ordered, and guaranteed to arrive. UDP is connectionless. You send your data and hope it arrives. No handshake, no acknowledgments, no guarantees. Just raw speed with minimal overhead.
+TCP is connection-oriented, like a phone call: you establish a connection, exchange data with every byte acknowledged and ordered, then close it. UDP is connectionless: you send a datagram and hope it arrives, with no handshake and no guarantees, for minimal overhead.
 
 | Feature | TCP | UDP |
 |---------|-----|-----|
-| Connection | Connection-oriented (handshake required) | Connectionless (no handshake) |
-| Reliability | Guaranteed delivery, ordered packets | Best-effort delivery, packets may be lost |
-| Speed | Slower (overhead from reliability mechanisms) | Faster (minimal overhead) |
-| Use Cases | Web browsing, file transfer, email | Video streaming, DNS queries, gaming |
-| Header Size | 20 bytes minimum (up to 60 with options) | 8 bytes fixed |
-| Flow Control | Yes (sliding window, receiver-driven) | No (sender transmits at will) |
-| Congestion Control | Yes (slows down when network is congested) | No (application's responsibility) |
-| Error Checking | Extensive (checksum + acknowledgments) | Basic (checksum only; optional in IPv4, mandatory in IPv6) |
-| Ordering | Packets reordered if received out-of-sequence | No ordering, packets delivered as received |
-| Retransmission | Automatic (lost packets retransmitted) | None (application must handle) |
+| Connection | Connection-oriented (handshake) | Connectionless (no handshake) |
+| Reliability | Guaranteed, ordered | Best-effort, may drop |
+| Speed | Slower (reliability overhead) | Faster (minimal overhead) |
+| Use cases | Web, file transfer, email | Streaming, DNS, gaming, WebRTC |
+| Header size | 20 bytes (up to 60) | 8 bytes fixed |
+| Flow/congestion control | Yes | No |
+| Ordering / retransmission | Yes | No |
 
-### TCP and Proxies
+All proxy protocols (HTTP, HTTPS, SOCKS4, SOCKS5) use TCP for their control channel, because authentication and command sequences need guaranteed delivery. SOCKS5 additionally can proxy UDP, which SOCKS4 and HTTP proxies cannot.
 
-All proxy protocols (HTTP, HTTPS, SOCKS4, SOCKS5) use TCP for their control channel. This is because proxy authentication and command exchange require guaranteed delivery, proxy protocols have strict command sequences (handshake, then auth, then data), and proxies need persistent connections to track client state.
+### The TCP three-way handshake
 
-However, SOCKS5 can also proxy UDP traffic, unlike SOCKS4 or HTTP proxies. This makes SOCKS5 essential for proxying DNS queries, WebRTC audio/video, VoIP, and gaming protocols.
-
-!!! danger "UDP and IP Leakage"
-    Most browser connections use TCP (HTTP, WebSocket, etc.), but WebRTC uses UDP directly, bypassing the browser's proxy configuration. This is the most common cause of IP leakage in proxied browser automation: your TCP traffic goes through the proxy while your UDP traffic leaks your real IP.
-
-### The TCP Three-Way Handshake
-
-Before any data can be transmitted, TCP requires a three-way handshake to establish a connection. This negotiation synchronizes sequence numbers, agrees on window sizes, and establishes connection state on both ends.
+Before any data moves, TCP performs a three-way handshake to synchronize sequence numbers and connection state.
 
 ```mermaid
 sequenceDiagram
     participant Client
     participant Server
 
-    Client->>Server: SYN (Synchronize, seq=x)
-    Note over Client,Server: Client requests connection
-
+    Client->>Server: SYN (seq=x)
     Server->>Client: SYN-ACK (seq=y, ack=x+1)
-    Note over Client,Server: Server acknowledges and sends its own SYN
-
     Client->>Server: ACK (ack=y+1)
-    Note over Client,Server: Connection established, data transfer begins
+    Note over Client,Server: Connection established
 ```
 
-The process starts when the client sends a SYN (Synchronize) packet containing a random Initial Sequence Number (ISN), for example `seq=1000`. Along with the ISN, TCP options are negotiated: window size, Maximum Segment Size (MSS), timestamps, and SACK support.
+The client sends a SYN with a random Initial Sequence Number and its TCP options (window size, MSS, timestamps, SACK). The server replies with a SYN-ACK: its own random ISN plus an acknowledgment of the client's. The client sends a final ACK, and the connection is open in both directions. The ISN is randomized (RFC 6528) to prevent an attacker from injecting packets by guessing sequence numbers.
 
-The server responds with a SYN-ACK: it picks its own random ISN (e.g., `seq=5000`) and acknowledges the client's ISN by setting `ack=1001` (client's ISN + 1). This single packet both establishes the server-to-client direction (SYN) and confirms the client-to-server direction (ACK). The server also returns its own TCP options.
+### TCP fingerprinting
 
-The client then sends a final ACK, acknowledging the server's ISN (`ack=5001`). At this point the connection is fully established in both directions and data transmission can begin.
-
-The ISN is randomized rather than starting from zero to prevent TCP hijacking attacks. If ISNs were predictable, an attacker could inject packets into an existing connection by guessing the sequence numbers. Modern systems use cryptographic randomness for ISN selection (RFC 6528).
-
-### TCP Fingerprinting
-
-The TCP handshake reveals characteristics that fingerprint your operating system. Different OSes use different default values for the initial window size, TCP options order, TTL (Time To Live), window scale factor, and timestamp behavior. These values are set by the kernel, not the browser, so a proxy cannot change them.
-
-Here are illustrative examples for modern operating systems. Note that actual values vary across OS versions, kernel configurations, and network tuning:
+The handshake exposes OS-specific values: initial window size, options order, TTL, and window scale. The kernel sets these, not the browser, so a proxy cannot change them. Illustrative defaults (they vary by version and tuning):
 
 ```
-Windows 10/11 (modern builds):
-    Window Size: 65535
-    MSS: 1460
-    Options: MSS, NOP, WS, NOP, NOP, SACK_PERM
-    TTL: 128
-
-Linux (kernel 5.x+, Ubuntu 20.04+):
-    Window Size: 29200
-    MSS: 1460
-    Options: MSS, SACK_PERM, TS, NOP, WS
-    TTL: 64
-
-macOS (Monterey+):
-    Window Size: 65535
-    TTL: 64
+Windows 10/11:  Window 65535,  TTL 128,  Options: MSS, NOP, WS, NOP, NOP, SACK_PERM
+Linux 5.x+:     Window 29200,  TTL 64,   Options: MSS, SACK_PERM, TS, NOP, WS
+macOS:          Window 65535,  TTL 64
 ```
 
-These differences are burned into the kernel. A proxy cannot change them because they are set by your operating system, not your browser. This is how sophisticated detection systems can identify you even through proxies.
+!!! warning "A proxy cannot hide your TCP fingerprint"
+    HTTP and SOCKS proxies sit above TCP, so your OS's TCP fingerprint reaches the proxy and any observer between you and it. Only VPN-level routing or OS-level stack tuning changes it. The TLS handshake right after adds another fingerprint (JA3/JA4); see [Network fingerprinting](../fingerprinting/network-fingerprinting.md).
 
-!!! warning "Proxy Limitation"
-    HTTP and SOCKS proxies operate above the TCP layer. They cannot modify TCP handshake characteristics. Your OS's TCP fingerprint is always exposed to the proxy server and any network observers between you and the proxy. Only VPN-level solutions or OS-level TCP stack configuration can address this.
+### UDP, DNS, and QUIC
 
-!!! note "Beyond TCP Fingerprinting"
-    The TCP handshake is just the first fingerprinting opportunity. Immediately after, the TLS handshake reveals another unique fingerprint known as JA3/JA4. See [Network Fingerprinting](../fingerprinting/network-fingerprinting.md) for details on TLS and HTTP/2 fingerprinting.
+UDP is fire-and-forget: an 8-byte header, no connection, no reliability. It fits real-time media (WebRTC, VoIP), gaming, and DNS, where the application handles any retries. DNS uses UDP because queries are small and benefit from zero handshake overhead.
 
-### UDP
+The automation concern is that most proxies only carry TCP, so UDP traffic can bypass the proxy and expose your real IP:
 
-Unlike TCP's reliable, connection-oriented approach, UDP is a fire-and-forget protocol. It trades reliability for minimal latency and overhead, making it ideal for real-time applications where speed matters more than perfect delivery.
+| Proxy type | UDP support |
+|------------|-------------|
+| HTTP / HTTPS (CONNECT) | No (TCP tunnels only) |
+| SOCKS4 | No |
+| SOCKS5 | Yes (via `UDP ASSOCIATE`) |
+| VPN | Yes (tunnels all IP traffic) |
 
-A UDP datagram has only an 8-byte header (compared to TCP's 20-60 bytes), containing source port, destination port, length, and a checksum. There is no connection establishment, no reliability guarantee, no flow control, and no congestion control. If a packet is lost, the application must decide whether and how to handle it.
+Modern Chrome also uses QUIC (RFC 9000), the UDP-based transport behind HTTP/3, which shares the same bypass risk and has its own fingerprint. In automation you can force HTTP/2 over TCP with `--disable-quic` so all web traffic follows your proxy.
 
-UDP is the right choice for real-time communication (voice/video calls via WebRTC and VoIP), gaming (low-latency state updates), streaming (where occasional frame loss is acceptable), and DNS queries (small request/response pairs where the application handles retries). It is a poor choice for file transfers, web browsing, email, or databases, all of which need reliable, ordered delivery.
+## WebRTC and IP leakage
 
-DNS is a particularly important example in the context of automation. DNS uses UDP because queries are typically small and benefit from UDP's zero-handshake overhead. While EDNS0 (RFC 6891) increased the maximum UDP DNS payload beyond the original 512-byte limit, most queries remain compact. The DNS client handles retries at the application level if a response does not arrive within a timeout.
+WebRTC enables peer-to-peer audio, video, and data directly between browsers. It optimizes for low latency over privacy, and it is the single most common source of IP leaks in proxied automation: it can reveal your real IP even when every HTTP layer is proxied correctly.
 
-For browser automation, the key concern with UDP is that WebRTC uses it for real-time audio and video, DNS queries use it for domain resolution, and most proxies (HTTP, HTTPS, SOCKS4) only handle TCP. Unless you explicitly configure UDP proxying, this traffic bypasses your proxy and leaks your real IP.
+To set up a P2P connection, WebRTC discovers your public IP through STUN servers over UDP. Those queries bypass a TCP-only proxy, the IP ends up in the connection's ICE candidates, and JavaScript on the page can read the candidates and send your real IP to a server.
 
-| Proxy Type | UDP Support | Notes |
-|------------|-------------|-------|
-| HTTP Proxy | No | Only proxies TCP-based HTTP/HTTPS |
-| HTTPS Proxy (CONNECT) | No | CONNECT method only establishes TCP tunnels |
-| SOCKS4 | No | TCP-only protocol |
-| SOCKS5 | Yes | Supports UDP relay via `UDP ASSOCIATE` command |
-| VPN | Yes | Tunnels all IP traffic (TCP and UDP) |
+### ICE, STUN, and the candidates that leak
 
-For true anonymity in browser automation, you need either a SOCKS5 proxy with UDP support and WebRTC configured to use it, WebRTC disabled entirely (which breaks video conferencing), a VPN that tunnels all traffic, or the browser flag `--force-webrtc-ip-handling-policy=disable_non_proxied_udp`.
-
-### QUIC and HTTP/3
-
-Modern browsers increasingly use QUIC (RFC 9000), a UDP-based transport protocol that powers HTTP/3. Since QUIC runs over UDP, it shares the same proxy bypass issues as WebRTC and DNS: most HTTP proxies cannot handle QUIC traffic, and it may leak outside your proxy configuration.
-
-In automation scenarios, consider disabling QUIC with the `--disable-quic` Chrome flag to force HTTP/2 over TCP, ensuring all web traffic passes through your proxy. QUIC also has its own fingerprinting characteristics, similar to JA3 for TLS, which adds another vector for detection.
-
-## WebRTC and IP Leakage
-
-WebRTC (Web Real-Time Communication) is a browser API standardized by the W3C that enables peer-to-peer audio, video, and data communication directly between browsers without plugins or intermediary servers. While powerful for real-time applications, WebRTC is the single biggest source of IP leakage in proxied browser automation.
-
-### How WebRTC Leaks Your IP
-
-WebRTC was designed for direct peer-to-peer connections, optimizing for low latency over privacy. To establish P2P connections, WebRTC must discover your real public IP address and share it with the remote peer, even if your browser is configured to use a proxy.
-
-The problem unfolds like this: your browser uses a proxy for HTTP/HTTPS traffic (which is TCP), but WebRTC uses STUN servers to discover your real public IP over UDP. STUN queries bypass the proxy because most proxies only handle TCP. Your real IP is discovered and shared with remote peers as part of the connection negotiation. JavaScript on the page can read these "ICE candidates" and send your real IP to the website's server.
-
-!!! danger "Severity of WebRTC Leaks"
-    Even with an HTTP proxy configured correctly, HTTPS proxy working, DNS queries proxied, User-Agent spoofed, and canvas fingerprinting mitigated, WebRTC can still leak your real IP in milliseconds. This is because WebRTC operates below the browser's proxy layer, directly interfacing with the OS network stack.
-
-### The ICE Process
-
-WebRTC uses ICE (Interactive Connectivity Establishment, RFC 8445) to discover possible connection paths and select the best one. This process inherently reveals your network topology by gathering three types of candidates.
+WebRTC uses ICE (RFC 8445) to gather possible connection paths, called candidates, and this gathering is what exposes your network.
 
 ```mermaid
 sequenceDiagram
     participant Browser
     participant STUN as STUN Server
-    participant TURN as TURN Relay
     participant Peer as Remote Peer
 
-    Note over Browser: WebRTC connection initiated
-
-    Browser->>Browser: Gather local IP addresses<br/>(LAN interfaces)
-    Note over Browser: Local candidate:<br/>192.168.1.100:54321
-
-    Browser->>STUN: STUN Binding Request (over UDP)
-    Note over STUN: STUN server discovers public IP<br/>(bypasses proxy!)
-    STUN->>Browser: STUN Response with real public IP
-    Note over Browser: Server reflexive candidate:<br/>203.0.113.45:54321
-
-    Browser->>TURN: Allocate relay (if needed)
-    TURN->>Browser: Relay address assigned
-    Note over Browser: Relay candidate:<br/>198.51.100.10:61234
-
-    Browser->>Peer: Send all ICE candidates<br/>(local + public + relay)
-    Note over Peer: Now knows your:<br/>- LAN IP<br/>- Real public IP<br/>- Relay address
-
-    Peer->>Browser: Send ICE candidates
-
-    Note over Browser,Peer: ICE negotiation: try direct P2P first
-
-    alt Direct P2P succeeds
-        Browser<<->>Peer: Direct connection (bypasses proxy entirely!)
-    else Direct P2P fails (firewall/NAT)
-        Browser->>TURN: Use TURN relay
-        TURN<<->>Peer: Relayed connection
-        Note over Browser,Peer: Higher latency, but works
-    end
+    Browser->>Browser: Gather local IPs (LAN)
+    Browser->>STUN: Binding Request (UDP, bypasses proxy)
+    STUN->>Browser: Response with real public IP
+    Browser->>Peer: Send all ICE candidates (local + public)
+    Note over Browser,Peer: Direct P2P bypasses the proxy entirely
 ```
 
-### ICE Candidate Types
+Three candidate types are gathered:
 
-ICE discovers three types of candidates (possible connection endpoints), each revealing different information about your network.
+- **Host candidates**: your local LAN IPs. Chrome 75+ replaces these with ephemeral mDNS names (`a1b2c3d4.local`) unless camera/microphone permission is granted, so this leak is mostly mitigated.
+- **Server-reflexive candidates**: your public IP as a STUN server sees it. This is the leak everyone means: the proxy shows one IP, WebRTC reveals your real one.
+- **Relay candidates**: a TURN relay address used when direct P2P fails; the `raddr` field may still carry your real IP.
 
-**Host candidates** are your local LAN IP addresses. The browser enumerates all local network interfaces and creates candidates for each. This reveals your local IP addresses on private networks, your network topology (presence of VPN interfaces, VM bridges), and the number of network interfaces.
+STUN (RFC 8489) is a simple request/response over UDP: the client asks "what IP do you see," and the server returns the public IP and port in an `XOR-MAPPED-ADDRESS` (XOR'ed with a fixed magic cookie for NAT compatibility, not security). Browsers ship with public STUN servers such as `stun.l.google.com:19302`.
+
+A proxy cannot stop this because WebRTC uses UDP (which most proxies do not carry), operates below the HTTP layer against the OS network stack directly, and enumerates every interface. Any page can trigger it and read the result:
 
 ```javascript
-// Example host candidates
-candidate:1 1 UDP 2130706431 192.168.1.100 54321 typ host
-candidate:2 1 UDP 2130706431 10.0.0.5 54322 typ host
-```
-
-Modern browsers (Chrome 75+, Firefox 78+, Safari) mitigate host candidate leaks by replacing local IP addresses with ephemeral mDNS names (e.g., `a1b2c3d4.local`) when media permissions (camera/microphone) have not been granted. However, server reflexive candidates (your public IP) remain exposed regardless of mDNS.
-
-**Server reflexive candidates** are your public IP as seen by a STUN server. The browser sends a STUN request to a public server, which replies with your public IP address. This is the leak everyone talks about: your proxy shows one IP but WebRTC reveals your real one, along with your NAT type, external port mapping, and ISP information.
-
-```javascript
-// Server reflexive candidate (your real public IP)
-candidate:4 1 UDP 1694498815 203.0.113.45 54321 typ srflx raddr 192.168.1.100 rport 54321
-```
-
-**Relay candidates** are TURN server addresses used as fallback when direct P2P fails. The relay candidate may still contain your real IP in the `raddr` (remote address) field, depending on the TURN server implementation.
-
-```javascript
-// Relay candidate (TURN server address)
-candidate:5 1 UDP 16777215 198.51.100.10 61234 typ relay raddr 203.0.113.45 rport 54321
-```
-
-### The STUN Protocol
-
-STUN (Session Traversal Utilities for NAT, RFC 8489) is a simple request-response protocol over UDP. Its job is straightforward: the client asks "what IP do you see me as?" and the server replies with the client's public IP and port.
-
-The client sends a Binding Request containing a magic cookie (`0x2112A442`, a fixed value defined by the RFC) and a random 12-byte transaction ID. The server responds with a Binding Success Response that includes an `XOR-MAPPED-ADDRESS` attribute containing the client's public IP and port as seen from the server's perspective.
-
-The IP address in the response is XOR'ed with the magic cookie and transaction ID. This is not for security but for NAT compatibility: some NAT devices incorrectly modify IP addresses in packet payloads, and XOR'ing obfuscates the address to prevent this interference.
-
-Common public STUN servers used by browsers include `stun.l.google.com:19302` (Google), `stun1.l.google.com:19302` (Google), `stun.services.mozilla.com` (Mozilla), and `stun.stunprotocol.org:3478`.
-
-### Why Proxies Cannot Stop WebRTC Leaks
-
-WebRTC leaks happen for several reinforcing reasons. First, WebRTC uses UDP, and most proxies (HTTP, HTTPS CONNECT, SOCKS4) only handle TCP. Only SOCKS5 supports UDP, and even then the browser must be explicitly configured to route WebRTC through it.
-
-Second, WebRTC is a browser API that operates below the HTTP layer. It directly accesses the OS network stack, bypassing proxy settings configured for HTTP/HTTPS. STUN queries go directly to the network interface, and the OS routing table determines their path, not the browser's proxy configuration. Only VPN-level routing can intercept them.
-
-Third, WebRTC enumerates all network interfaces (physical ethernet, Wi-Fi, VPN adapters, VM bridges), including interfaces not used for regular browsing. This leaks your internal network topology.
-
-Finally, web pages can read ICE candidates via JavaScript using the `RTCPeerConnection.onicecandidate` event, extract IP addresses from candidate strings with a simple regex, and send your real IP to their tracking server.
-
-### Preventing WebRTC Leaks in Pydoll
-
-Pydoll provides multiple strategies for preventing WebRTC IP leaks.
-
-**Method 1: Force WebRTC to only use proxied routes (recommended)**
-
-```python
-from pydoll.browser import Chrome
-from pydoll.browser.options import ChromiumOptions
-
-options = ChromiumOptions()
-options.webrtc_leak_protection = True  # Adds --force-webrtc-ip-handling-policy=disable_non_proxied_udp
-```
-
-Pydoll provides a convenient `webrtc_leak_protection` property that manages the underlying Chrome flag for you. This disables UDP if no proxy supports it, forces WebRTC to use TURN relays only (no direct P2P), and prevents STUN queries to public servers. The trade-off is higher latency for video calls since direct P2P connections are disabled.
-
-**Method 2: Disable WebRTC entirely**
-
-```python
-options.add_argument('--disable-features=WebRTC')
-```
-
-This completely disables the WebRTC API, eliminating any possibility of IP leaks through this vector. The trade-off is that all WebRTC-dependent sites (video conferencing, voice calls) will break. Note that this flag should be tested with your specific Chrome version, as feature flag names can vary between releases.
-
-**Method 3: Restrict WebRTC via browser preferences**
-
-```python
-options.browser_preferences = {
-    'webrtc': {
-        'ip_handling_policy': 'disable_non_proxied_udp',
-        'multiple_routes_enabled': False,
-        'nonproxied_udp_enabled': False,
-        'allow_legacy_tls_protocols': False
-    }
-}
-```
-
-This achieves the same effect as Method 1 but through preferences rather than command-line flags. `multiple_routes_enabled` prevents using multiple network paths, and `nonproxied_udp_enabled` blocks UDP that does not go through the proxy.
-
-**Method 4: Use a SOCKS5 proxy with UDP support**
-
-```python
-options.add_argument('--proxy-server=socks5://proxy.example.com:1080')
-options.add_argument('--force-webrtc-ip-handling-policy=default_public_interface_only')
-```
-
-SOCKS5 can proxy UDP via its `UDP ASSOCIATE` command, allowing WebRTC's STUN queries to go through the proxy. This requires a SOCKS5 proxy that actually supports UDP relay, which not all do.
-
-!!! warning "SOCKS5 Authentication"
-    Chrome does not support SOCKS5 authentication inline (e.g., `socks5://user:pass@host:port`) via the `--proxy-server` flag. Pydoll provides a built-in `SOCKS5Forwarder` that works around this limitation by running a local unauthenticated SOCKS5 proxy that forwards traffic to the remote authenticated proxy, handling the username/password handshake on Chrome's behalf. See [Proxy Configuration](../../features/configuration/proxy.md) for usage details.
-
-### Testing for WebRTC Leaks
-
-You can test manually by visiting [browserleaks.com/webrtc](https://browserleaks.com/webrtc) and checking whether your real IP appears in the "Public IP Address" section. If you see your real IP instead of your proxy IP, you are leaking.
-
-For automated testing with Pydoll:
-
-```python
-import asyncio
-from pydoll.browser import Chrome
-from pydoll.browser.options import ChromiumOptions
-
-async def test_webrtc_leak():
-    options = ChromiumOptions()
-    options.add_argument('--proxy-server=http://proxy.example.com:8080')
-    options.add_argument('--force-webrtc-ip-handling-policy=disable_non_proxied_udp')
-
-    async with Chrome(options=options) as browser:
-        tab = await browser.start()
-        await tab.go_to('https://browserleaks.com/webrtc')
-
-        await asyncio.sleep(3)
-
-        ips = await tab.execute_script('''
-            return Array.from(document.querySelectorAll('.ip-address'))
-                .map(el => el.textContent.trim());
-        ''')
-
-        print("Detected IPs:", ips)
-        # Should only show proxy IP, not your real IP
-
-asyncio.run(test_webrtc_leak())
-```
-
-!!! danger "Always Test WebRTC Leaks"
-    Never assume your proxy configuration prevents WebRTC leaks. Always verify with [browserleaks.com/webrtc](https://browserleaks.com/webrtc) or [ipleak.net](https://ipleak.net). Even a single WebRTC leak instantly compromises your entire proxy setup, since the website now knows your real location, ISP, and network topology.
-
-### How Websites Exploit WebRTC Leaks
-
-Websites can intentionally trigger WebRTC to extract your real IP using a few lines of JavaScript:
-
-```javascript
-const pc = new RTCPeerConnection({
-    iceServers: [{urls: 'stun:stun.l.google.com:19302'}]
-});
-
+const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
 pc.createDataChannel('');
 pc.createOffer().then(offer => pc.setLocalDescription(offer));
-
 pc.onicecandidate = (event) => {
-    if (event.candidate) {
-        const ipRegex = /([0-9]{1,3}(\.[0-9]{1,3}){3})/;
-        const ipMatch = event.candidate.candidate.match(ipRegex);
-
-        if (ipMatch) {
-            const realIP = ipMatch[1];
-            fetch(`/track?real_ip=${realIP}&proxy_ip=${window.clientIP}`);
-        }
-    }
+  if (!event.candidate) return;
+  const ip = event.candidate.candidate.match(/([0-9]{1,3}(\.[0-9]{1,3}){3})/);
+  if (ip) fetch(`/track?real_ip=${ip[1]}`);
 };
 ```
 
-This code creates an RTCPeerConnection, triggers ICE candidate gathering (which contacts STUN servers), extracts IP addresses from the candidates with a regex, and sends your real IP to a tracking server. Disabling WebRTC or forcing proxied-only routes as described above prevents this.
+### Preventing WebRTC leaks
 
-## Summary
+The recommended fix is Pydoll's built-in option, which sets the WebRTC IP-handling policy so UDP that would skip the proxy is blocked:
 
-Proxies operate at specific layers of the network stack: HTTP at Layer 7, SOCKS at Layer 5. The layer determines what the proxy can see, modify, and hide. TCP fingerprints (window size, options, TTL) leak from lower layers and reveal your real OS even through a proxy. UDP traffic, including WebRTC and DNS, often bypasses proxies unless explicitly configured. WebRTC is the most common source of IP leakage, and only SOCKS5 or a VPN can proxy UDP traffic effectively. Modern browsers also use QUIC (HTTP/3 over UDP), which adds another potential bypass vector.
+```python
+from pydoll.browser.chromium import Chrome
+from pydoll.browser.options import ChromiumOptions
 
-**Next steps:**
+options = ChromiumOptions()
+options.webrtc_leak_protection = True   # --force-webrtc-ip-handling-policy=disable_non_proxied_udp
+```
 
-- [HTTP/HTTPS Proxies](./http-proxies.md): Application-layer proxying
-- [SOCKS Proxies](./socks-proxies.md): Session-layer, protocol-agnostic proxying
-- [Network Fingerprinting](../fingerprinting/network-fingerprinting.md): TCP/IP and TLS fingerprinting techniques
-- [Proxy Configuration](../../features/configuration/proxy.md): Practical Pydoll proxy setup
+Alternatives, depending on your needs:
+
+- Set the same policy through `options.browser_preferences = {'webrtc': {'ip_handling_policy': 'disable_non_proxied_udp', 'multiple_routes_enabled': False, 'nonproxied_udp_enabled': False}}`.
+- Route WebRTC through a SOCKS5 proxy that supports UDP relay (`--proxy-server=socks5://host:1080`), which not all do.
+- Disable WebRTC entirely with `--disable-features=WebRTC` if you never need it (this breaks video conferencing; test the flag name against your Chrome version).
+
+!!! warning "Always verify"
+    Never assume the proxy stops WebRTC leaks. Load [browserleaks.com/webrtc](https://browserleaks.com/webrtc) or [ipleak.net](https://ipleak.net) through your setup and confirm only the proxy IP appears. A single leak exposes your real location, ISP, and topology at once.
+
+## Related
+
+- [HTTP/HTTPS proxies](http-proxies.md): application-layer proxying in depth.
+- [SOCKS proxies](socks-proxies.md): session-layer, protocol-agnostic proxying (including the SOCKS5 UDP and authentication details).
+- [Proxy detection](proxy-detection.md): the signals that give a proxy away.
+- [Network fingerprinting](../fingerprinting/network-fingerprinting.md): how TCP/TLS/HTTP2 become a signature.
+- [Proxies](../../guides/proxies.md): the practical Pydoll setup.
 
 ## References
 
-- RFC 793: Transmission Control Protocol (TCP) - https://tools.ietf.org/html/rfc793
-- RFC 768: User Datagram Protocol (UDP) - https://tools.ietf.org/html/rfc768
-- RFC 8489: Session Traversal Utilities for NAT (STUN) - https://tools.ietf.org/html/rfc8489
-- RFC 8445: Interactive Connectivity Establishment (ICE) - https://tools.ietf.org/html/rfc8445
-- RFC 8656: Traversal Using Relays around NAT (TURN) - https://tools.ietf.org/html/rfc8656
-- RFC 6528: Defending Against Sequence Number Attacks - https://tools.ietf.org/html/rfc6528
-- RFC 9000: QUIC: A UDP-Based Multiplexed and Secure Transport - https://tools.ietf.org/html/rfc9000
-- W3C WebRTC 1.0: Real-Time Communication Between Browsers - https://www.w3.org/TR/webrtc/
-- BrowserLeaks: WebRTC Leak Test - https://browserleaks.com/webrtc
-- IPLeak: Comprehensive Leak Testing - https://ipleak.net
+- RFC 793 (TCP), RFC 768 (UDP), RFC 6528 (ISN randomization)
+- RFC 8489 (STUN), RFC 8445 (ICE), RFC 8656 (TURN)
+- RFC 9000 (QUIC), W3C WebRTC 1.0

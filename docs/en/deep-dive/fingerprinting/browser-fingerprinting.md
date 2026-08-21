@@ -1,13 +1,8 @@
-# Browser Fingerprinting
+# Browser fingerprinting
 
-Browser fingerprinting identifies clients by analyzing properties exposed through JavaScript APIs, HTTP headers, and rendering engines. Unlike network fingerprinting, which examines protocol-level signals from the OS kernel and TLS library, browser fingerprinting targets the application layer: the specific browser, its version, its configuration, and the hardware it runs on. These signals are accessible to any website through standard web APIs, and the combination of enough properties creates a fingerprint that is often unique across millions of visitors.
+Browser fingerprinting identifies clients by the properties they expose through JavaScript APIs, HTTP headers, and the rendering engine. Where [network fingerprinting](network-fingerprinting.md) examines protocol-level signals from the OS kernel and TLS library, browser fingerprinting targets the application layer: the specific browser, its version, its configuration, and the hardware it runs on. Any website can read these signals through standard web APIs, and the combination of enough of them creates a fingerprint that is often unique across millions of visitors.
 
-!!! info "Module Navigation"
-    - [Network Fingerprinting](./network-fingerprinting.md): TCP/IP, TLS, HTTP/2 protocol fingerprinting
-    - [Behavioral Fingerprinting](./behavioral-fingerprinting.md): Mouse, keyboard, scroll analysis
-    - [Evasion Techniques](./evasion-techniques.md): Practical countermeasures
-
-## JavaScript Navigator Properties
+## JavaScript navigator properties
 
 The `navigator` object is the richest single source of browser fingerprinting data. It exposes dozens of properties that reveal the browser, its capabilities, and the system it runs on. Detection systems collect these properties, cross-reference them against each other and against HTTP headers, and flag inconsistencies.
 
@@ -52,17 +47,17 @@ const fingerprint = {
 
 Several of these properties deserve individual attention because they carry more fingerprinting weight or are more commonly misconfigured by automation tools.
 
-### Platform and User-Agent Consistency
+### Platform and User-Agent consistency
 
 The `navigator.platform` property returns a string like `Win32`, `MacIntel`, or `Linux x86_64`. Detection systems compare this against the User-Agent header. If the HTTP User-Agent claims `Windows NT 10.0` but `navigator.platform` returns `Linux x86_64`, the mismatch is a strong signal. This is one of the most common mistakes in automation: setting a custom User-Agent via `--user-agent=` without also overriding the platform.
 
-### Hardware Properties
+### Hardware properties
 
 `navigator.hardwareConcurrency` returns the number of logical CPU cores. A value of 1 or 2 suggests a minimal VM or container rather than a real user's machine. `navigator.deviceMemory` reports approximate RAM in gigabytes (0.25, 0.5, 1, 2, 4, 8). This property is only available in Chromium browsers; Firefox and Safari return `undefined`. Both values should be consistent with the claimed device: a User-Agent claiming a modern desktop but reporting 1 core and 0.5 GB of RAM is suspicious.
 
-### WebDriver Property
+### WebDriver property
 
-The `navigator.webdriver` property is `true` when the browser is controlled by WebDriver-based automation (Selenium, Playwright in WebDriver mode). This is the single most obvious automation indicator. Pydoll uses CDP (Chrome DevTools Protocol) directly, which does not set this flag. In a Pydoll-controlled browser, `navigator.webdriver` is `undefined`, matching the behavior of a normal user session.
+The `navigator.webdriver` property is `true` when the browser is controlled by WebDriver-based automation (Selenium, Playwright in WebDriver mode). This is the single most obvious automation indicator. Modern Chrome defines the property as a getter that returns `false` in a normal session, and only flips it to `true` under automation flags. Pydoll drives Chrome through CDP without those flags, so `navigator.webdriver` reports `false`, the same as a normal user session. It is not `undefined`; an `undefined` value would itself be unusual and is not what Pydoll produces.
 
 ### Plugins
 
@@ -80,13 +75,13 @@ console.log(navigator.plugins.length); // 5
 
 A common misconception claims that modern browsers return empty arrays for `navigator.plugins`. This is incorrect. Returning an empty array is itself a detection signal that suggests headless mode or a non-browser HTTP client.
 
-### Screen and Window Dimensions
+### Screen and window dimensions
 
 The gap between `window.outerWidth`/`outerHeight` and `window.innerWidth`/`innerHeight` represents the browser chrome (toolbars, scrollbars, window frame). Headless browsers often report zero difference because they have no visible UI. Detection systems flag clients where `outerWidth` equals `innerWidth` as potentially headless. Similarly, `screen.width` matching `innerWidth` exactly suggests a maximized headless window rather than a normal desktop session.
 
 The `devicePixelRatio` varies by display: standard monitors report `1.0`, MacBook Retina displays report `2.0`, and smartphones report `2.0` to `3.0`. This value should be consistent with the claimed device in the User-Agent.
 
-## User-Agent Client Hints
+## User-Agent client hints
 
 Modern Chromium browsers (Chrome, Edge, Opera) supplement the traditional User-Agent string with Client Hints headers: `Sec-CH-UA`, `Sec-CH-UA-Platform`, `Sec-CH-UA-Mobile`, and (on request) higher-entropy values like `Sec-CH-UA-Full-Version-List`, `Sec-CH-UA-Arch`, and `Sec-CH-UA-Bitness`.
 
@@ -114,10 +109,10 @@ const highEntropy = await navigator.userAgentData.getHighEntropyValues([
 // {architecture: "x86", bitness: "64", platformVersion: "15.0.0", ...}
 ```
 
-!!! warning "Browser Support"
+!!! warning "Browser support"
     Client Hints are a Chromium-only feature. Firefox and Safari do not send `Sec-CH-UA` headers and do not expose `navigator.userAgentData`. If the User-Agent claims Firefox but the server receives Client Hints headers, the client is not Firefox.
 
-## Canvas Fingerprinting
+## Canvas fingerprinting
 
 Canvas fingerprinting exploits the fact that the HTML5 Canvas API produces subtly different pixel output across different combinations of GPU, graphics driver, OS, and browser. The variation comes from differences in font rasterization (sub-pixel rendering, hinting, anti-aliasing), GPU-specific shader execution, floating-point precision in the graphics pipeline, and OS-level text rendering libraries (DirectWrite on Windows, Core Text on macOS, FreeType on Linux).
 
@@ -152,14 +147,14 @@ The pangram "Cwm fjordbank glyphs vext quiz" is chosen because it uses unusual c
 
 Canvas fingerprinting is effective for distinguishing broad categories of devices, but its uniqueness is sometimes overstated. Research by Laperdrix et al. (2016) found that canvas fingerprints alone provide moderate distinguishing power, and their real value comes from combining with other signals (WebGL, navigator properties, timezone) to achieve high uniqueness.
 
-!!! note "Canvas Noise Injection"
+!!! note "Canvas noise injection"
     Some privacy tools inject random noise into canvas output to break fingerprinting. Detection systems counter this by requesting the canvas fingerprint multiple times in the same session. If the hash changes between requests, noise injection is present, which is itself a detection signal. Randomizing canvas output is therefore counterproductive: it does not prevent identification and it reveals the use of anti-fingerprinting tools.
 
 Since Pydoll controls a real Chrome instance with actual GPU rendering, the canvas fingerprint is authentic and consistent across repeated reads. No injection or spoofing is needed.
 
-## WebGL Fingerprinting
+## WebGL fingerprinting
 
-WebGL fingerprinting extends canvas fingerprinting into the 3D rendering pipeline. It is more powerful because it directly exposes hardware identifiers that are difficult to spoof.
+WebGL fingerprinting extends canvas fingerprinting into the 3D rendering pipeline. It is more revealing because it directly exposes hardware identifiers that are difficult to spoof.
 
 The most distinctive data comes from the `WEBGL_debug_renderer_info` extension, which reveals the GPU vendor and model:
 
@@ -193,7 +188,7 @@ The renderer string directly names the GPU hardware. A client claiming to be a m
 
 Beyond metadata, WebGL can render a 3D scene (a gradient triangle, for instance) and hash the pixel output, producing a render fingerprint analogous to canvas fingerprinting but in the 3D pipeline. The combination of GPU identifiers, supported extensions, parameter limits (`MAX_TEXTURE_SIZE`, `MAX_VIEWPORT_DIMS`), and shader precision formats creates a detailed fingerprint of the graphics stack.
 
-## AudioContext Fingerprinting
+## AudioContext fingerprinting
 
 The Web Audio API generates fingerprints by processing audio and measuring the output. The standard technique creates an `OscillatorNode`, routes it through a `DynamicsCompressorNode`, and reads the resulting audio samples from an `AnalyserNode` or `OfflineAudioContext`. Differences in audio processing implementations across browsers and OS audio stacks produce distinct output.
 
@@ -235,11 +230,11 @@ The Battery Status API (`navigator.getBattery()`) exposes the device's battery l
 
 This API is only available in Chromium browsers. Firefox removed it in version 52 (2017) citing privacy concerns, and Safari has never implemented it. Detection systems that see Battery API results from a client claiming to be Firefox or Safari know the client is misrepresenting its identity.
 
-## HTTP Header Fingerprinting
+## HTTP header fingerprinting
 
 Beyond JavaScript APIs, HTTP headers provide fingerprinting signals visible to the server before any JavaScript executes.
 
-### Header Order
+### Header order
 
 Browsers send HTTP headers in a consistent, version-specific order. Chrome places `Sec-CH-UA` headers early, before `User-Agent`. Firefox leads with `User-Agent` followed by `Accept` and `Accept-Language`. Automated HTTP libraries like Python's `requests` or `httpx` send headers in yet another order, typically starting with `Host` and `Connection`.
 
@@ -249,7 +244,7 @@ Detection systems record the order of the first 10-15 headers and compare agains
 
 Modern browsers support Brotli compression (`br`) in addition to `gzip` and `deflate`. Chrome also supports `zstd`. The `Accept-Encoding` for modern Chrome looks like `gzip, deflate, br, zstd`. A client claiming to be Chrome but missing Brotli is either outdated or automated.
 
-### Accept-Language Consistency
+### Accept-Language consistency
 
 The `Accept-Language` header should be consistent with `navigator.language`, `navigator.languages`, the timezone, and the IP geolocation. A request with `Accept-Language: en-US` from an IP in Tokyo with timezone `Asia/Tokyo` is plausible for a traveler but suspicious in combination with other signals. A request with `Accept-Language: zh-CN` and timezone `America/New_York` from a Chinese datacenter IP is a strong proxy indicator.
 
@@ -259,9 +254,16 @@ Because Pydoll drives a real Chromium browser through CDP, all browser-level fin
 
 The main risk in automation is inconsistency across layers. Setting a custom User-Agent without synchronizing related properties creates trivially detectable mismatches. Pydoll handles this automatically: when it detects `--user-agent=` in the browser arguments, it uses `Emulation.setUserAgentOverride` to synchronize the User-Agent string, platform, and full Client Hints metadata across all layers. It also injects `navigator.vendor` and `navigator.appVersion` overrides via `Page.addScriptToEvaluateOnNewDocument` to ensure consistency in newly opened tabs.
 
-For timezone and geolocation consistency (to match a proxy IP's location), Pydoll wraps the native `Emulation.setTimezoneOverride` and `Emulation.setGeolocationOverride` commands, and [`tab.apply_fingerprint()`](../../features/advanced/fingerprint-injection.md) applies them together with locale, User-Agent, and Client Hints from a single coherent profile. The `--lang` flag and `set_accept_languages()` configure language headers. The `webrtc_leak_protection` option prevents WebRTC from exposing the real IP behind a proxy.
+Language headers come from the `--lang` flag and `set_accept_languages()`, and `webrtc_leak_protection` stops WebRTC from exposing the real IP behind a proxy. Timezone and geolocation need to match the proxy IP's location and stay consistent with everything else; [`tab.apply_fingerprint()`](../../stealth/fingerprint-injection.md) applies them together with locale, User-Agent, and Client Hints from one coherent profile.
 
-The general principle is that Pydoll provides the authentic browser fingerprint as a baseline, and the developer only needs to ensure that the configurable layers (User-Agent, timezone, language, geolocation) are consistent with each other and with the proxy's characteristics.
+The principle is that Pydoll gives you the authentic browser fingerprint as a baseline, and you only need to keep the configurable layers (User-Agent, timezone, language, geolocation) consistent with each other and with the proxy.
+
+## Related
+
+- [Network fingerprinting](network-fingerprinting.md): the protocol layer beneath these APIs.
+- [Behavioral fingerprinting](behavioral-fingerprinting.md): how mouse, keyboard, and timing are analyzed.
+- [Evasion techniques](../../stealth/evasion-techniques.md): the practical levers you control.
+- [Fingerprint injection](../../stealth/fingerprint-injection.md): apply a coherent identity across every layer.
 
 ## References
 

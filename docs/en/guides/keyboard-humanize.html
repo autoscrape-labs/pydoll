@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Humanized typing playground</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+<style>
+  :root{
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;--panel2:#191c20;
+    --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
+    --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--pass:#35e0a1;--danger:#ff6b6b;
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
+  .widget{border:1px solid var(--line);padding:16px 18px}
+  .top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:13px}
+  .mode{font-family:var(--mono);font-size:12px;color:var(--dim)}
+  .lbl{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--faint);margin-bottom:6px}
+  .src{width:100%;font-family:var(--mono);font-size:13px;color:var(--ink);background:var(--bg2);border:1px solid var(--line2);padding:9px 12px;outline:none}
+  .src:focus{border-color:var(--indigo)}
+  .field{margin-top:14px;min-height:44px;display:flex;align-items:center;gap:1px;background:var(--panel);border:1px solid var(--line2);padding:11px 13px;font-family:var(--mono);font-size:14px}
+  .field .typed{white-space:pre-wrap;word-break:break-word}
+  .field .typed:empty::after{content:'Pydoll types here';color:var(--faint);font-style:italic;font-size:12.5px}
+  .field .typed .typo{color:var(--danger)}
+  .caret{width:1.5px;height:17px;background:var(--indigo);display:inline-block;animation:blink 1s step-end infinite}
+  @keyframes blink{50%{opacity:0}}
+  .rhythm{margin-top:14px;height:46px;display:flex;align-items:flex-end;gap:3px;overflow:hidden;border-bottom:1px solid var(--line);padding-bottom:1px}
+  .bar{width:5px;flex:0 0 5px;background:var(--indigo);opacity:.75;transition:height .05s}
+  .bar.typo{background:var(--danger);opacity:.9}
+  .rhythm-lbl{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:6px}
+  .controls{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:center}
+  button{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:8px 12px;cursor:pointer;transition:.15s}
+  button:hover{border-color:var(--indigo);color:#fff}
+  button.active{background:rgba(110,123,255,.14);border-color:var(--indigo);color:#fff}
+  button:disabled{opacity:.5;cursor:default}
+  .caption{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-left:auto;min-height:16px;text-align:right}
+  .caption b{color:var(--pass);font-weight:500}
+  @media (prefers-reduced-motion:reduce){.caret{animation:none}}
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="top"><div class="mode" id="mode">Type anything, then watch Pydoll type it back. Each run is different.</div></div>
+
+  <div class="lbl">your text</div>
+  <input class="src" id="src" value="web scraping is fun" maxlength="42" spellcheck="false" />
+
+  <div class="field"><span class="typed" id="typed"></span><span class="caret"></span></div>
+  <div class="rhythm" id="rhythm"></div>
+  <div class="rhythm-lbl">delay between keystrokes</div>
+
+  <div class="controls">
+    <button id="human">Type it (humanize=True)</button>
+    <button id="fixed">Type it (fixed 50ms)</button>
+    <span class="caption" id="caption"></span>
+  </div>
+</div>
+
+<script>
+(function(){
+  var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  var src=document.getElementById('src'),typed=document.getElementById('typed'),rhythm=document.getElementById('rhythm');
+  var mode=document.getElementById('mode'),caption=document.getElementById('caption');
+  var hBtn=document.getElementById('human'),fBtn=document.getElementById('fixed');
+  var timers=[],busy=false;
+
+  function rand(a,b){return a+Math.random()*(b-a);}
+  function wrongKey(c){ var n='abcdefghijklmnopqrstuvwxyz'.replace(c.toLowerCase(),''); return n[Math.floor(Math.random()*n.length)]; }
+  function render(cur,typoCh){
+    typed.textContent=cur;
+    if(typoCh){ var s=document.createElement('span'); s.className='typo'; s.textContent=typoCh; typed.appendChild(s); }
+  }
+  function addBar(ms,typo){
+    var b=document.createElement('div'); b.className='bar'+(typo?' typo':'');
+    var h=Math.max(6,Math.min(42,(ms-30)/170*40+8)); b.style.height=h+'px';
+    rhythm.appendChild(b);
+  }
+  function reset(){ timers.forEach(clearTimeout);timers=[]; typed.textContent='';rhythm.innerHTML='';caption.innerHTML=''; }
+
+  function buildActions(text,human){
+    var acts=[],typos=0;
+    for(var i=0;i<text.length;i++){
+      var c=text[i];
+      if(human && c!==' ' && Math.random()<0.06){
+        acts.push({k:'typo',ch:wrongKey(c),wait:rand(70,150)});
+        acts.push({k:'del',wait:rand(180,300)});
+        typos++;
+      }
+      acts.push({k:'char',ch:c,wait:human?rand(45,180):50});
+    }
+    return {acts:acts,typos:typos};
+  }
+  function run(human){
+    if(busy)return; var text=src.value; if(!text){return;}
+    busy=true;hBtn.disabled=true;fBtn.disabled=true;reset();
+    hBtn.classList.toggle('active',human);fBtn.classList.toggle('active',!human);
+    mode.textContent = human ? 'humanize=True: variable rhythm, with occasional corrected typos' : 'no humanize: a flat, fixed 50ms rhythm, a timing fingerprint';
+    var built=buildActions(text,human),acts=built.acts,cur='',i=0,t0=performance.now();
+    function step(){
+      if(i>=acts.length){
+        var secs=((performance.now()-t0)/1000).toFixed(1);
+        caption.innerHTML = human
+          ? 'typed <b>'+text.length+'</b> chars in <b>'+secs+'s</b>, '+built.typos+' corrected typo'+(built.typos===1?'':'s')
+          : 'typed <b>'+text.length+'</b> chars in <b>'+secs+'s</b>, every gap identical';
+        busy=false;hBtn.disabled=false;fBtn.disabled=false;return;
+      }
+      var a=acts[i++];var wait=reduce?0:a.wait;
+      if(a.k==='char'){ cur+=a.ch; render(cur); addBar(a.wait,false); }
+      else if(a.k==='typo'){ render(cur,a.ch); addBar(a.wait,true); }
+      else if(a.k==='del'){ render(cur); }
+      timers.push(setTimeout(step,wait));
+    }
+    step();
+  }
+  hBtn.addEventListener('click',function(){run(true);});
+  fBtn.addEventListener('click',function(){run(false);});
+})();
+</script>
+<script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>
+</body>
+</html>

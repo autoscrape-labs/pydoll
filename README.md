@@ -24,7 +24,7 @@
 
 
 
-**Pydoll is a stealth-first browser automation library for Python.** It talks straight to the Chrome DevTools Protocol over WebSocket, so there's no WebDriver binary and no `navigator.webdriver` flag to give you away. It clicks, types, and scrolls like a real person, which is often enough to sail through the bot-protection that stops ordinary automation cold. All of it behind a clean, async-native, fully typed API.
+**Pydoll is a stealth-first browser automation library for Python.** It talks straight to the Chrome DevTools Protocol over WebSocket, so there's no WebDriver binary and no `navigator.webdriver` flag to give you away. It clicks, types, and scrolls like a real person, which is often enough to get past the bot protection that blocks ordinary automation. All behind an async-native, fully typed API.
 
 <div align="center">
   <h3>Be a good human, give it a star ⭐</h3>
@@ -33,11 +33,11 @@
 
 ### Why Pydoll?
 
-- **Native fingerprint injection**: Make the browser report a fully consistent identity with [`tab.apply_fingerprint()`](#2-fingerprint-injection): User-Agent, Client Hints, `navigator`, WebGL, canvas, screen, fonts, timezone and locale, all aligned. The injected overrides survive `toString` and prototype introspection and propagate into Web Workers, with **zero detections** across CreepJS, SannySoft, BrowserScan and BrowserLeaks.
-- **Looks human, not like a bot**: Human-like [mouse movement](https://pydoll.tech/docs/features/automation/mouse-control/) (Bezier curves), realistic typing, and scroll physics. Enough to pass behavioral challenges like Cloudflare Turnstile or reCAPTCHA v3, depending on your browser and IP reputation.
+- **Native fingerprint injection**: Make the browser report a fully consistent identity with [`tab.apply_fingerprint()`](#2-fingerprint-injection): User-Agent, Client Hints, `navigator`, WebGL, canvas, screen, fonts, timezone and locale, all aligned. The injected overrides survive `toString` and prototype introspection and propagate into Web Workers, so lie-detection checks like CreepJS's don't flag them.
+- **Looks human, not like a bot**: Human-like [mouse movement](https://pydoll.tech/docs/features/automation/mouse-control/) (Bezier curves), realistic typing, and scroll physics. Often enough to pass behavioral challenges like Cloudflare Turnstile or reCAPTCHA v3, depending on your browser and IP reputation.
 - **Zero WebDrivers**: A direct CDP connection over WebSocket. No driver binary, no `navigator.webdriver` flag, no version-matching headaches.
 - **Stealth built in**: Realistic interactions plus granular [browser preference](https://pydoll.tech/docs/features/configuration/browser-preferences/) control for fingerprint management.
-- **Async and typed**: Built on `asyncio` from the ground up, 100% type-checked with `mypy`. Full IDE autocompletion and static error checking.
+- **Async and typed**: Built on `asyncio`, type-checked with `mypy`. Full IDE autocompletion and static error checking.
 - **Network control**: [Intercept](https://pydoll.tech/docs/features/network/interception/) requests to block ads/trackers, [monitor](https://pydoll.tech/docs/features/network/monitoring/) traffic for API discovery, and make [authenticated HTTP requests](https://pydoll.tech/docs/features/network/http-requests/) that inherit the browser session.
 - **Shadow DOM and iframes**: Full support for [shadow roots](https://pydoll.tech/docs/deep-dive/architecture/shadow-dom/) (including closed) and cross-origin iframes. Discover, query, and interact with elements inside them using the same API.
 - **Structured extraction**: Define a [Pydantic](https://docs.pydantic.dev/) model, call `tab.extract()`, and get typed, validated data back. No manual element-by-element querying.
@@ -162,11 +162,11 @@ asyncio.run(google_search('pydoll site:github.com'))
 
 ### 2. Fingerprint Injection
 
-Beyond acting human, Pydoll can make the browser *report* a different, fully consistent identity. `tab.apply_fingerprint()` overrides the whole surface fingerprinting scripts read (User-Agent and Client Hints, `navigator`, WebGL, canvas, screen, fonts, timezone and locale) and aligns every layer so the browser tells one coherent story.
+Beyond acting human, Pydoll can make the browser *report* a different, fully consistent identity. `tab.apply_fingerprint()` overrides the whole surface fingerprinting scripts read (User-Agent and Client Hints, `navigator`, WebGL, canvas, screen, fonts, timezone and locale) and aligns those layers so the browser tells one coherent story.
 
-The hard part of spoofing a fingerprint is not changing the values, it is not getting caught changing them. Modern anti-bot scripts inspect *how* a property was defined: a naive `Object.defineProperty` leaves a fake `toString`, an own-property where a prototype getter should be, or an override that a phantom `iframe` or a Web Worker can see straight through. Pydoll resolves all of this: injected getters are indistinguishable from native ones under `toString` and prototype introspection, and the same identity is replayed inside dedicated, shared and service workers.
+The hard part of spoofing a fingerprint is not changing the values, it is not getting caught changing them. Modern anti-bot scripts inspect *how* a property was defined: a naive `Object.defineProperty` leaves a fake `toString`, an own-property where a prototype getter should be, or an override that a phantom `iframe` or a Web Worker can see straight through. Pydoll handles all of this: injected getters read as native under `toString` and prototype introspection, and the same identity is replayed inside dedicated, shared and service workers.
 
-It also neutralizes the classic **headless** tells (most importantly the SwiftShader WebGL renderer that gives away a GPU-less browser), so `headless=True` automation is no longer flagged as headless. That is what lets a plain Google search run in headless mode without being blocked. (Cloudflare Turnstile in headless is still under study.)
+It also neutralizes the classic **headless** tells (most importantly the SwiftShader WebGL renderer that gives away a GPU-less browser), so `headless=True` is no longer an automatic giveaway. That is what lets a plain Google search run in headless mode. (Cloudflare Turnstile in headless is still under study.)
 
 ```python
 import asyncio
@@ -189,7 +189,7 @@ async def spoof_fingerprint():
 asyncio.run(spoof_fingerprint())
 ```
 
-Verified with **zero detections** across the major fingerprint and bot-detection suites:
+In our testing it passed each of these fingerprint and bot-detection suites without being flagged:
 
 | Test site | What it checks | Result |
 | --- | --- | --- |

@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Humanized mouse movement</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+<style>
+  :root{
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;
+    --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
+    --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--pass:#35e0a1;--danger:#ff6b6b;
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
+  .widget{border:1px solid var(--line);padding:16px 18px}
+  .top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:12px}
+  .mode{font-family:var(--mono);font-size:12px;color:var(--dim)}
+  .badge{font-family:var(--mono);font-size:11px;color:var(--faint)}
+  .badge b{color:var(--ink);font-weight:500}
+  .stage{width:100%;height:170px;border:1px solid var(--line);background:var(--bg2);display:block}
+  .pathH{fill:none;stroke:var(--pass);stroke-width:1.5;opacity:.25;transition:opacity .3s;stroke-dasharray:none}
+  .pathB{fill:none;stroke:var(--danger);stroke-width:1.5;opacity:.25;stroke-dasharray:4 5;transition:opacity .3s}
+  .on-h .pathH{opacity:.9} .on-b .pathB{opacity:.9}
+  .start{fill:var(--faint)}
+  .target{fill:none;stroke:var(--line2);stroke-width:1.5}
+  .target-lbl{fill:var(--dim);font-family:"Chivo",sans-serif;font-weight:700;font-size:12px}
+  .hit .target{stroke:var(--pass)} .hit .target-lbl{fill:var(--ink)}
+  .cur{opacity:0}
+  .cur path{fill:var(--ink);stroke:#000;stroke-width:.6}
+  .ripple{fill:none;stroke:var(--pass);stroke-width:2;opacity:0}
+  .ripple.go{animation:rip .5s ease-out}
+  @keyframes rip{0%{opacity:.9;r:4}100%{opacity:0;r:26}}
+  .controls{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:center}
+  button{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:8px 12px;cursor:pointer;transition:.15s}
+  button:hover{border-color:var(--indigo);color:#fff}
+  button.active{background:rgba(110,123,255,.14);border-color:var(--indigo);color:#fff}
+  button:disabled{opacity:.5;cursor:default}
+  .caption{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-left:auto;min-height:16px}
+  .caption b.h{color:var(--pass)} .caption b.b{color:var(--danger)}
+  @media (prefers-reduced-motion:reduce){.cur{transition:none}}
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="top">
+    <div class="mode" id="mode">Detection watches how the cursor moves, not just where it clicks.</div>
+    <div class="badge">clicks landed: <b id="count">0</b></div>
+  </div>
+
+  <svg class="stage" id="stage" viewBox="0 0 460 170" preserveAspectRatio="xMidYMid meet">
+    <path id="pathH" class="pathH" d="M40 128 C 150 24, 300 150, 388 66" />
+    <path id="pathB" class="pathB" d="M40 128 L 388 66" />
+    <circle class="start" cx="40" cy="128" r="4" />
+    <g id="tgt">
+      <rect class="target" x="352" y="46" width="76" height="40" />
+      <text class="target-lbl" x="390" y="71" text-anchor="middle">Submit</text>
+    </g>
+    <circle class="ripple" id="ripple" cx="390" cy="66" r="4" />
+    <g class="cur" id="curH"><path d="M0 0 L0 17 L4.6 12.6 L7.3 18.6 L9.4 17.7 L6.7 11.7 L12 11.5 Z" />
+      <animateMotion id="mmH" begin="indefinite" dur="1.35s" fill="freeze"><mpath href="#pathH"/></animateMotion></g>
+    <g class="cur" id="curB"><path d="M0 0 L0 17 L4.6 12.6 L7.3 18.6 L9.4 17.7 L6.7 11.7 L12 11.5 Z" />
+      <animateMotion id="mmB" begin="indefinite" dur="0.13s" fill="freeze"><mpath href="#pathB"/></animateMotion></g>
+  </svg>
+
+  <div class="controls">
+    <button id="human">Click (humanize=True)</button>
+    <button id="bot">Click (instant)</button>
+    <span class="caption" id="caption"></span>
+  </div>
+</div>
+
+<script>
+(function(){
+  var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  var stage=document.getElementById('stage'),tgt=document.getElementById('tgt'),ripple=document.getElementById('ripple');
+  var curH=document.getElementById('curH'),curB=document.getElementById('curB'),mmH=document.getElementById('mmH'),mmB=document.getElementById('mmB');
+  var mode=document.getElementById('mode'),caption=document.getElementById('caption'),count=document.getElementById('count');
+  var hBtn=document.getElementById('human'),bBtn=document.getElementById('bot');
+  var n=0,busy=false,timers=[];
+
+  function land(kind){
+    tgt.classList.add('hit');
+    ripple.classList.remove('go'); void ripple.getBBox(); ripple.classList.add('go');
+    n+=1; count.textContent=n;
+    caption.innerHTML = kind==='h'
+      ? '<b class="h">humanize=True</b>: a curved path with human timing before the click.'
+      : '<b class="b">instant</b>: a straight teleport to the exact center, a behavioral tell.';
+    timers.push(setTimeout(function(){tgt.classList.remove('hit');busy=false;hBtn.disabled=false;bBtn.disabled=false;},650));
+  }
+  function reset(){ timers.forEach(clearTimeout);timers=[]; curH.setAttribute('opacity','0');curB.setAttribute('opacity','0'); stage.classList.remove('on-h','on-b'); ripple.classList.remove('go'); }
+
+  function runHuman(){
+    if(busy)return;busy=true;hBtn.disabled=true;bBtn.disabled=true;reset();
+    hBtn.classList.add('active');bBtn.classList.remove('active');
+    mode.textContent='humanized: the cursor curves toward the target with a human rhythm';
+    stage.classList.add('on-h'); curH.setAttribute('opacity','1');
+    if(reduce){ land('h'); return; }
+    try{ mmH.beginElement(); }catch(e){}
+    timers.push(setTimeout(function(){land('h');},1350));
+  }
+  function runBot(){
+    if(busy)return;busy=true;hBtn.disabled=true;bBtn.disabled=true;reset();
+    bBtn.classList.add('active');hBtn.classList.remove('active');
+    mode.textContent='robotic: the cursor jumps straight to the exact center, instantly';
+    stage.classList.add('on-b'); curB.setAttribute('opacity','1');
+    if(reduce){ land('b'); return; }
+    try{ mmB.beginElement(); }catch(e){}
+    timers.push(setTimeout(function(){land('b');},150));
+  }
+  hBtn.addEventListener('click',runHuman);
+  bBtn.addEventListener('click',runBot);
+})();
+</script>
+<script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>
+</body>
+</html>

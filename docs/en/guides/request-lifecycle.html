@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>What happens to an intercepted request</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+<style>
+  :root{
+    --bg:#0c0d0f; --bg2:#0f1113; --panel:#141618; --code:#14161a;
+    --line:rgba(244,245,247,.10); --line2:rgba(244,245,247,.18);
+    --ink:#f4f5f7; --dim:#9aa2ad; --faint:#5b6570;
+    --indigo:#6e7bff; --indigo2:#8f99ff; --pass:#35e0a1; --danger:#ff6b6b;
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px}
+  .widget{border:1px solid var(--line);padding:18px 20px 20px}
+
+  .flow{position:relative;display:grid;grid-template-columns:repeat(3,1fr);align-items:center;height:96px}
+  .conn{position:absolute;top:50%;height:2px;background:var(--line2);transform:translateY(-50%);z-index:0;transition:background .3s}
+  .conn.on{background:var(--indigo)} .conn.ok{background:var(--pass)} .conn.off{opacity:.3}
+  #c1{left:16.667%;width:33.333%} #c2{left:50%;width:33.333%}
+
+  .packet{position:absolute;left:0;top:50%;width:12px;height:12px;margin-left:-6px;border-radius:50%;
+    background:var(--indigo);box-shadow:0 0 0 4px rgba(110,123,255,.16),0 0 12px 2px rgba(110,123,255,.55);
+    transform:translate(0,-50%);z-index:2;
+    transition:transform .6s cubic-bezier(.4,0,.2,1),background .25s,box-shadow .25s,opacity .3s}
+  .packet.resp{background:var(--pass);box-shadow:0 0 0 4px rgba(53,224,161,.16),0 0 12px 2px rgba(53,224,161,.55)}
+  .packet.blocked{background:var(--danger);box-shadow:0 0 0 4px rgba(255,107,107,.16),0 0 12px 2px rgba(255,107,107,.55)}
+  .packet.gone{opacity:0}
+
+  .node{position:relative;z-index:1;justify-self:center;width:118px;text-align:center;
+    border:1px solid var(--line2);background:var(--bg);color:var(--dim);padding:12px 10px;
+    transition:border-color .3s,color .3s,background .3s,opacity .3s}
+  .node .ic{display:grid;place-items:center;height:22px;color:var(--faint);transition:color .3s}
+  .node .ic svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .node .cap{font-family:var(--sans);font-weight:700;font-size:12.5px;margin-top:7px;letter-spacing:-.01em}
+  .node.on{border-color:var(--indigo);color:var(--ink)} .node.on .ic{color:var(--indigo)}
+  .node.paused{border-color:var(--indigo);color:var(--ink);animation:pulse 1.5s infinite} .node.paused .ic{color:var(--indigo)}
+  .node.ok{border-color:var(--pass);color:var(--ink)} .node.ok .ic{color:var(--pass)}
+  .node.mock{border-color:var(--pass);color:var(--ink)} .node.mock .ic{color:var(--pass)}
+  .node.blocked{border-color:var(--danger);color:var(--danger)} .node.blocked .ic{color:var(--danger)}
+  .node.off{opacity:.36}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(110,123,255,.5)}70%{box-shadow:0 0 0 8px rgba(110,123,255,0)}100%{box-shadow:0 0 0 0 rgba(110,123,255,0)}}
+  .node .xb{position:absolute;top:-8px;right:-8px;width:18px;height:18px;background:var(--danger);color:#0a0b16;
+    display:grid;place-items:center;font-family:var(--mono);font-size:11px;font-weight:600;opacity:0;transform:scale(.4);transition:.2s}
+  .node.blocked .xb{opacity:1;transform:scale(1)}
+
+  .status{border:1px solid var(--line);background:var(--panel);padding:11px 14px;font-size:13px;color:var(--dim);
+    min-height:44px;margin:16px 0 13px;line-height:1.55}
+  .status code{font-family:var(--mono);font-size:.84em;color:var(--ink);background:var(--code);border:1px solid var(--line);padding:1px 5px}
+  .status b.go{color:var(--indigo2)} .status b.stop{color:var(--danger)} .status b.mock{color:var(--pass)}
+
+  .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  button{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink);background:var(--panel);
+    border:1px solid var(--line2);padding:8px 12px;cursor:pointer;transition:.15s}
+  button:hover{border-color:var(--indigo);color:#fff}
+  button.active{background:rgba(110,123,255,.14);border-color:var(--indigo);color:#fff}
+  button.replay{margin-left:auto;color:var(--dim);border-style:dashed}
+  button.replay[hidden]{display:none}
+
+  .code{margin:14px 0 0;border:1px solid var(--line);background:var(--bg2);padding:13px 15px;
+    font-family:var(--mono);font-size:12px;line-height:1.75;color:var(--ink);overflow-x:auto;white-space:pre;min-height:64px}
+  .code .kw{color:#b3a0ff} .code .fn{color:#7fb4ff} .code .st{color:var(--pass)} .code .cm{color:var(--faint)}
+
+  @media (prefers-reduced-motion:reduce){
+    .packet,.node,.conn{transition:none!important;animation:none!important}
+  }
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="flow" id="flow">
+    <div class="conn" id="c1"></div>
+    <div class="conn" id="c2"></div>
+    <div class="packet" id="packet"></div>
+    <div class="node" id="nPage">
+      <div class="ic"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
+      <div class="cap">Page</div>
+    </div>
+    <div class="node" id="nHandler">
+      <span class="xb">✕</span>
+      <div class="ic"><svg viewBox="0 0 24 24"><path d="M3 4h18l-7 8v6l-4 2v-8z"/></svg></div>
+      <div class="cap">Your handler</div>
+    </div>
+    <div class="node" id="nServer">
+      <div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="7"/><rect x="3" y="13" width="18" height="7"/><line x1="7" y1="7.5" x2="7.01" y2="7.5"/><line x1="7" y1="16.5" x2="7.01" y2="16.5"/></svg></div>
+      <div class="cap">Server</div>
+    </div>
+  </div>
+
+  <div class="status" id="status">A request to <code>/api/data</code> is paused at your handler. Choose how to resolve it.</div>
+
+  <div class="controls">
+    <button data-act="continue" id="bCont">continue_request()</button>
+    <button data-act="fail" id="bFail">fail_request()</button>
+    <button data-act="fulfill" id="bFul">fulfill_request()</button>
+    <button class="replay" id="bReplay" hidden>↻ replay</button>
+  </div>
+
+  <pre class="code" id="code"><span class="cm"># a request is paused, pick a resolver above</span></pre>
+</div>
+
+<script>
+(function(){
+  var flow=document.getElementById('flow'), packet=document.getElementById('packet');
+  var nPage=document.getElementById('nPage'), nHandler=document.getElementById('nHandler'), nServer=document.getElementById('nServer');
+  var c1=document.getElementById('c1'), c2=document.getElementById('c2');
+  var status=document.getElementById('status'), code=document.getElementById('code');
+  var bCont=document.getElementById('bCont'), bFail=document.getElementById('bFail'), bFul=document.getElementById('bFul'), bReplay=document.getElementById('bReplay');
+  var reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
+  var busy=false, at='page';
+
+  var CODE={
+    continue:'<span class="kw">await</span> tab.<span class="fn">continue_request</span>(request_id)\n<span class="cm"># or modify it on the way:</span>\n<span class="kw">await</span> tab.<span class="fn">continue_request</span>(request_id, headers=headers)',
+    fail:'<span class="kw">from</span> pydoll.protocol.network.types <span class="kw">import</span> ErrorReason\n\n<span class="kw">await</span> tab.<span class="fn">fail_request</span>(request_id, ErrorReason.BLOCKED_BY_CLIENT)',
+    fulfill:'<span class="kw">await</span> tab.<span class="fn">fulfill_request</span>(\n    request_id, response_code=<span class="st">200</span>,\n    body=<span class="st">\'{"ok": true}\'</span>,\n)'
+  };
+  var MSG={
+    paused:'A request to <code>/api/data</code> is paused at your handler. Choose how to resolve it.',
+    continue:'<b class="go">continue_request()</b> forwards it to the server, and the page gets the real response. Pass <code>url=</code> or <code>headers=</code> to modify it on the way.',
+    fail:'<b class="stop">fail_request()</b> drops it at your handler with <code>BLOCKED_BY_CLIENT</code>. The server is never contacted. Great for killing images, trackers and ads.',
+    fulfill:'<b class="mock">fulfill_request()</b> answers from your handler with a mock response. The server is never contacted, and the page receives your body.'
+  };
+
+  function cx(which){ var w=flow.clientWidth; return which==='page'? w/6 : which==='handler'? w/2 : w*5/6; }
+  var sleep=function(ms){ return new Promise(function(r){ setTimeout(r, reduce?0:ms); }); };
+  function placeAt(which){ at=which; packet.style.transitionDuration='0ms'; packet.style.transform='translate('+cx(which)+'px,-50%)'; }
+  function moveTo(which, ms){ at=which; packet.style.transitionDuration=(reduce?0:ms)+'ms'; packet.style.transform='translate('+cx(which)+'px,-50%)'; return sleep(ms); }
+
+  function setNode(n, cls){ n.className='node'+(cls?(' '+cls):''); }
+  function clearAll(){ setNode(nPage); setNode(nHandler); setNode(nServer); c1.className='conn'; c2.className='conn'; packet.className='packet'; packet.style.opacity=''; }
+  function setBtn(act){ [bCont,bFail,bFul].forEach(function(b){ b.classList.toggle('active', b.dataset.act===act); }); }
+
+  async function toPaused(instant){
+    clearAll(); setBtn(null); bReplay.hidden=true;
+    setNode(nPage,'on'); c1.classList.add('on');
+    if(instant){ placeAt('handler'); }
+    else { placeAt('page'); await sleep(220); await moveTo('handler', 640); }
+    setNode(nHandler,'paused');
+    status.innerHTML=MSG.paused;
+    code.innerHTML='<span class="cm"># a request is paused, pick a resolver above</span>';
+  }
+
+  async function runContinue(){
+    if(busy) return; busy=true; setBtn('continue');
+    clearAll(); setNode(nPage,'on'); c1.classList.add('on'); placeAt('handler'); setNode(nHandler,'on');
+    await sleep(120);
+    c2.classList.add('on'); await moveTo('server', 560); setNode(nServer,'on');
+    await sleep(220);
+    packet.classList.add('resp'); c1.classList.remove('on'); c1.classList.add('ok'); c2.classList.remove('on'); c2.classList.add('ok');
+    await moveTo('handler', 480); await moveTo('page', 480); setNode(nPage,'ok');
+    finish('continue');
+  }
+  async function runFail(){
+    if(busy) return; busy=true; setBtn('fail');
+    clearAll(); setNode(nPage,'on'); c1.classList.add('on'); placeAt('handler');
+    setNode(nHandler,'blocked'); packet.classList.add('blocked'); c2.classList.add('off'); setNode(nServer,'off');
+    await sleep(520); packet.classList.add('gone');
+    finish('fail');
+  }
+  async function runFulfill(){
+    if(busy) return; busy=true; setBtn('fulfill');
+    clearAll(); setNode(nPage,'on'); c1.classList.add('on'); placeAt('handler');
+    c2.classList.add('off'); setNode(nServer,'off'); setNode(nHandler,'mock');
+    await sleep(160);
+    packet.classList.add('resp'); c1.classList.remove('on'); c1.classList.add('ok');
+    await moveTo('page', 560); setNode(nPage,'ok');
+    finish('fulfill');
+  }
+  function finish(kind){ status.innerHTML=MSG[kind]; code.innerHTML=CODE[kind]; bReplay.hidden=false; busy=false; }
+
+  bCont.addEventListener('click', runContinue);
+  bFail.addEventListener('click', runFail);
+  bFul.addEventListener('click', runFulfill);
+  bReplay.addEventListener('click', function(){ if(!busy) toPaused(false); });
+
+  var rt;
+  window.addEventListener('resize', function(){ clearTimeout(rt); rt=setTimeout(function(){ if(!busy) packet.style.transform='translate('+cx(at)+'px,-50%)'; }, 120); });
+
+  // intro: request arrives and pauses at the handler
+  placeAt('page');
+  toPaused(false);
+})();
+</script>
+<script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>
+</body>
+</html>

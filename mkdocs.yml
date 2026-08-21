@@ -8,72 +8,64 @@ docs_dir: docs
 # Configuração da navegação
 nav:
   - Pydoll: index.md
-  - Features:
-      - Overview: features/index.md
-      - Core Concepts: features/core-concepts.md
-      - Element Finding: features/element-finding.md
-      - Data Extraction:
-          - Structured Extraction: features/extraction/structured-extraction.md
-      - Automation:
-          - Human-Like Interactions: features/automation/human-interactions.md
-          - Keyboard Control: features/automation/keyboard-control.md
-          - Mouse Control: features/automation/mouse-control.md
-          - File Operations: features/automation/file-operations.md
-          - IFrames: features/automation/iframes.md
-          - Screenshots & PDF: features/automation/screenshots-and-pdfs.md
+  - Getting Started:
+      - Installation: getting-started.md
+      - Your first automation: first-automation.md
+      - Migrating from Selenium & Playwright: migrating.md
+  - Basics:
+      - Async Python in practice: basics/async-python.md
+      - Selectors, CSS and XPath: basics/selectors.md
+  - Guides:
+      - Overview: guides/index.md
+      - Core concepts: guides/core-concepts.md
+      - Finding and extracting:
+          - Element finding: guides/element-finding.md
+          - DOM traversal: guides/dom-traversal.md
+          - Structured extraction: guides/structured-extraction.md
+      - Interacting:
+          - Keyboard: guides/keyboard.md
+          - Mouse: guides/mouse.md
+          - File operations: guides/file-operations.md
+          - Iframes: guides/iframes.md
+          - Screenshots and PDFs: guides/screenshots-and-pdfs.md
       - Network:
-          - Network Monitoring: features/network/monitoring.md
-          - Request Interception: features/network/interception.md
-          - Browser-Context HTTP Requests: features/network/http-requests.md
-          - HAR Network Recording: features/network/network-recording.md
-      - Browser Management:
-          - Multi-Tab Management: features/browser-management/tabs.md
-          - Browser Contexts: features/browser-management/contexts.md
-          - Cookies & Sessions: features/browser-management/cookies-sessions.md
-      - Configuration:
-          - Browser Options: features/configuration/browser-options.md
-          - Browser Preferences: features/configuration/browser-preferences.md
-          - Proxy Configuration: features/configuration/proxy.md
-      - Advanced:
-          - Fingerprint Injection: features/advanced/fingerprint-injection.md
-          - Behavioral Captcha Bypass: features/advanced/behavioral-captcha-bypass.md
-          - Event System: features/advanced/event-system.md
-          - Remote Connections: features/advanced/remote-connections.md
-          - Retry Decorator: features/advanced/decorators.md
+          - Network monitoring: guides/network-monitoring.md
+          - Request interception: guides/request-interception.md
+          - Browser-context HTTP requests: guides/http-requests.md
+          - HAR recording: guides/network-recording.md
+      - Managing the browser:
+          - Tabs: guides/tabs.md
+          - Browser contexts: guides/browser-contexts.md
+          - Cookies and sessions: guides/cookies-and-sessions.md
+          - Browser options: guides/browser-options.md
+          - Browser preferences: guides/browser-preferences.md
+          - Proxies: guides/proxies.md
+          - Remote connections: guides/remote-connections.md
+      - Reacting to events:
+          - Events: guides/events.md
+          - Retrying: guides/retrying.md
+  - Stealth:
+      - Overview: stealth/index.md
+      - Evasion techniques: stealth/evasion-techniques.md
+      - Human-like interactions: stealth/human-like-interactions.md
+      - Captcha bypass: stealth/captcha-bypass.md
+      - Fingerprint injection: stealth/fingerprint-injection.md
   - Deep Dive:
       - Overview: deep-dive/index.md
-      - Core Fundamentals:
-          - Overview: deep-dive/fundamentals/index.md
-          - Chrome DevTools Protocol: deep-dive/fundamentals/cdp.md
-          - Connection Layer: deep-dive/fundamentals/connection-layer.md
-          - Python Type System: deep-dive/fundamentals/typing-system.md
-          - Iframes & Contexts: deep-dive/fundamentals/iframes-and-contexts.md
-      - Internal Architecture:
-          - Overview: deep-dive/architecture/index.md
-          - Browser Domain: deep-dive/architecture/browser-domain.md
-          - Tab Domain: deep-dive/architecture/tab-domain.md
-          - WebElement Domain: deep-dive/architecture/webelement-domain.md
-          - FindElements Mixin: deep-dive/architecture/find-elements-mixin.md
-          - Event Architecture: deep-dive/architecture/event-architecture.md
-          - Browser Requests Architecture: deep-dive/architecture/browser-requests-architecture.md
-          - Shadow DOM: deep-dive/architecture/shadow-dom.md
-      - Network & Security:
+      - Chrome DevTools Protocol: deep-dive/cdp.md
+      - Network & proxies:
           - Overview: deep-dive/network/index.md
-          - Network Fundamentals: deep-dive/network/network-fundamentals.md
-          - HTTP/HTTPS Proxies: deep-dive/network/http-proxies.md
-          - SOCKS Proxies: deep-dive/network/socks-proxies.md
-          - Proxy Detection: deep-dive/network/proxy-detection.md
-          - Building Proxy Servers: deep-dive/network/build-proxy.md
-          - Legal & Ethical: deep-dive/network/proxy-legal.md
+          - Network fundamentals: deep-dive/network/network-fundamentals.md
+          - HTTP/HTTPS proxies: deep-dive/network/http-proxies.md
+          - SOCKS proxies: deep-dive/network/socks-proxies.md
+          - Proxy detection: deep-dive/network/proxy-detection.md
+          - Building a proxy server: deep-dive/network/build-proxy.md
+          - Legal & ethical: deep-dive/network/proxy-legal.md
       - Fingerprinting:
           - Overview: deep-dive/fingerprinting/index.md
-          - Network Fingerprinting: deep-dive/fingerprinting/network-fingerprinting.md
-          - Browser Fingerprinting: deep-dive/fingerprinting/browser-fingerprinting.md
-          - Behavioral Fingerprinting: deep-dive/fingerprinting/behavioral-fingerprinting.md
-          - Evasion Techniques: deep-dive/fingerprinting/evasion-techniques.md
-      - Practical Guides:
-          - Overview: deep-dive/guides/index.md
-          - CSS Selectors vs XPath: deep-dive/guides/selectors-guide.md
+          - Network fingerprinting: deep-dive/fingerprinting/network-fingerprinting.md
+          - Browser fingerprinting: deep-dive/fingerprinting/browser-fingerprinting.md
+          - Behavioral fingerprinting: deep-dive/fingerprinting/behavioral-fingerprinting.md
   - API Reference:
       - Overview: api/index.md
       - Browser:
@@ -82,62 +74,25 @@ nav:
           - Options: api/browser/options.md
           - Tab: api/browser/tab.md
           - Requests: api/browser/requests.md
-          - Managers: api/browser/managers.md
       - Elements:
           - WebElement: api/elements/web_element.md
           - ShadowRoot: api/elements/shadow_root.md
-          - Mixins: api/elements/mixins.md
-      - Connection:
-          - Connection Handler: api/connection/connection.md
-          - Managers: api/connection/managers.md
-      - Commands:
-          - Overview: api/commands/index.md
-          - Browser: api/commands/browser.md
-          - DOM: api/commands/dom.md
-          - Input: api/commands/input.md
-          - Network: api/commands/network.md
-          - Page: api/commands/page.md
-          - Runtime: api/commands/runtime.md
-          - Storage: api/commands/storage.md
-          - Target: api/commands/target.md
-          - Fetch: api/commands/fetch.md
-      - Protocol:
-          - Base Types: api/protocol/base.md
-          - Browser: api/protocol/browser.md
-          - DOM: api/protocol/dom.md
-          - Fetch: api/protocol/fetch.md
-          - Input: api/protocol/input.md
-          - Network: api/protocol/network.md
-          - Page: api/protocol/page.md
-          - Runtime: api/protocol/runtime.md
-          - Storage: api/protocol/storage.md
-          - Target: api/protocol/target.md
+      - Extraction: api/extraction.md
+      - Connection: api/connection/connection.md
       - Core:
           - Constants: api/core/constants.md
           - Exceptions: api/core/exceptions.md
-          - Utils: api/core/utils.md
 
 theme:
   name: material
+  custom_dir: overrides
   font:
-    text: Roboto
-    code: Roboto Mono
+    text: Chivo
+    code: JetBrains Mono
   palette:
-    - media: "(prefers-color-scheme: dark)"
-      scheme: slate
-      primary: custom
-      accent: indigo
-      toggle:
-        icon: material/toggle-switch-off-outline
-        name: Dark Mode
-  
-    - media: "(prefers-color-scheme: light)"
-      scheme: default
-      primary: custom
-      accent: indigo
-      toggle:
-        icon: material/toggle-switch
-        name: Light Mode
+    scheme: slate
+    primary: custom
+    accent: indigo
   icon:
     repo: fontawesome/brands/github
     logo: material/lightning-bolt
@@ -412,6 +367,7 @@ extra:
 extra_css:
   - resources/stylesheets/termynal.css
   - resources/stylesheets/extra.css
+  - resources/stylesheets/landing-theme.css
 
 extra_javascript:
   - resources/scripts/termynal.js

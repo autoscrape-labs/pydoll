@@ -2,17 +2,6 @@
     <img src="../resources/images/logo.png" alt="Pydoll Logo" /> <br><br>
 </p>
 
-<p align="center">
-    <a href="https://codecov.io/gh/autoscrape-labs/pydoll">
-        <img src="https://codecov.io/gh/autoscrape-labs/pydoll/graph/badge.svg?token=40I938OGM9"/> 
-    </a>
-    <img src="https://github.com/thalissonvs/pydoll/actions/workflows/tests.yml/badge.svg" alt="Tests">
-    <img src="https://github.com/thalissonvs/pydoll/actions/workflows/ruff-ci.yml/badge.svg" alt="Ruff CI">
-    <img src="https://github.com/thalissonvs/pydoll/actions/workflows/release.yml/badge.svg" alt="Release">
-    <img src="https://github.com/thalissonvs/pydoll/actions/workflows/mypy.yml/badge.svg" alt="MyPy CI">
-</p>
-
-
 # 欢迎使用Pydoll
 
 欢迎来到 Pydoll 的世界～这是为 Python 量身打造的新一代浏览器自动化神器！
