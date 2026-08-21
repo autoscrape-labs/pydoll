@@ -156,7 +156,7 @@ asyncio.run(google_search('pydoll site:github.com'))
 ```
 
 <p align="center">
-  <img width="100%" alt="Pydoll running a humanized Google search" src="https://github.com/user-attachments/assets/ccf22ee9-3a96-4e49-b15e-5049361a0608" />
+  <img width="100%" alt="Pydoll running a humanized Google search: mouse curves to the box, types, and clicks the result" src="public/images/humanized-google-search.gif" />
 </p>
 
 ### 2. Fingerprint Injection
