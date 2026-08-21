@@ -28,7 +28,7 @@ The call runs through the browser's own `fetch`, so anything the browser already
 
 ## Call an API after logging in
 
-This is where browser-context requests earn their place. Sign in through the page as a user would, then hit the site's API with the session you just established. You don't extract a token or copy a cookie jar; the request is already authenticated.
+Browser-context requests are most useful after a login. Sign in through the page as a user would, then hit the site's API with the session you just established. You don't extract a token or copy a cookie jar; the request is already authenticated.
 
 ```python
 import asyncio

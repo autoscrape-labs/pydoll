@@ -1,12 +1,12 @@
 # Async Python in practice
 
-Every Pydoll call has `await` in front of it. If that keyword is new to you, this page is the one to read first. You don't need to master asyncio; you need just enough to be comfortable, and to see why Pydoll is built on it. Each example here runs on its own, so paste them into a file and watch what happens.
+Every Pydoll call has `await` in front of it. If that keyword is new to you, this page is the one to read first. You don't need to master asyncio; you need only enough to be comfortable, and to see why Pydoll is built on it. Each example here runs on its own, so paste them into a file and watch what happens.
 
 ## Why every Pydoll call is awaited
 
 Browser automation spends most of its time waiting: for a page to load, for an element to appear, for a network request to come back. Regular Python code sits idle during those waits. Async code doesn't: while one task waits, another can run.
 
-That single idea is what makes Pydoll's headline features possible:
+That single idea is what makes these Pydoll features possible:
 
 - Driving many tabs or browsers **at the same time** instead of one after another.
 - Watching **network traffic** while your script keeps working.
@@ -39,7 +39,7 @@ Calling `main()` on its own does nothing useful; it only creates a coroutine obj
 
 ## `await` means "wait here, but let other work run"
 
-`await asyncio.sleep(1)` does not freeze your whole program for a second. It pauses *this* coroutine and hands control back, so anything else that is ready can run during that second. That handoff is the entire trick, and the next section shows why it matters.
+`await asyncio.sleep(1)` does not freeze your whole program for a second. It pauses *this* coroutine and hands control back, so anything else that is ready can run during that second. That handoff is what makes concurrency possible, and the next section shows why it matters.
 
 ## Doing things at the same time
 

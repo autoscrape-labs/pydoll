@@ -75,4 +75,4 @@ Each command module follows a consistent pattern:
 - **Static methods**: For direct command execution
 - **Type hints**: Full type safety with protocol types
 - **Error handling**: Proper exception handling for CDP errors
-- **Documentation**: Comprehensive docstrings with examples 
+- **Documentation**: Docstrings with examples 

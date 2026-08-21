@@ -2,7 +2,7 @@
 
 Detection systems watch *how* you act, not just what you click. Instant clicks in the exact center of an element, keystrokes at a perfectly fixed rate, and cursor jumps in straight lines are all behavioral tells. Pass `humanize=True` and Pydoll performs the same action with the timing and motion of a person: variable typing rhythm, curved cursor paths, and physics-based scrolling.
 
-Humanization is opt-in per interaction, so you spend the extra milliseconds only where behavior is watched, and it is one layer of stealth, not the whole story. It shapes behavior; it does not change your [identity or network fingerprint](index.md).
+Humanization is opt-in per interaction, so you spend the extra milliseconds only where behavior is watched, and it is one layer of stealth, not all of it. It shapes behavior; it does not change your [identity or network fingerprint](index.md).
 
 ## Type like a human
 

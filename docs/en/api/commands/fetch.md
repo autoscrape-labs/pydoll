@@ -1,10 +1,10 @@
 # Fetch Commands
 
-Fetch commands provide advanced network request handling and interception capabilities using the Fetch API domain.
+Fetch commands provide network request handling and interception capabilities using the Fetch API domain.
 
 ## Overview
 
-The fetch commands module enables sophisticated network request management, including request modification, response interception, and authentication handling.
+The fetch commands module enables network request management, including request modification, response interception, and authentication handling.
 
 ::: pydoll.commands.fetch_commands
     options:

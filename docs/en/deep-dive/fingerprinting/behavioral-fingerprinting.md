@@ -88,7 +88,7 @@ See [Human-like interactions](../../stealth/human-like-interactions.md) for how 
 
 ## Scroll behavior
 
-Scroll fingerprinting analyzes how a user moves through page content. The difference is stark: a programmatic `window.scrollTo()` is an instant, discrete jump, while a human scroll (wheel, trackpad, or touch) is a stream of small incremental events with momentum and deceleration.
+Scroll fingerprinting analyzes how a user moves through page content. A programmatic `window.scrollTo()` is an instant, discrete jump, while a human scroll (wheel, trackpad, or touch) is a stream of small incremental events with momentum and deceleration.
 
 Mouse wheels produce discrete `wheel` events with consistent deltas (often 100 or 120 pixels per notch) at irregular intervals. Trackpads produce many small events with decreasing deltas that simulate momentum. Touch is similar with larger initial deltas and a longer deceleration tail. Detection systems read the delta distribution, inter-event timing, and deceleration curve, and look for:
 
@@ -107,7 +107,7 @@ await tab.scroll.by(ScrollPosition.DOWN, 800, humanize=True)
 
 ## Other behavioral signals
 
-Beyond mouse, keyboard, and scroll, sophisticated systems watch several more signals.
+Beyond mouse, keyboard, and scroll, some systems watch several more signals.
 
 **Focus and visibility.** The Page Visibility API (`document.visibilityState`) and focus events reveal whether the user is actively viewing the page. A real session has tab switches, minimizations, and idle periods; a script that holds continuous focus for hours without a single blur is anomalous.
 

@@ -1,6 +1,6 @@
 # Building a proxy server
 
-The clearest way to understand what a proxy does is to build one. This page implements an HTTP proxy and a SOCKS5 proxy from scratch in Python with asyncio, so you can see how each byte is parsed, where the security boundaries are, and why real proxy software makes the choices it does. To use a proxy with Pydoll rather than build one, see [Proxies](../../guides/proxies.md); Pydoll also ships a `SOCKS5Forwarder` in `pydoll.utils`, so you don't have to build the authenticated-SOCKS5 case yourself.
+To understand what a proxy does, build one. This page implements an HTTP proxy and a SOCKS5 proxy from scratch in Python with asyncio, so you can see how each byte is parsed, where the security boundaries are, and why real proxy software makes the choices it does. To use a proxy with Pydoll rather than build one, see [Proxies](../../guides/proxies.md); Pydoll also ships a `SOCKS5Forwarder` in `pydoll.utils`, so you don't have to build the authenticated-SOCKS5 case yourself.
 
 !!! warning "Educational code"
     These implementations favor clarity over robustness. They lack connection limits, access control, and many error-recovery paths a production proxy needs. Do not expose them to untrusted networks.

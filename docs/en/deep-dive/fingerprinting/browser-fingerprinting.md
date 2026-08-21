@@ -143,7 +143,7 @@ function generateCanvasFingerprint() {
 }
 ```
 
-The pangram "Cwm fjordbank glyphs vext quiz" is chosen because it uses unusual character combinations that stress font rendering. The emoji adds another dimension because emoji rendering varies significantly across operating systems. The semi-transparent overlay tests alpha compositing, which differs across GPU implementations.
+The pangram "Cwm fjordbank glyphs vext quiz" is chosen because it uses unusual character combinations that stress font rendering. The emoji adds another dimension because emoji rendering varies across operating systems. The semi-transparent overlay tests alpha compositing, which differs across GPU implementations.
 
 Canvas fingerprinting is effective for distinguishing broad categories of devices, but its uniqueness is sometimes overstated. Research by Laperdrix et al. (2016) found that canvas fingerprints alone provide moderate distinguishing power, and their real value comes from combining with other signals (WebGL, navigator properties, timezone) to achieve high uniqueness.
 
@@ -184,7 +184,7 @@ function getWebGLFingerprint() {
 }
 ```
 
-The renderer string directly names the GPU hardware. A client claiming to be a mobile device but reporting a desktop GPU is obviously inconsistent. Virtual machines often report software renderers like "SwiftShader" or "llvmpipe", which real users almost never have.
+The renderer string directly names the GPU hardware. A client claiming to be a mobile device but reporting a desktop GPU is inconsistent. Virtual machines often report software renderers like "SwiftShader" or "llvmpipe", which real users almost never have.
 
 Beyond metadata, WebGL can render a 3D scene (a gradient triangle, for instance) and hash the pixel output, producing a render fingerprint analogous to canvas fingerprinting but in the 3D pipeline. The combination of GPU identifiers, supported extensions, parameter limits (`MAX_TEXTURE_SIZE`, `MAX_VIEWPORT_DIMS`), and shader precision formats creates a detailed fingerprint of the graphics stack.
 

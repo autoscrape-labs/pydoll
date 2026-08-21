@@ -60,7 +60,7 @@ html = f'<img src="data:image/png;base64,{data}" />'
 
 ## Screenshot a single element
 
-Call `take_screenshot()` on an element to capture just that element. Pydoll scrolls it into view first.
+Call `take_screenshot()` on an element to capture only that element. Pydoll scrolls it into view first.
 
 ```python
 await tab.go_to('https://en.wikipedia.org/wiki/Python_(programming_language)')

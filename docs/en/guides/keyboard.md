@@ -137,4 +137,4 @@ Keys sent over the DevTools Protocol are marked untrusted, so they never trigger
 
 - [Mouse](mouse.md): clicks, movement, and drag with humanized timing.
 - [Element finding](element-finding.md): locate the fields you type into.
-- [Human-like interactions](../stealth/human-like-interactions.md): what `humanize=True` does under the hood.
+- [Human-like interactions](../stealth/human-like-interactions.md): what `humanize=True` does internally.

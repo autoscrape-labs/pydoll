@@ -24,7 +24,7 @@ The window scale factor (a TCP option) multiplies the 16-bit window size field t
 
 ### TCP options order
 
-The selection and ordering of TCP options in the SYN packet is highly distinctive. Each OS arranges options in a fixed, version-specific order that the kernel does not expose as a configurable parameter. Linux sends `MSS, SACK_PERM, TIMESTAMP, NOP, WSCALE`. Windows sends `MSS, NOP, WSCALE, NOP, NOP, SACK_PERM` and notably omits the TIMESTAMP option in default configurations. macOS sends `MSS, NOP, WSCALE, NOP, NOP, TIMESTAMP, SACK_PERM`.
+The selection and ordering of TCP options in the SYN packet is highly distinctive. Each OS arranges options in a fixed, version-specific order that the kernel does not expose as a configurable parameter. Linux sends `MSS, SACK_PERM, TIMESTAMP, NOP, WSCALE`. Windows sends `MSS, NOP, WSCALE, NOP, NOP, SACK_PERM` and omits the TIMESTAMP option in default configurations. macOS sends `MSS, NOP, WSCALE, NOP, NOP, TIMESTAMP, SACK_PERM`.
 
 The presence or absence of specific options matters as much as the order. Windows historically omitted TCP timestamps, which Linux and macOS include by default. SACK (Selective Acknowledgment) is supported by all modern systems, but older or embedded systems may not advertise it. The combination of which options appear and in what order creates a signature that tools like p0f match against a database of known OS fingerprints.
 
@@ -101,7 +101,7 @@ You can check your HTTP/2 fingerprint at [browserleaks.com/http2](https://browse
 
 ## Implications for browser automation
 
-The practical takeaway for automation with Pydoll is that network fingerprinting is one area where controlling a real browser provides a significant advantage. Chrome's TCP/IP stack, TLS implementation (BoringSSL), and HTTP/2 stack produce authentic fingerprints by default. The main risk is environmental mismatch: running Chrome on a Linux server while the User-Agent claims Windows creates a TCP/IP fingerprint inconsistency (TTL 64 instead of 128, Linux TCP options order instead of Windows).
+The practical takeaway for automation with Pydoll is that network fingerprinting is one area where controlling a real browser is an advantage. Chrome's TCP/IP stack, TLS implementation (BoringSSL), and HTTP/2 stack produce authentic fingerprints by default. The main risk is environmental mismatch: running Chrome on a Linux server while the User-Agent claims Windows creates a TCP/IP fingerprint inconsistency (TTL 64 instead of 128, Linux TCP options order instead of Windows).
 
 For proxy-based setups, the fingerprint flow is: your machine's TCP/IP stack generates the connection to the proxy (which the proxy's operator can see but the target cannot), and the proxy's TCP/IP stack generates the connection to the target. The target sees the proxy server's TTL and TCP options. If the proxy runs Linux (as most do), the TCP fingerprint will indicate Linux regardless of the User-Agent. This is a well-known detection signal that residential proxies partially mitigate (the proxy endpoint is a real user's machine, so its TCP fingerprint is plausible) but datacenter proxies cannot.
 

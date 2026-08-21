@@ -1,10 +1,10 @@
 # DOM Commands
 
-DOM commands provide comprehensive functionality for interacting with the Document Object Model of web pages.
+DOM commands provide functionality for interacting with the Document Object Model of web pages.
 
 ## Overview
 
-The DOM commands module is one of the most important modules in Pydoll, providing all the functionality needed to find, interact with, and manipulate HTML elements on web pages.
+The DOM commands module provides the functionality needed to find, interact with, and manipulate HTML elements on web pages.
 
 ::: pydoll.commands.dom_commands
     options:
@@ -55,4 +55,4 @@ The DOM commands module provides functions for:
 - `request_child_nodes()` - Get child elements
 
 !!! tip "High-Level APIs"
-    While these commands provide powerful low-level access, most users should use the higher-level `WebElement` class methods like `click()`, `type_text()`, and `get_attribute()` which use these commands internally. 
+    While these commands provide low-level access, most users should use the higher-level `WebElement` class methods like `click()`, `type_text()`, and `get_attribute()` which use these commands internally. 

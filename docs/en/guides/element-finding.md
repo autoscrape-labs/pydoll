@@ -103,7 +103,7 @@ label_input = await tab.query("//label[text()='Email:']/following-sibling::input
 
 ## Search within an element
 
-Every element supports `find()` and `query()` scoped to its own subtree, which is how you work with repeating structures like cards or rows. A scoped search looks through **all** descendants of the element, not just its direct children, matching how `querySelector` behaves.
+Every element supports `find()` and `query()` scoped to its own subtree, which is how you work with repeating structures like cards or rows. A scoped search looks through **all** descendants of the element, not only its direct children, matching how `querySelector` behaves.
 
 ```python
 await tab.go_to('https://books.toscrape.com')

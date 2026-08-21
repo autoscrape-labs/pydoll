@@ -80,7 +80,7 @@ Events are why automation over CDP can react the instant the browser changes sta
 
 CDP calls each thing you can attach to a **target**: the browser itself, every tab, and out-of-process iframes are separate targets. Attaching to a target opens a **session**, and commands for that target carry its `sessionId` so the browser knows where to route them.
 
-This is how one WebSocket connection drives many tabs at once, and how commands reach an element inside a cross-origin iframe. Pydoll handles the target and session routing for you, so a `Tab` object just works without you tracking session ids.
+This is how one WebSocket connection drives many tabs at once, and how commands reach an element inside a cross-origin iframe. Pydoll handles the target and session routing for you, so a `Tab` object works without you tracking session ids.
 
 ## Why there is no webdriver
 

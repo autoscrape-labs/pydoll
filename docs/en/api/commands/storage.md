@@ -1,6 +1,6 @@
 # Storage Commands
 
-Storage commands provide comprehensive browser storage management including cookies, localStorage, sessionStorage, and IndexedDB.
+Storage commands provide browser storage management including cookies, localStorage, sessionStorage, and IndexedDB.
 
 ## Overview
 

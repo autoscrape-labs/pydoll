@@ -1,6 +1,6 @@
 # Browser Requests
 
-The requests module provides HTTP request capabilities within the browser context, enabling seamless API calls that inherit the browser's session state, cookies, and authentication.
+The requests module provides HTTP request capabilities within the browser context, enabling API calls that inherit the browser's session state, cookies, and authentication.
 
 ## Overview
 
@@ -9,7 +9,7 @@ The browser requests module offers a `requests`-like interface for making HTTP c
 - **Session inheritance**: Automatic cookie, authentication, and CORS handling
 - **Browser context**: Requests execute in the same security context as the page
 - **No session juggling**: Eliminate the need to transfer cookies and tokens between automation and API calls
-- **SPA compatibility**: Perfect for Single Page Applications with complex authentication flows
+- **SPA compatibility**: Works with Single Page Applications with complex authentication flows
 
 ## Request Class
 
@@ -136,4 +136,4 @@ response2 = await tab2.request.get("/api/data")  # Uses site2.com cookies
 ```
 
 !!! tip "Hybrid Automation"
-    This module is particularly powerful for hybrid automation scenarios where you need to combine UI interactions with API calls. For example, log in through the UI, then use the authenticated session for API calls without manually handling cookies or tokens.
+    This module is useful for hybrid automation scenarios where you need to combine UI interactions with API calls. For example, log in through the UI, then use the authenticated session for API calls without manually handling cookies or tokens.

@@ -132,7 +132,7 @@ Models support CSS and XPath selectors, HTML attribute targeting, custom transfo
 
 ## Sponsors
 
-The support from sponsors is essential to keep the project alive, evolving, and accessible to the entire community. Each partnership helps cover costs, drive new features, and ensure ongoing development. We are truly grateful to everyone who believes in and supports the project!
+Sponsors keep the project running and help fund ongoing development. Thanks to everyone who supports Pydoll.
 
 <div class="sponsor-grid-mini">
   <a class="sponsor-card sponsor-tile" href="https://proxy-seller.com/?partner=8DES01TZ1QGWR3" target="_blank" rel="noopener nofollow sponsored">

@@ -50,7 +50,7 @@ This clears the tab's context. To clear a specific context, use the browser-leve
 
 ## Save and restore a session
 
-This is the pattern that pays off: log in once, save the cookies, then reload them on later runs to skip the login entirely. This example uses [quotes.toscrape.com](https://quotes.toscrape.com/login), whose login accepts any credentials and sets a session cookie.
+Log in once, save the cookies, then reload them on later runs to skip the login entirely. This example uses [quotes.toscrape.com](https://quotes.toscrape.com/login), whose login accepts any credentials and sets a session cookie.
 
 First run, log in and save:
 

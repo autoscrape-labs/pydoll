@@ -53,7 +53,7 @@ The cost of that coupling is scope. It cannot natively carry FTP, SSH, or custom
 
 ## The CONNECT method: tunneling HTTPS
 
-CONNECT (RFC 9110) answers a basic question: how does a proxy forward encrypted traffic it cannot read? By becoming a blind TCP tunnel. The client asks the proxy to open a raw TCP connection to the destination; once it confirms, the proxy stops interpreting HTTP and just relays bytes in both directions.
+CONNECT (RFC 9110) answers a basic question: how does a proxy forward encrypted traffic it cannot read? By becoming a blind TCP tunnel. The client asks the proxy to open a raw TCP connection to the destination; once it confirms, the proxy stops interpreting HTTP and only relays bytes in both directions.
 
 ```mermaid
 sequenceDiagram
@@ -101,7 +101,7 @@ For automation this decides whose TLS fingerprint the server sees. Through a CON
 
 ## Connecting to the proxy over TLS
 
-Proxying HTTPS traffic is different from reaching the proxy itself over HTTPS. Configure `--proxy-server=https://proxy:port` (rather than `http://`) and the hop between your browser and the proxy is TLS-encrypted, which protects your proxy credentials on the local network and hides even the CONNECT hostname from local observers. This matters most on untrusted networks, where the client-to-proxy hop is the weakest link.
+Proxying HTTPS traffic is different from reaching the proxy itself over HTTPS. Configure `--proxy-server=https://proxy:port` (rather than `http://`) and the hop between your browser and the proxy is TLS-encrypted, which protects your proxy credentials on the local network and hides even the CONNECT hostname from local observers. This matters most on untrusted networks, where the client-to-proxy hop is the least protected.
 
 ## Authentication
 
@@ -119,7 +119,7 @@ When a proxy needs credentials it replies `407 Proxy Authentication Required` wi
 | NTLM | Medium | Challenge-response (NT hash) | Windows SSO. Breaks HTTP/2. |
 | Negotiate | High | Kerberos/SPNEGO | Strongest. Needs Active Directory. |
 
-Chrome does not accept inline credentials in `--proxy-server`: `http://user:pass@proxy:port` connects without the `user:pass`. Pydoll works around this for you (it strips the credentials from the URL and answers the `407` challenge over CDP), so you can pass a proxy URL with credentials and it just works. See [Proxies](../../guides/proxies.md) for the usage.
+Chrome does not accept inline credentials in `--proxy-server`: `http://user:pass@proxy:port` connects without the `user:pass`. Pydoll works around this for you (it strips the credentials from the URL and answers the `407` challenge over CDP), so you can pass a proxy URL with credentials. See [Proxies](../../guides/proxies.md) for the usage.
 
 ## Modern protocols
 
@@ -152,7 +152,7 @@ HTTP/3 runs over QUIC, a UDP transport, which breaks the assumptions of TCP-base
 | Privacy | Low (parses HTTP, adds headers) | Higher (does not parse or modify) |
 | DNS resolution | Proxy resolves | Chrome resolves remotely for SOCKS5 |
 
-HTTP proxies suit environments that need content control and caching. For privacy-focused automation, SOCKS5 gives better stealth and protocol flexibility. The CONNECT tunnel is the feature that matters most for automation: it keeps your TLS fingerprint end to end and gives the proxy only hostname-level visibility.
+HTTP proxies suit environments that need content control and caching. For privacy-focused automation, SOCKS5 gives better stealth and protocol flexibility. In automation, the CONNECT tunnel keeps your TLS fingerprint end to end and gives the proxy only hostname-level visibility.
 
 ## Related
 

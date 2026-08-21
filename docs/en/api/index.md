@@ -1,10 +1,10 @@
 # API Reference
 
-Welcome to the Pydoll API Reference! This section provides comprehensive documentation for all classes, methods, and functions available in the Pydoll library.
+This section documents the classes, methods, and functions in the Pydoll library.
 
 ## Overview
 
-Pydoll is organized into several key modules, each serving a specific purpose in browser automation:
+Pydoll is organized into several modules:
 
 ### Browser Module
 The browser module contains classes for managing browser instances and their lifecycle.
@@ -117,7 +117,7 @@ await tab.on('Page.loadEventFired', handle_page_load)
 
 ## Type Hints
 
-Pydoll is fully typed and provides comprehensive type hints for better IDE support and code safety. All public APIs include proper type annotations.
+Pydoll is fully typed and provides type hints for better IDE support and code safety. All public APIs include type annotations.
 
 ```python
 from typing import Optional, List
@@ -144,4 +144,4 @@ async def main():
 asyncio.run(main())
 ```
 
-Browse the sections below to explore the complete API documentation for each module. 
+Browse the sections below for the API documentation of each module. 

@@ -102,7 +102,7 @@ await tab.query('//ul/li[last()]') # the last <li> in a <ul>
 
 ### Match on attributes and text
 
-This is where XPath earns its place. CSS cannot select by visible text; XPath can.
+This is where you need XPath. CSS cannot select by visible text; XPath can.
 
 ```python
 await tab.query("//input[@type='email']")            # attribute equals
@@ -117,7 +117,7 @@ await tab.query("//a[starts-with(@href, 'https://')]")  # attribute starts with
 
 ### Axes: move in any direction
 
-An axis says which direction to travel from the current node. This is XPath's real advantage: you can go up to a parent or across to a sibling, which CSS cannot.
+An axis says which direction to travel from the current node. This is XPath's advantage: you can go up to a parent or across to a sibling, which CSS cannot.
 
 | Axis | Direction | Finds |
 |------|-----------|-------|

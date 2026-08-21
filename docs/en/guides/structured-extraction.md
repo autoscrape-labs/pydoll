@@ -1,14 +1,14 @@
 # Structured extraction
 
-Pydoll's extraction engine lets you define **what** you want from a page using typed models, and handles the **how** automatically. Instead of manually querying elements one by one, you declare a model with selectors and call `tab.extract()`. The result is a fully typed, validated Python object powered by [Pydantic](https://docs.pydantic.dev/).
+Pydoll's extraction engine lets you define **what** you want from a page using typed models, and handles the **how** automatically. Instead of manually querying elements one by one, you declare a model with selectors and call `tab.extract()`. The result is a fully typed, validated Python object built on [Pydantic](https://docs.pydantic.dev/).
 
 <iframe src="../extraction-flow.html" aria-label="A page and a model producing a typed, validated object through tab.extract" style="width: 100%; height: 360px; border: 0;" loading="lazy"></iframe>
 
 ## Why use a model
 
-Traditional scraping code tends to grow into a tangled mess of `find()` calls, `await element.text`, attribute reads, and manual type conversions scattered across dozens of lines. When the page changes, you hunt through that code to find which selector broke.
+Traditional scraping code spreads `find()` calls, `await element.text`, attribute reads, and manual type conversions across dozens of lines. When the page changes, you hunt through that code to find which selector broke.
 
-With structured extraction, all your selectors live in one place (the model), the types are enforced automatically, and the output is a clean Pydantic object with IDE autocomplete and serialization built in.
+With structured extraction, all your selectors live in one place (the model), the types are enforced automatically, and the output is a Pydantic object with IDE autocomplete and serialization built in.
 
 ## Basic usage
 
