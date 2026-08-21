@@ -52,8 +52,8 @@
         
         
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Chivo:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Chivo";--md-code-font:"JetBrains Mono"}</style>
       
     
     
@@ -65,6 +65,8 @@
     
       <link rel="stylesheet" href="../../../../resources/stylesheets/extra.css">
     
+      <link rel="stylesheet" href="../../../../resources/stylesheets/landing-theme.css">
+    
     <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -75,8 +77,6 @@
   
   
     
-    
-      
     
     
     
@@ -104,7 +104,7 @@
 
   
 
-<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+<header class="md-header md-header--landing md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="../../../" title="Pydoll - 异步网页自动化库" class="md-header__button md-logo" aria-label="Pydoll - 异步网页自动化库" data-md-component="logo">
       
@@ -112,6 +112,7 @@
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11 15H6l7-14v8h5l-7 14z"/></svg>
 
     </a>
+    <span class="md-header__docs-chip">docs</span>
     <label class="md-header__button md-icon" for="__drawer">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
@@ -119,48 +120,18 @@
     <div class="md-header__title" data-md-component="header-title">
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
-          <span class="md-ellipsis">
-            Pydoll - 异步网页自动化库
-          </span>
+          <span class="md-ellipsis">Pydoll - 异步网页自动化库</span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
-            
-              网络基础
-            
+            网络基础
           </span>
         </div>
       </div>
     </div>
     
       
-        <form class="md-header__option" data-md-component="palette">
-  
     
-    
-    
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Dark Mode"  type="radio" name="__palette" id="__palette_0">
-    
-      <label class="md-header__button md-icon" title="Dark Mode" for="__palette_1" hidden>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6m0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4M7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3"/></svg>
-      </label>
-    
-  
-    
-    
-    
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Light Mode"  type="radio" name="__palette" id="__palette_1">
-    
-      <label class="md-header__button md-icon" title="Light Mode" for="__palette_0" hidden>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
-      </label>
-    
-  
-</form>
-      
-    
-    
-      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
     
     
       <div class="md-header__option">
@@ -251,6 +222,7 @@
 </a>
       </div>
     
+    <a class="md-header__cta" href="../../../../getting-started/">Get started</a>
   </nav>
   
     
@@ -286,13 +258,79 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../features/" class="md-tabs__link">
+        <a href="../../../getting-started/" class="md-tabs__link">
           
   
   
     
   
-  特性
+  快速上手
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../basics/async-python/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  基础
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../guides/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  指南
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../stealth/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Stealth
 
         </a>
       </li>
@@ -434,11 +472,283 @@
     
       
         
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
           
         
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    快速上手
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    快速上手
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    安装
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../first-automation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    你的第一个自动化
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../migrating/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    从 Selenium 和 Playwright 迁移
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
       
         
       
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    基础
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    基础
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../basics/async-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    异步 Python 实践
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../basics/selectors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    选择器、CSS 和 XPath
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
         
       
         
@@ -468,18 +778,18 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../features/" class="md-nav__link ">
+            <a href="../../../guides/" class="md-nav__link ">
               
   
   
   <span class="md-ellipsis">
     
   
-    特性
+    指南
   
 
     
@@ -490,18 +800,18 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
   
-    特性
+    指南
   
 
           </label>
@@ -516,7 +826,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/core-concepts/" class="md-nav__link">
+      <a href="../../../guides/core-concepts/" class="md-nav__link">
         
   
   
@@ -543,8 +853,70 @@
   
   
   
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    查找与提取
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    查找与提取
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
     <li class="md-nav__item">
-      <a href="../../../features/element-finding/" class="md-nav__link">
+      <a href="../../../guides/element-finding/" class="md-nav__link">
         
   
   
@@ -571,37 +943,15 @@
   
   
   
-    
-    
-      
+    <li class="md-nav__item">
+      <a href="../../../guides/dom-traversal/" class="md-nav__link">
         
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_4" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
-            
   
   
   <span class="md-ellipsis">
     
   
-    Data Extraction
+    DOM 遍历
   
 
     
@@ -609,19 +959,11 @@
   
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_4">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Data Extraction
+      </a>
+    </li>
   
 
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
+              
             
               
                 
@@ -630,14 +972,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/extraction/structured-extraction/" class="md-nav__link">
+      <a href="../../../guides/structured-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Structured Extraction
+    结构化提取
   
 
     
@@ -678,8 +1020,6 @@
       
         
       
-        
-      
     
     
     
@@ -695,17 +1035,17 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_5" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_4" >
         
           
-          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="0">
             
   
   
   <span class="md-ellipsis">
     
   
-    自动化
+    交互
   
 
     
@@ -716,12 +1056,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_5">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_4">
             <span class="md-nav__icon md-icon"></span>
             
   
-    自动化
+    交互
   
 
           </label>
@@ -734,14 +1074,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/automation/human-interactions/" class="md-nav__link">
+      <a href="../../../guides/keyboard/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    类人交互
+    键盘
   
 
     
@@ -762,14 +1102,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/automation/keyboard-control/" class="md-nav__link">
+      <a href="../../../guides/mouse/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    键盘控制
+    鼠标
   
 
     
@@ -790,35 +1130,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/automation/mouse-control/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    鼠标控制
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/automation/file-operations/" class="md-nav__link">
+      <a href="../../../guides/file-operations/" class="md-nav__link">
         
   
   
@@ -846,14 +1158,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/automation/iframes/" class="md-nav__link">
+      <a href="../../../guides/iframes/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    IFrame交互
+    IFrame
   
 
     
@@ -874,14 +1186,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/automation/screenshots-and-pdfs/" class="md-nav__link">
+      <a href="../../../guides/screenshots-and-pdfs/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    截图与PDF
+    截图与 PDF
   
 
     
@@ -935,10 +1247,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_6" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_5" >
         
           
-          <label class="md-nav__link" for="__nav_2_6" id="__nav_2_6_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4_5" id="__nav_4_5_label" tabindex="0">
             
   
   
@@ -956,8 +1268,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_6">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -974,7 +1286,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/network/monitoring/" class="md-nav__link">
+      <a href="../../../guides/network-monitoring/" class="md-nav__link">
         
   
   
@@ -1002,7 +1314,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/network/interception/" class="md-nav__link">
+      <a href="../../../guides/request-interception/" class="md-nav__link">
         
   
   
@@ -1030,14 +1342,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/network/http-requests/" class="md-nav__link">
+      <a href="../../../guides/http-requests/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    浏览器上下文HTTP请求
+    浏览器上下文 HTTP 请求
   
 
     
@@ -1058,14 +1370,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/network/network-recording/" class="md-nav__link">
+      <a href="../../../guides/network-recording/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    HAR网络录制
+    HAR 录制
   
 
     
@@ -1102,6 +1414,14 @@
       
         
       
+        
+      
+        
+      
+        
+      
+        
+      
     
     
     
@@ -1117,17 +1437,17 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_7" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_6" >
         
           
-          <label class="md-nav__link" for="__nav_2_7" id="__nav_2_7_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4_6" id="__nav_4_6_label" tabindex="0">
             
   
   
   <span class="md-ellipsis">
     
   
-    浏览器管理
+    管理浏览器
   
 
     
@@ -1138,12 +1458,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_7">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_6">
             <span class="md-nav__icon md-icon"></span>
             
   
-    浏览器管理
+    管理浏览器
   
 
           </label>
@@ -1156,14 +1476,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/browser-management/tabs/" class="md-nav__link">
+      <a href="../../../guides/tabs/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    多标签页管理
+    标签页
   
 
     
@@ -1184,7 +1504,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/browser-management/contexts/" class="md-nav__link">
+      <a href="../../../guides/browser-contexts/" class="md-nav__link">
         
   
   
@@ -1212,14 +1532,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/browser-management/cookies-sessions/" class="md-nav__link">
+      <a href="../../../guides/cookies-and-sessions/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Cookie与会话
+    Cookie 与会话
   
 
     
@@ -1233,76 +1553,6 @@
 
               
             
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_8" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_8" id="__nav_2_8_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    配置
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_8_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_8">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    配置
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
               
                 
   
@@ -1310,7 +1560,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/configuration/browser-options/" class="md-nav__link">
+      <a href="../../../guides/browser-options/" class="md-nav__link">
         
   
   
@@ -1338,7 +1588,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/configuration/browser-preferences/" class="md-nav__link">
+      <a href="../../../guides/browser-preferences/" class="md-nav__link">
         
   
   
@@ -1366,14 +1616,42 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/configuration/proxy/" class="md-nav__link">
+      <a href="../../../guides/proxies/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    代理配置
+    代理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/remote-connections/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    远程连接
   
 
     
@@ -1404,6 +1682,139 @@
     
     
       
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_7" id="__nav_4_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    响应事件
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    响应事件
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    事件
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/retrying/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    重试
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
         
       
         
@@ -1429,17 +1840,18 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_9" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
         
           
-          <label class="md-nav__link" for="__nav_2_9" id="__nav_2_9_label" tabindex="0">
-            
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../stealth/" class="md-nav__link ">
+              
   
   
   <span class="md-ellipsis">
     
   
-    高级功能
+    Stealth
   
 
     
@@ -1447,19 +1859,27 @@
   
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_9_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_9">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
   
-    高级功能
+    Stealth
   
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
             
               
                 
@@ -1468,7 +1888,91 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/advanced/fingerprint-injection/" class="md-nav__link">
+      <a href="../../../stealth/evasion-techniques/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    规避技术
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../stealth/human-like-interactions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    类人交互
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../stealth/captcha-bypass/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    验证码绕过
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../stealth/fingerprint-injection/" class="md-nav__link">
         
   
   
@@ -1489,126 +1993,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/advanced/behavioral-captcha-bypass/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    行为验证码绕过
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/advanced/event-system/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    事件系统
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/advanced/remote-connections/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    远程连接
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/advanced/decorators/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Retry 装饰器
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -1629,10 +2013,6 @@
       
         
           
-        
-      
-        
-      
         
       
         
@@ -1657,7 +2037,7 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
         
           
           <div class="md-nav__link md-nav__container">
@@ -1679,14 +2059,14 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_3">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1704,88 +2084,8 @@
   
   
   
-    
-    
-      
-        
-          
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-          
-          
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_2" >
-        
-          
-          <div class="md-nav__link md-nav__container">
-            <a href="../../fundamentals/" class="md-nav__link ">
-              
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    核心基础
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_3_2" id="__nav_3_2_label" tabindex="">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_2">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    核心基础
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
     <li class="md-nav__item">
-      <a href="../../fundamentals/cdp/" class="md-nav__link">
+      <a href="../../cdp/" class="md-nav__link">
         
   
   
@@ -1810,388 +2110,6 @@
                 
   
   
-  
-  
-    <li class="md-nav__item">
-      <a href="../../fundamentals/connection-layer/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    连接层
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../fundamentals/typing-system/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Python类型系统
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../fundamentals/iframes-and-contexts/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Iframes & Contexts
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-          
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-          
-          
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_3" >
-        
-          
-          <div class="md-nav__link md-nav__container">
-            <a href="../../architecture/" class="md-nav__link ">
-              
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    内部架构
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_3_3" id="__nav_3_3_label" tabindex="">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_3">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    内部架构
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/browser-domain/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    浏览器域
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/tab-domain/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    标签页域
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/webelement-domain/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Web元素域
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/find-elements-mixin/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    查找元素混合器
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/event-architecture/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    事件架构
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/browser-requests-architecture/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    浏览器请求架构
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/shadow-dom/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Shadow DOM 架构
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
     
   
   
@@ -2231,7 +2149,7 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_3" checked>
         
           
           <div class="md-nav__link md-nav__container">
@@ -2242,7 +2160,7 @@
   <span class="md-ellipsis">
     
   
-    网络与安全
+    网络与代理
   
 
     
@@ -2253,18 +2171,18 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_3_4" id="__nav_3_4_label" tabindex="">
+              <label class="md-nav__link " for="__nav_6_3" id="__nav_6_3_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_3_4">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6_3">
             <span class="md-nav__icon md-icon"></span>
             
   
-    网络与安全
+    网络与代理
   
 
           </label>
@@ -2342,19 +2260,19 @@
   <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        网络堆栈
+        网络栈
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="网络堆栈">
+    <nav class="md-nav" aria-label="网络栈">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#osi" class="md-nav__link">
+  <a href="#proxy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        OSI 模型
+        层如何决定一个 proxy 能做什么
       
     </span>
   </a>
@@ -2363,17 +2281,6 @@
         
           <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        层级位置如何影响代理
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
       
         层泄露问题
@@ -2389,30 +2296,19 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#tcp-vs-udp" class="md-nav__link">
+  <a href="#tcp-udp" class="md-nav__link">
     <span class="md-ellipsis">
       
-        TCP vs UDP
+        TCP 与 UDP
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="TCP vs UDP">
+    <nav class="md-nav" aria-label="TCP 与 UDP">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#tcp" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        TCP 与代理
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#tcp_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         TCP 三次握手
@@ -2423,10 +2319,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#tcp-fingerprinting" class="md-nav__link">
+  <a href="#tcp_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        TCP Fingerprinting
+        TCP 指纹
       
     </span>
   </a>
@@ -2434,21 +2330,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#udp" class="md-nav__link">
+  <a href="#udpdns-quic" class="md-nav__link">
     <span class="md-ellipsis">
       
-        UDP
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#quic-http3" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        QUIC 与 HTTP/3
+        UDP、DNS 与 QUIC
       
     </span>
   </a>
@@ -2473,43 +2358,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#webrtc-ip_1" class="md-nav__link">
+  <a href="#icestun-candidate" class="md-nav__link">
     <span class="md-ellipsis">
       
-        WebRTC 如何泄露您的 IP
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#ice" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ICE 过程
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#ice_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ICE 候选者类型
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#stun" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        STUN 协议
+        ICE、STUN，以及会泄露的那些 candidate
       
     </span>
   </a>
@@ -2520,40 +2372,7 @@
   <a href="#webrtc" class="md-nav__link">
     <span class="md-ellipsis">
       
-        为什么代理无法阻止 WebRTC 泄露
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#pydoll-webrtc" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        在 Pydoll 中防止 WebRTC 泄露
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#webrtc_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        测试 WebRTC 泄露
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#webrtc_2" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        网站如何利用 WebRTC 泄露
+        防止 WebRTC 泄露
       
     </span>
   </a>
@@ -2566,10 +2385,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
+  <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
       
-        总结
+        相关内容
       
     </span>
   </a>
@@ -2577,7 +2396,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_6" class="md-nav__link">
+  <a href="#_5" class="md-nav__link">
     <span class="md-ellipsis">
       
         参考资料
@@ -2763,8 +2582,6 @@
       
         
       
-        
-      
     
     
     
@@ -2783,7 +2600,7 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_5" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6_4" >
         
           
           <div class="md-nav__link md-nav__container">
@@ -2805,14 +2622,14 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_3_5" id="__nav_3_5_label" tabindex="">
+              <label class="md-nav__link " for="__nav_6_4" id="__nav_6_4_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_5">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_4">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2908,144 +2725,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../fingerprinting/evasion-techniques/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    规避技术
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-          
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-          
-          
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_6" >
-        
-          
-          <div class="md-nav__link md-nav__container">
-            <a href="../../guides/" class="md-nav__link ">
-              
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    实用指南
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_3_6" id="__nav_3_6_label" tabindex="">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_6">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    实用指南
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../guides/selectors-guide/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    CSS选择器 vs XPath
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -3072,8 +2751,6 @@
       
         
           
-        
-      
         
       
         
@@ -3101,7 +2778,7 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
         
           
           <div class="md-nav__link md-nav__container">
@@ -3123,14 +2800,14 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -3161,8 +2838,6 @@
       
         
       
-        
-      
     
     
     
@@ -3178,10 +2853,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_2" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_2" >
         
           
-          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7_2" id="__nav_7_2_label" tabindex="0">
             
   
   
@@ -3199,8 +2874,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_2">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_2">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -3308,7 +2983,7 @@
   <span class="md-ellipsis">
     
   
-    标签页
+    Tab
   
 
     
@@ -3336,35 +3011,7 @@
   <span class="md-ellipsis">
     
   
-    请求
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/browser/managers/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    管理器
+    Requests
   
 
     
@@ -3399,8 +3046,6 @@
       
         
       
-        
-      
     
     
     
@@ -3416,10 +3061,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_3" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_3" >
         
           
-          <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7_3" id="__nav_7_3_label" tabindex="0">
             
   
   
@@ -3437,8 +3082,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_3">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_3">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -3462,7 +3107,7 @@
   <span class="md-ellipsis">
     
   
-    Web元素
+    WebElement
   
 
     
@@ -3490,35 +3135,7 @@
   <span class="md-ellipsis">
     
   
-    Shadow根
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/elements/mixins/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    混合器
+    ShadowRoot
   
 
     
@@ -3546,39 +3163,15 @@
   
   
   
-    
-    
-      
+    <li class="md-nav__item">
+      <a href="../../../api/extraction/" class="md-nav__link">
         
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_4" >
-        
-          
-          <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="0">
-            
   
   
   <span class="md-ellipsis">
     
   
-    连接
+    Extraction
   
 
     
@@ -3586,19 +3179,11 @@
   
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_4">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    连接
+      </a>
+    </li>
   
 
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
+              
             
               
                 
@@ -3614,7 +3199,7 @@
   <span class="md-ellipsis">
     
   
-    连接处理器
+    Connection
   
 
     
@@ -3634,62 +3219,8 @@
   
   
   
-    <li class="md-nav__item">
-      <a href="../../../api/connection/managers/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    管理器
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
     
     
-      
-        
-          
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
       
         
       
@@ -3710,362 +3241,17 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_5" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_6" >
         
           
-          <div class="md-nav__link md-nav__container">
-            <a href="../../../api/commands/" class="md-nav__link ">
-              
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    命令
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_4_5" id="__nav_4_5_label" tabindex="0">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_5">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    命令
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/browser/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    浏览器
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/dom/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    DOM
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/input/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    输入
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/network/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    网络
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/page/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    页面
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/runtime/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    运行时
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/storage/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    存储
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/target/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    目标
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/fetch/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    获取
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_6" >
-        
-          
-          <label class="md-nav__link" for="__nav_4_6" id="__nav_4_6_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7_6" id="__nav_7_6_label" tabindex="0">
             
   
   
   <span class="md-ellipsis">
     
   
-    协议
+    Core
   
 
     
@@ -4076,362 +3262,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_6">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_6">
             <span class="md-nav__icon md-icon"></span>
             
   
-    协议
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/base/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    基础类型
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/browser/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    浏览器
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/dom/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    DOM
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/fetch/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    获取
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/input/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    输入
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/network/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    网络
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/page/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    页面
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/runtime/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    运行时
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/storage/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    存储
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/target/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    目标
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_7" >
-        
-          
-          <label class="md-nav__link" for="__nav_4_7" id="__nav_4_7_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    核心
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_7">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    核心
+    Core
   
 
           </label>
@@ -4493,34 +3329,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/core/utils/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    工具
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -4566,19 +3374,19 @@
   <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        网络堆栈
+        网络栈
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="网络堆栈">
+    <nav class="md-nav" aria-label="网络栈">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#osi" class="md-nav__link">
+  <a href="#proxy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        OSI 模型
+        层如何决定一个 proxy 能做什么
       
     </span>
   </a>
@@ -4587,17 +3395,6 @@
         
           <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        层级位置如何影响代理
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
       
         层泄露问题
@@ -4613,30 +3410,19 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#tcp-vs-udp" class="md-nav__link">
+  <a href="#tcp-udp" class="md-nav__link">
     <span class="md-ellipsis">
       
-        TCP vs UDP
+        TCP 与 UDP
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="TCP vs UDP">
+    <nav class="md-nav" aria-label="TCP 与 UDP">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#tcp" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        TCP 与代理
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#tcp_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         TCP 三次握手
@@ -4647,10 +3433,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#tcp-fingerprinting" class="md-nav__link">
+  <a href="#tcp_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        TCP Fingerprinting
+        TCP 指纹
       
     </span>
   </a>
@@ -4658,21 +3444,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#udp" class="md-nav__link">
+  <a href="#udpdns-quic" class="md-nav__link">
     <span class="md-ellipsis">
       
-        UDP
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#quic-http3" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        QUIC 与 HTTP/3
+        UDP、DNS 与 QUIC
       
     </span>
   </a>
@@ -4697,43 +3472,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#webrtc-ip_1" class="md-nav__link">
+  <a href="#icestun-candidate" class="md-nav__link">
     <span class="md-ellipsis">
       
-        WebRTC 如何泄露您的 IP
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#ice" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ICE 过程
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#ice_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ICE 候选者类型
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#stun" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        STUN 协议
+        ICE、STUN，以及会泄露的那些 candidate
       
     </span>
   </a>
@@ -4744,40 +3486,7 @@
   <a href="#webrtc" class="md-nav__link">
     <span class="md-ellipsis">
       
-        为什么代理无法阻止 WebRTC 泄露
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#pydoll-webrtc" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        在 Pydoll 中防止 WebRTC 泄露
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#webrtc_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        测试 WebRTC 泄露
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#webrtc_2" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        网站如何利用 WebRTC 泄露
+        防止 WebRTC 泄露
       
     </span>
   </a>
@@ -4790,10 +3499,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
+  <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
       
-        总结
+        相关内容
       
     </span>
   </a>
@@ -4801,7 +3510,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_6" class="md-nav__link">
+  <a href="#_5" class="md-nav__link">
     <span class="md-ellipsis">
       
         参考资料
@@ -4875,7 +3584,7 @@
         <a href="../" class="md-path__link">
           
   <span class="md-ellipsis">
-    网络与安全
+    网络与代理
   </span>
 
         </a>
@@ -4898,55 +3607,43 @@
 
 
 <h1 id="_1">网络基础</h1>
-<p>本文档涵盖了驱动互联网的基础网络协议，以及它们如何在自动化场景中暴露或保护您的身份。充分理解 TCP、UDP、OSI 模型和 WebRTC，将使代理配置不再神秘，并且更加有效。</p>
-<div class="admonition info">
-<p class="admonition-title">模块导航</p>
-<ul>
-<li><a href="../">网络与安全概述</a>：模块介绍和学习路径</li>
-<li><a href="../http-proxies/">HTTP/HTTPS 代理</a>：应用层代理</li>
-<li><a href="../socks-proxies/">SOCKS 代理</a>：会话层代理</li>
-</ul>
-<p>有关 Pydoll 的实际用法，请参阅<a href="../../../features/configuration/proxy/">代理配置</a>和<a href="../../../features/configuration/browser-options/">浏览器选项</a>。</p>
-</div>
-<h2 id="_2">网络堆栈</h2>
-<p>浏览器发出的每一个 HTTP 请求都会经过一个分层的网络堆栈。每一层都有特定的职责、协议和安全影响。代理在不同的层运行，运行的层决定了代理能看到、修改和隐藏什么。低层的网络特征即使通过代理也能对您的真实系统进行 fingerprinting，因此理解协议栈有助于了解身份泄露发生在哪里，以及如何防止它们。</p>
-<h3 id="osi">OSI 模型</h3>
-<p>OSI（开放系统互连）模型由 ISO 于 1984 年制定，提供了一个概念框架来理解网络协议是如何交互的。现实世界的网络使用 TCP/IP 模型（早于 OSI，只有 4 层），但 OSI 术语仍然是描述代理运行位置及其可访问内容的标准方式。</p>
+<p>你的浏览器发出的每一个请求，都会穿过一个分层的网络栈，而每一层都决定了一个 proxy 能看到、改变或隐藏什么，以及什么仍会泄露你真实的身份。理解这个栈，才能让 proxy 的行为变得可预测，而不再神秘。本页会走一遍这些层、TCP 和 UDP 协议，以及 WebRTC，也就是在被代理的自动化中最常见的 IP 泄露源头。</p>
+<p>实际配置见 <a href="../../../guides/proxies/">Proxy</a>。这些底层如何被转化为一个指纹，见 <a href="../../fingerprinting/network-fingerprinting/">网络指纹</a>。</p>
+<h2 id="_2">网络栈</h2>
+<p>Proxy 工作在不同的层上，而所在的层决定了它的触及范围。即便隔着一个完美无缺的高层 proxy，更底层的特征仍能给你的真实系统留下指纹，所以搞清楚每个协议所处的位置会很有帮助。</p>
+<p>OSI 模型（7 层）是一个教学参考；真实网络运行的是 TCP/IP 模型（4 层）。但 OSI 术语仍是人们描述一个 proxy 工作在哪里时的通用说法，所以值得了解。</p>
 <pre class="mermaid"><code>graph TD
-    L7[Layer 7: Application - HTTP, FTP, SMTP, DNS]
-    L6[Layer 6: Presentation - Encryption, Compression]
-    L5[Layer 5: Session - SOCKS]
-    L4[Layer 4: Transport - TCP, UDP]
-    L3[Layer 3: Network - IP, ICMP]
-    L2[Layer 2: Data Link - Ethernet, WiFi]
-    L1[Layer 1: Physical - Cables, Radio Waves]
+    L7[第 7 层：应用层 - HTTP, FTP, SMTP, DNS]
+    L6[第 6 层：表示层 - 加密, 压缩]
+    L5[第 5 层：会话层 - SOCKS]
+    L4[第 4 层：传输层 - TCP, UDP]
+    L3[第 3 层：网络层 - IP, ICMP]
+    L2[第 2 层：数据链路层 - Ethernet, WiFi]
+    L1[第 1 层：物理层 - 线缆, 无线电波]
 
     L7 --&gt; L6 --&gt; L5 --&gt; L4 --&gt; L3 --&gt; L2 --&gt; L1</code></pre>
-<p>第 7 层（应用层）是面向用户的协议所在层：HTTP、HTTPS、FTP、SMTP 和 DNS 都在这里运行。这一层包含应用程序关心的实际数据，如 HTML 文档、JSON 响应和文件传输。HTTP 代理在这一层运行，因此对请求和响应内容具有完全的可见性。</p>
-<p>第 6 层（表示层）处理数据格式转换、加密和压缩。SSL/TLS 通常与这一层关联，因为它承担加密职责，但实际上 TLS 横跨第 4 层到第 6 层，无法干净地映射到单个 OSI 层。对自动化来说重要的是，HTTPS 加密发生在这里，在数据传递到下层之前对第 7 层数据进行加密。</p>
-<p>第 5 层（会话层）管理应用程序之间的连接。SOCKS 代理在这一层运行，低于应用层但高于传输层。这个位置使得 SOCKS 与协议无关：它可以代理任何第 7 层协议（HTTP、FTP、SMTP、SSH），而无需理解它们的具体内容。</p>
-<p>第 4 层（传输层）提供端到端的数据传输。TCP（面向连接、可靠）和 UDP（无连接、快速）是这一层的主要协议。这一层处理端口号、流量控制和错误纠正。所有代理最终都依赖第 4 层进行实际的数据传输。</p>
-<p>第 3 层（网络层）处理网络之间的路由和寻址。IP（互联网协议）在这一层运行，管理 IP 地址和路由决策。您的真实 IP 地址就在这一层，也是代理试图替换它的地方。</p>
-<p>第 2 层（数据链路层）管理同一物理网段上的通信。以太网、Wi-Fi 和 PPP 在这里运行，处理 MAC 地址和帧传输。MAC 地址仅在本地网段可见，远程服务器无法直接访问，但它们可能通过 IPv6 SLAAC（将 MAC 嵌入地址中）等协议暴露。</p>
-<p>第 1 层（物理层）是实际的硬件：电缆、无线电波和电压水平。与软件自动化几乎无关。</p>
-<div class="admonition tip">
-<p class="admonition-title">OSI vs TCP/IP</p>
-<p>TCP/IP 模型（4 层：链路层、互联网层、传输层、应用层）是网络实际使用的模型。OSI（7 层）是教学工具和参考模型。当人们说"第 7 层代理"时，他们使用的是 OSI 术语，但实际实现运行在 TCP/IP 上。</p>
-</div>
-<h3 id="_3">层级位置如何影响代理</h3>
-<p>代理运行的层级决定了它能做什么和不能做什么。</p>
-<p>HTTP/HTTPS 代理运行在第 7 层（应用层）。因为它们理解 HTTP，所以可以读取和修改 URL、标头、Cookie 和请求正文。它们可以根据 HTTP 语义智能缓存响应，按 URL 或关键字过滤内容，以及注入身份验证标头。代价是它们只理解 HTTP。它们无法代理 FTP、SMTP、SSH 或其他协议，而且检查 HTTPS 内容需要 TLS 终止，即解密然后重新加密流量。</p>
-<p>SOCKS 代理运行在第 5 层（会话层）。因为它们位于应用层之下，所以与协议无关，可以在不修改的情况下代理任何第 7 层协议。HTTPS 流量以端到端加密方式通过，因为 SOCKS 代理无需对其解密。SOCKS5 还支持 UDP，使其能够代理 DNS 查询、VoIP 和其他基于 UDP 的协议。代价是 SOCKS 代理对应用层数据没有可见性：它们无法缓存、按 URL 过滤或检查内容。它们只能按 IP 和端口进行过滤。</p>
+<p>对自动化重要的那些层：</p>
+<ul>
+<li><strong>第 7 层，应用层。</strong> HTTP、HTTPS、FTP、SMTP、DNS。你的代码真正关心的实际数据。HTTP proxy 位于此处，对请求和响应有完整的可见性。</li>
+<li><strong>第 6 层，表示层。</strong> 加密和压缩。TLS 与这一层相关联，尽管实际上它横跨第 4 到第 6 层。</li>
+<li><strong>第 5 层，会话层。</strong> SOCKS proxy 位于此处，在应用层之下，这使它们与协议无关。</li>
+<li><strong>第 4 层，传输层。</strong> TCP（可靠）和 UDP（快速）。端口、流控、纠错。每一个 proxy 都依赖这一层来搬运数据。</li>
+<li><strong>第 3 层，网络层。</strong> IP 寻址和路由。你的真实 IP 就在这里，也正是 proxy 所替换掉的东西。</li>
+<li><strong>第 2 层，数据链路层。</strong> Ethernet 和 Wi-Fi，MAC 地址。只在本地网段可见，远端服务器看不到（不过 IPv6 SLAAC 可能会把 MAC 嵌入地址中）。</li>
+<li><strong>第 1 层，物理层。</strong> 线缆和无线电。与自动化很少相关。</li>
+</ul>
+<h3 id="proxy">层如何决定一个 proxy 能做什么</h3>
+<p>第 7 层的 HTTP/HTTPS proxy 理解 HTTP，所以它可以读取和重写 URL、header、cookie 和 body，按 HTTP 语义缓存，并注入 header。作为交换，它只讲 HTTP，而检视 HTTPS 意味着要终结 TLS（解密、再加密）。</p>
+<p>第 5 层的 SOCKS proxy 位于应用层之下，所以它与协议无关：它原封不动地转发任何第 7 层协议，让 HTTPS 端到端加密地穿过，而且 SOCKS5 还能承载 UDP。代价是没有应用层的可见性：它能按 IP 和端口过滤，但不能按 URL 或内容过滤。</p>
 <div class="admonition note">
-<p class="admonition-title">根本性的权衡</p>
-<p>更高层（第 7 层）给您更多控制，但灵活性更低。更低层（第 5 层）给您更少控制，但灵活性更高。需要内容控制时选择 HTTP 代理，需要协议灵活性或端到端加密时选择 SOCKS 代理。</p>
+<p class="admonition-title">取舍</p>
+<p>更高的层给你更多内容控制，但更少的协议灵活性；更低的层则反过来。要内容控制就选 HTTP proxy，要协议灵活性或端到端加密就选 SOCKS proxy。</p>
 </div>
-<h3 id="_4">层泄露问题</h3>
-<p>即使有完美的第 7 层代理，低层的特征也能暴露您的真实身份。您操作系统的 TCP 堆栈在第 4 层有独特的 fingerprint，由窗口大小、选项顺序和 TTL 值定义。第 3 层的 IP 标头字段（如 TTL 和分片行为）会揭示您的操作系统和网络拓扑。</p>
-<p>例如，如果您配置代理来显示 "Windows 10" 的 User-Agent，但您实际 Linux 系统的 TCP fingerprint 在第 4 层与此相矛盾，复杂的检测系统就能将这种不一致标记为强烈的机器人指标。这就是网络级 fingerprinting（在<a href="../../fingerprinting/network-fingerprinting/">网络指纹</a>中介绍）如此危险的原因：它运行在代理层之下，即使应用层代理完美无缺，也会暴露您的真实系统。</p>
-<h2 id="tcp-vs-udp">TCP vs UDP</h2>
-<p>在第 4 层（传输层），两种根本不同的协议主导着互联网通信。它们代表了相反的设计理念：可靠性与速度。</p>
-<p>TCP 是面向连接的。可以把它想象成打电话：您建立连接，确认对方正在收听，可靠地交换数据，然后挂断。每个字节都会被确认、排序，并保证到达。UDP 是无连接的。您发送数据，希望它能到达。没有 handshake，没有确认，没有保证。只有原始的速度和最小的开销。</p>
+<h3 id="_3">层泄露问题</h3>
+<p>即便是一个完美的第 7 层 proxy，也无法改变更底层所暴露的东西。你操作系统在第 4 层的 TCP 栈有一个指纹（窗口大小、选项顺序、TTL），而第 3 层的 IP header 字段会暴露操作系统和网络拓扑。如果你呈现一个 Windows 的 User-Agent，而你 Linux 内核的 TCP 指纹却另有说法，那么一个把两者关联起来的系统就会标记出这处不一致。这正是 <a href="../../fingerprinting/network-fingerprinting/">网络指纹</a> 危险之处：它工作在 proxy 之下。</p>
+<h2 id="tcp-udp">TCP 与 UDP</h2>
+<p>在第 4 层，有两个协议占主导地位，它们的优先取向恰好相反：可靠性对速度。</p>
+<p>TCP 是面向连接的，就像打电话：你建立一个连接，交换数据时每个字节都被确认并保序，然后关闭它。UDP 是无连接的：你发出一个数据报，然后寄希望于它能送达，没有握手也没有任何保证，换来的是最小的开销。</p>
 <table>
 <thead>
 <tr>
@@ -4958,335 +3655,156 @@
 <tbody>
 <tr>
 <td>连接</td>
-<td>面向连接（需要 handshake）</td>
-<td>无连接（无需 handshake）</td>
+<td>面向连接（有握手）</td>
+<td>无连接（无握手）</td>
 </tr>
 <tr>
 <td>可靠性</td>
-<td>保证交付，有序数据包</td>
-<td>尽力而为交付，数据包可能丢失</td>
+<td>保证送达、保序</td>
+<td>尽力而为，可能丢包</td>
 </tr>
 <tr>
 <td>速度</td>
-<td>较慢（可靠性机制带来开销）</td>
-<td>较快（最小开销）</td>
+<td>较慢（可靠性开销）</td>
+<td>较快（开销极小）</td>
 </tr>
 <tr>
-<td>用例</td>
-<td>网页浏览、文件传输、电子邮件</td>
-<td>视频流、DNS 查询、游戏</td>
+<td>使用场景</td>
+<td>Web、文件传输、邮件</td>
+<td>流媒体、DNS、游戏、WebRTC</td>
 </tr>
 <tr>
-<td>标头大小</td>
-<td>最小 20 字节（带选项时可达 60）</td>
+<td>Header 大小</td>
+<td>20 字节（最多 60）</td>
 <td>固定 8 字节</td>
 </tr>
 <tr>
-<td>流量控制</td>
-<td>有（滑动窗口，接收方驱动）</td>
-<td>无（发送方随意传输）</td>
+<td>流控/拥塞控制</td>
+<td>有</td>
+<td>无</td>
 </tr>
 <tr>
-<td>拥塞控制</td>
-<td>有（网络拥塞时减速）</td>
-<td>无（应用程序的责任）</td>
-</tr>
-<tr>
-<td>错误检查</td>
-<td>广泛（校验和 + 确认）</td>
-<td>基本（仅校验和；在 IPv4 中可选，在 IPv6 中强制）</td>
-</tr>
-<tr>
-<td>排序</td>
-<td>乱序接收时重新排序数据包</td>
-<td>无排序，按接收顺序交付</td>
-</tr>
-<tr>
-<td>重传</td>
-<td>自动（丢失的数据包会重传）</td>
-<td>无（应用程序必须处理）</td>
+<td>保序/重传</td>
+<td>有</td>
+<td>无</td>
 </tr>
 </tbody>
 </table>
-<h3 id="tcp">TCP 与代理</h3>
-<p>所有代理协议（HTTP、HTTPS、SOCKS4、SOCKS5）都使用 TCP 作为其控制通道。这是因为代理身份验证和命令交换需要保证交付，代理协议有严格的命令序列（handshake，然后认证，然后数据），代理需要持久连接来跟踪客户端状态。</p>
-<p>然而，SOCKS5 还可以代理 UDP 流量，这与 SOCKS4 或 HTTP 代理不同。这使得 SOCKS5 对于代理 DNS 查询、WebRTC 音频/视频、VoIP 和游戏协议至关重要。</p>
-<div class="admonition danger">
-<p class="admonition-title">UDP 与 IP 泄露</p>
-<p>大多数浏览器连接使用 TCP（HTTP、WebSocket 等），但 WebRTC 直接使用 UDP，绕过了浏览器的代理配置。这是代理浏览器自动化中 IP 泄露的最常见原因：您的 TCP 流量通过代理传输，而 UDP 流量却泄露了您的真实 IP。</p>
-</div>
-<h3 id="tcp_1">TCP 三次握手</h3>
-<p>在传输任何数据之前，TCP 需要三次 handshake 来建立连接。这个协商过程同步序列号，商定窗口大小，并在两端建立连接状态。</p>
+<p>所有 proxy 协议（HTTP、HTTPS、SOCKS4、SOCKS5）都用 TCP 作为它们的控制通道，因为认证和命令序列需要有保证的送达。SOCKS5 额外还能代理 UDP，而这是 SOCKS4 和 HTTP proxy 做不到的。</p>
+<h3 id="tcp">TCP 三次握手</h3>
+<p>在任何数据传输之前，TCP 会进行一次三次握手，以同步序列号和连接状态。</p>
 <pre class="mermaid"><code>sequenceDiagram
-    participant Client
-    participant Server
+    participant Client as 客户端
+    participant Server as 服务器
 
-    Client-&gt;&gt;Server: SYN (Synchronize, seq=x)
-    Note over Client,Server: Client requests connection
-
+    Client-&gt;&gt;Server: SYN (seq=x)
     Server-&gt;&gt;Client: SYN-ACK (seq=y, ack=x+1)
-    Note over Client,Server: Server acknowledges and sends its own SYN
-
     Client-&gt;&gt;Server: ACK (ack=y+1)
-    Note over Client,Server: Connection established, data transfer begins</code></pre>
-<p>该过程从客户端发送 SYN（同步）包开始，其中包含一个随机的初始序列号（ISN），例如 <code>seq=1000</code>。除了 ISN 之外，还会协商 TCP 选项：窗口大小、最大分段大小（MSS）、时间戳和 SACK 支持。</p>
-<p>服务器以 SYN-ACK 响应：它选择自己的随机 ISN（例如 <code>seq=5000</code>），并通过设置 <code>ack=1001</code>（客户端的 ISN + 1）来确认客户端的 ISN。这个单一的包既建立了服务器到客户端的方向（SYN），又确认了客户端到服务器的方向（ACK）。服务器还会返回自己的 TCP 选项。</p>
-<p>然后客户端发送最终的 ACK，确认服务器的 ISN（<code>ack=5001</code>）。此时连接在两个方向上都已完全建立，数据传输可以开始。</p>
-<p>ISN 是随机化的而非从零开始，以防止 TCP 劫持攻击。如果 ISN 是可预测的，攻击者可以通过猜测序列号将数据包注入到现有连接中。现代系统使用加密随机性来选择 ISN（RFC 6528）。</p>
-<h3 id="tcp-fingerprinting">TCP Fingerprinting</h3>
-<p>TCP handshake 揭示了能够 fingerprint 您操作系统的特征。不同操作系统对初始窗口大小、TCP 选项顺序、TTL（生存时间）、窗口缩放因子和时间戳行为使用不同的默认值。这些值由内核设置，而不是浏览器，因此代理无法更改它们。</p>
-<p>以下是现代操作系统的示例值。请注意，实际值因操作系统版本、内核配置和网络调优而异：</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Windows 10/11 (modern builds):
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    Window Size: 65535
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    MSS: 1460
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    Options: MSS, NOP, WS, NOP, NOP, SACK_PERM
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    TTL: 128
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>Linux (kernel 5.x+, Ubuntu 20.04+):
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    Window Size: 29200
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    MSS: 1460
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    Options: MSS, SACK_PERM, TS, NOP, WS
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    TTL: 64
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>macOS (Monterey+):
-</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    Window Size: 65535
-</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>    TTL: 64
+    Note over Client,Server: 连接已建立</code></pre>
+<p>客户端发送一个 SYN，携带一个随机的初始序列号（Initial Sequence Number）和它的 TCP 选项（窗口大小、MSS、时间戳、SACK）。服务器回复一个 SYN-ACK：它自己的随机 ISN，外加对客户端 ISN 的确认。客户端发送最后一个 ACK，连接便在双向上都打开了。ISN 被随机化（RFC 6528），以防止攻击者靠猜测序列号来注入数据包。</p>
+<h3 id="tcp_1">TCP 指纹</h3>
+<p>握手会暴露操作系统特有的值：初始窗口大小、选项顺序、TTL 和窗口缩放。这些由内核设定，而非浏览器，所以 proxy 无法改变它们。示意性的默认值（会随版本和调优而变化）：</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Windows 10/11:  Window 65535,  TTL 128,  Options: MSS, NOP, WS, NOP, NOP, SACK_PERM
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>Linux 5.x+:     Window 29200,  TTL 64,   Options: MSS, SACK_PERM, TS, NOP, WS
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>macOS:          Window 65535,  TTL 64
 </span></code></pre></div>
-<p>这些差异烙印在内核中。代理无法更改它们，因为它们是由您的操作系统而不是浏览器设置的。这就是复杂的检测系统即使通过代理也能识别您的原因。</p>
 <div class="admonition warning">
-<p class="admonition-title">代理的局限性</p>
-<p>HTTP 和 SOCKS 代理运行在 TCP 层之上。它们无法修改 TCP handshake 特征。您操作系统的 TCP fingerprint 始终暴露给代理服务器以及您和代理之间的任何网络观察者。只有 VPN 级别的解决方案或操作系统级的 TCP 堆栈配置才能解决这个问题。</p>
+<p class="admonition-title">proxy 无法隐藏你的 TCP 指纹</p>
+<p>HTTP 和 SOCKS proxy 都位于 TCP 之上，所以你操作系统的 TCP 指纹会一直到达 proxy，以及你和它之间的任何观察者。只有 VPN 层级的路由，或操作系统层级的栈调优，才能改变它。紧随其后的 TLS 握手又会加上另一个指纹（JA3/JA4）；见 <a href="../../fingerprinting/network-fingerprinting/">网络指纹</a>。</p>
 </div>
-<div class="admonition note">
-<p class="admonition-title">TCP Fingerprinting 之外</p>
-<p>TCP handshake 只是第一个 fingerprinting 机会。紧接着，TLS handshake 会揭示另一个独特的 fingerprint，即 JA3/JA4。详情请参阅<a href="../../fingerprinting/network-fingerprinting/">网络指纹</a>。</p>
-</div>
-<h3 id="udp">UDP</h3>
-<p>与 TCP 可靠、面向连接的方法不同，UDP 是一种"发射后不管"的协议。它以可靠性换取最小的延迟和开销，使其成为实时应用的理想选择，因为在这些应用中速度比完美交付更重要。</p>
-<p>UDP 数据报只有 8 字节标头（相比 TCP 的 20-60 字节），包含源端口、目标端口、长度和校验和。没有连接建立，没有可靠性保证，没有流量控制，没有拥塞控制。如果数据包丢失，应用程序必须自行决定是否以及如何处理。</p>
-<p>UDP 适用于实时通信（通过 WebRTC 和 VoIP 进行的语音/视频通话）、游戏（低延迟的状态更新）、流媒体（偶尔的帧丢失可以接受）和 DNS 查询（小型请求/响应对，应用程序处理重试）。它不适合文件传输、网页浏览、电子邮件或数据库，这些都需要可靠、有序的交付。</p>
-<p>DNS 在自动化上下文中是一个特别重要的例子。DNS 使用 UDP 是因为查询通常很小，并且受益于 UDP 零 handshake 的开销优势。虽然 EDNS0（RFC 6891）将最大 UDP DNS 负载增加到了原始 512 字节限制之上，但大多数查询仍然很紧凑。如果响应未在超时时间内到达，DNS 客户端会在应用层处理重试。</p>
-<p>对于浏览器自动化，UDP 的关键问题是 WebRTC 使用它进行实时音频和视频，DNS 查询使用它进行域名解析，而大多数代理（HTTP、HTTPS、SOCKS4）只处理 TCP。除非您显式配置 UDP 代理，否则这些流量会绕过您的代理并泄露您的真实 IP。</p>
+<h3 id="udpdns-quic">UDP、DNS 与 QUIC</h3>
+<p>UDP 是发了就不管：一个 8 字节的 header，没有连接，没有可靠性。它适合实时媒体（WebRTC、VoIP）、游戏和 DNS，这些场景由应用自己来处理任何重试。DNS 使用 UDP，是因为查询很小，且能从零握手开销中获益。</p>
+<p>自动化上的顾虑在于，大多数 proxy 只承载 TCP，所以 UDP 流量可能绕过 proxy 而暴露你的真实 IP：</p>
 <table>
 <thead>
 <tr>
-<th>代理类型</th>
+<th>Proxy 类型</th>
 <th>UDP 支持</th>
-<th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>HTTP 代理</td>
-<td>否</td>
-<td>只代理基于 TCP 的 HTTP/HTTPS</td>
-</tr>
-<tr>
-<td>HTTPS 代理 (CONNECT)</td>
-<td>否</td>
-<td>CONNECT 方法只建立 TCP 隧道</td>
+<td>HTTP / HTTPS (CONNECT)</td>
+<td>否（仅 TCP 隧道）</td>
 </tr>
 <tr>
 <td>SOCKS4</td>
 <td>否</td>
-<td>仅 TCP 协议</td>
 </tr>
 <tr>
 <td>SOCKS5</td>
-<td>是</td>
-<td>通过 <code>UDP ASSOCIATE</code> 命令支持 UDP 中继</td>
+<td>是（通过 <code>UDP ASSOCIATE</code>）</td>
 </tr>
 <tr>
 <td>VPN</td>
-<td>是</td>
-<td>隧道传输所有 IP 流量（TCP 和 UDP）</td>
+<td>是（隧道承载所有 IP 流量）</td>
 </tr>
 </tbody>
 </table>
-<p>为了在浏览器自动化中实现真正的匿名，您需要：支持 UDP 的 SOCKS5 代理并将 WebRTC 配置为使用它、完全禁用 WebRTC（这会破坏视频会议）、隧道传输所有流量的 VPN，或者浏览器标志 <code>--force-webrtc-ip-handling-policy=disable_non_proxied_udp</code>。</p>
-<h3 id="quic-http3">QUIC 与 HTTP/3</h3>
-<p>现代浏览器越来越多地使用 QUIC（RFC 9000），这是一种基于 UDP 的传输协议，为 HTTP/3 提供支持。由于 QUIC 运行在 UDP 上，它与 WebRTC 和 DNS 存在相同的代理绕过问题：大多数 HTTP 代理无法处理 QUIC 流量，它可能会泄露到您的代理配置之外。</p>
-<p>在自动化场景中，考虑使用 <code>--disable-quic</code> Chrome 标志禁用 QUIC，以强制使用基于 TCP 的 HTTP/2，确保所有网页流量通过您的代理。QUIC 还有自己的 fingerprinting 特征，类似于 TLS 的 JA3，增加了另一个检测向量。</p>
+<p>现代 Chrome 还会使用 QUIC（RFC 9000），也就是 HTTP/3 背后基于 UDP 的传输，它带有同样的绕过风险，并有它自己的指纹。在自动化中，你可以用 <code>--disable-quic</code> 强制走 TCP 上的 HTTP/2，让所有 web 流量都遵循你的 proxy。</p>
 <h2 id="webrtc-ip">WebRTC 与 IP 泄露</h2>
-<p>WebRTC（Web 实时通信）是 W3C 标准化的浏览器 API，支持浏览器之间直接进行点对点的音频、视频和数据通信，无需插件或中介服务器。虽然 WebRTC 对实时应用功能强大，但它是代理浏览器自动化中最大的 IP 泄露源。</p>
-<h3 id="webrtc-ip_1">WebRTC 如何泄露您的 IP</h3>
-<p>WebRTC 专为直接的点对点连接设计，优先考虑低延迟而非隐私。为了建立 P2P 连接，WebRTC 必须发现您的真实公共 IP 地址并与远程对等方共享，即使您的浏览器配置为使用代理。</p>
-<p>问题是这样展开的：您的浏览器使用代理处理 HTTP/HTTPS 流量（即 TCP），但 WebRTC 使用 STUN 服务器通过 UDP 发现您的真实公共 IP。STUN 查询绕过代理，因为大多数代理只处理 TCP。您的真实 IP 被发现并作为连接协商的一部分与远程对等方共享。页面上的 JavaScript 可以读取这些"ICE 候选者"并将您的真实 IP 发送到网站的服务器。</p>
-<div class="admonition danger">
-<p class="admonition-title">WebRTC 泄露的严重性</p>
-<p>即使正确配置了 HTTP 代理、HTTPS 代理工作正常、DNS 查询被代理、User-Agent 被伪造、canvas fingerprinting 被缓解，WebRTC 仍然可以在毫秒内泄露您的真实 IP。这是因为 WebRTC 运行在浏览器的代理层之下，直接与操作系统的网络堆栈交互。</p>
-</div>
-<h3 id="ice">ICE 过程</h3>
-<p>WebRTC 使用 ICE（交互式连接建立，RFC 8445）来发现可能的连接路径并选择最佳路径。这个过程本身就会揭示您的网络拓扑，它收集三种类型的候选者。</p>
+<p>WebRTC 让浏览器之间可以直接进行点对点的音频、视频和数据传输。它以低延迟为优化目标而非隐私，是被代理的自动化中最常见的单一 IP 泄露源头：即便每一个 HTTP 层都被正确代理，它仍能暴露你的真实 IP。</p>
+<p>为了建立一个 P2P 连接，WebRTC 会通过 STUN 服务器经由 UDP 发现你的公网 IP。这些查询会绕过只走 TCP 的 proxy，IP 便落进了连接的 ICE candidate 里，而页面上的 JavaScript 可以读取这些 candidate 并把你的真实 IP 发给服务器。</p>
+<h3 id="icestun-candidate">ICE、STUN，以及会泄露的那些 candidate</h3>
+<p>WebRTC 使用 ICE（RFC 8445）来收集可能的连接路径，称为 candidate，而正是这个收集过程暴露了你的网络。</p>
 <pre class="mermaid"><code>sequenceDiagram
-    participant Browser
-    participant STUN as STUN Server
-    participant TURN as TURN Relay
-    participant Peer as Remote Peer
+    participant Browser as 浏览器
+    participant STUN as STUN 服务器
+    participant Peer as 远端对等方
 
-    Note over Browser: WebRTC connection initiated
-
-    Browser-&gt;&gt;Browser: Gather local IP addresses&lt;br/&gt;(LAN interfaces)
-    Note over Browser: Local candidate:&lt;br/&gt;192.168.1.100:54321
-
-    Browser-&gt;&gt;STUN: STUN Binding Request (over UDP)
-    Note over STUN: STUN server discovers public IP&lt;br/&gt;(bypasses proxy!)
-    STUN-&gt;&gt;Browser: STUN Response with real public IP
-    Note over Browser: Server reflexive candidate:&lt;br/&gt;203.0.113.45:54321
-
-    Browser-&gt;&gt;TURN: Allocate relay (if needed)
-    TURN-&gt;&gt;Browser: Relay address assigned
-    Note over Browser: Relay candidate:&lt;br/&gt;198.51.100.10:61234
-
-    Browser-&gt;&gt;Peer: Send all ICE candidates&lt;br/&gt;(local + public + relay)
-    Note over Peer: Now knows your:&lt;br/&gt;- LAN IP&lt;br/&gt;- Real public IP&lt;br/&gt;- Relay address
-
-    Peer-&gt;&gt;Browser: Send ICE candidates
-
-    Note over Browser,Peer: ICE negotiation: try direct P2P first
-
-    alt Direct P2P succeeds
-        Browser&lt;&lt;-&gt;&gt;Peer: Direct connection (bypasses proxy entirely!)
-    else Direct P2P fails (firewall/NAT)
-        Browser-&gt;&gt;TURN: Use TURN relay
-        TURN&lt;&lt;-&gt;&gt;Peer: Relayed connection
-        Note over Browser,Peer: Higher latency, but works
-    end</code></pre>
-<h3 id="ice_1">ICE 候选者类型</h3>
-<p>ICE 发现三种类型的候选者（可能的连接端点），每种类型揭示关于您网络的不同信息。</p>
-<p><strong>主机候选者</strong>是您的本地局域网 IP 地址。浏览器枚举所有本地网络接口，并为每个接口创建候选者。这会揭示您在专用网络上的本地 IP 地址、网络拓扑（是否存在 VPN 接口、虚拟机网桥）以及网络接口的数量。</p>
-<div class="language-javascript highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1">// Example host candidates</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nx">candidate</span><span class="o">:</span><span class="mf">1</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="nx">UDP</span><span class="w"> </span><span class="mf">2130706431</span><span class="w"> </span><span class="mf">192.168.1.100</span><span class="w"> </span><span class="mf">54321</span><span class="w"> </span><span class="nx">typ</span><span class="w"> </span><span class="nx">host</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="nx">candidate</span><span class="o">:</span><span class="mf">2</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="nx">UDP</span><span class="w"> </span><span class="mf">2130706431</span><span class="w"> </span><span class="mf">10.0.0.5</span><span class="w"> </span><span class="mf">54322</span><span class="w"> </span><span class="nx">typ</span><span class="w"> </span><span class="nx">host</span>
-</span></code></pre></div>
-<p>现代浏览器（Chrome 75+、Firefox 78+、Safari）通过在未授予媒体权限（摄像头/麦克风）时将本地 IP 地址替换为临时的 mDNS 名称（例如 <code>a1b2c3d4.local</code>）来缓解主机候选者泄露。然而，无论 mDNS 如何，服务器自反候选者（您的公共 IP）仍然会暴露。</p>
-<p><strong>服务器自反候选者</strong>是 STUN 服务器看到的您的公共 IP。浏览器向公共 STUN 服务器发送请求，后者回复您的公共 IP 地址。这就是人们常说的泄露：您的代理显示一个 IP，但 WebRTC 揭示了您的真实 IP，连同您的 NAT 类型、外部端口映射和 ISP 信息。</p>
-<div class="language-javascript highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1">// Server reflexive candidate (your real public IP)</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="nx">candidate</span><span class="o">:</span><span class="mf">4</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="nx">UDP</span><span class="w"> </span><span class="mf">1694498815</span><span class="w"> </span><span class="mf">203.0.113.45</span><span class="w"> </span><span class="mf">54321</span><span class="w"> </span><span class="nx">typ</span><span class="w"> </span><span class="nx">srflx</span><span class="w"> </span><span class="nx">raddr</span><span class="w"> </span><span class="mf">192.168.1.100</span><span class="w"> </span><span class="nx">rport</span><span class="w"> </span><span class="mf">54321</span>
-</span></code></pre></div>
-<p><strong>中继候选者</strong>是在直接 P2P 失败时用作后备的 TURN 服务器地址。根据 TURN 服务器实现的不同，中继候选者的 <code>raddr</code>（远程地址）字段中可能仍然包含您的真实 IP。</p>
-<div class="language-javascript highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1">// Relay candidate (TURN server address)</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nx">candidate</span><span class="o">:</span><span class="mf">5</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="nx">UDP</span><span class="w"> </span><span class="mf">16777215</span><span class="w"> </span><span class="mf">198.51.100.10</span><span class="w"> </span><span class="mf">61234</span><span class="w"> </span><span class="nx">typ</span><span class="w"> </span><span class="nx">relay</span><span class="w"> </span><span class="nx">raddr</span><span class="w"> </span><span class="mf">203.0.113.45</span><span class="w"> </span><span class="nx">rport</span><span class="w"> </span><span class="mf">54321</span>
-</span></code></pre></div>
-<h3 id="stun">STUN 协议</h3>
-<p>STUN（NAT 会话穿透实用工具，RFC 8489）是一个简单的基于 UDP 的请求-响应协议。它的工作很直接：客户端询问"您看到的我是什么 IP？"，服务器回复客户端的公共 IP 和端口。</p>
-<p>客户端发送一个绑定请求，其中包含一个魔法 Cookie（<code>0x2112A442</code>，RFC 定义的固定值）和一个随机的 12 字节事务 ID。服务器响应一个绑定成功响应，其中包含一个 <code>XOR-MAPPED-ADDRESS</code> 属性，包含从服务器角度看到的客户端公共 IP 和端口。</p>
-<p>响应中的 IP 地址与魔法 Cookie 和事务 ID 进行了异或运算。这不是为了安全，而是为了 NAT 兼容性：一些 NAT 设备会错误地修改数据包负载中的 IP 地址，异或运算混淆了地址以防止这种干扰。</p>
-<p>浏览器常用的公共 STUN 服务器包括 <code>stun.l.google.com:19302</code>（Google）、<code>stun1.l.google.com:19302</code>（Google）、<code>stun.services.mozilla.com</code>（Mozilla）和 <code>stun.stunprotocol.org:3478</code>。</p>
-<h3 id="webrtc">为什么代理无法阻止 WebRTC 泄露</h3>
-<p>WebRTC 泄露发生有几个相互强化的原因。首先，WebRTC 使用 UDP，而大多数代理（HTTP、HTTPS CONNECT、SOCKS4）只处理 TCP。只有 SOCKS5 支持 UDP，即便如此，浏览器也必须显式配置为通过它路由 WebRTC。</p>
-<p>其次，WebRTC 是一个运行在 HTTP 层之下的浏览器 API。它直接访问操作系统网络堆栈，绕过为 HTTP/HTTPS 配置的代理设置。STUN 查询直接进入网络接口，操作系统路由表决定它们的路径，而不是浏览器的代理配置。只有 VPN 级别的路由才能拦截它们。</p>
-<p>第三，WebRTC 枚举所有网络接口（物理以太网、Wi-Fi、VPN 适配器、虚拟机网桥），包括未用于常规浏览的接口。这会泄露您的内部网络拓扑。</p>
-<p>最后，网页可以通过 JavaScript 使用 <code>RTCPeerConnection.onicecandidate</code> 事件读取 ICE 候选者，用简单的正则表达式从候选者字符串中提取 IP 地址，并将您的真实 IP 发送到他们的跟踪服务器。</p>
-<h3 id="pydoll-webrtc">在 Pydoll 中防止 WebRTC 泄露</h3>
-<p>Pydoll 提供了多种策略来防止 WebRTC IP 泄露。</p>
-<p><strong>方法 1：强制 WebRTC 仅使用代理路由（推荐）</strong></p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChromiumOptions</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="n">options</span><span class="o">.</span><span class="n">webrtc_leak_protection</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># Adds --force-webrtc-ip-handling-policy=disable_non_proxied_udp</span>
-</span></code></pre></div>
-<p>Pydoll 提供了一个便捷的 <code>webrtc_leak_protection</code> 属性来管理底层的 Chrome 标志。这会在没有代理支持 UDP 时禁用 UDP，强制 WebRTC 仅使用 TURN 中继（不使用直接 P2P），并阻止对公共服务器的 STUN 查询。代价是视频通话的延迟更高，因为直接 P2P 连接被禁用。</p>
-<p><strong>方法 2：完全禁用 WebRTC</strong></p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--disable-features=WebRTC'</span><span class="p">)</span>
-</span></code></pre></div>
-<p>这会完全禁用 WebRTC API，消除通过此向量发生 IP 泄露的任何可能性。代价是所有依赖 WebRTC 的网站（视频会议、语音通话）将无法工作。请注意，此标志应在您的特定 Chrome 版本上测试，因为功能标志名称可能因版本而异。</p>
-<p><strong>方法 3：通过浏览器首选项限制 WebRTC</strong></p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">options</span><span class="o">.</span><span class="n">browser_preferences</span> <span class="o">=</span> <span class="p">{</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="s1">'webrtc'</span><span class="p">:</span> <span class="p">{</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>        <span class="s1">'ip_handling_policy'</span><span class="p">:</span> <span class="s1">'disable_non_proxied_udp'</span><span class="p">,</span>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>        <span class="s1">'multiple_routes_enabled'</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>        <span class="s1">'nonproxied_udp_enabled'</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>        <span class="s1">'allow_legacy_tls_protocols'</span><span class="p">:</span> <span class="kc">False</span>
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="p">}</span>
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="p">}</span>
-</span></code></pre></div>
-<p>这与方法 1 效果相同，但通过首选项而非命令行标志实现。<code>multiple_routes_enabled</code> 防止使用多个网络路径，<code>nonproxied_udp_enabled</code> 阻止不通过代理的 UDP。</p>
-<p><strong>方法 4：使用支持 UDP 的 SOCKS5 代理</strong></p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--proxy-server=socks5://proxy.example.com:1080'</span><span class="p">)</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--force-webrtc-ip-handling-policy=default_public_interface_only'</span><span class="p">)</span>
-</span></code></pre></div>
-<p>SOCKS5 可以通过其 <code>UDP ASSOCIATE</code> 命令代理 UDP，允许 WebRTC 的 STUN 查询通过代理。这需要实际支持 UDP 中继的 SOCKS5 代理，而并非所有代理都支持。</p>
-<div class="admonition warning">
-<p class="admonition-title">SOCKS5 身份验证</p>
-<p>Chrome 不支持通过 <code>--proxy-server</code> 标志内联 SOCKS5 身份验证（例如 <code>socks5://user:pass@host:port</code>）。Pydoll 提供了内置的 <code>SOCKS5Forwarder</code> 来解决此限制，它运行一个本地无需身份验证的 SOCKS5 代理，将流量转发到远程经过身份验证的代理，代替 Chrome 处理用户名/密码 handshake。详情请参阅<a href="../../../features/configuration/proxy/">代理配置</a>。</p>
-</div>
-<h3 id="webrtc_1">测试 WebRTC 泄露</h3>
-<p>您可以通过访问 <a href="https://browserleaks.com/webrtc">browserleaks.com/webrtc</a> 并检查"Public IP Address"部分来手动测试。如果您看到的是您的真实 IP 而不是代理 IP，则说明存在泄露。</p>
-<p>使用 Pydoll 进行自动化测试：</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChromiumOptions</span>
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">test_webrtc_leak</span><span class="p">():</span>
-</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    <span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
-</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    <span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--proxy-server=http://proxy.example.com:8080'</span><span class="p">)</span>
-</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    <span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--force-webrtc-ip-handling-policy=disable_non_proxied_udp'</span><span class="p">)</span>
-</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>
-</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>    <span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">(</span><span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
-</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>        <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">'https://browserleaks.com/webrtc'</span><span class="p">)</span>
-</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>
-</span><span id="__span-8-14"><a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
-</span><span id="__span-8-15"><a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>
-</span><span id="__span-8-16"><a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>        <span class="n">ips</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">execute_script</span><span class="p">(</span><span class="s1">'''</span>
-</span><span id="__span-8-17"><a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a><span class="s1">            return Array.from(document.querySelectorAll('.ip-address'))</span>
-</span><span id="__span-8-18"><a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a><span class="s1">                .map(el =&gt; el.textContent.trim());</span>
-</span><span id="__span-8-19"><a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a><span class="s1">        '''</span><span class="p">)</span>
-</span><span id="__span-8-20"><a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a>
-</span><span id="__span-8-21"><a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a>        <span class="nb">print</span><span class="p">(</span><span class="s2">"Detected IPs:"</span><span class="p">,</span> <span class="n">ips</span><span class="p">)</span>
-</span><span id="__span-8-22"><a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a>        <span class="c1"># Should only show proxy IP, not your real IP</span>
-</span><span id="__span-8-23"><a id="__codelineno-8-23" name="__codelineno-8-23" href="#__codelineno-8-23"></a>
-</span><span id="__span-8-24"><a id="__codelineno-8-24" name="__codelineno-8-24" href="#__codelineno-8-24"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">test_webrtc_leak</span><span class="p">())</span>
-</span></code></pre></div>
-<div class="admonition danger">
-<p class="admonition-title">务必测试 WebRTC 泄露</p>
-<p>切勿假设您的代理配置能阻止 WebRTC 泄露。始终使用 <a href="https://browserleaks.com/webrtc">browserleaks.com/webrtc</a> 或 <a href="https://ipleak.net">ipleak.net</a> 进行验证。即使是单个 WebRTC 泄露也会立即危及您的整个代理设置，因为网站现在知道了您的真实位置、ISP 和网络拓扑。</p>
-</div>
-<h3 id="webrtc_2">网站如何利用 WebRTC 泄露</h3>
-<p>网站可以用几行 JavaScript 有意触发 WebRTC 来提取您的真实 IP：</p>
-<div class="language-javascript highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kd">const</span><span class="w"> </span><span class="nx">pc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">RTCPeerConnection</span><span class="p">({</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">    </span><span class="nx">iceServers</span><span class="o">:</span><span class="w"> </span><span class="p">[{</span><span class="nx">urls</span><span class="o">:</span><span class="w"> </span><span class="s1">'stun:stun.l.google.com:19302'</span><span class="p">}]</span>
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="p">});</span>
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>
-</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="nx">pc</span><span class="p">.</span><span class="nx">createDataChannel</span><span class="p">(</span><span class="s1">''</span><span class="p">);</span>
-</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="nx">pc</span><span class="p">.</span><span class="nx">createOffer</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="nx">offer</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">pc</span><span class="p">.</span><span class="nx">setLocalDescription</span><span class="p">(</span><span class="nx">offer</span><span class="p">));</span>
-</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>
-</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="nx">pc</span><span class="p">.</span><span class="nx">onicecandidate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nx">event</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">event</span><span class="p">.</span><span class="nx">candidate</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="w">        </span><span class="kd">const</span><span class="w"> </span><span class="nx">ipRegex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sr">/([0-9]{1,3}(\.[0-9]{1,3}){3})/</span><span class="p">;</span>
-</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="w">        </span><span class="kd">const</span><span class="w"> </span><span class="nx">ipMatch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">event</span><span class="p">.</span><span class="nx">candidate</span><span class="p">.</span><span class="nx">candidate</span><span class="p">.</span><span class="nx">match</span><span class="p">(</span><span class="nx">ipRegex</span><span class="p">);</span>
-</span><span id="__span-9-12"><a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>
-</span><span id="__span-9-13"><a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">ipMatch</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-9-14"><a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a><span class="w">            </span><span class="kd">const</span><span class="w"> </span><span class="nx">realIP</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">ipMatch</span><span class="p">[</span><span class="mf">1</span><span class="p">];</span>
-</span><span id="__span-9-15"><a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a><span class="w">            </span><span class="nx">fetch</span><span class="p">(</span><span class="sb">`/track?real_ip=</span><span class="si">${</span><span class="nx">realIP</span><span class="si">}</span><span class="sb">&amp;proxy_ip=</span><span class="si">${</span><span class="nb">window</span><span class="p">.</span><span class="nx">clientIP</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
-</span><span id="__span-9-16"><a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a><span class="w">        </span><span class="p">}</span>
-</span><span id="__span-9-17"><a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-9-18"><a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a><span class="p">};</span>
-</span></code></pre></div>
-<p>这段代码创建一个 RTCPeerConnection，触发 ICE 候选者收集（联系 STUN 服务器），用正则表达式从候选者中提取 IP 地址，并将您的真实 IP 发送到跟踪服务器。按照上述方法禁用 WebRTC 或强制仅使用代理路由可以防止这种情况。</p>
-<h2 id="_5">总结</h2>
-<p>代理运行在网络堆栈的特定层：HTTP 在第 7 层，SOCKS 在第 5 层。层级决定了代理能看到、修改和隐藏什么。TCP fingerprint（窗口大小、选项、TTL）从低层泄露，即使通过代理也会揭示您的真实操作系统。UDP 流量（包括 WebRTC 和 DNS）除非显式配置，否则通常会绕过代理。WebRTC 是 IP 泄露最常见的来源，只有 SOCKS5 或 VPN 才能有效代理 UDP 流量。现代浏览器还使用 QUIC（基于 UDP 的 HTTP/3），增加了另一个潜在的绕过向量。</p>
-<p><strong>后续步骤：</strong></p>
+    Browser-&gt;&gt;Browser: 收集本地 IP（LAN）
+    Browser-&gt;&gt;STUN: Binding Request (UDP, 绕过 proxy)
+    STUN-&gt;&gt;Browser: 响应中包含真实公网 IP
+    Browser-&gt;&gt;Peer: 发送所有 ICE candidate（本地 + 公网）
+    Note over Browser,Peer: 直连 P2P 完全绕过了 proxy</code></pre>
+<p>会收集三种类型的 candidate：</p>
 <ul>
-<li><a href="../http-proxies/">HTTP/HTTPS 代理</a>：应用层代理</li>
-<li><a href="../socks-proxies/">SOCKS 代理</a>：会话层、协议无关的代理</li>
-<li><a href="../../fingerprinting/network-fingerprinting/">网络指纹</a>：TCP/IP 和 TLS fingerprinting 技术</li>
-<li><a href="../../../features/configuration/proxy/">代理配置</a>：实用 Pydoll 代理设置</li>
+<li><strong>Host candidate</strong>：你的本地 LAN IP。Chrome 75+ 会用临时的 mDNS 名称（<code>a1b2c3d4.local</code>）替换它们，除非授予了摄像头/麦克风权限，所以这类泄露已基本被缓解。</li>
+<li><strong>Server-reflexive candidate</strong>：STUN 服务器所看到的你的公网 IP。这就是大家所说的那种泄露：proxy 显示一个 IP，WebRTC 却暴露了你真实的那个。</li>
+<li><strong>Relay candidate</strong>：当直连 P2P 失败时使用的 TURN 中继地址；其 <code>raddr</code> 字段可能仍携带你的真实 IP。</li>
 </ul>
-<h2 id="_6">参考资料</h2>
+<p>STUN（RFC 8489）是一个简单的 UDP 上的请求/响应：客户端问“你看到的 IP 是什么”，服务器则在一个 <code>XOR-MAPPED-ADDRESS</code> 中返回公网 IP 和端口（为 NAT 兼容性而与一个固定的 magic cookie 做异或，并非出于安全考虑）。浏览器出厂就自带公共 STUN 服务器，例如 <code>stun.l.google.com:19302</code>。</p>
+<p>proxy 无法阻止这一切，因为 WebRTC 使用 UDP（大多数 proxy 并不承载），它工作在 HTTP 层之下、直接面对操作系统的网络栈，并且会枚举每一个网络接口。任何页面都可以触发它并读取结果：</p>
+<div class="language-javascript highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kd">const</span><span class="w"> </span><span class="nx">pc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">RTCPeerConnection</span><span class="p">({</span><span class="w"> </span><span class="nx">iceServers</span><span class="o">:</span><span class="w"> </span><span class="p">[{</span><span class="w"> </span><span class="nx">urls</span><span class="o">:</span><span class="w"> </span><span class="s1">'stun:stun.l.google.com:19302'</span><span class="w"> </span><span class="p">}]</span><span class="w"> </span><span class="p">});</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nx">pc</span><span class="p">.</span><span class="nx">createDataChannel</span><span class="p">(</span><span class="s1">''</span><span class="p">);</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="nx">pc</span><span class="p">.</span><span class="nx">createOffer</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="nx">offer</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">pc</span><span class="p">.</span><span class="nx">setLocalDescription</span><span class="p">(</span><span class="nx">offer</span><span class="p">));</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="nx">pc</span><span class="p">.</span><span class="nx">onicecandidate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nx">event</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">event</span><span class="p">.</span><span class="nx">candidate</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="p">;</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">ip</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">event</span><span class="p">.</span><span class="nx">candidate</span><span class="p">.</span><span class="nx">candidate</span><span class="p">.</span><span class="nx">match</span><span class="p">(</span><span class="sr">/([0-9]{1,3}(\.[0-9]{1,3}){3})/</span><span class="p">);</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">ip</span><span class="p">)</span><span class="w"> </span><span class="nx">fetch</span><span class="p">(</span><span class="sb">`/track?real_ip=</span><span class="si">${</span><span class="nx">ip</span><span class="p">[</span><span class="mf">1</span><span class="p">]</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="p">};</span>
+</span></code></pre></div>
+<h3 id="webrtc">防止 WebRTC 泄露</h3>
+<p>推荐的修复是 Pydoll 内置的选项，它会设置 WebRTC 的 IP 处理策略，从而阻止那些本会跳过 proxy 的 UDP：</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.chromium</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChromiumOptions</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="n">options</span><span class="o">.</span><span class="n">webrtc_leak_protection</span> <span class="o">=</span> <span class="kc">True</span>   <span class="c1"># --force-webrtc-ip-handling-policy=disable_non_proxied_udp</span>
+</span></code></pre></div>
+<p>其他替代方案，视你的需要而定：</p>
 <ul>
-<li>RFC 793: Transmission Control Protocol (TCP) - https://tools.ietf.org/html/rfc793</li>
-<li>RFC 768: User Datagram Protocol (UDP) - https://tools.ietf.org/html/rfc768</li>
-<li>RFC 8489: Session Traversal Utilities for NAT (STUN) - https://tools.ietf.org/html/rfc8489</li>
-<li>RFC 8445: Interactive Connectivity Establishment (ICE) - https://tools.ietf.org/html/rfc8445</li>
-<li>RFC 8656: Traversal Using Relays around NAT (TURN) - https://tools.ietf.org/html/rfc8656</li>
-<li>RFC 6528: Defending Against Sequence Number Attacks - https://tools.ietf.org/html/rfc6528</li>
-<li>RFC 9000: QUIC: A UDP-Based Multiplexed and Secure Transport - https://tools.ietf.org/html/rfc9000</li>
-<li>W3C WebRTC 1.0: Real-Time Communication Between Browsers - https://www.w3.org/TR/webrtc/</li>
-<li>BrowserLeaks: WebRTC Leak Test - https://browserleaks.com/webrtc</li>
-<li>IPLeak: Comprehensive Leak Testing - https://ipleak.net</li>
+<li>通过 <code>options.browser_preferences = {'webrtc': {'ip_handling_policy': 'disable_non_proxied_udp', 'multiple_routes_enabled': False, 'nonproxied_udp_enabled': False}}</code> 设置同样的策略。</li>
+<li>让 WebRTC 走一个支持 UDP 中继的 SOCKS5 proxy（<code>--proxy-server=socks5://host:1080</code>），但并非所有 SOCKS5 都支持。</li>
+<li>如果你从不需要 WebRTC，就用 <code>--disable-features=WebRTC</code> 彻底禁用它（这会破坏视频会议；请针对你的 Chrome 版本测试该标志名）。</li>
+</ul>
+<div class="admonition warning">
+<p class="admonition-title">务必验证</p>
+<p>永远不要假设 proxy 会阻止 WebRTC 泄露。用你的配置加载 <a href="https://browserleaks.com/webrtc">browserleaks.com/webrtc</a> 或 <a href="https://ipleak.net">ipleak.net</a>，确认只出现 proxy 的 IP。哪怕一次泄露，也会同时暴露你真实的位置、ISP 和网络拓扑。</p>
+</div>
+<h2 id="_4">相关内容</h2>
+<ul>
+<li><a href="../http-proxies/">HTTP/HTTPS proxy</a>：深入讲应用层代理。</li>
+<li><a href="../socks-proxies/">SOCKS proxy</a>：会话层、与协议无关的代理（包括 SOCKS5 的 UDP 和认证细节）。</li>
+<li><a href="../proxy-detection/">Proxy 检测</a>：暴露 proxy 的那些信号。</li>
+<li><a href="../../fingerprinting/network-fingerprinting/">网络指纹</a>：TCP/TLS/HTTP2 如何成为一个签名。</li>
+<li><a href="../../../guides/proxies/">Proxy</a>：Pydoll 的实践配置。</li>
+</ul>
+<h2 id="_5">参考资料</h2>
+<ul>
+<li>RFC 793 (TCP), RFC 768 (UDP), RFC 6528 (ISN randomization)</li>
+<li>RFC 8489 (STUN), RFC 8445 (ICE), RFC 8656 (TURN)</li>
+<li>RFC 9000 (QUIC), W3C WebRTC 1.0</li>
 </ul>
 
 

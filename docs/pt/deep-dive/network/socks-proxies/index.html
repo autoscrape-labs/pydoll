@@ -52,8 +52,8 @@
         
         
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Chivo:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Chivo";--md-code-font:"JetBrains Mono"}</style>
       
     
     
@@ -67,6 +67,8 @@
     
       <link rel="stylesheet" href="../../../../resources/stylesheets/extra.css">
     
+      <link rel="stylesheet" href="../../../../resources/stylesheets/landing-theme.css">
+    
     <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -77,8 +79,6 @@
   
   
     
-    
-      
     
     
     
@@ -92,7 +92,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#arquitetura-do-protocolo-socks" class="md-skip">
+        <a href="#proxies-socks" class="md-skip">
           Skip to content
         </a>
       
@@ -106,7 +106,7 @@
 
   
 
-<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+<header class="md-header md-header--landing md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="../../../" title="Pydoll - Biblioteca de Automação Web Assíncrona" class="md-header__button md-logo" aria-label="Pydoll - Biblioteca de Automação Web Assíncrona" data-md-component="logo">
       
@@ -114,6 +114,7 @@
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11 15H6l7-14v8h5l-7 14z"/></svg>
 
     </a>
+    <span class="md-header__docs-chip">docs</span>
     <label class="md-header__button md-icon" for="__drawer">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
@@ -121,48 +122,18 @@
     <div class="md-header__title" data-md-component="header-title">
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
-          <span class="md-ellipsis">
-            Pydoll - Biblioteca de Automação Web Assíncrona
-          </span>
+          <span class="md-ellipsis">Pydoll - Biblioteca de Automação Web Assíncrona</span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
-            
-              Proxies SOCKS
-            
+            Proxies SOCKS
           </span>
         </div>
       </div>
     </div>
     
       
-        <form class="md-header__option" data-md-component="palette">
-  
     
-    
-    
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Dark Mode"  type="radio" name="__palette" id="__palette_0">
-    
-      <label class="md-header__button md-icon" title="Dark Mode" for="__palette_1" hidden>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6m0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4M7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3"/></svg>
-      </label>
-    
-  
-    
-    
-    
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Light Mode"  type="radio" name="__palette" id="__palette_1">
-    
-      <label class="md-header__button md-icon" title="Light Mode" for="__palette_0" hidden>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
-      </label>
-    
-  
-</form>
-      
-    
-    
-      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
     
     
       <div class="md-header__option">
@@ -253,6 +224,7 @@
 </a>
       </div>
     
+    <a class="md-header__cta" href="../../../../getting-started/">Get started</a>
   </nav>
   
     
@@ -288,13 +260,79 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../features/" class="md-tabs__link">
+        <a href="../../../getting-started/" class="md-tabs__link">
           
   
   
     
   
-  Recursos
+  Primeiros passos
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../basics/async-python/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Fundamentos
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../guides/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Guias
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../stealth/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Stealth
 
         </a>
       </li>
@@ -318,7 +356,7 @@
   
     
   
-  Análise Profunda
+  Análise profunda
 
         </a>
       </li>
@@ -436,20 +474,6 @@
     
       
         
-          
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
       
         
       
@@ -473,15 +497,301 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
         
           
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Primeiros passos
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Primeiros passos
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Instalação
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../first-automation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sua primeira automação
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../migrating/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migrando do Selenium e Playwright
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fundamentos
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Fundamentos
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../basics/async-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python assíncrono na prática
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../basics/selectors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Seletores, CSS e XPath
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
           <div class="md-nav__link md-nav__container">
-            <a href="../../../features/" class="md-nav__link ">
+            <a href="../../../guides/" class="md-nav__link ">
               
   
   
   <span class="md-ellipsis">
     
   
-    Recursos
+    Guias
   
 
     
@@ -492,18 +802,18 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Recursos
+    Guias
   
 
           </label>
@@ -518,42 +828,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/core-concepts/" class="md-nav__link">
+      <a href="../../../guides/core-concepts/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Conceitos Fundamentais
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/element-finding/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Pesquisa de Elementos
+    Conceitos fundamentais
   
 
     
@@ -575,6 +857,10 @@
   
     
     
+      
+        
+      
+        
       
         
       
@@ -593,17 +879,17 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_4" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_3" >
         
           
-          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
             
   
   
   <span class="md-ellipsis">
     
   
-    Data Extraction
+    Encontrar e extrair
   
 
     
@@ -614,12 +900,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_4">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_3">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Data Extraction
+    Encontrar e extrair
   
 
           </label>
@@ -632,14 +918,70 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/extraction/structured-extraction/" class="md-nav__link">
+      <a href="../../../guides/element-finding/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Structured Extraction
+    Encontrar elementos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/dom-traversal/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Percorrer o DOM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/structured-extraction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Extração estruturada
   
 
     
@@ -680,8 +1022,6 @@
       
         
       
-        
-      
     
     
     
@@ -697,17 +1037,17 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_5" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_4" >
         
           
-          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="0">
             
   
   
   <span class="md-ellipsis">
     
   
-    Automação
+    Interagir
   
 
     
@@ -718,12 +1058,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_5">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_4">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Automação
+    Interagir
   
 
           </label>
@@ -736,14 +1076,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/automation/human-interactions/" class="md-nav__link">
+      <a href="../../../guides/keyboard/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Interações Humanas
+    Teclado
   
 
     
@@ -764,14 +1104,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/automation/keyboard-control/" class="md-nav__link">
+      <a href="../../../guides/mouse/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Controle de Teclado
+    Mouse
   
 
     
@@ -792,14 +1132,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/automation/mouse-control/" class="md-nav__link">
+      <a href="../../../guides/file-operations/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Controle do Mouse
+    Operações com arquivos
   
 
     
@@ -820,14 +1160,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/automation/file-operations/" class="md-nav__link">
+      <a href="../../../guides/iframes/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Operações com Arquivos
+    Iframes
   
 
     
@@ -848,42 +1188,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/automation/iframes/" class="md-nav__link">
+      <a href="../../../guides/screenshots-and-pdfs/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    IFrames
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/automation/screenshots-and-pdfs/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Capturas e PDF
+    Capturas de tela e PDFs
   
 
     
@@ -937,10 +1249,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_6" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_5" >
         
           
-          <label class="md-nav__link" for="__nav_2_6" id="__nav_2_6_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4_5" id="__nav_4_5_label" tabindex="0">
             
   
   
@@ -958,8 +1270,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_6">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -976,14 +1288,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/network/monitoring/" class="md-nav__link">
+      <a href="../../../guides/network-monitoring/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Monitoramento de Rede
+    Monitoramento de rede
   
 
     
@@ -1004,14 +1316,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/network/interception/" class="md-nav__link">
+      <a href="../../../guides/request-interception/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Interceptação de Requisições
+    Interceptação de requisições
   
 
     
@@ -1032,14 +1344,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/network/http-requests/" class="md-nav__link">
+      <a href="../../../guides/http-requests/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Requisições HTTP no Contexto do Navegador
+    Requisições HTTP no contexto do navegador
   
 
     
@@ -1060,14 +1372,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/network/network-recording/" class="md-nav__link">
+      <a href="../../../guides/network-recording/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Gravação de Rede HAR
+    Gravação HAR
   
 
     
@@ -1101,310 +1413,6 @@
         
       
         
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_7" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_7" id="__nav_2_7_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Gerenciamento do Navegador
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_7">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Gerenciamento do Navegador
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/browser-management/tabs/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Gerenciamento de Abas
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/browser-management/contexts/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Contextos do Navegador
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/browser-management/cookies-sessions/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Cookies e Sessões
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_8" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_8" id="__nav_2_8_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Configuração
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_8_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_8">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Configuração
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/configuration/browser-options/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Opções do Navegador
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/configuration/browser-preferences/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Preferências do Navegador
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/configuration/proxy/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Configuração de Proxy
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
       
         
       
@@ -1431,17 +1439,17 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_9" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_6" >
         
           
-          <label class="md-nav__link" for="__nav_2_9" id="__nav_2_9_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4_6" id="__nav_4_6_label" tabindex="0">
             
   
   
   <span class="md-ellipsis">
     
   
-    Avançado
+    Gerenciar o navegador
   
 
     
@@ -1452,12 +1460,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_9_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_9">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_6">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Avançado
+    Gerenciar o navegador
   
 
           </label>
@@ -1470,14 +1478,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/advanced/fingerprint-injection/" class="md-nav__link">
+      <a href="../../../guides/tabs/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Injeção de Fingerprint
+    Abas
   
 
     
@@ -1498,14 +1506,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/advanced/behavioral-captcha-bypass/" class="md-nav__link">
+      <a href="../../../guides/browser-contexts/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Bypass de Captcha Comportamental
+    Contextos do navegador
   
 
     
@@ -1526,14 +1534,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/advanced/event-system/" class="md-nav__link">
+      <a href="../../../guides/cookies-and-sessions/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Sistema de Eventos
+    Cookies e sessões
   
 
     
@@ -1554,14 +1562,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/advanced/remote-connections/" class="md-nav__link">
+      <a href="../../../guides/browser-options/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Conexões Remotas
+    Opções do navegador
   
 
     
@@ -1582,14 +1590,70 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/advanced/decorators/" class="md-nav__link">
+      <a href="../../../guides/browser-preferences/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Decorator Retry
+    Preferências do navegador
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/proxies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Proxies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/remote-connections/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conexões remotas
   
 
     
@@ -1606,6 +1670,326 @@
           </ul>
         </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_7" id="__nav_4_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reagir a eventos
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reagir a eventos
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Eventos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/retrying/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Repetição
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../stealth/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stealth
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Stealth
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../stealth/evasion-techniques/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Técnicas de evasão
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../stealth/human-like-interactions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interações humanizadas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../stealth/captcha-bypass/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bypass de captcha
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../stealth/fingerprint-injection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Injeção de fingerprint
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -1631,10 +2015,6 @@
       
         
           
-        
-      
-        
-      
         
       
         
@@ -1659,7 +2039,7 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
         
           
           <div class="md-nav__link md-nav__container">
@@ -1670,7 +2050,7 @@
   <span class="md-ellipsis">
     
   
-    Análise Profunda
+    Análise profunda
   
 
     
@@ -1681,98 +2061,18 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_3">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Análise Profunda
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-          
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-          
-          
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_2" >
-        
-          
-          <div class="md-nav__link md-nav__container">
-            <a href="../../fundamentals/" class="md-nav__link ">
-              
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Fundamentos Centrais
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_3_2" id="__nav_3_2_label" tabindex="">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_2">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Fundamentos Centrais
+    Análise profunda
   
 
           </label>
@@ -1787,7 +2087,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/cdp/" class="md-nav__link">
+      <a href="../../cdp/" class="md-nav__link">
         
   
   
@@ -1812,388 +2112,6 @@
                 
   
   
-  
-  
-    <li class="md-nav__item">
-      <a href="../../fundamentals/connection-layer/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Camada de Conexão
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../fundamentals/typing-system/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Sistema de Tipos Python
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../fundamentals/iframes-and-contexts/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Iframes & Contexts
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-          
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-          
-          
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_3" >
-        
-          
-          <div class="md-nav__link md-nav__container">
-            <a href="../../architecture/" class="md-nav__link ">
-              
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Arquitetura Interna
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_3_3" id="__nav_3_3_label" tabindex="">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_3">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Arquitetura Interna
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/browser-domain/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Domínio do Navegador
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/tab-domain/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Domínio da Aba
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/webelement-domain/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Domínio do WebElement
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/find-elements-mixin/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Mixin FindElements
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/event-architecture/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Arquitetura de Eventos
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/browser-requests-architecture/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Arquitetura de Requisições do Navegador
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/shadow-dom/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Arquitetura Shadow DOM
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
     
   
   
@@ -2233,7 +2151,7 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_3" checked>
         
           
           <div class="md-nav__link md-nav__container">
@@ -2244,7 +2162,7 @@
   <span class="md-ellipsis">
     
   
-    Rede e Segurança
+    Rede e proxies
   
 
     
@@ -2255,18 +2173,18 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_3_4" id="__nav_3_4_label" tabindex="">
+              <label class="md-nav__link " for="__nav_6_3" id="__nav_6_3_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_3_4">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6_3">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Rede e Segurança
+    Rede e proxies
   
 
           </label>
@@ -2288,7 +2206,7 @@
   <span class="md-ellipsis">
     
   
-    Fundamentos de Rede
+    Fundamentos de rede
   
 
     
@@ -2397,10 +2315,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#como-o-socks-difere-dos-proxies-http" class="md-nav__link">
+  <a href="#como-o-socks-difere-de-proxies-http" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Como o SOCKS Difere dos Proxies HTTP
+        Como o SOCKS difere de proxies HTTP
       
     </span>
   </a>
@@ -2419,22 +2337,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#o-handshake-socks5" class="md-nav__link">
+  <a href="#o-handshake-do-socks5" class="md-nav__link">
     <span class="md-ellipsis">
       
-        O Handshake SOCKS5
+        O handshake do SOCKS5
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="O Handshake SOCKS5">
+    <nav class="md-nav" aria-label="O handshake do SOCKS5">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#fase-1-negociacao-de-metodo" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Fase 1: Negociação de Método
+        Fase 1: negociação de método
       
     </span>
   </a>
@@ -2445,7 +2363,7 @@
   <a href="#fase-2-autenticacao" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Fase 2: Autenticação
+        Fase 2: autenticação
       
     </span>
   </a>
@@ -2456,7 +2374,7 @@
   <a href="#fase-3-requisicao-de-conexao" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Fase 3: Requisição de Conexão
+        Fase 3: requisição de conexão
       
     </span>
   </a>
@@ -2469,10 +2387,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#suporte-udp" class="md-nav__link">
+  <a href="#suporte-a-udp" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Suporte UDP
+        Suporte a UDP
       
     </span>
   </a>
@@ -2494,7 +2412,7 @@
   <a href="#socks5-e-resistencia-a-mitm" class="md-nav__link">
     <span class="md-ellipsis">
       
-        SOCKS5 e Resistência a MITM
+        SOCKS5 e resistência a MITM
       
     </span>
   </a>
@@ -2502,10 +2420,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#tls-e-browser-fingerprinting-atraves-do-socks5" class="md-nav__link">
+  <a href="#fingerprinting-atraves-do-socks5" class="md-nav__link">
     <span class="md-ellipsis">
       
-        TLS e Browser Fingerprinting Através do SOCKS5
+        Fingerprinting através do SOCKS5
       
     </span>
   </a>
@@ -2525,10 +2443,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#socks5forwarder-do-pydoll" class="md-nav__link">
+  <a href="#o-socks5forwarder-do-pydoll" class="md-nav__link">
     <span class="md-ellipsis">
       
-        SOCKS5Forwarder do Pydoll
+        O SOCKS5Forwarder do Pydoll
       
     </span>
   </a>
@@ -2541,21 +2459,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#configuracao-pratica" class="md-nav__link">
+  <a href="#relacionado" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Configuração Prática
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#resumo" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Resumo
+        Relacionado
       
     </span>
   </a>
@@ -2596,7 +2503,7 @@
   <span class="md-ellipsis">
     
   
-    Detecção de Proxy
+    Detecção de proxy
   
 
     
@@ -2624,7 +2531,7 @@
   <span class="md-ellipsis">
     
   
-    Construindo Servidores Proxy
+    Construindo um servidor proxy
   
 
     
@@ -2652,7 +2559,7 @@
   <span class="md-ellipsis">
     
   
-    Legal & Ética
+    Legal e ético
   
 
     
@@ -2693,8 +2600,6 @@
       
         
       
-        
-      
     
     
     
@@ -2713,7 +2618,7 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_5" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6_4" >
         
           
           <div class="md-nav__link md-nav__container">
@@ -2735,14 +2640,14 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_3_5" id="__nav_3_5_label" tabindex="">
+              <label class="md-nav__link " for="__nav_6_4" id="__nav_6_4_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_5">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_4">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2768,7 +2673,7 @@
   <span class="md-ellipsis">
     
   
-    Fingerprinting de Rede
+    Fingerprinting de rede
   
 
     
@@ -2796,7 +2701,7 @@
   <span class="md-ellipsis">
     
   
-    Fingerprinting do Navegador
+    Fingerprinting de navegador
   
 
     
@@ -2824,145 +2729,7 @@
   <span class="md-ellipsis">
     
   
-    Fingerprinting Comportamental
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../fingerprinting/evasion-techniques/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Técnicas de Evasão
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-          
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-          
-          
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_6" >
-        
-          
-          <div class="md-nav__link md-nav__container">
-            <a href="../../guides/" class="md-nav__link ">
-              
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Guias Práticos
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_3_6" id="__nav_3_6_label" tabindex="">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_6">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Guias Práticos
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../guides/selectors-guide/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Seletores CSS vs XPath
+    Fingerprinting comportamental
   
 
     
@@ -3002,8 +2769,6 @@
       
         
           
-        
-      
         
       
         
@@ -3031,7 +2796,7 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
         
           
           <div class="md-nav__link md-nav__container">
@@ -3053,14 +2818,14 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -3091,8 +2856,6 @@
       
         
       
-        
-      
     
     
     
@@ -3108,10 +2871,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_2" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_2" >
         
           
-          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7_2" id="__nav_7_2_label" tabindex="0">
             
   
   
@@ -3129,8 +2892,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_2">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_2">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -3238,7 +3001,7 @@
   <span class="md-ellipsis">
     
   
-    Aba
+    Tab
   
 
     
@@ -3266,35 +3029,7 @@
   <span class="md-ellipsis">
     
   
-    Requisições
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/browser/managers/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Gerenciadores
+    Requests
   
 
     
@@ -3329,8 +3064,6 @@
       
         
       
-        
-      
     
     
     
@@ -3346,10 +3079,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_3" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_3" >
         
           
-          <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7_3" id="__nav_7_3_label" tabindex="0">
             
   
   
@@ -3367,8 +3100,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_3">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_3">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -3392,7 +3125,7 @@
   <span class="md-ellipsis">
     
   
-    Elemento Web
+    WebElement
   
 
     
@@ -3420,35 +3153,7 @@
   <span class="md-ellipsis">
     
   
-    Shadow Root
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/elements/mixins/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Mixins
+    ShadowRoot
   
 
     
@@ -3476,39 +3181,15 @@
   
   
   
-    
-    
-      
+    <li class="md-nav__item">
+      <a href="../../../api/extraction/" class="md-nav__link">
         
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_4" >
-        
-          
-          <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="0">
-            
   
   
   <span class="md-ellipsis">
     
   
-    Conexão
+    Extraction
   
 
     
@@ -3516,19 +3197,11 @@
   
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_4">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Conexão
+      </a>
+    </li>
   
 
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
+              
             
               
                 
@@ -3544,7 +3217,7 @@
   <span class="md-ellipsis">
     
   
-    Manipulador de Conexão
+    Connection
   
 
     
@@ -3564,62 +3237,8 @@
   
   
   
-    <li class="md-nav__item">
-      <a href="../../../api/connection/managers/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Gerenciadores
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
     
     
-      
-        
-          
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
       
         
       
@@ -3640,362 +3259,17 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_5" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_6" >
         
           
-          <div class="md-nav__link md-nav__container">
-            <a href="../../../api/commands/" class="md-nav__link ">
-              
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Comandos
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_4_5" id="__nav_4_5_label" tabindex="0">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_5">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Comandos
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/browser/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Navegador
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/dom/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    DOM
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/input/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Entrada
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/network/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Rede
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/page/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Página
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/runtime/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Tempo de Execução
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/storage/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Armazenamento
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/target/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Alvo
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/fetch/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Fetch
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_6" >
-        
-          
-          <label class="md-nav__link" for="__nav_4_6" id="__nav_4_6_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7_6" id="__nav_7_6_label" tabindex="0">
             
   
   
   <span class="md-ellipsis">
     
   
-    Protocolo
+    Core
   
 
     
@@ -4006,362 +3280,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_6">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_6">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Protocolo
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/base/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Tipos Base
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/browser/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Navegador
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/dom/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    DOM
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/fetch/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Fetch
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/input/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Entrada
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/network/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Rede
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/page/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Página
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/runtime/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Tempo de Execução
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/storage/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Armazenamento
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/target/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Alvo
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_7" >
-        
-          
-          <label class="md-nav__link" for="__nav_4_7" id="__nav_4_7_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Núcleo
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_7">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Núcleo
+    Core
   
 
           </label>
@@ -4423,34 +3347,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/core/utils/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Utilitários
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -4493,10 +3389,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#como-o-socks-difere-dos-proxies-http" class="md-nav__link">
+  <a href="#como-o-socks-difere-de-proxies-http" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Como o SOCKS Difere dos Proxies HTTP
+        Como o SOCKS difere de proxies HTTP
       
     </span>
   </a>
@@ -4515,22 +3411,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#o-handshake-socks5" class="md-nav__link">
+  <a href="#o-handshake-do-socks5" class="md-nav__link">
     <span class="md-ellipsis">
       
-        O Handshake SOCKS5
+        O handshake do SOCKS5
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="O Handshake SOCKS5">
+    <nav class="md-nav" aria-label="O handshake do SOCKS5">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#fase-1-negociacao-de-metodo" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Fase 1: Negociação de Método
+        Fase 1: negociação de método
       
     </span>
   </a>
@@ -4541,7 +3437,7 @@
   <a href="#fase-2-autenticacao" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Fase 2: Autenticação
+        Fase 2: autenticação
       
     </span>
   </a>
@@ -4552,7 +3448,7 @@
   <a href="#fase-3-requisicao-de-conexao" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Fase 3: Requisição de Conexão
+        Fase 3: requisição de conexão
       
     </span>
   </a>
@@ -4565,10 +3461,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#suporte-udp" class="md-nav__link">
+  <a href="#suporte-a-udp" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Suporte UDP
+        Suporte a UDP
       
     </span>
   </a>
@@ -4590,7 +3486,7 @@
   <a href="#socks5-e-resistencia-a-mitm" class="md-nav__link">
     <span class="md-ellipsis">
       
-        SOCKS5 e Resistência a MITM
+        SOCKS5 e resistência a MITM
       
     </span>
   </a>
@@ -4598,10 +3494,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#tls-e-browser-fingerprinting-atraves-do-socks5" class="md-nav__link">
+  <a href="#fingerprinting-atraves-do-socks5" class="md-nav__link">
     <span class="md-ellipsis">
       
-        TLS e Browser Fingerprinting Através do SOCKS5
+        Fingerprinting através do SOCKS5
       
     </span>
   </a>
@@ -4621,10 +3517,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#socks5forwarder-do-pydoll" class="md-nav__link">
+  <a href="#o-socks5forwarder-do-pydoll" class="md-nav__link">
     <span class="md-ellipsis">
       
-        SOCKS5Forwarder do Pydoll
+        O SOCKS5Forwarder do Pydoll
       
     </span>
   </a>
@@ -4637,21 +3533,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#configuracao-pratica" class="md-nav__link">
+  <a href="#relacionado" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Configuração Prática
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#resumo" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Resumo
+        Relacionado
       
     </span>
   </a>
@@ -4715,7 +3600,7 @@
         <a href="../../" class="md-path__link">
           
   <span class="md-ellipsis">
-    Análise Profunda
+    Análise profunda
   </span>
 
         </a>
@@ -4733,7 +3618,7 @@
         <a href="../" class="md-path__link">
           
   <span class="md-ellipsis">
-    Rede e Segurança
+    Rede e proxies
   </span>
 
         </a>
@@ -4755,35 +3640,23 @@
   
 
 
-<h1 id="arquitetura-do-protocolo-socks">Arquitetura do Protocolo SOCKS</h1>
-<p>SOCKS (SOCKet Secure) é um protocolo de proxy que opera entre as camadas de transporte e aplicação da pilha de rede (comumente descrito como Camada 5 no modelo OSI). Diferente dos proxies HTTP, que analisam e compreendem o tráfego HTTP, os proxies SOCKS encaminham conexões TCP e UDP brutas sem inspecionar seu conteúdo. Esse design agnóstico a protocolo torna o SOCKS a escolha preferida para automação focada em privacidade: o proxy nunca precisa analisar suas requisições, injetar cabeçalhos ou terminar conexões TLS.</p>
-<p>Este documento cobre como o SOCKS funciona no nível do protocolo, as diferenças entre SOCKS4 e SOCKS5, o tratamento de autenticação no Chrome, o comportamento de resolução de DNS e a configuração prática no Pydoll.</p>
-<div class="admonition info">
-<p class="admonition-title">Navegação do Módulo</p>
-<ul>
-<li><a href="../http-proxies/">Proxies HTTP/HTTPS</a>: Proxy na camada de aplicação</li>
-<li><a href="../network-fundamentals/">Fundamentos de Rede</a>: TCP/IP, UDP, modelo OSI</li>
-<li><a href="../">Visão Geral de Rede e Segurança</a>: Introdução do módulo</li>
-<li><a href="../proxy-detection/">Detecção de Proxy</a>: Níveis de anonimato e evasão de detecção</li>
-<li><a href="../build-proxy/">Construindo Proxies</a>: Implementação do SOCKS5 do zero</li>
-</ul>
-<p>Para configuração prática, veja <a href="../../../features/configuration/proxy/">Configuração de Proxy</a>.</p>
-</div>
-<h2 id="como-o-socks-difere-dos-proxies-http">Como o SOCKS Difere dos Proxies HTTP</h2>
-<p>A diferença fundamental está no que cada proxy pode ver e fazer. Um proxy HTTP opera na camada de aplicação e compreende HTTP: ele pode ler URLs, cabeçalhos, cookies e corpos de requisição (para tráfego não criptografado), modificá-los em trânsito, armazenar respostas em cache e injetar seus próprios cabeçalhos como <code>Via</code> e <code>X-Forwarded-For</code>. Isso é poderoso para filtragem de conteúdo, mas significa que você precisa confiar no operador do proxy com os dados da sua aplicação.</p>
-<p>Um proxy SOCKS opera abaixo da camada de aplicação. Ele vê apenas o endereço de destino, a porta e o volume de dados sendo transferido. Ele não analisa, modifica ou sequer compreende qual protocolo está fluindo através dele. HTTP, HTTPS, FTP, SSH, WebSocket ou qualquer protocolo customizado parecem todos iguais para um proxy SOCKS: apenas bytes sendo retransmitidos entre dois endpoints.</p>
-<p>Isso tem uma implicação prática direta. Quando você envia uma requisição HTTPS através de um proxy SOCKS5, o proxy vê <code>example.com:443</code> e o fluxo TLS criptografado. Ele não consegue ler a URL, os cabeçalhos, os cookies ou o conteúdo da resposta. Ele não adiciona cabeçalhos identificadores. Ele não precisa terminar o TLS. O túnel criptografado funciona de ponta a ponta entre seu navegador e o servidor de destino.</p>
-<p>No entanto, é importante entender o que o SOCKS não fornece. SOCKS é um protocolo de proxy, não um protocolo de criptografia. O nome "SOCKet Secure" refere-se à travessia segura de firewalls, não à segurança criptográfica. Se você enviar tráfego HTTP não criptografado através de um proxy SOCKS5, o operador do proxy pode ler os bytes passando através dele, mesmo que o proxy não tenha sido projetado para inspecioná-los. Para criptografia real, você precisa de TLS/HTTPS sobre SOCKS, ou de um túnel criptografado (SSH, VPN) envolvendo a conexão SOCKS.</p>
+<h1 id="proxies-socks">Proxies SOCKS</h1>
+<p>Um proxy SOCKS encaminha conexões TCP cruas (e, no SOCKS5, UDP) sem entender o que corre por elas, o que o torna uma forma de baixo nível e agnóstica ao protocolo de rotear tráfego através de outro host. Esta página cobre como o SOCKS funciona, a diferença entre SOCKS4 e SOCKS5, o handshake do SOCKS5, o comportamento de DNS, e a única coisa que morde a automação: o Chrome não faz autenticação SOCKS5.</p>
+<p>Para a configuração prática, veja o guia <a href="../../../guides/proxies/">Proxies</a>; esta página é a teoria por trás dele.</p>
+<h2 id="como-o-socks-difere-de-proxies-http">Como o SOCKS difere de proxies HTTP</h2>
+<p>A diferença é o que cada proxy consegue ver. Um proxy HTTP trabalha na camada de aplicação e entende HTTP: pode ler URLs, headers e cookies (para tráfego não criptografado), modificá-los em trânsito, cachear respostas, e adicionar headers como <code>Via</code> e <code>X-Forwarded-For</code>. Isso é útil para filtragem, mas significa que você confia seus dados de aplicação ao operador.</p>
+<p>Um proxy SOCKS trabalha abaixo da camada de aplicação. Ele vê o endereço de destino, a porta e o volume de dados, e nada mais. HTTP, HTTPS, SSH, WebSocket, ou qualquer protocolo customizado parecem todos iguais para ele: bytes repassados entre dois endpoints. Envie uma requisição HTTPS através do SOCKS5 e o proxy vê <code>example.com:443</code> e um stream TLS criptografado. Ele não pode ler a URL, os headers ou a resposta, não adiciona headers identificadores, e não termina o TLS. O túnel criptografado corre de ponta a ponta.</p>
+<p>O SOCKS é um protocolo de proxying, não de criptografia. O nome se refere à travessia segura de firewall, não à criptografia. HTTP não criptografado enviado através do SOCKS5 ainda é legível pelo operador do proxy, mesmo que o proxy não seja feito para inspecioná-lo. Para criptografia de fato você precisa de TLS por cima, ou de um túnel criptografado (SSH, VPN) em volta da conexão SOCKS.</p>
 <div class="admonition note">
-<p class="admonition-title">Modelo de Confiança</p>
-<p>Com proxies HTTP, você confia no operador do proxy para não registrar seu histórico de navegação, roubar tokens, modificar respostas ou realizar ataques MITM. Com SOCKS5, você confia no proxy apenas para encaminhar pacotes corretamente e não registrar metadados de conexão. A superfície de ataque é menor, mas não é zero.</p>
+<p class="admonition-title">Modelo de confiança</p>
+<p>Com um proxy HTTP você confia que o operador não vai logar seu histórico, roubar tokens ou modificar respostas. Com o SOCKS5 você confia nele apenas para encaminhar pacotes e não logar metadados de conexão. A superfície de ataque é menor, não zero.</p>
 </div>
 <h2 id="socks4-vs-socks5">SOCKS4 vs SOCKS5</h2>
-<p>O SOCKS possui duas versões de uso comum. O SOCKS4 foi desenvolvido pela NEC no início dos anos 1990 como um padrão informal sem RFC. O SOCKS5 foi padronizado como RFC 1928 em 1996 para resolver as limitações do SOCKS4.</p>
+<p>O SOCKS4 veio da NEC no início dos anos 1990 sem RFC formal. O SOCKS5 foi padronizado como RFC 1928 em 1996 para corrigir as limitações do SOCKS4.</p>
 <table>
 <thead>
 <tr>
-<th>Característica</th>
+<th>Recurso</th>
 <th>SOCKS4</th>
 <th>SOCKS5</th>
 </tr>
@@ -4791,293 +3664,222 @@
 <tbody>
 <tr>
 <td>Padrão</td>
-<td>Sem RFC oficial (de facto, 1992)</td>
+<td>De facto (1992), sem RFC</td>
 <td>RFC 1928 (1996)</td>
 </tr>
 <tr>
 <td>Autenticação</td>
-<td>Apenas identificação (campo USERID, sem senha)</td>
-<td>Múltiplos métodos (nenhum, usuário/senha, GSSAPI)</td>
+<td>Apenas identificação (USERID, sem senha)</td>
+<td>Nenhuma, usuário/senha, ou GSSAPI</td>
 </tr>
 <tr>
-<td>Versão IP</td>
+<td>Versão de IP</td>
 <td>Apenas IPv4</td>
 <td>IPv4 e IPv6</td>
 </tr>
 <tr>
-<td>Suporte UDP</td>
+<td>Suporte a UDP</td>
 <td>Não</td>
-<td>Sim (comando UDP ASSOCIATE)</td>
+<td>Sim (UDP ASSOCIATE)</td>
 </tr>
 <tr>
-<td>Resolução DNS</td>
-<td>Lado do cliente (extensão SOCKS4A adiciona lado do servidor)</td>
-<td>Lado do servidor ao usar nomes de domínio (ATYP=0x03)</td>
-</tr>
-<tr>
-<td>Suporte a protocolo</td>
-<td>Apenas TCP</td>
-<td>TCP e UDP</td>
+<td>Resolução de DNS</td>
+<td>No cliente (SOCKS4A adiciona no servidor)</td>
+<td>No servidor para nomes de domínio (ATYP=0x03)</td>
 </tr>
 </tbody>
 </table>
-<p>O SOCKS5 é superior em todos os aspectos práticos. Use SOCKS4 apenas se o proxy não suportar SOCKS5.</p>
-<h2 id="o-handshake-socks5">O Handshake SOCKS5</h2>
-<p>O processo de conexão SOCKS5 segue a RFC 1928 e consiste em três fases: negociação de método, autenticação opcional e a requisição de conexão.</p>
+<p>O SOCKS5 é a melhor escolha em todo caso prático. Use o SOCKS4 apenas quando um proxy não suportar SOCKS5.</p>
+<h2 id="o-handshake-do-socks5">O handshake do SOCKS5</h2>
+<p>Uma conexão SOCKS5 segue a RFC 1928 em três fases: negociação de método, autenticação opcional, e então a requisição de conexão.</p>
 <pre class="mermaid"><code>sequenceDiagram
     participant Client
     participant SOCKS5 as SOCKS5 Proxy
     participant Server as Target Server
 
-    Note over Client,SOCKS5: Phase 1: Method Negotiation
+    Note over Client,SOCKS5: Fase 1: negociação de método
     Client-&gt;&gt;SOCKS5: Hello [VER=5, NMETHODS, METHODS]
-    SOCKS5-&gt;&gt;Client: Method Selected [VER=5, METHOD]
+    SOCKS5-&gt;&gt;Client: Método selecionado [VER=5, METHOD]
 
-    Note over Client,SOCKS5: Phase 2: Authentication (if required)
-    Client-&gt;&gt;SOCKS5: Auth Request [VER=1, ULEN, UNAME, PLEN, PASSWD]
-    SOCKS5-&gt;&gt;Client: Auth Response [VER=1, STATUS]
+    Note over Client,SOCKS5: Fase 2: autenticação (se necessária)
+    Client-&gt;&gt;SOCKS5: Auth [VER=1, ULEN, UNAME, PLEN, PASSWD]
+    SOCKS5-&gt;&gt;Client: Resposta de auth [VER=1, STATUS]
 
-    Note over Client,SOCKS5: Phase 3: Connection Request
-    Client-&gt;&gt;SOCKS5: Connect [VER=5, CMD=CONNECT, DST.ADDR, DST.PORT]
-    SOCKS5-&gt;&gt;Server: Establish TCP connection
-    Server--&gt;&gt;SOCKS5: Connection established
+    Note over Client,SOCKS5: Fase 3: requisição de conexão
+    Client-&gt;&gt;SOCKS5: Connect [VER=5, CMD, DST.ADDR, DST.PORT]
+    SOCKS5-&gt;&gt;Server: Estabelece conexão TCP
+    Server--&gt;&gt;SOCKS5: Conectado
     SOCKS5-&gt;&gt;Client: Reply [VER=5, REP=SUCCESS, BND.ADDR, BND.PORT]
 
-    Note over Client,Server: Data relay (proxied)
-    Client-&gt;&gt;SOCKS5: Application data
-    SOCKS5-&gt;&gt;Server: Forward data
-    Server-&gt;&gt;SOCKS5: Response data
-    SOCKS5-&gt;&gt;Client: Forward response</code></pre>
-<h3 id="fase-1-negociacao-de-metodo">Fase 1: Negociação de Método</h3>
-<p>O cliente abre uma conexão TCP com o proxy e envia uma saudação contendo a versão do protocolo (sempre <code>0x05</code> para SOCKS5) e uma lista de métodos de autenticação que ele suporta.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Client Hello</span>
+    Note over Client,Server: Relay de dados
+    Client-&gt;&gt;SOCKS5: Dados de aplicação
+    SOCKS5-&gt;&gt;Server: Encaminha
+    Server-&gt;&gt;SOCKS5: Resposta
+    SOCKS5-&gt;&gt;Client: Encaminha</code></pre>
+<h3 id="fase-1-negociacao-de-metodo">Fase 1: negociação de método</h3>
+<p>O cliente abre uma conexão TCP ao proxy e envia a versão do protocolo (<code>0x05</code>) e os métodos de autenticação que suporta.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Client hello</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="p">[</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="mh">0x05</span><span class="p">,</span>        <span class="c1"># VER: Protocol version (5)</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="mh">0x02</span><span class="p">,</span>        <span class="c1"># NMETHODS: Number of methods offered</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x02</span>   <span class="c1"># METHODS: No auth (0x00) and Username/Password (0x02)</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="mh">0x05</span><span class="p">,</span>        <span class="c1"># VER: versão 5</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="mh">0x02</span><span class="p">,</span>        <span class="c1"># NMETHODS: número de métodos oferecidos</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x02</span><span class="p">,</span>  <span class="c1"># METHODS: sem auth (0x00) e usuário/senha (0x02)</span>
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="p">]</span>
 </span></code></pre></div>
-<p>O proxy responde com o método que ele seleciona. Se o proxy exigir autenticação e o cliente tiver oferecido <code>0x02</code> (usuário/senha), o proxy o seleciona. Se nenhum método aceitável foi oferecido, o proxy responde com <code>0xFF</code> e fecha a conexão.</p>
+<p>O proxy responde com o método que escolheu. Se ele exige autenticação e o cliente ofereceu <code>0x02</code>, ele seleciona esse. Se nada aceitável foi oferecido, ele responde <code>0xFF</code> e fecha a conexão.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Server response</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="p">[</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="mh">0x05</span><span class="p">,</span>   <span class="c1"># VER: Protocol version (5)</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="mh">0x02</span>    <span class="c1"># METHOD: Username/Password selected</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="mh">0x05</span><span class="p">,</span>  <span class="c1"># VER: versão 5</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="mh">0x02</span><span class="p">,</span>  <span class="c1"># METHOD: usuário/senha selecionado</span>
 </span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="p">]</span>
 </span></code></pre></div>
-<p>Códigos de método definidos pela RFC 1928: <code>0x00</code> = sem autenticação, <code>0x01</code> = GSSAPI, <code>0x02</code> = usuário/senha (RFC 1929), <code>0x03-0x7F</code> = atribuídos pela IANA, <code>0x80-0xFE</code> = reservados para métodos privados, <code>0xFF</code> = nenhum método aceitável.</p>
-<h3 id="fase-2-autenticacao">Fase 2: Autenticação</h3>
-<p>Se o proxy selecionou o método <code>0x02</code>, o cliente envia as credenciais seguindo a RFC 1929. A subnegociação usa seu próprio número de versão (<code>0x01</code>, não <code>0x05</code>).</p>
+<p>Códigos de método (RFC 1928): <code>0x00</code> sem autenticação, <code>0x01</code> GSSAPI, <code>0x02</code> usuário/senha (RFC 1929), <code>0xFF</code> nenhum método aceitável.</p>
+<h3 id="fase-2-autenticacao">Fase 2: autenticação</h3>
+<p>Se o proxy selecionou <code>0x02</code>, o cliente envia as credenciais conforme a RFC 1929. Essa subnegociação usa seu próprio byte de versão (<code>0x01</code>, não <code>0x05</code>).</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Client authentication</span>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="p">[</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="mh">0x01</span><span class="p">,</span>              <span class="c1"># VER: Subnegotiation version (1)</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="nb">len</span><span class="p">(</span><span class="n">username</span><span class="p">),</span>     <span class="c1"># ULEN: Username length (max 255)</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="o">*</span><span class="n">username_bytes</span><span class="p">,</span>   <span class="c1"># UNAME: Username</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="nb">len</span><span class="p">(</span><span class="n">password</span><span class="p">),</span>     <span class="c1"># PLEN: Password length (max 255)</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="o">*</span><span class="n">password_bytes</span>    <span class="c1"># PASSWD: Password</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="mh">0x01</span><span class="p">,</span>             <span class="c1"># VER: versão da subnegociação 1</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="nb">len</span><span class="p">(</span><span class="n">username</span><span class="p">),</span>    <span class="c1"># ULEN: tamanho do username (máx 255)</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="o">*</span><span class="n">username_bytes</span><span class="p">,</span>  <span class="c1"># UNAME</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="nb">len</span><span class="p">(</span><span class="n">password</span><span class="p">),</span>    <span class="c1"># PLEN: tamanho da senha (máx 255)</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="o">*</span><span class="n">password_bytes</span><span class="p">,</span>  <span class="c1"># PASSWD</span>
 </span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="p">]</span>
 </span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>
 </span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="c1"># Server response</span>
 </span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="p">[</span>
-</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>    <span class="mh">0x01</span><span class="p">,</span>   <span class="c1"># VER: Subnegotiation version (1)</span>
-</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>    <span class="mh">0x00</span>    <span class="c1"># STATUS: 0 = success, non-zero = failure</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>    <span class="mh">0x01</span><span class="p">,</span>  <span class="c1"># VER: versão da subnegociação 1</span>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>    <span class="mh">0x00</span><span class="p">,</span>  <span class="c1"># STATUS: 0 = sucesso, diferente de zero = falha</span>
 </span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="p">]</span>
 </span></code></pre></div>
-<p>As credenciais são transmitidas em texto claro durante este handshake. Isso é inerente ao protocolo SOCKS5 (RFC 1929). Para ambientes sensíveis, envolva a conexão SOCKS em um túnel SSH ou VPN.</p>
-<h3 id="fase-3-requisicao-de-conexao">Fase 3: Requisição de Conexão</h3>
-<p>Após a autenticação ser bem-sucedida (ou se nenhuma autenticação foi necessária), o cliente envia uma requisição de conexão especificando o comando, o endereço de destino e a porta.</p>
+<p>As credenciais viajam em texto claro durante esse handshake; isso é inerente à RFC 1929. Para ambientes sensíveis, envolva a conexão SOCKS em um túnel SSH ou VPN.</p>
+<h3 id="fase-3-requisicao-de-conexao">Fase 3: requisição de conexão</h3>
+<p>Após a autenticação (ou imediatamente, se nenhuma era necessária), o cliente envia o comando, o endereço de destino e a porta.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="p">[</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="mh">0x05</span><span class="p">,</span>          <span class="c1"># VER: Protocol version (5)</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="mh">0x01</span><span class="p">,</span>          <span class="c1"># CMD: 1=CONNECT, 2=BIND, 3=UDP ASSOCIATE</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="mh">0x00</span><span class="p">,</span>          <span class="c1"># RSV: Reserved</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="mh">0x03</span><span class="p">,</span>          <span class="c1"># ATYP: 1=IPv4 (4 bytes), 3=Domain (length+name), 4=IPv6 (16 bytes)</span>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="nb">len</span><span class="p">(</span><span class="n">domain</span><span class="p">),</span>   <span class="c1"># Domain length (only for ATYP=0x03)</span>
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="o">*</span><span class="n">domain_bytes</span><span class="p">,</span> <span class="c1"># Domain name</span>
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="o">*</span><span class="n">port_bytes</span>    <span class="c1"># Port (2 bytes, big-endian)</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="mh">0x05</span><span class="p">,</span>           <span class="c1"># VER: versão 5</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="mh">0x01</span><span class="p">,</span>           <span class="c1"># CMD: 1=CONNECT, 2=BIND, 3=UDP ASSOCIATE</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="mh">0x00</span><span class="p">,</span>           <span class="c1"># RSV: reservado</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="mh">0x03</span><span class="p">,</span>           <span class="c1"># ATYP: 1=IPv4, 3=domínio, 4=IPv6</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="nb">len</span><span class="p">(</span><span class="n">domain</span><span class="p">),</span>    <span class="c1"># tamanho do domínio (somente ATYP=0x03)</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="o">*</span><span class="n">domain_bytes</span><span class="p">,</span>  <span class="c1"># nome do domínio</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="o">*</span><span class="n">port_bytes</span><span class="p">,</span>    <span class="c1"># porta (2 bytes, big-endian)</span>
 </span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="p">]</span>
 </span></code></pre></div>
-<p>O tipo de endereço (ATYP) determina o formato: <code>0x01</code> significa que 4 bytes de endereço IPv4 seguem, <code>0x04</code> significa 16 bytes de IPv6, e <code>0x03</code> significa um byte de comprimento seguido pelo nome do domínio. Quando o cliente envia um nome de domínio (ATYP=0x03), o proxy resolve o DNS do seu lado, o que previne vazamentos de DNS para a rede local do cliente.</p>
-<p>O proxy conecta ao destino e responde com uma resposta:</p>
+<p>O tipo de endereço (ATYP) define o formato: <code>0x01</code> são 4 bytes de IPv4, <code>0x04</code> são 16 bytes de IPv6, e <code>0x03</code> é um byte de tamanho mais o nome do domínio. Quando o cliente envia um nome de domínio, o proxy resolve o DNS do lado dele, o que mantém o DNS fora da rede local do cliente.</p>
+<p>O proxy conecta ao destino e responde:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="p">[</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="mh">0x05</span><span class="p">,</span>       <span class="c1"># VER: Protocol version (5)</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="mh">0x00</span><span class="p">,</span>       <span class="c1"># REP: 0x00=success, 0x01-0x08=various errors</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="mh">0x00</span><span class="p">,</span>       <span class="c1"># RSV: Reserved</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="mh">0x01</span><span class="p">,</span>       <span class="c1"># ATYP: Address type of bound address</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="o">*</span><span class="n">bind_addr</span><span class="p">,</span> <span class="c1"># BND.ADDR: Address the proxy bound to</span>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="o">*</span><span class="n">bind_port</span>  <span class="c1"># BND.PORT: Port the proxy bound to</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="mh">0x05</span><span class="p">,</span>        <span class="c1"># VER: versão 5</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="mh">0x00</span><span class="p">,</span>        <span class="c1"># REP: 0x00 sucesso, 0x01-0x08 erros</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="mh">0x00</span><span class="p">,</span>        <span class="c1"># RSV: reservado</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="mh">0x01</span><span class="p">,</span>        <span class="c1"># ATYP: tipo de endereço do endereço vinculado</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="o">*</span><span class="n">bind_addr</span><span class="p">,</span>  <span class="c1"># BND.ADDR</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="o">*</span><span class="n">bind_port</span><span class="p">,</span>  <span class="c1"># BND.PORT</span>
 </span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="p">]</span>
 </span></code></pre></div>
-<p>Códigos de resposta: <code>0x00</code> sucesso, <code>0x01</code> falha geral, <code>0x02</code> conexão não permitida, <code>0x03</code> rede inacessível, <code>0x04</code> host inacessível, <code>0x05</code> conexão recusada, <code>0x06</code> TTL expirado, <code>0x07</code> comando não suportado, <code>0x08</code> tipo de endereço não suportado.</p>
-<p>Após uma resposta bem-sucedida, o proxy começa a retransmitir dados bidirecionalmente. Todo o handshake SOCKS5 é um protocolo binário, tornando-o mais eficiente que o HTTP baseado em texto, mas mais difícil de depurar sem dumps hexadecimais.</p>
-<h2 id="suporte-udp">Suporte UDP</h2>
-<p>O SOCKS5 suporta proxy UDP através do comando <code>UDP ASSOCIATE</code> (CMD=0x03). Isso funciona de forma diferente do proxy TCP: o cliente envia uma requisição UDP ASSOCIATE pela conexão de controle TCP, e o proxy responde com um endereço e porta de retransmissão. O cliente então envia datagramas UDP para essa retransmissão, e o proxy os encaminha para seus destinos.</p>
-<pre class="mermaid"><code>sequenceDiagram
-    participant Client
-    participant SOCKS5
-    participant UDP_Server as UDP Server
-
-    Note over Client,SOCKS5: TCP control connection (handshake + auth)
-    Client-&gt;&gt;SOCKS5: UDP ASSOCIATE request (CMD=0x03)
-    SOCKS5-&gt;&gt;Client: Relay address and port
-
-    Note over Client,SOCKS5: UDP data transfer
-    Client-&gt;&gt;SOCKS5: UDP datagram to relay
-    SOCKS5-&gt;&gt;UDP_Server: Forward datagram
-    UDP_Server-&gt;&gt;SOCKS5: Response datagram
-    SOCKS5-&gt;&gt;Client: Forward response
-
-    Note over Client,SOCKS5: TCP control connection stays open</code></pre>
-<p>Cada datagrama UDP enviado através da retransmissão inclui um pequeno cabeçalho com o endereço e a porta de destino:</p>
+<p>Códigos de resposta: <code>0x00</code> sucesso, <code>0x01</code> falha geral, <code>0x02</code> não permitido, <code>0x03</code> rede inalcançável, <code>0x04</code> host inalcançável, <code>0x05</code> conexão recusada, <code>0x06</code> TTL expirado, <code>0x07</code> comando não suportado, <code>0x08</code> tipo de endereço não suportado. Após uma resposta de sucesso, o proxy repassa dados nos dois sentidos. O handshake é binário, então é eficiente mas difícil de ler sem um hex dump.</p>
+<h2 id="suporte-a-udp">Suporte a UDP</h2>
+<p>O SOCKS5 pode fazer proxy de UDP através do comando <code>UDP ASSOCIATE</code> (CMD=0x03). O cliente envia a requisição pela conexão de controle TCP, e o proxy retorna um endereço e porta de relay. O cliente então envia datagramas UDP para esse relay, cada um prefixado com um pequeno header nomeando o destino:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="p">[</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span>    <span class="c1"># RSV: Reserved</span>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="mh">0x00</span><span class="p">,</span>          <span class="c1"># FRAG: Fragment number (0 = no fragmentation)</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="mh">0x01</span><span class="p">,</span>          <span class="c1"># ATYP: Address type</span>
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="o">*</span><span class="n">dst_addr</span><span class="p">,</span>     <span class="c1"># DST.ADDR: Destination address</span>
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="o">*</span><span class="n">dst_port</span><span class="p">,</span>     <span class="c1"># DST.PORT: Destination port</span>
-</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span class="o">*</span><span class="n">data</span>          <span class="c1"># DATA: Application data</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="mh">0x00</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span>  <span class="c1"># RSV: reservado</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="mh">0x00</span><span class="p">,</span>        <span class="c1"># FRAG: número do fragmento (0 = nenhum)</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="mh">0x01</span><span class="p">,</span>        <span class="c1"># ATYP: tipo de endereço</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="o">*</span><span class="n">dst_addr</span><span class="p">,</span>   <span class="c1"># DST.ADDR</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="o">*</span><span class="n">dst_port</span><span class="p">,</span>   <span class="c1"># DST.PORT</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span class="o">*</span><span class="n">data</span><span class="p">,</span>       <span class="c1"># dados de aplicação</span>
 </span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="p">]</span>
 </span></code></pre></div>
-<p>A conexão de controle TCP deve permanecer aberta durante toda a duração da associação UDP. Se ela for fechada, o proxy descarta a retransmissão UDP.</p>
+<p>A conexão de controle TCP precisa permanecer aberta durante toda a vida da associação; se ela fecha, o proxy descarta o relay de UDP.</p>
 <div class="admonition warning">
-<p class="admonition-title">UDP no Chrome</p>
-<p>O Chrome não utiliza UDP ASSOCIATE do SOCKS5 para nenhum tráfego. Mesmo quando configurado com um proxy SOCKS5, o Chrome apenas faz proxy de conexões TCP. WebRTC, DNS-sobre-UDP e outros tráfegos UDP não são roteados pelo proxy SOCKS5. Isso significa que vazamentos de IP via WebRTC ainda são possíveis com SOCKS5 no Chrome. Use <code>--force-webrtc-ip-handling-policy=disable_non_proxied_udp</code> ou <code>webrtc_leak_protection = True</code> do Pydoll para mitigar isso. Para mais detalhes, veja <a href="../network-fundamentals/#webrtc-and-ip-leakage">Fundamentos de Rede: WebRTC e Vazamento de IP</a>.</p>
-</div>
-<div class="admonition tip">
-<p class="admonition-title">Alternativas Modernas de Proxy UDP</p>
-<p>Para cenários que exigem suporte UDP completo além do que a implementação SOCKS5 do Chrome oferece, considere Shadowsocks (protocolo criptografado semelhante ao SOCKS com UDP nativo), WireGuard (VPN com excelente desempenho) ou V2Ray/VMess (framework de proxy flexível com tratamento UDP abrangente).</p>
+<p class="admonition-title">O Chrome não faz proxy de UDP sobre SOCKS5</p>
+<p>Mesmo com um proxy SOCKS5 configurado, o Chrome só faz proxy de TCP. WebRTC, DNS-over-UDP, e outros tráfegos UDP contornam o proxy, então um vazamento de IP por WebRTC ainda é possível. Defina <code>options.webrtc_leak_protection = True</code> (que adiciona <code>--force-webrtc-ip-handling-policy=disable_non_proxied_udp</code>) para mitigá-lo. Veja <a href="../network-fundamentals/">Fundamentos de rede</a>.</p>
 </div>
 <h2 id="resolucao-de-dns">Resolução de DNS</h2>
-<p>Um equívoco comum é que proxies HTTP vazam consultas DNS enquanto proxies SOCKS5 não. A realidade no Chrome é mais nuançada.</p>
-<p>Quando o Chrome é configurado com qualquer proxy (HTTP, HTTPS ou SOCKS5), ele envia nomes de host para o proxy em vez de resolver DNS localmente. Para proxies HTTP, o nome do host aparece na requisição <code>CONNECT host:443</code>. Para SOCKS5, ele aparece na requisição de conexão com ATYP=0x03 (nome de domínio). Em ambos os casos, o proxy resolve o DNS do seu lado, e o Chrome não faz consultas DNS locais para tráfego direcionado ao proxy.</p>
-<p>A verdadeira diferença de privacidade de DNS entre os dois tipos de proxy não é quem resolve o DNS, mas o que o proxy vê na camada de aplicação. Um proxy HTTP vê a URL completa para requisições não criptografadas e o nome do host para requisições CONNECT. Um proxy SOCKS5 vê apenas o nome do host de destino e a porta como parâmetros opacos de conexão.</p>
-<p>No entanto, existe uma ressalva importante: o prefetcher de DNS do Chrome pode fazer consultas DNS locais para nomes de host encontrados no conteúdo da página, mesmo quando um proxy está configurado. Isso pode vazar os domínios que você está navegando para o seu resolvedor DNS local. Para prevenir isso, desabilite o prefetching de DNS ou use a flag <code>--host-resolver-rules="MAP * ~NOTFOUND , EXCLUDE 127.0.0.1"</code>.</p>
+<p>Uma crença comum é que proxies HTTP vazam DNS enquanto o SOCKS5 não. No Chrome a realidade é mais específica.</p>
+<p>Com qualquer proxy configurado (HTTP, HTTPS ou SOCKS5), o Chrome entrega os hostnames ao proxy em vez de resolvê-los localmente. Para um proxy HTTP, o hostname está na linha <code>CONNECT host:443</code>; para o SOCKS5, está na requisição de conexão com ATYP=0x03. Em ambos os casos o proxy resolve o DNS, e o Chrome não faz consulta DNS local para tráfego com proxy. A diferença real não é quem resolve o DNS, mas o que o proxy vê: um proxy HTTP vê a URL completa de requisições não criptografadas e o hostname de requisições CONNECT, enquanto um proxy SOCKS5 vê apenas o host e a porta de destino como parâmetros opacos.</p>
+<p>Uma ressalva: o prefetcher de DNS do Chrome ainda pode fazer consultas locais para hostnames encontrados no conteúdo da página, o que vaza os domínios que você navega ao seu resolver local. Desabilite o prefetch de DNS para preveni-lo.</p>
 <div class="admonition note">
 <p class="admonition-title"><code>socks5://</code> vs <code>socks5h://</code></p>
-<p>Muitas ferramentas fora do Chrome distinguem entre <code>socks5://</code> (cliente resolve DNS) e <code>socks5h://</code> (proxy resolve DNS, o "h" significa hostname). O Chrome sempre resolve DNS do lado do proxy para SOCKS5, comportando-se como <code>socks5h://</code> independentemente de qual esquema você use. Mas se você usar ferramentas como <code>curl</code>, Firefox ou bibliotecas Python junto com o Pydoll, a distinção importa: sempre use <code>socks5h://</code> para prevenir vazamentos de DNS.</p>
+<p>Muitas ferramentas distinguem <code>socks5://</code> (o cliente resolve o DNS) de <code>socks5h://</code> (o proxy o resolve). O Chrome sempre resolve o DNS do lado do proxy para o SOCKS5, então ele se comporta como <code>socks5h://</code> de qualquer jeito. Se você usa curl, Firefox ou bibliotecas Python junto com o Pydoll, prefira <code>socks5h://</code> para evitar vazamentos de DNS ali.</p>
 </div>
-<h2 id="socks5-e-resistencia-a-mitm">SOCKS5 e Resistência a MITM</h2>
-<p>O SOCKS5 é frequentemente descrito como "resistente a MITM". Isso é verdade em um sentido específico: como o SOCKS5 não compreende nem interage com TLS, ele não tem mecanismo para terminar uma conexão TLS e recriptografá-la. Um proxy SOCKS5 simplesmente retransmite bytes criptografados sem modificação.</p>
-<p>Um proxy HTTP, por outro lado, pode realizar terminação TLS (MITM) apresentando seu próprio certificado ao cliente, descriptografando o tráfego, inspecionando ou modificando-o, e recriptografando-o em direção ao servidor. Isso exige que o cliente confie no certificado CA do proxy, e é detectável através de certificate pinning e logs de Certificate Transparency. O comportamento normal de um proxy HTTP com HTTPS (usando CONNECT) é criar um túnel transparente sem terminação, mas a possibilidade arquitetônica de MITM existe.</p>
-<p>Com SOCKS5, a terminação TLS não é possível no nível do protocolo. O proxy não consegue se inserir no handshake TLS porque ele não analisa os dados da aplicação fluindo através dele. A criptografia de ponta a ponta entre cliente e servidor é preservada por design.</p>
-<p>Vale notar que é o TLS que fornece a proteção criptográfica real, não o SOCKS5 em si. Se você enviar HTTP não criptografado através de um proxy SOCKS5, o operador do proxy pode ler tudo. A vantagem de segurança do SOCKS5 é arquitetônica (ele não exige nem permite terminação TLS), não criptográfica.</p>
-<h2 id="tls-e-browser-fingerprinting-atraves-do-socks5">TLS e Browser Fingerprinting Através do SOCKS5</h2>
-<p>Uma limitação importante para entender: o SOCKS5 não altera o fingerprint do seu navegador. O handshake TLS (ClientHello) passa pelo proxy SOCKS5 byte por byte, o que significa que o servidor de destino vê o fingerprint JA3/JA4 exato do seu navegador. O mesmo se aplica aos frames HTTP/2 SETTINGS, à ordenação de cabeçalhos específica do navegador e a todos os outros sinais de fingerprinting na camada de aplicação.</p>
-<p>O SOCKS5 oculta seu endereço IP e impede que o proxy injete cabeçalhos identificadores. Ele não ajuda com nenhuma forma de browser fingerprinting ou fingerprinting comportamental. Para uma estratégia completa de evasão, você precisa abordar o fingerprinting em múltiplas camadas. Veja <a href="../../fingerprinting/evasion-techniques/">Técnicas de Evasão</a> para detalhes.</p>
+<h2 id="socks5-e-resistencia-a-mitm">SOCKS5 e resistência a MITM</h2>
+<p>O SOCKS5 é frequentemente chamado de resistente a MITM, e em um sentido específico ele é: porque não entende TLS, não tem como terminar e recriptografar uma conexão TLS. Ele repassa bytes criptografados sem tocar.</p>
+<p>Um proxy HTTP pode realizar terminação de TLS apresentando seu próprio certificado, descriptografando, inspecionando ou modificando, e recriptografando em direção ao servidor. Isso exige que o cliente confie na CA do proxy, e é detectável através de certificate pinning e Certificate Transparency. O comportamento HTTPS normal de um proxy HTTP (CONNECT) é um túnel transparente sem terminação, mas a possibilidade existe. Com o SOCKS5 ela não existe, porque o proxy nunca toca nos dados de aplicação.</p>
+<p>O TLS é o que fornece a proteção criptográfica aqui, não o SOCKS5. A vantagem do SOCKS5 é arquitetural, no sentido de que ele nem exige nem habilita terminação de TLS, não criptográfica.</p>
+<h2 id="fingerprinting-atraves-do-socks5">Fingerprinting através do SOCKS5</h2>
+<p>O SOCKS5 não muda o fingerprint do seu navegador. O TLS ClientHello passa byte por byte, então o servidor vê seu fingerprint JA3/JA4 exato, e o mesmo vale para as configurações do HTTP/2, a ordem dos headers, e todo outro sinal da camada de aplicação. O SOCKS5 esconde seu IP e impede o proxy de injetar headers; ele não faz nada pelo fingerprinting de navegador ou comportamental. Para isso, trate as outras camadas também: veja <a href="../../../stealth/evasion-techniques/">Técnicas de evasão</a>.</p>
 <h2 id="autenticacao-socks5-no-chrome">Autenticação SOCKS5 no Chrome</h2>
-<p>O Chrome não suporta autenticação por usuário/senha do SOCKS5. Esta é uma limitação de longa data rastreada como <a href="https://issues.chromium.org/issues/40323993">Chromium Issue #40323993</a>. Quando o Chrome realiza a negociação de método SOCKS5, ele oferece apenas o método <code>0x00</code> (sem autenticação). Se o proxy exigir autenticação, a conexão falha silenciosamente.</p>
-<p>Isso é fundamentalmente diferente da autenticação de proxy HTTP. Proxies HTTP autenticam via códigos de status HTTP (<code>407 Proxy Authentication Required</code>), que o Chrome trata através do domínio Fetch no CDP. O Pydoll intercepta esses eventos <code>Fetch.authRequired</code> e responde com as credenciais armazenadas automaticamente. A autenticação SOCKS5, por outro lado, acontece durante um handshake de protocolo binário na camada de sessão, antes que qualquer tráfego HTTP exista. Não há HTTP 407, nenhum evento <code>Fetch.authRequired</code> e nenhuma forma de ferramentas baseadas em CDP injetarem credenciais nesse processo.</p>
-<p>Configurar <code>--proxy-server=socks5://user:pass@proxy:1080</code> não funciona. O Chrome ignora silenciosamente as credenciais embutidas.</p>
-<h3 id="socks5forwarder-do-pydoll">SOCKS5Forwarder do Pydoll</h3>
-<p>A solução padrão é um proxy forwarder local: um servidor SOCKS5 leve rodando no localhost que aceita conexões não autenticadas do Chrome e as encaminha para o proxy remoto com autenticação completa.</p>
+<p>O Chrome não suporta autenticação SOCKS5 por usuário/senha, uma limitação de longa data rastreada como <a href="https://issues.chromium.org/issues/40323993">issue 40323993 do Chromium</a>. Durante a negociação de método, o Chrome oferece apenas <code>0x00</code> (sem autenticação); se o proxy exige credenciais, a conexão falha silenciosamente. Definir <code>--proxy-server=socks5://user:pass@proxy:1080</code> não funciona, porque o Chrome ignora as credenciais embutidas.</p>
+<p>Isso difere da autenticação de proxy HTTP. Proxies HTTP autenticam com um status <code>407 Proxy Authentication Required</code>, que o Chrome expõe através do domínio Fetch do CDP; o Pydoll responde a esses eventos <code>Fetch.authRequired</code> com suas credenciais automaticamente. A autenticação SOCKS5 acontece em um handshake binário antes de qualquer HTTP existir, então não há 407, não há <code>Fetch.authRequired</code>, e não há como uma ferramenta baseada em CDP injetar credenciais nela.</p>
+<h3 id="o-socks5forwarder-do-pydoll">O SOCKS5Forwarder do Pydoll</h3>
+<p>A correção padrão é um forwarder local: um pequeno servidor SOCKS5 no localhost que aceita conexões não autenticadas do Chrome e as encaminha ao proxy remoto com autenticação completa.</p>
 <pre class="mermaid"><code>sequenceDiagram
     participant Chrome
-    participant Forwarder as Local Forwarder&lt;br/&gt;(127.0.0.1:1081)
-    participant Remote as Remote SOCKS5 Proxy&lt;br/&gt;(proxy:1080)
-    participant Server as Destination Server
+    participant Forwarder as Local forwarder&lt;br/&gt;(127.0.0.1:1081)
+    participant Remote as Remote SOCKS5 proxy&lt;br/&gt;(proxy:1080)
+    participant Server as Destination
 
-    Note over Chrome,Forwarder: No authentication
-    Chrome-&gt;&gt;Forwarder: SOCKS5 Hello [methods: 0x00]
-    Forwarder-&gt;&gt;Chrome: Method selected [0x00]
+    Note over Chrome,Forwarder: sem autenticação
+    Chrome-&gt;&gt;Forwarder: Hello [methods: 0x00]
+    Forwarder-&gt;&gt;Chrome: Método selecionado [0x00]
     Chrome-&gt;&gt;Forwarder: CONNECT example.com:443
 
-    Note over Forwarder,Remote: With authentication
-    Forwarder-&gt;&gt;Remote: SOCKS5 Hello [methods: 0x02]
-    Remote-&gt;&gt;Forwarder: Method selected [0x02]
+    Note over Forwarder,Remote: com autenticação
+    Forwarder-&gt;&gt;Remote: Hello [methods: 0x02]
+    Remote-&gt;&gt;Forwarder: Método selecionado [0x02]
     Forwarder-&gt;&gt;Remote: Auth [username, password]
     Remote-&gt;&gt;Forwarder: Auth OK
     Forwarder-&gt;&gt;Remote: CONNECT example.com:443
-    Remote-&gt;&gt;Server: TCP connection
-    Remote-&gt;&gt;Forwarder: Connect OK
+    Remote-&gt;&gt;Server: Conexão TCP
+    Remote-&gt;&gt;Forwarder: Conectado
+    Forwarder-&gt;&gt;Chrome: Conectado
 
-    Forwarder-&gt;&gt;Chrome: Connect OK
-
-    Note over Chrome,Server: Bidirectional data relay
-    Chrome-&gt;&gt;Forwarder: TLS + application data
-    Forwarder-&gt;&gt;Remote: Forward
-    Remote-&gt;&gt;Server: Forward
-    Server-&gt;&gt;Remote: Response
-    Remote-&gt;&gt;Forwarder: Forward
-    Forwarder-&gt;&gt;Chrome: Forward</code></pre>
-<p>O Pydoll fornece um <code>SOCKS5Forwarder</code> integrado no módulo <code>pydoll.utils</code>. É uma implementação async pura em Python, sem dependências externas, que lida com o handshake SOCKS5 completo com o proxy remoto, incluindo autenticação por usuário/senha (RFC 1929), tipos de endereço IPv4, IPv6 e domínio.</p>
+    Note over Chrome,Server: relay bidirecional
+    Chrome-&gt;&gt;Forwarder: TLS + dados de aplicação
+    Forwarder-&gt;&gt;Remote: Encaminha
+    Remote-&gt;&gt;Server: Encaminha</code></pre>
+<p>O Pydoll traz o <code>SOCKS5Forwarder</code> em <code>pydoll.utils</code>. É uma implementação assíncrona em Python puro, sem dependências, que lida com o handshake completo com o proxy remoto, incluindo autenticação por usuário/senha e os tipos de endereço IPv4, IPv6 e domínio.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">SOCKS5Forwarder</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
 </span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.chromium</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
 </span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChromiumOptions</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="n">forwarder</span> <span class="o">=</span> <span class="n">SOCKS5Forwarder</span><span class="p">(</span>
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>        <span class="n">remote_host</span><span class="o">=</span><span class="s1">'proxy.example.com'</span><span class="p">,</span>
-</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>        <span class="n">remote_port</span><span class="o">=</span><span class="mi">1080</span><span class="p">,</span>
-</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>        <span class="n">username</span><span class="o">=</span><span class="s1">'myuser'</span><span class="p">,</span>
-</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>        <span class="n">password</span><span class="o">=</span><span class="s1">'mypass'</span><span class="p">,</span>
-</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>        <span class="n">local_port</span><span class="o">=</span><span class="mi">1081</span><span class="p">,</span>  <span class="c1"># Use 0 for auto-assigned port</span>
-</span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>    <span class="p">)</span>
-</span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>    <span class="k">async</span> <span class="k">with</span> <span class="n">forwarder</span><span class="p">:</span>
-</span><span id="__span-6-15"><a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a>        <span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
-</span><span id="__span-6-16"><a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a>        <span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="sa">f</span><span class="s1">'--proxy-server=socks5://127.0.0.1:</span><span class="si">{</span><span class="n">forwarder</span><span class="o">.</span><span class="n">local_port</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
-</span><span id="__span-6-17"><a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a>
-</span><span id="__span-6-18"><a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a>        <span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">(</span><span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
-</span><span id="__span-6-19"><a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a>            <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-</span><span id="__span-6-20"><a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a>            <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">'https://httpbin.org/ip'</span><span class="p">)</span>
-</span><span id="__span-6-21"><a id="__codelineno-6-21" name="__codelineno-6-21" href="#__codelineno-6-21"></a>
-</span><span id="__span-6-22"><a id="__codelineno-6-22" name="__codelineno-6-22" href="#__codelineno-6-22"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">SOCKS5Forwarder</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>    <span class="n">forwarder</span> <span class="o">=</span> <span class="n">SOCKS5Forwarder</span><span class="p">(</span>
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>        <span class="n">remote_host</span><span class="o">=</span><span class="s1">'proxy.example.com'</span><span class="p">,</span>
+</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>        <span class="n">remote_port</span><span class="o">=</span><span class="mi">1080</span><span class="p">,</span>
+</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>        <span class="n">username</span><span class="o">=</span><span class="s1">'myuser'</span><span class="p">,</span>
+</span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>        <span class="n">password</span><span class="o">=</span><span class="s1">'mypass'</span><span class="p">,</span>
+</span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>        <span class="n">local_port</span><span class="o">=</span><span class="mi">1081</span><span class="p">,</span>   <span class="c1"># 0 deixa o SO escolher uma porta livre</span>
+</span><span id="__span-6-15"><a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a>    <span class="p">)</span>
+</span><span id="__span-6-16"><a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a>    <span class="k">async</span> <span class="k">with</span> <span class="n">forwarder</span><span class="p">:</span>
+</span><span id="__span-6-17"><a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a>        <span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
+</span><span id="__span-6-18"><a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a>        <span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="sa">f</span><span class="s1">'--proxy-server=socks5://127.0.0.1:</span><span class="si">{</span><span class="n">forwarder</span><span class="o">.</span><span class="n">local_port</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+</span><span id="__span-6-19"><a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a>
+</span><span id="__span-6-20"><a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a>        <span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">(</span><span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
+</span><span id="__span-6-21"><a id="__codelineno-6-21" name="__codelineno-6-21" href="#__codelineno-6-21"></a>            <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</span><span id="__span-6-22"><a id="__codelineno-6-22" name="__codelineno-6-22" href="#__codelineno-6-22"></a>            <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">'https://httpbin.org/ip'</span><span class="p">)</span>
+</span><span id="__span-6-23"><a id="__codelineno-6-23" name="__codelineno-6-23" href="#__codelineno-6-23"></a>
+</span><span id="__span-6-24"><a id="__codelineno-6-24" name="__codelineno-6-24" href="#__codelineno-6-24"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </span></code></pre></div>
-<p>O forwarder também pode ser executado como ferramenta CLI standalone para testes ou uso com outras aplicações:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>python<span class="w"> </span>-m<span class="w"> </span>pydoll.utils.socks5_proxy_forwarder<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span>--remote-host<span class="w"> </span>proxy.example.com<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span>--remote-port<span class="w"> </span><span class="m">1080</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">    </span>--username<span class="w"> </span>myuser<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">    </span>--password<span class="w"> </span>mypass<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">    </span>--local-port<span class="w"> </span><span class="m">1081</span>
-</span></code></pre></div>
-<p>O forwarder se vincula a <code>127.0.0.1</code> por padrão, tornando-o acessível apenas da sua máquina. Nunca vincule a <code>0.0.0.0</code> em produção, pois isso exporia um proxy SOCKS5 sem autenticação para a rede. As credenciais nunca são registradas em texto claro nos logs. O forwarder adiciona latência sub-milissegundo, já que toda a comunicação acontece pela interface de loopback local.</p>
+<p>O forwarder faz bind em <code>127.0.0.1</code>, então é alcançável apenas a partir da sua máquina. Não faça bind em <code>0.0.0.0</code>, o que exporia um proxy SOCKS5 não autenticado à rede. Como tudo roda pela interface de loopback, ele adiciona latência de sub-milissegundo.</p>
 <div class="admonition tip">
-<p class="admonition-title">Ambientes Restritos</p>
-<p>Alguns ambientes (contêineres Docker, plataformas serverless, VMs endurecidas) podem restringir a vinculação a portas locais. Use <code>local_port=0</code> para deixar o SO atribuir uma porta disponível. Se a vinculação local estiver completamente bloqueada, considere usar um proxy HTTP CONNECT, que o Chrome suporta nativamente com autenticação via ProxyManager do Pydoll.</p>
+<p class="admonition-title">Ambientes restritos</p>
+<p>Alguns ambientes (containers, serverless, VMs endurecidas) restringem o bind em portas locais. Use <code>local_port=0</code> para deixar o SO atribuir uma. Se o bind local estiver totalmente bloqueado, use um proxy HTTP CONNECT em vez disso, que o Chrome suporta nativamente com a autenticação tratada para você (veja <a href="../../../guides/proxies/">Proxies</a>).</p>
 </div>
-<h2 id="configuracao-pratica">Configuração Prática</h2>
-<p><strong>SOCKS5 básico (sem autenticação):</strong></p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.chromium</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChromiumOptions</span>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--proxy-server=socks5://proxy.example.com:1080'</span><span class="p">)</span>
-</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
-</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">(</span><span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
-</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>    <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">'https://example.com'</span><span class="p">)</span>
-</span></code></pre></div>
-<p><strong>SOCKS5 com autenticação (via SOCKS5Forwarder):</strong></p>
-<p>Veja a <a href="#socks5forwarder-do-pydoll">seção do SOCKS5Forwarder</a> acima.</p>
-<p><strong>Prevenindo vazamentos:</strong></p>
-<p>Para uma configuração SOCKS5 completa, você também deve prevenir vazamentos de WebRTC e DNS prefetch:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--proxy-server=socks5://proxy.example.com:1080'</span><span class="p">)</span>
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="n">options</span><span class="o">.</span><span class="n">webrtc_leak_protection</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># Prevents WebRTC IP leaks</span>
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--disable-quic'</span><span class="p">)</span>  <span class="c1"># Forces HTTP/2 over TCP through proxy</span>
-</span></code></pre></div>
-<p><strong>Testando sua configuração:</strong></p>
-<p>Sempre verifique sua configuração de proxy com testes de vazamento. Visite <a href="https://browserleaks.com/ip">browserleaks.com/ip</a> para confirmar seu IP, <a href="https://browserleaks.com/webrtc">browserleaks.com/webrtc</a> para verificar vazamentos de WebRTC, e <a href="https://dnsleaktest.com/">dnsleaktest.com</a> para confirmar que o DNS não está vazando.</p>
-<h2 id="resumo">Resumo</h2>
-<p>O SOCKS5 fornece proxy agnóstico a protocolo com uma superfície de confiança menor que a dos proxies HTTP. Ele não analisa, modifica ou injeta nada no seu tráfego. A resolução de DNS acontece do lado do proxy no Chrome. A criptografia TLS é preservada de ponta a ponta. A principal limitação no Chrome é a falta de autenticação SOCKS5 nativa (resolvida pelo <code>SOCKS5Forwarder</code> do Pydoll) e a ausência de proxy UDP (mitigada desabilitando o WebRTC ou usando as flags apropriadas do navegador).</p>
-<p>O SOCKS5 não altera o fingerprint TLS do seu navegador, as configurações HTTP/2 ou quaisquer características da camada de aplicação. Para evasão completa, combine SOCKS5 com gerenciamento de browser fingerprint e simulação comportamental.</p>
-<p><strong>Próximos passos:</strong></p>
+<h2 id="relacionado">Relacionado</h2>
 <ul>
-<li><a href="../proxy-detection/">Detecção de Proxy</a>: Como até mesmo proxies SOCKS5 podem ser detectados</li>
-<li><a href="../build-proxy/">Construindo Proxies</a>: Implemente seu próprio servidor SOCKS5</li>
-<li><a href="../../../features/configuration/proxy/">Configuração de Proxy</a>: Configuração prática de proxy no Pydoll</li>
-<li><a href="../../fingerprinting/evasion-techniques/">Técnicas de Evasão</a>: Estratégia de evasão multicamada</li>
+<li><a href="../http-proxies/">Proxies HTTP/HTTPS</a>: a alternativa na camada de aplicação.</li>
+<li><a href="../network-fundamentals/">Fundamentos de rede</a>: as camadas por baixo.</li>
+<li><a href="../proxy-detection/">Detecção de proxy</a>: como até proxies SOCKS5 são detectados.</li>
+<li><a href="../build-proxy/">Construindo um servidor proxy</a>: implemente um servidor SOCKS5 você mesmo.</li>
+<li><a href="../../../guides/proxies/">Proxies</a>: configure proxies no Pydoll.</li>
 </ul>
 <h2 id="referencias">Referências</h2>
 <ul>
 <li>RFC 1928: SOCKS Protocol Version 5 (1996) - https://datatracker.ietf.org/doc/html/rfc1928</li>
 <li>RFC 1929: Username/Password Authentication for SOCKS V5 (1996) - https://datatracker.ietf.org/doc/html/rfc1929</li>
-<li>RFC 1961: GSS-API Authentication Method for SOCKS V5 (1996) - https://datatracker.ietf.org/doc/html/rfc1961</li>
-<li>RFC 3089: SOCKS-based IPv6/IPv4 Gateway Mechanism (2001) - https://datatracker.ietf.org/doc/html/rfc3089</li>
-<li>Chromium Proxy Documentation - https://chromium.googlesource.com/chromium/src/+/689912289c/net/docs/proxy.md</li>
-<li>Chromium Issue #40323993: SOCKS5 Authentication - https://issues.chromium.org/issues/40323993</li>
-<li>BrowserLeaks: WebRTC Leak Test - https://browserleaks.com/webrtc</li>
-<li>DNS Leak Test - https://dnsleaktest.com/</li>
-<li>IPLeak: Comprehensive Leak Testing - https://ipleak.net</li>
+<li>Chromium issue 40323993: SOCKS5 authentication - https://issues.chromium.org/issues/40323993</li>
+<li>BrowserLeaks: WebRTC leak test - https://browserleaks.com/webrtc</li>
 </ul>
 
 

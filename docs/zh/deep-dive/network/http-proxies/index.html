@@ -52,8 +52,8 @@
         
         
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Chivo:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Chivo";--md-code-font:"JetBrains Mono"}</style>
       
     
     
@@ -65,6 +65,8 @@
     
       <link rel="stylesheet" href="../../../../resources/stylesheets/extra.css">
     
+      <link rel="stylesheet" href="../../../../resources/stylesheets/landing-theme.css">
+    
     <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -75,8 +77,6 @@
   
   
     
-    
-      
     
     
     
@@ -90,7 +90,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#httphttps-proxy" class="md-skip">
+        <a href="#http-https-proxy" class="md-skip">
           Skip to content
         </a>
       
@@ -104,7 +104,7 @@
 
   
 
-<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+<header class="md-header md-header--landing md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="../../../" title="Pydoll - 异步网页自动化库" class="md-header__button md-logo" aria-label="Pydoll - 异步网页自动化库" data-md-component="logo">
       
@@ -112,6 +112,7 @@
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11 15H6l7-14v8h5l-7 14z"/></svg>
 
     </a>
+    <span class="md-header__docs-chip">docs</span>
     <label class="md-header__button md-icon" for="__drawer">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
@@ -119,48 +120,18 @@
     <div class="md-header__title" data-md-component="header-title">
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
-          <span class="md-ellipsis">
-            Pydoll - 异步网页自动化库
-          </span>
+          <span class="md-ellipsis">Pydoll - 异步网页自动化库</span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
-            
-              HTTP/HTTPS 代理
-            
+            HTTP/HTTPS 代理
           </span>
         </div>
       </div>
     </div>
     
       
-        <form class="md-header__option" data-md-component="palette">
-  
     
-    
-    
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Dark Mode"  type="radio" name="__palette" id="__palette_0">
-    
-      <label class="md-header__button md-icon" title="Dark Mode" for="__palette_1" hidden>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6m0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4M7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3"/></svg>
-      </label>
-    
-  
-    
-    
-    
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Light Mode"  type="radio" name="__palette" id="__palette_1">
-    
-      <label class="md-header__button md-icon" title="Light Mode" for="__palette_0" hidden>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
-      </label>
-    
-  
-</form>
-      
-    
-    
-      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
     
     
       <div class="md-header__option">
@@ -251,6 +222,7 @@
 </a>
       </div>
     
+    <a class="md-header__cta" href="../../../../getting-started/">Get started</a>
   </nav>
   
     
@@ -286,13 +258,79 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../features/" class="md-tabs__link">
+        <a href="../../../getting-started/" class="md-tabs__link">
           
   
   
     
   
-  特性
+  快速上手
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../basics/async-python/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  基础
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../guides/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  指南
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../stealth/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Stealth
 
         </a>
       </li>
@@ -434,11 +472,283 @@
     
       
         
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
           
         
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    快速上手
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    快速上手
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    安装
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../first-automation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    你的第一个自动化
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../migrating/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    从 Selenium 和 Playwright 迁移
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
       
         
       
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    基础
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    基础
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../basics/async-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    异步 Python 实践
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../basics/selectors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    选择器、CSS 和 XPath
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
         
       
         
@@ -468,18 +778,18 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../features/" class="md-nav__link ">
+            <a href="../../../guides/" class="md-nav__link ">
               
   
   
   <span class="md-ellipsis">
     
   
-    特性
+    指南
   
 
     
@@ -490,18 +800,18 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
   
-    特性
+    指南
   
 
           </label>
@@ -516,7 +826,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/core-concepts/" class="md-nav__link">
+      <a href="../../../guides/core-concepts/" class="md-nav__link">
         
   
   
@@ -543,8 +853,70 @@
   
   
   
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    查找与提取
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    查找与提取
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
     <li class="md-nav__item">
-      <a href="../../../features/element-finding/" class="md-nav__link">
+      <a href="../../../guides/element-finding/" class="md-nav__link">
         
   
   
@@ -571,37 +943,15 @@
   
   
   
-    
-    
-      
+    <li class="md-nav__item">
+      <a href="../../../guides/dom-traversal/" class="md-nav__link">
         
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_4" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
-            
   
   
   <span class="md-ellipsis">
     
   
-    Data Extraction
+    DOM 遍历
   
 
     
@@ -609,19 +959,11 @@
   
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_4">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Data Extraction
+      </a>
+    </li>
   
 
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
+              
             
               
                 
@@ -630,14 +972,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/extraction/structured-extraction/" class="md-nav__link">
+      <a href="../../../guides/structured-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Structured Extraction
+    结构化提取
   
 
     
@@ -678,8 +1020,6 @@
       
         
       
-        
-      
     
     
     
@@ -695,17 +1035,17 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_5" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_4" >
         
           
-          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="0">
             
   
   
   <span class="md-ellipsis">
     
   
-    自动化
+    交互
   
 
     
@@ -716,12 +1056,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_5">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_4">
             <span class="md-nav__icon md-icon"></span>
             
   
-    自动化
+    交互
   
 
           </label>
@@ -734,14 +1074,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/automation/human-interactions/" class="md-nav__link">
+      <a href="../../../guides/keyboard/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    类人交互
+    键盘
   
 
     
@@ -762,14 +1102,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/automation/keyboard-control/" class="md-nav__link">
+      <a href="../../../guides/mouse/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    键盘控制
+    鼠标
   
 
     
@@ -790,35 +1130,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/automation/mouse-control/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    鼠标控制
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/automation/file-operations/" class="md-nav__link">
+      <a href="../../../guides/file-operations/" class="md-nav__link">
         
   
   
@@ -846,14 +1158,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/automation/iframes/" class="md-nav__link">
+      <a href="../../../guides/iframes/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    IFrame交互
+    IFrame
   
 
     
@@ -874,14 +1186,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/automation/screenshots-and-pdfs/" class="md-nav__link">
+      <a href="../../../guides/screenshots-and-pdfs/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    截图与PDF
+    截图与 PDF
   
 
     
@@ -935,10 +1247,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_6" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_5" >
         
           
-          <label class="md-nav__link" for="__nav_2_6" id="__nav_2_6_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4_5" id="__nav_4_5_label" tabindex="0">
             
   
   
@@ -956,8 +1268,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_6">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -974,7 +1286,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/network/monitoring/" class="md-nav__link">
+      <a href="../../../guides/network-monitoring/" class="md-nav__link">
         
   
   
@@ -1002,7 +1314,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/network/interception/" class="md-nav__link">
+      <a href="../../../guides/request-interception/" class="md-nav__link">
         
   
   
@@ -1030,14 +1342,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/network/http-requests/" class="md-nav__link">
+      <a href="../../../guides/http-requests/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    浏览器上下文HTTP请求
+    浏览器上下文 HTTP 请求
   
 
     
@@ -1058,14 +1370,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/network/network-recording/" class="md-nav__link">
+      <a href="../../../guides/network-recording/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    HAR网络录制
+    HAR 录制
   
 
     
@@ -1102,6 +1414,14 @@
       
         
       
+        
+      
+        
+      
+        
+      
+        
+      
     
     
     
@@ -1117,17 +1437,17 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_7" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_6" >
         
           
-          <label class="md-nav__link" for="__nav_2_7" id="__nav_2_7_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4_6" id="__nav_4_6_label" tabindex="0">
             
   
   
   <span class="md-ellipsis">
     
   
-    浏览器管理
+    管理浏览器
   
 
     
@@ -1138,12 +1458,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_7">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_6">
             <span class="md-nav__icon md-icon"></span>
             
   
-    浏览器管理
+    管理浏览器
   
 
           </label>
@@ -1156,14 +1476,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/browser-management/tabs/" class="md-nav__link">
+      <a href="../../../guides/tabs/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    多标签页管理
+    标签页
   
 
     
@@ -1184,7 +1504,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/browser-management/contexts/" class="md-nav__link">
+      <a href="../../../guides/browser-contexts/" class="md-nav__link">
         
   
   
@@ -1212,14 +1532,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/browser-management/cookies-sessions/" class="md-nav__link">
+      <a href="../../../guides/cookies-and-sessions/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Cookie与会话
+    Cookie 与会话
   
 
     
@@ -1233,76 +1553,6 @@
 
               
             
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_8" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_8" id="__nav_2_8_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    配置
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_8_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_8">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    配置
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
               
                 
   
@@ -1310,7 +1560,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/configuration/browser-options/" class="md-nav__link">
+      <a href="../../../guides/browser-options/" class="md-nav__link">
         
   
   
@@ -1338,7 +1588,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/configuration/browser-preferences/" class="md-nav__link">
+      <a href="../../../guides/browser-preferences/" class="md-nav__link">
         
   
   
@@ -1366,14 +1616,42 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/configuration/proxy/" class="md-nav__link">
+      <a href="../../../guides/proxies/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    代理配置
+    代理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/remote-connections/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    远程连接
   
 
     
@@ -1404,6 +1682,139 @@
     
     
       
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_7" id="__nav_4_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    响应事件
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    响应事件
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    事件
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/retrying/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    重试
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
         
       
         
@@ -1429,17 +1840,18 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_9" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
         
           
-          <label class="md-nav__link" for="__nav_2_9" id="__nav_2_9_label" tabindex="0">
-            
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../stealth/" class="md-nav__link ">
+              
   
   
   <span class="md-ellipsis">
     
   
-    高级功能
+    Stealth
   
 
     
@@ -1447,19 +1859,27 @@
   
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_9_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_9">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
   
-    高级功能
+    Stealth
   
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
             
               
                 
@@ -1468,7 +1888,91 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/advanced/fingerprint-injection/" class="md-nav__link">
+      <a href="../../../stealth/evasion-techniques/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    规避技术
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../stealth/human-like-interactions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    类人交互
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../stealth/captcha-bypass/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    验证码绕过
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../stealth/fingerprint-injection/" class="md-nav__link">
         
   
   
@@ -1489,126 +1993,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/advanced/behavioral-captcha-bypass/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    行为验证码绕过
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/advanced/event-system/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    事件系统
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/advanced/remote-connections/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    远程连接
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/advanced/decorators/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Retry 装饰器
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -1629,10 +2013,6 @@
       
         
           
-        
-      
-        
-      
         
       
         
@@ -1657,7 +2037,7 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
         
           
           <div class="md-nav__link md-nav__container">
@@ -1679,14 +2059,14 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_3">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1704,88 +2084,8 @@
   
   
   
-    
-    
-      
-        
-          
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-          
-          
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_2" >
-        
-          
-          <div class="md-nav__link md-nav__container">
-            <a href="../../fundamentals/" class="md-nav__link ">
-              
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    核心基础
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_3_2" id="__nav_3_2_label" tabindex="">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_2">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    核心基础
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
     <li class="md-nav__item">
-      <a href="../../fundamentals/cdp/" class="md-nav__link">
+      <a href="../../cdp/" class="md-nav__link">
         
   
   
@@ -1810,388 +2110,6 @@
                 
   
   
-  
-  
-    <li class="md-nav__item">
-      <a href="../../fundamentals/connection-layer/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    连接层
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../fundamentals/typing-system/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Python类型系统
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../fundamentals/iframes-and-contexts/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Iframes & Contexts
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-          
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-          
-          
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_3" >
-        
-          
-          <div class="md-nav__link md-nav__container">
-            <a href="../../architecture/" class="md-nav__link ">
-              
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    内部架构
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_3_3" id="__nav_3_3_label" tabindex="">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_3">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    内部架构
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/browser-domain/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    浏览器域
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/tab-domain/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    标签页域
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/webelement-domain/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Web元素域
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/find-elements-mixin/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    查找元素混合器
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/event-architecture/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    事件架构
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/browser-requests-architecture/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    浏览器请求架构
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/shadow-dom/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Shadow DOM 架构
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
     
   
   
@@ -2231,7 +2149,7 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_3" checked>
         
           
           <div class="md-nav__link md-nav__container">
@@ -2242,7 +2160,7 @@
   <span class="md-ellipsis">
     
   
-    网络与安全
+    网络与代理
   
 
     
@@ -2253,18 +2171,18 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_3_4" id="__nav_3_4_label" tabindex="">
+              <label class="md-nav__link " for="__nav_6_3" id="__nav_6_3_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_3_4">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6_3">
             <span class="md-nav__icon md-icon"></span>
             
   
-    网络与安全
+    网络与代理
   
 
           </label>
@@ -2370,41 +2288,30 @@
   <a href="#http-proxy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        HTTP Proxy 的工作原理
+        一个 HTTP proxy 如何工作
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="HTTP Proxy 的工作原理">
+    <nav class="md-nav" aria-label="一个 HTTP proxy 如何工作">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#proxy-header" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        暴露 proxy 的那些 header
+      
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        请求流程
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#proxy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Proxy 标头与隐私
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        能力与限制
+        它能做什么，不能做什么
       
     </span>
   </a>
@@ -2420,19 +2327,19 @@
   <a href="#connect-https" class="md-nav__link">
     <span class="md-ellipsis">
       
-        CONNECT 方法：HTTPS 隧道
+        CONNECT 方法：为 HTTPS 建立隧道
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="CONNECT 方法：HTTPS 隧道">
+    <nav class="md-nav" aria-label="CONNECT 方法：为 HTTPS 建立隧道">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#connect" class="md-nav__link">
+  <a href="#connect-proxy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        CONNECT 请求
+        CONNECT 之后 proxy 能看到什么
       
     </span>
   </a>
@@ -2440,32 +2347,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#connect_1" class="md-nav__link">
+  <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        CONNECT 之后的可见性
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#connect-https_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        CONNECT 用于非 HTTPS 协议
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#https" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        HTTPS 困境
+        隧道对拦截
       
     </span>
   </a>
@@ -2478,10 +2363,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#https-proxy-proxy-tls" class="md-nav__link">
+  <a href="#tls-proxy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        HTTPS Proxy（到 Proxy 的 TLS）
+        通过 TLS 连接到 proxy
       
     </span>
   </a>
@@ -2492,51 +2377,23 @@
   <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       
-        身份验证
+        认证
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="身份验证">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        身份验证方案
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#pydoll" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Pydoll 中的身份验证
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
+  <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
       
-        现代协议与代理
+        现代协议
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="现代协议与代理">
+    <nav class="md-nav" aria-label="现代协议">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2567,38 +2424,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_6" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        总结
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="总结">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
   <a href="#http-proxy-socks5" class="md-nav__link">
     <span class="md-ellipsis">
       
-        HTTP Proxy 与 SOCKS5 对比
+        HTTP proxy 对 SOCKS5
       
     </span>
   </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#_7" class="md-nav__link">
+  <a href="#_5" class="md-nav__link">
     <span class="md-ellipsis">
       
-        参考文献
+        相关内容
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        参考资料
       
     </span>
   </a>
@@ -2753,8 +2604,6 @@
       
         
       
-        
-      
     
     
     
@@ -2773,7 +2622,7 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_5" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6_4" >
         
           
           <div class="md-nav__link md-nav__container">
@@ -2795,14 +2644,14 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_3_5" id="__nav_3_5_label" tabindex="">
+              <label class="md-nav__link " for="__nav_6_4" id="__nav_6_4_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_5">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_4">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2898,144 +2747,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../fingerprinting/evasion-techniques/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    规避技术
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-          
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-          
-          
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_6" >
-        
-          
-          <div class="md-nav__link md-nav__container">
-            <a href="../../guides/" class="md-nav__link ">
-              
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    实用指南
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_3_6" id="__nav_3_6_label" tabindex="">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_6">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    实用指南
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../guides/selectors-guide/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    CSS选择器 vs XPath
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -3062,8 +2773,6 @@
       
         
           
-        
-      
         
       
         
@@ -3091,7 +2800,7 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
         
           
           <div class="md-nav__link md-nav__container">
@@ -3113,14 +2822,14 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -3151,8 +2860,6 @@
       
         
       
-        
-      
     
     
     
@@ -3168,10 +2875,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_2" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_2" >
         
           
-          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7_2" id="__nav_7_2_label" tabindex="0">
             
   
   
@@ -3189,8 +2896,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_2">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_2">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -3298,7 +3005,7 @@
   <span class="md-ellipsis">
     
   
-    标签页
+    Tab
   
 
     
@@ -3326,35 +3033,7 @@
   <span class="md-ellipsis">
     
   
-    请求
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/browser/managers/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    管理器
+    Requests
   
 
     
@@ -3389,8 +3068,6 @@
       
         
       
-        
-      
     
     
     
@@ -3406,10 +3083,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_3" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_3" >
         
           
-          <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7_3" id="__nav_7_3_label" tabindex="0">
             
   
   
@@ -3427,8 +3104,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_3">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_3">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -3452,7 +3129,7 @@
   <span class="md-ellipsis">
     
   
-    Web元素
+    WebElement
   
 
     
@@ -3480,35 +3157,7 @@
   <span class="md-ellipsis">
     
   
-    Shadow根
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/elements/mixins/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    混合器
+    ShadowRoot
   
 
     
@@ -3536,39 +3185,15 @@
   
   
   
-    
-    
-      
+    <li class="md-nav__item">
+      <a href="../../../api/extraction/" class="md-nav__link">
         
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_4" >
-        
-          
-          <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="0">
-            
   
   
   <span class="md-ellipsis">
     
   
-    连接
+    Extraction
   
 
     
@@ -3576,19 +3201,11 @@
   
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_4">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    连接
+      </a>
+    </li>
   
 
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
+              
             
               
                 
@@ -3604,7 +3221,7 @@
   <span class="md-ellipsis">
     
   
-    连接处理器
+    Connection
   
 
     
@@ -3624,62 +3241,8 @@
   
   
   
-    <li class="md-nav__item">
-      <a href="../../../api/connection/managers/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    管理器
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
     
     
-      
-        
-          
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
       
         
       
@@ -3700,362 +3263,17 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_5" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_6" >
         
           
-          <div class="md-nav__link md-nav__container">
-            <a href="../../../api/commands/" class="md-nav__link ">
-              
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    命令
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_4_5" id="__nav_4_5_label" tabindex="0">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_5">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    命令
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/browser/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    浏览器
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/dom/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    DOM
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/input/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    输入
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/network/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    网络
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/page/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    页面
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/runtime/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    运行时
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/storage/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    存储
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/target/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    目标
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/fetch/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    获取
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_6" >
-        
-          
-          <label class="md-nav__link" for="__nav_4_6" id="__nav_4_6_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7_6" id="__nav_7_6_label" tabindex="0">
             
   
   
   <span class="md-ellipsis">
     
   
-    协议
+    Core
   
 
     
@@ -4066,362 +3284,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_6">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_6">
             <span class="md-nav__icon md-icon"></span>
             
   
-    协议
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/base/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    基础类型
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/browser/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    浏览器
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/dom/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    DOM
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/fetch/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    获取
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/input/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    输入
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/network/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    网络
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/page/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    页面
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/runtime/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    运行时
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/storage/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    存储
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/target/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    目标
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_7" >
-        
-          
-          <label class="md-nav__link" for="__nav_4_7" id="__nav_4_7_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    核心
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_7">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    核心
+    Core
   
 
           </label>
@@ -4483,34 +3351,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/core/utils/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    工具
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -4556,41 +3396,30 @@
   <a href="#http-proxy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        HTTP Proxy 的工作原理
+        一个 HTTP proxy 如何工作
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="HTTP Proxy 的工作原理">
+    <nav class="md-nav" aria-label="一个 HTTP proxy 如何工作">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#proxy-header" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        暴露 proxy 的那些 header
+      
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        请求流程
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#proxy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Proxy 标头与隐私
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        能力与限制
+        它能做什么，不能做什么
       
     </span>
   </a>
@@ -4606,19 +3435,19 @@
   <a href="#connect-https" class="md-nav__link">
     <span class="md-ellipsis">
       
-        CONNECT 方法：HTTPS 隧道
+        CONNECT 方法：为 HTTPS 建立隧道
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="CONNECT 方法：HTTPS 隧道">
+    <nav class="md-nav" aria-label="CONNECT 方法：为 HTTPS 建立隧道">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#connect" class="md-nav__link">
+  <a href="#connect-proxy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        CONNECT 请求
+        CONNECT 之后 proxy 能看到什么
       
     </span>
   </a>
@@ -4626,32 +3455,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#connect_1" class="md-nav__link">
+  <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        CONNECT 之后的可见性
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#connect-https_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        CONNECT 用于非 HTTPS 协议
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#https" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        HTTPS 困境
+        隧道对拦截
       
     </span>
   </a>
@@ -4664,10 +3471,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#https-proxy-proxy-tls" class="md-nav__link">
+  <a href="#tls-proxy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        HTTPS Proxy（到 Proxy 的 TLS）
+        通过 TLS 连接到 proxy
       
     </span>
   </a>
@@ -4678,51 +3485,23 @@
   <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       
-        身份验证
+        认证
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="身份验证">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        身份验证方案
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#pydoll" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Pydoll 中的身份验证
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
+  <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
       
-        现代协议与代理
+        现代协议
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="现代协议与代理">
+    <nav class="md-nav" aria-label="现代协议">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -4753,38 +3532,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_6" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        总结
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="总结">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
   <a href="#http-proxy-socks5" class="md-nav__link">
     <span class="md-ellipsis">
       
-        HTTP Proxy 与 SOCKS5 对比
+        HTTP proxy 对 SOCKS5
       
     </span>
   </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#_7" class="md-nav__link">
+  <a href="#_5" class="md-nav__link">
     <span class="md-ellipsis">
       
-        参考文献
+        相关内容
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        参考资料
       
     </span>
   </a>
@@ -4855,7 +3628,7 @@
         <a href="../" class="md-path__link">
           
   <span class="md-ellipsis">
-    网络与安全
+    网络与代理
   </span>
 
         </a>
@@ -4877,97 +3650,72 @@
   
 
 
-<h1 id="httphttps-proxy">HTTP/HTTPS Proxy 架构</h1>
-<p>HTTP proxy 是互联网上最常见的代理协议。几乎每个企业网络都在使用它们，大多数商业代理服务也将其作为默认选项。它们在 OSI 模型的第 7 层（应用层）运行，这意味着它们能够理解 HTTP，并可以解析、修改、缓存和过滤流量。然而，这种与协议的深度集成也是它们最大的局限：它们只能处理 HTTP 流量，会通过可识别的标头暴露代理的使用，并且无法代理 UDP，导致 WebRTC 和 DNS 容易泄露。</p>
-<p>本文档涵盖 HTTP proxy 在协议层面的工作原理、用于 HTTPS 隧道的 CONNECT 方法、身份验证机制，以及 HTTP/2 和 HTTP/3 等现代协议的影响。</p>
-<div class="admonition info">
-<p class="admonition-title">模块导航</p>
-<ul>
-<li><a href="../network-fundamentals/">网络基础</a>：TCP/IP、UDP、OSI 模型</li>
-<li><a href="../">网络与安全概述</a>：模块介绍</li>
-<li><a href="../socks-proxies/">SOCKS Proxy</a>：协议无关的替代方案</li>
-<li><a href="../proxy-detection/">Proxy 检测</a>：如何避免被检测</li>
-</ul>
-<p>有关实际配置，请参阅 <a href="../../../features/configuration/proxy/">Proxy 配置</a>。</p>
-</div>
-<h2 id="http-proxy">HTTP Proxy 的工作原理</h2>
-<p>HTTP proxy 位于客户端和目标服务器之间，维护两个独立的 TCP 连接：一个从客户端到 proxy，另一个从 proxy 到目标服务器。由于 proxy 理解 HTTP，它可以对经过的流量做出智能决策。</p>
-<h3 id="_1">请求流程</h3>
-<p>当客户端配置为使用 HTTP proxy 时，它会将完整的 HTTP 请求发送到 proxy，而不是直接发送到目标服务器。与直接请求的关键区别在于，请求行包含绝对 URI，而不仅仅是路径。例如，客户端发送的不是 <code>GET /page HTTP/1.1</code>，而是 <code>GET http://example.com/page HTTP/1.1</code>。这告诉 proxy 应将请求转发到哪里。</p>
+<h1 id="http-https-proxy">HTTP 与 HTTPS proxy</h1>
+<p>一个 HTTP proxy 坐落在你的浏览器和目标服务器之间，并且理解 HTTP，所以它能够解析、缓存、过滤和修改经过它的流量。这种与协议的深度耦合也正是它的局限：它只处理 HTTP，会通过可识别的 header 暴露自己，而且无法承载 UDP，这就让 WebRTC 和 QUIC 从它旁边泄露出去。</p>
+<p>本页涵盖 HTTP proxy 如何搬运流量、承载 HTTPS 的 CONNECT 隧道、认证如何工作，以及现代协议（HTTP/2、HTTP/3）在哪里让局面变得复杂。在 Pydoll 中配置 proxy 的方法，见 <a href="../../../guides/proxies/">Proxy</a>。相关背景：<a href="../network-fundamentals/">网络基础</a>、<a href="../socks-proxies/">SOCKS proxy</a> 和 <a href="../proxy-detection/">Proxy 检测</a>。</p>
+<h2 id="http-proxy">一个 HTTP proxy 如何工作</h2>
+<p>一个 HTTP proxy 持有两条独立的 TCP 连接：一条从客户端到 proxy，一条从 proxy 到目标。因为它读取 HTTP，所以它能对每个请求决定该怎么做，而不是盲目地中转字节。</p>
+<p>当一个客户端被配置为使用 proxy 时，它会把完整的请求发给 proxy 而不是服务器。破绽在请求行：它携带的是绝对 URI，而不只是路径。客户端发送的不是 <code>GET /page HTTP/1.1</code>，而是 <code>GET http://example.com/page HTTP/1.1</code>，这就告诉了 proxy 该把它转发到哪里。</p>
 <pre class="mermaid"><code>sequenceDiagram
-    participant Client as Client Browser
+    participant Client as 客户端浏览器
     participant Proxy as HTTP Proxy
-    participant Server as Target Server
+    participant Server as 目标服务器
 
     Client-&gt;&gt;Proxy: GET http://example.com/page HTTP/1.1&lt;br/&gt;Host: example.com&lt;br/&gt;User-Agent: Mozilla/5.0
-    Note over Client,Proxy: TCP connection #1
+    Note over Client,Proxy: TCP 连接 #1
 
-    Note over Proxy: Parse request, check auth,&lt;br/&gt;check cache, apply rules
+    Note over Proxy: 解析请求、检查认证、&lt;br/&gt;检查缓存、应用规则
 
     Proxy-&gt;&gt;Server: GET /page HTTP/1.1&lt;br/&gt;Host: example.com&lt;br/&gt;Via: 1.1 proxy.example.com&lt;br/&gt;X-Forwarded-For: 192.168.1.100
-    Note over Proxy,Server: TCP connection #2
+    Note over Proxy,Server: TCP 连接 #2
 
-    Server-&gt;&gt;Proxy: HTTP/1.1 200 OK&lt;br/&gt;[response body]
+    Server-&gt;&gt;Proxy: HTTP/1.1 200 OK&lt;br/&gt;[响应 body]
 
-    Note over Proxy: Cache response if allowed,&lt;br/&gt;filter content, log transaction
-
-    Proxy-&gt;&gt;Client: HTTP/1.1 200 OK&lt;br/&gt;Via: 1.1 proxy.example.com&lt;br/&gt;[possibly modified body]</code></pre>
-<p>Proxy 接收到完整的 HTTP 请求后，会解析方法、URL 和标头，然后决定如何处理。它可能会检查身份验证凭据、根据访问控制列表验证 URL、查找资源的缓存副本，并在转发前修改标头。然后它会打开一个到目标服务器的独立 TCP 连接并发送请求，可能带有修改过的标头。</p>
-<p>当响应到达时，proxy 可以根据 HTTP 语义（<code>Cache-Control</code>、<code>ETag</code>）缓存响应，过滤恶意软件或被拦截的关键词，在客户端支持时进行压缩，并在将响应转发回客户端之前记录事务。</p>
-<h3 id="proxy">Proxy 标头与隐私</h3>
-<p>HTTP proxy 通常会添加标头来暴露它们的存在以及客户端的真实 IP 地址。<code>Via</code> 标头（RFC 9110）标识请求链中的 proxy。<code>X-Forwarded-For</code> 标头包含原始客户端 IP，如果涉及多个 proxy 则会形成链。<code>X-Forwarded-Proto</code> 标头指示原始请求是 HTTP 还是 HTTPS。一些 proxy 还会添加 <code>X-Real-IP</code> 作为 <code>X-Forwarded-For</code> 的简化替代。</p>
-<p>还有一个标准化的 <code>Forwarded</code> 标头（RFC 7239），将所有这些信息整合到一个字段中，例如 <code>Forwarded: for=192.168.1.100;proto=http;by=proxy.example.com</code>。实际上，大多数 proxy 仍然使用 <code>X-Forwarded-*</code> 变体，因为它们有更广泛的支持。</p>
-<p>旧版客户端和一些老旧浏览器在通过 proxy 路由时，可能还会发送 <code>Proxy-Connection: keep-alive</code> 标头而非 <code>Connection: keep-alive</code>。这个标头是一个众所周知的 proxy 使用指标，也是经典的检测信号。</p>
-<div class="admonition danger">
-<p class="admonition-title">标头检测</p>
-<p>检测系统会查找 <code>Via</code>、<code>X-Forwarded-For</code> 或 <code>Forwarded</code> 标头的存在来确认 proxy 的使用。如果 <code>X-Real-IP</code> 与连接 IP 不匹配，则可以确认使用了 proxy。高级 proxy 可以剥离这些标头，但许多商业 proxy 服务默认会保留它们。请务必使用 <a href="https://browserleaks.com/ip">browserleaks.com/ip</a> 等工具验证你的 proxy 行为。</p>
+    Proxy-&gt;&gt;Client: HTTP/1.1 200 OK&lt;br/&gt;Via: 1.1 proxy.example.com&lt;br/&gt;[可能被修改的 body]</code></pre>
+<p>proxy 解析方法、URL 和 header，然后作出决定：核对凭据、把 URL 与一个访问列表匹配、查找一份缓存副本、重写 header。它打开自己到服务器的连接并转发请求。当响应回来时，它可以按 <code>Cache-Control</code> 和 <code>ETag</code> 缓存它、过滤内容、压缩它，并在放行之前记录这次事务。</p>
+<h3 id="proxy-header">暴露 proxy 的那些 header</h3>
+<p>HTTP proxy 常常会添加一些暴露其存在、以及客户端真实 IP 的 header：</p>
+<ul>
+<li><code>Via</code>（RFC 9110）标明了请求链路中的这个 proxy。</li>
+<li><code>X-Forwarded-For</code> 携带原始客户端 IP，若涉及多个 proxy 则会串接起来。<code>X-Real-IP</code> 是一个更简单的变体。</li>
+<li><code>X-Forwarded-Proto</code> 记录原始请求是 HTTP 还是 HTTPS。</li>
+<li>标准化的 <code>Forwarded</code> header（RFC 7239）把这些合并进一个字段，尽管大多数 proxy 仍在发送 <code>X-Forwarded-*</code> 系列变体。</li>
+</ul>
+<p>较老的客户端可能还会发送 <code>Proxy-Connection: keep-alive</code> 而不是 <code>Connection: keep-alive</code>，这是一个经典的 proxy 标志。</p>
+<div class="admonition warning">
+<p class="admonition-title">header 会坐实一个 proxy</p>
+<p>检测系统会寻找 <code>Via</code>、<code>X-Forwarded-For</code> 或 <code>Forwarded</code>，并在 <code>X-Real-IP</code> 与连入的 IP 不一致时坐实这个 proxy。好的 proxy 会剥除这些，但许多商用服务默认会把它们留着。用类似 <a href="https://browserleaks.com/ip">browserleaks.com/ip</a> 的工具检查你自己的。</p>
 </div>
-<h3 id="_2">能力与限制</h3>
-<p>由于 HTTP proxy 能够解析和理解 HTTP 协议，它们可以读取和修改未加密 HTTP 请求和响应的每个部分：URL、标头、Cookie 和正文。这使它们能够智能缓存响应、按 URL 或关键词过滤内容、注入或剥离标头、验证用户身份，以及详细记录所有流量。</p>
-<p>代价是与 HTTP 的深度耦合意味着 proxy 仅限于 HTTP 流量。它无法原生代理 FTP、SSH、SMTP 或自定义协议（尽管下面描述的 CONNECT 方法为任何基于 TCP 的协议提供了隧道解决方案）。它不支持 UDP，这意味着 WebRTC、DNS 查询和 QUIC/HTTP/3 流量会完全绕过它。而检查 HTTPS 内容需要 TLS 终止，这会破坏端到端加密。</p>
-<h2 id="connect-https">CONNECT 方法：HTTPS 隧道</h2>
-<p>CONNECT 方法（RFC 9110，第 9.3.6 节）解决了一个根本问题：HTTP proxy 如何转发它无法读取的加密流量？答案是成为一个盲目的 TCP 隧道。</p>
-<p>当客户端想要通过 proxy 访问 HTTPS 站点时，它会发送一个 <code>CONNECT</code> 请求，要求 proxy 建立到目标的原始 TCP 连接。一旦 proxy 确认隧道已建立，它就不再是 HTTP proxy，而是变成第 4 层的透明 TCP 中继，在两个方向上转发字节而不解释它们。</p>
+<h3 id="_1">它能做什么，不能做什么</h3>
+<p>因为它解析 HTTP，一个 proxy 可以读取和更改一个未加密请求和响应的每一个部分（URL、header、cookie、body），这正是缓存、内容过滤、header 注入、认证和详细日志得以实现的基础。</p>
+<p>这种耦合的代价是适用范围。它无法原生承载 FTP、SSH 或自定义协议（下文的 CONNECT 是一种变通），它没有 UDP 通路，所以 WebRTC、DNS 和 QUIC 会绕过它，而检视 HTTPS 内容则需要终结 TLS，这会破坏端到端加密。</p>
+<h2 id="connect-https">CONNECT 方法：为 HTTPS 建立隧道</h2>
+<p>CONNECT（RFC 9110）回答了一个基本问题：一个 proxy 如何转发它读不懂的加密流量？靠变成一条盲的 TCP 隧道。客户端请求 proxy 打开一条到目的地的原始 TCP 连接；一旦确认，proxy 就停止解释 HTTP，只在双向上中转字节。</p>
 <pre class="mermaid"><code>sequenceDiagram
-    participant Client
-    participant Proxy
-    participant Server
+    participant Client as 客户端
+    participant Proxy as Proxy
+    participant Server as 服务器
 
     Client-&gt;&gt;Proxy: CONNECT example.com:443 HTTP/1.1&lt;br/&gt;Host: example.com:443&lt;br/&gt;Proxy-Authorization: Basic dXNlcjpwYXNz
-    Note over Client,Proxy: Unencrypted HTTP request
-
-    Proxy-&gt;&gt;Server: TCP three-way handshake
-    Note over Proxy,Server: TCP connection established
-
+    Proxy-&gt;&gt;Server: TCP 三次握手
     Proxy-&gt;&gt;Client: HTTP/1.1 200 Connection Established
-
-    Note right of Proxy: Proxy is now a transparent&lt;br/&gt;TCP relay (Layer 4)
-
+    Note right of Proxy: proxy 现在是一个透明的&lt;br/&gt;TCP relay（第 4 层）
     Client-&gt;&gt;Server: TLS ClientHello
-    Note over Client,Server: TLS handshake (proxy sees&lt;br/&gt;this in plaintext)
     Server-&gt;&gt;Client: TLS ServerHello, Certificate
-
-    Client-&gt;&gt;Server: Encrypted HTTP/2 request
-    Server-&gt;&gt;Client: Encrypted HTTP/2 response
-
-    Note over Proxy: Proxy blindly forwards&lt;br/&gt;all encrypted data</code></pre>
-<h3 id="connect">CONNECT 请求</h3>
-<p>CONNECT 请求非常简洁。方法是 <code>CONNECT</code>，请求 URI 是目标的 <code>host:port</code>（而不是路径），如果 proxy 需要则包含身份验证。没有请求体。Proxy 验证凭据，检查访问控制规则，然后打开到指定主机和端口的 TCP 连接。如果一切成功，它会返回 <code>HTTP/1.1 200 Connection Established</code>，后跟一个空行。在该空行之后，HTTP 对话结束，proxy 变成透明中继。</p>
-<h3 id="connect_1">CONNECT 之后的可见性</h3>
-<p>一旦隧道建立，proxy 的可见性就很有限了。它知道来自 CONNECT 请求的目标主机名和端口。它可以观察连接时间（何时建立以及持续多久）、每个方向传输的数据量，以及任一方终止连接的时刻。它还可以观察随后的 TLS 握手，这一点特别值得关注。</p>
-<p>TLS ClientHello 消息在隧道建立后立即发送，且以明文传输。Proxy（以及任何网络观察者）可以直接读取 TLS 版本、完整的支持密码套件列表、扩展及其参数、提供的椭圆曲线，以及包含目标主机名的 SNI（Server Name Indication）扩展。这正是用于 TLS 指纹识别（JA3/JA4）的信息。详情请参阅<a href="../../fingerprinting/network-fingerprinting/">网络指纹</a>。</p>
-<p>Proxy 无法看到的是加密的应用数据：HTTP 方法、URL、请求和响应标头、Cookie、会话令牌和响应内容都在 TLS 隧道内加密。</p>
+    Client-&gt;&gt;Server: 加密的 HTTP/2 请求
+    Server-&gt;&gt;Client: 加密的 HTTP/2 响应</code></pre>
+<p>CONNECT 请求很精简：方法是 <code>CONNECT</code>，目标是 <code>host:port</code>（不是路径），没有 body。proxy 校验凭据、检查规则、打开 TCP 连接，然后回复 <code>HTTP/1.1 200 Connection Established</code>，后跟一个空行。在那一行之后，HTTP 对话就结束了，proxy 变成了一个中继。</p>
+<h3 id="connect-proxy">CONNECT 之后 proxy 能看到什么</h3>
+<p>一旦隧道建立，proxy 就知道目的主机和端口，并能观察时序、每个方向的数据量，以及任一端何时挂断。它还能看到以明文发送的 TLS ClientHello：TLS 版本、加密套件、扩展、曲线，以及 SNI 主机名。这正是 TLS 指纹（JA3/JA4）所读取的东西；见 <a href="../../fingerprinting/network-fingerprinting/">网络指纹</a>。</p>
+<p>它看不到的是加密的应用数据：方法、URL、header、cookie、令牌和 body 全都在 TLS 隧道内部。</p>
 <div class="admonition note">
-<p class="admonition-title">SNI 与 Encrypted Client Hello (ECH)</p>
-<p>ClientHello 中的 SNI 扩展以明文暴露目标主机名，这在 proxy 场景中与 CONNECT 请求是冗余的，但对其他网络观察者来说很有意义。Encrypted Client Hello (ECH) 目前正在部署中，旨在加密 SNI 来解决这一泄露问题。不过，ECH 的采用仍然有限，需要客户端和服务器双方的支持。</p>
+<p class="admonition-title">SNI 与 Encrypted Client Hello</p>
+<p>SNI 扩展以明文暴露目标主机名，在这里与 CONNECT 行是冗余的，但对其他网络观察者是可见的。Encrypted Client Hello（ECH）意在隐藏它，但采用率仍然有限，且需要客户端和服务器双方支持。</p>
 </div>
-<h3 id="connect-https_1">CONNECT 用于非 HTTPS 协议</h3>
-<p>虽然 CONNECT 主要用于 HTTPS，但它可以隧道传输任何基于 TCP 的协议。到端口 993 的 IMAPS 连接、到端口 22 的 SSH 连接，或到端口 990 的 FTP-over-TLS 都可以通过 CONNECT 隧道工作。Proxy 不需要理解这些协议，因为隧道建立后它只是简单地中继字节。</p>
-<p>实际上，许多企业 proxy 会将 CONNECT 限制在端口 443（HTTPS），以防止滥用。尝试 <code>CONNECT example.com:22</code> 进行 SSH 连接通常会返回 <code>403 Forbidden</code>。</p>
-<h3 id="https">HTTPS 困境</h3>
-<p>HTTP proxy 在处理加密流量时面临一个根本性的选择。使用 CONNECT 隧道方式，端到端加密得以保留，客户端直接验证服务器证书，证书固定正常工作。但 proxy 无法检查、缓存或过滤加密内容。</p>
-<p>另一种方式是 TLS 终止（MITM），proxy 解密 HTTPS 流量、检查内容，然后重新加密后转发。这需要在客户端上安装 proxy 的 CA 证书，会破坏端到端加密，并且可以通过证书固定和证书透明度日志检测到。大多数企业 proxy 使用这种方式进行内容过滤和安全扫描，而注重隐私的 proxy 则使用盲目 CONNECT 隧道。</p>
-<p>对于网页抓取和自动化来说，这一区别对 TLS 指纹识别很重要。如果 proxy 执行 TLS 终止，目标服务器看到的 TLS 指纹属于 proxy，而非你的浏览器。如果你使用的是 CONNECT 隧道，指纹则是端到端保留的。根据你的规避策略，其中一种方式可能比另一种更合适。</p>
+<p>CONNECT 可以为任何 TCP 协议（IMAPS、SSH、FTPS）建立隧道，因为隧道打开之后 proxy 只中转字节。实际中许多企业 proxy 会把 CONNECT 限制在 443 端口，所以 <code>CONNECT example.com:22</code> 常常返回 <code>403 Forbidden</code>。</p>
+<h3 id="_2">隧道对拦截</h3>
+<p>一个 proxy 面对加密流量时有一个选择。CONNECT 隧道保留端到端加密：客户端直接校验服务器证书，证书固定（certificate pinning）也能工作，但 proxy 无法检视或缓存内容。TLS 终结（MITM）是另一种做法：proxy 解密、检视、再加密，这需要在客户端安装它的 CA 证书，会破坏端到端加密，并且能通过固定和证书透明度（Certificate Transparency）被检测到。企业 proxy 倾向于为内容过滤而终结 TLS；注重隐私的 proxy 则使用盲隧道。</p>
+<p>对自动化而言，这决定了服务器看到的是谁的 TLS 指纹。经过一条 CONNECT 隧道，指纹端到端都是你浏览器的。经过一个会终结的 proxy，则是 proxy 的。</p>
 <table>
 <thead>
 <tr>
@@ -4978,80 +3726,74 @@
 </thead>
 <tbody>
 <tr>
-<td>Proxy 可见性</td>
-<td>完整的 HTTP 请求/响应</td>
-<td>仅目标 host:port + TLS ClientHello</td>
+<td>proxy 可见性</td>
+<td>完整的请求和响应</td>
+<td>目的 host:port + TLS ClientHello</td>
 </tr>
 <tr>
 <td>加密</td>
-<td>无（除非 TLS 终止）</td>
+<td>无（除非它终结 TLS）</td>
 <td>端到端 TLS</td>
 </tr>
 <tr>
 <td>缓存</td>
-<td>是，基于 HTTP 语义</td>
-<td>否（加密内容）</td>
+<td>可以，按 HTTP 语义</td>
+<td>不可（已加密）</td>
 </tr>
 <tr>
 <td>内容过滤</td>
-<td>是</td>
-<td>否（仅基于主机名拦截）</td>
-</tr>
-<tr>
-<td>标头修改</td>
-<td>是</td>
-<td>否（加密标头）</td>
+<td>可以</td>
+<td>仅基于主机名</td>
 </tr>
 <tr>
 <td>URL 可见性</td>
 <td>完整 URL</td>
-<td>仅主机名（通过 CONNECT 和 SNI）</td>
+<td>仅主机名（CONNECT 和 SNI）</td>
 </tr>
 <tr>
 <td>协议支持</td>
 <td>仅 HTTP</td>
-<td>任何基于 TCP 的协议</td>
+<td>任何 TCP 协议</td>
 </tr>
 </tbody>
 </table>
-<h2 id="https-proxy-proxy-tls">HTTPS Proxy（到 Proxy 的 TLS）</h2>
-<p>有一个值得澄清的区别：代理 HTTPS 流量与通过 HTTPS 连接到 proxy 本身是不同的。当你配置 <code>--proxy-server=https://proxy:port</code> 而非 <code>http://proxy:port</code> 时，你的浏览器与 proxy 之间的连接是通过 TLS 加密的。这可以保护你的 proxy 身份验证凭据不被本地网络嗅探，并且对本地观察者隐藏 CONNECT 主机名，因为它被封装在到 proxy 的 TLS 连接内。</p>
-<p>Chrome 通过 <code>--proxy-server</code> 中的 <code>https://</code> 方案支持此功能。当在不受信任的网络（公共 Wi-Fi、共享主机）上使用 proxy 时，这一点尤其重要，因为你与 proxy 之间的连接是最薄弱的环节。</p>
-<h2 id="_3">身份验证</h2>
-<p>HTTP proxy 身份验证使用标准 HTTP 状态码和标头，遵循 RFC 9110。当 proxy 需要身份验证时，它会返回 <code>407 Proxy Authentication Required</code> 以及一个 <code>Proxy-Authenticate</code> 标头，指示它支持哪些身份验证方案。然后客户端使用包含凭据的 <code>Proxy-Authorization</code> 标头重新传输请求。</p>
-<h3 id="_4">身份验证方案</h3>
-<p>有多种身份验证方案，每种都有不同的安全特性。</p>
-<p><strong>Basic</strong>（RFC 7617）是最简单的。客户端发送 <code>Proxy-Authorization: Basic &lt;base64(username:password)&gt;</code>。Base64 是一种编码而非加密，因此凭据可以被轻易还原。任何拦截到该标头的人都可以立即解码并无限期地重用，因为没有重放保护。Basic 身份验证应仅通过 TLS 加密的连接使用。</p>
-<p><strong>Digest</strong>（RFC 7616）使用挑战-响应机制。Proxy 发送一个随机 nonce，客户端计算用户名、密码、nonce 和请求 URI 的哈希值。密码永不传输，nonce 提供重放保护。原始版本使用 MD5，其速度足以被高效暴力破解，不过 RFC 7616 增加了 SHA-256 支持。Digest 身份验证很少被现代 proxy 服务实现。</p>
-<p><strong>NTLM</strong> 是微软专有的挑战-响应协议，常见于 Windows 企业环境。它使用三步协商（Type 1 协商、Type 2 挑战、Type 3 认证），并与 Active Directory 集成实现单点登录。NTLMv1 使用 DES（已被攻破），NTLMv2 使用 HMAC-MD5（按现代标准被认为较弱）。微软建议在新部署中使用 Kerberos 替代 NTLM。NTLM 是绑定连接的，这意味着它在 HTTP/2 多路复用下会出问题。</p>
-<p><strong>Negotiate</strong>（RFC 4559）使用 SPNEGO 在 Kerberos 和 NTLM 之间选择，优先使用 Kerberos。Kerberos 提供最强的安全性（AES 加密、相互身份验证、有时间限制的票据），但需要 Active Directory 基础设施、加入域的机器和精确的时钟同步。在浏览器自动化中，Kerberos 难以通过编程方式配置。</p>
+<h2 id="tls-proxy">通过 TLS 连接到 proxy</h2>
+<p>代理 HTTPS 流量与通过 HTTPS 抵达 proxy 本身是两回事。配置 <code>--proxy-server=https://proxy:port</code>（而不是 <code>http://</code>），你的浏览器与 proxy 之间那一跳就是 TLS 加密的，这能在本地网络上保护你的 proxy 凭据，甚至对本地观察者隐藏 CONNECT 的主机名。这在不受信任的网络上最为重要，那里客户端到 proxy 的这一跳是最缺乏保护的。</p>
+<h2 id="_3">认证</h2>
+<p>当一个 proxy 需要凭据时，它会回复 <code>407 Proxy Authentication Required</code>，带一个 <code>Proxy-Authenticate</code> header 说明它接受的方案，客户端随即用一个 <code>Proxy-Authorization</code> header 重试。</p>
+<ul>
+<li><strong>Basic</strong>（RFC 7617）：发送 <code>base64(username:password)</code>。Base64 是编码，不是加密，所以它可以被轻易逆转，也没有防重放保护。只在到 proxy 的 TLS 连接上使用它。</li>
+<li><strong>Digest</strong>（RFC 7616）：基于一个 nonce 的挑战-应答；密码从不发送，nonce 限制了重放。最初的 MD5 形式很弱（SHA-256 是后来加入的），如今已很少实现。</li>
+<li><strong>NTLM</strong>：微软专有的挑战-应答，在 Windows 网络中常见。它是绑定到连接的，所以会因 HTTP/2 多路复用而失效，而且以现代标准衡量它的哈希很弱。</li>
+<li><strong>Negotiate</strong>（RFC 4559）：由 SPNEGO 选择 Kerberos 或 NTLM，优先 Kerberos。Kerberos 最强，但需要 Active Directory、加入域的机器，以及时钟同步，这在自动化中很难安排。</li>
+</ul>
 <table>
 <thead>
 <tr>
 <th>方案</th>
 <th>安全性</th>
 <th>机制</th>
-<th>实用说明</th>
+<th>备注</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>Basic</td>
 <td>低</td>
-<td>Base64 编码的凭据</td>
-<td>通用支持。仅通过 TLS 使用。</td>
+<td>Base64 凭据</td>
+<td>通用。仅限 TLS 上使用。</td>
 </tr>
 <tr>
 <td>Digest</td>
 <td>中</td>
-<td>使用 MD5/SHA-256 的挑战-响应</td>
-<td>通过 nonce 提供重放保护。很少被实现。</td>
+<td>挑战-应答（MD5/SHA-256）</td>
+<td>有防重放。少见。</td>
 </tr>
 <tr>
 <td>NTLM</td>
 <td>中</td>
-<td>挑战-响应（NT 哈希）</td>
-<td>Windows SSO。专有，存在已知漏洞。</td>
+<td>挑战-应答（NT 哈希）</td>
+<td>Windows 单点登录。会破坏 HTTP/2。</td>
 </tr>
 <tr>
 <td>Negotiate</td>
@@ -5061,29 +3803,10 @@
 </tr>
 </tbody>
 </table>
-<h3 id="pydoll">Pydoll 中的身份验证</h3>
-<p>Chrome 不支持在 <code>--proxy-server</code> 标志中内联 proxy 凭据。写 <code>--proxy-server=http://user:pass@proxy:port</code> 不会生效：Chrome 会静默忽略 <code>user:pass</code> 部分并在不进行身份验证的情况下连接。</p>
-<p>Pydoll 通过其 <code>ProxyManager</code> 透明地解决了这个问题。当你提供带有内嵌凭据的 proxy URL 时，Pydoll 会提取用户名和密码，在传递给 Chrome 之前从 URL 中剥离它们，然后使用 CDP Fetch 域拦截 <code>407 Proxy Authentication Required</code> 响应，并通过 <code>Fetch.continueWithAuth</code> 自动提供凭据。这种方式适用于 Chrome 支持的所有身份验证方案（Basic、Digest、NTLM、Negotiate），而无需 Pydoll 实现特定于协议的逻辑。</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChromiumOptions</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="c1"># Pydoll extracts credentials, cleans the URL, and handles 407 via CDP</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--proxy-server=http://user:pass@proxy.example.com:8080'</span><span class="p">)</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">(</span><span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">'https://example.com'</span><span class="p">)</span>
-</span></code></pre></div>
-<div class="admonition tip">
-<p class="admonition-title">身份验证最佳实践</p>
-<p>始终使用 TLS 加密的 proxy 连接（HTTPS proxy 或 SSH 隧道）来保护传输中的凭据。对于 API proxy，优先使用 Bearer 令牌，因为它们可撤销且有时间限制。切勿通过未加密的 HTTP 连接使用 Basic 身份验证。不要在源代码中硬编码凭据，请使用环境变量。</p>
-</div>
-<h2 id="_5">现代协议与代理</h2>
+<p>Chrome 不接受 <code>--proxy-server</code> 中的内联凭据：<code>http://user:pass@proxy:port</code> 会在不带 <code>user:pass</code> 的情况下连接。Pydoll 为你绕过了这一点（它从 URL 中剥除凭据，并通过 CDP 应答 <code>407</code> 挑战），所以你可以传入一个带凭据的 proxy URL。用法见 <a href="../../../guides/proxies/">Proxy</a>。</p>
+<h2 id="_4">现代协议</h2>
 <h3 id="http2">HTTP/2</h3>
-<p>HTTP/2 引入了多路复用、二进制分帧和 HPACK 标头压缩，从根本上改变了 proxy 处理连接的方式。在 HTTP/1.1 中，每个请求按顺序占用一个连接（虽然存在流水线但实际上已被禁用，因此浏览器通过为每个主机打开六个并行连接来解决这个问题）。在 HTTP/2 中，单个 TCP 连接承载多个并发流，每个流都有自己的请求和响应。</p>
-<p>对于 proxy 来说，这意味着需要在连接的两端管理流 ID、优先级和流控窗口。Proxy 必须在客户端侧和服务器侧之间转换流 ID、维护优先级树，并对每个流进行流量控制。这比 HTTP/1.1 简单的请求-响应转发要复杂得多。</p>
-<p>从指纹识别的角度来看，HTTP/2 流元数据（窗口大小、优先级设置、HPACK 内的标头排序）可以对单个客户端进行指纹识别，即使多个用户共享同一个 proxy。</p>
+<p>HTTP/2 在一条 TCP 连接上承载多个并发的流（stream），带有二进制分帧和 HPACK header 压缩。对一个 proxy 而言，这意味着要在两侧之间映射流 ID、维护优先级树，并做逐流的流控，这比 HTTP/1.1 的顺序转发要复杂得多。它对指纹识别也很重要：HTTP/2 的流元数据（窗口大小、优先级、HPACK 中的 header 顺序）即便在许多客户端共用一个 proxy 时也能识别出各个客户端。</p>
 <table>
 <thead>
 <tr>
@@ -5095,145 +3818,94 @@
 <tbody>
 <tr>
 <td>连接</td>
-<td>每个连接按顺序处理（浏览器并行打开 6 个）</td>
-<td>单个连接上的多个并发流</td>
+<td>每条连接顺序处理（浏览器并行开约 6 条）</td>
+<td>一条连接上的并发流</td>
 </tr>
 <tr>
 <td>多路复用</td>
-<td>否（队头阻塞）</td>
-<td>是（仅流级别）</td>
+<td>无</td>
+<td>有（流级别）</td>
 </tr>
 <tr>
-<td>标头压缩</td>
+<td>Header 压缩</td>
 <td>无</td>
 <td>HPACK</td>
 </tr>
 <tr>
-<td>Proxy 复杂度</td>
-<td>简单的请求/响应转发</td>
-<td>流 ID 映射、优先级管理</td>
+<td>proxy 复杂度</td>
+<td>简单转发</td>
+<td>流映射、优先级</td>
 </tr>
 </tbody>
 </table>
-<p>在 HTTP/2 中，CONNECT 方法通过 RFC 8441 进行了扩展，支持 <code>:protocol</code> 伪标头，使 WebSocket 隧道和其他协议升级可以直接在 HTTP/2 流中进行，而无需单独的连接。</p>
 <h3 id="http3-quic">HTTP/3 与 QUIC</h3>
-<p>HTTP/3 运行在 QUIC（RFC 9000）之上，这是一种基于 UDP 的传输协议。这给 HTTP proxy 带来了根本性的挑战。传统 HTTP proxy 运行在 TCP 之上，无法处理 QUIC 的 UDP 流量。QUIC 连接可以在 IP 变化后继续存活（连接迁移），使 proxy 会话管理变得复杂。而且 QUIC 几乎加密了所有内容，包括之前可见的传输层元数据。</p>
-<p>代理 QUIC 需要 CONNECT-UDP（RFC 9298），这是一种通过 HTTP proxy 建立 UDP 隧道的新方法。大多数传统 proxy，包括许多商业服务，尚不支持此功能。当 proxy 不支持 QUIC 时，浏览器会回退到基于 TCP 的 HTTP/2，这意味着如果你依赖 HTTP/3 的加密传输，实际泄露的元数据可能比预期更多。</p>
-<p>在自动化场景中，考虑使用 <code>--disable-quic</code> Chrome 标志禁用 QUIC，以强制使用基于 TCP 的 HTTP/2。这可以确保所有流量都通过你的 proxy，并消除 QUIC 导致的 UDP 泄露风险。</p>
-<table>
-<thead>
-<tr>
-<th>方面</th>
-<th>TCP + TLS（HTTP/1.1、HTTP/2）</th>
-<th>QUIC/UDP（HTTP/3）</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>传输</td>
-<td>TCP（面向连接）</td>
-<td>UDP（无连接）</td>
-</tr>
-<tr>
-<td>握手</td>
-<td>分离的 TCP + TLS（2 RTT）</td>
-<td>合并（0-1 RTT）</td>
-</tr>
-<tr>
-<td>队头阻塞</td>
-<td>是（TCP 级别）</td>
-<td>否（仅流级别）</td>
-</tr>
-<tr>
-<td>连接迁移</td>
-<td>不支持</td>
-<td>支持（可在 IP 变化后存活）</td>
-</tr>
-<tr>
-<td>Proxy 兼容性</td>
-<td>极好</td>
-<td>有限（需要 UDP 中继支持）</td>
-</tr>
-</tbody>
-</table>
+<p>HTTP/3 运行在 QUIC 之上，一个 UDP 传输，这打破了基于 TCP 的 proxy 的种种假设。传统 proxy 无法承载 QUIC，它的连接能在 IP 变化后存续，而且它加密了几乎所有的传输元数据。要代理它需要 CONNECT-UDP（RFC 9298），许多服务尚不支持，所以当 proxy 做不了 QUIC 时，浏览器会回退到 TCP 上的 HTTP/2。</p>
 <div class="admonition warning">
-<p class="admonition-title">协议降级</p>
-<p>当 proxy 不支持 HTTP/3 时，浏览器会静默回退到 HTTP/2 或 HTTP/1.1。这种降级可能暴露 HTTP/3 本会加密的元数据（标头、时序模式）。请监控你的流量以了解实际的协议版本，并注意 HTTP/3 的采用率因地区和 CDN 而异。</p>
+<p class="admonition-title">静默降级会泄露元数据</p>
+<p>当一个 proxy 不支持 HTTP/3 时，浏览器会悄悄回退到 HTTP/2 或 HTTP/1.1，暴露出本会被 HTTP/3 加密的时序和 header 元数据。在自动化中，可以考虑用 <code>--disable-quic</code> 标志强制走 TCP，好让所有流量都经过 proxy，也就没有基于 UDP 的泄露。</p>
 </div>
-<h2 id="_6">总结</h2>
-<p>HTTP proxy 提供了丰富的功能，但代价是范围有限和隐私问题。它们可以检查、缓存和过滤 HTTP 流量，但无法处理非 HTTP 协议、UDP 流量或 HTTPS 内容（除非破坏加密）。除非明确剥离，否则它们的存在会通过可识别的标头暴露。</p>
-<p>对于自动化来说，CONNECT 隧道是最相关的功能：它在保留端到端 TLS 加密的同时，仅让 proxy 获得主机名级别的可见性。Pydoll 通过 CDP Fetch 域透明地处理 proxy 身份验证，支持 Chrome 实现的所有方案。</p>
-<h3 id="http-proxy-socks5">HTTP Proxy 与 SOCKS5 对比</h3>
+<h2 id="http-proxy-socks5">HTTP proxy 对 SOCKS5</h2>
 <table>
 <thead>
 <tr>
 <th>需求</th>
-<th>HTTP Proxy</th>
+<th>HTTP proxy</th>
 <th>SOCKS5</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>内容过滤</td>
-<td>是</td>
-<td>否</td>
+<td>内容过滤 / 缓存</td>
+<td>可以</td>
+<td>不可</td>
 </tr>
 <tr>
-<td>基于 URL 拦截</td>
-<td>是</td>
-<td>否（仅 IP:port）</td>
-</tr>
-<tr>
-<td>缓存</td>
-<td>是</td>
-<td>否</td>
+<td>基于 URL 的封锁</td>
+<td>可以</td>
+<td>不可（仅 IP:port）</td>
 </tr>
 <tr>
 <td>UDP 支持</td>
-<td>否</td>
-<td>是</td>
+<td>无</td>
+<td>有</td>
 </tr>
 <tr>
 <td>协议灵活性</td>
-<td>仅 HTTP（CONNECT 可用于 TCP 隧道）</td>
+<td>HTTP（用 CONNECT 建 TCP 隧道）</td>
 <td>任何 TCP/UDP</td>
 </tr>
 <tr>
 <td>隐私</td>
-<td>低（解析 HTTP，添加暴露性标头）</td>
-<td>中（不解析或修改流量，但未加密内容对运营商仍然可见）</td>
+<td>低（解析 HTTP、添加 header）</td>
+<td>较高（不解析也不修改）</td>
 </tr>
 <tr>
 <td>DNS 解析</td>
-<td>Proxy 解析（远程）</td>
-<td>取决于配置（SOCKS5：通常客户端解析，SOCKS5h：proxy 解析。Chrome 对 SOCKS5 始终使用远程解析。）</td>
+<td>proxy 解析</td>
+<td>Chrome 为 SOCKS5 远程解析</td>
 </tr>
 </tbody>
 </table>
-<p>对于需要内容控制和缓存的企业环境，HTTP proxy 是正确的选择。对于注重隐私的自动化，SOCKS5 提供更好的隐蔽性和协议灵活性。要获得最高安全性，请使用 SOCKS5 over SSH 隧道或 VPN。</p>
-<p><strong>后续步骤：</strong></p>
+<p>HTTP proxy 适合需要内容控制和缓存的环境。对注重隐私的自动化，SOCKS5 提供更好的隐匿和协议灵活性。在自动化中，CONNECT 隧道让你的 TLS 指纹端到端保持不变，并只给 proxy 主机名层面的可见性。</p>
+<h2 id="_5">相关内容</h2>
 <ul>
-<li><a href="../socks-proxies/">SOCKS Proxy</a>：协议无关的会话层代理</li>
-<li><a href="../network-fundamentals/">网络基础</a>：TCP/IP、UDP、WebRTC</li>
-<li><a href="../proxy-detection/">Proxy 检测</a>：如何检测 proxy 以及如何避免</li>
-<li><a href="../../../features/configuration/proxy/">Proxy 配置</a>：Pydoll 实际 proxy 设置</li>
-<li><a href="../../fingerprinting/network-fingerprinting/">网络指纹</a>：TCP/IP 和 TLS 指纹识别</li>
+<li><a href="../socks-proxies/">SOCKS proxy</a>：与协议无关的会话层代理。</li>
+<li><a href="../proxy-detection/">Proxy 检测</a>：暴露一个 proxy 的那些信号。</li>
+<li><a href="../network-fundamentals/">网络基础</a>：TCP/IP、UDP，以及底下的那些层。</li>
+<li><a href="../../fingerprinting/network-fingerprinting/">网络指纹</a>：TCP/IP 和 TLS 指纹。</li>
+<li><a href="../../../guides/proxies/">Proxy</a>：在 Pydoll 中配置 proxy。</li>
 </ul>
-<h2 id="_7">参考文献</h2>
+<h2 id="_6">参考资料</h2>
 <ul>
-<li>RFC 9110: HTTP Semantics (2022, replaces RFC 7230-7237) - https://www.rfc-editor.org/rfc/rfc9110.html</li>
-<li>RFC 9112: HTTP/1.1 (2022) - https://www.rfc-editor.org/rfc/rfc9112.html</li>
-<li>RFC 9113: HTTP/2 (2022, replaces RFC 7540) - https://www.rfc-editor.org/rfc/rfc9113.html</li>
-<li>RFC 9114: HTTP/3 (2022) - https://www.rfc-editor.org/rfc/rfc9114.html</li>
-<li>RFC 9000: QUIC Transport Protocol (2021) - https://www.rfc-editor.org/rfc/rfc9000.html</li>
-<li>RFC 9298: Proxying UDP in HTTP (CONNECT-UDP, 2022) - https://www.rfc-editor.org/rfc/rfc9298.html</li>
-<li>RFC 8441: Bootstrapping WebSockets with HTTP/2 (2018) - https://www.rfc-editor.org/rfc/rfc8441.html</li>
-<li>RFC 7617: Basic Authentication (2015) - https://www.rfc-editor.org/rfc/rfc7617.html</li>
-<li>RFC 7616: Digest Authentication (2015) - https://www.rfc-editor.org/rfc/rfc7616.html</li>
-<li>RFC 7239: Forwarded HTTP Extension (2014) - https://www.rfc-editor.org/rfc/rfc7239.html</li>
-<li>RFC 4559: Negotiate Authentication (2006) - https://www.rfc-editor.org/rfc/rfc4559.html</li>
-<li>MDN Web Docs: Proxy servers and tunneling - https://developer.mozilla.org/en-US/docs/Web/HTTP/Proxy_servers_and_tunneling</li>
-<li>Chrome DevTools Protocol: Fetch domain - https://chromedevtools.github.io/devtools-protocol/tot/Fetch/</li>
+<li>RFC 9110: HTTP Semantics: https://www.rfc-editor.org/rfc/rfc9110.html</li>
+<li>RFC 9113: HTTP/2: https://www.rfc-editor.org/rfc/rfc9113.html</li>
+<li>RFC 9114: HTTP/3: https://www.rfc-editor.org/rfc/rfc9114.html</li>
+<li>RFC 9000: QUIC: https://www.rfc-editor.org/rfc/rfc9000.html</li>
+<li>RFC 9298: Proxying UDP in HTTP (CONNECT-UDP): https://www.rfc-editor.org/rfc/rfc9298.html</li>
+<li>RFC 7617: Basic Authentication: https://www.rfc-editor.org/rfc/rfc7617.html</li>
+<li>RFC 7616: Digest Authentication: https://www.rfc-editor.org/rfc/rfc7616.html</li>
+<li>RFC 7239: Forwarded HTTP Extension: https://www.rfc-editor.org/rfc/rfc7239.html</li>
+<li>MDN: Proxy servers and tunneling: https://developer.mozilla.org/en-US/docs/Web/HTTP/Proxy_servers_and_tunneling</li>
 </ul>
 
 

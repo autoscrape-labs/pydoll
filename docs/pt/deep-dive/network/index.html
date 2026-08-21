@@ -11,7 +11,7 @@
         <link rel="canonical" href="https://pydoll.tech/docs/pt/deep-dive/network/">
       
       
-        <link rel="prev" href="../architecture/shadow-dom/">
+        <link rel="prev" href="../cdp/">
       
       
         <link rel="next" href="network-fundamentals/">
@@ -31,7 +31,7 @@
     
     
       
-        <title>Visão Geral - Pydoll - Biblioteca de Automação Web Assíncrona</title>
+        <title>Visão geral - Pydoll - Biblioteca de Automação Web Assíncrona</title>
       
     
     
@@ -52,8 +52,8 @@
         
         
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Chivo:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Chivo";--md-code-font:"JetBrains Mono"}</style>
       
     
     
@@ -67,6 +67,8 @@
     
       <link rel="stylesheet" href="../../../resources/stylesheets/extra.css">
     
+      <link rel="stylesheet" href="../../../resources/stylesheets/landing-theme.css">
+    
     <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -77,8 +79,6 @@
   
   
     
-    
-      
     
     
     
@@ -92,7 +92,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#analise-profunda-de-rede-e-seguranca" class="md-skip">
+        <a href="#rede-e-proxies" class="md-skip">
           Skip to content
         </a>
       
@@ -106,7 +106,7 @@
 
   
 
-<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+<header class="md-header md-header--landing md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="../../" title="Pydoll - Biblioteca de Automação Web Assíncrona" class="md-header__button md-logo" aria-label="Pydoll - Biblioteca de Automação Web Assíncrona" data-md-component="logo">
       
@@ -114,6 +114,7 @@
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11 15H6l7-14v8h5l-7 14z"/></svg>
 
     </a>
+    <span class="md-header__docs-chip">docs</span>
     <label class="md-header__button md-icon" for="__drawer">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
@@ -121,48 +122,18 @@
     <div class="md-header__title" data-md-component="header-title">
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
-          <span class="md-ellipsis">
-            Pydoll - Biblioteca de Automação Web Assíncrona
-          </span>
+          <span class="md-ellipsis">Pydoll - Biblioteca de Automação Web Assíncrona</span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
-            
-              Visão Geral
-            
+            Visão geral
           </span>
         </div>
       </div>
     </div>
     
       
-        <form class="md-header__option" data-md-component="palette">
-  
     
-    
-    
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Dark Mode"  type="radio" name="__palette" id="__palette_0">
-    
-      <label class="md-header__button md-icon" title="Dark Mode" for="__palette_1" hidden>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6m0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4M7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3"/></svg>
-      </label>
-    
-  
-    
-    
-    
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Light Mode"  type="radio" name="__palette" id="__palette_1">
-    
-      <label class="md-header__button md-icon" title="Light Mode" for="__palette_0" hidden>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
-      </label>
-    
-  
-</form>
-      
-    
-    
-      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
     
     
       <div class="md-header__option">
@@ -253,6 +224,7 @@
 </a>
       </div>
     
+    <a class="md-header__cta" href="../../../getting-started/">Get started</a>
   </nav>
   
     
@@ -288,13 +260,79 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../features/" class="md-tabs__link">
+        <a href="../../getting-started/" class="md-tabs__link">
           
   
   
     
   
-  Recursos
+  Primeiros passos
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../basics/async-python/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Fundamentos
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../guides/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Guias
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../stealth/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Stealth
 
         </a>
       </li>
@@ -318,7 +356,7 @@
   
     
   
-  Análise Profunda
+  Análise profunda
 
         </a>
       </li>
@@ -436,20 +474,6 @@
     
       
         
-          
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
       
         
       
@@ -473,15 +497,301 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
         
           
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Primeiros passos
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Primeiros passos
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Instalação
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../first-automation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sua primeira automação
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../migrating/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migrando do Selenium e Playwright
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fundamentos
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Fundamentos
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../basics/async-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python assíncrono na prática
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../basics/selectors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Seletores, CSS e XPath
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
           <div class="md-nav__link md-nav__container">
-            <a href="../../features/" class="md-nav__link ">
+            <a href="../../guides/" class="md-nav__link ">
               
   
   
   <span class="md-ellipsis">
     
   
-    Recursos
+    Guias
   
 
     
@@ -492,18 +802,18 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Recursos
+    Guias
   
 
           </label>
@@ -518,42 +828,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../features/core-concepts/" class="md-nav__link">
+      <a href="../../guides/core-concepts/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Conceitos Fundamentais
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../features/element-finding/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Pesquisa de Elementos
+    Conceitos fundamentais
   
 
     
@@ -575,6 +857,10 @@
   
     
     
+      
+        
+      
+        
       
         
       
@@ -593,17 +879,17 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_4" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_3" >
         
           
-          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
             
   
   
   <span class="md-ellipsis">
     
   
-    Data Extraction
+    Encontrar e extrair
   
 
     
@@ -614,12 +900,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_4">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_3">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Data Extraction
+    Encontrar e extrair
   
 
           </label>
@@ -632,14 +918,70 @@
   
   
     <li class="md-nav__item">
-      <a href="../../features/extraction/structured-extraction/" class="md-nav__link">
+      <a href="../../guides/element-finding/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Structured Extraction
+    Encontrar elementos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/dom-traversal/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Percorrer o DOM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/structured-extraction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Extração estruturada
   
 
     
@@ -680,8 +1022,6 @@
       
         
       
-        
-      
     
     
     
@@ -697,17 +1037,17 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_5" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_4" >
         
           
-          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="0">
             
   
   
   <span class="md-ellipsis">
     
   
-    Automação
+    Interagir
   
 
     
@@ -718,12 +1058,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_5">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_4">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Automação
+    Interagir
   
 
           </label>
@@ -736,14 +1076,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../features/automation/human-interactions/" class="md-nav__link">
+      <a href="../../guides/keyboard/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Interações Humanas
+    Teclado
   
 
     
@@ -764,14 +1104,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../features/automation/keyboard-control/" class="md-nav__link">
+      <a href="../../guides/mouse/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Controle de Teclado
+    Mouse
   
 
     
@@ -792,14 +1132,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../features/automation/mouse-control/" class="md-nav__link">
+      <a href="../../guides/file-operations/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Controle do Mouse
+    Operações com arquivos
   
 
     
@@ -820,14 +1160,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../features/automation/file-operations/" class="md-nav__link">
+      <a href="../../guides/iframes/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Operações com Arquivos
+    Iframes
   
 
     
@@ -848,42 +1188,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../features/automation/iframes/" class="md-nav__link">
+      <a href="../../guides/screenshots-and-pdfs/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    IFrames
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../features/automation/screenshots-and-pdfs/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Capturas e PDF
+    Capturas de tela e PDFs
   
 
     
@@ -937,10 +1249,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_6" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_5" >
         
           
-          <label class="md-nav__link" for="__nav_2_6" id="__nav_2_6_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4_5" id="__nav_4_5_label" tabindex="0">
             
   
   
@@ -958,8 +1270,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_6">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -976,14 +1288,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../features/network/monitoring/" class="md-nav__link">
+      <a href="../../guides/network-monitoring/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Monitoramento de Rede
+    Monitoramento de rede
   
 
     
@@ -1004,14 +1316,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../features/network/interception/" class="md-nav__link">
+      <a href="../../guides/request-interception/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Interceptação de Requisições
+    Interceptação de requisições
   
 
     
@@ -1032,14 +1344,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../features/network/http-requests/" class="md-nav__link">
+      <a href="../../guides/http-requests/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Requisições HTTP no Contexto do Navegador
+    Requisições HTTP no contexto do navegador
   
 
     
@@ -1060,14 +1372,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../features/network/network-recording/" class="md-nav__link">
+      <a href="../../guides/network-recording/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Gravação de Rede HAR
+    Gravação HAR
   
 
     
@@ -1101,310 +1413,6 @@
         
       
         
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_7" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_7" id="__nav_2_7_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Gerenciamento do Navegador
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_7">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Gerenciamento do Navegador
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../features/browser-management/tabs/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Gerenciamento de Abas
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../features/browser-management/contexts/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Contextos do Navegador
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../features/browser-management/cookies-sessions/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Cookies e Sessões
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_8" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_8" id="__nav_2_8_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Configuração
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_8_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_8">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Configuração
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../features/configuration/browser-options/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Opções do Navegador
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../features/configuration/browser-preferences/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Preferências do Navegador
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../features/configuration/proxy/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Configuração de Proxy
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
       
         
       
@@ -1431,17 +1439,17 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_9" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_6" >
         
           
-          <label class="md-nav__link" for="__nav_2_9" id="__nav_2_9_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4_6" id="__nav_4_6_label" tabindex="0">
             
   
   
   <span class="md-ellipsis">
     
   
-    Avançado
+    Gerenciar o navegador
   
 
     
@@ -1452,12 +1460,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_9_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_9">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_6">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Avançado
+    Gerenciar o navegador
   
 
           </label>
@@ -1470,14 +1478,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../features/advanced/fingerprint-injection/" class="md-nav__link">
+      <a href="../../guides/tabs/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Injeção de Fingerprint
+    Abas
   
 
     
@@ -1498,14 +1506,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../features/advanced/behavioral-captcha-bypass/" class="md-nav__link">
+      <a href="../../guides/browser-contexts/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Bypass de Captcha Comportamental
+    Contextos do navegador
   
 
     
@@ -1526,14 +1534,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../features/advanced/event-system/" class="md-nav__link">
+      <a href="../../guides/cookies-and-sessions/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Sistema de Eventos
+    Cookies e sessões
   
 
     
@@ -1554,14 +1562,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../features/advanced/remote-connections/" class="md-nav__link">
+      <a href="../../guides/browser-options/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Conexões Remotas
+    Opções do navegador
   
 
     
@@ -1582,14 +1590,70 @@
   
   
     <li class="md-nav__item">
-      <a href="../../features/advanced/decorators/" class="md-nav__link">
+      <a href="../../guides/browser-preferences/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Decorator Retry
+    Preferências do navegador
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/proxies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Proxies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/remote-connections/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conexões remotas
   
 
     
@@ -1606,6 +1670,326 @@
           </ul>
         </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_7" id="__nav_4_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reagir a eventos
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reagir a eventos
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Eventos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/retrying/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Repetição
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../stealth/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stealth
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Stealth
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../stealth/evasion-techniques/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Técnicas de evasão
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../stealth/human-like-interactions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interações humanizadas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../stealth/captcha-bypass/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bypass de captcha
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../stealth/fingerprint-injection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Injeção de fingerprint
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -1631,10 +2015,6 @@
       
         
           
-        
-      
-        
-      
         
       
         
@@ -1659,7 +2039,7 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
         
           
           <div class="md-nav__link md-nav__container">
@@ -1670,7 +2050,7 @@
   <span class="md-ellipsis">
     
   
-    Análise Profunda
+    Análise profunda
   
 
     
@@ -1681,98 +2061,18 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_3">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Análise Profunda
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-          
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-          
-          
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_2" >
-        
-          
-          <div class="md-nav__link md-nav__container">
-            <a href="../fundamentals/" class="md-nav__link ">
-              
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Fundamentos Centrais
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_3_2" id="__nav_3_2_label" tabindex="">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_2">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Fundamentos Centrais
+    Análise profunda
   
 
           </label>
@@ -1787,7 +2087,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../fundamentals/cdp/" class="md-nav__link">
+      <a href="../cdp/" class="md-nav__link">
         
   
   
@@ -1812,388 +2112,6 @@
                 
   
   
-  
-  
-    <li class="md-nav__item">
-      <a href="../fundamentals/connection-layer/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Camada de Conexão
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../fundamentals/typing-system/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Sistema de Tipos Python
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../fundamentals/iframes-and-contexts/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Iframes & Contexts
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-          
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-          
-          
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_3" >
-        
-          
-          <div class="md-nav__link md-nav__container">
-            <a href="../architecture/" class="md-nav__link ">
-              
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Arquitetura Interna
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_3_3" id="__nav_3_3_label" tabindex="">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_3">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Arquitetura Interna
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../architecture/browser-domain/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Domínio do Navegador
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../architecture/tab-domain/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Domínio da Aba
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../architecture/webelement-domain/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Domínio do WebElement
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../architecture/find-elements-mixin/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Mixin FindElements
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../architecture/event-architecture/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Arquitetura de Eventos
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../architecture/browser-requests-architecture/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Arquitetura de Requisições do Navegador
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../architecture/shadow-dom/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Arquitetura Shadow DOM
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
     
   
   
@@ -2233,7 +2151,7 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_3" checked>
         
           
           <div class="md-nav__link md-nav__container">
@@ -2244,7 +2162,7 @@
   <span class="md-ellipsis">
     
   
-    Rede e Segurança
+    Rede e proxies
   
 
     
@@ -2255,18 +2173,18 @@
             </a>
             
               
-              <label class="md-nav__link md-nav__link--active" for="__nav_3_4" id="__nav_3_4_label" tabindex="">
+              <label class="md-nav__link md-nav__link--active" for="__nav_6_3" id="__nav_6_3_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_3_4">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6_3">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Rede e Segurança
+    Rede e proxies
   
 
           </label>
@@ -2288,7 +2206,7 @@
   <span class="md-ellipsis">
     
   
-    Fundamentos de Rede
+    Fundamentos de rede
   
 
     
@@ -2372,7 +2290,7 @@
   <span class="md-ellipsis">
     
   
-    Detecção de Proxy
+    Detecção de proxy
   
 
     
@@ -2400,7 +2318,7 @@
   <span class="md-ellipsis">
     
   
-    Construindo Servidores Proxy
+    Construindo um servidor proxy
   
 
     
@@ -2428,7 +2346,7 @@
   <span class="md-ellipsis">
     
   
-    Legal & Ética
+    Legal e ético
   
 
     
@@ -2469,8 +2387,6 @@
       
         
       
-        
-      
     
     
     
@@ -2489,7 +2405,7 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_5" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6_4" >
         
           
           <div class="md-nav__link md-nav__container">
@@ -2511,14 +2427,14 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_3_5" id="__nav_3_5_label" tabindex="">
+              <label class="md-nav__link " for="__nav_6_4" id="__nav_6_4_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_5">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_4">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2544,7 +2460,7 @@
   <span class="md-ellipsis">
     
   
-    Fingerprinting de Rede
+    Fingerprinting de rede
   
 
     
@@ -2572,7 +2488,7 @@
   <span class="md-ellipsis">
     
   
-    Fingerprinting do Navegador
+    Fingerprinting de navegador
   
 
     
@@ -2600,145 +2516,7 @@
   <span class="md-ellipsis">
     
   
-    Fingerprinting Comportamental
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../fingerprinting/evasion-techniques/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Técnicas de Evasão
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-          
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-          
-          
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_6" >
-        
-          
-          <div class="md-nav__link md-nav__container">
-            <a href="../guides/" class="md-nav__link ">
-              
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Guias Práticos
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_3_6" id="__nav_3_6_label" tabindex="">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_6">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Guias Práticos
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../guides/selectors-guide/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Seletores CSS vs XPath
+    Fingerprinting comportamental
   
 
     
@@ -2778,8 +2556,6 @@
       
         
           
-        
-      
         
       
         
@@ -2807,7 +2583,7 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
         
           
           <div class="md-nav__link md-nav__container">
@@ -2829,14 +2605,14 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2867,8 +2643,6 @@
       
         
       
-        
-      
     
     
     
@@ -2884,10 +2658,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_2" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_2" >
         
           
-          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7_2" id="__nav_7_2_label" tabindex="0">
             
   
   
@@ -2905,8 +2679,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_2">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_2">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -3014,7 +2788,7 @@
   <span class="md-ellipsis">
     
   
-    Aba
+    Tab
   
 
     
@@ -3042,35 +2816,7 @@
   <span class="md-ellipsis">
     
   
-    Requisições
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../api/browser/managers/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Gerenciadores
+    Requests
   
 
     
@@ -3105,8 +2851,6 @@
       
         
       
-        
-      
     
     
     
@@ -3122,10 +2866,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_3" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_3" >
         
           
-          <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7_3" id="__nav_7_3_label" tabindex="0">
             
   
   
@@ -3143,8 +2887,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_3">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_3">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -3168,7 +2912,7 @@
   <span class="md-ellipsis">
     
   
-    Elemento Web
+    WebElement
   
 
     
@@ -3196,35 +2940,7 @@
   <span class="md-ellipsis">
     
   
-    Shadow Root
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../api/elements/mixins/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Mixins
+    ShadowRoot
   
 
     
@@ -3252,39 +2968,15 @@
   
   
   
-    
-    
-      
+    <li class="md-nav__item">
+      <a href="../../api/extraction/" class="md-nav__link">
         
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_4" >
-        
-          
-          <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="0">
-            
   
   
   <span class="md-ellipsis">
     
   
-    Conexão
+    Extraction
   
 
     
@@ -3292,19 +2984,11 @@
   
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_4">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Conexão
+      </a>
+    </li>
   
 
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
+              
             
               
                 
@@ -3320,7 +3004,7 @@
   <span class="md-ellipsis">
     
   
-    Manipulador de Conexão
+    Connection
   
 
     
@@ -3340,62 +3024,8 @@
   
   
   
-    <li class="md-nav__item">
-      <a href="../../api/connection/managers/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Gerenciadores
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
     
     
-      
-        
-          
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
       
         
       
@@ -3416,362 +3046,17 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_5" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_6" >
         
           
-          <div class="md-nav__link md-nav__container">
-            <a href="../../api/commands/" class="md-nav__link ">
-              
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Comandos
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_4_5" id="__nav_4_5_label" tabindex="0">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_5">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Comandos
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../api/commands/browser/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Navegador
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../api/commands/dom/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    DOM
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../api/commands/input/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Entrada
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../api/commands/network/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Rede
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../api/commands/page/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Página
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../api/commands/runtime/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Tempo de Execução
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../api/commands/storage/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Armazenamento
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../api/commands/target/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Alvo
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../api/commands/fetch/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Fetch
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_6" >
-        
-          
-          <label class="md-nav__link" for="__nav_4_6" id="__nav_4_6_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7_6" id="__nav_7_6_label" tabindex="0">
             
   
   
   <span class="md-ellipsis">
     
   
-    Protocolo
+    Core
   
 
     
@@ -3782,362 +3067,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_6">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_6">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Protocolo
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../api/protocol/base/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Tipos Base
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../api/protocol/browser/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Navegador
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../api/protocol/dom/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    DOM
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../api/protocol/fetch/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Fetch
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../api/protocol/input/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Entrada
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../api/protocol/network/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Rede
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../api/protocol/page/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Página
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../api/protocol/runtime/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Tempo de Execução
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../api/protocol/storage/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Armazenamento
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../api/protocol/target/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Alvo
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_7" >
-        
-          
-          <label class="md-nav__link" for="__nav_4_7" id="__nav_4_7_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Núcleo
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_7">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Núcleo
+    Core
   
 
           </label>
@@ -4199,34 +3134,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../api/core/utils/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Utilitários
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -4269,10 +3176,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#por-que-a-arquitetura-de-rede-importa" class="md-nav__link">
+  <a href="#comece-por-aqui" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Por que a Arquitetura de Rede Importa
+        Comece por aqui
       
     </span>
   </a>
@@ -4280,121 +3187,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#a-arquitetura-da-privacidade-na-internet" class="md-nav__link">
+  <a href="#tipos-de-proxy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        A Arquitetura da Privacidade na Internet
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="A Arquitetura da Privacidade na Internet">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#a-realidade-do-modelo-osi" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        A Realidade do Modelo OSI
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#o-que-voce-vai-dominar" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        O que Você Vai Dominar
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="O que Você Vai Dominar">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1-fundamentos-de-rede" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. Fundamentos de Rede
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-proxies-httphttps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Proxies HTTP/HTTPS
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-proxies-socks" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Proxies SOCKS
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#4-deteccao-de-proxy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Detecção de Proxy
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#5-construindo-servidores-proxy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Construindo Servidores Proxy
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#6-consideracoes-legais-e-eticas" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Considerações Legais e Éticas
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#o-paradoxo-do-proxy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        O Paradoxo do Proxy
+        Tipos de proxy
       
     </span>
   </a>
@@ -4402,10 +3198,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#pre-requisitos" class="md-nav__link">
+  <a href="#deteccao-e-mecanica" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Pré-requisitos
+        Detecção e mecânica
       
     </span>
   </a>
@@ -4413,65 +3209,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#integracao-com-outros-modulos" class="md-nav__link">
+  <a href="#relacionado" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Integração com Outros Módulos
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#a-trilha-de-aprendizagem" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        A Trilha de Aprendizagem
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#a-filosofia" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        A Filosofia
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#compromisso-etico" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Compromisso Ético
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#pronto-para-comecar" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Pronto para Começar?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#navegacao-rapida" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Navegação Rápida
+        Relacionado
       
     </span>
   </a>
@@ -4524,7 +3265,7 @@
         <a href="../" class="md-path__link">
           
   <span class="md-ellipsis">
-    Análise Profunda
+    Análise profunda
   </span>
 
         </a>
@@ -4542,7 +3283,7 @@
         <a href="./" class="md-path__link">
           
   <span class="md-ellipsis">
-    Rede e Segurança
+    Rede e proxies
   </span>
 
         </a>
@@ -4564,235 +3305,27 @@
   
 
 
-<h1 id="analise-profunda-de-rede-e-seguranca">Análise Profunda de Rede e Segurança</h1>
-<p><strong>Bem-vindo ao fundamento da comunicação moderna da internet, o campo de batalha do anonimato, detecção e evasão.</strong></p>
-<p>Protocolos de rede são a infraestrutura invisível que alimenta cada requisição web, conexão de navegador e script de automação. Entendê-los profundamente transforma você de um <strong>usuário de ferramenta</strong> em um <strong>engenheiro de protocolo</strong> capaz de navegar pelos mais sofisticados sistemas anti-bot.</p>
-<h2 id="por-que-a-arquitetura-de-rede-importa">Por que a Arquitetura de Rede Importa</h2>
-<p>Quando você executa <code>tab.go_to('https://example.com')</code>, uma complexa sinfonia de protocolos entra em ação:</p>
-<ol>
-<li><strong>Resolução DNS</strong> traduz o domínio para um endereço IP (potencialmente vazando sua intenção)</li>
-<li><strong>Handshake TCP</strong> estabelece a conexão (revelando seu SO através de características de pacote)</li>
-<li><strong>Negociação TLS</strong> protege o canal (aplicando fingerprinting no seu navegador via suítes de cifras)</li>
-<li><strong>Requisição HTTP/2</strong> busca a página (expondo a versão do navegador através de frames SETTINGS)</li>
-<li><strong>Descoberta WebRTC</strong> pode sondar seu IP real (contornando completamente sua VPN)</li>
-</ol>
-<p><strong>Cada passo é uma oportunidade para detecção ou evasão.</strong></p>
-<div class="admonition danger">
-<p class="admonition-title">A Camada de Rede Não Pode Mentir</p>
-<p>Diferente das características em nível de navegador (que o JavaScript pode modificar), os fingerprints de nível de rede estão <strong>gravados no kernel do SO e na pilha TCP/IP</strong>. Um desencontro aqui, como um navegador Chrome enviando opções TCP de Linux enquanto alega ser Windows, é instantaneamente fatal para a automação furtiva.</p>
-</div>
-<h2 id="a-arquitetura-da-privacidade-na-internet">A Arquitetura da Privacidade na Internet</h2>
-<p>Este módulo explora os <strong>fundamentos técnicos</strong> que tornam a privacidade possível (e quebrável) na internet moderna:</p>
-<h3 id="a-realidade-do-modelo-osi">A Realidade do Modelo OSI</h3>
-<pre class="mermaid"><code>graph TB
-    subgraph "Camada de Aplicação 7"
-        HTTP[Cabeçalhos HTTP/HTTPS]
-        DNS[Consultas DNS]
-    end
-
-    subgraph "Camada de Apresentação 6"
-        TLS[Fingerprinting TLS/SSL]
-        Ciphers[Suítes de Cifras, Extensões]
-    end
-
-    subgraph "Camadas de Sessão/Transporte 5-4"
-        SOCKS[Protocolo Proxy SOCKS]
-        TCP[Janela TCP, Opções, ISN]
-    end
-
-    subgraph "Camada de Rede 3"
-        IP[IP TTL, Fragmentação]
-        Routing[Roteamento de Pacotes, Saltos]
-    end
-
-    HTTP --&gt; TLS
-    DNS --&gt; TLS
-    TLS --&gt; SOCKS
-    Ciphers --&gt; TCP
-    SOCKS --&gt; IP
-    TCP --&gt; Routing</code></pre>
-<p><strong>Cada camada é tanto um escudo quanto uma vulnerabilidade:</strong></p>
+<h1 id="rede-e-proxies">Rede e proxies</h1>
+<p>Proxies são como você muda de onde seu tráfego parece vir, e como ele aparece na rede. Acertá-los (e entender como eles são pegos) significa saber o que de fato acontece em cada camada de uma requisição. Esta seção é o pano de fundo; para configurar um proxy no Pydoll, veja o guia <a href="../../guides/proxies/">Proxies</a>.</p>
+<h2 id="comece-por-aqui">Comece por aqui</h2>
 <ul>
-<li><strong>Camada 7 (Aplicação)</strong>: Proxies podem ler e modificar seu tráfego HTTP</li>
-<li><strong>Camada 6 (Apresentação)</strong>: Criptografia TLS protege o conteúdo, mas vaza metadados</li>
-<li><strong>Camada 4 (Transporte)</strong>: Características TCP traem seu sistema operacional</li>
-<li><strong>Camada 3 (Rede)</strong>: Endereços IP revelam sua localização física</li>
+<li><a href="network-fundamentals/">Fundamentos de rede</a>: as camadas pelas quais uma requisição passa, do TCP ao TLS ao HTTP, e qual camada um proxy consegue alcançar.</li>
 </ul>
-<h2 id="o-que-voce-vai-dominar">O que Você Vai Dominar</h2>
-<p>Este módulo está estruturado como uma <strong>progressão técnica</strong> de fundamentos até a exploração avançada:</p>
-<h3 id="1-fundamentos-de-rede">1. Fundamentos de Rede</h3>
-<p><strong><a href="network-fundamentals/">Fundamentos de Rede</a></strong></p>
-<p>Construa a base: entenda os protocolos que movem a internet e como eles revelam, ou escondem, sua identidade.</p>
+<h2 id="tipos-de-proxy">Tipos de proxy</h2>
 <ul>
-<li><strong>Camadas do Modelo OSI</strong> e suas implicações para fingerprinting</li>
-<li><strong>TCP vs UDP</strong>: Por que seu proxy pode vazar tráfego UDP</li>
-<li><strong>Vazamento de IP via WebRTC</strong>: A ameaça oculta nos navegadores modernos</li>
-<li><strong>Características da pilha de rede</strong>: TTL, tamanho da janela, ordem das opções</li>
+<li><a href="http-proxies/">Proxies HTTP/HTTPS</a>: o forward proxy e o túnel CONNECT, o que cada um enxerga, e como a interceptação MITM muda o fingerprint TLS.</li>
+<li><a href="socks-proxies/">Proxies SOCKS</a>: o handshake da camada de transporte, SOCKS4 vs SOCKS5, DNS remoto, e a limitação de autenticação do SOCKS5 no Chrome.</li>
 </ul>
-<p><strong>Por que começar aqui</strong>: Sem esta base, a configuração de proxy é <strong>"programação de culto à carga"</strong> (cargo cult programming), copiando comandos sem entender por que funcionam (ou não).</p>
-<h3 id="2-proxies-httphttps">2. Proxies HTTP/HTTPS</h3>
-<p><strong><a href="http-proxies/">Proxies HTTP/HTTPS</a></strong></p>
-<p>Domine o protocolo de proxy mais comum e entenda suas limitações fundamentais.</p>
+<h2 id="deteccao-e-mecanica">Detecção e mecânica</h2>
 <ul>
-<li><strong>Operação de proxy HTTP</strong>: Encaminhamento de requisições, cache, injeção de cabeçalho</li>
-<li><strong>Tunelamento CONNECT</strong>: Como o HTTPS "passa por um túnel" através de proxies HTTP</li>
-<li><strong>Complexidades do HTTP/2</strong>: Multiplexação, prioridades de stream, fingerprinting de SETTINGS</li>
-<li><strong>HTTP/3 e QUIC</strong>: Desafios de proxying baseado em UDP</li>
-<li><strong>Esquemas de autenticação</strong>: Basic, Digest, NTLM, tokens Bearer</li>
+<li><a href="proxy-detection/">Detecção de proxy</a>: os sinais que entregam um proxy, da reputação de IP a divergências de header e fingerprint.</li>
+<li><a href="build-proxy/">Construindo um servidor proxy</a>: um proxy HTTP e SOCKS5 mínimo em Python, para ver como o encaminhamento realmente funciona.</li>
+<li><a href="proxy-legal/">Uso legal e ético</a>: termos de serviço, privacidade e scraping responsável.</li>
 </ul>
-<p><strong>Visão crítica</strong>: Proxies HTTP operam na Camada 7, eles podem <strong>ler, modificar e registrar</strong> seu tráfego não criptografado. Para privacidade verdadeira, você precisa de criptografia <strong>antes</strong> que o proxy veja seus dados.</p>
-<h3 id="3-proxies-socks">3. Proxies SOCKS</h3>
-<p><strong><a href="socks-proxies/">Proxies SOCKS</a></strong></p>
-<p>Entenda por que o SOCKS5 é o <strong>padrão ouro</strong> para automação consciente da privacidade.</p>
+<h2 id="relacionado">Relacionado</h2>
 <ul>
-<li><strong>SOCKS4 vs SOCKS5</strong>: Evolução do protocolo e capacidades</li>
-<li><strong>Handshake SOCKS5</strong>: Análise profunda do protocolo binário com estruturas de pacotes</li>
-<li><strong>Suporte UDP</strong>: Jogos, VoIP e WebRTC sobre SOCKS5</li>
-<li><strong>Resolução DNS</strong>: Por que o DNS no lado do proxy previne vazamentos</li>
-<li><strong>Por que SOCKS5 &gt; proxies HTTP</strong>: Comparação em nível de protocolo</li>
-</ul>
-<p><strong>Vantagem chave</strong>: SOCKS opera na Camada 5 (Sessão), <strong>abaixo</strong> da camada de aplicação. Ele não pode ler seu tráfego HTTP, apenas ver IPs de destino, reduzindo vastamente a superfície de confiança.</p>
-<h3 id="4-deteccao-de-proxy">4. Detecção de Proxy</h3>
-<p><strong><a href="proxy-detection/">Detecção de Proxy e Anonimato</a></strong></p>
-<p>Aprenda como sites <strong>detectam o uso de proxy</strong> e como evadir a detecção.</p>
-<ul>
-<li><strong>Níveis de anonimato</strong>: Proxies transparentes, anônimos, elite</li>
-<li><strong>Bancos de dados de reputação de IP</strong>: Como seu IP de datacenter te trai</li>
-<li><strong>Análise de cabeçalhos</strong>: Cabeçalhos X-Forwarded-For, Via, Forwarded</li>
-<li><strong>Checagens de consistência</strong>: DNS reverso, desencontros de geolocalização</li>
-<li><strong>Integração de fingerprinting de rede</strong>: Combinando detecção de proxy com análise TCP/TLS</li>
-</ul>
-<p><strong>Dura realidade</strong>: A maioria dos proxies "anônimos" é trivialmente detectável. Furtividade verdadeira requer <strong>proxies residenciais de elite</strong> + <strong>fingerprinting de navegador consistente</strong> + <strong>comportamento semelhante ao humano</strong>.</p>
-<h3 id="5-construindo-servidores-proxy">5. Construindo Servidores Proxy</h3>
-<p><strong><a href="build-proxy/">Construindo Seu Próprio Proxy</a></strong></p>
-<p>Implemente proxies HTTP e SOCKS5 do zero em Python, a experiência de aprendizado definitiva.</p>
-<ul>
-<li><strong>Servidor proxy HTTP</strong>: Implementação assíncrona completa com autenticação</li>
-<li><strong>Servidor proxy SOCKS5</strong>: Manipulação de protocolo binário, tunelamento TCP</li>
-<li><strong>Encadeamento de proxy (Proxy chaining)</strong>: Anonimato em camadas (e trocas de latência)</li>
-<li><strong>Pools de proxy rotativos</strong>: Verificação de saúde, failover, balanceamento de carga</li>
-<li><strong>Tópicos avançados</strong>: Proxies transparentes, interceptação SSL MITM</li>
-</ul>
-<p><strong>Por que construir o seu</strong>: Entender detalhes de implementação revela <strong>vetores de ataque</strong> e <strong>oportunidades de otimização</strong> invisíveis do exterior.</p>
-<h3 id="6-consideracoes-legais-e-eticas">6. Considerações Legais e Éticas</h3>
-<p><strong><a href="proxy-legal/">Diretrizes Legais e Éticas</a></strong></p>
-<p>Navegue pelo campo minado legal do uso de proxy e automação web.</p>
-<ul>
-<li><strong>Conformidade regulatória</strong>: GDPR, CFAA, leis internacionais</li>
-<li><strong>Termos de Serviço</strong>: O que constitui violação</li>
-<li><strong>Diretrizes éticas</strong>: robots.txt, limitação de taxa, transparência</li>
-<li><strong>Estudos de caso</strong>: Precedentes legais (hiQ vs LinkedIn, QVC vs Resultly)</li>
-<li><strong>Quando evitar proxies</strong>: Cenários de alto risco</li>
-</ul>
-<p><strong>Aviso</strong>: Esta é <strong>informação educacional</strong>, não aconselhamento jurídico. A lei varia muito por jurisdição e caso de uso. Consulte um advogado qualificado.</p>
-<h2 id="o-paradoxo-do-proxy">O Paradoxo do Proxy</h2>
-<p>Aqui está a verdade desconfortável sobre proxies:</p>
-<div class="admonition warning">
-<p class="admonition-title">Proxies Não Te Tornam Anônimo. Eles Te Tornam <strong>Diferente</strong></p>
-<p>Um proxy muda seu endereço IP, mas ele também:</p>
-<ul>
-<li>Adiciona <strong>latência</strong> (detectável via análise de tempo)</li>
-<li>Reseta valores de <strong>TTL</strong> (revelando saltos do proxy)</li>
-<li>Introduz desencontros de <strong>fingerprint TCP</strong> (SO do proxy ≠ seu SO)</li>
-<li>Pode injetar <strong>cabeçalhos</strong> (X-Forwarded-For, Via)</li>
-<li>Cria <strong>inconsistências de geolocalização</strong> (fuso horário do navegador ≠ localização do IP)</li>
-</ul>
-<p>Proxies são uma <strong>ferramenta</strong>, não uma solução. Furtividade verdadeira requer <strong>consistência holística</strong>.</p>
-</div>
-<h2 id="pre-requisitos">Pré-requisitos</h2>
-<p>Este é um <strong>material avançado</strong>. Você deve estar confortável com:</p>
-<p>Conceitos básicos de redes (endereços IP, portas, protocolos)
-Fundamentos de TCP/IP (three-way handshake, pacotes, roteamento)
-Programação Python assíncrona (asyncio, async/await)
-Básico do Pydoll (veja <a href="../../features/core-concepts/">Conceitos Principais</a>)</p>
-<p><strong>Se você é novo em redes</strong>, recomendamos fortemente:</p>
-<ol>
-<li>Ler um guia de fundamentos de TCP/IP primeiro</li>
-<li>Experimentar com o Wireshark para visualizar o tráfego de rede</li>
-<li>Tentar os exemplos de código com capturas de pacotes rodando</li>
-<li>Construir os servidores proxy e testá-los localmente</li>
-</ol>
-<h2 id="integracao-com-outros-modulos">Integração com Outros Módulos</h2>
-<p>Arquitetura de rede não existe isoladamente. Ela se integra profundamente com:</p>
-<ul>
-<li><strong><a href="../fingerprinting/network-fingerprinting/">Fingerprinting</a></strong>: Como características TCP/IP e TLS te identificam</li>
-<li><strong><a href="../../features/configuration/browser-preferences/">Configuração do Navegador</a></strong>: Alinhando comportamento do navegador com características do proxy</li>
-<li><strong><a href="../fundamentals/connection-layer/">Camada de Conexão</a></strong>: Como o Pydoll gerencia conexões WebSocket sobre proxies</li>
-</ul>
-<h2 id="a-trilha-de-aprendizagem">A Trilha de Aprendizagem</h2>
-<p>Recomendamos esta progressão:</p>
-<p><strong>Fase 1: Fundação</strong></p>
-<ol>
-<li>Leia <a href="network-fundamentals/">Fundamentos de Rede</a></li>
-<li>Entenda o modelo OSI e as camadas de protocolo</li>
-<li>Aprenda sobre vazamentos WebRTC e tunelamento UDP</li>
-</ol>
-<p><strong>Fase 2: Análise Profunda de Protocolo</strong></p>
-<ol>
-<li>Estude <a href="http-proxies/">Proxies HTTP/HTTPS</a></li>
-<li>Domine <a href="socks-proxies/">Proxies SOCKS</a></li>
-<li>Compare protocolos e entenda as trocas</li>
-</ol>
-<p><strong>Fase 3: Pensamento Adversário</strong></p>
-<ol>
-<li>Explore <a href="proxy-detection/">Detecção de Proxy</a></li>
-<li>Aprenda técnicas de detecção da perspectiva do defensor</li>
-<li>Aplique estratégias de evasão</li>
-</ol>
-<p><strong>Fase 4: Implementação Prática</strong></p>
-<ol>
-<li>Construa servidores proxy de <a href="build-proxy/">Construindo Proxies</a></li>
-<li>Capture e analise tráfego com Wireshark</li>
-<li>Teste cadeias de proxy e estratégias de rotação</li>
-</ol>
-<p><strong>Fase 5: Segurança Operacional</strong></p>
-<ol>
-<li>Revise as diretrizes <a href="proxy-legal/">Legais e Éticas</a></li>
-<li>Entenda os requisitos de conformidade</li>
-<li>Desenvolva políticas de automação responsáveis</li>
-</ol>
-<h2 id="a-filosofia">A Filosofia</h2>
-<p>Conhecimento de rede e segurança é <strong>poder fundamental</strong>. Diferente de habilidades específicas de frameworks (que se tornam obsoletas), o conhecimento de protocolos é <strong>atemporal</strong>:</p>
-<ul>
-<li>TCP não mudou fundamentalmente desde a RFC 793 (1981)</li>
-<li>TLS constrói sobre conceitos do SSL (1995)</li>
-<li>HTTP/2 (2015) e HTTP/3 (2022) são evoluções, não revoluções</li>
-</ul>
-<p>Domine esses fundamentos uma vez, e você entenderá <strong>todo sistema baseado em rede</strong> que encontrar pelo resto de sua carreira.</p>
-<h2 id="compromisso-etico">Compromisso Ético</h2>
-<p>Antes de prosseguir, reconheça:</p>
-<p>Eu entendo que proxies podem ser usados tanto para fins legítimos quanto maliciosos
-Eu respeitarei os termos de serviço dos sites e o robots.txt
-Eu implementarei limitação de taxa e rastreamento respeitoso
-Eu não usarei este conhecimento para fraude, abuso ou atividades ilegais
-Eu consultarei aconselhamento jurídico quando incerto sobre conformidade</p>
-<p><strong>Com grandes poderes vêm grandes responsabilidades.</strong> Use este conhecimento com sabedoria.</p>
-<hr />
-<h2 id="pronto-para-comecar">Pronto para Começar?</h2>
-<p>Comece sua jornada com <strong><a href="network-fundamentals/">Fundamentos de Rede</a></strong> para construir a base, então progrida através dos módulos em ordem. Cada documento constrói sobre o anterior, criando um entendimento abrangente de arquitetura de rede para automação.</p>
-<p><strong>É aqui que "script kiddies" se tornam engenheiros. Vamos começar.</strong></p>
-<hr />
-<div class="admonition info">
-<p class="admonition-title">Status da Documentação</p>
-<p>Este módulo sintetiza conhecimento de RFCs, especificações de protocolo, pesquisa em segurança e testes do mundo real. Todo exemplo de código está pronto para produção. Se encontrar imprecisões ou tiver melhorias, contribuições são bem-vindas.</p>
-</div>
-<h2 id="navegacao-rapida">Navegação Rápida</h2>
-<p><strong>Protocolos Principais:</strong></p>
-<ul>
-<li><a href="network-fundamentals/">Fundamentos de Rede</a> - TCP/IP, UDP, WebRTC</li>
-<li><a href="http-proxies/">Proxies HTTP/HTTPS</a> - Proxying de camada de aplicação</li>
-<li><a href="socks-proxies/">Proxies SOCKS</a> - Proxying de camada de sessão</li>
-</ul>
-<p><strong>Tópicos Avançados:</strong></p>
-<ul>
-<li><a href="proxy-detection/">Detecção de Proxy</a> - Anonimato e evasão</li>
-<li><a href="build-proxy/">Construindo Proxies</a> - Implementação do zero</li>
-<li><a href="proxy-legal/">Legal e Ético</a> - Conformidade e responsabilidade</li>
-</ul>
-<p><strong>Módulos Relacionados:</strong></p>
-<ul>
-<li><a href="../fingerprinting/">Fingerprinting</a> - Técnicas de detecção</li>
-<li><a href="../../features/configuration/browser-options/">Configuração do Navegador</a> - Configuração prática</li>
+<li><a href="../../guides/proxies/">Proxies</a>: o guia prático para configurar proxies no Pydoll.</li>
+<li><a href="../fingerprinting/network-fingerprinting/">Fingerprinting de rede</a>: o que a camada de rede revela sobre um cliente.</li>
 </ul>
 
 

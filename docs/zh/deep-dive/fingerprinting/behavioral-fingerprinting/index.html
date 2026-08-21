@@ -14,7 +14,7 @@
         <link rel="prev" href="../browser-fingerprinting/">
       
       
-        <link rel="next" href="../evasion-techniques/">
+        <link rel="next" href="../../../api/">
       
       
         
@@ -52,8 +52,8 @@
         
         
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Chivo:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Chivo";--md-code-font:"JetBrains Mono"}</style>
       
     
     
@@ -65,6 +65,8 @@
     
       <link rel="stylesheet" href="../../../../resources/stylesheets/extra.css">
     
+      <link rel="stylesheet" href="../../../../resources/stylesheets/landing-theme.css">
+    
     <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -75,8 +77,6 @@
   
   
     
-    
-      
     
     
     
@@ -90,7 +90,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#fingerprinting" class="md-skip">
+        <a href="#behavioral-fingerprinting" class="md-skip">
           Skip to content
         </a>
       
@@ -104,7 +104,7 @@
 
   
 
-<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+<header class="md-header md-header--landing md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="../../../" title="Pydoll - 异步网页自动化库" class="md-header__button md-logo" aria-label="Pydoll - 异步网页自动化库" data-md-component="logo">
       
@@ -112,6 +112,7 @@
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11 15H6l7-14v8h5l-7 14z"/></svg>
 
     </a>
+    <span class="md-header__docs-chip">docs</span>
     <label class="md-header__button md-icon" for="__drawer">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
@@ -119,48 +120,18 @@
     <div class="md-header__title" data-md-component="header-title">
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
-          <span class="md-ellipsis">
-            Pydoll - 异步网页自动化库
-          </span>
+          <span class="md-ellipsis">Pydoll - 异步网页自动化库</span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
-            
-              行为指纹识别
-            
+            行为指纹识别
           </span>
         </div>
       </div>
     </div>
     
       
-        <form class="md-header__option" data-md-component="palette">
-  
     
-    
-    
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Dark Mode"  type="radio" name="__palette" id="__palette_0">
-    
-      <label class="md-header__button md-icon" title="Dark Mode" for="__palette_1" hidden>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6m0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4M7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3"/></svg>
-      </label>
-    
-  
-    
-    
-    
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Light Mode"  type="radio" name="__palette" id="__palette_1">
-    
-      <label class="md-header__button md-icon" title="Light Mode" for="__palette_0" hidden>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
-      </label>
-    
-  
-</form>
-      
-    
-    
-      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
     
     
       <div class="md-header__option">
@@ -251,6 +222,7 @@
 </a>
       </div>
     
+    <a class="md-header__cta" href="../../../../getting-started/">Get started</a>
   </nav>
   
     
@@ -286,13 +258,79 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../features/" class="md-tabs__link">
+        <a href="../../../getting-started/" class="md-tabs__link">
           
   
   
     
   
-  特性
+  快速上手
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../basics/async-python/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  基础
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../guides/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  指南
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../stealth/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Stealth
 
         </a>
       </li>
@@ -434,11 +472,283 @@
     
       
         
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
           
         
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    快速上手
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    快速上手
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    安装
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../first-automation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    你的第一个自动化
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../migrating/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    从 Selenium 和 Playwright 迁移
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
       
         
       
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    基础
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    基础
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../basics/async-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    异步 Python 实践
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../basics/selectors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    选择器、CSS 和 XPath
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
         
       
         
@@ -468,18 +778,18 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../features/" class="md-nav__link ">
+            <a href="../../../guides/" class="md-nav__link ">
               
   
   
   <span class="md-ellipsis">
     
   
-    特性
+    指南
   
 
     
@@ -490,18 +800,18 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
   
-    特性
+    指南
   
 
           </label>
@@ -516,7 +826,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/core-concepts/" class="md-nav__link">
+      <a href="../../../guides/core-concepts/" class="md-nav__link">
         
   
   
@@ -543,8 +853,70 @@
   
   
   
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    查找与提取
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    查找与提取
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
     <li class="md-nav__item">
-      <a href="../../../features/element-finding/" class="md-nav__link">
+      <a href="../../../guides/element-finding/" class="md-nav__link">
         
   
   
@@ -571,37 +943,15 @@
   
   
   
-    
-    
-      
+    <li class="md-nav__item">
+      <a href="../../../guides/dom-traversal/" class="md-nav__link">
         
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_4" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
-            
   
   
   <span class="md-ellipsis">
     
   
-    Data Extraction
+    DOM 遍历
   
 
     
@@ -609,19 +959,11 @@
   
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_4">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Data Extraction
+      </a>
+    </li>
   
 
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
+              
             
               
                 
@@ -630,14 +972,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/extraction/structured-extraction/" class="md-nav__link">
+      <a href="../../../guides/structured-extraction/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Structured Extraction
+    结构化提取
   
 
     
@@ -678,8 +1020,6 @@
       
         
       
-        
-      
     
     
     
@@ -695,17 +1035,17 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_5" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_4" >
         
           
-          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="0">
             
   
   
   <span class="md-ellipsis">
     
   
-    自动化
+    交互
   
 
     
@@ -716,12 +1056,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_5">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_4">
             <span class="md-nav__icon md-icon"></span>
             
   
-    自动化
+    交互
   
 
           </label>
@@ -734,14 +1074,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/automation/human-interactions/" class="md-nav__link">
+      <a href="../../../guides/keyboard/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    类人交互
+    键盘
   
 
     
@@ -762,14 +1102,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/automation/keyboard-control/" class="md-nav__link">
+      <a href="../../../guides/mouse/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    键盘控制
+    鼠标
   
 
     
@@ -790,35 +1130,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/automation/mouse-control/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    鼠标控制
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/automation/file-operations/" class="md-nav__link">
+      <a href="../../../guides/file-operations/" class="md-nav__link">
         
   
   
@@ -846,14 +1158,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/automation/iframes/" class="md-nav__link">
+      <a href="../../../guides/iframes/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    IFrame交互
+    IFrame
   
 
     
@@ -874,14 +1186,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/automation/screenshots-and-pdfs/" class="md-nav__link">
+      <a href="../../../guides/screenshots-and-pdfs/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    截图与PDF
+    截图与 PDF
   
 
     
@@ -935,10 +1247,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_6" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_5" >
         
           
-          <label class="md-nav__link" for="__nav_2_6" id="__nav_2_6_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4_5" id="__nav_4_5_label" tabindex="0">
             
   
   
@@ -956,8 +1268,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_6">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -974,7 +1286,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/network/monitoring/" class="md-nav__link">
+      <a href="../../../guides/network-monitoring/" class="md-nav__link">
         
   
   
@@ -1002,7 +1314,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/network/interception/" class="md-nav__link">
+      <a href="../../../guides/request-interception/" class="md-nav__link">
         
   
   
@@ -1030,14 +1342,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/network/http-requests/" class="md-nav__link">
+      <a href="../../../guides/http-requests/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    浏览器上下文HTTP请求
+    浏览器上下文 HTTP 请求
   
 
     
@@ -1058,14 +1370,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/network/network-recording/" class="md-nav__link">
+      <a href="../../../guides/network-recording/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    HAR网络录制
+    HAR 录制
   
 
     
@@ -1102,6 +1414,14 @@
       
         
       
+        
+      
+        
+      
+        
+      
+        
+      
     
     
     
@@ -1117,17 +1437,17 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_7" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_6" >
         
           
-          <label class="md-nav__link" for="__nav_2_7" id="__nav_2_7_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4_6" id="__nav_4_6_label" tabindex="0">
             
   
   
   <span class="md-ellipsis">
     
   
-    浏览器管理
+    管理浏览器
   
 
     
@@ -1138,12 +1458,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_7">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_6">
             <span class="md-nav__icon md-icon"></span>
             
   
-    浏览器管理
+    管理浏览器
   
 
           </label>
@@ -1156,14 +1476,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/browser-management/tabs/" class="md-nav__link">
+      <a href="../../../guides/tabs/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    多标签页管理
+    标签页
   
 
     
@@ -1184,7 +1504,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/browser-management/contexts/" class="md-nav__link">
+      <a href="../../../guides/browser-contexts/" class="md-nav__link">
         
   
   
@@ -1212,14 +1532,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/browser-management/cookies-sessions/" class="md-nav__link">
+      <a href="../../../guides/cookies-and-sessions/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Cookie与会话
+    Cookie 与会话
   
 
     
@@ -1233,76 +1553,6 @@
 
               
             
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_8" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_8" id="__nav_2_8_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    配置
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_8_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_8">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    配置
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
               
                 
   
@@ -1310,7 +1560,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/configuration/browser-options/" class="md-nav__link">
+      <a href="../../../guides/browser-options/" class="md-nav__link">
         
   
   
@@ -1338,7 +1588,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/configuration/browser-preferences/" class="md-nav__link">
+      <a href="../../../guides/browser-preferences/" class="md-nav__link">
         
   
   
@@ -1366,14 +1616,42 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/configuration/proxy/" class="md-nav__link">
+      <a href="../../../guides/proxies/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    代理配置
+    代理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/remote-connections/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    远程连接
   
 
     
@@ -1404,6 +1682,139 @@
     
     
       
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_7" id="__nav_4_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    响应事件
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    响应事件
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    事件
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/retrying/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    重试
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
         
       
         
@@ -1429,17 +1840,18 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_9" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
         
           
-          <label class="md-nav__link" for="__nav_2_9" id="__nav_2_9_label" tabindex="0">
-            
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../stealth/" class="md-nav__link ">
+              
   
   
   <span class="md-ellipsis">
     
   
-    高级功能
+    Stealth
   
 
     
@@ -1447,19 +1859,27 @@
   
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_9_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_9">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
   
-    高级功能
+    Stealth
   
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
             
               
                 
@@ -1468,7 +1888,91 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/advanced/fingerprint-injection/" class="md-nav__link">
+      <a href="../../../stealth/evasion-techniques/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    规避技术
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../stealth/human-like-interactions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    类人交互
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../stealth/captcha-bypass/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    验证码绕过
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../stealth/fingerprint-injection/" class="md-nav__link">
         
   
   
@@ -1489,126 +1993,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/advanced/behavioral-captcha-bypass/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    行为验证码绕过
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/advanced/event-system/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    事件系统
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/advanced/remote-connections/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    远程连接
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/advanced/decorators/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Retry 装饰器
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -1629,10 +2013,6 @@
       
         
           
-        
-      
-        
-      
         
       
         
@@ -1657,7 +2037,7 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
         
           
           <div class="md-nav__link md-nav__container">
@@ -1679,14 +2059,14 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_3">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1704,88 +2084,8 @@
   
   
   
-    
-    
-      
-        
-          
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-          
-          
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_2" >
-        
-          
-          <div class="md-nav__link md-nav__container">
-            <a href="../../fundamentals/" class="md-nav__link ">
-              
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    核心基础
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_3_2" id="__nav_3_2_label" tabindex="">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_2">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    核心基础
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
     <li class="md-nav__item">
-      <a href="../../fundamentals/cdp/" class="md-nav__link">
+      <a href="../../cdp/" class="md-nav__link">
         
   
   
@@ -1812,388 +2112,6 @@
   
   
   
-    <li class="md-nav__item">
-      <a href="../../fundamentals/connection-layer/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    连接层
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../fundamentals/typing-system/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Python类型系统
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../fundamentals/iframes-and-contexts/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Iframes & Contexts
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-          
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-          
-          
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_3" >
-        
-          
-          <div class="md-nav__link md-nav__container">
-            <a href="../../architecture/" class="md-nav__link ">
-              
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    内部架构
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_3_3" id="__nav_3_3_label" tabindex="">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_3">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    内部架构
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/browser-domain/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    浏览器域
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/tab-domain/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    标签页域
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/webelement-domain/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Web元素域
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/find-elements-mixin/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    查找元素混合器
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/event-architecture/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    事件架构
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/browser-requests-architecture/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    浏览器请求架构
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/shadow-dom/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Shadow DOM 架构
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
     
     
       
@@ -2231,7 +2149,7 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_4" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6_3" >
         
           
           <div class="md-nav__link md-nav__container">
@@ -2242,7 +2160,7 @@
   <span class="md-ellipsis">
     
   
-    网络与安全
+    网络与代理
   
 
     
@@ -2253,18 +2171,18 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_3_4" id="__nav_3_4_label" tabindex="">
+              <label class="md-nav__link " for="__nav_6_3" id="__nav_6_3_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_4">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_3">
             <span class="md-nav__icon md-icon"></span>
             
   
-    网络与安全
+    网络与代理
   
 
           </label>
@@ -2469,8 +2387,6 @@
       
         
       
-        
-      
     
     
     
@@ -2487,7 +2403,7 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_5" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_4" checked>
         
           
           <div class="md-nav__link md-nav__container">
@@ -2509,14 +2425,14 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_3_5" id="__nav_3_5_label" tabindex="">
+              <label class="md-nav__link " for="__nav_6_4" id="__nav_6_4_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_5_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_3_5">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6_4">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2696,10 +2612,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#pydoll-humanize" class="md-nav__link">
+  <a href="#pydoll" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Pydoll 的鼠标 humanize 功能
+        Pydoll 如何拟人化鼠标
       
     </span>
   </a>
@@ -2715,19 +2631,19 @@
   <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
       
-        击键动态
+        按键动态
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="击键动态">
+    <nav class="md-nav" aria-label="按键动态">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#_5" class="md-nav__link">
     <span class="md-ellipsis">
       
-        时间特征
+        时序特征
       
     </span>
   </a>
@@ -2746,10 +2662,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#pydoll-humanize_1" class="md-nav__link">
+  <a href="#pydoll_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Pydoll 的键盘 humanize 功能
+        Pydoll 如何拟人化打字
       
     </span>
   </a>
@@ -2765,104 +2681,26 @@
   <a href="#_7" class="md-nav__link">
     <span class="md-ellipsis">
       
-        滚动行为分析
+        滚动行为
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="滚动行为分析">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
+</li>
+      
+        <li class="md-nav__item">
   <a href="#_8" class="md-nav__link">
     <span class="md-ellipsis">
       
-        物理滚动特征
+        其他行为信号
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
   <a href="#_9" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        检测信号
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#pydoll-humanize_2" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Pydoll 的滚动 humanize 功能
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#_10" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        其他检测向量
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="其他检测向量">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#_11" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        焦点和可见性
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_12" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        空闲模式
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_13" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        事件序列完整性
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#_14" class="md-nav__link">
     <span class="md-ellipsis">
       
         机器学习检测
@@ -2873,7 +2711,18 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_15" class="md-nav__link">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        相关内容
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
     <span class="md-ellipsis">
       
         参考文献
@@ -2892,144 +2741,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../evasion-techniques/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    规避技术
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-          
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-          
-          
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_6" >
-        
-          
-          <div class="md-nav__link md-nav__container">
-            <a href="../../guides/" class="md-nav__link ">
-              
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    实用指南
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_3_6" id="__nav_3_6_label" tabindex="">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_6">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    实用指南
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../guides/selectors-guide/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    CSS选择器 vs XPath
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -3056,8 +2767,6 @@
       
         
           
-        
-      
         
       
         
@@ -3085,7 +2794,7 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
         
           
           <div class="md-nav__link md-nav__container">
@@ -3107,14 +2816,14 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -3145,8 +2854,6 @@
       
         
       
-        
-      
     
     
     
@@ -3162,10 +2869,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_2" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_2" >
         
           
-          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7_2" id="__nav_7_2_label" tabindex="0">
             
   
   
@@ -3183,8 +2890,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_2">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_2">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -3292,7 +2999,7 @@
   <span class="md-ellipsis">
     
   
-    标签页
+    Tab
   
 
     
@@ -3320,35 +3027,7 @@
   <span class="md-ellipsis">
     
   
-    请求
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/browser/managers/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    管理器
+    Requests
   
 
     
@@ -3383,8 +3062,6 @@
       
         
       
-        
-      
     
     
     
@@ -3400,10 +3077,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_3" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_3" >
         
           
-          <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7_3" id="__nav_7_3_label" tabindex="0">
             
   
   
@@ -3421,8 +3098,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_3">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_3">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -3446,7 +3123,7 @@
   <span class="md-ellipsis">
     
   
-    Web元素
+    WebElement
   
 
     
@@ -3474,35 +3151,7 @@
   <span class="md-ellipsis">
     
   
-    Shadow根
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/elements/mixins/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    混合器
+    ShadowRoot
   
 
     
@@ -3530,39 +3179,15 @@
   
   
   
-    
-    
-      
+    <li class="md-nav__item">
+      <a href="../../../api/extraction/" class="md-nav__link">
         
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_4" >
-        
-          
-          <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="0">
-            
   
   
   <span class="md-ellipsis">
     
   
-    连接
+    Extraction
   
 
     
@@ -3570,19 +3195,11 @@
   
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_4">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    连接
+      </a>
+    </li>
   
 
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
+              
             
               
                 
@@ -3598,7 +3215,7 @@
   <span class="md-ellipsis">
     
   
-    连接处理器
+    Connection
   
 
     
@@ -3618,62 +3235,8 @@
   
   
   
-    <li class="md-nav__item">
-      <a href="../../../api/connection/managers/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    管理器
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
     
     
-      
-        
-          
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
       
         
       
@@ -3694,362 +3257,17 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_5" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_6" >
         
           
-          <div class="md-nav__link md-nav__container">
-            <a href="../../../api/commands/" class="md-nav__link ">
-              
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    命令
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_4_5" id="__nav_4_5_label" tabindex="0">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_5">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    命令
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/browser/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    浏览器
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/dom/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    DOM
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/input/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    输入
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/network/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    网络
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/page/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    页面
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/runtime/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    运行时
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/storage/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    存储
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/target/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    目标
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/fetch/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    获取
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_6" >
-        
-          
-          <label class="md-nav__link" for="__nav_4_6" id="__nav_4_6_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7_6" id="__nav_7_6_label" tabindex="0">
             
   
   
   <span class="md-ellipsis">
     
   
-    协议
+    Core
   
 
     
@@ -4060,362 +3278,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_6">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_6">
             <span class="md-nav__icon md-icon"></span>
             
   
-    协议
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/base/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    基础类型
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/browser/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    浏览器
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/dom/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    DOM
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/fetch/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    获取
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/input/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    输入
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/network/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    网络
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/page/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    页面
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/runtime/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    运行时
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/storage/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    存储
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/target/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    目标
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_7" >
-        
-          
-          <label class="md-nav__link" for="__nav_4_7" id="__nav_4_7_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    核心
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_7">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    核心
+    Core
   
 
           </label>
@@ -4464,34 +3332,6 @@
     
   
     异常
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/core/utils/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    工具
   
 
     
@@ -4592,10 +3432,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#pydoll-humanize" class="md-nav__link">
+  <a href="#pydoll" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Pydoll 的鼠标 humanize 功能
+        Pydoll 如何拟人化鼠标
       
     </span>
   </a>
@@ -4611,19 +3451,19 @@
   <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
       
-        击键动态
+        按键动态
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="击键动态">
+    <nav class="md-nav" aria-label="按键动态">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#_5" class="md-nav__link">
     <span class="md-ellipsis">
       
-        时间特征
+        时序特征
       
     </span>
   </a>
@@ -4642,10 +3482,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#pydoll-humanize_1" class="md-nav__link">
+  <a href="#pydoll_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Pydoll 的键盘 humanize 功能
+        Pydoll 如何拟人化打字
       
     </span>
   </a>
@@ -4661,104 +3501,26 @@
   <a href="#_7" class="md-nav__link">
     <span class="md-ellipsis">
       
-        滚动行为分析
+        滚动行为
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="滚动行为分析">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
+</li>
+      
+        <li class="md-nav__item">
   <a href="#_8" class="md-nav__link">
     <span class="md-ellipsis">
       
-        物理滚动特征
+        其他行为信号
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
   <a href="#_9" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        检测信号
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#pydoll-humanize_2" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Pydoll 的滚动 humanize 功能
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#_10" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        其他检测向量
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="其他检测向量">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#_11" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        焦点和可见性
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_12" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        空闲模式
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_13" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        事件序列完整性
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#_14" class="md-nav__link">
     <span class="md-ellipsis">
       
         机器学习检测
@@ -4769,7 +3531,18 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_15" class="md-nav__link">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        相关内容
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
     <span class="md-ellipsis">
       
         参考文献
@@ -4865,130 +3638,95 @@
   
 
 
-<h1 id="fingerprinting">行为 Fingerprinting</h1>
-<p>行为 fingerprinting 分析的是用户与 Web 应用的交互方式，而非他们使用的工具。虽然网络和浏览器指纹可以通过设置正确的值来伪造，但人类行为遵循生物力学模式，难以令人信服地复制。检测系统收集鼠标移动、击键时间、滚动行为和交互序列，然后使用统计模型来区分人类和自动化。</p>
-<p>本文档涵盖检测技术、背后的科学原理，以及 Pydoll 的人性化功能如何应对各个检测向量。</p>
-<div class="admonition info">
-<p class="admonition-title">模块导航</p>
-<ul>
-<li><a href="../network-fingerprinting/">网络 Fingerprinting</a>：TCP/IP、TLS、HTTP/2 协议 fingerprinting</li>
-<li><a href="../browser-fingerprinting/">浏览器 Fingerprinting</a>：Canvas、WebGL、navigator 属性</li>
-<li><a href="../evasion-techniques/">规避技术</a>：实用对策</li>
-</ul>
-</div>
+<h1 id="behavioral-fingerprinting">Behavioral fingerprinting</h1>
+<p>Behavioral fingerprinting 分析的是用户如何与页面交互，而不是他们用什么工具。网络和浏览器 fingerprint 可以通过设置正确的值来伪造，但人类行为遵循难以令人信服地复制的生物力学模式。检测系统收集鼠标移动、按键时序、滚动行为和交互序列，然后用统计模型把人类和自动化区分开来。本页解释这些技术、它们背后的科学，以及 Pydoll 的拟人化如何应对每一项。</p>
 <h2 id="_1">鼠标移动分析</h2>
-<p>鼠标移动是最强大的行为指标之一，因为人类的运动控制遵循生物力学定律，简单的自动化无法复制。检测系统收集 <code>mousemove</code> 事件（每个事件包含 x、y 坐标和时间戳），并分析轨迹的属性，以区分有机移动和程序化光标瞬移。</p>
+<p>鼠标移动是最强的行为指标之一，因为人类的运动控制遵循简单自动化无法重现的生物力学规律。检测系统收集 <code>mousemove</code> 事件（每个事件都带有 x、y 坐标和一个时间戳），并分析轨迹，寻找能把有机移动与程序化光标瞬移区分开来的特性。</p>
 <h3 id="fittss-law">Fitts's Law</h3>
-<p>Fitts's Law 描述将指针移动到目标所需的时间。Shannon 公式（MacKenzie, 1992）是使用最广泛的版本，表述如下：</p>
+<p>Fitts's Law 描述了将指针移动到目标所需的时间。Shannon 形式（MacKenzie, 1992）是使用最广泛的：</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>T = a + b * log2(D/W + 1)
 </span></code></pre></div>
-<p>其中 <code>T</code> 是移动时间，<code>a</code> 是代表反应/启动时间的常数，<code>b</code> 是代表输入设备固有速度的常数，<code>D</code> 是到目标的距离，<code>W</code> 是目标的宽度（大小）。对数关系意味着距离加倍会增加固定的时间量，而目标大小减半也会增加相同的固定时间量。</p>
-<p>这对机器人检测具有重要意义。人类到达小而远的目标需要更长时间，而到达大而近的目标则很快。他们在移动开始时加速，大约在路径中点达到峰值速度，并在接近目标时减速。如果机器人无论距离和目标大小如何都以恒定时间移动光标，就违反了 Fitts's Law，很容易被检测到。</p>
-<p>检测系统测量每次点击事件的移动时间，根据距离和目标大小计算预期时间，并标记那些明显快于 Fitts's Law 预测或在距离/大小与移动时间之间没有相关性的移动。</p>
+<p><code>T</code> 是移动时间，<code>a</code> 是起始/反应常数，<code>b</code> 是输入设备固有的速度，<code>D</code> 是到目标的距离，<code>W</code> 是目标宽度。这个对数意味着距离翻倍会增加固定的时间量，而目标尺寸减半会增加同样的固定时间量。</p>
+<p>它对检测的影响是直接的。人类到达又小又远的目标需要更长时间，而快速到达又大又近的目标。他们在起始时加速，在大约路径中点达到峰值速度，在到达时减速。一个无论距离和目标尺寸如何都以恒定时间移动的机器人，违反了 Fitts's Law，极易被检测到。检测系统会测量每次点击前的移动时间，根据距离和目标尺寸计算 Fitts's Law 所预测的时间，并标记那些远快于预测、或距离/尺寸与时间之间毫无相关性的移动。</p>
 <h3 id="_2">轨迹形状</h3>
-<p>两点之间的人类手部移动不是直线。Abend、Bizzi 和 Morasso（1982）的研究表明，由于手臂关节和肌肉的生物力学约束，手部路径通常是弯曲的。Flash 和 Hogan（1985）证明，人类到达运动遵循最小 jerk 轨迹，即轨迹在移动持续时间内最小化 jerk（加速度的导数）的积分。由此产生的速度曲线呈钟形，用五次（5 阶）多项式描述：</p>
+<p>人手在两点之间的移动不是直线。Abend、Bizzi 和 Morasso（1982）表明，由于手臂的关节和肌肉，手的路径是弯曲的。Flash 和 Hogan（1985）表明，够取动作遵循最小急动度（minimum-jerk）轨迹，即在整个移动过程中使急动度（加速度的导数）的积分最小化。速度曲线呈钟形，用一个五次多项式描述：</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>x(t) = x0 + (xf - x0) * (10t^3 - 15t^4 + 6t^5)
 </span></code></pre></div>
-<p>其中 <code>t</code> 是从 0 到 1 的归一化时间，<code>x0</code>/<code>xf</code> 是起始和终止位置。这会产生从静止开始的平滑加速、大约在路径中点的峰值速度，以及回到静止的平滑减速。</p>
-<p>检测系统分析轨迹曲率、速度曲线和加速度模式。它们寻找的具体信号包括：</p>
-<p><strong>直线检测。</strong> 两点之间完全笔直的路径（每个采样点曲率为零）是最明显的机器人信号。由于手臂旋转关节的存在，人类路径总是有一定的曲率。</p>
-<p><strong>恒定速度。</strong> 人类表现出钟形速度曲线（加速、达到峰值、减速）。整个移动过程中恒定的速度表明是线性插值，这是大多数自动化工具的默认行为。</p>
-<p><strong>缺少子移动。</strong> 长距离移动由多个重叠的子移动组成（Meyer 等，1988），每个子移动都有自己的速度峰值。覆盖 500+ 像素但只有一个平滑速度峰值的移动是可疑的；该距离的真实移动通常会显示 2-4 个速度峰值。</p>
-<p><strong>无 overshoot。</strong> 人类经常会略微超过目标（5-15 像素），然后做一个小的校正回来。每次都精确命中目标的完美移动在统计上是不可能的。</p>
+<p>其中 <code>t</code> 是从 0 到 1 归一化的时间，<code>x0</code>/<code>xf</code> 是起始和结束位置。这带来了从静止开始的平滑加速、路径中点附近的峰值速度，以及平滑减速回到静止。</p>
+<p>检测系统分析曲率、速度和加速度，寻找四个破绽：</p>
+<ul>
+<li><strong>直线路径。</strong> 每个采样点的曲率都为零，是最明显的机器人信号；人类的路径总是弯曲的，因为手臂围绕关节旋转。</li>
+<li><strong>恒定速度。</strong> 人类呈现钟形的速度曲线。恒定速度表明是线性插值，这是大多数自动化工具的默认做法。</li>
+<li><strong>没有子移动（sub-movements）。</strong> 长距离移动是由重叠的子移动构成的（Meyer et al., 1988），每个子移动都有自己的速度峰值。一次 500 像素的移动只有单个平滑峰值是可疑的；真实的移动会呈现 2 到 4 个峰值。</li>
+<li><strong>没有过冲。</strong> 人类经常会过冲 5 到 15 像素然后修正回来。每次都精确落在目标上，从统计学上讲不太可能。</li>
+</ul>
 <h3 id="_3">移动熵</h3>
-<p>在这个语境中，熵衡量鼠标路径的不可预测性。检测系统将轨迹分成段，测量每个点的方向变化，并计算方向变化分布上的 Shannon 熵。直线的熵为零（每段指向相同方向）。随机游走的熵最大。人类移动具有中等到高的熵，反映了有意方向和非自主变异性的结合。</p>
-<p>在一个会话中多次鼠标移动都表现出低熵是一个强烈的机器人信号，即使个别移动具有合理的曲率。</p>
-<h3 id="pydoll-humanize">Pydoll 的鼠标 humanize 功能</h3>
-<p>Pydoll 通过点击操作上的 <code>humanize=True</code> 参数实现了全面的鼠标人性化。启用后，鼠标模块会生成针对上述每个检测向量的移动：</p>
-<p>路径遵循带有随机控制点的三次 Bezier 曲线，产生自然曲率而非直线。沿路径的速度遵循最小 jerk 曲线（<code>10t^3 - 15t^4 + 6t^5</code>），产生 Fitts's Law 预测的钟形速度曲线。移动持续时间使用 Fitts's Law 和可配置常数（默认 <code>a=0.070</code>，<code>b=0.150</code>）计算。</p>
-<p>通过向光标位置添加高斯噪声来模拟生理震颤，振幅与速度成反比（当手移动缓慢时震颤更明显，这与真实生理学一致）。overshoot 以 70% 的概率发生，超过目标总距离的 3-12%，然后进行校正移动。微停顿（15-40ms）以 3% 的概率在移动过程中发生，模拟短暂的犹豫。</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># 基本的 humanize 点击</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">await</span> <span class="n">element</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># 也可以直接使用 Mouse 类获得更多控制</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.interactions.mouse</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mouse</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="n">mouse</span> <span class="o">=</span> <span class="n">Mouse</span><span class="p">(</span><span class="n">connection_handler</span><span class="p">)</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="k">await</span> <span class="n">mouse</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<p>这里的熵衡量的是路径有多不可预测。检测系统把轨迹拆分成若干段，测量每个点上的方向变化，并对这些变化的分布计算 Shannon 熵。直线的熵为零；随机游走的熵最大；人类移动介于两者之间，把意图与不自主的变异结合在一起。在一个会话中，许多移动都呈现低熵，是一个强烈的机器人信号，即使单个移动看起来是貌似合理地弯曲的。</p>
+<h3 id="pydoll">Pydoll 如何拟人化鼠标</h3>
+<p>在 <code>humanize=True</code> 时，Pydoll 生成的移动会回应上面每一个破绽。路径遵循一条控制点随机化的三次 Bezier 曲线，因此它会弯曲而不是走直线。沿路径的速度遵循最小急动度曲线（<code>10t^3 - 15t^4 + 6t^5</code>），给出 Fitts's Law 所预测的钟形曲线，而持续时间正是根据 Fitts's Law 本身计算得出的。生理性震颤被作为与速度成反比缩放的位置噪声加入（当光标缓慢移动时更明显，与真实生理相符），过冲以设定的概率发生并随后修正，偶尔的微停顿模拟短暂的犹豫。</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">await</span> <span class="n">element</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>   <span class="c1"># 坐标形式</span>
 </span></code></pre></div>
+<p>时序模型可以通过赋值给 <code>tab.mouse.timing</code> 的 <code>MouseTimingConfig</code> 进行配置。实用指南请参见 <a href="../../../stealth/human-like-interactions/">Human-like interactions</a>。</p>
 <div class="admonition note">
-<p class="admonition-title">Pydoll 目前未实现的功能</p>
-<p>Pydoll 的鼠标人性化目前不会对非常长的距离建模子移动（路径是单个 Bezier 段）。对于大多数 Web 交互（距离在 500 像素以内），这已经足够了。极长的移动（全屏对角线穿越）可能会受益于未来的多段支持。</p>
+<p class="admonition-title">它没有建模的部分</p>
+<p>Pydoll 的鼠标路径是单条 Bezier 曲线段；它不会把很长的移动拆分成多个子移动。对于典型的网页交互（大约 500 像素以内）这已经够了。全屏对角线穿越才是子移动会起作用的场景。</p>
 </div>
-<h2 id="_4">击键动态</h2>
-<p>击键动态分析键盘输入的时间模式。该技术可以追溯到 1850 年代的电报操作员，他们可以通过各自的莫尔斯电码"拳头"（特征性时间模式）来识别彼此。现代系统通过 <code>keydown</code> 和 <code>keyup</code> 事件以毫秒精度测量时间。</p>
-<h3 id="_5">时间特征</h3>
-<p>两个基本测量是停留时间（单个按键 <code>keydown</code> 和 <code>keyup</code> 之间的持续时间，人类通常为 50-200ms）和飞行时间（释放一个键到按下下一个键之间的持续时间，通常为 80-400ms）。连续按键对的停留时间和飞行时间的组合称为二元组（digraph）延迟。</p>
-<p>二元组延迟并不均匀。它们取决于键入的特定按键对（bigram），因为打字是一种运动技能，常见序列存储为程序记忆。关键的生物力学因素包括：</p>
-<p><strong>双手交替。</strong> 用双手交替输入的 bigram（如 "th"，在 QWERTY 键盘上 "t" 是左手，"h" 是右手）通常比同一只手输入的 bigram（如 "de"，两个键都在左手）更快。交替手可以在第一只手完成击键时就开始移动。</p>
-<p><strong>手指距离。</strong> 主行到主行的过渡最快。到达顶行或底行会增加与手指必须移动的物理距离成比例的时间。</p>
-<p><strong>手指独立性。</strong> 同一只手上的无名指和小指组合比食指和中指组合更慢，因为无名指和小指共享肌腱，独立运动控制能力较弱。</p>
-<p><strong>频率效应。</strong> 经常输入的 bigram（如英语中的 "th"、"er"、"in"）由于运动记忆而执行更快，与其物理布局无关。</p>
+<h2 id="_4">按键动态</h2>
+<p>按键动态分析的是键盘输入的时序。这个想法很古老：1850 年代的电报操作员通过彼此的莫尔斯"手法"（一种特征性的时序模式）来相互识别。现代系统通过 <code>keydown</code> 和 <code>keyup</code> 事件以毫秒级精度测量同样的东西。</p>
+<h3 id="_5">时序特征</h3>
+<p>两个基本测量量是驻留时间（dwell time，从一个键的 <code>keydown</code> 到 <code>keyup</code>，通常为 50 到 200ms）和飞行时间（flight time，从松开一个键到按下下一个键，通常为 80 到 400ms）。连续键对的驻留和飞行是一个双字母组延迟（digraph latency），它并不均匀，因为打字是一种运动技能，常见序列存在于程序性记忆中：</p>
+<ul>
+<li><strong>双手交替。</strong> 用交替的双手打出的二连字（bigram，比如 QWERTY 上的 "th"）比同一只手的（比如 "de"）更快，因为第二只手在第一只手还没打完时就开始移动了。</li>
+<li><strong>手指移动。</strong> 主键行到主键行的转换最快；够到上排或下排的成本与距离成正比。</li>
+<li><strong>手指独立性。</strong> 无名指和小指的组合比食指和中指慢，因为这些手指共享肌腱，独立活动的能力较弱。</li>
+<li><strong>频率。</strong> 经常打的二连字（"th"、"er"、"in"）借助运动记忆跑得更快，与键盘布局无关。</li>
+</ul>
 <h3 id="_6">检测信号</h3>
-<p>检测系统寻找几种将人类打字与自动化区分开的信号：</p>
-<p><strong>零或恒定停留时间。</strong> 许多自动化工具在 <code>keydown</code> 和 <code>keyup</code> 事件之间以零或接近零的延迟（低于 5ms）发送。真实的按键具有可测量的停留时间。所有按键的停留时间恒定同样可疑。</p>
-<p><strong>均匀飞行时间。</strong> 设置固定的击键间隔（如 <code>type_text("hello", interval=0.1)</code>）会产生完全规律的时间，非常容易被检测。人类的飞行时间因 bigram、疲劳和认知负荷而变化。</p>
-<p><strong>无打字错误。</strong> 在较长的文本输入（50+ 个字符）中，完全没有退格键或删除键的按下是不寻常的。人类的错误率大约为 1-5%，取决于打字熟练度和文本复杂度。</p>
-<p><strong>超人速度。</strong> 持续超过 150 WPM 的打字速度超出了除精英竞技打字员以外所有人的能力。比这更快发送字符的自动化工具会立即被标记。</p>
-<h3 id="pydoll-humanize_1">Pydoll 的键盘 humanize 功能</h3>
-<p>Pydoll 的 <code>type_text(humanize=True)</code> 通过可配置参数应对每个检测向量：</p>
-<p>击键延迟从均匀分布中抽取（默认 30-120ms），而不是固定间隔。标点字符（<code>.!?;:,</code>）接收额外延迟（80-180ms），模拟打字者考虑句子结构时的停顿。思考停顿（300-700ms）以 2% 的概率发生，模拟短暂的思考时刻。分心停顿（500-1200ms）以 0.5% 的概率发生，模拟打字者看向别处或被短暂打断。</p>
-<p>逼真的打字错误以大约每字符 2% 的概率发生，包含五种按其真实世界频率加权的不同错误类型：相邻键错误（55%，按下 QWERTY 键盘上的相邻键）、换位（20%，交换两个连续字符）、重复按键（12%，连续按两次键）、跳过字符（8%，在正确输入前犹豫）和遗漏空格（5%，忘记单词之间的空格）。每种错误类型包含逼真的恢复序列（停顿、退格、校正）和适当的时间。</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Humanize 打字</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="k">await</span> <span class="n">element</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s2">"Hello, world!"</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># 使用自定义时间配置</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.interactions.keyboard</span><span class="w"> </span><span class="kn">import</span> <span class="n">Keyboard</span><span class="p">,</span> <span class="n">TimingConfig</span><span class="p">,</span> <span class="n">TypoConfig</span>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="n">config</span> <span class="o">=</span> <span class="n">TimingConfig</span><span class="p">(</span>
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="n">keystroke_min</span><span class="o">=</span><span class="mf">0.04</span><span class="p">,</span>
-</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span class="n">keystroke_max</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span>
-</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="n">thinking_probability</span><span class="o">=</span><span class="mf">0.03</span><span class="p">,</span>
-</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="p">)</span>
-</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="n">keyboard</span> <span class="o">=</span> <span class="n">Keyboard</span><span class="p">(</span><span class="n">connection_handler</span><span class="p">,</span> <span class="n">timing_config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
-</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="k">await</span> <span class="n">keyboard</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s2">"Custom timing example"</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<ul>
+<li><strong>驻留时间为零或恒定。</strong> 许多工具以近乎零的延迟派发 <code>keydown</code> 和 <code>keyup</code>；真实的按键有可测量、可变化的驻留时间。</li>
+<li><strong>飞行时间统一。</strong> 按键之间固定的间隔会产生完美规律的时序，极易检测。人类的飞行时间随二连字、疲劳和负荷而变化。</li>
+<li><strong>没有打字错误。</strong> 在 50 多个字符中完全没有退格是不寻常的；人类的出错率大约在 1% 到 5%。</li>
+<li><strong>超人的速度。</strong> 持续打字超过 150 WPM 是除了顶尖打字员之外无人能及的，因此任何更快的都会被标记。</li>
+</ul>
+<h3 id="pydoll_1">Pydoll 如何拟人化打字</h3>
+<p>在 <code>type_text(humanize=True)</code> 时，按键延迟是从一个分布中抽取的，而不是固定间隔。标点会获得额外的延迟，模拟打字者在句子结构处的停顿；偶尔的思考停顿和更罕见的分心停顿模拟思考或被打断的瞬间。真实的打字错误以每字符大约 2% 的概率发生，分为五种错误类型，按现实世界的频率加权（相邻键、换位、双击、漏字符、漏空格），每个错误后都跟着一个自然的修正序列。</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">await</span> <span class="n">element</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s1">'Hello, world!'</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span></code></pre></div>
+<p>关于如何调整它，请参见 <a href="../../../stealth/human-like-interactions/">Human-like interactions</a>。</p>
 <div class="admonition note">
-<p class="admonition-title">Pydoll 目前未实现的功能</p>
-<p>Pydoll 的键盘人性化使用均匀随机延迟，而非基于 bigram 的时间。它不会建模每个按键的停留时间变化或双手交替速度差异。对于大多数自动化场景（表单填写、搜索查询），均匀变化足以通过行为检测。需要认证级别击键生物识别规避的应用需要自定义时间模型。</p>
+<p class="admonition-title">它没有建模的部分</p>
+<p>Pydoll 使用的是可变的随机延迟，而不是感知二连字的时序，也不建模逐键的驻留时间或双手交替的差异。对于填表和搜索查询这已经够了。要躲避认证级别的按键生物特征，则需要一个定制的时序模型。</p>
 </div>
-<h2 id="_7">滚动行为分析</h2>
-<p>滚动 fingerprinting 分析用户如何在页面内容中进行垂直（和水平）导航。人类滚动和自动滚动之间的区别非常明显：程序化的 <code>window.scrollTo()</code> 调用产生即时的离散跳跃，而通过鼠标滚轮、触控板或触摸屏进行的人类滚动则产生一连串带有惯性和减速效果的小增量事件。</p>
-<h3 id="_8">物理滚动特征</h3>
-<p>鼠标滚轮滚动产生带有一致 delta 值的离散 <code>wheel</code> 事件（通常每个凹槽 100 或 120 像素，取决于操作系统和浏览器）。事件以不规则的间隔到达，反映用户转动滚轮的速度。触控板滚动产生许多小事件，delta 值递减，模拟物理惯性。触摸滚动类似于触控板，但初始 delta 更大，减速尾部更长。</p>
-<p>检测系统分析 delta 分布、事件间时间和减速曲线。<code>scrollTo(0, 5000)</code> 调用产生单次跳跃且没有中间事件，这与人类滚动产生的数百个增量事件根本不同。</p>
-<h3 id="_9">检测信号</h3>
-<p><strong>即时滚动。</strong> 使用 <code>window.scrollTo()</code> 或 <code>window.scrollBy()</code> 配合大值会产生零中间滚动事件。监听 <code>scroll</code> 事件的检测系统会看到滚动位置在单帧内发生变化。</p>
-<p><strong>均匀 delta。</strong> 程序化滚动模拟以恒定 delta 值发送 wheel 事件（例如始终 100 像素），缺少人类滚动中的自然变化，人类滚动的 delta 值由于手指压力不一致会波动 10-30%。</p>
-<p><strong>无减速。</strong> 人类滚动，尤其是在触控板上，有一个惯性阶段，在用户抬起手指后滚动继续，速度呈指数递减。突然停止的自动滚动缺少这个减速尾部。</p>
-<p><strong>缺少方向变化。</strong> 人类经常过度滚动然后略微回滚，或在页面中途暂停阅读内容。以恒定速度沿一个方向移动而没有暂停或反转的自动滚动是可疑的。</p>
-<h3 id="pydoll-humanize_2">Pydoll 的滚动 humanize 功能</h3>
-<p>Pydoll 的滚动模块通过 <code>scroll.by(position, distance, humanize=True)</code> 实现人性化滚动：</p>
-<p>滚动遵循三次 Bezier 缓动曲线（默认控制点 <code>0.645, 0.045, 0.355, 1.0</code>），产生自然的加速和减速。每帧 ±3 像素的 jitter 为 delta 值添加变化。微停顿（20-50ms）以 5% 的概率发生，模拟短暂的阅读停顿。overshoot 以 15% 的概率发生，滚过目标 2-8% 然后校正回来。对于长距离，滚动被分解为多个"轻弹"手势（每次 100-1200 像素），模拟真实用户通过重复滑动而非单次连续动作来滚动长页面的方式。</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.interactions.scroll</span><span class="w"> </span><span class="kn">import</span> <span class="n">Scroll</span><span class="p">,</span> <span class="n">ScrollPosition</span>
+<h2 id="_7">滚动行为</h2>
+<p>滚动 fingerprinting 分析的是用户如何在页面内容中移动。程序化的 <code>window.scrollTo()</code> 是一次瞬间的、离散的跳转，而人类的滚动（滚轮、触控板或触摸）是一连串带有惯性和减速的小增量事件。</p>
+<p>鼠标滚轮以不规则的间隔产生离散的 <code>wheel</code> 事件，其 delta 一致（通常每格 100 或 120 像素）。触控板产生许多 delta 递减的小事件来模拟惯性。触摸类似，但初始 delta 更大，减速尾部更长。检测系统读取 delta 分布、事件间时序和减速曲线，寻找：</p>
+<ul>
+<li><strong>瞬间滚动。</strong> 带有大数值的 <code>scrollTo</code>/<code>scrollBy</code> 在单帧内改变滚动位置，没有中间事件。</li>
+<li><strong>统一的 delta。</strong> 恒定的 delta 值缺少真实滚动那 10% 到 30% 的变化。</li>
+<li><strong>没有减速。</strong> 人类的滚动，尤其是在触控板上，会在手指抬起后继续移动，速度呈指数递减。突然停止的自动化没有尾部。</li>
+<li><strong>没有方向变化。</strong> 人类会过度滚动然后修正，或停下来阅读。单方向恒速滚动是可疑的。</li>
+</ul>
+<p>Pydoll 的拟人化滚动回应了这些：它遵循 Bezier 缓动曲线以实现自然的加速和减速，为 delta 添加逐帧抖动，插入偶尔的微停顿，有时过冲并修正，并把长距离拆分成多个"轻拂"手势而不是一次连续的移动。</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">ScrollPosition</span>
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">scroll</span> <span class="o">=</span> <span class="n">Scroll</span><span class="p">(</span><span class="n">connection_handler</span><span class="p">)</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="c1"># Humanize 向下滚动 800 像素</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="k">await</span> <span class="n">scroll</span><span class="o">.</span><span class="n">by</span><span class="p">(</span><span class="n">ScrollPosition</span><span class="o">.</span><span class="n">Y</span><span class="p">,</span> <span class="mi">800</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>
-</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="c1"># 滚动到顶部/底部使用多次类人轻弹</span>
-</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="k">await</span> <span class="n">scroll</span><span class="o">.</span><span class="n">to_bottom</span><span class="p">(</span><span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">scroll</span><span class="o">.</span><span class="n">by</span><span class="p">(</span><span class="n">ScrollPosition</span><span class="o">.</span><span class="n">DOWN</span><span class="p">,</span> <span class="mi">800</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span></code></pre></div>
-<h2 id="_10">其他检测向量</h2>
-<p>除了鼠标、键盘和滚动分析之外，复杂的检测系统还监控其他几种行为信号。</p>
-<h3 id="_11">焦点和可见性</h3>
-<p>Page Visibility API（<code>document.visibilityState</code>）和焦点事件（<code>window.onfocus</code>、<code>window.onblur</code>）揭示用户是否在主动查看页面。真实用户的会话包括标签页切换、窗口最小化和不活动期。一个连续保持焦点数小时而没有一个 blur 事件的自动化脚本在行为上是异常的。同样，<code>document.hasFocus()</code> 在较长时间内持续返回 <code>true</code> 也是不寻常的。</p>
-<h3 id="_12">空闲模式</h3>
-<p>真实用户有自然的空闲期：阅读内容、在行动前思考、被分心。检测系统测量交互之间空闲时间的分布。如果一个会话中每个动作都在前一个动作的 100-500ms 内发生，没有更长的停顿，这种模式在统计上与人类浏览有明显区别——人类浏览中动作之间 2-30 秒的空闲期是正常的。</p>
-<h3 id="_13">事件序列完整性</h3>
-<p>浏览器为用户交互生成特定的事件序列。一次鼠标点击产生 <code>pointerdown</code>、<code>mousedown</code>、<code>pointerup</code>、<code>mouseup</code>、<code>click</code>，按此顺序，之前还有 <code>pointermove</code>/<code>mousemove</code> 事件显示光标正在接近点击目标。发送裸 <code>click</code> 事件而没有前置移动和指针事件的自动化工具可以通过事件序列分析被检测到。</p>
-<p>Pydoll 基于 CDP 的事件发送生成完整的事件序列，因为它使用 Chrome 的输入模拟，产生与真实用户输入相同的事件链。</p>
-<h2 id="_14">机器学习检测</h2>
-<p>现代反机器人系统（DataDome、Akamai Bot Manager、Cloudflare Bot Management、PerimeterX/HUMAN Security）不使用简单的阈值规则。它们在数百万真实用户会话和数百万已知机器人会话上训练机器学习模型，学习基于 50+ 个特征同时区分人类和自动化。</p>
-<p>这些模型捕获难以列举为单独规则的统计属性：移动速度和曲率的联合分布、打字速度和错误率之间的相关性、滚动深度和阅读时间之间的关系，以及浏览会话的整体"节奏"。一个通过每项单独检查但在特征之间存在微妙错误相关性的系统，仍然可以被训练良好的模型标记。</p>
-<p>实际意义在于，行为规避必须在所有交互类型之间保持一致，而不仅仅是单独看起来合理。Pydoll 的 <code>humanize=True</code> 参数提供了跨鼠标、键盘和滚动交互的连贯人性化层，但开发者仍然需要负责更高层面的行为合理性：在页面加载之间添加阅读延迟、变化多页工作流的节奏，以及包含自然的空闲期。</p>
-<h2 id="_15">参考文献</h2>
+<h2 id="_8">其他行为信号</h2>
+<p>除了鼠标、键盘和滚动之外，一些系统还会关注另外几个信号。</p>
+<p><strong>焦点和可见性。</strong> Page Visibility API（<code>document.visibilityState</code>）和焦点事件揭示了用户是否正在主动查看页面。一个真实的会话会有标签页切换、最小化和空闲时段；一个连续数小时保持焦点、没有一次 blur 的脚本是异常的。</p>
+<p><strong>空闲模式。</strong> 真实用户会停下来阅读和思考。一个每个动作都在前一个动作后 100 到 500ms 内跟进、没有更长间隔的会话，在统计上与人类浏览截然不同，后者 2 到 30 秒的空闲是正常的。</p>
+<p><strong>事件序列完整性。</strong> 一次真实的点击会按顺序产生 <code>pointerdown</code>、<code>mousedown</code>、<code>pointerup</code>、<code>mouseup</code>、<code>click</code>，并且前面有接近目标的移动事件。那些派发一个没有前置移动的裸 <code>click</code> 的工具是可检测的。Pydoll 通过 CDP 使用 Chrome 自己的输入模拟来派发输入，因此它生成的完整事件链与真实输入相同。</p>
+<h2 id="_9">机器学习检测</h2>
+<p>现代反机器人系统（DataDome、Akamai Bot Manager、Cloudflare Bot Management、HUMAN Security）不依赖阈值规则。它们在数百万个真实会话和已知机器人会话上训练模型，学习一次性跨 50 多个特征把它们区分开：速度与曲率的联合分布、打字速度与错误率之间的相关性、滚动深度与阅读时间之间的关系、会话的整体节奏。一次通过了每一项单独检查、但特征之间存在微妙错误相关性的运行，仍然可能被标记。</p>
+<p>实际的后果是，行为的真实感必须在各种交互类型之间保持一致，而不仅仅是一次一个看起来合理。Pydoll 的 <code>humanize=True</code> 在鼠标、键盘和滚动之间提供了一个一致的拟人化层，但更高层次的合理性仍然由你负责：在页面加载之间加入阅读延迟，改变多页面工作流的节奏，并包含自然的空闲时段。</p>
+<h2 id="_10">相关内容</h2>
+<ul>
+<li><a href="../network-fingerprinting/">Network fingerprinting</a>：协议层（TCP/IP、TLS、HTTP/2）。</li>
+<li><a href="../browser-fingerprinting/">Browser fingerprinting</a>：canvas、WebGL、字体和 navigator。</li>
+<li><a href="../../../stealth/human-like-interactions/">Human-like interactions</a>：<code>humanize=True</code> 的实用指南。</li>
+</ul>
+<h2 id="_11">参考文献</h2>
 <ul>
 <li>Fitts, P. M. (1954). The Information Capacity of the Human Motor System in Controlling the Amplitude of Movement. Journal of Experimental Psychology.</li>
 <li>MacKenzie, I. S. (1992). Fitts' Law as a Research and Design Tool in Human-Computer Interaction. Human-Computer Interaction.</li>

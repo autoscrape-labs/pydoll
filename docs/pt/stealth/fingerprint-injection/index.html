@@ -1,0 +1,4100 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://pydoll.tech/docs/pt/stealth/fingerprint-injection/">
+      
+      
+        <link rel="prev" href="../captcha-bypass/">
+      
+      
+        <link rel="next" href="../../deep-dive/">
+      
+      
+        
+          <link rel="alternate" href="/docs/" hreflang="en">
+        
+          <link rel="alternate" href="/docs/pt/" hreflang="pt">
+        
+          <link rel="alternate" href="/docs/zh/" hreflang="zh">
+        
+      
+      
+      <link rel="icon" href="../../../resources/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Injeção de fingerprint - Pydoll - Biblioteca de Automação Web Assíncrona</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Chivo:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Chivo";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../resources/stylesheets/termynal.css">
+    
+      <link rel="stylesheet" href="../../../resources/stylesheets/extra.css">
+    
+      <link rel="stylesheet" href="../../../resources/stylesheets/landing-theme.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#injecao-de-fingerprint" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--landing md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../" title="Pydoll - Biblioteca de Automação Web Assíncrona" class="md-header__button md-logo" aria-label="Pydoll - Biblioteca de Automação Web Assíncrona" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11 15H6l7-14v8h5l-7 14z"/></svg>
+
+    </a>
+    <span class="md-header__docs-chip">docs</span>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">Pydoll - Biblioteca de Automação Web Assíncrona</span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            Injeção de fingerprint
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/docs/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/docs/pt/" hreflang="pt" class="md-select__link">
+              Português (BR)
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/docs/zh/" hreflang="zh" class="md-select__link">
+              中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/autoscrape-labs/pydoll" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    autoscrape-labs/pydoll
+  </div>
+</a>
+      </div>
+    
+    <a class="md-header__cta" href="../../../getting-started/">Get started</a>
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Pydoll
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../getting-started/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Primeiros passos
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../basics/async-python/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Fundamentos
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../guides/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Guias
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Stealth
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../deep-dive/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Análise profunda
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Referência da API
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="Pydoll - Biblioteca de Automação Web Assíncrona" class="md-nav__button md-logo" aria-label="Pydoll - Biblioteca de Automação Web Assíncrona" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11 15H6l7-14v8h5l-7 14z"/></svg>
+
+    </a>
+    Pydoll - Biblioteca de Automação Web Assíncrona
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/autoscrape-labs/pydoll" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    autoscrape-labs/pydoll
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pydoll
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Primeiros passos
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Primeiros passos
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Instalação
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../first-automation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sua primeira automação
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../migrating/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migrando do Selenium e Playwright
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fundamentos
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Fundamentos
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../basics/async-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python assíncrono na prática
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../basics/selectors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Seletores, CSS e XPath
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../guides/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guias
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guias
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/core-concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conceitos fundamentais
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Encontrar e extrair
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Encontrar e extrair
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/element-finding/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Encontrar elementos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/dom-traversal/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Percorrer o DOM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/structured-extraction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Extração estruturada
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interagir
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Interagir
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/keyboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Teclado
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/mouse/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mouse
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/file-operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operações com arquivos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/iframes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Iframes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/screenshots-and-pdfs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Capturas de tela e PDFs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_5" id="__nav_4_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rede
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Rede
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/network-monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monitoramento de rede
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/request-interception/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interceptação de requisições
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/http-requests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Requisições HTTP no contexto do navegador
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/network-recording/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gravação HAR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_6" id="__nav_4_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gerenciar o navegador
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Gerenciar o navegador
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/tabs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Abas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/browser-contexts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contextos do navegador
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/cookies-and-sessions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cookies e sessões
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/browser-options/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Opções do navegador
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/browser-preferences/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preferências do navegador
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/proxies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Proxies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/remote-connections/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conexões remotas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_7" id="__nav_4_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reagir a eventos
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reagir a eventos
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Eventos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/retrying/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Repetição
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stealth
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Stealth
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../evasion-techniques/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Técnicas de evasão
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../human-like-interactions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interações humanizadas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../captcha-bypass/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bypass de captcha
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Injeção de fingerprint
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Injeção de fingerprint
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#inicio-rapido" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Início rápido
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#see-the-difference-a-live-bot-score-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Veja a diferença: um teste de bot score ao vivo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#o-override-tornado-visivel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        O override, tornado visível
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checklist
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overrides" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overrides
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Overrides">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overrides-via-cdp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overrides via CDP
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#overrides-via-javascript" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overrides via JavaScript
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#detectando-overrides-em-javascript" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Detectando overrides em JavaScript
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Detectando overrides em JavaScript">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#como-o-pydoll-evita-esses-sinais" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Como o pydoll evita esses sinais
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#headless-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modo headless
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#consistency-is-the-whole-game" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consistência entre camadas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#case-study-a-locale-mismatch-triggering-googles-captcha" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Incompatibilidade de locale/IP (Google)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#case-study-a-chrome-version-mismatch-triggering-cloudflares-challenge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Incompatibilidade de versão do Chrome (Cloudflare Turnstile)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#case-study-an-os-mismatch-triggering-cloudflares-managed-challenge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Incompatibilidade de sistema operacional (Cloudflare)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multiple-fingerprints-across-contexts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Múltiplos fingerprints entre contextos
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bring-your-own-fingerprints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fornecendo seus próprios perfis
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#relacionados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Relacionados
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../deep-dive/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Análise profunda
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Análise profunda
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deep-dive/cdp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protocolo Chrome DevTools
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../deep-dive/network/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rede e proxies
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6_3" id="__nav_6_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Rede e proxies
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deep-dive/network/network-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fundamentos de rede
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deep-dive/network/http-proxies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Proxies HTTP/HTTPS
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deep-dive/network/socks-proxies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Proxies SOCKS
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deep-dive/network/proxy-detection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Detecção de proxy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deep-dive/network/build-proxy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Construindo um servidor proxy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deep-dive/network/proxy-legal/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Legal e ético
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6_4" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../deep-dive/fingerprinting/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fingerprinting
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6_4" id="__nav_6_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Fingerprinting
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deep-dive/fingerprinting/network-fingerprinting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fingerprinting de rede
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deep-dive/fingerprinting/browser-fingerprinting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fingerprinting de navegador
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deep-dive/fingerprinting/behavioral-fingerprinting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fingerprinting comportamental
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../api/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Referência da API
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Referência da API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_2" id="__nav_7_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Navegador
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Navegador
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/browser/chrome/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Chrome
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/browser/edge/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Edge
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/browser/options/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Opções
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/browser/tab/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tab
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/browser/requests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Requests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_3" id="__nav_7_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Elementos
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Elementos
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/elements/web_element/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WebElement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/elements/shadow_root/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ShadowRoot
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/extraction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Extraction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/connection/connection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Connection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_6" id="__nav_7_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Core
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/core/constants/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Constantes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/core/exceptions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exceções
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#inicio-rapido" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Início rápido
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#see-the-difference-a-live-bot-score-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Veja a diferença: um teste de bot score ao vivo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#o-override-tornado-visivel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        O override, tornado visível
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checklist
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overrides" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overrides
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Overrides">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overrides-via-cdp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overrides via CDP
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#overrides-via-javascript" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overrides via JavaScript
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#detectando-overrides-em-javascript" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Detectando overrides em JavaScript
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Detectando overrides em JavaScript">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#como-o-pydoll-evita-esses-sinais" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Como o pydoll evita esses sinais
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#headless-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modo headless
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#consistency-is-the-whole-game" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consistência entre camadas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#case-study-a-locale-mismatch-triggering-googles-captcha" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Incompatibilidade de locale/IP (Google)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#case-study-a-chrome-version-mismatch-triggering-cloudflares-challenge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Incompatibilidade de versão do Chrome (Cloudflare Turnstile)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#case-study-an-os-mismatch-triggering-cloudflares-managed-challenge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Incompatibilidade de sistema operacional (Cloudflare)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multiple-fingerprints-across-contexts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Múltiplos fingerprints entre contextos
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bring-your-own-fingerprints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fornecendo seus próprios perfis
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#relacionados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Relacionados
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+  <nav class="md-path" aria-label="Navigation" >
+    <ol class="md-path__list">
+      
+        
+  
+  
+    <li class="md-path__item">
+      <a href="../../" class="md-path__link">
+        
+  <span class="md-ellipsis">
+    Pydoll
+  </span>
+
+      </a>
+    </li>
+  
+
+      
+      
+        
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="../" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    Stealth
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ol>
+  </nav>
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="injecao-de-fingerprint">Injeção de fingerprint</h1>
+<p><code>tab.apply_fingerprint()</code> sobrescreve os sinais de identidade do navegador que os scripts de fingerprinting leem: User-Agent e Client Hints, propriedades do <code>navigator</code>, WebGL, métricas de tela, fontes, áudio, fuso horário e locale. Os valores sobrescritos têm que permanecer consistentes entre si e com as camadas que <code>apply_fingerprint()</code> não controla (veja <a href="#consistency-is-the-whole-game">Consistência entre camadas</a>). Um fingerprint inconsistente é mais detectável do que um navegador sem modificações.</p>
+<p>Isto é substituição de identidade, não anonimato: não muda o fingerprint da camada de rede nem o IP de saída.</p>
+<h2 id="inicio-rapido">Início rápido</h2>
+<p>Chame <code>apply_fingerprint()</code> antes da primeira navegação. Os overrides em JavaScript são registrados com <code>Page.addScriptToEvaluateOnNewDocument</code>, então eles só se aplicam a documentos carregados depois da chamada.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.chromium</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="kn">from</span><span class="w"> </span><span class="nn">examples.fingerprints</span><span class="w"> </span><span class="kn">import</span> <span class="n">FINGERPRINTS</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">spoof_fingerprint</span><span class="p">():</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">()</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>        <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>        <span class="c1"># Aplique antes da primeira navegação.</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">apply_fingerprint</span><span class="p">(</span><span class="n">FINGERPRINTS</span><span class="p">[</span><span class="s1">'windows11_rtx3060_nyc'</span><span class="p">])</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">'https://abrahamjuliot.github.io/creepjs/'</span><span class="p">)</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>        <span class="nb">print</span><span class="p">(</span><span class="s1">'Fingerprint applied.'</span><span class="p">)</span>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">spoof_fingerprint</span><span class="p">())</span>
+</span></code></pre></div>
+<p><code>FingerprintConfig</code> (de <code>pydoll.protocol.fingerprint.types</code>) é um dicionário tipado. Apenas os campos presentes são sobrescritos; o restante mantém os valores reais do navegador. Os perfis em <code>examples/fingerprints.py</code> são referências completas e internamente consistentes para o formato da config (veja <a href="#bring-your-own-fingerprints">Fornecendo seus próprios perfis</a>).</p>
+<div class="admonition note">
+<p class="admonition-title">De onde vem <code>FINGERPRINTS</code></p>
+<p>O Pydoll não inclui perfis de fingerprint. <code>FINGERPRINTS</code> fica em <code>examples/fingerprints.py</code> no <a href="https://github.com/autoscrape-labs/pydoll">repositório do pydoll</a>, como perfis de referência para o formato de <code>FingerprintConfig</code>. Copie esse arquivo para o seu projeto para usá-los, depois adapte cada perfil à sua própria máquina e IP (o checklist abaixo explica por quê). Um perfil reutilizado como está é uma assinatura compartilhada, não um disfarce.</p>
+</div>
+<h2 id="see-the-difference-a-live-bot-score-test">Veja a diferença: um teste de bot score ao vivo</h2>
+<p>Se um fingerprint ajuda ou atrapalha é mensurável. O <a href="https://fingerprint-scan.com/">fingerprint-scan.com</a>, criado pelo engenheiro por trás do blog anti-bot da Castle, roda um teste de fingerprinting e detecção de bots dentro da página e reporta um <strong>bot score</strong> de 0 a 100, onde mais baixo é lido como mais humano. As três execuções abaixo são da mesma máquina (um Mac com Apple Silicon, Chrome 151, headful), capturadas com o Pydoll controlando o navegador e tirando o screenshot.</p>
+<p><strong>Sem fingerprint</strong>, o Pydoll controlando um Chrome real sem nada aplicado: score 15/100.</p>
+<p align="center">
+  <img src="/docs/resources/images/fp-scan-no-fingerprint.png" alt="fingerprint-scan.com reportando um bot score de 15/100 para o Pydoll sem nenhum fingerprint aplicado" width="760" />
+</p>
+<p align="center"><sub>Um Chrome real via CDP já é lido como humano: 15/100.</sub></p>
+
+<p>O Pydoll começa baixo por conta própria. Ele controla um Chrome real via CDP, então a GPU, o canvas e o TLS são autênticos e <code>navigator.webdriver</code> é <code>false</code>. Fechar a distância restante até 0 é uma área que ainda está sendo aprimorada.</p>
+<p><strong>Um perfil de macOS no Mac</strong>, uma identidade que combina com o sistema operacional: score 15/100.</p>
+<p align="center">
+  <img src="/docs/resources/images/fp-scan-mac-on-mac.png" alt="fingerprint-scan.com reportando um bot score de 15/100 para um fingerprint de macOS aplicado num host macOS" width="760" />
+</p>
+<p align="center"><sub>Um perfil de macOS que combina: ainda 15/100, consistente, não invisível.</sub></p>
+
+<p>Aplicar um perfil de Mac num Mac muda a identidade reportada sem contradizer o hardware por baixo, então o score não se move. Um perfil que combina é consistente, não invisível.</p>
+<p><strong>Um perfil de Windows no Mac</strong>, um campo em desacordo: score 57/100.</p>
+<p align="center">
+  <img src="/docs/resources/images/fp-scan-windows-on-mac.png" alt="fingerprint-scan.com reportando um bot score de 57/100 para um fingerprint de Windows aplicado num host macOS" width="760" />
+</p>
+<p align="center"><sub>Uma contradição de sistema operacional quase quadruplica o score: 57/100.</sub></p>
+
+<p>Mesma injeção, mesma máquina; o perfil agora afirma ser Windows num host cujo kernel, GPU e renderização de texto são macOS. Essa única contradição quase quadruplica o score.</p>
+<table>
+<thead>
+<tr>
+<th>Execução (mesmo Mac, Chrome 151, headful)</th>
+<th>Bot score</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sem fingerprint</td>
+<td>15 / 100</td>
+</tr>
+<tr>
+<td>Perfil de macOS no macOS (combinando)</td>
+<td>15 / 100</td>
+</tr>
+<tr>
+<td>Perfil de Windows no macOS (incompatível)</td>
+<td>57 / 100</td>
+</tr>
+</tbody>
+</table>
+<p>Duas conclusões. A injeção torna o fingerprint consistente; ela não torna o navegador invisível: mesmo a execução que combina marca 15, não 0, e fechar essa distância ainda está sendo trabalhado. E o valor está em <em>combinar</em>, e é por isso que um perfil inconsistente marca pior do que nenhum perfil, e por que toda regra no checklist abaixo é sobre concordância entre camadas.</p>
+<div class="admonition warning">
+<p class="admonition-title">Esses números são um retrato de um momento</p>
+<p>Uma máquina, um IP, uma build do Chrome, um ponto no tempo. Os seus vão diferir, e os sites de detecção mudam a pontuação deles. Encare os scores como uma demonstração da direção (o que combina fica baixo, o incompatível dispara), não como um resultado garantido.</p>
+</div>
+<p>O mesmo teste em modo headless começa bem mais alto. Sem perfil, o Chrome headless marca o máximo:</p>
+<p align="center">
+  <img src="/docs/resources/images/fp-scan-headless-nofp.png" alt="fingerprint-scan.com reportando um bot score de 100/100 para o Chrome headless sem fingerprint" width="760" />
+</p>
+<p align="center"><sub>Headless, sem perfil: o máximo, 100/100.</sub></p>
+
+<p>Aplique o perfil de macOS e a mesma execução headless cai para 15, no mesmo nível do resultado headful:</p>
+<p align="center">
+  <img src="/docs/resources/images/fp-scan-headless-mac.png" alt="fingerprint-scan.com reportando um bot score de 15/100 para o Chrome headless com um fingerprint de macOS aplicado" width="760" />
+</p>
+<p align="center"><sub>Headless com um perfil de macOS: 15/100, no nível do headful.</sub></p>
+
+<p>No modo headless o perfil muda o resultado mais do que em qualquer outro caso, do máximo até o score do headful. A seção <a href="#headless-mode">Modo headless</a> cobre quais sinais ele neutraliza.</p>
+<h2 id="o-override-tornado-visivel">O override, tornado visível</h2>
+<p>A maneira mais fácil de confirmar que um perfil surtiu efeito é ler de volta um sinal de hardware. O <a href="https://browserleaks.com/webgl">browserleaks.com/webgl</a> reporta a GPU por trás do WebGL. Neste MacBook, sem perfil aplicado, ele lê o chip real, um Apple M4, com um User-Agent de macOS:</p>
+<p align="center">
+  <img src="/docs/resources/images/browserleaks-webgl-real.png" alt="Relatório WebGL do browserleaks mostrando um User-Agent de macOS e o renderer sem máscara ANGLE (Apple, Apple M4)" width="760" />
+</p>
+<p align="center"><sub>Sem perfil: o Apple M4 real e um User-Agent de macOS.</sub></p>
+
+<p>Aplique o perfil de Windows e a mesma página, na mesma máquina, reporta uma NVIDIA GeForce RTX 3060 e um User-Agent de Windows:</p>
+<p align="center">
+  <img src="/docs/resources/images/browserleaks-webgl-rtx3060.png" alt="Relatório WebGL do browserleaks mostrando um User-Agent de Windows e o renderer sem máscara ANGLE (NVIDIA, NVIDIA GeForce RTX 3060)" width="760" />
+</p>
+<p align="center"><sub>Perfil de Windows, mesma máquina: uma NVIDIA RTX 3060 e um User-Agent de Windows.</sub></p>
+
+<p><code>apply_fingerprint()</code> definiu o vendor e o renderer sem máscara do WebGL através dos overrides injetados, junto com o User-Agent e os Client Hints. Um limite honesto fica visível nas mesmas duas capturas: o <strong>WebGL Image Hash é idêntico</strong> (<code>52497E30...</code>). A <em>string</em> do renderer agora diz NVIDIA, mas os pixels ainda são desenhados pela GPU Apple real, então o fingerprint da imagem renderizada não se move. Sobrescrever a string é necessário, mas não suficiente: um detector que rasteriza a saída e a passa por hash ainda vê o hardware real. É exatamente por isso que afirmar uma GPU NVIDIA numa máquina Apple é a contradição que empurrou o score para 57 acima, e por que o checklist insiste que o sistema operacional e a GPU do perfil combinem com o host.</p>
+<h2 id="checklist">Checklist</h2>
+<p>Regras para um perfil que não é detectado. A maioria descreve uma camada que <code>apply_fingerprint()</code> não consegue controlar, então o perfil tem que ser escolhido para combinar com ela em vez de brigar com ela.</p>
+<ul>
+<li>Sistema operacional do perfil = sistema operacional do host. Não rode um perfil de Windows no macOS nem o contrário; a stack TCP/IP do kernel e a renderização de GPU/texto expõem o sistema operacional real em camadas que o CDP não alcança (<a href="#case-study-an-os-mismatch-triggering-cloudflares-managed-challenge">Incompatibilidade de sistema operacional</a>).</li>
+<li>Versão do Chrome no User-Agent = versão do binário real. Mantenha <code>CHROME_DESKTOP</code> / <code>CHROME_MOBILE</code> iguais à major de <code>browser.get_version()</code>, e atualize-os a cada upgrade do Chrome (<a href="#case-study-a-chrome-version-mismatch-triggering-cloudflares-challenge">Incompatibilidade de versão do Chrome</a>).</li>
+<li>Locale, fuso horário e geolocalização = país do IP de saída. <code>Accept-Language</code> e o fuso horário são cruzados com o IP (<a href="#case-study-a-locale-mismatch-triggering-googles-captcha">Incompatibilidade de locale/IP</a>).</li>
+<li>Vendor/renderer do WebGL = família de GPU do host (um renderer Apple em hardware Apple, e assim por diante). Os pixels renderizados vêm da GPU real e não podem ser forjados.</li>
+<li>Aplique o fingerprint antes da primeira navegação.</li>
+<li>Uma identidade por contexto de navegador; use contextos separados para identidades diferentes (<a href="#multiple-fingerprints-across-contexts">Múltiplos fingerprints entre contextos</a>).</li>
+<li>Não combine a opção <code>--user-agent</code> com <code>apply_fingerprint()</code>; o fingerprint é o dono do User-Agent.</li>
+<li>Use um IP residencial limpo. A injeção não muda a reputação do IP.</li>
+</ul>
+<h2 id="overrides">Overrides</h2>
+<p>Os overrides são aplicados através de dois mecanismos.</p>
+<h3 id="overrides-via-cdp">Overrides via CDP</h3>
+<p>Os sinais que o próprio Chrome consegue sobrescrever são definidos através do domínio <code>Emulation</code> do DevTools Protocol. O navegador os aplica abaixo da camada JavaScript, então o getter que um script de detecção lê continua sendo o nativo e não há nenhum wrapper JavaScript para inspecionar. Quando existe um override de CDP para um sinal, ele é usado em vez de um override em JavaScript.</p>
+<table>
+<thead>
+<tr>
+<th>Sinal</th>
+<th>Comando CDP</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>User-Agent, <code>navigator.platform</code> / <code>vendor</code> / <code>appVersion</code>, Client Hints (<code>Sec-CH-UA*</code>)</td>
+<td><code>Emulation.setUserAgentOverride</code></td>
+</tr>
+<tr>
+<td>Fuso horário (<code>Intl</code>, <code>Date</code>)</td>
+<td><code>Emulation.setTimezoneOverride</code></td>
+</tr>
+<tr>
+<td>Geolocalização</td>
+<td><code>Emulation.setGeolocationOverride</code></td>
+</tr>
+<tr>
+<td>Tamanho de tela, <code>devicePixelRatio</code>, viewport, orientação</td>
+<td><code>Emulation.setDeviceMetricsOverride</code></td>
+</tr>
+<tr>
+<td>Locale (formatação <code>Intl</code>)</td>
+<td><code>Emulation.setLocaleOverride</code></td>
+</tr>
+<tr>
+<td><code>navigator.hardwareConcurrency</code></td>
+<td><code>Emulation.setHardwareConcurrencyOverride</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>hardwareConcurrency</code> ilustra a diferença: um getter JavaScript é detectável (veja abaixo), enquanto <code>Emulation.setHardwareConcurrencyOverride</code> muda o valor com o getter permanecendo nativo.</p>
+<h3 id="overrides-via-javascript">Overrides via JavaScript</h3>
+<p>Os sinais que o CDP não alcança são definidos por um script injetado antes de qualquer script da página em todo novo documento, e replicado em Web Workers. Isso cobre:</p>
+<ul>
+<li>extras do <code>navigator</code>: <code>deviceMemory</code>, <code>maxTouchPoints</code>, <code>doNotTrack</code>, <code>pdfViewerEnabled</code></li>
+<li><code>screen.availWidth</code> / <code>availHeight</code> (o CDP força esses iguais ao tamanho da tela, um sinal de headless), <code>colorDepth</code>, <code>pixelDepth</code> e <code>window.outerWidth</code> / <code>outerHeight</code></li>
+<li>vendor, renderer e valores de parâmetro/precisão do WebGL</li>
+<li><code>navigator.mediaDevices</code>, Web Audio, vozes de <code>speechSynthesis</code></li>
+<li>disponibilidade de fontes (<code>document.fonts.check</code> / <code>FontFace.load</code>)</li>
+<li><code>navigator.connection</code> (Network Information API)</li>
+<li>resultados de consultas de <code>navigator.permissions</code></li>
+<li>política de tratamento de IP do WebRTC</li>
+</ul>
+<p>O readback de canvas e WebGL não é modificado. Os sistemas de detecção requisitam o fingerprint repetidamente, então um valor que muda entre leituras é, por si só, um sinal de automação; o canvas de um Chrome real é estável. As strings de vendor e renderer do WebGL são sobrescritas para combinar com a plataforma declarada, mas os pixels renderizados são deixados inalterados.</p>
+<h2 id="detectando-overrides-em-javascript">Detectando overrides em JavaScript</h2>
+<p>Os scripts de fingerprinting não leem apenas o valor de uma propriedade; eles inspecionam como ela foi definida e se os objetos ao redor foram modificados. Três verificações são padrão, e um override ingênuo falha em todas as três. O CreepJS é a implementação de referência.</p>
+<p>Propriedade própria vs accessor no prototype. Num navegador real, <code>hardwareConcurrency</code> é um accessor em <code>Navigator.prototype</code>, não uma propriedade de dados na instância <code>navigator</code>:</p>
+<div class="language-javascript highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nb">Object</span><span class="p">.</span><span class="nx">defineProperty</span><span class="p">(</span><span class="nx">navigator</span><span class="p">,</span><span class="w"> </span><span class="s1">'hardwareConcurrency'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">get</span><span class="o">:</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="mf">8</span><span class="w"> </span><span class="p">});</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="c1">// navigator.hasOwnProperty('hardwareConcurrency') === true   (Chrome real: false)</span>
+</span></code></pre></div>
+<p><code>Object.getOwnPropertyNames(navigator)</code> ou uma comparação com o prototype expõe a propriedade própria adicionada.</p>
+<p><code>toString</code> do getter. Um getter nativo se reporta como código nativo:</p>
+<div class="language-javascript highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nb">Object</span><span class="p">.</span><span class="nx">getOwnPropertyDescriptor</span><span class="p">(</span><span class="nx">Navigator</span><span class="p">.</span><span class="nx">prototype</span><span class="p">,</span><span class="w"> </span><span class="s1">'hardwareConcurrency'</span><span class="p">).</span><span class="nx">get</span><span class="p">.</span><span class="nx">toString</span><span class="p">();</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="c1">// real:    "function get hardwareConcurrency() { [native code] }"</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="c1">// ingênuo: "() =&gt; 8"</span>
+</span></code></pre></div>
+<p><code>Function.prototype.toString</code> retorna o código-fonte JavaScript de um getter escrito à mão, então uma única chamada o expõe.</p>
+<p>Leituras entre realms. Um <code>iframe</code> de mesma origem ou um Web Worker é um realm novo cujo <code>navigator</code> e prototypes estão intocados por um hook instalado apenas no realm principal. Um <code>WorkerNavigator</code> de um worker reportando o valor real enquanto a página reporta o override é uma contradição.</p>
+<h3 id="como-o-pydoll-evita-esses-sinais">Como o pydoll evita esses sinais</h3>
+<ul>
+<li>Os getters são definidos no prototype (<code>Navigator.prototype</code>, <code>Screen.prototype</code>), então a instância não ganha propriedades próprias.</li>
+<li>Os getters e métodos com patch se reportam como nativos sob <code>toString</code>, e o próprio patch de <code>toString</code> não se torna um novo sinal.</li>
+<li>Os overrides são replicados em dedicated, shared e service workers, então a página e os realms que ela gera reportam os mesmos valores.</li>
+</ul>
+<p>É por isso que um perfil injetado passa nas verificações de detecção de mentiras, de prototype, de worker e de fontes do CreepJS, em vez de apenas mudar os valores visíveis.</p>
+<p>A verificação de worker é a que um override ingênuo falha com mais frequência. O CreepJS lê cada sinal na página principal e depois roda o fingerprint inteiro de novo dentro de um Web Worker, um realm separado que um hook da thread principal nunca alcança. Os screenshots abaixo são deste Mac com o perfil de Windows aplicado.</p>
+<p>Na página principal, a seção <code>navigator</code> reporta a identidade de Windows de ponta a ponta: platform <code>Win32</code>, <code>Windows 11</code>, o User-Agent de Windows e o <code>appVersion</code>, além das listas de plugins e mimeTypes, memória do dispositivo e contagem de núcleos.</p>
+<p align="center">
+  <img src="/docs/resources/images/creepjs-navigator-windows.png" alt="Seção navigator do CreepJS na página principal reportando platform Win32, Windows 11, um User-Agent e appVersion de Windows, plugins e núcleos/ram" width="760" />
+</p>
+<p align="center"><sub>Página principal: o navigator reporta a identidade Windows 11.</sub></p>
+
+<p>Sua seção WebGL lê uma NVIDIA GeForce RTX 3060 com alta confiança, com as métricas de tela do perfil ao lado:</p>
+<p align="center">
+  <img src="/docs/resources/images/creepjs-webgl-windows.png" alt="Seções WebGL e Screen do CreepJS na página principal lendo uma NVIDIA GeForce RTX 3060 com alta confiança e uma tela 1920x1080" width="760" />
+</p>
+<p align="center"><sub>Página principal: o WebGL lê a NVIDIA RTX 3060.</sub></p>
+
+<p>O mesmo fingerprint, relido dentro de um service worker, reporta a mesma GPU ao lado de um User-Agent de Windows, <code>Win32</code> e Windows 11:</p>
+<p align="center">
+  <img src="/docs/resources/images/creepjs-worker-windows.png" alt="Painel Worker do CreepJS mostrando a identidade injetada replicada dentro do ServiceWorkerGlobalScope: um User-Agent de Windows, uma NVIDIA GeForce RTX 3060 com alta confiança, Win32 e Windows 11, tudo num Mac da Apple" width="760" />
+</p>
+<p align="center"><sub>Dentro de um service worker: a mesma identidade, replicada.</sub></p>
+
+<p>Um override instalado apenas no realm principal vazaria os valores reais de macOS e da GPU Apple naquele painel de worker, e a divergência entre a página e o seu worker é exatamente a contradição que o CreepJS reporta como mentira. Como o Pydoll replica os overrides em dedicated, shared e service workers, os dois realms concordam.</p>
+<h2 id="headless-mode">Modo headless</h2>
+<p>O Chrome headless expõe sinais que um navegador headful não expõe, e é por isso que as verificações de bot costumavam falhar antes da injeção de fingerprint:</p>
+<ul>
+<li>Renderer do WebGL. Sem passthrough de GPU, o Chrome headless renderiza através de um rasterizador de software (SwiftShader). <code>UNMASKED_RENDERER_WEBGL</code> reporta <code>ANGLE (Google, Vulkan 1.3.0 (SwiftShader))</code> ou <code>Google SwiftShader</code> em vez de uma string de GPU real como <code>ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 Direct3D11)</code> ou <code>Apple M3</code>. Sobrescrever apenas a string é insuficiente: a superfície de capacidades da GPU (extensões suportadas, precisão de shader, tamanho máximo de textura) ainda reflete o renderer de software e é cruzada com a GPU declarada.</li>
+<li><code>navigator.plugins</code> / <code>mimeTypes</code> vazios, onde o Chrome headful expõe as entradas do visualizador de PDF embutido.</li>
+<li><code>screen.availWidth</code> / <code>availHeight</code> iguais ao tamanho total da tela (sem espaço de taskbar ou dock) e uma janela externa zerada.</li>
+<li>Dispositivos de mídia ausentes, e diferenças de rasterização de fontes/áudio em relação a uma máquina com display.</li>
+<li>No antigo <code>--headless</code>, um token <code>HeadlessChrome</code> no User-Agent (removido no <code>--headless=new</code>; os sinais de renderização acima permanecem).</li>
+</ul>
+<p><code>apply_fingerprint()</code> sobrescreve o vendor/renderer do WebGL e a superfície de parâmetro/precisão, reporta <code>availWidth</code>/<code>availHeight</code> com um espaço de taskbar, restaura dispositivos de mídia e fontes, e fixa o User-Agent através do CDP. Com um perfil aplicado, os sites de detecção testados reportam o navegador como headful.</p>
+<p>Como o <a href="#see-the-difference-a-live-bot-score-test">teste de bot score acima</a> mostra, o headless vai de 100/100 sem perfil para 15/100 com o perfil de macOS, o mesmo que a execução headful. É isso que permite que uma busca simples no Google rode em modo headless:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.chromium</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">Key</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="kn">from</span><span class="w"> </span><span class="nn">examples.fingerprints</span><span class="w"> </span><span class="kn">import</span> <span class="n">FINGERPRINTS</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">headless_google_search</span><span class="p">():</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">()</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>        <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">headless</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>        <span class="c1"># Neutraliza os sinais de renderização do headless antes da primeira navegação.</span>
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">apply_fingerprint</span><span class="p">(</span><span class="n">FINGERPRINTS</span><span class="p">[</span><span class="s1">'windows11_rtx3060_nyc'</span><span class="p">])</span>
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">'https://www.google.com'</span><span class="p">)</span>
+</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>        <span class="n">search_box</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">tag_name</span><span class="o">=</span><span class="s1">'textarea'</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'q'</span><span class="p">)</span>
+</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>        <span class="k">await</span> <span class="n">search_box</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s1">'pydoll'</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">keyboard</span><span class="o">.</span><span class="n">press</span><span class="p">(</span><span class="n">Key</span><span class="o">.</span><span class="n">ENTER</span><span class="p">)</span>
+</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</span><span id="__span-3-20"><a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>        <span class="nb">print</span><span class="p">(</span><span class="s1">'Google search completed in headless mode.'</span><span class="p">)</span>
+</span><span id="__span-3-21"><a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>
+</span><span id="__span-3-22"><a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">headless_google_search</span><span class="p">())</span>
+</span></code></pre></div>
+<p>A injeção de fingerprint remove apenas os sinais de renderização do headless. Ela não muda o IP: um IP de datacenter com má reputação continua sendo desafiado tanto em headless quanto em headful (veja <a href="../captcha-bypass/">O que determina o sucesso</a>).</p>
+<p>Para o Cloudflare Turnstile, a falha mais comum com um fingerprint aplicado é uma incompatibilidade de versão do Chrome, não o headless (veja <a href="#case-study-a-chrome-version-mismatch-triggering-cloudflares-challenge">Incompatibilidade de versão do Chrome</a>). O Turnstile em headless ainda está sendo validado; prefira headful para ele.</p>
+<h2 id="consistency-is-the-whole-game">Consistência entre camadas</h2>
+<p>Os sistemas anti-bot correlacionam sinais entre camadas. <code>apply_fingerprint()</code> mantém consistentes as camadas que ele controla, mas três camadas ficam fora do alcance do CDP e têm que ser combinadas separadamente:</p>
+<ol>
+<li>Versão do binário do Chrome. O fingerprint da camada de rede (TLS JA3/JA4, <code>SETTINGS</code> do HTTP/2) e a versão do motor JavaScript vêm do binário real e não podem ser sobrescritos. Um perfil que afirma ser Chrome 145 tem que rodar num binário Chrome 145 (veja <a href="#case-study-a-chrome-version-mismatch-triggering-cloudflares-challenge">Incompatibilidade de versão do Chrome</a>).</li>
+<li>Geografia do IP de saída. O header <code>Accept-Language</code> e o fuso horário são verificados contra o país do IP. Uma identidade dos EUA num IP brasileiro é uma contradição (veja <a href="#case-study-a-locale-mismatch-triggering-googles-captcha">Incompatibilidade de locale/IP</a>).</li>
+<li>Sistema operacional do host. A stack TCP/IP do kernel é um fingerprint passivo do sistema operacional (TTL inicial 64 no macOS/Linux, 128 no Windows), e a renderização de GPU/texto também reflete o sistema operacional real. Nenhum dos dois é alcançável através do CDP. Um perfil de Windows num Mac é uma contradição de sistema operacional (veja <a href="#case-study-an-os-mismatch-triggering-cloudflares-managed-challenge">Incompatibilidade de sistema operacional</a>).</li>
+</ol>
+<p>Para o modelo de correlação, veja <a href="../../deep-dive/fingerprinting/">Fingerprinting de navegador</a> e <a href="../evasion-techniques/">Técnicas de evasão</a>.</p>
+<h2 id="case-study-a-locale-mismatch-triggering-googles-captcha">Incompatibilidade de locale/IP (Google)</h2>
+<p>Aplicar um perfil dos EUA fez uma busca simples no Google retornar um captcha; remover a chamada <code>apply_fingerprint()</code> removeu o bloqueio. O perfil passou em todos os sites dedicados de fingerprinting, então o gatilho era específico do Google.</p>
+<p>O perfil declarava uma identidade dos EUA (<code>locale.languages = ['en-US', 'en']</code>) numa máquina por trás de um IP brasileiro com um idioma de sistema operacional brasileiro. O Google cruza o header <code>Accept-Language</code> e os Client Hints com o país do IP. <code>en-US</code> a partir de um IP de São Paulo é uma combinação incomum, e os headers da requisição estavam inconsistentes com os outros sinais, derrubando a pontuação de confiança abaixo do limiar do captcha.</p>
+<p>O campo <code>locale</code> controla:</p>
+<ul>
+<li>o header HTTP <code>Accept-Language</code> enviado em toda requisição,</li>
+<li><code>navigator.language</code> e <code>navigator.languages</code>,</li>
+<li>os padrões de formatação do <code>Intl</code> (datas, números, moeda).</li>
+</ul>
+<p>Todos os três são lidos por sistemas anti-abuso e têm que concordar com o fuso horário e o IP. Definir um locale brasileiro (combinando com o IP) removeu o bloqueio sem nenhuma outra mudança.</p>
+<p align="center">
+  <img src="/docs/resources/images/fingerprint-inconsistent-captcha.png" alt="Google servindo um captcha porque o locale dos EUA do fingerprint injetado contradiz o IP de saída brasileiro" width="720" />
+</p>
+<p align="center"><sub>Locale dos EUA sobre um IP brasileiro: o Google retorna um captcha.</sub></p>
+
+<h2 id="case-study-a-chrome-version-mismatch-triggering-cloudflares-challenge">Incompatibilidade de versão do Chrome (Cloudflare Turnstile)</h2>
+<p>Para combinar a interação do <a href="../captcha-bypass/">Cloudflare Turnstile</a> com um fingerprint, a versão do Chrome anunciada tem que corresponder ao binário real. Esta é a causa mais comum de falha do Turnstile com um fingerprint aplicado.</p>
+<p>Aplicar o perfil <code>macos_m3_new_york</code> fez o Turnstile falhar até em headful: a página ficou presa no interstício "Just a moment…", e remover a chamada <code>apply_fingerprint()</code> fez ele passar. O perfil fixava o Chrome 145 no User-Agent enquanto o binário era o Chrome 151; <code>apply_fingerprint()</code> definiu <code>navigator.userAgent</code>, <code>Sec-CH-UA</code> e <code>navigator.userAgentData</code> para 145 enquanto o handshake TLS/HTTP2 e o motor permaneciam em 151. Uma bisseção de variável única confirmou: mudar apenas a major anunciada de 145 para 151 transformou toda falha em aprovação.</p>
+<p>Duas camadas reportam a versão real e não podem ser sobrescritas através do CDP:</p>
+<ul>
+<li>O fingerprint TLS (JA3/JA4) e o frame <code>SETTINGS</code> do HTTP/2, produzidos pelo binário real antes de qualquer JavaScript rodar.</li>
+<li>A superfície do motor JavaScript (APIs disponíveis e seu comportamento), que reflete a build real do V8/Blink.</li>
+</ul>
+<p>O managed challenge do Cloudflare compara a versão anunciada (User-Agent + Client Hints) com a versão observada (handshake e motor). Um navegador real não anuncia uma versão que não está rodando, então 145 sobre um handshake 151 é uma inconsistência e o interstício não se limpa.</p>
+<p>Leia a versão do binário e combine o User-Agent do perfil com ela:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">()</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="n">version</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">get_version</span><span class="p">()</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">version</span><span class="p">[</span><span class="s1">'product'</span><span class="p">])</span>  <span class="c1"># ex. 'Chrome/151.0.7922.137'</span>
+</span></code></pre></div>
+<p>Em <code>examples/fingerprints.py</code>, <code>CHROME_DESKTOP</code> e <code>CHROME_MOBILE</code> definem a versão no User-Agent de cada perfil. Defina-os para a major do binário (a build completa alimenta <code>Sec-CH-UA-Full-Version-List</code>; <code>navigator.userAgent</code> é reduzido a <code>Chrome/&lt;MAJOR&gt;.0.0.0</code>). Atualize-os quando o Chrome atualizar.</p>
+<h2 id="case-study-an-os-mismatch-triggering-cloudflares-managed-challenge">Incompatibilidade de sistema operacional (Cloudflare)</h2>
+<p>Com a versão do Chrome alinhada, um segundo perfil ainda falhou. Neste host (Apple Silicon, Chrome 151, IP brasileiro), <code>macos_m3_new_york</code> passa no Cloudflare e <code>windows11_rtx3060_nyc</code> falha. As versões combinam (ambas 151), e o perfil que falha é o que é geograficamente consistente com o IP, então nem a versão nem o locale são a causa. A diferença é o sistema operacional anunciado.</p>
+<p>Uma bisseção de variável única do perfil que passa em direção ao que falha rastreou apenas o sistema operacional no User-Agent:</p>
+<ul>
+<li>User-Agent/platform de Windows para macOS no perfil que falha: passa.</li>
+<li>User-Agent/platform de macOS para Windows no perfil que passa: falha.</li>
+<li>Um User-Agent de Linux: falha.</li>
+<li>GPU/WebGL (renderer, params, extensões), canvas, fontes, tela, hardware, áudio, vozes, geo, locale: nenhum efeito.</li>
+</ul>
+<p>Qualquer sistema operacional que não seja macOS falha neste host macOS. Um perfil de macOS anunciando uma GPU NVIDIA passa; um perfil de Windows anunciando a GPU Apple real falha.</p>
+<p>Medição por camada, ambos os perfis, mesmo Chrome:</p>
+<ul>
+<li>TCP/IP: o servidor observa o mesmo TTL inicial de 64 (macOS/Unix) para ambos os perfis; um host Windows emite 128. Não alcançável através do CDP.</li>
+<li>TLS (JA3/JA4): varia por conexão (o toggle de extensão de padding do Chrome); a baseline sem fingerprint produz ambas as variantes. Não codifica o sistema operacional.</li>
+<li>HTTP/2 (Akamai): idêntico entre os perfis. Não codifica o sistema operacional.</li>
+<li>Client Hints: totalmente sobrescritos para o sistema operacional anunciado (o Windows reporta <code>architecture</code> <code>x86</code>, sem vazamento de <code>arm</code>).</li>
+<li>Canvas/WebGL: o hash da imagem renderizada é idêntico entre os perfis (pixels da GPU Apple real em ambos). Não é o diferenciador.</li>
+</ul>
+<p>Tudo o que <code>apply_fingerprint()</code> controla reporta Windows; a stack TCP/IP do kernel reporta macOS. O managed challenge do Cloudflare compara o sistema operacional anunciado com a assinatura passiva da stack e mantém o interstício quando eles discordam.</p>
+<p>O TTL, o window scaling e a ordem das opções TCP vêm do kernel do host, não do navegador, e nenhum override de CDP ou JavaScript os alcança. A renderização de GPU e as métricas de texto (CoreText no macOS) também são do host. Clientes que forjam TLS (curl_cffi, tls-client) não ajudam aqui: a falha não está no TLS, e eles ainda usam a stack TCP/IP do kernel do host.</p>
+<p>Para passar, combine o sistema operacional do perfil (e a família de GPU) com o host: um perfil de macOS neste Mac, um perfil de Windows num host Windows. Um proxy de encaminhamento (SOCKS5/HTTP CONNECT) reorigina a conexão TCP a partir do kernel do proxy, então o sistema operacional observado passa a ser o do host do proxy; um perfil de Windows então exige um proxy rodando em Windows (um proxy Linux dá uma assinatura de Linux, ainda inconsistente com um User-Agent de Windows).</p>
+<h2 id="multiple-fingerprints-across-contexts">Múltiplos fingerprints entre contextos</h2>
+<p>Service e shared workers são compartilhados entre todas as abas de um contexto de navegador, então um contexto guarda uma única identidade. Aplicar um fingerprint diferente a um contexto que já tem um levanta <code>FingerprintContextConflict</code>:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">FingerprintContextConflict</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="c1"># Mesmo contexto, dois fingerprints diferentes -&gt; conflito</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="n">tab_a</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="k">await</span> <span class="n">tab_a</span><span class="o">.</span><span class="n">apply_fingerprint</span><span class="p">(</span><span class="n">FINGERPRINTS</span><span class="p">[</span><span class="s1">'windows11_rtx3060_nyc'</span><span class="p">])</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="n">tab_b</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">new_tab</span><span class="p">()</span>               <span class="c1"># mesmo contexto (padrão)</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="k">try</span><span class="p">:</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>    <span class="k">await</span> <span class="n">tab_b</span><span class="o">.</span><span class="n">apply_fingerprint</span><span class="p">(</span><span class="n">FINGERPRINTS</span><span class="p">[</span><span class="s1">'macos_m3_new_york'</span><span class="p">])</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="k">except</span> <span class="n">FingerprintContextConflict</span><span class="p">:</span>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>    <span class="nb">print</span><span class="p">(</span><span class="s1">'One context holds one identity.'</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Para rodar fingerprints diferentes simultaneamente, use um contexto de navegador separado por identidade:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">ctx_id</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">create_browser_context</span><span class="p">()</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="n">tab_us</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">tab_br</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">new_tab</span><span class="p">(</span><span class="n">browser_context_id</span><span class="o">=</span><span class="n">ctx_id</span><span class="p">)</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="k">await</span> <span class="n">tab_us</span><span class="o">.</span><span class="n">apply_fingerprint</span><span class="p">(</span><span class="n">FINGERPRINTS</span><span class="p">[</span><span class="s1">'windows11_rtx3060_nyc'</span><span class="p">])</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="k">await</span> <span class="n">tab_br</span><span class="o">.</span><span class="n">apply_fingerprint</span><span class="p">(</span><span class="n">FINGERPRINTS</span><span class="p">[</span><span class="s1">'android_s24_ultra_sao_paulo'</span><span class="p">])</span>
+</span></code></pre></div>
+<p>Veja <a href="../../guides/browser-contexts/">Contextos de navegador</a> para entender como os contextos isolados funcionam.</p>
+<h2 id="bring-your-own-fingerprints">Fornecendo seus próprios perfis</h2>
+<p>O Pydoll não gera nem inclui fingerprints. Os perfis em <code>examples/fingerprints.py</code> são uma referência para a coerência que um perfil exige e para o formato de <code>FingerprintConfig</code>; eles não são um catálogo para implantar como está.</p>
+<p>Um perfil tem que combinar com o seu ambiente:</p>
+<ul>
+<li>o binário do Chrome em uso (a camada de rede é autêntica e não pode ser sobrescrita), e</li>
+<li>a geografia do IP de saída (locale, fuso horário, geolocalização).</li>
+</ul>
+<p>Um perfil público reutilizado amplamente se torna uma assinatura compartilhada em vez de um disfarce.</p>
+<h2 id="relacionados">Relacionados</h2>
+<ul>
+<li><a href="../evasion-techniques/">Técnicas de evasão</a>: consistência do User-Agent, idioma, proteção contra vazamento de WebRTC e o que o Pydoll te dá de graça.</li>
+<li><a href="../../deep-dive/fingerprinting/browser-fingerprinting/">Fingerprinting de navegador</a>: a superfície de detecção (canvas, WebGL, navigator, fontes) que esta página sobrescreve.</li>
+<li><a href="../../deep-dive/fingerprinting/network-fingerprinting/">Fingerprinting de rede</a>: a camada TLS/TCP/HTTP2 que a injeção não alcança.</li>
+<li><a href="../../guides/browser-contexts/">Contextos de navegador</a>: rode uma identidade por contexto.</li>
+<li><a href="../../guides/proxies/">Proxies</a>: combine o IP de saída com a geografia do perfil.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.indexes", "navigation.expand", "navigation.path", "navigation.top", "toc.follow", "content.code.copy", "content.code.select", "content.tooltips", "search.highlight", "search.suggest"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../../../resources/scripts/termynal.js"></script>
+      
+        <script src="../../../resources/scripts/extra.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@10.0.0/dist/mermaid.min.js"></script>
+      
+    
+  </body>
+</html>

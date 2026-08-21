@@ -31,7 +31,7 @@
     
     
       
-        <title>Fingerprinting do Navegador - Pydoll - Biblioteca de Automação Web Assíncrona</title>
+        <title>Fingerprinting de navegador - Pydoll - Biblioteca de Automação Web Assíncrona</title>
       
     
     
@@ -52,8 +52,8 @@
         
         
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Chivo:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Chivo";--md-code-font:"JetBrains Mono"}</style>
       
     
     
@@ -67,6 +67,8 @@
     
       <link rel="stylesheet" href="../../../../resources/stylesheets/extra.css">
     
+      <link rel="stylesheet" href="../../../../resources/stylesheets/landing-theme.css">
+    
     <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -77,8 +79,6 @@
   
   
     
-    
-      
     
     
     
@@ -106,7 +106,7 @@
 
   
 
-<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+<header class="md-header md-header--landing md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="../../../" title="Pydoll - Biblioteca de Automação Web Assíncrona" class="md-header__button md-logo" aria-label="Pydoll - Biblioteca de Automação Web Assíncrona" data-md-component="logo">
       
@@ -114,6 +114,7 @@
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11 15H6l7-14v8h5l-7 14z"/></svg>
 
     </a>
+    <span class="md-header__docs-chip">docs</span>
     <label class="md-header__button md-icon" for="__drawer">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
@@ -121,48 +122,18 @@
     <div class="md-header__title" data-md-component="header-title">
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
-          <span class="md-ellipsis">
-            Pydoll - Biblioteca de Automação Web Assíncrona
-          </span>
+          <span class="md-ellipsis">Pydoll - Biblioteca de Automação Web Assíncrona</span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
-            
-              Fingerprinting do Navegador
-            
+            Fingerprinting de navegador
           </span>
         </div>
       </div>
     </div>
     
       
-        <form class="md-header__option" data-md-component="palette">
-  
     
-    
-    
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Dark Mode"  type="radio" name="__palette" id="__palette_0">
-    
-      <label class="md-header__button md-icon" title="Dark Mode" for="__palette_1" hidden>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6m0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4M7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3"/></svg>
-      </label>
-    
-  
-    
-    
-    
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Light Mode"  type="radio" name="__palette" id="__palette_1">
-    
-      <label class="md-header__button md-icon" title="Light Mode" for="__palette_0" hidden>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
-      </label>
-    
-  
-</form>
-      
-    
-    
-      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
     
     
       <div class="md-header__option">
@@ -253,6 +224,7 @@
 </a>
       </div>
     
+    <a class="md-header__cta" href="../../../../getting-started/">Get started</a>
   </nav>
   
     
@@ -288,13 +260,79 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../features/" class="md-tabs__link">
+        <a href="../../../getting-started/" class="md-tabs__link">
           
   
   
     
   
-  Recursos
+  Primeiros passos
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../basics/async-python/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Fundamentos
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../guides/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Guias
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../stealth/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Stealth
 
         </a>
       </li>
@@ -318,7 +356,7 @@
   
     
   
-  Análise Profunda
+  Análise profunda
 
         </a>
       </li>
@@ -436,20 +474,6 @@
     
       
         
-          
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
       
         
       
@@ -473,15 +497,301 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
         
           
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Primeiros passos
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Primeiros passos
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Instalação
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../first-automation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sua primeira automação
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../migrating/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migrando do Selenium e Playwright
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fundamentos
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Fundamentos
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../basics/async-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python assíncrono na prática
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../basics/selectors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Seletores, CSS e XPath
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
           <div class="md-nav__link md-nav__container">
-            <a href="../../../features/" class="md-nav__link ">
+            <a href="../../../guides/" class="md-nav__link ">
               
   
   
   <span class="md-ellipsis">
     
   
-    Recursos
+    Guias
   
 
     
@@ -492,18 +802,18 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Recursos
+    Guias
   
 
           </label>
@@ -518,42 +828,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/core-concepts/" class="md-nav__link">
+      <a href="../../../guides/core-concepts/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Conceitos Fundamentais
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/element-finding/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Pesquisa de Elementos
+    Conceitos fundamentais
   
 
     
@@ -575,6 +857,10 @@
   
     
     
+      
+        
+      
+        
       
         
       
@@ -593,17 +879,17 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_4" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_3" >
         
           
-          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
             
   
   
   <span class="md-ellipsis">
     
   
-    Data Extraction
+    Encontrar e extrair
   
 
     
@@ -614,12 +900,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_4">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_3">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Data Extraction
+    Encontrar e extrair
   
 
           </label>
@@ -632,14 +918,70 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/extraction/structured-extraction/" class="md-nav__link">
+      <a href="../../../guides/element-finding/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Structured Extraction
+    Encontrar elementos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/dom-traversal/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Percorrer o DOM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/structured-extraction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Extração estruturada
   
 
     
@@ -680,8 +1022,6 @@
       
         
       
-        
-      
     
     
     
@@ -697,17 +1037,17 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_5" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_4" >
         
           
-          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="0">
             
   
   
   <span class="md-ellipsis">
     
   
-    Automação
+    Interagir
   
 
     
@@ -718,12 +1058,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_5">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_4">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Automação
+    Interagir
   
 
           </label>
@@ -736,14 +1076,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/automation/human-interactions/" class="md-nav__link">
+      <a href="../../../guides/keyboard/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Interações Humanas
+    Teclado
   
 
     
@@ -764,14 +1104,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/automation/keyboard-control/" class="md-nav__link">
+      <a href="../../../guides/mouse/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Controle de Teclado
+    Mouse
   
 
     
@@ -792,14 +1132,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/automation/mouse-control/" class="md-nav__link">
+      <a href="../../../guides/file-operations/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Controle do Mouse
+    Operações com arquivos
   
 
     
@@ -820,14 +1160,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/automation/file-operations/" class="md-nav__link">
+      <a href="../../../guides/iframes/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Operações com Arquivos
+    Iframes
   
 
     
@@ -848,42 +1188,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/automation/iframes/" class="md-nav__link">
+      <a href="../../../guides/screenshots-and-pdfs/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    IFrames
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/automation/screenshots-and-pdfs/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Capturas e PDF
+    Capturas de tela e PDFs
   
 
     
@@ -937,10 +1249,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_6" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_5" >
         
           
-          <label class="md-nav__link" for="__nav_2_6" id="__nav_2_6_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4_5" id="__nav_4_5_label" tabindex="0">
             
   
   
@@ -958,8 +1270,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_6">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -976,14 +1288,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/network/monitoring/" class="md-nav__link">
+      <a href="../../../guides/network-monitoring/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Monitoramento de Rede
+    Monitoramento de rede
   
 
     
@@ -1004,14 +1316,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/network/interception/" class="md-nav__link">
+      <a href="../../../guides/request-interception/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Interceptação de Requisições
+    Interceptação de requisições
   
 
     
@@ -1032,14 +1344,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/network/http-requests/" class="md-nav__link">
+      <a href="../../../guides/http-requests/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Requisições HTTP no Contexto do Navegador
+    Requisições HTTP no contexto do navegador
   
 
     
@@ -1060,14 +1372,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/network/network-recording/" class="md-nav__link">
+      <a href="../../../guides/network-recording/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Gravação de Rede HAR
+    Gravação HAR
   
 
     
@@ -1101,310 +1413,6 @@
         
       
         
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_7" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_7" id="__nav_2_7_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Gerenciamento do Navegador
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_7">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Gerenciamento do Navegador
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/browser-management/tabs/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Gerenciamento de Abas
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/browser-management/contexts/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Contextos do Navegador
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/browser-management/cookies-sessions/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Cookies e Sessões
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_8" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_8" id="__nav_2_8_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Configuração
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_8_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_8">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Configuração
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/configuration/browser-options/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Opções do Navegador
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/configuration/browser-preferences/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Preferências do Navegador
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/configuration/proxy/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Configuração de Proxy
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
       
         
       
@@ -1431,17 +1439,17 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_9" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_6" >
         
           
-          <label class="md-nav__link" for="__nav_2_9" id="__nav_2_9_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4_6" id="__nav_4_6_label" tabindex="0">
             
   
   
   <span class="md-ellipsis">
     
   
-    Avançado
+    Gerenciar o navegador
   
 
     
@@ -1452,12 +1460,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_9_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_9">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_6">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Avançado
+    Gerenciar o navegador
   
 
           </label>
@@ -1470,14 +1478,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/advanced/fingerprint-injection/" class="md-nav__link">
+      <a href="../../../guides/tabs/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Injeção de Fingerprint
+    Abas
   
 
     
@@ -1498,14 +1506,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/advanced/behavioral-captcha-bypass/" class="md-nav__link">
+      <a href="../../../guides/browser-contexts/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Bypass de Captcha Comportamental
+    Contextos do navegador
   
 
     
@@ -1526,14 +1534,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/advanced/event-system/" class="md-nav__link">
+      <a href="../../../guides/cookies-and-sessions/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Sistema de Eventos
+    Cookies e sessões
   
 
     
@@ -1554,14 +1562,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/advanced/remote-connections/" class="md-nav__link">
+      <a href="../../../guides/browser-options/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Conexões Remotas
+    Opções do navegador
   
 
     
@@ -1582,14 +1590,70 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/advanced/decorators/" class="md-nav__link">
+      <a href="../../../guides/browser-preferences/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Decorator Retry
+    Preferências do navegador
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/proxies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Proxies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/remote-connections/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conexões remotas
   
 
     
@@ -1606,6 +1670,326 @@
           </ul>
         </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_7" id="__nav_4_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reagir a eventos
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reagir a eventos
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Eventos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/retrying/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Repetição
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../stealth/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stealth
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Stealth
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../stealth/evasion-techniques/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Técnicas de evasão
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../stealth/human-like-interactions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interações humanizadas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../stealth/captcha-bypass/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bypass de captcha
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../stealth/fingerprint-injection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Injeção de fingerprint
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -1631,10 +2015,6 @@
       
         
           
-        
-      
-        
-      
         
       
         
@@ -1659,7 +2039,7 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
         
           
           <div class="md-nav__link md-nav__container">
@@ -1670,7 +2050,7 @@
   <span class="md-ellipsis">
     
   
-    Análise Profunda
+    Análise profunda
   
 
     
@@ -1681,98 +2061,18 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_3">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Análise Profunda
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-          
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-          
-          
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_2" >
-        
-          
-          <div class="md-nav__link md-nav__container">
-            <a href="../../fundamentals/" class="md-nav__link ">
-              
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Fundamentos Centrais
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_3_2" id="__nav_3_2_label" tabindex="">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_2">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Fundamentos Centrais
+    Análise profunda
   
 
           </label>
@@ -1787,7 +2087,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/cdp/" class="md-nav__link">
+      <a href="../../cdp/" class="md-nav__link">
         
   
   
@@ -1814,388 +2114,6 @@
   
   
   
-    <li class="md-nav__item">
-      <a href="../../fundamentals/connection-layer/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Camada de Conexão
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../fundamentals/typing-system/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Sistema de Tipos Python
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../fundamentals/iframes-and-contexts/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Iframes & Contexts
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-          
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-          
-          
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_3" >
-        
-          
-          <div class="md-nav__link md-nav__container">
-            <a href="../../architecture/" class="md-nav__link ">
-              
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Arquitetura Interna
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_3_3" id="__nav_3_3_label" tabindex="">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_3">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Arquitetura Interna
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/browser-domain/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Domínio do Navegador
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/tab-domain/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Domínio da Aba
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/webelement-domain/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Domínio do WebElement
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/find-elements-mixin/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Mixin FindElements
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/event-architecture/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Arquitetura de Eventos
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/browser-requests-architecture/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Arquitetura de Requisições do Navegador
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/shadow-dom/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Arquitetura Shadow DOM
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
     
     
       
@@ -2233,7 +2151,7 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_4" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6_3" >
         
           
           <div class="md-nav__link md-nav__container">
@@ -2244,7 +2162,7 @@
   <span class="md-ellipsis">
     
   
-    Rede e Segurança
+    Rede e proxies
   
 
     
@@ -2255,18 +2173,18 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_3_4" id="__nav_3_4_label" tabindex="">
+              <label class="md-nav__link " for="__nav_6_3" id="__nav_6_3_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_4">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_3">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Rede e Segurança
+    Rede e proxies
   
 
           </label>
@@ -2288,7 +2206,7 @@
   <span class="md-ellipsis">
     
   
-    Fundamentos de Rede
+    Fundamentos de rede
   
 
     
@@ -2372,7 +2290,7 @@
   <span class="md-ellipsis">
     
   
-    Detecção de Proxy
+    Detecção de proxy
   
 
     
@@ -2400,7 +2318,7 @@
   <span class="md-ellipsis">
     
   
-    Construindo Servidores Proxy
+    Construindo um servidor proxy
   
 
     
@@ -2428,7 +2346,7 @@
   <span class="md-ellipsis">
     
   
-    Legal & Ética
+    Legal e ético
   
 
     
@@ -2471,8 +2389,6 @@
       
         
       
-        
-      
     
     
     
@@ -2489,7 +2405,7 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_5" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_4" checked>
         
           
           <div class="md-nav__link md-nav__container">
@@ -2511,14 +2427,14 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_3_5" id="__nav_3_5_label" tabindex="">
+              <label class="md-nav__link " for="__nav_6_4" id="__nav_6_4_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_5_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_3_5">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6_4">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2544,7 +2460,7 @@
   <span class="md-ellipsis">
     
   
-    Fingerprinting de Rede
+    Fingerprinting de rede
   
 
     
@@ -2581,7 +2497,7 @@
   <span class="md-ellipsis">
     
   
-    Fingerprinting do Navegador
+    Fingerprinting de navegador
   
 
     
@@ -2599,7 +2515,7 @@
   <span class="md-ellipsis">
     
   
-    Fingerprinting do Navegador
+    Fingerprinting de navegador
   
 
     
@@ -2625,22 +2541,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#propriedades-javascript-do-navigator" class="md-nav__link">
+  <a href="#propriedades-do-navigator-em-javascript" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Propriedades JavaScript do Navigator
+        Propriedades do navigator em JavaScript
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Propriedades JavaScript do Navigator">
+    <nav class="md-nav" aria-label="Propriedades do navigator em JavaScript">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#consistencia-de-platform-e-user-agent" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Consistência de Platform e User-Agent
+        Consistência de platform e User-Agent
       
     </span>
   </a>
@@ -2651,7 +2567,7 @@
   <a href="#propriedades-de-hardware" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Propriedades de Hardware
+        Propriedades de hardware
       
     </span>
   </a>
@@ -2684,7 +2600,7 @@
   <a href="#dimensoes-de-tela-e-janela" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Dimensões de Tela e Janela
+        Dimensões de tela e janela
       
     </span>
   </a>
@@ -2700,7 +2616,7 @@
   <a href="#user-agent-client-hints" class="md-nav__link">
     <span class="md-ellipsis">
       
-        User-Agent Client Hints
+        User-Agent client hints
       
     </span>
   </a>
@@ -2711,7 +2627,7 @@
   <a href="#canvas-fingerprinting" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Canvas Fingerprinting
+        Canvas fingerprinting
       
     </span>
   </a>
@@ -2722,7 +2638,7 @@
   <a href="#webgl-fingerprinting" class="md-nav__link">
     <span class="md-ellipsis">
       
-        WebGL Fingerprinting
+        WebGL fingerprinting
       
     </span>
   </a>
@@ -2733,7 +2649,7 @@
   <a href="#audiocontext-fingerprinting" class="md-nav__link">
     <span class="md-ellipsis">
       
-        AudioContext Fingerprinting
+        AudioContext fingerprinting
       
     </span>
   </a>
@@ -2752,22 +2668,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#fingerprinting-de-cabecalhos-http" class="md-nav__link">
+  <a href="#http-header-fingerprinting" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Fingerprinting de Cabeçalhos HTTP
+        HTTP header fingerprinting
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Fingerprinting de Cabeçalhos HTTP">
+    <nav class="md-nav" aria-label="HTTP header fingerprinting">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#ordem-dos-cabecalhos" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Ordem dos Cabeçalhos
+        Ordem dos cabeçalhos
       
     </span>
   </a>
@@ -2813,6 +2729,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#relacionado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Relacionado
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#referencias" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2846,145 +2773,7 @@
   <span class="md-ellipsis">
     
   
-    Fingerprinting Comportamental
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../evasion-techniques/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Técnicas de Evasão
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-          
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-          
-          
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_6" >
-        
-          
-          <div class="md-nav__link md-nav__container">
-            <a href="../../guides/" class="md-nav__link ">
-              
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Guias Práticos
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_3_6" id="__nav_3_6_label" tabindex="">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_6">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Guias Práticos
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../guides/selectors-guide/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Seletores CSS vs XPath
+    Fingerprinting comportamental
   
 
     
@@ -3024,8 +2813,6 @@
       
         
           
-        
-      
         
       
         
@@ -3053,7 +2840,7 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
         
           
           <div class="md-nav__link md-nav__container">
@@ -3075,14 +2862,14 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -3113,8 +2900,6 @@
       
         
       
-        
-      
     
     
     
@@ -3130,10 +2915,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_2" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_2" >
         
           
-          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7_2" id="__nav_7_2_label" tabindex="0">
             
   
   
@@ -3151,8 +2936,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_2">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_2">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -3260,7 +3045,7 @@
   <span class="md-ellipsis">
     
   
-    Aba
+    Tab
   
 
     
@@ -3288,35 +3073,7 @@
   <span class="md-ellipsis">
     
   
-    Requisições
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/browser/managers/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Gerenciadores
+    Requests
   
 
     
@@ -3351,8 +3108,6 @@
       
         
       
-        
-      
     
     
     
@@ -3368,10 +3123,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_3" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_3" >
         
           
-          <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7_3" id="__nav_7_3_label" tabindex="0">
             
   
   
@@ -3389,8 +3144,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_3">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_3">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -3414,7 +3169,7 @@
   <span class="md-ellipsis">
     
   
-    Elemento Web
+    WebElement
   
 
     
@@ -3442,35 +3197,7 @@
   <span class="md-ellipsis">
     
   
-    Shadow Root
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/elements/mixins/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Mixins
+    ShadowRoot
   
 
     
@@ -3498,39 +3225,15 @@
   
   
   
-    
-    
-      
+    <li class="md-nav__item">
+      <a href="../../../api/extraction/" class="md-nav__link">
         
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_4" >
-        
-          
-          <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="0">
-            
   
   
   <span class="md-ellipsis">
     
   
-    Conexão
+    Extraction
   
 
     
@@ -3538,19 +3241,11 @@
   
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_4">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Conexão
+      </a>
+    </li>
   
 
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
+              
             
               
                 
@@ -3566,7 +3261,7 @@
   <span class="md-ellipsis">
     
   
-    Manipulador de Conexão
+    Connection
   
 
     
@@ -3586,62 +3281,8 @@
   
   
   
-    <li class="md-nav__item">
-      <a href="../../../api/connection/managers/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Gerenciadores
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
     
     
-      
-        
-          
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
       
         
       
@@ -3662,362 +3303,17 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_5" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_6" >
         
           
-          <div class="md-nav__link md-nav__container">
-            <a href="../../../api/commands/" class="md-nav__link ">
-              
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Comandos
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_4_5" id="__nav_4_5_label" tabindex="0">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_5">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Comandos
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/browser/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Navegador
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/dom/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    DOM
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/input/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Entrada
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/network/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Rede
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/page/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Página
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/runtime/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Tempo de Execução
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/storage/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Armazenamento
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/target/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Alvo
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/fetch/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Fetch
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_6" >
-        
-          
-          <label class="md-nav__link" for="__nav_4_6" id="__nav_4_6_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7_6" id="__nav_7_6_label" tabindex="0">
             
   
   
   <span class="md-ellipsis">
     
   
-    Protocolo
+    Core
   
 
     
@@ -4028,362 +3324,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_6">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_6">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Protocolo
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/base/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Tipos Base
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/browser/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Navegador
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/dom/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    DOM
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/fetch/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Fetch
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/input/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Entrada
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/network/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Rede
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/page/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Página
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/runtime/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Tempo de Execução
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/storage/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Armazenamento
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/target/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Alvo
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_7" >
-        
-          
-          <label class="md-nav__link" for="__nav_4_7" id="__nav_4_7_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Núcleo
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_7">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Núcleo
+    Core
   
 
           </label>
@@ -4445,34 +3391,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/core/utils/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Utilitários
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -4515,22 +3433,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#propriedades-javascript-do-navigator" class="md-nav__link">
+  <a href="#propriedades-do-navigator-em-javascript" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Propriedades JavaScript do Navigator
+        Propriedades do navigator em JavaScript
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Propriedades JavaScript do Navigator">
+    <nav class="md-nav" aria-label="Propriedades do navigator em JavaScript">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#consistencia-de-platform-e-user-agent" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Consistência de Platform e User-Agent
+        Consistência de platform e User-Agent
       
     </span>
   </a>
@@ -4541,7 +3459,7 @@
   <a href="#propriedades-de-hardware" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Propriedades de Hardware
+        Propriedades de hardware
       
     </span>
   </a>
@@ -4574,7 +3492,7 @@
   <a href="#dimensoes-de-tela-e-janela" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Dimensões de Tela e Janela
+        Dimensões de tela e janela
       
     </span>
   </a>
@@ -4590,7 +3508,7 @@
   <a href="#user-agent-client-hints" class="md-nav__link">
     <span class="md-ellipsis">
       
-        User-Agent Client Hints
+        User-Agent client hints
       
     </span>
   </a>
@@ -4601,7 +3519,7 @@
   <a href="#canvas-fingerprinting" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Canvas Fingerprinting
+        Canvas fingerprinting
       
     </span>
   </a>
@@ -4612,7 +3530,7 @@
   <a href="#webgl-fingerprinting" class="md-nav__link">
     <span class="md-ellipsis">
       
-        WebGL Fingerprinting
+        WebGL fingerprinting
       
     </span>
   </a>
@@ -4623,7 +3541,7 @@
   <a href="#audiocontext-fingerprinting" class="md-nav__link">
     <span class="md-ellipsis">
       
-        AudioContext Fingerprinting
+        AudioContext fingerprinting
       
     </span>
   </a>
@@ -4642,22 +3560,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#fingerprinting-de-cabecalhos-http" class="md-nav__link">
+  <a href="#http-header-fingerprinting" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Fingerprinting de Cabeçalhos HTTP
+        HTTP header fingerprinting
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Fingerprinting de Cabeçalhos HTTP">
+    <nav class="md-nav" aria-label="HTTP header fingerprinting">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#ordem-dos-cabecalhos" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Ordem dos Cabeçalhos
+        Ordem dos cabeçalhos
       
     </span>
   </a>
@@ -4696,6 +3614,17 @@
     <span class="md-ellipsis">
       
         Implicações para o Pydoll
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#relacionado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Relacionado
       
     </span>
   </a>
@@ -4759,7 +3688,7 @@
         <a href="../../" class="md-path__link">
           
   <span class="md-ellipsis">
-    Análise Profunda
+    Análise profunda
   </span>
 
         </a>
@@ -4799,26 +3728,18 @@
   
 
 
-<h1 id="browser-fingerprinting">Browser Fingerprinting</h1>
-<p>O browser fingerprinting identifica clientes analisando propriedades expostas através de APIs JavaScript, cabeçalhos HTTP e motores de renderização. Diferentemente do network fingerprinting, que examina sinais de nível de protocolo do kernel do SO e biblioteca TLS, o browser fingerprinting tem como alvo a camada de aplicação: o navegador específico, sua versão, sua configuração e o hardware em que roda. Esses sinais são acessíveis a qualquer site através de APIs web padrão, e a combinação de propriedades suficientes cria um fingerprint que é frequentemente único entre milhões de visitantes.</p>
-<div class="admonition info">
-<p class="admonition-title">Navegação do Módulo</p>
-<ul>
-<li><a href="../network-fingerprinting/">Network Fingerprinting</a>: Fingerprinting de protocolo TCP/IP, TLS, HTTP/2</li>
-<li><a href="../behavioral-fingerprinting/">Behavioral Fingerprinting</a>: Análise de mouse, teclado, scroll</li>
-<li><a href="../evasion-techniques/">Técnicas de Evasão</a>: Contramedidas práticas</li>
-</ul>
-</div>
-<h2 id="propriedades-javascript-do-navigator">Propriedades JavaScript do Navigator</h2>
-<p>O objeto <code>navigator</code> é a fonte mais rica de dados de fingerprinting de navegador. Ele expõe dezenas de propriedades que revelam o navegador, suas capacidades e o sistema em que roda. Sistemas de detecção coletam essas propriedades, fazem referência cruzada entre elas e contra cabeçalhos HTTP, e sinalizam inconsistências.</p>
-<p>O seguinte JavaScript coleta o conjunto central de propriedades que sistemas de fingerprinting tipicamente examinam:</p>
+<h1 id="browser-fingerprinting">Browser fingerprinting</h1>
+<p>O browser fingerprinting identifica clientes pelas propriedades que eles expõem através de APIs JavaScript, cabeçalhos HTTP e do motor de renderização. Enquanto o <a href="../network-fingerprinting/">network fingerprinting</a> examina sinais de nível de protocolo vindos do kernel do sistema operacional e da biblioteca TLS, o browser fingerprinting mira a camada de aplicação: o navegador específico, sua versão, sua configuração e o hardware em que ele roda. Qualquer site pode ler esses sinais através de APIs web padrão, e a combinação de um número suficiente deles cria um fingerprint que, com frequência, é único entre milhões de visitantes.</p>
+<h2 id="propriedades-do-navigator-em-javascript">Propriedades do navigator em JavaScript</h2>
+<p>O objeto <code>navigator</code> é a fonte única mais rica de dados de browser fingerprinting. Ele expõe dezenas de propriedades que revelam o navegador, suas capacidades e o sistema em que ele roda. Os sistemas de detecção coletam essas propriedades, cruzam umas com as outras e com os cabeçalhos HTTP, e marcam as inconsistências.</p>
+<p>O JavaScript a seguir coleta o conjunto central de propriedades que os sistemas de fingerprinting normalmente examinam:</p>
 <div class="language-javascript highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kd">const</span><span class="w"> </span><span class="nx">fingerprint</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="c1">// Identidade</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nx">userAgent</span><span class="o">:</span><span class="w"> </span><span class="nx">navigator</span><span class="p">.</span><span class="nx">userAgent</span><span class="p">,</span>
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="nx">platform</span><span class="o">:</span><span class="w"> </span><span class="nx">navigator</span><span class="p">.</span><span class="nx">platform</span><span class="p">,</span>
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="nx">vendor</span><span class="o">:</span><span class="w"> </span><span class="nx">navigator</span><span class="p">.</span><span class="nx">vendor</span><span class="p">,</span>
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="c1">// Idioma e locale</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="c1">// Idioma e localidade</span>
 </span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="nx">language</span><span class="o">:</span><span class="w"> </span><span class="nx">navigator</span><span class="p">.</span><span class="nx">language</span><span class="p">,</span>
 </span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">    </span><span class="nx">languages</span><span class="o">:</span><span class="w"> </span><span class="nx">navigator</span><span class="p">.</span><span class="nx">languages</span><span class="p">,</span>
 </span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>
@@ -4838,25 +3759,25 @@
 </span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="w">    </span><span class="nx">colorDepth</span><span class="o">:</span><span class="w"> </span><span class="nx">screen</span><span class="p">.</span><span class="nx">colorDepth</span><span class="p">,</span>
 </span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a><span class="w">    </span><span class="nx">devicePixelRatio</span><span class="o">:</span><span class="w"> </span><span class="nb">window</span><span class="p">.</span><span class="nx">devicePixelRatio</span><span class="p">,</span>
 </span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>
-</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a><span class="w">    </span><span class="c1">// Chrome do navegador (barra de ferramentas, dimensões da scrollbar)</span>
+</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a><span class="w">    </span><span class="c1">// Chrome da janela (dimensões de barra de ferramentas, barra de rolagem)</span>
 </span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a><span class="w">    </span><span class="nx">chromeHeight</span><span class="o">:</span><span class="w"> </span><span class="nb">window</span><span class="p">.</span><span class="nx">outerHeight</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nb">window</span><span class="p">.</span><span class="nx">innerHeight</span><span class="p">,</span>
 </span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a><span class="w">    </span><span class="nx">chromeWidth</span><span class="o">:</span><span class="w"> </span><span class="nb">window</span><span class="p">.</span><span class="nx">outerWidth</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nb">window</span><span class="p">.</span><span class="nx">innerWidth</span><span class="p">,</span>
 </span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>
-</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a><span class="w">    </span><span class="c1">// Timezone</span>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a><span class="w">    </span><span class="c1">// Fuso horário</span>
 </span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a><span class="w">    </span><span class="nx">timezone</span><span class="o">:</span><span class="w"> </span><span class="nb">Intl</span><span class="p">.</span><span class="nx">DateTimeFormat</span><span class="p">().</span><span class="nx">resolvedOptions</span><span class="p">().</span><span class="nx">timeZone</span><span class="p">,</span>
 </span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a><span class="w">    </span><span class="nx">timezoneOffset</span><span class="o">:</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Date</span><span class="p">().</span><span class="nx">getTimezoneOffset</span><span class="p">(),</span>
 </span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a><span class="p">};</span>
 </span></code></pre></div>
-<p>Várias dessas propriedades merecem atenção individual porque carregam mais peso de fingerprinting ou são mais comumente mal configuradas por ferramentas de automação.</p>
-<h3 id="consistencia-de-platform-e-user-agent">Consistência de Platform e User-Agent</h3>
-<p>A propriedade <code>navigator.platform</code> retorna uma string como <code>Win32</code>, <code>MacIntel</code> ou <code>Linux x86_64</code>. Sistemas de detecção comparam isso com o cabeçalho User-Agent. Se o User-Agent HTTP afirma <code>Windows NT 10.0</code> mas <code>navigator.platform</code> retorna <code>Linux x86_64</code>, a inconsistência é um sinal forte. Este é um dos erros mais comuns em automação: definir um User-Agent personalizado via <code>--user-agent=</code> sem também sobrescrever a plataforma.</p>
-<h3 id="propriedades-de-hardware">Propriedades de Hardware</h3>
-<p><code>navigator.hardwareConcurrency</code> retorna o número de núcleos lógicos de CPU. Um valor de 1 ou 2 sugere uma VM ou container mínimo em vez de uma máquina real de usuário. <code>navigator.deviceMemory</code> reporta RAM aproximada em gigabytes (0.25, 0.5, 1, 2, 4, 8). Esta propriedade só está disponível em navegadores Chromium; Firefox e Safari retornam <code>undefined</code>. Ambos os valores devem ser consistentes com o dispositivo declarado: um User-Agent alegando um desktop moderno mas reportando 1 núcleo e 0.5 GB de RAM é suspeito.</p>
+<p>Várias dessas propriedades merecem atenção individual, porque carregam mais peso de fingerprinting ou são configuradas erradas com mais frequência pelas ferramentas de automação.</p>
+<h3 id="consistencia-de-platform-e-user-agent">Consistência de platform e User-Agent</h3>
+<p>A propriedade <code>navigator.platform</code> retorna uma string como <code>Win32</code>, <code>MacIntel</code> ou <code>Linux x86_64</code>. Os sistemas de detecção comparam isso com o cabeçalho User-Agent. Se o User-Agent HTTP alega <code>Windows NT 10.0</code> mas <code>navigator.platform</code> retorna <code>Linux x86_64</code>, a divergência é um forte sinal. Esse é um dos erros mais comuns em automação: definir um User-Agent customizado via <code>--user-agent=</code> sem também sobrescrever a plataforma.</p>
+<h3 id="propriedades-de-hardware">Propriedades de hardware</h3>
+<p><code>navigator.hardwareConcurrency</code> retorna o número de núcleos lógicos de CPU. Um valor de 1 ou 2 sugere uma VM ou container mínimo, e não a máquina de um usuário real. <code>navigator.deviceMemory</code> reporta a RAM aproximada em gigabytes (0.25, 0.5, 1, 2, 4, 8). Essa propriedade só está disponível em navegadores Chromium; Firefox e Safari retornam <code>undefined</code>. Ambos os valores devem ser consistentes com o dispositivo alegado: um User-Agent que alega um desktop moderno mas reporta 1 núcleo e 0.5 GB de RAM é suspeito.</p>
 <h3 id="propriedade-webdriver">Propriedade WebDriver</h3>
-<p>A propriedade <code>navigator.webdriver</code> é <code>true</code> quando o navegador é controlado por automação baseada em WebDriver (Selenium, Playwright em modo WebDriver). Este é o indicador de automação mais óbvio. O Pydoll usa CDP (Chrome DevTools Protocol) diretamente, que não define esta flag. Em um navegador controlado pelo Pydoll, <code>navigator.webdriver</code> é <code>undefined</code>, correspondendo ao comportamento de uma sessão normal de usuário.</p>
+<p>A propriedade <code>navigator.webdriver</code> é <code>true</code> quando o navegador é controlado por automação baseada em WebDriver (Selenium, Playwright em modo WebDriver). Esse é o indicador de automação mais óbvio de todos. O Chrome moderno define a propriedade como um getter que retorna <code>false</code> numa sessão normal, e só a inverte para <code>true</code> sob flags de automação. O Pydoll dirige o Chrome através do CDP sem essas flags, então <code>navigator.webdriver</code> reporta <code>false</code>, o mesmo que a sessão de um usuário normal. Não é <code>undefined</code>; um valor <code>undefined</code> seria por si só incomum e não é o que o Pydoll produz.</p>
 <h3 id="plugins">Plugins</h3>
-<p>A propriedade <code>navigator.plugins</code> foi historicamente um forte vetor de fingerprinting porque diferentes navegadores e configurações de SO expunham diferentes listas de plugins. Navegadores Chromium modernos (Chrome 90+) retornam uma lista fixa de cinco plugins relacionados a PDF independentemente do estado real dos plugins:</p>
-<div class="language-javascript highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1">// Chrome moderno sempre retorna estes 5 plugins:</span>
+<p>A propriedade <code>navigator.plugins</code> foi historicamente um forte vetor de fingerprinting, porque navegadores e configurações de SO diferentes expunham listas de plugins diferentes. Os navegadores Chromium modernos (Chrome 90+) retornam uma lista fixa de cinco plugins relacionados a PDF, independentemente do estado real de plugins:</p>
+<div class="language-javascript highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1">// O Chrome moderno sempre retorna estes 5 plugins:</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="c1">// 1. PDF Viewer</span>
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="c1">// 2. Chrome PDF Viewer</span>
 </span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1">// 3. Chromium PDF Viewer</span>
@@ -4864,37 +3785,37 @@
 </span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="c1">// 5. WebKit built-in PDF</span>
 </span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">navigator</span><span class="p">.</span><span class="nx">plugins</span><span class="p">.</span><span class="nx">length</span><span class="p">);</span><span class="w"> </span><span class="c1">// 5</span>
 </span></code></pre></div>
-<p>Um equívoco comum alega que navegadores modernos retornam arrays vazios para <code>navigator.plugins</code>. Isto é incorreto. Retornar um array vazio é em si um sinal de detecção que sugere modo headless ou um cliente HTTP não-navegador.</p>
-<h3 id="dimensoes-de-tela-e-janela">Dimensões de Tela e Janela</h3>
-<p>A diferença entre <code>window.outerWidth</code>/<code>outerHeight</code> e <code>window.innerWidth</code>/<code>innerHeight</code> representa o chrome do navegador (barras de ferramentas, scrollbars, moldura da janela). Navegadores headless frequentemente reportam diferença zero porque não têm UI visível. Sistemas de detecção sinalizam clientes onde <code>outerWidth</code> é igual a <code>innerWidth</code> como potencialmente headless. Da mesma forma, <code>screen.width</code> correspondendo a <code>innerWidth</code> exatamente sugere uma janela headless maximizada em vez de uma sessão desktop normal.</p>
-<p>O <code>devicePixelRatio</code> varia por display: monitores padrão reportam <code>1.0</code>, displays Retina de MacBook reportam <code>2.0</code>, e smartphones reportam <code>2.0</code> a <code>3.0</code>. Este valor deve ser consistente com o dispositivo declarado no User-Agent.</p>
-<h2 id="user-agent-client-hints">User-Agent Client Hints</h2>
-<p>Navegadores Chromium modernos (Chrome, Edge, Opera) complementam a string User-Agent tradicional com cabeçalhos Client Hints: <code>Sec-CH-UA</code>, <code>Sec-CH-UA-Platform</code>, <code>Sec-CH-UA-Mobile</code>, e (sob demanda) valores de maior entropia como <code>Sec-CH-UA-Full-Version-List</code>, <code>Sec-CH-UA-Arch</code> e <code>Sec-CH-UA-Bitness</code>.</p>
+<p>Uma crença equivocada comum afirma que os navegadores modernos retornam arrays vazios para <code>navigator.plugins</code>. Isso está incorreto. Retornar um array vazio é por si só um sinal de detecção que sugere modo headless ou um cliente HTTP que não é navegador.</p>
+<h3 id="dimensoes-de-tela-e-janela">Dimensões de tela e janela</h3>
+<p>A diferença entre <code>window.outerWidth</code>/<code>outerHeight</code> e <code>window.innerWidth</code>/<code>innerHeight</code> representa o chrome do navegador (barras de ferramentas, barras de rolagem, moldura da janela). Navegadores headless frequentemente reportam diferença zero porque não têm UI visível. Os sistemas de detecção marcam clientes em que <code>outerWidth</code> é igual a <code>innerWidth</code> como potencialmente headless. De forma parecida, <code>screen.width</code> casando exatamente com <code>innerWidth</code> sugere uma janela headless maximizada, e não uma sessão de desktop normal.</p>
+<p>O <code>devicePixelRatio</code> varia por display: monitores padrão reportam <code>1.0</code>, telas Retina de MacBook reportam <code>2.0</code>, e smartphones reportam <code>2.0</code> a <code>3.0</code>. Esse valor deve ser consistente com o dispositivo alegado no User-Agent.</p>
+<h2 id="user-agent-client-hints">User-Agent client hints</h2>
+<p>Os navegadores Chromium modernos (Chrome, Edge, Opera) complementam a string tradicional do User-Agent com cabeçalhos Client Hints: <code>Sec-CH-UA</code>, <code>Sec-CH-UA-Platform</code>, <code>Sec-CH-UA-Mobile</code> e (sob demanda) valores de maior entropia como <code>Sec-CH-UA-Full-Version-List</code>, <code>Sec-CH-UA-Arch</code> e <code>Sec-CH-UA-Bitness</code>.</p>
 <div class="language-http highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="err">Sec-CH-UA: "Chromium";v="120", "Google Chrome";v="120", "Not:A-Brand";v="99"</span>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="err">Sec-CH-UA-Mobile: ?0</span>
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="err">Sec-CH-UA-Platform: "Windows"</span>
 </span></code></pre></div>
-<p>Client Hints fornecem dados estruturados e legíveis por máquina que são mais difíceis de falsificar de forma inconsistente. Um servidor pode comparar o cabeçalho <code>Sec-CH-UA-Platform</code> com <code>navigator.platform</code>, a string User-Agent e o fingerprint TCP/IP. Qualquer inconsistência entre essas camadas é um sinal de detecção.</p>
-<p>O equivalente no lado JavaScript é <code>navigator.userAgentData</code>, que expõe <code>brands</code>, <code>mobile</code> e <code>platform</code> como valores de baixa entropia, e <code>getHighEntropyValues()</code> para informações detalhadas de versão, arquitetura e bitness:</p>
+<p>Os Client Hints fornecem dados estruturados e legíveis por máquina, mais difíceis de forjar de forma inconsistente. Um servidor pode comparar o cabeçalho <code>Sec-CH-UA-Platform</code> com <code>navigator.platform</code>, a string do User-Agent e o fingerprint TCP/IP. Qualquer inconsistência entre essas camadas é um sinal de detecção.</p>
+<p>O equivalente do lado do JavaScript é <code>navigator.userAgentData</code>, que expõe <code>brands</code>, <code>mobile</code> e <code>platform</code> como valores de baixa entropia, e <code>getHighEntropyValues()</code> para informações detalhadas de versão, arquitetura e bitness:</p>
 <div class="language-javascript highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1">// Baixa entropia (sempre disponível, sem necessidade de permissão)</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">navigator</span><span class="p">.</span><span class="nx">userAgentData</span><span class="p">.</span><span class="nx">brands</span><span class="p">);</span>
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="c1">// [{brand: "Chromium", version: "120"}, {brand: "Google Chrome", version: "120"}, ...]</span>
 </span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">navigator</span><span class="p">.</span><span class="nx">userAgentData</span><span class="p">.</span><span class="nx">platform</span><span class="p">);</span><span class="w"> </span><span class="c1">// "Windows"</span>
 </span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">navigator</span><span class="p">.</span><span class="nx">userAgentData</span><span class="p">.</span><span class="nx">mobile</span><span class="p">);</span><span class="w">   </span><span class="c1">// false</span>
 </span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="c1">// Alta entropia (requer promise, pode requerer permissão)</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="c1">// Alta entropia (requer promise, pode exigir permissão)</span>
 </span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="kd">const</span><span class="w"> </span><span class="nx">highEntropy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">navigator</span><span class="p">.</span><span class="nx">userAgentData</span><span class="p">.</span><span class="nx">getHighEntropyValues</span><span class="p">([</span>
 </span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">    </span><span class="s1">'architecture'</span><span class="p">,</span><span class="w"> </span><span class="s1">'bitness'</span><span class="p">,</span><span class="w"> </span><span class="s1">'platformVersion'</span><span class="p">,</span><span class="w"> </span><span class="s1">'uaFullVersion'</span>
 </span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="p">]);</span>
 </span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="c1">// {architecture: "x86", bitness: "64", platformVersion: "15.0.0", ...}</span>
 </span></code></pre></div>
 <div class="admonition warning">
-<p class="admonition-title">Suporte de Navegador</p>
-<p>Client Hints são um recurso exclusivo do Chromium. Firefox e Safari não enviam cabeçalhos <code>Sec-CH-UA</code> e não expõem <code>navigator.userAgentData</code>. Se o User-Agent alega Firefox mas o servidor recebe cabeçalhos Client Hints, o cliente não é Firefox.</p>
+<p class="admonition-title">Suporte dos navegadores</p>
+<p>Client Hints são um recurso exclusivo do Chromium. Firefox e Safari não enviam cabeçalhos <code>Sec-CH-UA</code> e não expõem <code>navigator.userAgentData</code>. Se o User-Agent alega Firefox mas o servidor recebe cabeçalhos Client Hints, o cliente não é o Firefox.</p>
 </div>
-<h2 id="canvas-fingerprinting">Canvas Fingerprinting</h2>
-<p>O canvas fingerprinting explora o fato de que a API Canvas do HTML5 produz saída de pixels sutilmente diferente em diferentes combinações de GPU, driver gráfico, SO e navegador. A variação vem de diferenças na rasterização de fontes (renderização sub-pixel, hinting, anti-aliasing), execução de shader específica da GPU, precisão de ponto flutuante no pipeline gráfico e bibliotecas de renderização de texto no nível do SO (DirectWrite no Windows, Core Text no macOS, FreeType no Linux).</p>
-<p>A técnica desenha texto, formas e gradientes em um canvas oculto, extrai os dados de pixel e faz hash:</p>
+<h2 id="canvas-fingerprinting">Canvas fingerprinting</h2>
+<p>O canvas fingerprinting explora o fato de que a API HTML5 Canvas produz uma saída de pixels sutilmente diferente entre combinações diferentes de GPU, driver gráfico, SO e navegador. A variação vem de diferenças na rasterização de fontes (renderização sub-pixel, hinting, anti-aliasing), da execução de shaders específica da GPU, da precisão de ponto flutuante no pipeline gráfico e das bibliotecas de renderização de texto no nível do SO (DirectWrite no Windows, Core Text no macOS, FreeType no Linux).</p>
+<p>A técnica desenha texto, formas e gradientes num canvas oculto, extrai os dados de pixels e faz o hash deles:</p>
 <div class="language-javascript highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kd">function</span><span class="w"> </span><span class="nx">generateCanvasFingerprint</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">canvas</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s1">'canvas'</span><span class="p">);</span>
 </span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="nx">canvas</span><span class="p">.</span><span class="nx">width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">220</span><span class="p">;</span>
@@ -4905,35 +3826,35 @@
 </span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">    </span><span class="nx">ctx</span><span class="p">.</span><span class="nx">fillStyle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'#f60'</span><span class="p">;</span>
 </span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">    </span><span class="nx">ctx</span><span class="p">.</span><span class="nx">fillRect</span><span class="p">(</span><span class="mf">125</span><span class="p">,</span><span class="w"> </span><span class="mf">1</span><span class="p">,</span><span class="w"> </span><span class="mf">62</span><span class="p">,</span><span class="w"> </span><span class="mf">20</span><span class="p">);</span>
 </span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>
-</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">    </span><span class="c1">// Texto com emoji (maximiza variação de renderização)</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">    </span><span class="c1">// Texto com emoji (maximiza a variação de renderização)</span>
 </span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">    </span><span class="nx">ctx</span><span class="p">.</span><span class="nx">font</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'14px Arial'</span><span class="p">;</span>
 </span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">    </span><span class="nx">ctx</span><span class="p">.</span><span class="nx">textBaseline</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'alphabetic'</span><span class="p">;</span>
 </span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="w">    </span><span class="nx">ctx</span><span class="p">.</span><span class="nx">fillStyle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'#069'</span><span class="p">;</span>
 </span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="w">    </span><span class="nx">ctx</span><span class="p">.</span><span class="nx">fillText</span><span class="p">(</span><span class="s1">'Cwm fjordbank glyphs vext quiz, 😃'</span><span class="p">,</span><span class="w"> </span><span class="mf">2</span><span class="p">,</span><span class="w"> </span><span class="mf">15</span><span class="p">);</span>
 </span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>
-</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="w">    </span><span class="c1">// Sobreposição semi-transparente (expõe diferenças de composição alfa)</span>
+</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="w">    </span><span class="c1">// Sobreposição semitransparente (expõe diferenças de composição alfa)</span>
 </span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="w">    </span><span class="nx">ctx</span><span class="p">.</span><span class="nx">fillStyle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'rgba(102, 204, 0, 0.7)'</span><span class="p">;</span>
 </span><span id="__span-4-19"><a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="w">    </span><span class="nx">ctx</span><span class="p">.</span><span class="nx">fillText</span><span class="p">(</span><span class="s1">'Cwm fjordbank glyphs vext quiz, 😃'</span><span class="p">,</span><span class="w"> </span><span class="mf">4</span><span class="p">,</span><span class="w"> </span><span class="mf">17</span><span class="p">);</span>
 </span><span id="__span-4-20"><a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>
 </span><span id="__span-4-21"><a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nx">canvas</span><span class="p">.</span><span class="nx">toDataURL</span><span class="p">();</span>
 </span><span id="__span-4-22"><a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a><span class="p">}</span>
 </span></code></pre></div>
-<p>O pangrama "Cwm fjordbank glyphs vext quiz" é escolhido porque usa combinações incomuns de caracteres que estressam a renderização de fontes. O emoji adiciona outra dimensão porque a renderização de emoji varia significativamente entre sistemas operacionais. A sobreposição semi-transparente testa composição alfa, que difere entre implementações de GPU.</p>
-<p>O canvas fingerprinting é eficaz para distinguir categorias amplas de dispositivos, mas sua unicidade é às vezes exagerada. A pesquisa de Laperdrix et al. (2016) encontrou que fingerprints de canvas sozinhos fornecem poder de distinção moderado, e seu verdadeiro valor vem da combinação com outros sinais (WebGL, propriedades do navigator, timezone) para alcançar alta unicidade.</p>
+<p>O pangrama "Cwm fjordbank glyphs vext quiz" é escolhido porque usa combinações incomuns de caracteres que estressam a renderização de fontes. O emoji adiciona outra dimensão porque a renderização de emoji varia entre sistemas operacionais. A sobreposição semitransparente testa a composição alfa, que difere entre implementações de GPU.</p>
+<p>O canvas fingerprinting é eficaz para distinguir categorias amplas de dispositivos, mas sua unicidade às vezes é superestimada. A pesquisa de Laperdrix et al. (2016) constatou que os fingerprints de canvas isolados fornecem poder de distinção moderado, e seu valor real vem de combinar com outros sinais (WebGL, propriedades do navigator, fuso horário) para alcançar alta unicidade.</p>
 <div class="admonition note">
-<p class="admonition-title">Injeção de Ruído no Canvas</p>
-<p>Algumas ferramentas de privacidade injetam ruído aleatório na saída do canvas para quebrar o fingerprinting. Sistemas de detecção contra-atacam solicitando o fingerprint do canvas múltiplas vezes na mesma sessão. Se o hash muda entre requisições, injeção de ruído está presente, o que é em si um sinal de detecção. Randomizar a saída do canvas é, portanto, contraproducente: não previne a identificação e revela o uso de ferramentas anti-fingerprinting.</p>
+<p class="admonition-title">Injeção de ruído no canvas</p>
+<p>Algumas ferramentas de privacidade injetam ruído aleatório na saída do canvas para quebrar o fingerprinting. Os sistemas de detecção rebatem isso solicitando o fingerprint de canvas várias vezes na mesma sessão. Se o hash muda entre as solicitações, há injeção de ruído presente, o que é por si só um sinal de detecção. Aleatorizar a saída do canvas é, portanto, contraproducente: não impede a identificação e revela o uso de ferramentas anti-fingerprinting.</p>
 </div>
-<p>Como o Pydoll controla uma instância real do Chrome com renderização GPU real, o fingerprint de canvas é autêntico e consistente entre leituras repetidas. Nenhuma injeção ou falsificação é necessária.</p>
-<h2 id="webgl-fingerprinting">WebGL Fingerprinting</h2>
-<p>O WebGL fingerprinting estende o canvas fingerprinting para o pipeline de renderização 3D. É mais poderoso porque expõe diretamente identificadores de hardware que são difíceis de falsificar.</p>
-<p>Os dados mais distintivos vêm da extensão <code>WEBGL_debug_renderer_info</code>, que revela o fabricante e modelo da GPU:</p>
+<p>Como o Pydoll controla uma instância real do Chrome com renderização de GPU de verdade, o fingerprint de canvas é autêntico e consistente entre leituras repetidas. Nenhuma injeção ou spoofing é necessário.</p>
+<h2 id="webgl-fingerprinting">WebGL fingerprinting</h2>
+<p>O WebGL fingerprinting estende o canvas fingerprinting para dentro do pipeline de renderização 3D. Ele é mais revelador porque expõe diretamente identificadores de hardware que são difíceis de forjar.</p>
+<p>Os dados mais distintivos vêm da extensão <code>WEBGL_debug_renderer_info</code>, que revela o fabricante e o modelo da GPU:</p>
 <div class="language-javascript highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kd">function</span><span class="w"> </span><span class="nx">getWebGLFingerprint</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">canvas</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s1">'canvas'</span><span class="p">);</span>
 </span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">gl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">canvas</span><span class="p">.</span><span class="nx">getContext</span><span class="p">(</span><span class="s1">'webgl'</span><span class="p">);</span>
 </span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">gl</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
 </span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">    </span><span class="c1">// Identificação da GPU (mais distintivo)</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">    </span><span class="c1">// Identificação da GPU (mais distintiva)</span>
 </span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">debugInfo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">gl</span><span class="p">.</span><span class="nx">getExtension</span><span class="p">(</span><span class="s1">'WEBGL_debug_renderer_info'</span><span class="p">);</span>
 </span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">vendor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">debugInfo</span>
 </span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">        </span><span class="o">?</span><span class="w"> </span><span class="nx">gl</span><span class="p">.</span><span class="nx">getParameter</span><span class="p">(</span><span class="nx">debugInfo</span><span class="p">.</span><span class="nx">UNMASKED_VENDOR_WEBGL</span><span class="p">)</span>
@@ -4943,8 +3864,8 @@
 </span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="w">        </span><span class="o">:</span><span class="w"> </span><span class="nx">gl</span><span class="p">.</span><span class="nx">getParameter</span><span class="p">(</span><span class="nx">gl</span><span class="p">.</span><span class="nx">RENDERER</span><span class="p">);</span>
 </span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>
 </span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="w">        </span><span class="nx">vendor</span><span class="p">,</span><span class="w">    </span><span class="c1">// ex: "Google Inc. (NVIDIA)"</span>
-</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="w">        </span><span class="nx">renderer</span><span class="p">,</span><span class="w">  </span><span class="c1">// ex: "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 Direct3D11 vs_5_0 ps_5_0)"</span>
+</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="w">        </span><span class="nx">vendor</span><span class="p">,</span><span class="w">    </span><span class="c1">// ex.: "Google Inc. (NVIDIA)"</span>
+</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="w">        </span><span class="nx">renderer</span><span class="p">,</span><span class="w">  </span><span class="c1">// ex.: "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 Direct3D11 vs_5_0 ps_5_0)"</span>
 </span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="w">        </span><span class="nx">version</span><span class="o">:</span><span class="w"> </span><span class="nx">gl</span><span class="p">.</span><span class="nx">getParameter</span><span class="p">(</span><span class="nx">gl</span><span class="p">.</span><span class="nx">VERSION</span><span class="p">),</span>
 </span><span id="__span-5-19"><a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a><span class="w">        </span><span class="nx">shadingLanguageVersion</span><span class="o">:</span><span class="w"> </span><span class="nx">gl</span><span class="p">.</span><span class="nx">getParameter</span><span class="p">(</span><span class="nx">gl</span><span class="p">.</span><span class="nx">SHADING_LANGUAGE_VERSION</span><span class="p">),</span>
 </span><span id="__span-5-20"><a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a><span class="w">        </span><span class="nx">maxTextureSize</span><span class="o">:</span><span class="w"> </span><span class="nx">gl</span><span class="p">.</span><span class="nx">getParameter</span><span class="p">(</span><span class="nx">gl</span><span class="p">.</span><span class="nx">MAX_TEXTURE_SIZE</span><span class="p">),</span>
@@ -4952,10 +3873,10 @@
 </span><span id="__span-5-22"><a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a><span class="w">    </span><span class="p">};</span>
 </span><span id="__span-5-23"><a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a><span class="p">}</span>
 </span></code></pre></div>
-<p>A string do renderer nomeia diretamente o hardware da GPU. Um cliente alegando ser um dispositivo móvel mas reportando uma GPU desktop é obviamente inconsistente. Máquinas virtuais frequentemente reportam renderizadores de software como "SwiftShader" ou "llvmpipe", que usuários reais quase nunca têm.</p>
-<p>Além de metadados, o WebGL pode renderizar uma cena 3D (um triângulo gradiente, por exemplo) e fazer hash da saída de pixels, produzindo um fingerprint de renderização análogo ao canvas fingerprinting mas no pipeline 3D. A combinação de identificadores de GPU, extensões suportadas, limites de parâmetros (<code>MAX_TEXTURE_SIZE</code>, <code>MAX_VIEWPORT_DIMS</code>) e formatos de precisão de shader cria um fingerprint detalhado da pilha gráfica.</p>
-<h2 id="audiocontext-fingerprinting">AudioContext Fingerprinting</h2>
-<p>A Web Audio API gera fingerprints processando áudio e medindo a saída. A técnica padrão cria um <code>OscillatorNode</code>, roteia através de um <code>DynamicsCompressorNode</code>, e lê as amostras de áudio resultantes de um <code>AnalyserNode</code> ou <code>OfflineAudioContext</code>. Diferenças nas implementações de processamento de áudio entre navegadores e pilhas de áudio do SO produzem saída distinta.</p>
+<p>A string do renderer nomeia diretamente o hardware da GPU. Um cliente que alega ser um dispositivo móvel mas reporta uma GPU de desktop é inconsistente. Máquinas virtuais frequentemente reportam renderizadores de software como "SwiftShader" ou "llvmpipe", que usuários reais quase nunca têm.</p>
+<p>Além dos metadados, o WebGL pode renderizar uma cena 3D (um triângulo com gradiente, por exemplo) e fazer o hash da saída de pixels, produzindo um render fingerprint análogo ao canvas fingerprinting, mas no pipeline 3D. A combinação de identificadores de GPU, extensões suportadas, limites de parâmetros (<code>MAX_TEXTURE_SIZE</code>, <code>MAX_VIEWPORT_DIMS</code>) e formatos de precisão de shader cria um fingerprint detalhado da pilha gráfica.</p>
+<h2 id="audiocontext-fingerprinting">AudioContext fingerprinting</h2>
+<p>A Web Audio API gera fingerprints processando áudio e medindo a saída. A técnica padrão cria um <code>OscillatorNode</code>, o roteia através de um <code>DynamicsCompressorNode</code> e lê as amostras de áudio resultantes de um <code>AnalyserNode</code> ou <code>OfflineAudioContext</code>. Diferenças nas implementações de processamento de áudio entre navegadores e pilhas de áudio do SO produzem saídas distintas.</p>
 <div class="language-javascript highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kd">function</span><span class="w"> </span><span class="nx">getAudioFingerprint</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">ctx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">OfflineAudioContext</span><span class="p">(</span><span class="mf">1</span><span class="p">,</span><span class="w"> </span><span class="mf">44100</span><span class="p">,</span><span class="w"> </span><span class="mf">44100</span><span class="p">);</span>
 </span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">oscillator</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">ctx</span><span class="p">.</span><span class="nx">createOscillator</span><span class="p">();</span>
@@ -4975,7 +3896,7 @@
 </span><span id="__span-6-17"><a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a>
 </span><span id="__span-6-18"><a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nx">ctx</span><span class="p">.</span><span class="nx">startRendering</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="nx">buffer</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-6-19"><a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a><span class="w">        </span><span class="kd">const</span><span class="w"> </span><span class="nx">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">buffer</span><span class="p">.</span><span class="nx">getChannelData</span><span class="p">(</span><span class="mf">0</span><span class="p">);</span>
-</span><span id="__span-6-20"><a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a><span class="w">        </span><span class="c1">// Hash de um subconjunto das amostras de áudio</span>
+</span><span id="__span-6-20"><a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a><span class="w">        </span><span class="c1">// Faz o hash de um subconjunto das amostras de áudio</span>
 </span><span id="__span-6-21"><a id="__codelineno-6-21" name="__codelineno-6-21" href="#__codelineno-6-21"></a><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="nx">hash</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0</span><span class="p">;</span>
 </span><span id="__span-6-22"><a id="__codelineno-6-22" name="__codelineno-6-22" href="#__codelineno-6-22"></a><span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">let</span><span class="w"> </span><span class="nx">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">4500</span><span class="p">;</span><span class="w"> </span><span class="nx">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mf">5000</span><span class="p">;</span><span class="w"> </span><span class="nx">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-6-23"><a id="__codelineno-6-23" name="__codelineno-6-23" href="#__codelineno-6-23"></a><span class="w">            </span><span class="nx">hash</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="nb">Math</span><span class="p">.</span><span class="nx">abs</span><span class="p">(</span><span class="nx">data</span><span class="p">[</span><span class="nx">i</span><span class="p">]);</span>
@@ -4984,24 +3905,31 @@
 </span><span id="__span-6-26"><a id="__codelineno-6-26" name="__codelineno-6-26" href="#__codelineno-6-26"></a><span class="w">    </span><span class="p">});</span>
 </span><span id="__span-6-27"><a id="__codelineno-6-27" name="__codelineno-6-27" href="#__codelineno-6-27"></a><span class="p">}</span>
 </span></code></pre></div>
-<p>O AudioContext fingerprinting é menos amplamente implantado que canvas ou WebGL fingerprinting, mas adiciona outra dimensão ao fingerprint geral. O sinal é particularmente útil para distinguir navegadores no mesmo SO, já que o processamento de áudio varia mais entre motores de navegador do que entre versões de SO.</p>
+<p>O AudioContext fingerprinting é menos difundido do que o canvas ou o WebGL fingerprinting, mas adiciona outra dimensão ao fingerprint geral. O sinal é particularmente útil para distinguir navegadores no mesmo SO, já que o processamento de áudio varia mais entre motores de navegador do que entre versões do SO.</p>
 <h2 id="battery-status-api">Battery Status API</h2>
-<p>A Battery Status API (<code>navigator.getBattery()</code>) expõe o nível de bateria do dispositivo, status de carregamento e tempos estimados de carga/descarga. Esses valores criam um fingerprint de curta duração mas único para a duração de uma sessão.</p>
-<p>Esta API só está disponível em navegadores Chromium. O Firefox a removeu na versão 52 (2017) citando preocupações de privacidade, e o Safari nunca a implementou. Sistemas de detecção que veem resultados da Battery API de um cliente alegando ser Firefox ou Safari sabem que o cliente está representando falsamente sua identidade.</p>
-<h2 id="fingerprinting-de-cabecalhos-http">Fingerprinting de Cabeçalhos HTTP</h2>
-<p>Além de APIs JavaScript, cabeçalhos HTTP fornecem sinais de fingerprinting visíveis ao servidor antes de qualquer JavaScript executar.</p>
-<h3 id="ordem-dos-cabecalhos">Ordem dos Cabeçalhos</h3>
-<p>Navegadores enviam cabeçalhos HTTP em uma ordem consistente e específica por versão. O Chrome coloca cabeçalhos <code>Sec-CH-UA</code> cedo, antes de <code>User-Agent</code>. O Firefox lidera com <code>User-Agent</code> seguido por <code>Accept</code> e <code>Accept-Language</code>. Bibliotecas HTTP automatizadas como <code>requests</code> ou <code>httpx</code> do Python enviam cabeçalhos em outra ordem, tipicamente começando com <code>Host</code> e <code>Connection</code>.</p>
-<p>Sistemas de detecção registram a ordem dos primeiros 10-15 cabeçalhos e comparam contra assinaturas de navegadores conhecidos. Mesmo que todos os valores de cabeçalho individuais estejam corretos, enviá-los na ordem errada revela que a requisição não foi gerada pelo navegador declarado. Como o Pydoll controla uma instância real do Chrome, a ordem dos cabeçalhos é autêntica.</p>
+<p>A Battery Status API (<code>navigator.getBattery()</code>) expõe o nível da bateria do dispositivo, o status de carregamento e os tempos estimados de carga/descarga. Esses valores criam um fingerprint efêmero mas único durante a sessão.</p>
+<p>Essa API só está disponível em navegadores Chromium. O Firefox a removeu na versão 52 (2017) citando preocupações de privacidade, e o Safari nunca a implementou. Sistemas de detecção que veem resultados da Battery API vindos de um cliente que alega ser Firefox ou Safari sabem que o cliente está distorcendo sua identidade.</p>
+<h2 id="http-header-fingerprinting">HTTP header fingerprinting</h2>
+<p>Além das APIs JavaScript, os cabeçalhos HTTP fornecem sinais de fingerprinting visíveis ao servidor antes de qualquer JavaScript executar.</p>
+<h3 id="ordem-dos-cabecalhos">Ordem dos cabeçalhos</h3>
+<p>Os navegadores enviam os cabeçalhos HTTP numa ordem consistente e específica da versão. O Chrome coloca os cabeçalhos <code>Sec-CH-UA</code> no início, antes do <code>User-Agent</code>. O Firefox começa com <code>User-Agent</code> seguido de <code>Accept</code> e <code>Accept-Language</code>. Bibliotecas HTTP automatizadas como o <code>requests</code> ou o <code>httpx</code> do Python enviam os cabeçalhos em outra ordem ainda, tipicamente começando com <code>Host</code> e <code>Connection</code>.</p>
+<p>Os sistemas de detecção registram a ordem dos primeiros 10 a 15 cabeçalhos e comparam com assinaturas conhecidas de navegadores. Mesmo que todos os valores individuais dos cabeçalhos estejam corretos, enviá-los na ordem errada revela que a requisição não foi gerada pelo navegador alegado. Como o Pydoll controla uma instância real do Chrome, a ordem dos cabeçalhos é autêntica.</p>
 <h3 id="accept-encoding">Accept-Encoding</h3>
-<p>Navegadores modernos suportam compressão Brotli (<code>br</code>) além de <code>gzip</code> e <code>deflate</code>. O Chrome também suporta <code>zstd</code>. O <code>Accept-Encoding</code> do Chrome moderno se parece com <code>gzip, deflate, br, zstd</code>. Um cliente alegando ser Chrome mas sem Brotli é desatualizado ou automatizado.</p>
+<p>Os navegadores modernos suportam compressão Brotli (<code>br</code>) além de <code>gzip</code> e <code>deflate</code>. O Chrome também suporta <code>zstd</code>. O <code>Accept-Encoding</code> do Chrome moderno se parece com <code>gzip, deflate, br, zstd</code>. Um cliente que alega ser Chrome mas está sem Brotli está desatualizado ou é automatizado.</p>
 <h3 id="consistencia-de-accept-language">Consistência de Accept-Language</h3>
-<p>O cabeçalho <code>Accept-Language</code> deve ser consistente com <code>navigator.language</code>, <code>navigator.languages</code>, o timezone e a geolocalização do IP. Uma requisição com <code>Accept-Language: en-US</code> de um IP em Tóquio com timezone <code>Asia/Tokyo</code> é plausível para um viajante mas suspeita em combinação com outros sinais. Uma requisição com <code>Accept-Language: zh-CN</code> e timezone <code>America/New_York</code> de um IP de datacenter chinês é um forte indicador de proxy.</p>
+<p>O cabeçalho <code>Accept-Language</code> deve ser consistente com <code>navigator.language</code>, <code>navigator.languages</code>, o fuso horário e a geolocalização do IP. Uma requisição com <code>Accept-Language: en-US</code> de um IP em Tóquio com fuso horário <code>Asia/Tokyo</code> é plausível para um viajante, mas suspeita em combinação com outros sinais. Uma requisição com <code>Accept-Language: zh-CN</code> e fuso horário <code>America/New_York</code> de um IP de datacenter chinês é um forte indicador de proxy.</p>
 <h2 id="implicacoes-para-o-pydoll">Implicações para o Pydoll</h2>
-<p>Porque o Pydoll controla um navegador Chromium real através do CDP, todos os fingerprints de nível de navegador são autênticos por padrão. Os fingerprints de canvas, WebGL e AudioContext vêm de hardware real de GPU e áudio. As propriedades do navigator, plugins e dimensões de tela refletem o estado real do navegador. Cabeçalhos HTTP, incluindo sua ordem, são gerados pela pilha de rede do Chrome.</p>
-<p>O principal risco na automação é inconsistência entre camadas. Definir um User-Agent personalizado sem sincronizar propriedades relacionadas cria incompatibilidades trivialmente detectáveis. O Pydoll lida com isso automaticamente: quando detecta <code>--user-agent=</code> nos argumentos do navegador, usa <code>Emulation.setUserAgentOverride</code> para sincronizar a string User-Agent, plataforma e metadados completos de Client Hints em todas as camadas. Também injeta sobrescritas de <code>navigator.vendor</code> e <code>navigator.appVersion</code> via <code>Page.addScriptToEvaluateOnNewDocument</code> para garantir consistência em abas recém-abertas.</p>
-<p>Para consistência de timezone e geolocalização (para corresponder à localização do IP do proxy), sobrescritas JavaScript podem definir <code>Intl.DateTimeFormat().resolvedOptions().timeZone</code> e <code>Date.prototype.getTimezoneOffset</code>. A flag <code>--lang</code> e <code>set_accept_languages()</code> configuram cabeçalhos de idioma. A opção <code>webrtc_leak_protection</code> previne que o WebRTC exponha o IP real por trás de um proxy.</p>
-<p>O princípio geral é que o Pydoll fornece o fingerprint autêntico do navegador como linha de base, e o desenvolvedor só precisa garantir que as camadas configuráveis (User-Agent, timezone, idioma, geolocalização) sejam consistentes entre si e com as características do proxy.</p>
+<p>Como o Pydoll dirige um navegador Chromium real através do CDP, todos os fingerprints de nível de navegador são autênticos por padrão. Os fingerprints de canvas, WebGL e AudioContext vêm de hardware de GPU e áudio de verdade. As propriedades do navigator, os plugins e as dimensões de tela refletem o estado real do navegador. Os cabeçalhos HTTP, incluindo sua ordem, são gerados pela pilha de rede do Chrome.</p>
+<p>O principal risco em automação é a inconsistência entre camadas. Definir um User-Agent customizado sem sincronizar as propriedades relacionadas cria divergências trivialmente detectáveis. O Pydoll cuida disso automaticamente: quando ele detecta <code>--user-agent=</code> nos argumentos do navegador, usa <code>Emulation.setUserAgentOverride</code> para sincronizar a string do User-Agent, a plataforma e os metadados completos de Client Hints em todas as camadas. Ele também injeta sobrescritas de <code>navigator.vendor</code> e <code>navigator.appVersion</code> via <code>Page.addScriptToEvaluateOnNewDocument</code> para garantir consistência em abas recém-abertas.</p>
+<p>Os cabeçalhos de idioma vêm da flag <code>--lang</code> e de <code>set_accept_languages()</code>, e <code>webrtc_leak_protection</code> impede que o WebRTC exponha o IP real por trás de um proxy. O fuso horário e a geolocalização precisam casar com a localização do IP do proxy e permanecer consistentes com todo o resto; <a href="../../../stealth/fingerprint-injection/"><code>tab.apply_fingerprint()</code></a> os aplica junto com a localidade, o User-Agent e os Client Hints, a partir de um único perfil coerente.</p>
+<p>O princípio é que o Pydoll te dá o fingerprint autêntico do navegador como linha de base, e você só precisa manter as camadas configuráveis (User-Agent, fuso horário, idioma, geolocalização) consistentes entre si e com o proxy.</p>
+<h2 id="relacionado">Relacionado</h2>
+<ul>
+<li><a href="../network-fingerprinting/">Network fingerprinting</a>: a camada de protocolo abaixo dessas APIs.</li>
+<li><a href="../behavioral-fingerprinting/">Behavioral fingerprinting</a>: como mouse, teclado e timing são analisados.</li>
+<li><a href="../../../stealth/evasion-techniques/">Evasion techniques</a>: as alavancas práticas que você controla.</li>
+<li><a href="../../../stealth/fingerprint-injection/">Fingerprint injection</a>: aplique uma identidade coerente em todas as camadas.</li>
+</ul>
 <h2 id="referencias">Referências</h2>
 <ul>
 <li>Laperdrix, P., Rudametkin, W., &amp; Baudry, B. (2016). Beauty and the Beast: Diverting Modern Web Browsers to Build Unique Browser Fingerprints. IEEE S&amp;P.</li>

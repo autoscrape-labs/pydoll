@@ -52,8 +52,8 @@
         
         
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Chivo:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Chivo";--md-code-font:"JetBrains Mono"}</style>
       
     
     
@@ -67,6 +67,8 @@
     
       <link rel="stylesheet" href="../../../../resources/stylesheets/extra.css">
     
+      <link rel="stylesheet" href="../../../../resources/stylesheets/landing-theme.css">
+    
     <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -77,8 +79,6 @@
   
   
     
-    
-      
     
     
     
@@ -92,7 +92,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#arquitetura-de-proxy-httphttps" class="md-skip">
+        <a href="#proxies-http-e-https" class="md-skip">
           Skip to content
         </a>
       
@@ -106,7 +106,7 @@
 
   
 
-<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+<header class="md-header md-header--landing md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="../../../" title="Pydoll - Biblioteca de Automação Web Assíncrona" class="md-header__button md-logo" aria-label="Pydoll - Biblioteca de Automação Web Assíncrona" data-md-component="logo">
       
@@ -114,6 +114,7 @@
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11 15H6l7-14v8h5l-7 14z"/></svg>
 
     </a>
+    <span class="md-header__docs-chip">docs</span>
     <label class="md-header__button md-icon" for="__drawer">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
@@ -121,48 +122,18 @@
     <div class="md-header__title" data-md-component="header-title">
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
-          <span class="md-ellipsis">
-            Pydoll - Biblioteca de Automação Web Assíncrona
-          </span>
+          <span class="md-ellipsis">Pydoll - Biblioteca de Automação Web Assíncrona</span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
-            
-              Proxies HTTP/HTTPS
-            
+            Proxies HTTP/HTTPS
           </span>
         </div>
       </div>
     </div>
     
       
-        <form class="md-header__option" data-md-component="palette">
-  
     
-    
-    
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Dark Mode"  type="radio" name="__palette" id="__palette_0">
-    
-      <label class="md-header__button md-icon" title="Dark Mode" for="__palette_1" hidden>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6m0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4M7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3"/></svg>
-      </label>
-    
-  
-    
-    
-    
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Light Mode"  type="radio" name="__palette" id="__palette_1">
-    
-      <label class="md-header__button md-icon" title="Light Mode" for="__palette_0" hidden>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
-      </label>
-    
-  
-</form>
-      
-    
-    
-      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
     
     
       <div class="md-header__option">
@@ -253,6 +224,7 @@
 </a>
       </div>
     
+    <a class="md-header__cta" href="../../../../getting-started/">Get started</a>
   </nav>
   
     
@@ -288,13 +260,79 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../features/" class="md-tabs__link">
+        <a href="../../../getting-started/" class="md-tabs__link">
           
   
   
     
   
-  Recursos
+  Primeiros passos
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../basics/async-python/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Fundamentos
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../guides/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Guias
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../stealth/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Stealth
 
         </a>
       </li>
@@ -318,7 +356,7 @@
   
     
   
-  Análise Profunda
+  Análise profunda
 
         </a>
       </li>
@@ -436,20 +474,6 @@
     
       
         
-          
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
       
         
       
@@ -473,15 +497,301 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
         
           
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Primeiros passos
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Primeiros passos
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Instalação
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../first-automation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sua primeira automação
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../migrating/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migrando do Selenium e Playwright
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fundamentos
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Fundamentos
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../basics/async-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python assíncrono na prática
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../basics/selectors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Seletores, CSS e XPath
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
           <div class="md-nav__link md-nav__container">
-            <a href="../../../features/" class="md-nav__link ">
+            <a href="../../../guides/" class="md-nav__link ">
               
   
   
   <span class="md-ellipsis">
     
   
-    Recursos
+    Guias
   
 
     
@@ -492,18 +802,18 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Recursos
+    Guias
   
 
           </label>
@@ -518,42 +828,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/core-concepts/" class="md-nav__link">
+      <a href="../../../guides/core-concepts/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Conceitos Fundamentais
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/element-finding/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Pesquisa de Elementos
+    Conceitos fundamentais
   
 
     
@@ -575,6 +857,10 @@
   
     
     
+      
+        
+      
+        
       
         
       
@@ -593,17 +879,17 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_4" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_3" >
         
           
-          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
             
   
   
   <span class="md-ellipsis">
     
   
-    Data Extraction
+    Encontrar e extrair
   
 
     
@@ -614,12 +900,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_4">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_3">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Data Extraction
+    Encontrar e extrair
   
 
           </label>
@@ -632,14 +918,70 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/extraction/structured-extraction/" class="md-nav__link">
+      <a href="../../../guides/element-finding/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Structured Extraction
+    Encontrar elementos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/dom-traversal/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Percorrer o DOM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/structured-extraction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Extração estruturada
   
 
     
@@ -680,8 +1022,6 @@
       
         
       
-        
-      
     
     
     
@@ -697,17 +1037,17 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_5" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_4" >
         
           
-          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="0">
             
   
   
   <span class="md-ellipsis">
     
   
-    Automação
+    Interagir
   
 
     
@@ -718,12 +1058,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_5">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_4">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Automação
+    Interagir
   
 
           </label>
@@ -736,14 +1076,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/automation/human-interactions/" class="md-nav__link">
+      <a href="../../../guides/keyboard/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Interações Humanas
+    Teclado
   
 
     
@@ -764,14 +1104,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/automation/keyboard-control/" class="md-nav__link">
+      <a href="../../../guides/mouse/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Controle de Teclado
+    Mouse
   
 
     
@@ -792,14 +1132,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/automation/mouse-control/" class="md-nav__link">
+      <a href="../../../guides/file-operations/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Controle do Mouse
+    Operações com arquivos
   
 
     
@@ -820,14 +1160,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/automation/file-operations/" class="md-nav__link">
+      <a href="../../../guides/iframes/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Operações com Arquivos
+    Iframes
   
 
     
@@ -848,42 +1188,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/automation/iframes/" class="md-nav__link">
+      <a href="../../../guides/screenshots-and-pdfs/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    IFrames
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/automation/screenshots-and-pdfs/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Capturas e PDF
+    Capturas de tela e PDFs
   
 
     
@@ -937,10 +1249,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_6" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_5" >
         
           
-          <label class="md-nav__link" for="__nav_2_6" id="__nav_2_6_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4_5" id="__nav_4_5_label" tabindex="0">
             
   
   
@@ -958,8 +1270,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_6">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -976,14 +1288,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/network/monitoring/" class="md-nav__link">
+      <a href="../../../guides/network-monitoring/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Monitoramento de Rede
+    Monitoramento de rede
   
 
     
@@ -1004,14 +1316,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/network/interception/" class="md-nav__link">
+      <a href="../../../guides/request-interception/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Interceptação de Requisições
+    Interceptação de requisições
   
 
     
@@ -1032,14 +1344,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/network/http-requests/" class="md-nav__link">
+      <a href="../../../guides/http-requests/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Requisições HTTP no Contexto do Navegador
+    Requisições HTTP no contexto do navegador
   
 
     
@@ -1060,14 +1372,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/network/network-recording/" class="md-nav__link">
+      <a href="../../../guides/network-recording/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Gravação de Rede HAR
+    Gravação HAR
   
 
     
@@ -1101,310 +1413,6 @@
         
       
         
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_7" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_7" id="__nav_2_7_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Gerenciamento do Navegador
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_7">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Gerenciamento do Navegador
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/browser-management/tabs/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Gerenciamento de Abas
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/browser-management/contexts/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Contextos do Navegador
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/browser-management/cookies-sessions/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Cookies e Sessões
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_8" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_8" id="__nav_2_8_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Configuração
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_8_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_8">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Configuração
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/configuration/browser-options/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Opções do Navegador
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/configuration/browser-preferences/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Preferências do Navegador
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/configuration/proxy/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Configuração de Proxy
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
       
         
       
@@ -1431,17 +1439,17 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_9" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_6" >
         
           
-          <label class="md-nav__link" for="__nav_2_9" id="__nav_2_9_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4_6" id="__nav_4_6_label" tabindex="0">
             
   
   
   <span class="md-ellipsis">
     
   
-    Avançado
+    Gerenciar o navegador
   
 
     
@@ -1452,12 +1460,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_9_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_9">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_6">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Avançado
+    Gerenciar o navegador
   
 
           </label>
@@ -1470,14 +1478,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/advanced/fingerprint-injection/" class="md-nav__link">
+      <a href="../../../guides/tabs/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Injeção de Fingerprint
+    Abas
   
 
     
@@ -1498,14 +1506,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/advanced/behavioral-captcha-bypass/" class="md-nav__link">
+      <a href="../../../guides/browser-contexts/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Bypass de Captcha Comportamental
+    Contextos do navegador
   
 
     
@@ -1526,14 +1534,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/advanced/event-system/" class="md-nav__link">
+      <a href="../../../guides/cookies-and-sessions/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Sistema de Eventos
+    Cookies e sessões
   
 
     
@@ -1554,14 +1562,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/advanced/remote-connections/" class="md-nav__link">
+      <a href="../../../guides/browser-options/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Conexões Remotas
+    Opções do navegador
   
 
     
@@ -1582,14 +1590,70 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/advanced/decorators/" class="md-nav__link">
+      <a href="../../../guides/browser-preferences/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Decorator Retry
+    Preferências do navegador
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/proxies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Proxies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/remote-connections/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conexões remotas
   
 
     
@@ -1606,6 +1670,326 @@
           </ul>
         </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_7" id="__nav_4_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reagir a eventos
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reagir a eventos
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Eventos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/retrying/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Repetição
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../stealth/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stealth
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Stealth
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../stealth/evasion-techniques/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Técnicas de evasão
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../stealth/human-like-interactions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interações humanizadas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../stealth/captcha-bypass/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bypass de captcha
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../stealth/fingerprint-injection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Injeção de fingerprint
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -1631,10 +2015,6 @@
       
         
           
-        
-      
-        
-      
         
       
         
@@ -1659,7 +2039,7 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
         
           
           <div class="md-nav__link md-nav__container">
@@ -1670,7 +2050,7 @@
   <span class="md-ellipsis">
     
   
-    Análise Profunda
+    Análise profunda
   
 
     
@@ -1681,98 +2061,18 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_3">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Análise Profunda
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-          
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-          
-          
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_2" >
-        
-          
-          <div class="md-nav__link md-nav__container">
-            <a href="../../fundamentals/" class="md-nav__link ">
-              
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Fundamentos Centrais
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_3_2" id="__nav_3_2_label" tabindex="">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_2">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Fundamentos Centrais
+    Análise profunda
   
 
           </label>
@@ -1787,7 +2087,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/cdp/" class="md-nav__link">
+      <a href="../../cdp/" class="md-nav__link">
         
   
   
@@ -1812,388 +2112,6 @@
                 
   
   
-  
-  
-    <li class="md-nav__item">
-      <a href="../../fundamentals/connection-layer/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Camada de Conexão
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../fundamentals/typing-system/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Sistema de Tipos Python
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../fundamentals/iframes-and-contexts/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Iframes & Contexts
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-          
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-          
-          
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_3" >
-        
-          
-          <div class="md-nav__link md-nav__container">
-            <a href="../../architecture/" class="md-nav__link ">
-              
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Arquitetura Interna
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_3_3" id="__nav_3_3_label" tabindex="">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_3">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Arquitetura Interna
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/browser-domain/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Domínio do Navegador
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/tab-domain/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Domínio da Aba
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/webelement-domain/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Domínio do WebElement
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/find-elements-mixin/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Mixin FindElements
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/event-architecture/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Arquitetura de Eventos
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/browser-requests-architecture/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Arquitetura de Requisições do Navegador
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/shadow-dom/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Arquitetura Shadow DOM
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
     
   
   
@@ -2233,7 +2151,7 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_3" checked>
         
           
           <div class="md-nav__link md-nav__container">
@@ -2244,7 +2162,7 @@
   <span class="md-ellipsis">
     
   
-    Rede e Segurança
+    Rede e proxies
   
 
     
@@ -2255,18 +2173,18 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_3_4" id="__nav_3_4_label" tabindex="">
+              <label class="md-nav__link " for="__nav_6_3" id="__nav_6_3_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_3_4">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6_3">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Rede e Segurança
+    Rede e proxies
   
 
           </label>
@@ -2288,7 +2206,7 @@
   <span class="md-ellipsis">
     
   
-    Fundamentos de Rede
+    Fundamentos de rede
   
 
     
@@ -2369,22 +2287,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#como-proxies-http-funcionam" class="md-nav__link">
+  <a href="#como-um-proxy-http-funciona" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Como Proxies HTTP Funcionam
+        Como um proxy HTTP funciona
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Como Proxies HTTP Funcionam">
+    <nav class="md-nav" aria-label="Como um proxy HTTP funciona">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#fluxo-de-requisicao" class="md-nav__link">
+  <a href="#headers-que-entregam-o-proxy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Fluxo de Requisição
+        Headers que entregam o proxy
       
     </span>
   </a>
@@ -2392,21 +2310,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#cabecalhos-de-proxy-e-privacidade" class="md-nav__link">
+  <a href="#o-que-ele-pode-e-nao-pode-fazer" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Cabeçalhos de Proxy e Privacidade
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#capacidades-e-limitacoes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Capacidades e Limitações
+        O que ele pode e não pode fazer
       
     </span>
   </a>
@@ -2419,22 +2326,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#o-metodo-connect-tunelamento-https" class="md-nav__link">
+  <a href="#o-metodo-connect-tunelando-https" class="md-nav__link">
     <span class="md-ellipsis">
       
-        O Método CONNECT: Tunelamento HTTPS
+        O método CONNECT: tunelando HTTPS
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="O Método CONNECT: Tunelamento HTTPS">
+    <nav class="md-nav" aria-label="O método CONNECT: tunelando HTTPS">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#a-requisicao-connect" class="md-nav__link">
+  <a href="#o-que-o-proxy-ve-apos-o-connect" class="md-nav__link">
     <span class="md-ellipsis">
       
-        A Requisição CONNECT
+        O que o proxy vê após o CONNECT
       
     </span>
   </a>
@@ -2442,32 +2349,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#visibilidade-apos-connect" class="md-nav__link">
+  <a href="#tunel-vs-interceptacao" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Visibilidade Após CONNECT
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#connect-para-protocolos-nao-https" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        CONNECT para Protocolos Não-HTTPS
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#o-dilema-do-https" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        O Dilema do HTTPS
+        Túnel vs interceptação
       
     </span>
   </a>
@@ -2480,10 +2365,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#proxies-https-tls-para-o-proxy" class="md-nav__link">
+  <a href="#conectando-ao-proxy-sobre-tls" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Proxies HTTPS (TLS para o Proxy)
+        Conectando ao proxy sobre TLS
       
     </span>
   </a>
@@ -2499,46 +2384,18 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Autenticação">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#esquemas-de-autenticacao" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Esquemas de Autenticação
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#autenticacao-no-pydoll" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Autenticação no Pydoll
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
-  <a href="#protocolos-modernos-e-proxy" class="md-nav__link">
+  <a href="#protocolos-modernos" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Protocolos Modernos e Proxy
+        Protocolos modernos
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Protocolos Modernos e Proxy">
+    <nav class="md-nav" aria-label="Protocolos modernos">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2569,18 +2426,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#resumo" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Resumo
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Resumo">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
   <a href="#proxy-http-vs-socks5" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2590,9 +2435,15 @@
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
+      
+        <li class="md-nav__item">
+  <a href="#relacionado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Relacionado
+      
+    </span>
+  </a>
   
 </li>
       
@@ -2658,7 +2509,7 @@
   <span class="md-ellipsis">
     
   
-    Detecção de Proxy
+    Detecção de proxy
   
 
     
@@ -2686,7 +2537,7 @@
   <span class="md-ellipsis">
     
   
-    Construindo Servidores Proxy
+    Construindo um servidor proxy
   
 
     
@@ -2714,7 +2565,7 @@
   <span class="md-ellipsis">
     
   
-    Legal & Ética
+    Legal e ético
   
 
     
@@ -2755,8 +2606,6 @@
       
         
       
-        
-      
     
     
     
@@ -2775,7 +2624,7 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_5" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6_4" >
         
           
           <div class="md-nav__link md-nav__container">
@@ -2797,14 +2646,14 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_3_5" id="__nav_3_5_label" tabindex="">
+              <label class="md-nav__link " for="__nav_6_4" id="__nav_6_4_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_5">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_4">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2830,7 +2679,7 @@
   <span class="md-ellipsis">
     
   
-    Fingerprinting de Rede
+    Fingerprinting de rede
   
 
     
@@ -2858,7 +2707,7 @@
   <span class="md-ellipsis">
     
   
-    Fingerprinting do Navegador
+    Fingerprinting de navegador
   
 
     
@@ -2886,145 +2735,7 @@
   <span class="md-ellipsis">
     
   
-    Fingerprinting Comportamental
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../fingerprinting/evasion-techniques/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Técnicas de Evasão
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-          
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-          
-          
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_6" >
-        
-          
-          <div class="md-nav__link md-nav__container">
-            <a href="../../guides/" class="md-nav__link ">
-              
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Guias Práticos
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_3_6" id="__nav_3_6_label" tabindex="">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_6">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Guias Práticos
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../guides/selectors-guide/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Seletores CSS vs XPath
+    Fingerprinting comportamental
   
 
     
@@ -3064,8 +2775,6 @@
       
         
           
-        
-      
         
       
         
@@ -3093,7 +2802,7 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
         
           
           <div class="md-nav__link md-nav__container">
@@ -3115,14 +2824,14 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -3153,8 +2862,6 @@
       
         
       
-        
-      
     
     
     
@@ -3170,10 +2877,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_2" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_2" >
         
           
-          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7_2" id="__nav_7_2_label" tabindex="0">
             
   
   
@@ -3191,8 +2898,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_2">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_2">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -3300,7 +3007,7 @@
   <span class="md-ellipsis">
     
   
-    Aba
+    Tab
   
 
     
@@ -3328,35 +3035,7 @@
   <span class="md-ellipsis">
     
   
-    Requisições
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/browser/managers/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Gerenciadores
+    Requests
   
 
     
@@ -3391,8 +3070,6 @@
       
         
       
-        
-      
     
     
     
@@ -3408,10 +3085,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_3" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_3" >
         
           
-          <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7_3" id="__nav_7_3_label" tabindex="0">
             
   
   
@@ -3429,8 +3106,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_3">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_3">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -3454,7 +3131,7 @@
   <span class="md-ellipsis">
     
   
-    Elemento Web
+    WebElement
   
 
     
@@ -3482,35 +3159,7 @@
   <span class="md-ellipsis">
     
   
-    Shadow Root
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/elements/mixins/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Mixins
+    ShadowRoot
   
 
     
@@ -3538,39 +3187,15 @@
   
   
   
-    
-    
-      
+    <li class="md-nav__item">
+      <a href="../../../api/extraction/" class="md-nav__link">
         
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_4" >
-        
-          
-          <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="0">
-            
   
   
   <span class="md-ellipsis">
     
   
-    Conexão
+    Extraction
   
 
     
@@ -3578,19 +3203,11 @@
   
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_4">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Conexão
+      </a>
+    </li>
   
 
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
+              
             
               
                 
@@ -3606,7 +3223,7 @@
   <span class="md-ellipsis">
     
   
-    Manipulador de Conexão
+    Connection
   
 
     
@@ -3626,62 +3243,8 @@
   
   
   
-    <li class="md-nav__item">
-      <a href="../../../api/connection/managers/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Gerenciadores
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
     
     
-      
-        
-          
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
       
         
       
@@ -3702,362 +3265,17 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_5" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_6" >
         
           
-          <div class="md-nav__link md-nav__container">
-            <a href="../../../api/commands/" class="md-nav__link ">
-              
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Comandos
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_4_5" id="__nav_4_5_label" tabindex="0">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_5">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Comandos
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/browser/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Navegador
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/dom/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    DOM
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/input/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Entrada
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/network/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Rede
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/page/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Página
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/runtime/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Tempo de Execução
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/storage/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Armazenamento
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/target/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Alvo
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/fetch/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Fetch
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_6" >
-        
-          
-          <label class="md-nav__link" for="__nav_4_6" id="__nav_4_6_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7_6" id="__nav_7_6_label" tabindex="0">
             
   
   
   <span class="md-ellipsis">
     
   
-    Protocolo
+    Core
   
 
     
@@ -4068,362 +3286,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_6">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_6">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Protocolo
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/base/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Tipos Base
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/browser/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Navegador
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/dom/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    DOM
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/fetch/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Fetch
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/input/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Entrada
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/network/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Rede
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/page/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Página
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/runtime/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Tempo de Execução
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/storage/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Armazenamento
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/target/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Alvo
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_7" >
-        
-          
-          <label class="md-nav__link" for="__nav_4_7" id="__nav_4_7_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Núcleo
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_7">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Núcleo
+    Core
   
 
           </label>
@@ -4485,34 +3353,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/core/utils/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Utilitários
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -4555,22 +3395,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#como-proxies-http-funcionam" class="md-nav__link">
+  <a href="#como-um-proxy-http-funciona" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Como Proxies HTTP Funcionam
+        Como um proxy HTTP funciona
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Como Proxies HTTP Funcionam">
+    <nav class="md-nav" aria-label="Como um proxy HTTP funciona">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#fluxo-de-requisicao" class="md-nav__link">
+  <a href="#headers-que-entregam-o-proxy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Fluxo de Requisição
+        Headers que entregam o proxy
       
     </span>
   </a>
@@ -4578,21 +3418,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#cabecalhos-de-proxy-e-privacidade" class="md-nav__link">
+  <a href="#o-que-ele-pode-e-nao-pode-fazer" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Cabeçalhos de Proxy e Privacidade
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#capacidades-e-limitacoes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Capacidades e Limitações
+        O que ele pode e não pode fazer
       
     </span>
   </a>
@@ -4605,22 +3434,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#o-metodo-connect-tunelamento-https" class="md-nav__link">
+  <a href="#o-metodo-connect-tunelando-https" class="md-nav__link">
     <span class="md-ellipsis">
       
-        O Método CONNECT: Tunelamento HTTPS
+        O método CONNECT: tunelando HTTPS
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="O Método CONNECT: Tunelamento HTTPS">
+    <nav class="md-nav" aria-label="O método CONNECT: tunelando HTTPS">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#a-requisicao-connect" class="md-nav__link">
+  <a href="#o-que-o-proxy-ve-apos-o-connect" class="md-nav__link">
     <span class="md-ellipsis">
       
-        A Requisição CONNECT
+        O que o proxy vê após o CONNECT
       
     </span>
   </a>
@@ -4628,32 +3457,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#visibilidade-apos-connect" class="md-nav__link">
+  <a href="#tunel-vs-interceptacao" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Visibilidade Após CONNECT
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#connect-para-protocolos-nao-https" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        CONNECT para Protocolos Não-HTTPS
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#o-dilema-do-https" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        O Dilema do HTTPS
+        Túnel vs interceptação
       
     </span>
   </a>
@@ -4666,10 +3473,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#proxies-https-tls-para-o-proxy" class="md-nav__link">
+  <a href="#conectando-ao-proxy-sobre-tls" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Proxies HTTPS (TLS para o Proxy)
+        Conectando ao proxy sobre TLS
       
     </span>
   </a>
@@ -4685,46 +3492,18 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Autenticação">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#esquemas-de-autenticacao" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Esquemas de Autenticação
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#autenticacao-no-pydoll" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Autenticação no Pydoll
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
-  <a href="#protocolos-modernos-e-proxy" class="md-nav__link">
+  <a href="#protocolos-modernos" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Protocolos Modernos e Proxy
+        Protocolos modernos
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Protocolos Modernos e Proxy">
+    <nav class="md-nav" aria-label="Protocolos modernos">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -4755,18 +3534,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#resumo" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Resumo
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Resumo">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
   <a href="#proxy-http-vs-socks5" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4776,9 +3543,15 @@
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
+      
+        <li class="md-nav__item">
+  <a href="#relacionado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Relacionado
+      
+    </span>
+  </a>
   
 </li>
       
@@ -4839,7 +3612,7 @@
         <a href="../../" class="md-path__link">
           
   <span class="md-ellipsis">
-    Análise Profunda
+    Análise profunda
   </span>
 
         </a>
@@ -4857,7 +3630,7 @@
         <a href="../" class="md-path__link">
           
   <span class="md-ellipsis">
-    Rede e Segurança
+    Rede e proxies
   </span>
 
         </a>
@@ -4879,96 +3652,72 @@
   
 
 
-<h1 id="arquitetura-de-proxy-httphttps">Arquitetura de Proxy HTTP/HTTPS</h1>
-<p>Proxies HTTP são o protocolo de proxy mais comum na internet. Quase toda rede corporativa os utiliza, e a maioria dos serviços de proxy comerciais os oferece como opção padrão. Eles operam na Camada 7 (Aplicação) do modelo OSI, o que significa que entendem HTTP e podem analisar, modificar, cachear e filtrar tráfego. Essa mesma integração profunda com o protocolo também é sua maior limitação: só podem lidar com tráfego HTTP, revelam uso de proxy através de cabeçalhos identificáveis, e não podem fazer proxy de UDP, o que deixa WebRTC e DNS vulneráveis a vazamentos.</p>
-<p>Este documento cobre como proxies HTTP funcionam no nível do protocolo, o método CONNECT para tunelamento HTTPS, mecanismos de autenticação e as implicações de protocolos modernos como HTTP/2 e HTTP/3.</p>
-<div class="admonition info">
-<p class="admonition-title">Navegação do Módulo</p>
-<ul>
-<li><a href="../network-fundamentals/">Fundamentos de Rede</a>: TCP/IP, UDP, modelo OSI</li>
-<li><a href="../socks-proxies/">Proxies SOCKS</a>: Alternativa agnóstica a protocolo</li>
-<li><a href="../proxy-detection/">Detecção de Proxy</a>: Como evitar detecção</li>
-</ul>
-<p>Para configuração prática, veja <a href="../../../features/configuration/proxy/">Configuração de Proxy</a>.</p>
-</div>
-<h2 id="como-proxies-http-funcionam">Como Proxies HTTP Funcionam</h2>
-<p>Um proxy HTTP fica entre o cliente e o servidor destino, mantendo duas conexões TCP separadas: uma do cliente para o proxy, e outra do proxy para o servidor destino. Como o proxy entende HTTP, ele pode tomar decisões inteligentes sobre o tráfego que passa por ele.</p>
-<h3 id="fluxo-de-requisicao">Fluxo de Requisição</h3>
-<p>Quando um cliente é configurado para usar um proxy HTTP, ele envia a requisição HTTP completa para o proxy em vez de diretamente para o servidor destino. A diferença chave de uma requisição direta é que a linha de requisição inclui a URI absoluta, não apenas o caminho. Por exemplo, em vez de <code>GET /page HTTP/1.1</code>, o cliente envia <code>GET http://example.com/page HTTP/1.1</code>. Isso diz ao proxy para onde encaminhar a requisição.</p>
+<h1 id="proxies-http-e-https">Proxies HTTP e HTTPS</h1>
+<p>Um proxy HTTP fica entre seu navegador e o servidor de destino e entende HTTP, então pode fazer parse, cachear, filtrar e modificar o tráfego que passa por ele. Esse acoplamento profundo com o protocolo é também seu limite: ele lida só com HTTP, se revela através de headers identificáveis, e não pode carregar UDP, o que deixa WebRTC e QUIC vazarem por fora dele.</p>
+<p>Esta página cobre como proxies HTTP movem tráfego, o túnel CONNECT que carrega HTTPS, como a autenticação funciona, e onde protocolos modernos (HTTP/2, HTTP/3) complicam o cenário. Para configurar um proxy no Pydoll, veja <a href="../../../guides/proxies/">Proxies</a>. Fundo relacionado: <a href="../network-fundamentals/">Fundamentos de rede</a>, <a href="../socks-proxies/">Proxies SOCKS</a> e <a href="../proxy-detection/">Detecção de proxy</a>.</p>
+<h2 id="como-um-proxy-http-funciona">Como um proxy HTTP funciona</h2>
+<p>Um proxy HTTP mantém duas conexões TCP separadas: uma do cliente ao proxy, outra do proxy ao destino. Como ele lê HTTP, pode decidir o que fazer com cada requisição em vez de repassar bytes às cegas.</p>
+<p>Quando um cliente está configurado para usar o proxy, ele envia a requisição completa ao proxy em vez de ao servidor. O indício é a linha de requisição: ela carrega a URI absoluta, não apenas o caminho. Em vez de <code>GET /page HTTP/1.1</code>, o cliente envia <code>GET http://example.com/page HTTP/1.1</code>, o que diz ao proxy para onde encaminhar.</p>
 <pre class="mermaid"><code>sequenceDiagram
     participant Client as Navegador Cliente
     participant Proxy as Proxy HTTP
-    participant Server as Servidor Destino
+    participant Server as Servidor de Destino
 
     Client-&gt;&gt;Proxy: GET http://example.com/page HTTP/1.1&lt;br/&gt;Host: example.com&lt;br/&gt;User-Agent: Mozilla/5.0
     Note over Client,Proxy: Conexão TCP #1
 
-    Note over Proxy: Analisa requisição, verifica auth,&lt;br/&gt;verifica cache, aplica regras
+    Note over Proxy: Faz parse da requisição, checa auth,&lt;br/&gt;checa cache, aplica regras
 
     Proxy-&gt;&gt;Server: GET /page HTTP/1.1&lt;br/&gt;Host: example.com&lt;br/&gt;Via: 1.1 proxy.example.com&lt;br/&gt;X-Forwarded-For: 192.168.1.100
     Note over Proxy,Server: Conexão TCP #2
 
     Server-&gt;&gt;Proxy: HTTP/1.1 200 OK&lt;br/&gt;[corpo da resposta]
 
-    Note over Proxy: Cacheia resposta se permitido,&lt;br/&gt;filtra conteúdo, registra transação
-
     Proxy-&gt;&gt;Client: HTTP/1.1 200 OK&lt;br/&gt;Via: 1.1 proxy.example.com&lt;br/&gt;[corpo possivelmente modificado]</code></pre>
-<p>O proxy recebe a requisição HTTP completa, analisa o método, URL e cabeçalhos, e decide o que fazer. Ele pode verificar credenciais de autenticação, verificar a URL contra uma lista de controle de acesso, procurar uma cópia em cache do recurso e modificar cabeçalhos antes de encaminhar. Então abre uma conexão TCP separada para o servidor destino e envia a requisição, potencialmente com cabeçalhos alterados.</p>
-<p>Quando a resposta chega, o proxy pode cacheá-la de acordo com a semântica HTTP (<code>Cache-Control</code>, <code>ETag</code>), filtrar o conteúdo para malware ou palavras-chave bloqueadas, comprimi-la se o cliente suportar, e registrar a transação antes de encaminhar a resposta de volta ao cliente.</p>
-<h3 id="cabecalhos-de-proxy-e-privacidade">Cabeçalhos de Proxy e Privacidade</h3>
-<p>Proxies HTTP comumente adicionam cabeçalhos que revelam sua presença e o endereço IP real do cliente. O cabeçalho <code>Via</code> (RFC 9110) identifica o proxy na cadeia de requisição. O cabeçalho <code>X-Forwarded-For</code> contém o IP original do cliente, frequentemente formando uma cadeia se múltiplos proxies estão envolvidos. O cabeçalho <code>X-Forwarded-Proto</code> indica se a requisição original era HTTP ou HTTPS. Alguns proxies também adicionam <code>X-Real-IP</code> como alternativa mais simples ao <code>X-Forwarded-For</code>.</p>
-<p>Também existe um cabeçalho padronizado <code>Forwarded</code> (RFC 7239) que combina toda essa informação em um único campo, por exemplo <code>Forwarded: for=192.168.1.100;proto=http;by=proxy.example.com</code>. Na prática, a maioria dos proxies ainda usa as variantes <code>X-Forwarded-*</code> já que têm suporte mais amplo.</p>
-<p>Clientes legados e alguns navegadores mais antigos também podem enviar um cabeçalho <code>Proxy-Connection: keep-alive</code> em vez de <code>Connection: keep-alive</code> ao rotear através de um proxy. Este cabeçalho é um indicador bem conhecido de uso de proxy e um sinal clássico de detecção.</p>
-<div class="admonition danger">
-<p class="admonition-title">Detecção por Cabeçalho</p>
-<p>Sistemas de detecção procuram a presença de cabeçalhos <code>Via</code>, <code>X-Forwarded-For</code> ou <code>Forwarded</code> para confirmar uso de proxy. Se <code>X-Real-IP</code> não corresponde ao IP de conexão, o proxy é confirmado. Proxies sofisticados podem remover esses cabeçalhos, mas muitos serviços de proxy comerciais os deixam por padrão. Sempre verifique o comportamento do seu proxy usando uma ferramenta como <a href="https://browserleaks.com/ip">browserleaks.com/ip</a>.</p>
+<p>O proxy faz parse do método, da URL e dos headers, e então decide: checar credenciais, comparar a URL com uma lista de acesso, procurar uma cópia em cache, reescrever headers. Ele abre sua própria conexão ao servidor e encaminha a requisição. Quando a resposta volta, ele pode cacheá-la conforme <code>Cache-Control</code> e <code>ETag</code>, filtrar o conteúdo, comprimi-lo, e registrar a transação antes de repassá-la.</p>
+<h3 id="headers-que-entregam-o-proxy">Headers que entregam o proxy</h3>
+<p>Proxies HTTP comumente adicionam headers que revelam sua presença e o IP real do cliente:</p>
+<ul>
+<li><code>Via</code> (RFC 9110) identifica o proxy na cadeia de requisições.</li>
+<li><code>X-Forwarded-For</code> carrega o IP do cliente original, encadeando se vários proxies estiverem envolvidos. <code>X-Real-IP</code> é uma variante mais simples.</li>
+<li><code>X-Forwarded-Proto</code> registra se a requisição original foi HTTP ou HTTPS.</li>
+<li>O header padronizado <code>Forwarded</code> (RFC 7239) combina esses em um único campo, embora a maioria dos proxies ainda envie as variantes <code>X-Forwarded-*</code>.</li>
+</ul>
+<p>Clientes mais antigos também podem enviar <code>Proxy-Connection: keep-alive</code> em vez de <code>Connection: keep-alive</code>, que é um indicador clássico de proxy.</p>
+<div class="admonition warning">
+<p class="admonition-title">Headers confirmam um proxy</p>
+<p>Sistemas de detecção procuram por <code>Via</code>, <code>X-Forwarded-For</code> ou <code>Forwarded</code>, e confirmam o proxy quando <code>X-Real-IP</code> diverge do IP de conexão. Bons proxies removem esses headers, mas muitos serviços comerciais os deixam por padrão. Cheque o seu com uma ferramenta como <a href="https://browserleaks.com/ip">browserleaks.com/ip</a>.</p>
 </div>
-<h3 id="capacidades-e-limitacoes">Capacidades e Limitações</h3>
-<p>Como proxies HTTP analisam e entendem o protocolo HTTP, eles podem ler e modificar cada parte de uma requisição e resposta HTTP não criptografada: URLs, cabeçalhos, cookies e corpos. Isso permite que cacheiem respostas inteligentemente, filtrem conteúdo por URL ou palavra-chave, injetem ou removam cabeçalhos, autentiquem usuários e registrem todo o tráfego em detalhes.</p>
-<p>O tradeoff é que esse acoplamento profundo com HTTP significa que o proxy é limitado a tráfego HTTP. Ele não pode nativamente fazer proxy de FTP, SSH, SMTP ou protocolos personalizados (embora o método CONNECT, descrito abaixo, forneça uma solução de tunelamento para qualquer protocolo baseado em TCP). Não tem suporte para UDP, o que significa que tráfego WebRTC, consultas DNS e QUIC/HTTP/3 o ignoram completamente. E inspecionar conteúdo HTTPS requer terminação TLS, que quebra a criptografia de ponta a ponta.</p>
-<h2 id="o-metodo-connect-tunelamento-https">O Método CONNECT: Tunelamento HTTPS</h2>
-<p>O método CONNECT (RFC 9110, Seção 9.3.6) resolve um problema fundamental: como um proxy HTTP pode encaminhar tráfego criptografado que não pode ler? A resposta é tornar-se um túnel TCP cego.</p>
-<p>Quando um cliente quer acessar um site HTTPS através de um proxy, ele envia uma requisição <code>CONNECT</code> pedindo ao proxy para estabelecer uma conexão TCP bruta para o destino. Uma vez que o proxy confirma que o túnel está estabelecido, ele para de ser um proxy HTTP completamente e se torna um relay TCP transparente na Camada 4, encaminhando bytes em ambas as direções sem interpretá-los.</p>
+<h3 id="o-que-ele-pode-e-nao-pode-fazer">O que ele pode e não pode fazer</h3>
+<p>Como faz parse de HTTP, um proxy pode ler e mudar cada parte de uma requisição e resposta não criptografadas (URLs, headers, cookies, corpos), que é o que habilita cache, filtragem de conteúdo, injeção de headers, autenticação e logging detalhado.</p>
+<p>O custo desse acoplamento é o escopo. Ele não pode carregar FTP, SSH ou protocolos customizados nativamente (o CONNECT, abaixo, é a solução alternativa), não tem caminho para UDP, então WebRTC, DNS e QUIC o contornam, e inspecionar conteúdo HTTPS exige terminar o TLS, o que quebra a criptografia ponta a ponta.</p>
+<h2 id="o-metodo-connect-tunelando-https">O método CONNECT: tunelando HTTPS</h2>
+<p>O CONNECT (RFC 9110) responde a uma pergunta básica: como um proxy encaminha tráfego criptografado que não consegue ler? Tornando-se um túnel TCP cego. O cliente pede ao proxy para abrir uma conexão TCP crua ao destino; uma vez confirmada, o proxy para de interpretar HTTP e apenas repassa bytes nos dois sentidos.</p>
 <pre class="mermaid"><code>sequenceDiagram
     participant Client
     participant Proxy
     participant Server
 
     Client-&gt;&gt;Proxy: CONNECT example.com:443 HTTP/1.1&lt;br/&gt;Host: example.com:443&lt;br/&gt;Proxy-Authorization: Basic dXNlcjpwYXNz
-    Note over Client,Proxy: Requisição HTTP não criptografada
-
-    Proxy-&gt;&gt;Server: TCP three-way handshake
-    Note over Proxy,Server: Conexão TCP estabelecida
-
+    Proxy-&gt;&gt;Server: Handshake TCP de três vias
     Proxy-&gt;&gt;Client: HTTP/1.1 200 Connection Established
-
-    Note right of Proxy: Proxy agora é um relay&lt;br/&gt;TCP transparente (Camada 4)
-
+    Note right of Proxy: O proxy é agora um relay TCP&lt;br/&gt;transparente (Camada 4)
     Client-&gt;&gt;Server: TLS ClientHello
-    Note over Client,Server: Handshake TLS (proxy vê&lt;br/&gt;isso em texto plano)
     Server-&gt;&gt;Client: TLS ServerHello, Certificate
-
     Client-&gt;&gt;Server: Requisição HTTP/2 criptografada
-    Server-&gt;&gt;Client: Resposta HTTP/2 criptografada
-
-    Note over Proxy: Proxy encaminha cegamente&lt;br/&gt;todos os dados criptografados</code></pre>
-<h3 id="a-requisicao-connect">A Requisição CONNECT</h3>
-<p>A requisição CONNECT é mínima. O método é <code>CONNECT</code>, a URI de requisição é o <code>host:port</code> de destino (não um caminho), e inclui autenticação se o proxy a requer. Não há corpo de requisição. O proxy valida as credenciais, verifica suas regras de controle de acesso e abre uma conexão TCP para o host e porta especificados. Se tudo for bem-sucedido, ele envia de volta <code>HTTP/1.1 200 Connection Established</code> seguido por uma linha em branco. Após essa linha em branco, a conversação HTTP termina e o proxy se torna um relay transparente.</p>
-<h3 id="visibilidade-apos-connect">Visibilidade Após CONNECT</h3>
-<p>Uma vez que o túnel é estabelecido, a visibilidade do proxy é limitada. Ele sabe o hostname e porta de destino da requisição CONNECT. Ele pode observar o timing da conexão (quando foi estabelecida e por quanto tempo), o volume de dados transferidos em cada direção, e quando qualquer lado termina a conexão. Ele também pode observar o handshake TLS que se segue, o que é particularmente relevante.</p>
-<p>A mensagem TLS ClientHello, enviada imediatamente após o túnel ser estabelecido, é transmitida em texto plano. O proxy (e qualquer observador de rede) pode ler diretamente a versão TLS, a lista completa de cipher suites suportadas, as extensões e seus parâmetros, as curvas elípticas oferecidas, e a extensão SNI (Server Name Indication) que contém o hostname destino. Esta é exatamente a informação usada para TLS fingerprinting (JA3/JA4). Veja <a href="../../fingerprinting/network-fingerprinting/">Network Fingerprinting</a> para detalhes.</p>
-<p>O que o proxy não pode ver é os dados de aplicação criptografados: métodos HTTP, URLs, cabeçalhos de requisição e resposta, cookies, tokens de sessão e conteúdo de resposta são todos criptografados dentro do túnel TLS.</p>
+    Server-&gt;&gt;Client: Resposta HTTP/2 criptografada</code></pre>
+<p>A requisição CONNECT é mínima: o método é <code>CONNECT</code>, o alvo é <code>host:port</code> (não um caminho), não há corpo. O proxy valida as credenciais, checa suas regras, abre a conexão TCP, e responde <code>HTTP/1.1 200 Connection Established</code> seguido de uma linha em branco. Depois dessa linha, a conversa HTTP acabou e o proxy é um relay.</p>
+<h3 id="o-que-o-proxy-ve-apos-o-connect">O que o proxy vê após o CONNECT</h3>
+<p>Uma vez que o túnel está de pé, o proxy conhece o host e a porta de destino, e pode observar o timing, o volume de dados em cada sentido, e quando cada lado desliga. Ele também vê o TLS ClientHello, que é enviado em texto claro: a versão do TLS, as cipher suites, as extensões, as curvas, e o hostname SNI. É exatamente isso que o fingerprinting de TLS (JA3/JA4) lê; veja <a href="../../fingerprinting/network-fingerprinting/">Fingerprinting de rede</a>.</p>
+<p>O que ele não pode ver são os dados de aplicação criptografados: métodos, URLs, headers, cookies, tokens e corpos estão todos dentro do túnel TLS.</p>
 <div class="admonition note">
-<p class="admonition-title">SNI e Encrypted Client Hello (ECH)</p>
-<p>A extensão SNI no ClientHello revela o hostname destino em texto plano, que é redundante com a requisição CONNECT no cenário de proxy mas relevante para outros observadores de rede. Encrypted Client Hello (ECH), atualmente sendo implantado, visa criptografar o SNI para resolver esse vazamento. No entanto, a adoção do ECH ainda é limitada e requer suporte tanto do cliente quanto do servidor.</p>
+<p class="admonition-title">SNI e Encrypted Client Hello</p>
+<p>A extensão SNI revela o hostname de destino em texto claro, redundante com a linha CONNECT aqui mas visível a outros observadores da rede. O Encrypted Client Hello (ECH) visa escondê-lo, mas a adoção ainda é limitada e precisa de suporte tanto do cliente quanto do servidor.</p>
 </div>
-<h3 id="connect-para-protocolos-nao-https">CONNECT para Protocolos Não-HTTPS</h3>
-<p>Embora CONNECT seja usado principalmente para HTTPS, ele pode tunelar qualquer protocolo baseado em TCP. Uma conexão IMAPS na porta 993, uma conexão SSH na porta 22 ou FTP-over-TLS na porta 990 todos funcionam através de um túnel CONNECT. O proxy não precisa entender esses protocolos porque após o túnel ser estabelecido, ele está simplesmente retransmitindo bytes.</p>
-<p>Na prática, muitos proxies corporativos restringem CONNECT à porta 443 (HTTPS) para prevenir abuso. Tentar <code>CONNECT example.com:22</code> para SSH frequentemente retornará <code>403 Forbidden</code>.</p>
-<h3 id="o-dilema-do-https">O Dilema do HTTPS</h3>
-<p>Proxies HTTP enfrentam uma escolha fundamental com tráfego criptografado. Com a abordagem de túnel CONNECT, a criptografia de ponta a ponta é preservada, o cliente verifica o certificado do servidor diretamente, e certificate pinning funciona normalmente. Mas o proxy não pode inspecionar, cachear ou filtrar o conteúdo criptografado.</p>
-<p>A alternativa é terminação TLS (MITM), onde o proxy descriptografa o tráfego HTTPS, inspeciona o conteúdo e re-criptografa antes de encaminhar. Isso requer instalar o certificado CA do proxy no cliente, quebra a criptografia de ponta a ponta e é detectável através de certificate pinning e logs de Certificate Transparency. A maioria dos proxies corporativos usa essa abordagem para filtragem de conteúdo e scanning de segurança, enquanto proxies focados em privacidade usam túneis CONNECT cegos.</p>
-<p>Para web scraping e automação, essa distinção importa para TLS fingerprinting. Se o proxy realiza terminação TLS, o fingerprint TLS que o servidor destino vê pertence ao proxy, não ao seu navegador. Se você está usando um túnel CONNECT, o fingerprint é preservado de ponta a ponta. Dependendo da sua estratégia de evasão, uma abordagem pode ser preferível à outra.</p>
+<p>O CONNECT pode tunelar qualquer protocolo TCP (IMAPS, SSH, FTPS), porque depois que o túnel abre o proxy apenas repassa bytes. Na prática, muitos proxies corporativos restringem o CONNECT à porta 443, então <code>CONNECT example.com:22</code> frequentemente retorna <code>403 Forbidden</code>.</p>
+<h3 id="tunel-vs-interceptacao">Túnel vs interceptação</h3>
+<p>Um proxy enfrenta uma escolha com tráfego criptografado. Um túnel CONNECT preserva a criptografia ponta a ponta: o cliente verifica o certificado do servidor diretamente e o certificate pinning funciona, mas o proxy não pode inspecionar nem cachear o conteúdo. A terminação de TLS (MITM) é a alternativa: o proxy descriptografa, inspeciona, e recriptografa, o que exige instalar seu certificado de CA no cliente, quebra a criptografia ponta a ponta, e é detectável através de pinning e Certificate Transparency. Proxies corporativos tendem a terminar para filtragem de conteúdo; proxies focados em privacidade usam túneis cegos.</p>
+<p>Para automação, isso decide qual fingerprint TLS o servidor vê. Através de um túnel CONNECT, o fingerprint é o do seu navegador, de ponta a ponta. Através de um proxy que termina, é o do proxy.</p>
 <table>
 <thead>
 <tr>
@@ -4980,111 +3729,86 @@
 <tbody>
 <tr>
 <td>Visibilidade do proxy</td>
-<td>Requisição/resposta HTTP completa</td>
-<td>Apenas host:porta destino + TLS ClientHello</td>
+<td>Requisição e resposta completas</td>
+<td>host:port de destino + TLS ClientHello</td>
 </tr>
 <tr>
 <td>Criptografia</td>
-<td>Nenhuma (a menos que terminação TLS)</td>
-<td>TLS de ponta a ponta</td>
+<td>Nenhuma (a menos que termine o TLS)</td>
+<td>TLS ponta a ponta</td>
 </tr>
 <tr>
-<td>Caching</td>
-<td>Sim, baseado em semântica HTTP</td>
-<td>Não (conteúdo criptografado)</td>
+<td>Cache</td>
+<td>Sim, por semântica HTTP</td>
+<td>Não (criptografado)</td>
 </tr>
 <tr>
 <td>Filtragem de conteúdo</td>
 <td>Sim</td>
-<td>Não (apenas bloqueio baseado em hostname)</td>
+<td>Apenas por hostname</td>
 </tr>
 <tr>
-<td>Modificação de cabeçalhos</td>
-<td>Sim</td>
-<td>Não (cabeçalhos criptografados)</td>
-</tr>
-<tr>
-<td>Visibilidade de URL</td>
+<td>Visibilidade da URL</td>
 <td>URL completa</td>
-<td>Apenas hostname (via CONNECT e SNI)</td>
+<td>Apenas hostname (CONNECT e SNI)</td>
 </tr>
 <tr>
 <td>Suporte a protocolo</td>
 <td>Apenas HTTP</td>
-<td>Qualquer protocolo sobre TCP</td>
+<td>Qualquer protocolo TCP</td>
 </tr>
 </tbody>
 </table>
-<h2 id="proxies-https-tls-para-o-proxy">Proxies HTTPS (TLS para o Proxy)</h2>
-<p>Uma distinção que vale esclarecer é a diferença entre fazer proxy de tráfego HTTPS e conectar ao próprio proxy via HTTPS. Quando você configura <code>--proxy-server=https://proxy:port</code> em vez de <code>http://proxy:port</code>, a conexão entre seu navegador e o proxy é criptografada com TLS. Isso protege suas credenciais de autenticação do proxy de serem interceptadas na rede local e esconde até o hostname CONNECT de observadores locais, já que está encapsulado dentro da conexão TLS para o proxy.</p>
-<p>O Chrome suporta isso via o esquema <code>https://</code> em <code>--proxy-server</code>. É particularmente importante ao usar um proxy em redes não confiáveis (Wi-Fi público, hospedagem compartilhada), onde a conexão entre você e o proxy é o elo mais fraco.</p>
+<h2 id="conectando-ao-proxy-sobre-tls">Conectando ao proxy sobre TLS</h2>
+<p>Fazer proxy de tráfego HTTPS é diferente de alcançar o próprio proxy sobre HTTPS. Configure <code>--proxy-server=https://proxy:port</code> (em vez de <code>http://</code>) e o salto entre seu navegador e o proxy fica criptografado por TLS, o que protege suas credenciais de proxy na rede local e esconde até o hostname do CONNECT de observadores locais. Isso importa mais em redes não confiáveis, onde o salto do cliente ao proxy é o menos protegido.</p>
 <h2 id="autenticacao">Autenticação</h2>
-<p>A autenticação de proxy HTTP usa códigos de status e cabeçalhos HTTP padrão, seguindo a RFC 9110. Quando um proxy requer autenticação, ele responde com <code>407 Proxy Authentication Required</code> e um cabeçalho <code>Proxy-Authenticate</code> indicando quais esquemas de autenticação suporta. O cliente então retransmite a requisição com um cabeçalho <code>Proxy-Authorization</code> contendo as credenciais.</p>
-<h3 id="esquemas-de-autenticacao">Esquemas de Autenticação</h3>
-<p>Existem vários esquemas de autenticação, cada um com características de segurança diferentes.</p>
-<p><strong>Basic</strong> (RFC 7617) é o mais simples. O cliente envia <code>Proxy-Authorization: Basic &lt;base64(username:password)&gt;</code>. Base64 é uma codificação, não criptografia, então as credenciais são trivialmente reversíveis. Qualquer um que intercepte o cabeçalho pode decodificá-lo instantaneamente e reusá-lo indefinidamente já que não há proteção contra replay. Auth Basic deve ser usado apenas sobre conexões criptografadas com TLS.</p>
-<p><strong>Digest</strong> (RFC 7616) usa um mecanismo de challenge-response. O proxy envia um nonce aleatório, e o cliente computa um hash do username, password, nonce e URI da requisição. A senha nunca é transmitida, e o nonce fornece proteção contra replay. A versão original usa MD5, que é rápido o suficiente para brute-force eficiente, embora a RFC 7616 tenha adicionado suporte a SHA-256. Auth Digest é raramente implementado por serviços de proxy modernos.</p>
-<p><strong>NTLM</strong> é o protocolo proprietário de challenge-response da Microsoft, comum em ambientes corporativos Windows. Usa uma negociação de três etapas (Tipo 1 negociação, Tipo 2 challenge, Tipo 3 autenticação) e integra com Active Directory para single sign-on. NTLMv1 usa DES (quebrado), e NTLMv2 usa HMAC-MD5 (considerado fraco pelos padrões modernos). A Microsoft recomenda Kerberos sobre NTLM para novas implantações. NTLM é vinculado à conexão, o que significa que quebra com multiplexação HTTP/2.</p>
-<p><strong>Negotiate</strong> (RFC 4559) usa SPNEGO para selecionar entre Kerberos e NTLM, preferindo Kerberos. Kerberos oferece a segurança mais forte (criptografia AES, autenticação mútua, tickets com tempo limitado) mas requer infraestrutura Active Directory, máquinas no domínio e sincronização precisa de relógio. Em automação de navegador, Kerberos é difícil de configurar programaticamente.</p>
+<p>Quando um proxy precisa de credenciais, ele responde <code>407 Proxy Authentication Required</code> com um header <code>Proxy-Authenticate</code> nomeando os esquemas que aceita, e o cliente tenta de novo com um header <code>Proxy-Authorization</code>.</p>
+<ul>
+<li><strong>Basic</strong> (RFC 7617): envia <code>base64(username:password)</code>. Base64 é codificação, não criptografia, então é trivialmente reversível e não tem proteção contra replay. Use apenas sobre uma conexão TLS ao proxy.</li>
+<li><strong>Digest</strong> (RFC 7616): um desafio-resposta sobre um nonce; a senha nunca é enviada e o nonce limita o replay. A forma original em MD5 é fraca (o SHA-256 foi adicionado depois), e raramente é implementada hoje.</li>
+<li><strong>NTLM</strong>: o desafio-resposta proprietário da Microsoft, comum em redes Windows. É preso à conexão, então quebra com a multiplexação do HTTP/2, e seus hashes são fracos pelos padrões modernos.</li>
+<li><strong>Negotiate</strong> (RFC 4559): SPNEGO selecionando Kerberos ou NTLM, preferindo Kerberos. O Kerberos é o mais forte, mas precisa de Active Directory, máquinas ligadas ao domínio e relógios sincronizados, o que é difícil de arranjar em automação.</li>
+</ul>
 <table>
 <thead>
 <tr>
 <th>Esquema</th>
 <th>Segurança</th>
 <th>Mecanismo</th>
-<th>Notas Práticas</th>
+<th>Notas</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>Basic</td>
 <td>Baixa</td>
-<td>Credenciais codificadas em Base64</td>
-<td>Suporte universal. Usar apenas sobre TLS.</td>
+<td>Credenciais em Base64</td>
+<td>Universal. Só sobre TLS.</td>
 </tr>
 <tr>
 <td>Digest</td>
 <td>Média</td>
-<td>Challenge-response com MD5/SHA-256</td>
-<td>Proteção contra replay via nonce. Raramente implementado.</td>
+<td>Desafio-resposta (MD5/SHA-256)</td>
+<td>Proteção contra replay. Raro.</td>
 </tr>
 <tr>
 <td>NTLM</td>
 <td>Média</td>
-<td>Challenge-response (NT hash)</td>
-<td>SSO Windows. Proprietário, vulnerabilidades conhecidas.</td>
+<td>Desafio-resposta (hash NT)</td>
+<td>SSO do Windows. Quebra HTTP/2.</td>
 </tr>
 <tr>
 <td>Negotiate</td>
 <td>Alta</td>
 <td>Kerberos/SPNEGO</td>
-<td>Mais forte. Requer Active Directory.</td>
+<td>Mais forte. Precisa de Active Directory.</td>
 </tr>
 </tbody>
 </table>
-<h3 id="autenticacao-no-pydoll">Autenticação no Pydoll</h3>
-<p>O Chrome não suporta credenciais de proxy inline na flag <code>--proxy-server</code>. Escrever <code>--proxy-server=http://user:pass@proxy:port</code> não funciona: o Chrome silenciosamente ignora a porção <code>user:pass</code> e conecta sem autenticação.</p>
-<p>O Pydoll resolve isso transparentemente através do seu <code>ProxyManager</code>. Quando você fornece uma URL de proxy com credenciais embutidas, o Pydoll extrai o username e password, remove-os da URL antes de passá-la ao Chrome, e usa o domínio CDP Fetch para interceptar respostas <code>407 Proxy Authentication Required</code> e automaticamente fornecer as credenciais via <code>Fetch.continueWithAuth</code>. Essa abordagem funciona para todos os esquemas de autenticação que o Chrome suporta (Basic, Digest, NTLM, Negotiate) sem o Pydoll precisar implementar a lógica específica do protocolo.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChromiumOptions</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="c1"># Pydoll extrai credenciais, limpa a URL e lida com 407 via CDP</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--proxy-server=http://user:pass@proxy.example.com:8080'</span><span class="p">)</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">(</span><span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">'https://example.com'</span><span class="p">)</span>
-</span></code></pre></div>
-<div class="admonition tip">
-<p class="admonition-title">Melhores Práticas de Autenticação</p>
-<p>Sempre use conexões de proxy criptografadas com TLS (proxy HTTPS ou túnel SSH) para proteger credenciais em trânsito. Prefira Bearer tokens para proxies de API já que são revogáveis e com tempo limitado. Nunca use auth Basic sobre uma conexão HTTP não criptografada para o proxy. Não codifique credenciais no código-fonte; use variáveis de ambiente.</p>
-</div>
-<h2 id="protocolos-modernos-e-proxy">Protocolos Modernos e Proxy</h2>
+<p>O Chrome não aceita credenciais embutidas em <code>--proxy-server</code>: <code>http://user:pass@proxy:port</code> conecta sem o <code>user:pass</code>. O Pydoll contorna isso para você (ele remove as credenciais da URL e responde ao desafio <code>407</code> via CDP), então você pode passar uma URL de proxy com credenciais. Veja <a href="../../../guides/proxies/">Proxies</a> para o uso.</p>
+<h2 id="protocolos-modernos">Protocolos modernos</h2>
 <h3 id="http2">HTTP/2</h3>
-<p>HTTP/2 introduziu multiplexação, enquadramento binário e compressão de cabeçalhos HPACK, que mudam fundamentalmente como proxies lidam com conexões. No HTTP/1.1, cada requisição ocupa uma conexão sequencialmente (pipelining existe mas é desabilitado na prática, então navegadores contornam isso abrindo seis conexões paralelas por host). No HTTP/2, uma única conexão TCP carrega múltiplos streams concorrentes, cada um com sua própria requisição e resposta.</p>
-<p>Para proxies, isso significa gerenciar IDs de stream, prioridades e janelas de controle de fluxo em ambos os lados da conexão. O proxy deve traduzir entre IDs de stream no lado do cliente e do servidor, manter árvores de prioridade e lidar com controle de fluxo por stream. Isso é significativamente mais complexo que o simples encaminhamento de requisição-resposta do HTTP/1.1.</p>
-<p>Da perspectiva de fingerprinting, metadados de stream HTTP/2 (tamanhos de janela, configurações de prioridade, ordenação de cabeçalhos dentro do HPACK) podem fazer fingerprint de clientes individuais mesmo quando múltiplos usuários compartilham o mesmo proxy.</p>
+<p>O HTTP/2 carrega múltiplos streams concorrentes sobre uma única conexão TCP, com framing binário e compressão de headers HPACK. Para um proxy, isso significa mapear IDs de stream entre os dois lados, manter árvores de prioridade, e fazer controle de fluxo por stream, o que é bem mais envolvido do que o encaminhamento sequencial do HTTP/1.1. Também importa para fingerprinting: os metadados de stream do HTTP/2 (tamanhos de janela, prioridades, ordem dos headers no HPACK) podem identificar clientes individuais mesmo quando muitos compartilham um proxy.</p>
 <table>
 <thead>
 <tr>
@@ -5096,75 +3820,33 @@
 <tbody>
 <tr>
 <td>Conexões</td>
-<td>Sequencial por conexão (navegadores abrem 6 em paralelo)</td>
-<td>Múltiplos streams concorrentes sobre uma conexão</td>
+<td>Sequencial por conexão (navegadores abrem ~6 em paralelo)</td>
+<td>Streams concorrentes sobre uma conexão</td>
 </tr>
 <tr>
 <td>Multiplexação</td>
-<td>Não (head-of-line blocking)</td>
-<td>Sim (apenas em nível de stream)</td>
+<td>Não</td>
+<td>Sim (nível de stream)</td>
 </tr>
 <tr>
-<td>Compressão de Cabeçalhos</td>
+<td>Compressão de headers</td>
 <td>Nenhuma</td>
 <td>HPACK</td>
 </tr>
 <tr>
-<td>Complexidade do Proxy</td>
-<td>Encaminhamento simples de requisição/resposta</td>
-<td>Mapeamento de ID de stream, gerenciamento de prioridade</td>
+<td>Complexidade do proxy</td>
+<td>Encaminhamento simples</td>
+<td>Mapeamento de streams, prioridades</td>
 </tr>
 </tbody>
 </table>
-<p>No HTTP/2, o método CONNECT foi estendido pela RFC 8441 para suportar um pseudo-cabeçalho <code>:protocol</code>, habilitando tunelamento WebSocket e outras atualizações de protocolo diretamente dentro de streams HTTP/2 sem requerer conexões separadas.</p>
 <h3 id="http3-e-quic">HTTP/3 e QUIC</h3>
-<p>HTTP/3 roda sobre QUIC (RFC 9000), que é um protocolo de transporte baseado em UDP. Isso introduz desafios fundamentais para proxies HTTP. Proxies HTTP tradicionais operam sobre TCP e não podem lidar com o tráfego UDP do QUIC. Conexões QUIC podem sobreviver a mudanças de IP (migração de conexão), complicando o gerenciamento de sessão do proxy. E QUIC criptografa quase tudo, incluindo metadados de nível de transporte que eram anteriormente visíveis.</p>
-<p>Fazer proxy de QUIC requer CONNECT-UDP (RFC 9298), um novo método para estabelecer túneis UDP através de proxies HTTP. A maioria dos proxies tradicionais, incluindo muitos serviços comerciais, ainda não suporta isso. Navegadores fazem fallback para HTTP/2 sobre TCP quando o proxy não suporta QUIC, o que significa que mais metadados podem vazar do que esperado se você estava contando com o transporte criptografado do HTTP/3.</p>
-<p>Em cenários de automação, considere desabilitar QUIC com a flag do Chrome <code>--disable-quic</code> para forçar HTTP/2 sobre TCP. Isso garante que todo tráfego passe pelo seu proxy e elimina o risco de vazamentos baseados em UDP do QUIC.</p>
-<table>
-<thead>
-<tr>
-<th>Aspecto</th>
-<th>TCP + TLS (HTTP/1.1, HTTP/2)</th>
-<th>QUIC/UDP (HTTP/3)</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Transporte</td>
-<td>TCP (orientado a conexão)</td>
-<td>UDP (sem conexão)</td>
-</tr>
-<tr>
-<td>Handshake</td>
-<td>TCP + TLS separados (2 RTT)</td>
-<td>Combinado (0-1 RTT)</td>
-</tr>
-<tr>
-<td>Head-of-line blocking</td>
-<td>Sim (nível TCP)</td>
-<td>Não (apenas nível de stream)</td>
-</tr>
-<tr>
-<td>Migração de conexão</td>
-<td>Não suportado</td>
-<td>Suportado (sobrevive a mudanças de IP)</td>
-</tr>
-<tr>
-<td>Compatibilidade com proxy</td>
-<td>Excelente</td>
-<td>Limitada (requer suporte a relay UDP)</td>
-</tr>
-</tbody>
-</table>
+<p>O HTTP/3 roda sobre o QUIC, um transporte UDP, o que quebra as suposições de proxies baseados em TCP. Proxies tradicionais não conseguem carregar QUIC, suas conexões sobrevivem a mudanças de IP, e ele criptografa quase todos os metadados de transporte. Fazer proxy dele precisa de CONNECT-UDP (RFC 9298), que muitos serviços ainda não suportam, então os navegadores caem para HTTP/2 sobre TCP quando o proxy não consegue fazer QUIC.</p>
 <div class="admonition warning">
-<p class="admonition-title">Downgrade de Protocolo</p>
-<p>Quando um proxy não suporta HTTP/3, o navegador silenciosamente faz fallback para HTTP/2 ou HTTP/1.1. Este downgrade pode expor metadados (cabeçalhos, padrões de timing) que HTTP/3 teria criptografado. Monitore seu tráfego para entender sua versão de protocolo real, e esteja ciente de que a adoção do HTTP/3 varia por região e CDN.</p>
+<p class="admonition-title">O downgrade silencioso vaza metadados</p>
+<p>Quando um proxy não suporta HTTP/3, o navegador cai silenciosamente para HTTP/2 ou HTTP/1.1, expondo metadados de timing e header que o HTTP/3 teria criptografado. Em automação, considere forçar TCP com a flag <code>--disable-quic</code> para que todo o tráfego passe pelo proxy e não haja vazamentos baseados em UDP.</p>
 </div>
-<h2 id="resumo">Resumo</h2>
-<p>Proxies HTTP fornecem funcionalidade rica ao custo de escopo limitado e preocupações de privacidade. Eles podem inspecionar, cachear e filtrar tráfego HTTP, mas não podem lidar com protocolos não-HTTP, tráfego UDP ou conteúdo HTTPS sem quebrar a criptografia. Sua presença é revelada através de cabeçalhos identificáveis a menos que explicitamente removidos.</p>
-<p>Para automação, o túnel CONNECT é o recurso mais relevante: ele preserva a criptografia TLS de ponta a ponta enquanto dá ao proxy apenas visibilidade em nível de hostname. O Pydoll lida com autenticação de proxy transparentemente através do domínio CDP Fetch, suportando todos os esquemas que o Chrome implementa.</p>
-<h3 id="proxy-http-vs-socks5">Proxy HTTP vs SOCKS5</h3>
+<h2 id="proxy-http-vs-socks5">Proxy HTTP vs SOCKS5</h2>
 <table>
 <thead>
 <tr>
@@ -5175,66 +3857,57 @@
 </thead>
 <tbody>
 <tr>
-<td>Filtragem de conteúdo</td>
+<td>Filtragem de conteúdo / cache</td>
 <td>Sim</td>
 <td>Não</td>
 </tr>
 <tr>
 <td>Bloqueio baseado em URL</td>
 <td>Sim</td>
-<td>Não (apenas IP:porta)</td>
+<td>Não (só IP:port)</td>
 </tr>
 <tr>
-<td>Caching</td>
-<td>Sim</td>
-<td>Não</td>
-</tr>
-<tr>
-<td>Suporte UDP</td>
+<td>Suporte a UDP</td>
 <td>Não</td>
 <td>Sim</td>
 </tr>
 <tr>
 <td>Flexibilidade de protocolo</td>
-<td>Apenas HTTP (CONNECT para tunelamento TCP)</td>
+<td>HTTP (CONNECT para túneis TCP)</td>
 <td>Qualquer TCP/UDP</td>
 </tr>
 <tr>
 <td>Privacidade</td>
-<td>Baixa (analisa HTTP, adiciona cabeçalhos reveladores)</td>
-<td>Média (não analisa ou modifica tráfego, mas conteúdo não criptografado ainda é visível ao operador)</td>
+<td>Baixa (faz parse de HTTP, adiciona headers)</td>
+<td>Maior (não faz parse nem modifica)</td>
 </tr>
 <tr>
-<td>Resolução DNS</td>
-<td>Proxy resolve (remoto)</td>
-<td>Depende (SOCKS5: tipicamente cliente resolve, SOCKS5h: proxy resolve. Chrome sempre resolve remotamente para SOCKS5.)</td>
+<td>Resolução de DNS</td>
+<td>O proxy resolve</td>
+<td>O Chrome resolve remotamente para SOCKS5</td>
 </tr>
 </tbody>
 </table>
-<p>Para ambientes corporativos que precisam de controle de conteúdo e caching, proxies HTTP são a escolha certa. Para automação focada em privacidade, SOCKS5 oferece melhor stealth e flexibilidade de protocolo. Para segurança máxima, use SOCKS5 sobre um túnel SSH ou VPN.</p>
-<p><strong>Próximos passos:</strong></p>
+<p>Proxies HTTP servem a ambientes que precisam de controle de conteúdo e cache. Para automação focada em privacidade, o SOCKS5 dá melhor stealth e flexibilidade de protocolo. Em automação, o túnel CONNECT mantém seu fingerprint TLS de ponta a ponta e dá ao proxy apenas visibilidade em nível de hostname.</p>
+<h2 id="relacionado">Relacionado</h2>
 <ul>
-<li><a href="../socks-proxies/">Proxies SOCKS</a>: Proxy agnóstico a protocolo na camada de sessão</li>
-<li><a href="../network-fundamentals/">Fundamentos de Rede</a>: TCP/IP, UDP, WebRTC</li>
-<li><a href="../proxy-detection/">Detecção de Proxy</a>: Como proxies são detectados e como evitar</li>
-<li><a href="../../../features/configuration/proxy/">Configuração de Proxy</a>: Configuração prática de proxy no Pydoll</li>
-<li><a href="../../fingerprinting/network-fingerprinting/">Network Fingerprinting</a>: Fingerprinting TCP/IP e TLS</li>
+<li><a href="../socks-proxies/">Proxies SOCKS</a>: proxying agnóstico ao protocolo, na camada de sessão.</li>
+<li><a href="../proxy-detection/">Detecção de proxy</a>: os sinais que expõem um proxy.</li>
+<li><a href="../network-fundamentals/">Fundamentos de rede</a>: TCP/IP, UDP, e as camadas por baixo.</li>
+<li><a href="../../fingerprinting/network-fingerprinting/">Fingerprinting de rede</a>: fingerprinting de TCP/IP e TLS.</li>
+<li><a href="../../../guides/proxies/">Proxies</a>: configurando proxies no Pydoll.</li>
 </ul>
 <h2 id="referencias">Referências</h2>
 <ul>
-<li>RFC 9110: HTTP Semantics (2022, substitui RFC 7230-7237) - https://www.rfc-editor.org/rfc/rfc9110.html</li>
-<li>RFC 9112: HTTP/1.1 (2022) - https://www.rfc-editor.org/rfc/rfc9112.html</li>
-<li>RFC 9113: HTTP/2 (2022, substitui RFC 7540) - https://www.rfc-editor.org/rfc/rfc9113.html</li>
-<li>RFC 9114: HTTP/3 (2022) - https://www.rfc-editor.org/rfc/rfc9114.html</li>
-<li>RFC 9000: QUIC Transport Protocol (2021) - https://www.rfc-editor.org/rfc/rfc9000.html</li>
-<li>RFC 9298: Proxying UDP in HTTP (CONNECT-UDP, 2022) - https://www.rfc-editor.org/rfc/rfc9298.html</li>
-<li>RFC 8441: Bootstrapping WebSockets with HTTP/2 (2018) - https://www.rfc-editor.org/rfc/rfc8441.html</li>
-<li>RFC 7617: Basic Authentication (2015) - https://www.rfc-editor.org/rfc/rfc7617.html</li>
-<li>RFC 7616: Digest Authentication (2015) - https://www.rfc-editor.org/rfc/rfc7616.html</li>
-<li>RFC 7239: Forwarded HTTP Extension (2014) - https://www.rfc-editor.org/rfc/rfc7239.html</li>
-<li>RFC 4559: Negotiate Authentication (2006) - https://www.rfc-editor.org/rfc/rfc4559.html</li>
-<li>MDN Web Docs: Proxy servers and tunneling - https://developer.mozilla.org/en-US/docs/Web/HTTP/Proxy_servers_and_tunneling</li>
-<li>Chrome DevTools Protocol: Fetch domain - https://chromedevtools.github.io/devtools-protocol/tot/Fetch/</li>
+<li>RFC 9110: HTTP Semantics: https://www.rfc-editor.org/rfc/rfc9110.html</li>
+<li>RFC 9113: HTTP/2: https://www.rfc-editor.org/rfc/rfc9113.html</li>
+<li>RFC 9114: HTTP/3: https://www.rfc-editor.org/rfc/rfc9114.html</li>
+<li>RFC 9000: QUIC: https://www.rfc-editor.org/rfc/rfc9000.html</li>
+<li>RFC 9298: Proxying UDP in HTTP (CONNECT-UDP): https://www.rfc-editor.org/rfc/rfc9298.html</li>
+<li>RFC 7617: Basic Authentication: https://www.rfc-editor.org/rfc/rfc7617.html</li>
+<li>RFC 7616: Digest Authentication: https://www.rfc-editor.org/rfc/rfc7616.html</li>
+<li>RFC 7239: Forwarded HTTP Extension: https://www.rfc-editor.org/rfc/rfc7239.html</li>
+<li>MDN: Proxy servers and tunneling: https://developer.mozilla.org/en-US/docs/Web/HTTP/Proxy_servers_and_tunneling</li>
 </ul>
 
 

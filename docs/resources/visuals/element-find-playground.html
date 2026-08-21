@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Element finding playground</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+<style>
+  :root{
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;
+    --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
+    --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--pass:#35e0a1;--danger:#ff6b6b;
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
+  .widget{border:1px solid var(--line);padding:16px 18px}
+  .builder{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  @media(max-width:560px){.builder{grid-template-columns:1fr 1fr}}
+  .fieldwrap{display:flex;flex-direction:column;gap:5px;min-width:0}
+  .fieldwrap label{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint)}
+  .fieldwrap input{width:100%;min-width:0;font-family:var(--mono);font-size:12.5px;color:var(--ink);background:var(--bg2);border:1px solid var(--line2);padding:8px 10px;outline:none}
+  .fieldwrap input:focus{border-color:var(--indigo)}
+  .callrow{display:flex;align-items:center;gap:12px;margin-top:13px}
+  .call{flex:1;font-family:var(--mono);font-size:12.5px;color:var(--dim);background:var(--bg2);border:1px solid var(--line);padding:9px 12px;overflow-x:auto;white-space:nowrap}
+  .call .kw{color:#b3a0ff}.call .fn{color:#7fb4ff}.call .st{color:var(--pass)}.call .k{color:var(--indigo2)}
+  .allbtn{font-family:var(--mono);font-size:11px;color:var(--dim);background:var(--panel);border:1px solid var(--line2);padding:8px 11px;cursor:pointer;white-space:nowrap;transition:.15s}
+  .allbtn.on{color:var(--indigo);border-color:var(--indigo);background:rgba(110,123,255,.12)}
+  .preview{margin-top:13px;border:1px solid var(--line);background:var(--bg2);padding:15px;display:flex;flex-wrap:wrap;gap:9px;align-items:center}
+  .preview .field{font-family:var(--mono);font-size:12px;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:8px 11px;flex:1 1 100%}
+  .preview .btn{font-family:var(--sans);font-weight:600;font-size:12px;padding:8px 14px;border:1px solid var(--line2);background:var(--panel);color:var(--ink);cursor:default}
+  .preview .btn.primary{background:var(--indigo);border-color:var(--indigo);color:#0a0b16}
+  .preview .link{font-family:var(--mono);font-size:11.5px;color:var(--indigo2);text-decoration:none;margin-left:auto}
+  .match{outline:2px solid var(--pass)!important;outline-offset:2px}
+  .count{font-family:var(--mono);font-size:12px;color:var(--pass);margin-top:11px}
+  .count.bad{color:var(--danger)}
+  .count.zero{color:var(--faint)}
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="builder">
+    <div class="fieldwrap"><label>tag_name</label><input id="f_tag" value="button" spellcheck="false" /></div>
+    <div class="fieldwrap"><label>id</label><input id="f_id" value="" spellcheck="false" /></div>
+    <div class="fieldwrap"><label>class_name</label><input id="f_class" value="" spellcheck="false" /></div>
+    <div class="fieldwrap"><label>text</label><input id="f_text" value="" spellcheck="false" /></div>
+  </div>
+  <div class="callrow">
+    <div class="call" id="call"></div>
+    <button class="allbtn" id="allBtn">find_all</button>
+  </div>
+
+  <div class="preview" id="page">
+    <input class="field" id="email" placeholder="email" />
+    <input class="field" id="pass" placeholder="password" />
+    <button class="btn primary" type="submit">Sign up</button>
+    <button class="btn ghost" type="button">Cancel</button>
+    <a class="link" href="#">Forgot password?</a>
+  </div>
+  <div class="count" id="count"></div>
+</div>
+
+<script>
+(function(){
+  var page=document.getElementById('page'),call=document.getElementById('call'),count=document.getElementById('count'),allBtn=document.getElementById('allBtn');
+  var fTag=document.getElementById('f_tag'),fId=document.getElementById('f_id'),fClass=document.getElementById('f_class'),fText=document.getElementById('f_text');
+  var findAll=false;
+  function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+  function clearMatches(){ page.querySelectorAll('.match').forEach(function(n){n.classList.remove('match');}); }
+  function buildCall(tag,id,cls,text){
+    var parts=[];
+    if(tag)parts.push('<span class="k">tag_name</span>=<span class="st">\''+esc(tag)+'\'</span>');
+    if(id)parts.push('<span class="k">id</span>=<span class="st">\''+esc(id)+'\'</span>');
+    if(cls)parts.push('<span class="k">class_name</span>=<span class="st">\''+esc(cls)+'\'</span>');
+    if(text)parts.push('<span class="k">text</span>=<span class="st">\''+esc(text)+'\'</span>');
+    if(findAll)parts.push('<span class="k">find_all</span>=<span class="kw">True</span>');
+    if(!parts.length)return '<span class="kw">await</span> tab.<span class="fn">find</span>()  <span style="color:var(--faint)"># fill an attribute above</span>';
+    return '<span class="kw">await</span> tab.<span class="fn">find</span>('+parts.join(', ')+')';
+  }
+  function evaluate(){
+    clearMatches();
+    var tag=fTag.value.trim(),id=fId.value.trim(),cls=fClass.value.trim(),text=fText.value.trim();
+    call.innerHTML=buildCall(tag,id,cls,text);
+    if(!tag&&!id&&!cls&&!text){ count.textContent=''; count.className='count'; return; }
+    var sel=(tag||'')+(id?'#'+id:'')+(cls?'.'+cls.split(/\s+/).filter(Boolean).join('.'):'');
+    if(!sel)sel='*';
+    var nodes;
+    try{ nodes=[].slice.call(page.querySelectorAll(sel)); }
+    catch(e){ count.textContent='invalid attribute'; count.className='count bad'; return; }
+    if(text){
+      nodes=nodes.filter(function(n){ return n.textContent.trim()===text; });
+      nodes=nodes.filter(function(n){ return !nodes.some(function(m){ return m!==n && n.contains(m); }); });
+    }
+    if(!findAll)nodes=nodes.slice(0,1);
+    nodes.forEach(function(n){ n.classList.add('match'); });
+    var n=nodes.length;
+    if(n===0){ count.textContent='find() would raise ElementNotFound'; count.className='count zero'; }
+    else { count.textContent=findAll?(n+' element'+(n===1?'':'s')+' matched'):'1 element matched (find returns the first)'; count.className='count'; }
+  }
+  [fTag,fId,fClass,fText].forEach(function(i){i.addEventListener('input',evaluate);});
+  allBtn.addEventListener('click',function(){findAll=!findAll;allBtn.classList.toggle('on',findAll);evaluate();});
+  evaluate();
+})();
+</script>
+<script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>
+</body>
+</html>

@@ -31,7 +31,7 @@
     
     
       
-        <title>Fundamentos de Rede - Pydoll - Biblioteca de Automação Web Assíncrona</title>
+        <title>Fundamentos de rede - Pydoll - Biblioteca de Automação Web Assíncrona</title>
       
     
     
@@ -52,8 +52,8 @@
         
         
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Chivo:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Chivo";--md-code-font:"JetBrains Mono"}</style>
       
     
     
@@ -67,6 +67,8 @@
     
       <link rel="stylesheet" href="../../../../resources/stylesheets/extra.css">
     
+      <link rel="stylesheet" href="../../../../resources/stylesheets/landing-theme.css">
+    
     <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -77,8 +79,6 @@
   
   
     
-    
-      
     
     
     
@@ -106,7 +106,7 @@
 
   
 
-<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+<header class="md-header md-header--landing md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="../../../" title="Pydoll - Biblioteca de Automação Web Assíncrona" class="md-header__button md-logo" aria-label="Pydoll - Biblioteca de Automação Web Assíncrona" data-md-component="logo">
       
@@ -114,6 +114,7 @@
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11 15H6l7-14v8h5l-7 14z"/></svg>
 
     </a>
+    <span class="md-header__docs-chip">docs</span>
     <label class="md-header__button md-icon" for="__drawer">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
@@ -121,48 +122,18 @@
     <div class="md-header__title" data-md-component="header-title">
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
-          <span class="md-ellipsis">
-            Pydoll - Biblioteca de Automação Web Assíncrona
-          </span>
+          <span class="md-ellipsis">Pydoll - Biblioteca de Automação Web Assíncrona</span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
-            
-              Fundamentos de Rede
-            
+            Fundamentos de rede
           </span>
         </div>
       </div>
     </div>
     
       
-        <form class="md-header__option" data-md-component="palette">
-  
     
-    
-    
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Dark Mode"  type="radio" name="__palette" id="__palette_0">
-    
-      <label class="md-header__button md-icon" title="Dark Mode" for="__palette_1" hidden>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6m0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4M7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3"/></svg>
-      </label>
-    
-  
-    
-    
-    
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Light Mode"  type="radio" name="__palette" id="__palette_1">
-    
-      <label class="md-header__button md-icon" title="Light Mode" for="__palette_0" hidden>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
-      </label>
-    
-  
-</form>
-      
-    
-    
-      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
     
     
       <div class="md-header__option">
@@ -253,6 +224,7 @@
 </a>
       </div>
     
+    <a class="md-header__cta" href="../../../../getting-started/">Get started</a>
   </nav>
   
     
@@ -288,13 +260,79 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../features/" class="md-tabs__link">
+        <a href="../../../getting-started/" class="md-tabs__link">
           
   
   
     
   
-  Recursos
+  Primeiros passos
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../basics/async-python/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Fundamentos
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../guides/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Guias
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../stealth/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Stealth
 
         </a>
       </li>
@@ -318,7 +356,7 @@
   
     
   
-  Análise Profunda
+  Análise profunda
 
         </a>
       </li>
@@ -436,20 +474,6 @@
     
       
         
-          
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
       
         
       
@@ -473,15 +497,301 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
         
           
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Primeiros passos
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Primeiros passos
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Instalação
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../first-automation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sua primeira automação
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../migrating/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migrando do Selenium e Playwright
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fundamentos
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Fundamentos
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../basics/async-python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python assíncrono na prática
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../basics/selectors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Seletores, CSS e XPath
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
           <div class="md-nav__link md-nav__container">
-            <a href="../../../features/" class="md-nav__link ">
+            <a href="../../../guides/" class="md-nav__link ">
               
   
   
   <span class="md-ellipsis">
     
   
-    Recursos
+    Guias
   
 
     
@@ -492,18 +802,18 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Recursos
+    Guias
   
 
           </label>
@@ -518,42 +828,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/core-concepts/" class="md-nav__link">
+      <a href="../../../guides/core-concepts/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Conceitos Fundamentais
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/element-finding/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Pesquisa de Elementos
+    Conceitos fundamentais
   
 
     
@@ -575,6 +857,10 @@
   
     
     
+      
+        
+      
+        
       
         
       
@@ -593,17 +879,17 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_4" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_3" >
         
           
-          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
             
   
   
   <span class="md-ellipsis">
     
   
-    Data Extraction
+    Encontrar e extrair
   
 
     
@@ -614,12 +900,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_4">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_3">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Data Extraction
+    Encontrar e extrair
   
 
           </label>
@@ -632,14 +918,70 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/extraction/structured-extraction/" class="md-nav__link">
+      <a href="../../../guides/element-finding/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Structured Extraction
+    Encontrar elementos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/dom-traversal/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Percorrer o DOM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/structured-extraction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Extração estruturada
   
 
     
@@ -680,8 +1022,6 @@
       
         
       
-        
-      
     
     
     
@@ -697,17 +1037,17 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_5" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_4" >
         
           
-          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="0">
             
   
   
   <span class="md-ellipsis">
     
   
-    Automação
+    Interagir
   
 
     
@@ -718,12 +1058,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_5">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_4">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Automação
+    Interagir
   
 
           </label>
@@ -736,14 +1076,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/automation/human-interactions/" class="md-nav__link">
+      <a href="../../../guides/keyboard/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Interações Humanas
+    Teclado
   
 
     
@@ -764,14 +1104,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/automation/keyboard-control/" class="md-nav__link">
+      <a href="../../../guides/mouse/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Controle de Teclado
+    Mouse
   
 
     
@@ -792,14 +1132,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/automation/mouse-control/" class="md-nav__link">
+      <a href="../../../guides/file-operations/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Controle do Mouse
+    Operações com arquivos
   
 
     
@@ -820,14 +1160,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/automation/file-operations/" class="md-nav__link">
+      <a href="../../../guides/iframes/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Operações com Arquivos
+    Iframes
   
 
     
@@ -848,42 +1188,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/automation/iframes/" class="md-nav__link">
+      <a href="../../../guides/screenshots-and-pdfs/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    IFrames
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/automation/screenshots-and-pdfs/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Capturas e PDF
+    Capturas de tela e PDFs
   
 
     
@@ -937,10 +1249,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_6" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_5" >
         
           
-          <label class="md-nav__link" for="__nav_2_6" id="__nav_2_6_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4_5" id="__nav_4_5_label" tabindex="0">
             
   
   
@@ -958,8 +1270,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_6">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -976,14 +1288,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/network/monitoring/" class="md-nav__link">
+      <a href="../../../guides/network-monitoring/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Monitoramento de Rede
+    Monitoramento de rede
   
 
     
@@ -1004,14 +1316,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/network/interception/" class="md-nav__link">
+      <a href="../../../guides/request-interception/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Interceptação de Requisições
+    Interceptação de requisições
   
 
     
@@ -1032,14 +1344,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/network/http-requests/" class="md-nav__link">
+      <a href="../../../guides/http-requests/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Requisições HTTP no Contexto do Navegador
+    Requisições HTTP no contexto do navegador
   
 
     
@@ -1060,14 +1372,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/network/network-recording/" class="md-nav__link">
+      <a href="../../../guides/network-recording/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Gravação de Rede HAR
+    Gravação HAR
   
 
     
@@ -1101,310 +1413,6 @@
         
       
         
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_7" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_7" id="__nav_2_7_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Gerenciamento do Navegador
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_7">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Gerenciamento do Navegador
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/browser-management/tabs/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Gerenciamento de Abas
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/browser-management/contexts/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Contextos do Navegador
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/browser-management/cookies-sessions/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Cookies e Sessões
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_8" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_8" id="__nav_2_8_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Configuração
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_8_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_8">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Configuração
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/configuration/browser-options/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Opções do Navegador
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/configuration/browser-preferences/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Preferências do Navegador
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../features/configuration/proxy/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Configuração de Proxy
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
       
         
       
@@ -1431,17 +1439,17 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_9" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_6" >
         
           
-          <label class="md-nav__link" for="__nav_2_9" id="__nav_2_9_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4_6" id="__nav_4_6_label" tabindex="0">
             
   
   
   <span class="md-ellipsis">
     
   
-    Avançado
+    Gerenciar o navegador
   
 
     
@@ -1452,12 +1460,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_9_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_9">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_6">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Avançado
+    Gerenciar o navegador
   
 
           </label>
@@ -1470,14 +1478,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/advanced/fingerprint-injection/" class="md-nav__link">
+      <a href="../../../guides/tabs/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Injeção de Fingerprint
+    Abas
   
 
     
@@ -1498,14 +1506,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/advanced/behavioral-captcha-bypass/" class="md-nav__link">
+      <a href="../../../guides/browser-contexts/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Bypass de Captcha Comportamental
+    Contextos do navegador
   
 
     
@@ -1526,14 +1534,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/advanced/event-system/" class="md-nav__link">
+      <a href="../../../guides/cookies-and-sessions/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Sistema de Eventos
+    Cookies e sessões
   
 
     
@@ -1554,14 +1562,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/advanced/remote-connections/" class="md-nav__link">
+      <a href="../../../guides/browser-options/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Conexões Remotas
+    Opções do navegador
   
 
     
@@ -1582,14 +1590,70 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../features/advanced/decorators/" class="md-nav__link">
+      <a href="../../../guides/browser-preferences/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Decorator Retry
+    Preferências do navegador
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/proxies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Proxies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/remote-connections/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conexões remotas
   
 
     
@@ -1606,6 +1670,326 @@
           </ul>
         </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_7" id="__nav_4_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reagir a eventos
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reagir a eventos
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Eventos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/retrying/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Repetição
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../stealth/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stealth
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Stealth
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../stealth/evasion-techniques/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Técnicas de evasão
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../stealth/human-like-interactions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interações humanizadas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../stealth/captcha-bypass/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bypass de captcha
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../stealth/fingerprint-injection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Injeção de fingerprint
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -1631,10 +2015,6 @@
       
         
           
-        
-      
-        
-      
         
       
         
@@ -1659,7 +2039,7 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
         
           
           <div class="md-nav__link md-nav__container">
@@ -1670,7 +2050,7 @@
   <span class="md-ellipsis">
     
   
-    Análise Profunda
+    Análise profunda
   
 
     
@@ -1681,98 +2061,18 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_3">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Análise Profunda
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-          
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-          
-          
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_2" >
-        
-          
-          <div class="md-nav__link md-nav__container">
-            <a href="../../fundamentals/" class="md-nav__link ">
-              
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Fundamentos Centrais
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_3_2" id="__nav_3_2_label" tabindex="">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_2">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Fundamentos Centrais
+    Análise profunda
   
 
           </label>
@@ -1787,7 +2087,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../fundamentals/cdp/" class="md-nav__link">
+      <a href="../../cdp/" class="md-nav__link">
         
   
   
@@ -1812,388 +2112,6 @@
                 
   
   
-  
-  
-    <li class="md-nav__item">
-      <a href="../../fundamentals/connection-layer/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Camada de Conexão
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../fundamentals/typing-system/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Sistema de Tipos Python
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../fundamentals/iframes-and-contexts/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Iframes & Contexts
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-          
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-          
-          
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_3" >
-        
-          
-          <div class="md-nav__link md-nav__container">
-            <a href="../../architecture/" class="md-nav__link ">
-              
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Arquitetura Interna
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_3_3" id="__nav_3_3_label" tabindex="">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_3">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Arquitetura Interna
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/browser-domain/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Domínio do Navegador
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/tab-domain/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Domínio da Aba
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/webelement-domain/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Domínio do WebElement
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/find-elements-mixin/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Mixin FindElements
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/event-architecture/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Arquitetura de Eventos
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/browser-requests-architecture/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Arquitetura de Requisições do Navegador
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/shadow-dom/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Arquitetura Shadow DOM
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
     
   
   
@@ -2233,7 +2151,7 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_3" checked>
         
           
           <div class="md-nav__link md-nav__container">
@@ -2244,7 +2162,7 @@
   <span class="md-ellipsis">
     
   
-    Rede e Segurança
+    Rede e proxies
   
 
     
@@ -2255,18 +2173,18 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_3_4" id="__nav_3_4_label" tabindex="">
+              <label class="md-nav__link " for="__nav_6_3" id="__nav_6_3_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_3_4">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6_3">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Rede e Segurança
+    Rede e proxies
   
 
           </label>
@@ -2297,7 +2215,7 @@
   <span class="md-ellipsis">
     
   
-    Fundamentos de Rede
+    Fundamentos de rede
   
 
     
@@ -2315,7 +2233,7 @@
   <span class="md-ellipsis">
     
   
-    Fundamentos de Rede
+    Fundamentos de rede
   
 
     
@@ -2344,19 +2262,19 @@
   <a href="#a-pilha-de-rede" class="md-nav__link">
     <span class="md-ellipsis">
       
-        A Pilha de Rede
+        A pilha de rede
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="A Pilha de Rede">
+    <nav class="md-nav" aria-label="A pilha de rede">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#o-modelo-osi" class="md-nav__link">
+  <a href="#como-a-camada-decide-o-que-um-proxy-pode-fazer" class="md-nav__link">
     <span class="md-ellipsis">
       
-        O Modelo OSI
+        Como a camada decide o que um proxy pode fazer
       
     </span>
   </a>
@@ -2364,21 +2282,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#como-o-posicionamento-da-camada-afeta-os-proxies" class="md-nav__link">
+  <a href="#o-problema-do-vazamento-por-camada" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Como o Posicionamento da Camada Afeta os Proxies
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#o-problema-de-vazamento-de-camada" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        O Problema de Vazamento de Camada
+        O problema do vazamento por camada
       
     </span>
   </a>
@@ -2391,22 +2298,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#tcp-vs-udp" class="md-nav__link">
+  <a href="#tcp-e-udp" class="md-nav__link">
     <span class="md-ellipsis">
       
-        TCP vs UDP
+        TCP e UDP
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="TCP vs UDP">
+    <nav class="md-nav" aria-label="TCP e UDP">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#tcp-e-proxies" class="md-nav__link">
+  <a href="#o-handshake-tcp-de-tres-vias" class="md-nav__link">
     <span class="md-ellipsis">
       
-        TCP e Proxies
+        O handshake TCP de três vias
       
     </span>
   </a>
@@ -2414,10 +2321,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#o-handshake-de-tres-vias-do-tcp" class="md-nav__link">
+  <a href="#fingerprinting-de-tcp" class="md-nav__link">
     <span class="md-ellipsis">
       
-        O Handshake de Três Vias do TCP
+        Fingerprinting de TCP
       
     </span>
   </a>
@@ -2425,32 +2332,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#fingerprinting-tcp" class="md-nav__link">
+  <a href="#udp-dns-e-quic" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Fingerprinting TCP
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#udp" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        UDP
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#quic-e-http3" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        QUIC e HTTP/3
+        UDP, DNS e QUIC
       
     </span>
   </a>
@@ -2466,19 +2351,19 @@
   <a href="#webrtc-e-vazamento-de-ip" class="md-nav__link">
     <span class="md-ellipsis">
       
-        WebRTC e Vazamento de IP
+        WebRTC e vazamento de IP
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="WebRTC e Vazamento de IP">
+    <nav class="md-nav" aria-label="WebRTC e vazamento de IP">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#como-o-webrtc-vaza-seu-ip" class="md-nav__link">
+  <a href="#ice-stun-e-os-candidatos-que-vazam" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Como o WebRTC Vaza Seu IP
+        ICE, STUN e os candidatos que vazam
       
     </span>
   </a>
@@ -2486,76 +2371,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#o-processo-ice" class="md-nav__link">
+  <a href="#prevenindo-vazamentos-de-webrtc" class="md-nav__link">
     <span class="md-ellipsis">
       
-        O Processo ICE
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#tipos-de-candidatos-ice" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Tipos de Candidatos ICE
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#o-protocolo-stun" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        O Protocolo STUN
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#por-que-proxies-nao-conseguem-parar-vazamentos-webrtc" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Por que Proxies Não Conseguem Parar Vazamentos WebRTC
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#prevenindo-vazamentos-webrtc-no-pydoll" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Prevenindo Vazamentos WebRTC no Pydoll
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#testando-vazamentos-webrtc" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Testando Vazamentos WebRTC
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#como-sites-exploram-vazamentos-webrtc" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Como Sites Exploram Vazamentos WebRTC
+        Prevenindo vazamentos de WebRTC
       
     </span>
   </a>
@@ -2568,10 +2387,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#resumo" class="md-nav__link">
+  <a href="#relacionado" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Resumo
+        Relacionado
       
     </span>
   </a>
@@ -2668,7 +2487,7 @@
   <span class="md-ellipsis">
     
   
-    Detecção de Proxy
+    Detecção de proxy
   
 
     
@@ -2696,7 +2515,7 @@
   <span class="md-ellipsis">
     
   
-    Construindo Servidores Proxy
+    Construindo um servidor proxy
   
 
     
@@ -2724,7 +2543,7 @@
   <span class="md-ellipsis">
     
   
-    Legal & Ética
+    Legal e ético
   
 
     
@@ -2765,8 +2584,6 @@
       
         
       
-        
-      
     
     
     
@@ -2785,7 +2602,7 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_5" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6_4" >
         
           
           <div class="md-nav__link md-nav__container">
@@ -2807,14 +2624,14 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_3_5" id="__nav_3_5_label" tabindex="">
+              <label class="md-nav__link " for="__nav_6_4" id="__nav_6_4_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_5">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_4">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2840,7 +2657,7 @@
   <span class="md-ellipsis">
     
   
-    Fingerprinting de Rede
+    Fingerprinting de rede
   
 
     
@@ -2868,7 +2685,7 @@
   <span class="md-ellipsis">
     
   
-    Fingerprinting do Navegador
+    Fingerprinting de navegador
   
 
     
@@ -2896,145 +2713,7 @@
   <span class="md-ellipsis">
     
   
-    Fingerprinting Comportamental
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../fingerprinting/evasion-techniques/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Técnicas de Evasão
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-          
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-          
-          
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_6" >
-        
-          
-          <div class="md-nav__link md-nav__container">
-            <a href="../../guides/" class="md-nav__link ">
-              
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Guias Práticos
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_3_6" id="__nav_3_6_label" tabindex="">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_6">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Guias Práticos
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../guides/selectors-guide/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Seletores CSS vs XPath
+    Fingerprinting comportamental
   
 
     
@@ -3074,8 +2753,6 @@
       
         
           
-        
-      
         
       
         
@@ -3103,7 +2780,7 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
         
           
           <div class="md-nav__link md-nav__container">
@@ -3125,14 +2802,14 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -3163,8 +2840,6 @@
       
         
       
-        
-      
     
     
     
@@ -3180,10 +2855,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_2" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_2" >
         
           
-          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7_2" id="__nav_7_2_label" tabindex="0">
             
   
   
@@ -3201,8 +2876,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_2">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_2">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -3310,7 +2985,7 @@
   <span class="md-ellipsis">
     
   
-    Aba
+    Tab
   
 
     
@@ -3338,35 +3013,7 @@
   <span class="md-ellipsis">
     
   
-    Requisições
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/browser/managers/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Gerenciadores
+    Requests
   
 
     
@@ -3401,8 +3048,6 @@
       
         
       
-        
-      
     
     
     
@@ -3418,10 +3063,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_3" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_3" >
         
           
-          <label class="md-nav__link" for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7_3" id="__nav_7_3_label" tabindex="0">
             
   
   
@@ -3439,8 +3084,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_3">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_3">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -3464,7 +3109,7 @@
   <span class="md-ellipsis">
     
   
-    Elemento Web
+    WebElement
   
 
     
@@ -3492,35 +3137,7 @@
   <span class="md-ellipsis">
     
   
-    Shadow Root
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/elements/mixins/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Mixins
+    ShadowRoot
   
 
     
@@ -3548,39 +3165,15 @@
   
   
   
-    
-    
-      
+    <li class="md-nav__item">
+      <a href="../../../api/extraction/" class="md-nav__link">
         
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_4" >
-        
-          
-          <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="0">
-            
   
   
   <span class="md-ellipsis">
     
   
-    Conexão
+    Extraction
   
 
     
@@ -3588,19 +3181,11 @@
   
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_4">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Conexão
+      </a>
+    </li>
   
 
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
+              
             
               
                 
@@ -3616,7 +3201,7 @@
   <span class="md-ellipsis">
     
   
-    Manipulador de Conexão
+    Connection
   
 
     
@@ -3636,62 +3221,8 @@
   
   
   
-    <li class="md-nav__item">
-      <a href="../../../api/connection/managers/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Gerenciadores
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
     
     
-      
-        
-          
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
       
         
       
@@ -3712,362 +3243,17 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_5" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7_6" >
         
           
-          <div class="md-nav__link md-nav__container">
-            <a href="../../../api/commands/" class="md-nav__link ">
-              
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Comandos
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_4_5" id="__nav_4_5_label" tabindex="0">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_5">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Comandos
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/browser/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Navegador
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/dom/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    DOM
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/input/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Entrada
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/network/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Rede
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/page/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Página
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/runtime/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Tempo de Execução
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/storage/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Armazenamento
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/target/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Alvo
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/commands/fetch/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Fetch
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_6" >
-        
-          
-          <label class="md-nav__link" for="__nav_4_6" id="__nav_4_6_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7_6" id="__nav_7_6_label" tabindex="0">
             
   
   
   <span class="md-ellipsis">
     
   
-    Protocolo
+    Core
   
 
     
@@ -4078,362 +3264,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_6">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_6">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Protocolo
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/base/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Tipos Base
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/browser/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Navegador
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/dom/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    DOM
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/fetch/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Fetch
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/input/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Entrada
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/network/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Rede
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/page/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Página
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/runtime/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Tempo de Execução
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/storage/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Armazenamento
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/protocol/target/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Alvo
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_7" >
-        
-          
-          <label class="md-nav__link" for="__nav_4_7" id="__nav_4_7_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Núcleo
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4_7">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Núcleo
+    Core
   
 
           </label>
@@ -4495,34 +3331,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/core/utils/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Utilitários
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -4568,19 +3376,19 @@
   <a href="#a-pilha-de-rede" class="md-nav__link">
     <span class="md-ellipsis">
       
-        A Pilha de Rede
+        A pilha de rede
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="A Pilha de Rede">
+    <nav class="md-nav" aria-label="A pilha de rede">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#o-modelo-osi" class="md-nav__link">
+  <a href="#como-a-camada-decide-o-que-um-proxy-pode-fazer" class="md-nav__link">
     <span class="md-ellipsis">
       
-        O Modelo OSI
+        Como a camada decide o que um proxy pode fazer
       
     </span>
   </a>
@@ -4588,21 +3396,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#como-o-posicionamento-da-camada-afeta-os-proxies" class="md-nav__link">
+  <a href="#o-problema-do-vazamento-por-camada" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Como o Posicionamento da Camada Afeta os Proxies
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#o-problema-de-vazamento-de-camada" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        O Problema de Vazamento de Camada
+        O problema do vazamento por camada
       
     </span>
   </a>
@@ -4615,22 +3412,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#tcp-vs-udp" class="md-nav__link">
+  <a href="#tcp-e-udp" class="md-nav__link">
     <span class="md-ellipsis">
       
-        TCP vs UDP
+        TCP e UDP
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="TCP vs UDP">
+    <nav class="md-nav" aria-label="TCP e UDP">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#tcp-e-proxies" class="md-nav__link">
+  <a href="#o-handshake-tcp-de-tres-vias" class="md-nav__link">
     <span class="md-ellipsis">
       
-        TCP e Proxies
+        O handshake TCP de três vias
       
     </span>
   </a>
@@ -4638,10 +3435,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#o-handshake-de-tres-vias-do-tcp" class="md-nav__link">
+  <a href="#fingerprinting-de-tcp" class="md-nav__link">
     <span class="md-ellipsis">
       
-        O Handshake de Três Vias do TCP
+        Fingerprinting de TCP
       
     </span>
   </a>
@@ -4649,32 +3446,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#fingerprinting-tcp" class="md-nav__link">
+  <a href="#udp-dns-e-quic" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Fingerprinting TCP
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#udp" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        UDP
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#quic-e-http3" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        QUIC e HTTP/3
+        UDP, DNS e QUIC
       
     </span>
   </a>
@@ -4690,19 +3465,19 @@
   <a href="#webrtc-e-vazamento-de-ip" class="md-nav__link">
     <span class="md-ellipsis">
       
-        WebRTC e Vazamento de IP
+        WebRTC e vazamento de IP
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="WebRTC e Vazamento de IP">
+    <nav class="md-nav" aria-label="WebRTC e vazamento de IP">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#como-o-webrtc-vaza-seu-ip" class="md-nav__link">
+  <a href="#ice-stun-e-os-candidatos-que-vazam" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Como o WebRTC Vaza Seu IP
+        ICE, STUN e os candidatos que vazam
       
     </span>
   </a>
@@ -4710,76 +3485,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#o-processo-ice" class="md-nav__link">
+  <a href="#prevenindo-vazamentos-de-webrtc" class="md-nav__link">
     <span class="md-ellipsis">
       
-        O Processo ICE
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#tipos-de-candidatos-ice" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Tipos de Candidatos ICE
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#o-protocolo-stun" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        O Protocolo STUN
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#por-que-proxies-nao-conseguem-parar-vazamentos-webrtc" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Por que Proxies Não Conseguem Parar Vazamentos WebRTC
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#prevenindo-vazamentos-webrtc-no-pydoll" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Prevenindo Vazamentos WebRTC no Pydoll
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#testando-vazamentos-webrtc" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Testando Vazamentos WebRTC
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#como-sites-exploram-vazamentos-webrtc" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Como Sites Exploram Vazamentos WebRTC
+        Prevenindo vazamentos de WebRTC
       
     </span>
   </a>
@@ -4792,10 +3501,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#resumo" class="md-nav__link">
+  <a href="#relacionado" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Resumo
+        Relacionado
       
     </span>
   </a>
@@ -4859,7 +3568,7 @@
         <a href="../../" class="md-path__link">
           
   <span class="md-ellipsis">
-    Análise Profunda
+    Análise profunda
   </span>
 
         </a>
@@ -4877,7 +3586,7 @@
         <a href="../" class="md-path__link">
           
   <span class="md-ellipsis">
-    Rede e Segurança
+    Rede e proxies
   </span>
 
         </a>
@@ -4899,60 +3608,48 @@
   
 
 
-<h1 id="fundamentos-de-rede">Fundamentos de Rede</h1>
-<p>Este documento cobre os protocolos de rede fundamentais que alimentam a internet e como eles podem expor ou proteger sua identidade em cenários de automação. Uma compreensão funcional de TCP, UDP, do modelo OSI e do WebRTC tornará a configuração de proxy muito menos misteriosa e muito mais eficaz.</p>
-<div class="admonition info">
-<p class="admonition-title">Navegação do Módulo</p>
-<ul>
-<li><a href="../">Visão Geral de Rede e Segurança</a>: Introdução ao módulo e trilha de aprendizado</li>
-<li><a href="../http-proxies/">Proxies HTTP/HTTPS</a>: Proxy de camada de aplicação</li>
-<li><a href="../socks-proxies/">Proxies SOCKS</a>: Proxy de camada de sessão</li>
-</ul>
-<p>Para uso prático do Pydoll, veja <a href="../../../features/configuration/proxy/">Configuração de Proxy</a> e <a href="../../../features/configuration/browser-options/">Opções do Navegador</a>.</p>
-</div>
-<h2 id="a-pilha-de-rede">A Pilha de Rede</h2>
-<p>Cada requisição HTTP que seu navegador faz viaja através de uma pilha de rede em camadas. Cada camada tem responsabilidades, protocolos e implicações de segurança específicas. Proxies operam em camadas diferentes, e a camada determina o que o proxy pode ver, modificar e ocultar. Características de rede em camadas inferiores podem aplicar fingerprinting no seu sistema real mesmo através de proxies, então entender a pilha ajuda você a ver onde ocorrem vazamentos de identidade e como preveni-los.</p>
-<h3 id="o-modelo-osi">O Modelo OSI</h3>
-<p>O modelo OSI (Open Systems Interconnection), desenvolvido pela ISO em 1984, fornece um framework conceitual para entender como os protocolos de rede interagem. As redes do mundo real usam o modelo TCP/IP (que antecede o OSI e tem apenas 4 camadas), mas a terminologia OSI permanece como a forma padrão de descrever onde os proxies operam e o que eles podem acessar.</p>
+<h1 id="fundamentos-de-rede">Fundamentos de rede</h1>
+<p>Toda requisição que seu navegador faz percorre uma pilha de rede em camadas, e cada camada decide o que um proxy pode ver, mudar ou esconder, e o que ainda pode vazar sua identidade real. Entender a pilha é o que torna o comportamento do proxy previsível em vez de misterioso. Esta página percorre as camadas, os protocolos TCP e UDP, e o WebRTC, a fonte mais comum de vazamentos de IP em automação com proxy.</p>
+<p>Para a configuração prática, veja <a href="../../../guides/proxies/">Proxies</a>. Para como essas camadas inferiores viram um fingerprint, veja <a href="../../fingerprinting/network-fingerprinting/">Fingerprinting de rede</a>.</p>
+<h2 id="a-pilha-de-rede">A pilha de rede</h2>
+<p>Proxies operam em camadas diferentes, e a camada determina seu alcance. Características de camadas inferiores podem fazer o fingerprint do seu sistema real mesmo através de um proxy impecável em camada superior, então ajuda ver onde cada protocolo fica.</p>
+<p>O modelo OSI (7 camadas) é uma referência didática; redes reais rodam o modelo TCP/IP (4 camadas). A terminologia do OSI ainda é como as pessoas descrevem onde um proxy opera, então vale conhecê-la.</p>
 <pre class="mermaid"><code>graph TD
-    L7[Layer 7: Application - HTTP, FTP, SMTP, DNS]
-    L6[Layer 6: Presentation - Encryption, Compression]
-    L5[Layer 5: Session - SOCKS]
-    L4[Layer 4: Transport - TCP, UDP]
-    L3[Layer 3: Network - IP, ICMP]
-    L2[Layer 2: Data Link - Ethernet, WiFi]
-    L1[Layer 1: Physical - Cables, Radio Waves]
+    L7[Camada 7: Aplicação - HTTP, FTP, SMTP, DNS]
+    L6[Camada 6: Apresentação - Criptografia, Compressão]
+    L5[Camada 5: Sessão - SOCKS]
+    L4[Camada 4: Transporte - TCP, UDP]
+    L3[Camada 3: Rede - IP, ICMP]
+    L2[Camada 2: Enlace - Ethernet, WiFi]
+    L1[Camada 1: Física - Cabos, Ondas de Rádio]
 
     L7 --&gt; L6 --&gt; L5 --&gt; L4 --&gt; L3 --&gt; L2 --&gt; L1</code></pre>
-<p>A Camada 7 (Aplicação) é onde vivem os protocolos voltados ao usuário: HTTP, HTTPS, FTP, SMTP e DNS operam aqui. Esta camada contém os dados reais com os quais sua aplicação se importa, como documentos HTML, respostas JSON e transferências de arquivos. Proxies HTTP operam nesta camada, o que lhes dá visibilidade total sobre o conteúdo de requisição e resposta.</p>
-<p>A Camada 6 (Apresentação) lida com tradução de formato de dados, criptografia e compressão. SSL/TLS é comumente associado a esta camada pelo seu papel de criptografia, embora na prática o TLS abranja as Camadas 4 a 6 e não se mapeie de forma limpa a nenhuma camada OSI específica. O que importa para automação é que a criptografia HTTPS acontece aqui, criptografando os dados da Camada 7 antes de descerem pela pilha.</p>
-<p>A Camada 5 (Sessão) gerencia conexões entre aplicações. Proxies SOCKS operam aqui, abaixo da camada de aplicação mas acima da de transporte. Esta posição torna o SOCKS agnóstico a protocolo: ele pode proxyar qualquer protocolo da Camada 7 (HTTP, FTP, SMTP, SSH) sem precisar entender suas especificidades.</p>
-<p>A Camada 4 (Transporte) fornece entrega de dados de ponta a ponta. TCP (orientado à conexão, confiável) e UDP (sem conexão, rápido) são os protocolos dominantes aqui. Esta camada lida com números de porta, controle de fluxo e correção de erros. Todos os proxies dependem, em última análise, da Camada 4 para a transmissão real de dados.</p>
-<p>A Camada 3 (Rede) lida com roteamento e endereçamento entre redes. O IP (Internet Protocol) opera aqui, gerenciando endereços IP e decisões de roteamento. É aqui que seu endereço IP real reside, e onde os proxies tentam substituí-lo.</p>
-<p>A Camada 2 (Enlace de Dados) gerencia a comunicação no mesmo segmento de rede físico. Ethernet, Wi-Fi e PPP operam aqui, lidando com endereços MAC e transmissão de frames. Endereços MAC são visíveis apenas no segmento de rede local e não são diretamente acessíveis por servidores remotos, embora possam ser expostos através de protocolos como IPv6 SLAAC (que incorpora o MAC no endereço).</p>
-<p>A Camada 1 (Física) é o hardware real: cabos, ondas de rádio e níveis de voltagem. Raramente relevante para automação de software.</p>
-<div class="admonition tip">
-<p class="admonition-title">OSI vs TCP/IP</p>
-<p>O modelo TCP/IP (4 camadas: Enlace, Internet, Transporte, Aplicação) é o que as redes realmente usam. O OSI (7 camadas) é uma ferramenta de ensino e modelo de referência. Quando as pessoas dizem "proxy de Camada 7", elas estão usando a terminologia OSI, mas a implementação real roda sobre TCP/IP.</p>
-</div>
-<h3 id="como-o-posicionamento-da-camada-afeta-os-proxies">Como o Posicionamento da Camada Afeta os Proxies</h3>
-<p>A camada onde um proxy opera determina o que ele pode e o que não pode fazer.</p>
-<p>Proxies HTTP/HTTPS operam na Camada 7 (Aplicação). Como eles entendem HTTP, podem ler e modificar URLs, cabeçalhos, cookies e corpos de requisição. Podem fazer cache de respostas de forma inteligente com base na semântica HTTP, filtrar conteúdo por URL ou palavra-chave e injetar cabeçalhos de autenticação. A contrapartida é que eles só entendem HTTP. Não podem proxyar FTP, SMTP, SSH ou outros protocolos, e inspecionar conteúdo HTTPS requer terminação TLS, o que significa descriptografar e recriptografar o tráfego.</p>
-<p>Proxies SOCKS operam na Camada 5 (Sessão). Como ficam abaixo da camada de aplicação, são agnósticos a protocolo e podem proxyar qualquer protocolo da Camada 7 sem modificação. O tráfego HTTPS passa criptografado de ponta a ponta, já que o proxy SOCKS nunca precisa descriptografá-lo. O SOCKS5 também suporta UDP, permitindo proxyar consultas DNS, VoIP e outros protocolos baseados em UDP. A contrapartida é que proxies SOCKS não têm visibilidade dos dados da camada de aplicação: não podem fazer cache, filtrar por URL ou inspecionar conteúdo. Podem apenas filtrar por IP e porta.</p>
+<p>As camadas que importam para automação:</p>
+<ul>
+<li><strong>Camada 7, Aplicação.</strong> HTTP, HTTPS, FTP, SMTP, DNS. Os dados de fato com os quais seu código se importa. Proxies HTTP ficam aqui, com visibilidade completa sobre requisições e respostas.</li>
+<li><strong>Camada 6, Apresentação.</strong> Criptografia e compressão. O TLS é associado a esta camada, embora na prática ele fique entre as camadas 4 e 6.</li>
+<li><strong>Camada 5, Sessão.</strong> Proxies SOCKS ficam aqui, abaixo da camada de aplicação, o que os torna agnósticos ao protocolo.</li>
+<li><strong>Camada 4, Transporte.</strong> TCP (confiável) e UDP (rápido). Portas, controle de fluxo, correção de erros. Todo proxy depende desta camada para mover dados.</li>
+<li><strong>Camada 3, Rede.</strong> Endereçamento e roteamento IP. Seu IP real vive aqui, e é o que um proxy substitui.</li>
+<li><strong>Camada 2, Enlace.</strong> Ethernet e Wi-Fi, endereços MAC. Visíveis apenas no segmento local, não para servidores remotos (embora o SLAAC do IPv6 possa embutir o MAC no endereço).</li>
+<li><strong>Camada 1, Física.</strong> Cabos e rádio. Raramente relevante para automação.</li>
+</ul>
+<h3 id="como-a-camada-decide-o-que-um-proxy-pode-fazer">Como a camada decide o que um proxy pode fazer</h3>
+<p>Um proxy HTTP/HTTPS na Camada 7 entende HTTP, então pode ler e reescrever URLs, headers, cookies e corpos, cachear por semântica HTTP, e injetar headers. Em troca, ele só fala HTTP, e inspecionar HTTPS significa terminar o TLS (descriptografar, recriptografar).</p>
+<p>Um proxy SOCKS na Camada 5 fica abaixo da aplicação, então é agnóstico ao protocolo: encaminha qualquer protocolo da Camada 7 sem tocar, passa HTTPS criptografado de ponta a ponta, e o SOCKS5 pode ainda carregar UDP. O custo é não ter visibilidade na camada de aplicação: ele pode filtrar por IP e porta, não por URL ou conteúdo.</p>
 <div class="admonition note">
-<p class="admonition-title">A Contrapartida Fundamental</p>
-<p>Camadas mais altas (Camada 7) oferecem mais controle mas menos flexibilidade. Camadas mais baixas (Camada 5) oferecem menos controle mas mais flexibilidade. Escolha proxies HTTP quando precisar de controle de conteúdo, e proxies SOCKS quando precisar de flexibilidade de protocolo ou criptografia de ponta a ponta.</p>
+<p class="admonition-title">O trade-off</p>
+<p>Camadas superiores dão mais controle sobre o conteúdo, mas menos flexibilidade de protocolo; camadas inferiores dão o inverso. Escolha um proxy HTTP para controle de conteúdo, um proxy SOCKS para flexibilidade de protocolo ou criptografia ponta a ponta.</p>
 </div>
-<h3 id="o-problema-de-vazamento-de-camada">O Problema de Vazamento de Camada</h3>
-<p>Mesmo com um proxy de Camada 7 perfeito, características de camadas inferiores podem expor sua identidade real. A pilha TCP do seu sistema operacional na Camada 4 tem um fingerprint único definido pelo tamanho da janela, ordem das opções e valores de TTL. Campos do cabeçalho IP na Camada 3, como TTL e comportamento de fragmentação, revelam seu SO e topologia de rede.</p>
-<p>Por exemplo, se você configurar um proxy para apresentar um User-Agent de "Windows 10", mas o fingerprint TCP real do seu sistema Linux contradizer isso na Camada 4, sistemas de detecção sofisticados podem marcar essa inconsistência como um forte indicador de bot. É por isso que o fingerprinting em nível de rede (abordado em <a href="../../fingerprinting/network-fingerprinting/">Network Fingerprinting</a>) é tão perigoso: ele opera abaixo da camada do proxy, expondo seu sistema real mesmo quando o proxy da camada de aplicação é impecável.</p>
-<h2 id="tcp-vs-udp">TCP vs UDP</h2>
-<p>Na Camada 4 (Transporte), dois protocolos fundamentalmente diferentes dominam a comunicação na internet. Eles representam filosofias de design opostas: confiabilidade versus velocidade.</p>
-<p>O TCP é orientado à conexão. Pense nele como uma ligação telefônica: você estabelece uma conexão, verifica se a outra parte está ouvindo, troca dados de forma confiável e, em seguida, desliga. Cada byte é confirmado, ordenado e tem entrega garantida. O UDP é sem conexão. Você envia seus dados e espera que cheguem. Sem handshake, sem confirmações, sem garantias. Apenas velocidade bruta com sobrecarga mínima.</p>
+<h3 id="o-problema-do-vazamento-por-camada">O problema do vazamento por camada</h3>
+<p>Nem mesmo um proxy perfeito na Camada 7 consegue mudar o que camadas inferiores revelam. A pilha TCP do seu sistema operacional na Camada 4 tem um fingerprint (tamanho de janela, ordem das opções, TTL), e os campos do header IP na Camada 3 revelam o SO e a topologia. Se você apresenta um User-Agent do Windows enquanto o fingerprint TCP do seu kernel Linux diz outra coisa, um sistema que correlaciona os dois sinaliza a divergência. É por isso que o <a href="../../fingerprinting/network-fingerprinting/">fingerprinting de rede</a> é perigoso: ele opera abaixo do proxy.</p>
+<h2 id="tcp-e-udp">TCP e UDP</h2>
+<p>Na Camada 4, dois protocolos dominam, com prioridades opostas: confiabilidade versus velocidade.</p>
+<p>O TCP é orientado a conexão, como uma ligação telefônica: você estabelece uma conexão, troca dados com cada byte confirmado e ordenado, e então a encerra. O UDP é sem conexão: você envia um datagrama e torce para que chegue, sem handshake e sem garantias, com o mínimo de overhead.</p>
 <table>
 <thead>
 <tr>
-<th>Característica</th>
+<th>Recurso</th>
 <th>TCP</th>
 <th>UDP</th>
 </tr>
@@ -4960,335 +3657,156 @@
 <tbody>
 <tr>
 <td>Conexão</td>
-<td>Orientado à conexão (handshake necessário)</td>
+<td>Orientado a conexão (handshake)</td>
 <td>Sem conexão (sem handshake)</td>
 </tr>
 <tr>
 <td>Confiabilidade</td>
-<td>Entrega garantida, pacotes ordenados</td>
-<td>Entrega de melhor esforço, pacotes podem ser perdidos</td>
+<td>Garantida, ordenada</td>
+<td>Melhor esforço, pode descartar</td>
 </tr>
 <tr>
 <td>Velocidade</td>
-<td>Mais lento (sobrecarga dos mecanismos de confiabilidade)</td>
-<td>Mais rápido (sobrecarga mínima)</td>
+<td>Mais lento (overhead de confiabilidade)</td>
+<td>Mais rápido (overhead mínimo)</td>
 </tr>
 <tr>
-<td>Casos de Uso</td>
-<td>Navegação web, transferência de arquivos, email</td>
-<td>Streaming de vídeo, consultas DNS, jogos</td>
+<td>Casos de uso</td>
+<td>Web, transferência de arquivos, e-mail</td>
+<td>Streaming, DNS, jogos, WebRTC</td>
 </tr>
 <tr>
-<td>Tamanho do Cabeçalho</td>
-<td>20 bytes mínimo (até 60 com opções)</td>
-<td>8 bytes fixo</td>
+<td>Tamanho do header</td>
+<td>20 bytes (até 60)</td>
+<td>8 bytes fixos</td>
 </tr>
 <tr>
-<td>Controle de Fluxo</td>
-<td>Sim (janela deslizante, orientado pelo receptor)</td>
-<td>Não (transmissor envia à vontade)</td>
+<td>Controle de fluxo/congestão</td>
+<td>Sim</td>
+<td>Não</td>
 </tr>
 <tr>
-<td>Controle de Congestionamento</td>
-<td>Sim (desacelera quando a rede está congestionada)</td>
-<td>Não (responsabilidade da aplicação)</td>
-</tr>
-<tr>
-<td>Verificação de Erros</td>
-<td>Extensiva (checksum + acknowledgments)</td>
-<td>Básica (apenas checksum; opcional no IPv4, obrigatório no IPv6)</td>
-</tr>
-<tr>
-<td>Ordenação</td>
-<td>Pacotes reordenados se recebidos fora de sequência</td>
-<td>Sem ordenação, pacotes entregues como recebidos</td>
-</tr>
-<tr>
-<td>Retransmissão</td>
-<td>Automática (pacotes perdidos são retransmitidos)</td>
-<td>Nenhuma (aplicação deve tratar)</td>
+<td>Ordenação / retransmissão</td>
+<td>Sim</td>
+<td>Não</td>
 </tr>
 </tbody>
 </table>
-<h3 id="tcp-e-proxies">TCP e Proxies</h3>
-<p>Todos os protocolos de proxy (HTTP, HTTPS, SOCKS4, SOCKS5) usam TCP para seu canal de controle. Isso ocorre porque a autenticação de proxy e a troca de comandos exigem entrega garantida, protocolos de proxy têm sequências de comando estritas (handshake, depois auth, depois dados), e proxies precisam de conexões persistentes para rastrear o estado do cliente.</p>
-<p>No entanto, o SOCKS5 também pode proxyar tráfego UDP, diferente do SOCKS4 ou de proxies HTTP. Isso torna o SOCKS5 essencial para proxyar consultas DNS, áudio/vídeo WebRTC, VoIP e protocolos de jogos.</p>
-<div class="admonition danger">
-<p class="admonition-title">UDP e Vazamento de IP</p>
-<p>A maioria das conexões de navegador usa TCP (HTTP, WebSocket, etc.), mas o WebRTC usa UDP diretamente, contornando a configuração de proxy do navegador. Esta é a causa mais comum de vazamento de IP em automação de navegador com proxy: seu tráfego TCP passa pelo proxy enquanto seu tráfego UDP vaza seu IP real.</p>
-</div>
-<h3 id="o-handshake-de-tres-vias-do-tcp">O Handshake de Três Vias do TCP</h3>
-<p>Antes que quaisquer dados possam ser transmitidos, o TCP requer um handshake de três vias para estabelecer uma conexão. Esta negociação sincroniza números de sequência, acorda tamanhos de janela e estabelece o estado da conexão em ambas as pontas.</p>
+<p>Todos os protocolos de proxy (HTTP, HTTPS, SOCKS4, SOCKS5) usam TCP para seu canal de controle, porque autenticação e sequências de comando precisam de entrega garantida. O SOCKS5 pode adicionalmente fazer proxy de UDP, o que SOCKS4 e proxies HTTP não conseguem.</p>
+<h3 id="o-handshake-tcp-de-tres-vias">O handshake TCP de três vias</h3>
+<p>Antes de qualquer dado se mover, o TCP realiza um handshake de três vias para sincronizar números de sequência e o estado da conexão.</p>
 <pre class="mermaid"><code>sequenceDiagram
     participant Client
     participant Server
 
-    Client-&gt;&gt;Server: SYN (Synchronize, seq=x)
-    Note over Client,Server: Client requests connection
-
+    Client-&gt;&gt;Server: SYN (seq=x)
     Server-&gt;&gt;Client: SYN-ACK (seq=y, ack=x+1)
-    Note over Client,Server: Server acknowledges and sends its own SYN
-
     Client-&gt;&gt;Server: ACK (ack=y+1)
-    Note over Client,Server: Connection established, data transfer begins</code></pre>
-<p>O processo começa quando o cliente envia um pacote SYN (Synchronize) contendo um Número de Sequência Inicial (ISN) aleatório, por exemplo <code>seq=1000</code>. Junto com o ISN, opções TCP são negociadas: tamanho da janela, Tamanho Máximo de Segmento (MSS), timestamps e suporte a SACK.</p>
-<p>O servidor responde com um SYN-ACK: ele escolhe seu próprio ISN aleatório (ex: <code>seq=5000</code>) e confirma o ISN do cliente definindo <code>ack=1001</code> (ISN do cliente + 1). Este único pacote tanto estabelece a direção servidor-para-cliente (SYN) quanto confirma a direção cliente-para-servidor (ACK). O servidor também retorna suas próprias opções TCP.</p>
-<p>O cliente então envia um ACK final, confirmando o ISN do servidor (<code>ack=5001</code>). Neste ponto, a conexão está totalmente estabelecida em ambas as direções e a transmissão de dados pode começar.</p>
-<p>O ISN é aleatorizado em vez de começar do zero para prevenir ataques de sequestro de TCP. Se ISNs fossem previsíveis, um atacante poderia injetar pacotes em uma conexão existente adivinhando os números de sequência. Sistemas modernos usam aleatoriedade criptográfica para seleção de ISN (RFC 6528).</p>
-<h3 id="fingerprinting-tcp">Fingerprinting TCP</h3>
-<p>O handshake TCP revela características que aplicam fingerprinting no seu sistema operacional. Diferentes SOs usam valores padrão diferentes para o tamanho inicial da janela, ordem das opções TCP, TTL (Time To Live), fator de escala da janela e comportamento de timestamp. Esses valores são definidos pelo kernel, não pelo navegador, então um proxy não pode alterá-los.</p>
-<p>Aqui estão exemplos ilustrativos para sistemas operacionais modernos. Note que os valores reais variam entre versões de SO, configurações de kernel e ajustes de rede:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Windows 10/11 (modern builds):
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    Window Size: 65535
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    MSS: 1460
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    Options: MSS, NOP, WS, NOP, NOP, SACK_PERM
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    TTL: 128
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>Linux (kernel 5.x+, Ubuntu 20.04+):
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    Window Size: 29200
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    MSS: 1460
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    Options: MSS, SACK_PERM, TS, NOP, WS
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    TTL: 64
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>macOS (Monterey+):
-</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    Window Size: 65535
-</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>    TTL: 64
+    Note over Client,Server: Conexão estabelecida</code></pre>
+<p>O cliente envia um SYN com um Initial Sequence Number aleatório e suas opções TCP (tamanho de janela, MSS, timestamps, SACK). O servidor responde com um SYN-ACK: seu próprio ISN aleatório mais uma confirmação do ISN do cliente. O cliente envia um ACK final, e a conexão está aberta nos dois sentidos. O ISN é aleatorizado (RFC 6528) para impedir que um atacante injete pacotes adivinhando números de sequência.</p>
+<h3 id="fingerprinting-de-tcp">Fingerprinting de TCP</h3>
+<p>O handshake expõe valores específicos do SO: tamanho de janela inicial, ordem das opções, TTL e window scale. O kernel define esses valores, não o navegador, então um proxy não pode mudá-los. Padrões ilustrativos (eles variam por versão e ajuste):</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Windows 10/11:  Window 65535,  TTL 128,  Options: MSS, NOP, WS, NOP, NOP, SACK_PERM
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>Linux 5.x+:     Window 29200,  TTL 64,   Options: MSS, SACK_PERM, TS, NOP, WS
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>macOS:          Window 65535,  TTL 64
 </span></code></pre></div>
-<p>Essas diferenças estão gravadas no kernel. Um proxy não pode alterá-las porque são definidas pelo seu sistema operacional, não pelo seu navegador. É assim que sistemas de detecção sofisticados podem identificá-lo mesmo através de proxies.</p>
 <div class="admonition warning">
-<p class="admonition-title">Limitação do Proxy</p>
-<p>Proxies HTTP e SOCKS operam acima da camada TCP. Eles não podem modificar características do handshake TCP. O fingerprint TCP do seu SO está sempre exposto ao servidor proxy e a quaisquer observadores de rede entre você e o proxy. Apenas soluções em nível de VPN ou configuração da pilha TCP em nível de SO podem resolver isso.</p>
+<p class="admonition-title">Um proxy não pode esconder seu fingerprint TCP</p>
+<p>Proxies HTTP e SOCKS ficam acima do TCP, então o fingerprint TCP do seu SO chega ao proxy e a qualquer observador entre você e ele. Só roteamento em nível de VPN ou ajuste da pilha no nível do SO o altera. O handshake TLS logo em seguida adiciona outro fingerprint (JA3/JA4); veja <a href="../../fingerprinting/network-fingerprinting/">Fingerprinting de rede</a>.</p>
 </div>
-<div class="admonition note">
-<p class="admonition-title">Além do Fingerprinting TCP</p>
-<p>O handshake TCP é apenas a primeira oportunidade de fingerprinting. Imediatamente após, o handshake TLS revela outro fingerprint único conhecido como JA3/JA4. Veja <a href="../../fingerprinting/network-fingerprinting/">Network Fingerprinting</a> para detalhes sobre fingerprinting de TLS e HTTP/2.</p>
-</div>
-<h3 id="udp">UDP</h3>
-<p>Diferente da abordagem confiável e orientada à conexão do TCP, o UDP é um protocolo de "dispare-e-esqueça". Ele troca confiabilidade por latência e sobrecarga mínimas, tornando-o ideal para aplicações em tempo real onde a velocidade importa mais que a entrega perfeita.</p>
-<p>Um datagrama UDP tem apenas um cabeçalho de 8 bytes (comparado com 20-60 bytes do TCP), contendo porta de origem, porta de destino, comprimento e um checksum. Não há estabelecimento de conexão, nenhuma garantia de confiabilidade, nenhum controle de fluxo e nenhum controle de congestionamento. Se um pacote for perdido, a aplicação deve decidir se e como tratar isso.</p>
-<p>O UDP é a escolha certa para comunicação em tempo real (chamadas de voz/vídeo via WebRTC e VoIP), jogos (atualizações de estado de baixa latência), streaming (onde perda ocasional de frames é aceitável) e consultas DNS (pares pequenos de requisição/resposta onde a aplicação cuida das retentativas). É uma escolha ruim para transferências de arquivos, navegação web, email ou bancos de dados, todos os quais precisam de entrega confiável e ordenada.</p>
-<p>O DNS é um exemplo particularmente importante no contexto de automação. O DNS usa UDP porque as consultas são tipicamente pequenas e se beneficiam da ausência de sobrecarga de handshake do UDP. Embora o EDNS0 (RFC 6891) tenha aumentado o payload máximo de DNS sobre UDP além do limite original de 512 bytes, a maioria das consultas permanece compacta. O cliente DNS cuida das retentativas em nível de aplicação se uma resposta não chegar dentro do timeout.</p>
-<p>Para automação de navegador, a preocupação principal com o UDP é que o WebRTC o utiliza para áudio e vídeo em tempo real, consultas DNS o utilizam para resolução de domínio, e a maioria dos proxies (HTTP, HTTPS, SOCKS4) só lida com TCP. A menos que você configure explicitamente o proxy de UDP, esse tráfego contorna seu proxy e vaza seu IP real.</p>
+<h3 id="udp-dns-e-quic">UDP, DNS e QUIC</h3>
+<p>O UDP é dispare-e-esqueça: um header de 8 bytes, sem conexão, sem confiabilidade. Ele cai bem em mídia em tempo real (WebRTC, VoIP), jogos e DNS, onde a aplicação cuida de qualquer retentativa. O DNS usa UDP porque as consultas são pequenas e se beneficiam de zero overhead de handshake.</p>
+<p>A preocupação em automação é que a maioria dos proxies só carrega TCP, então o tráfego UDP pode contornar o proxy e expor seu IP real:</p>
 <table>
 <thead>
 <tr>
-<th>Tipo de Proxy</th>
-<th>Suporte UDP</th>
-<th>Notas</th>
+<th>Tipo de proxy</th>
+<th>Suporte a UDP</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Proxy HTTP</td>
-<td>Não</td>
-<td>Proxyia apenas HTTP/HTTPS baseado em TCP</td>
-</tr>
-<tr>
-<td>Proxy HTTPS (CONNECT)</td>
-<td>Não</td>
-<td>O método CONNECT só estabelece túneis TCP</td>
+<td>HTTP / HTTPS (CONNECT)</td>
+<td>Não (apenas túneis TCP)</td>
 </tr>
 <tr>
 <td>SOCKS4</td>
 <td>Não</td>
-<td>Protocolo apenas TCP</td>
 </tr>
 <tr>
 <td>SOCKS5</td>
-<td>Sim</td>
-<td>Suporta relay UDP via comando <code>UDP ASSOCIATE</code></td>
+<td>Sim (via <code>UDP ASSOCIATE</code>)</td>
 </tr>
 <tr>
 <td>VPN</td>
-<td>Sim</td>
-<td>Tunela todo o tráfego IP (TCP e UDP)</td>
+<td>Sim (encapsula todo o tráfego IP)</td>
 </tr>
 </tbody>
 </table>
-<p>Para anonimato verdadeiro em automação de navegador, você precisa de: um proxy SOCKS5 com suporte UDP e WebRTC configurado para usá-lo, WebRTC desabilitado inteiramente (o que quebra videoconferência), uma VPN que tunele todo o tráfego, ou a flag do navegador <code>--force-webrtc-ip-handling-policy=disable_non_proxied_udp</code>.</p>
-<h3 id="quic-e-http3">QUIC e HTTP/3</h3>
-<p>Navegadores modernos utilizam cada vez mais o QUIC (RFC 9000), um protocolo de transporte baseado em UDP que alimenta o HTTP/3. Como o QUIC roda sobre UDP, ele compartilha os mesmos problemas de bypass de proxy que o WebRTC e o DNS: a maioria dos proxies HTTP não consegue lidar com tráfego QUIC, e ele pode vazar para fora da sua configuração de proxy.</p>
-<p>Em cenários de automação, considere desabilitar o QUIC com a flag <code>--disable-quic</code> do Chrome para forçar HTTP/2 sobre TCP, garantindo que todo o tráfego web passe pelo seu proxy. O QUIC também tem suas próprias características de fingerprinting, similares ao JA3 para TLS, o que adiciona mais um vetor de detecção.</p>
-<h2 id="webrtc-e-vazamento-de-ip">WebRTC e Vazamento de IP</h2>
-<p>WebRTC (Web Real-Time Communication) é uma API de navegador padronizada pelo W3C que permite comunicação ponto-a-ponto de áudio, vídeo e dados diretamente entre navegadores, sem plugins ou servidores intermediários. Embora poderosa para aplicações em tempo real, o WebRTC é a maior fonte isolada de vazamento de IP em automação de navegador com proxy.</p>
-<h3 id="como-o-webrtc-vaza-seu-ip">Como o WebRTC Vaza Seu IP</h3>
-<p>O WebRTC foi projetado para conexões ponto-a-ponto diretas, otimizando para baixa latência em detrimento da privacidade. Para estabelecer conexões P2P, o WebRTC deve descobrir seu endereço IP público real e compartilhá-lo com o par remoto, mesmo se seu navegador estiver configurado para usar um proxy.</p>
-<p>O problema se desenrola assim: seu navegador usa um proxy para tráfego HTTP/HTTPS (que é TCP), mas o WebRTC usa servidores STUN para descobrir seu IP público real sobre UDP. Consultas STUN contornam o proxy porque a maioria dos proxies só lida com TCP. Seu IP real é descoberto e compartilhado com pares remotos como parte da negociação de conexão. JavaScript na página pode ler esses "candidatos ICE" e enviar seu IP real para o servidor do site.</p>
-<div class="admonition danger">
-<p class="admonition-title">Gravidade dos Vazamentos WebRTC</p>
-<p>Mesmo com um proxy HTTP configurado corretamente, proxy HTTPS funcionando, consultas DNS proxyadas, User-Agent falsificado e fingerprinting de canvas mitigado, o WebRTC ainda pode vazar seu IP real em milissegundos. Isso porque o WebRTC opera abaixo da camada de proxy do navegador, interagindo diretamente com a pilha de rede do SO.</p>
-</div>
-<h3 id="o-processo-ice">O Processo ICE</h3>
-<p>O WebRTC usa ICE (Interactive Connectivity Establishment, RFC 8445) para descobrir caminhos de conexão possíveis e selecionar o melhor. Este processo inerentemente revela sua topologia de rede ao coletar três tipos de candidatos.</p>
+<p>O Chrome moderno também usa QUIC (RFC 9000), o transporte baseado em UDP por trás do HTTP/3, que compartilha o mesmo risco de contorno e tem seu próprio fingerprint. Em automação, você pode forçar HTTP/2 sobre TCP com <code>--disable-quic</code> para que todo o tráfego web siga seu proxy.</p>
+<h2 id="webrtc-e-vazamento-de-ip">WebRTC e vazamento de IP</h2>
+<p>O WebRTC habilita áudio, vídeo e dados ponto a ponto diretamente entre navegadores. Ele otimiza para baixa latência em detrimento da privacidade, e é a fonte isolada mais comum de vazamentos de IP em automação com proxy: pode revelar seu IP real mesmo quando toda a camada HTTP está com proxy corretamente.</p>
+<p>Para montar uma conexão P2P, o WebRTC descobre seu IP público através de servidores STUN sobre UDP. Essas consultas contornam um proxy que só carrega TCP, o IP acaba nos candidatos ICE da conexão, e o JavaScript na página pode ler os candidatos e enviar seu IP real a um servidor.</p>
+<h3 id="ice-stun-e-os-candidatos-que-vazam">ICE, STUN e os candidatos que vazam</h3>
+<p>O WebRTC usa ICE (RFC 8445) para reunir possíveis caminhos de conexão, chamados candidatos, e essa reunião é o que expõe sua rede.</p>
 <pre class="mermaid"><code>sequenceDiagram
     participant Browser
     participant STUN as STUN Server
-    participant TURN as TURN Relay
     participant Peer as Remote Peer
 
-    Note over Browser: WebRTC connection initiated
-
-    Browser-&gt;&gt;Browser: Gather local IP addresses&lt;br/&gt;(LAN interfaces)
-    Note over Browser: Local candidate:&lt;br/&gt;192.168.1.100:54321
-
-    Browser-&gt;&gt;STUN: STUN Binding Request (over UDP)
-    Note over STUN: STUN server discovers public IP&lt;br/&gt;(bypasses proxy!)
-    STUN-&gt;&gt;Browser: STUN Response with real public IP
-    Note over Browser: Server reflexive candidate:&lt;br/&gt;203.0.113.45:54321
-
-    Browser-&gt;&gt;TURN: Allocate relay (if needed)
-    TURN-&gt;&gt;Browser: Relay address assigned
-    Note over Browser: Relay candidate:&lt;br/&gt;198.51.100.10:61234
-
-    Browser-&gt;&gt;Peer: Send all ICE candidates&lt;br/&gt;(local + public + relay)
-    Note over Peer: Now knows your:&lt;br/&gt;- LAN IP&lt;br/&gt;- Real public IP&lt;br/&gt;- Relay address
-
-    Peer-&gt;&gt;Browser: Send ICE candidates
-
-    Note over Browser,Peer: ICE negotiation: try direct P2P first
-
-    alt Direct P2P succeeds
-        Browser&lt;&lt;-&gt;&gt;Peer: Direct connection (bypasses proxy entirely!)
-    else Direct P2P fails (firewall/NAT)
-        Browser-&gt;&gt;TURN: Use TURN relay
-        TURN&lt;&lt;-&gt;&gt;Peer: Relayed connection
-        Note over Browser,Peer: Higher latency, but works
-    end</code></pre>
-<h3 id="tipos-de-candidatos-ice">Tipos de Candidatos ICE</h3>
-<p>O ICE descobre três tipos de candidatos (possíveis endpoints de conexão), cada um revelando diferentes informações sobre sua rede.</p>
-<p><strong>Candidatos host</strong> são seus endereços IP locais da LAN. O navegador enumera todas as interfaces de rede locais e cria candidatos para cada uma. Isso revela seus endereços IP locais em redes privadas, sua topologia de rede (presença de interfaces VPN, pontes de VM) e o número de interfaces de rede.</p>
-<div class="language-javascript highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1">// Example host candidates</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nx">candidate</span><span class="o">:</span><span class="mf">1</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="nx">UDP</span><span class="w"> </span><span class="mf">2130706431</span><span class="w"> </span><span class="mf">192.168.1.100</span><span class="w"> </span><span class="mf">54321</span><span class="w"> </span><span class="nx">typ</span><span class="w"> </span><span class="nx">host</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="nx">candidate</span><span class="o">:</span><span class="mf">2</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="nx">UDP</span><span class="w"> </span><span class="mf">2130706431</span><span class="w"> </span><span class="mf">10.0.0.5</span><span class="w"> </span><span class="mf">54322</span><span class="w"> </span><span class="nx">typ</span><span class="w"> </span><span class="nx">host</span>
-</span></code></pre></div>
-<p>Navegadores modernos (Chrome 75+, Firefox 78+, Safari) mitigam vazamentos de candidatos host substituindo endereços IP locais por nomes mDNS efêmeros (ex: <code>a1b2c3d4.local</code>) quando permissões de mídia (câmera/microfone) não foram concedidas. No entanto, candidatos reflexivos de servidor (seu IP público) permanecem expostos independentemente do mDNS.</p>
-<p><strong>Candidatos reflexivos de servidor</strong> são seu IP público como visto por um servidor STUN. O navegador envia uma requisição STUN para um servidor público, que responde com seu endereço IP público. Este é o vazamento do qual todos falam: seu proxy mostra um IP, mas o WebRTC revela o seu real, junto com seu tipo de NAT, mapeamento de porta externa e informações do ISP.</p>
-<div class="language-javascript highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1">// Server reflexive candidate (your real public IP)</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="nx">candidate</span><span class="o">:</span><span class="mf">4</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="nx">UDP</span><span class="w"> </span><span class="mf">1694498815</span><span class="w"> </span><span class="mf">203.0.113.45</span><span class="w"> </span><span class="mf">54321</span><span class="w"> </span><span class="nx">typ</span><span class="w"> </span><span class="nx">srflx</span><span class="w"> </span><span class="nx">raddr</span><span class="w"> </span><span class="mf">192.168.1.100</span><span class="w"> </span><span class="nx">rport</span><span class="w"> </span><span class="mf">54321</span>
-</span></code></pre></div>
-<p><strong>Candidatos de retransmissão</strong> são endereços de servidores TURN usados como fallback quando o P2P direto falha. O candidato de retransmissão ainda pode conter seu IP real no campo <code>raddr</code> (endereço remoto), dependendo da implementação do servidor TURN.</p>
-<div class="language-javascript highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1">// Relay candidate (TURN server address)</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nx">candidate</span><span class="o">:</span><span class="mf">5</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="nx">UDP</span><span class="w"> </span><span class="mf">16777215</span><span class="w"> </span><span class="mf">198.51.100.10</span><span class="w"> </span><span class="mf">61234</span><span class="w"> </span><span class="nx">typ</span><span class="w"> </span><span class="nx">relay</span><span class="w"> </span><span class="nx">raddr</span><span class="w"> </span><span class="mf">203.0.113.45</span><span class="w"> </span><span class="nx">rport</span><span class="w"> </span><span class="mf">54321</span>
-</span></code></pre></div>
-<h3 id="o-protocolo-stun">O Protocolo STUN</h3>
-<p>STUN (Session Traversal Utilities for NAT, RFC 8489) é um protocolo simples de requisição-resposta sobre UDP. Sua função é direta: o cliente pergunta "qual IP você vê de mim?" e o servidor responde com o IP público e a porta do cliente.</p>
-<p>O cliente envia uma Binding Request contendo um magic cookie (<code>0x2112A442</code>, um valor fixo definido pela RFC) e um transaction ID aleatório de 12 bytes. O servidor responde com uma Binding Success Response que inclui um atributo <code>XOR-MAPPED-ADDRESS</code> contendo o IP público e a porta do cliente como vistos da perspectiva do servidor.</p>
-<p>O endereço IP na resposta é XOR'ado com o magic cookie e o transaction ID. Isso não é por segurança, mas por compatibilidade com NAT: alguns dispositivos NAT modificam incorretamente endereços IP em payloads de pacotes, e o XOR ofusca o endereço para prevenir essa interferência.</p>
-<p>Servidores STUN públicos comumente usados por navegadores incluem <code>stun.l.google.com:19302</code> (Google), <code>stun1.l.google.com:19302</code> (Google), <code>stun.services.mozilla.com</code> (Mozilla) e <code>stun.stunprotocol.org:3478</code>.</p>
-<h3 id="por-que-proxies-nao-conseguem-parar-vazamentos-webrtc">Por que Proxies Não Conseguem Parar Vazamentos WebRTC</h3>
-<p>Vazamentos WebRTC acontecem por vários motivos que se reforçam. Primeiro, o WebRTC usa UDP, e a maioria dos proxies (HTTP, HTTPS CONNECT, SOCKS4) só lida com TCP. Apenas o SOCKS5 suporta UDP, e mesmo assim o navegador precisa ser explicitamente configurado para rotear o WebRTC através dele.</p>
-<p>Segundo, o WebRTC é uma API de navegador que opera abaixo da camada HTTP. Ele acessa diretamente a pilha de rede do SO, contornando configurações de proxy definidas para HTTP/HTTPS. Consultas STUN vão diretamente para a interface de rede, e a tabela de roteamento do SO determina seu caminho, não a configuração de proxy do navegador. Apenas roteamento em nível de VPN pode interceptá-las.</p>
-<p>Terceiro, o WebRTC enumera todas as interfaces de rede (ethernet física, Wi-Fi, adaptadores VPN, pontes de VM), incluindo interfaces não usadas para navegação regular. Isso vaza sua topologia de rede interna.</p>
-<p>Finalmente, páginas web podem ler candidatos ICE via JavaScript usando o evento <code>RTCPeerConnection.onicecandidate</code>, extrair endereços IP das strings de candidatos com um regex simples e enviar seu IP real para o servidor de rastreamento deles.</p>
-<h3 id="prevenindo-vazamentos-webrtc-no-pydoll">Prevenindo Vazamentos WebRTC no Pydoll</h3>
-<p>O Pydoll fornece múltiplas estratégias para prevenir vazamentos de IP via WebRTC.</p>
-<p><strong>Método 1: Forçar o WebRTC a usar apenas rotas proxyadas (recomendado)</strong></p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChromiumOptions</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="n">options</span><span class="o">.</span><span class="n">webrtc_leak_protection</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># Adds --force-webrtc-ip-handling-policy=disable_non_proxied_udp</span>
-</span></code></pre></div>
-<p>O Pydoll fornece uma propriedade conveniente <code>webrtc_leak_protection</code> que gerencia a flag do Chrome subjacente para você. Isso desabilita UDP se nenhum proxy o suportar, força o WebRTC a usar apenas retransmissores TURN (sem P2P direto) e previne consultas STUN para servidores públicos. A contrapartida é maior latência para chamadas de vídeo, já que conexões P2P diretas são desabilitadas.</p>
-<p><strong>Método 2: Desabilitar o WebRTC inteiramente</strong></p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--disable-features=WebRTC'</span><span class="p">)</span>
-</span></code></pre></div>
-<p>Isso desabilita completamente a API WebRTC, eliminando qualquer possibilidade de vazamento de IP por este vetor. A contrapartida é que todos os sites dependentes de WebRTC (videoconferência, chamadas de voz) deixarão de funcionar. Note que esta flag deve ser testada com sua versão específica do Chrome, pois nomes de feature flags podem variar entre versões.</p>
-<p><strong>Método 3: Restringir o WebRTC via preferências do navegador</strong></p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">options</span><span class="o">.</span><span class="n">browser_preferences</span> <span class="o">=</span> <span class="p">{</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="s1">'webrtc'</span><span class="p">:</span> <span class="p">{</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>        <span class="s1">'ip_handling_policy'</span><span class="p">:</span> <span class="s1">'disable_non_proxied_udp'</span><span class="p">,</span>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>        <span class="s1">'multiple_routes_enabled'</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>        <span class="s1">'nonproxied_udp_enabled'</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>        <span class="s1">'allow_legacy_tls_protocols'</span><span class="p">:</span> <span class="kc">False</span>
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="p">}</span>
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="p">}</span>
-</span></code></pre></div>
-<p>Isso alcança o mesmo efeito do Método 1, mas através de preferências em vez de flags de linha de comando. <code>multiple_routes_enabled</code> previne o uso de múltiplos caminhos de rede, e <code>nonproxied_udp_enabled</code> bloqueia UDP que não passa pelo proxy.</p>
-<p><strong>Método 4: Usar um proxy SOCKS5 com suporte UDP</strong></p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--proxy-server=socks5://proxy.example.com:1080'</span><span class="p">)</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--force-webrtc-ip-handling-policy=default_public_interface_only'</span><span class="p">)</span>
-</span></code></pre></div>
-<p>O SOCKS5 pode proxyar UDP via seu comando <code>UDP ASSOCIATE</code>, permitindo que as consultas STUN do WebRTC passem pelo proxy. Isso requer um proxy SOCKS5 que realmente suporte relay UDP, o que nem todos suportam.</p>
-<div class="admonition warning">
-<p class="admonition-title">Autenticação SOCKS5</p>
-<p>O Chrome não suporta autenticação SOCKS5 inline (ex: <code>socks5://user:pass@host:port</code>) via a flag <code>--proxy-server</code>. O Pydoll fornece um <code>SOCKS5Forwarder</code> integrado que contorna essa limitação executando um proxy SOCKS5 local sem autenticação que encaminha o tráfego para o proxy remoto autenticado, cuidando do handshake de usuário/senha em nome do Chrome. Veja <a href="../../../features/configuration/proxy/">Configuração de Proxy</a> para detalhes de uso.</p>
-</div>
-<h3 id="testando-vazamentos-webrtc">Testando Vazamentos WebRTC</h3>
-<p>Você pode testar manualmente visitando <a href="https://browserleaks.com/webrtc">browserleaks.com/webrtc</a> e verificando se seu IP real aparece na seção "Public IP Address". Se você vir seu IP real em vez do IP do proxy, está havendo vazamento.</p>
-<p>Para testes automatizados com o Pydoll:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChromiumOptions</span>
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">test_webrtc_leak</span><span class="p">():</span>
-</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    <span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
-</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    <span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--proxy-server=http://proxy.example.com:8080'</span><span class="p">)</span>
-</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    <span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--force-webrtc-ip-handling-policy=disable_non_proxied_udp'</span><span class="p">)</span>
-</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>
-</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>    <span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">(</span><span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
-</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>        <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">'https://browserleaks.com/webrtc'</span><span class="p">)</span>
-</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>
-</span><span id="__span-8-14"><a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
-</span><span id="__span-8-15"><a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>
-</span><span id="__span-8-16"><a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>        <span class="n">ips</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">execute_script</span><span class="p">(</span><span class="s1">'''</span>
-</span><span id="__span-8-17"><a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a><span class="s1">            return Array.from(document.querySelectorAll('.ip-address'))</span>
-</span><span id="__span-8-18"><a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a><span class="s1">                .map(el =&gt; el.textContent.trim());</span>
-</span><span id="__span-8-19"><a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a><span class="s1">        '''</span><span class="p">)</span>
-</span><span id="__span-8-20"><a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a>
-</span><span id="__span-8-21"><a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a>        <span class="nb">print</span><span class="p">(</span><span class="s2">"Detected IPs:"</span><span class="p">,</span> <span class="n">ips</span><span class="p">)</span>
-</span><span id="__span-8-22"><a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a>        <span class="c1"># Should only show proxy IP, not your real IP</span>
-</span><span id="__span-8-23"><a id="__codelineno-8-23" name="__codelineno-8-23" href="#__codelineno-8-23"></a>
-</span><span id="__span-8-24"><a id="__codelineno-8-24" name="__codelineno-8-24" href="#__codelineno-8-24"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">test_webrtc_leak</span><span class="p">())</span>
-</span></code></pre></div>
-<div class="admonition danger">
-<p class="admonition-title">Sempre Teste Vazamentos WebRTC</p>
-<p>Nunca assuma que sua configuração de proxy previne vazamentos WebRTC. Sempre verifique com <a href="https://browserleaks.com/webrtc">browserleaks.com/webrtc</a> ou <a href="https://ipleak.net">ipleak.net</a>. Mesmo um único vazamento WebRTC compromete instantaneamente toda a sua configuração de proxy, já que o site agora conhece sua localização real, ISP e topologia de rede.</p>
-</div>
-<h3 id="como-sites-exploram-vazamentos-webrtc">Como Sites Exploram Vazamentos WebRTC</h3>
-<p>Sites podem intencionalmente acionar o WebRTC para extrair seu IP real usando poucas linhas de JavaScript:</p>
-<div class="language-javascript highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kd">const</span><span class="w"> </span><span class="nx">pc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">RTCPeerConnection</span><span class="p">({</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">    </span><span class="nx">iceServers</span><span class="o">:</span><span class="w"> </span><span class="p">[{</span><span class="nx">urls</span><span class="o">:</span><span class="w"> </span><span class="s1">'stun:stun.l.google.com:19302'</span><span class="p">}]</span>
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="p">});</span>
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>
-</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="nx">pc</span><span class="p">.</span><span class="nx">createDataChannel</span><span class="p">(</span><span class="s1">''</span><span class="p">);</span>
-</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="nx">pc</span><span class="p">.</span><span class="nx">createOffer</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="nx">offer</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">pc</span><span class="p">.</span><span class="nx">setLocalDescription</span><span class="p">(</span><span class="nx">offer</span><span class="p">));</span>
-</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>
-</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="nx">pc</span><span class="p">.</span><span class="nx">onicecandidate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nx">event</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">event</span><span class="p">.</span><span class="nx">candidate</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="w">        </span><span class="kd">const</span><span class="w"> </span><span class="nx">ipRegex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sr">/([0-9]{1,3}(\.[0-9]{1,3}){3})/</span><span class="p">;</span>
-</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="w">        </span><span class="kd">const</span><span class="w"> </span><span class="nx">ipMatch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">event</span><span class="p">.</span><span class="nx">candidate</span><span class="p">.</span><span class="nx">candidate</span><span class="p">.</span><span class="nx">match</span><span class="p">(</span><span class="nx">ipRegex</span><span class="p">);</span>
-</span><span id="__span-9-12"><a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>
-</span><span id="__span-9-13"><a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">ipMatch</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-9-14"><a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a><span class="w">            </span><span class="kd">const</span><span class="w"> </span><span class="nx">realIP</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">ipMatch</span><span class="p">[</span><span class="mf">1</span><span class="p">];</span>
-</span><span id="__span-9-15"><a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a><span class="w">            </span><span class="nx">fetch</span><span class="p">(</span><span class="sb">`/track?real_ip=</span><span class="si">${</span><span class="nx">realIP</span><span class="si">}</span><span class="sb">&amp;proxy_ip=</span><span class="si">${</span><span class="nb">window</span><span class="p">.</span><span class="nx">clientIP</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
-</span><span id="__span-9-16"><a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a><span class="w">        </span><span class="p">}</span>
-</span><span id="__span-9-17"><a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-9-18"><a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a><span class="p">};</span>
-</span></code></pre></div>
-<p>Este código cria um RTCPeerConnection, aciona a coleta de candidatos ICE (que contata servidores STUN), extrai endereços IP dos candidatos com um regex e envia seu IP real para um servidor de rastreamento. Desabilitar o WebRTC ou forçar rotas apenas proxyadas como descrito acima previne isso.</p>
-<h2 id="resumo">Resumo</h2>
-<p>Proxies operam em camadas específicas da pilha de rede: HTTP na Camada 7, SOCKS na Camada 5. A camada determina o que o proxy pode ver, modificar e ocultar. Fingerprints TCP (tamanho da janela, opções, TTL) vazam de camadas inferiores e revelam seu SO real mesmo através de um proxy. Tráfego UDP, incluindo WebRTC e DNS, frequentemente contorna proxies a menos que explicitamente configurado. O WebRTC é a fonte mais comum de vazamento de IP, e apenas SOCKS5 ou VPN podem proxyar tráfego UDP de forma eficaz. Navegadores modernos também usam QUIC (HTTP/3 sobre UDP), o que adiciona mais um vetor potencial de bypass.</p>
-<p><strong>Próximos passos:</strong></p>
+    Browser-&gt;&gt;Browser: Reúne IPs locais (LAN)
+    Browser-&gt;&gt;STUN: Binding Request (UDP, contorna o proxy)
+    STUN-&gt;&gt;Browser: Resposta com o IP público real
+    Browser-&gt;&gt;Peer: Envia todos os candidatos ICE (local + público)
+    Note over Browser,Peer: P2P direto contorna o proxy por completo</code></pre>
+<p>Três tipos de candidato são reunidos:</p>
 <ul>
-<li><a href="../http-proxies/">Proxies HTTP/HTTPS</a>: Proxy de camada de aplicação</li>
-<li><a href="../socks-proxies/">Proxies SOCKS</a>: Proxy de camada de sessão, agnóstico a protocolo</li>
-<li><a href="../../fingerprinting/network-fingerprinting/">Network Fingerprinting</a>: Técnicas de fingerprinting TCP/IP e TLS</li>
-<li><a href="../../../features/configuration/proxy/">Configuração de Proxy</a>: Configuração prática de proxy no Pydoll</li>
+<li><strong>Host candidates</strong>: seus IPs locais de LAN. O Chrome 75+ os substitui por nomes mDNS efêmeros (<code>a1b2c3d4.local</code>) a menos que a permissão de câmera/microfone seja concedida, então esse vazamento está em grande parte mitigado.</li>
+<li><strong>Server-reflexive candidates</strong>: seu IP público como um servidor STUN o vê. Este é o vazamento a que todos se referem: o proxy mostra um IP, o WebRTC revela o seu verdadeiro.</li>
+<li><strong>Relay candidates</strong>: um endereço de relay TURN usado quando o P2P direto falha; o campo <code>raddr</code> ainda pode carregar seu IP real.</li>
+</ul>
+<p>O STUN (RFC 8489) é uma simples requisição/resposta sobre UDP: o cliente pergunta "qual IP você enxerga", e o servidor retorna o IP e a porta públicos em um <code>XOR-MAPPED-ADDRESS</code> (com XOR contra um magic cookie fixo por compatibilidade com NAT, não por segurança). Os navegadores já vêm com servidores STUN públicos como <code>stun.l.google.com:19302</code>.</p>
+<p>Um proxy não consegue impedir isso porque o WebRTC usa UDP (que a maioria dos proxies não carrega), opera abaixo da camada HTTP contra a pilha de rede do SO diretamente, e enumera cada interface. Qualquer página pode disparar isso e ler o resultado:</p>
+<div class="language-javascript highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kd">const</span><span class="w"> </span><span class="nx">pc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">RTCPeerConnection</span><span class="p">({</span><span class="w"> </span><span class="nx">iceServers</span><span class="o">:</span><span class="w"> </span><span class="p">[{</span><span class="w"> </span><span class="nx">urls</span><span class="o">:</span><span class="w"> </span><span class="s1">'stun:stun.l.google.com:19302'</span><span class="w"> </span><span class="p">}]</span><span class="w"> </span><span class="p">});</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nx">pc</span><span class="p">.</span><span class="nx">createDataChannel</span><span class="p">(</span><span class="s1">''</span><span class="p">);</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="nx">pc</span><span class="p">.</span><span class="nx">createOffer</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="nx">offer</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">pc</span><span class="p">.</span><span class="nx">setLocalDescription</span><span class="p">(</span><span class="nx">offer</span><span class="p">));</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="nx">pc</span><span class="p">.</span><span class="nx">onicecandidate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nx">event</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">event</span><span class="p">.</span><span class="nx">candidate</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="p">;</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">ip</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">event</span><span class="p">.</span><span class="nx">candidate</span><span class="p">.</span><span class="nx">candidate</span><span class="p">.</span><span class="nx">match</span><span class="p">(</span><span class="sr">/([0-9]{1,3}(\.[0-9]{1,3}){3})/</span><span class="p">);</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">ip</span><span class="p">)</span><span class="w"> </span><span class="nx">fetch</span><span class="p">(</span><span class="sb">`/track?real_ip=</span><span class="si">${</span><span class="nx">ip</span><span class="p">[</span><span class="mf">1</span><span class="p">]</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="p">};</span>
+</span></code></pre></div>
+<h3 id="prevenindo-vazamentos-de-webrtc">Prevenindo vazamentos de WebRTC</h3>
+<p>A correção recomendada é a opção embutida do Pydoll, que define a política de tratamento de IP do WebRTC para que o UDP que pularia o proxy seja bloqueado:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.chromium</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.options</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChromiumOptions</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="n">options</span><span class="o">.</span><span class="n">webrtc_leak_protection</span> <span class="o">=</span> <span class="kc">True</span>   <span class="c1"># --force-webrtc-ip-handling-policy=disable_non_proxied_udp</span>
+</span></code></pre></div>
+<p>Alternativas, dependendo do que você precisa:</p>
+<ul>
+<li>Defina a mesma política através de <code>options.browser_preferences = {'webrtc': {'ip_handling_policy': 'disable_non_proxied_udp', 'multiple_routes_enabled': False, 'nonproxied_udp_enabled': False}}</code>.</li>
+<li>Roteie o WebRTC através de um proxy SOCKS5 que suporte relay de UDP (<code>--proxy-server=socks5://host:1080</code>), o que nem todos suportam.</li>
+<li>Desabilite o WebRTC por completo com <code>--disable-features=WebRTC</code> se você nunca precisa dele (isso quebra videoconferência; teste o nome da flag contra a sua versão do Chrome).</li>
+</ul>
+<div class="admonition warning">
+<p class="admonition-title">Sempre verifique</p>
+<p>Nunca presuma que o proxy impede vazamentos de WebRTC. Carregue <a href="https://browserleaks.com/webrtc">browserleaks.com/webrtc</a> ou <a href="https://ipleak.net">ipleak.net</a> através da sua configuração e confirme que apenas o IP do proxy aparece. Um único vazamento expõe sua localização real, seu ISP e sua topologia de uma vez.</p>
+</div>
+<h2 id="relacionado">Relacionado</h2>
+<ul>
+<li><a href="../http-proxies/">Proxies HTTP/HTTPS</a>: proxying na camada de aplicação em profundidade.</li>
+<li><a href="../socks-proxies/">Proxies SOCKS</a>: proxying na camada de sessão, agnóstico ao protocolo (incluindo os detalhes de UDP e autenticação do SOCKS5).</li>
+<li><a href="../proxy-detection/">Detecção de proxy</a>: os sinais que entregam um proxy.</li>
+<li><a href="../../fingerprinting/network-fingerprinting/">Fingerprinting de rede</a>: como TCP/TLS/HTTP2 viram uma assinatura.</li>
+<li><a href="../../../guides/proxies/">Proxies</a>: a configuração prática no Pydoll.</li>
 </ul>
 <h2 id="referencias">Referências</h2>
 <ul>
-<li>RFC 793: Transmission Control Protocol (TCP) - https://tools.ietf.org/html/rfc793</li>
-<li>RFC 768: User Datagram Protocol (UDP) - https://tools.ietf.org/html/rfc768</li>
-<li>RFC 8489: Session Traversal Utilities for NAT (STUN) - https://tools.ietf.org/html/rfc8489</li>
-<li>RFC 8445: Interactive Connectivity Establishment (ICE) - https://tools.ietf.org/html/rfc8445</li>
-<li>RFC 8656: Traversal Using Relays around NAT (TURN) - https://tools.ietf.org/html/rfc8656</li>
-<li>RFC 6528: Defending Against Sequence Number Attacks - https://tools.ietf.org/html/rfc6528</li>
-<li>RFC 9000: QUIC: A UDP-Based Multiplexed and Secure Transport - https://tools.ietf.org/html/rfc9000</li>
-<li>W3C WebRTC 1.0: Real-Time Communication Between Browsers - https://www.w3.org/TR/webrtc/</li>
-<li>BrowserLeaks: WebRTC Leak Test - https://browserleaks.com/webrtc</li>
-<li>IPLeak: Comprehensive Leak Testing - https://ipleak.net</li>
+<li>RFC 793 (TCP), RFC 768 (UDP), RFC 6528 (aleatorização de ISN)</li>
+<li>RFC 8489 (STUN), RFC 8445 (ICE), RFC 8656 (TURN)</li>
+<li>RFC 9000 (QUIC), W3C WebRTC 1.0</li>
 </ul>
 
 

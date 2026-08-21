@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Structured extraction</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+<style>
+  :root{
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;
+    --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
+    --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--pass:#35e0a1;
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
+  .widget{border:1px solid var(--line);padding:16px 18px}
+  .cols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+  @media(max-width:660px){.cols{grid-template-columns:1fr}}
+  .pane{border:1px solid var(--line);background:var(--bg2);display:flex;flex-direction:column;min-height:150px}
+  .pane h4{margin:0;padding:9px 12px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint)}
+  .pane .body{padding:12px;flex:1}
+  .quote{display:flex;flex-direction:column;gap:7px}
+  .quote > *{border:1px solid transparent;padding:2px 5px;transition:background .15s,border-color .15s}
+  .quote .text{font-family:var(--sans);font-weight:600;font-size:12.5px;color:var(--ink)}
+  .quote .author{font-family:var(--mono);font-size:11px;color:var(--dim)}
+  .quote .tags{display:flex;gap:5px;flex-wrap:wrap}
+  .quote .tag{font-family:var(--mono);font-size:10px;color:var(--indigo2);border:1px solid var(--line);padding:1px 6px}
+  .hl{background:rgba(110,123,255,.14)!important;border-color:var(--indigo)!important}
+  .model{font-family:var(--mono);font-size:11px;line-height:1.7;white-space:pre-wrap}
+  .model .kw{color:#b3a0ff}.model .fn{color:#7fb4ff}.model .st{color:var(--pass)}.model .ty{color:var(--indigo2)}
+  .fld{display:block;border:1px solid transparent;padding:1px 4px;transition:background .15s,border-color .15s}
+  .fld.hl{background:rgba(110,123,255,.14);border-color:var(--indigo)}
+  .out{margin:0;font-family:var(--mono);font-size:11px;line-height:1.7;white-space:pre-wrap;color:var(--ink)}
+  .out .k{color:var(--dim)}.out .st{color:var(--pass)}.out .cls{color:var(--indigo2)}
+  .out .ln{opacity:0;transition:opacity .3s}.out .ln.show{opacity:1}
+  .controls{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:center}
+  button{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:8px 12px;cursor:pointer;transition:.15s}
+  button:hover:not(:disabled){border-color:var(--indigo);color:#fff}
+  button:disabled{opacity:.5;cursor:default}
+  .caption{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-left:auto;min-height:16px;text-align:right}
+  .caption b{color:var(--pass)}
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="cols">
+    <div class="pane">
+      <h4>Page</h4>
+      <div class="body"><div class="quote" id="quote">
+        <span class="text" data-src="text">"Stay hungry, stay foolish."</span>
+        <span class="author" data-src="author">Jobs</span>
+        <span class="tags"><a class="tag" data-src="tags" href="#">life</a><a class="tag" data-src="tags" href="#">work</a></span>
+      </div></div>
+    </div>
+    <div class="pane">
+      <h4>Model</h4>
+      <div class="body"><div class="model"><span class="kw">class</span> <span class="ty">Quote</span>(ExtractionModel):
+<span class="fld" data-f="text">    text: <span class="ty">str</span> = <span class="fn">Field</span>(selector=<span class="st">'.text'</span>)</span>
+<span class="fld" data-f="author">    author: <span class="ty">str</span> = <span class="fn">Field</span>(selector=<span class="st">'.author'</span>)</span>
+<span class="fld" data-f="tags">    tags: <span class="ty">list</span>[str] = <span class="fn">Field</span>(selector=<span class="st">'.tag'</span>)</span></div></div>
+    </div>
+    <div class="pane">
+      <h4>Result</h4>
+      <div class="body"><pre class="out" id="out"></pre></div>
+    </div>
+  </div>
+  <div class="controls">
+    <button id="run">Run tab.extract(Quote)</button>
+    <span class="caption" id="caption"></span>
+  </div>
+</div>
+
+<script>
+(function(){
+  var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  var U=function(ms){return reduce?0:ms;};
+  var quote=document.getElementById('quote'),out=document.getElementById('out'),runBtn=document.getElementById('run'),caption=document.getElementById('caption');
+  var flds=document.querySelectorAll('.fld');
+  var timers=[];
+  var STEPS=[
+    {f:'text',line:'    <span class="k">text</span>=<span class="st">\'Stay hungry, stay foolish.\'</span>,'},
+    {f:'author',line:'    <span class="k">author</span>=<span class="st">\'Jobs\'</span>,'},
+    {f:'tags',line:'    <span class="k">tags</span>=[<span class="st">\'life\'</span>, <span class="st">\'work\'</span>],'}
+  ];
+  function clearHl(){ quote.querySelectorAll('.hl').forEach(function(n){n.classList.remove('hl');}); flds.forEach(function(f){f.classList.remove('hl');}); }
+  function run(){
+    runBtn.disabled=true;caption.textContent='';clearHl();
+    out.innerHTML='<span class="ln show"><span class="cls">Quote</span>(</span>';
+    var i=0;
+    (function step(){
+      if(i>=STEPS.length){
+        var end=document.createElement('span');end.className='ln';end.textContent=')';out.appendChild(end);
+        requestAnimationFrame(function(){end.classList.add('show');});
+        clearHl();
+        caption.innerHTML='returns a <b>typed, validated</b> Quote';
+        runBtn.disabled=false;return;
+      }
+      var s=STEPS[i++];
+      clearHl();
+      quote.querySelectorAll('[data-src="'+s.f+'"]').forEach(function(n){n.classList.add('hl');});
+      var fld=document.querySelector('.fld[data-f="'+s.f+'"]'); if(fld)fld.classList.add('hl');
+      timers.push(setTimeout(function(){
+        var ln=document.createElement('span');ln.className='ln';ln.innerHTML=s.line;out.appendChild(ln);
+        requestAnimationFrame(function(){ln.classList.add('show');});
+        timers.push(setTimeout(step,U(720)));
+      },U(560)));
+    })();
+  }
+  runBtn.addEventListener('click',function(){timers.forEach(clearTimeout);timers=[];run();});
+})();
+</script>
+<script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>
+</body>
+</html>

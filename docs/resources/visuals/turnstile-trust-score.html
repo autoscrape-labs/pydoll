@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Turnstile trust score</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+<style>
+  :root{
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;--panel2:#191c20;
+    --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
+    --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--pass:#35e0a1;--amber:#f5b544;--danger:#ff6b6b;
+    --pass-dim:rgba(53,224,161,.12);--amber-dim:rgba(245,181,68,.13);--danger-dim:rgba(255,107,107,.12);
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
+  .widget{border:1px solid var(--line);padding:16px 18px}
+  .lead{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:15px}
+  .inputs{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+  @media(max-width:560px){.inputs{grid-template-columns:1fr}}
+  .inp{border:1px solid var(--line2);background:var(--bg2);padding:12px 13px;display:flex;flex-direction:column;gap:9px;min-width:0}
+  .inp .k{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint)}
+  .inp .val{font-family:var(--sans);font-weight:700;font-size:13.5px}
+  .inp.good{border-color:rgba(53,224,161,.4)} .inp.good .val{color:var(--pass)}
+  .inp.bad{border-color:rgba(255,107,107,.4)} .inp.bad .val{color:var(--danger)}
+  .inp .pts{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:auto}
+  .inp button{font-family:var(--mono);font-size:11px;color:var(--dim);background:var(--panel);border:1px solid var(--line2);padding:6px 9px;cursor:pointer;transition:.15s;text-align:left}
+  .inp button:hover{border-color:var(--indigo);color:#fff}
+  .click{display:flex;align-items:center;gap:10px;margin-top:11px;padding:10px 13px;border:1px dashed var(--line2);background:var(--panel);font-family:var(--mono);font-size:11.5px;color:var(--dim)}
+  .click .ck{width:16px;height:16px;border:1.5px solid var(--pass);display:grid;place-items:center;flex:none}
+  .click .ck svg{width:10px;height:10px;color:var(--pass)}
+  .click b{color:var(--ink);font-weight:500}
+  .click .who{margin-left:auto;color:var(--faint)}
+  .feed{text-align:center;font-family:var(--mono);font-size:10.5px;color:var(--faint);margin:15px 0 8px;letter-spacing:.03em}
+  .meter{position:relative;height:30px;border:1px solid var(--line);display:flex;margin-top:30px}
+  .zone{height:100%} .zone.b{background:var(--danger-dim)} .zone.c{background:var(--amber-dim)} .zone.a{background:var(--pass-dim)}
+  .mark{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink);transition:left .5s cubic-bezier(.4,0,.2,1)}
+  .mark .bub{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:11px;font-weight:600;color:var(--ink);background:var(--panel2);border:1px solid var(--line2);padding:1px 7px;white-space:nowrap}
+  .zlbls{display:flex;font-family:var(--mono);font-size:9.5px;color:var(--faint);margin-top:6px;text-transform:uppercase;letter-spacing:.05em}
+  .zlbls span{text-align:center}
+  .outcome{display:flex;align-items:center;gap:13px;margin-top:16px;padding:14px 15px;border:1px solid var(--line);transition:.35s}
+  .outcome .chip{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:5px 12px;border:1px solid;flex:none}
+  .outcome .txt{font-family:var(--mono);font-size:12px;color:var(--dim);line-height:1.5}
+  .outcome.a{background:var(--pass-dim);border-color:rgba(53,224,161,.3)} .outcome.a .chip{color:var(--pass);border-color:rgba(53,224,161,.5)} .outcome.a .txt b{color:var(--pass)}
+  .outcome.c{background:var(--amber-dim);border-color:rgba(245,181,68,.3)} .outcome.c .chip{color:var(--amber);border-color:rgba(245,181,68,.5)} .outcome.c .txt b{color:var(--amber)}
+  .outcome.bl{background:var(--danger-dim);border-color:rgba(255,107,107,.3)} .outcome.bl .chip{color:var(--danger);border-color:rgba(255,107,107,.5)} .outcome.bl .txt b{color:var(--danger)}
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="lead">Toggle each input. Turnstile scores them together, and the click is only one of them.</div>
+
+  <div class="inputs">
+    <div class="inp" id="ipCard">
+      <div class="k">IP reputation</div>
+      <div class="val" id="ipVal"></div>
+      <button id="ipBtn"></button>
+      <div class="pts" id="ipPts"></div>
+    </div>
+    <div class="inp" id="fpCard">
+      <div class="k">Fingerprint</div>
+      <div class="val" id="fpVal"></div>
+      <button id="fpBtn"></button>
+      <div class="pts" id="fpPts"></div>
+    </div>
+    <div class="inp" id="mdCard">
+      <div class="k">Browser mode</div>
+      <div class="val" id="mdVal"></div>
+      <button id="mdBtn"></button>
+      <div class="pts" id="mdPts"></div>
+    </div>
+  </div>
+
+  <div class="click">
+    <span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>
+    <span>Pydoll clicks the checkbox &middot; <b>done</b></span>
+    <span class="who">necessary, not sufficient</span>
+  </div>
+
+  <div class="feed">▼ &nbsp;the three inputs combine into a trust score&nbsp; ▼</div>
+
+  <div class="meter" id="meter">
+    <div class="zone b" style="width:45%"></div>
+    <div class="zone c" style="width:25%"></div>
+    <div class="zone a" style="width:30%"></div>
+    <div class="mark" id="mark"><span class="bub" id="bub">0</span></div>
+  </div>
+  <div class="zlbls"><span style="width:45%">blocked</span><span style="width:25%">challenged</span><span style="width:30%">accepted</span></div>
+
+  <div class="outcome" id="outcome">
+    <span class="chip" id="chip"></span>
+    <span class="txt" id="verdict"></span>
+  </div>
+</div>
+
+<script>
+(function(){
+  var S={ip:true,fp:true,md:true};
+  var W={ip:{good:45,bad:8},fp:{good:35,bad:8},md:{good:20,bad:7}};
+  var LABEL={
+    ip:{good:'residential',bad:'datacenter'},
+    fp:{good:'consistent',bad:'mismatched'},
+    md:{good:'headful',bad:'headless'}
+  };
+  var els={
+    ip:{card:'ipCard',val:'ipVal',btn:'ipBtn',pts:'ipPts'},
+    fp:{card:'fpCard',val:'fpVal',btn:'fpBtn',pts:'fpPts'},
+    md:{card:'mdCard',val:'mdVal',btn:'mdBtn',pts:'mdPts'}
+  };
+  function g(id){return document.getElementById(id);}
+  var mark=g('mark'),bub=g('bub'),outcome=g('outcome'),chip=g('chip'),verdict=g('verdict');
+
+  function score(){return W.ip[S.ip?'good':'bad']+W.fp[S.fp?'good':'bad']+W.md[S.md?'good':'bad'];}
+  function weakest(){
+    var arr=[['ip',S.ip],['fp',S.fp],['md',S.md]].filter(function(x){return !x[1];});
+    if(!arr.length)return null;
+    arr.sort(function(a,b){return (W[a[0]].good-W[a[0]].bad)-(W[b[0]].good-W[b[0]].bad);});
+    return arr[arr.length-1][0];
+  }
+  var WEAKTXT={
+    ip:'a <b>datacenter IP</b> is the heaviest drag; no browser tuning overcomes it',
+    fp:'a <b>mismatched fingerprint</b> (often a Chrome version gap) contradicts the rest',
+    md:'<b>headless</b> leaks rendering signals that lower the score'
+  };
+
+  function render(){
+    ['ip','fp','md'].forEach(function(k){
+      var e=els[k],good=S[k];
+      g(e.card).className='inp '+(good?'good':'bad');
+      g(e.val).textContent=LABEL[k][good?'good':'bad'];
+      g(e.btn).textContent=good?('use '+LABEL[k].bad):('use '+LABEL[k].good);
+      g(e.pts).textContent='+'+W[k][good?'good':'bad']+' pts';
+    });
+    var sc=score();
+    mark.style.left=sc+'%';
+    bub.textContent=sc;
+    var band = sc>=70?'a' : sc>=45?'c' : 'bl';
+    outcome.className='outcome '+band;
+    if(band==='a'){ chip.textContent='accepted'; verdict.innerHTML='Trust score <b>'+sc+'</b>. The inputs agree, so the click is accepted.'; }
+    else if(band==='c'){ chip.textContent='challenged'; verdict.innerHTML='Trust score <b>'+sc+'</b>. A puzzle follows the click: '+WEAKTXT[weakest()]+'.'; }
+    else { chip.textContent='blocked'; verdict.innerHTML='Trust score <b>'+sc+'</b>. The click never lands: '+WEAKTXT[weakest()]+'.'; }
+  }
+  ['ip','fp','md'].forEach(function(k){
+    g(els[k].btn).addEventListener('click',function(){S[k]=!S[k];render();});
+  });
+  render();
+})();
+</script>
+<script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>
+</body>
+</html>

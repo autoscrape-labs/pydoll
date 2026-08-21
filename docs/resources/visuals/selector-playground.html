@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Selector playground</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+<style>
+  :root{
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;
+    --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
+    --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--pass:#35e0a1;--danger:#ff6b6b;
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
+  .widget{border:1px solid var(--line);padding:16px 18px}
+  .row1{display:flex;gap:10px;align-items:center}
+  .sel{flex:1;min-width:0;font-family:var(--mono);font-size:13px;color:var(--ink);background:var(--bg2);border:1px solid var(--line2);padding:10px 12px;outline:none}
+  .sel:focus{border-color:var(--indigo)}
+  .count{font-family:var(--mono);font-size:12px;color:var(--pass);white-space:nowrap;min-width:96px;text-align:right}
+  .count.bad{color:var(--danger)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:11px}
+  .chip{font-family:var(--mono);font-size:11px;color:var(--dim);background:var(--panel);border:1px solid var(--line2);padding:5px 9px;cursor:pointer;transition:.15s}
+  .chip:hover{border-color:var(--indigo);color:#fff}
+  .chip.on{background:rgba(110,123,255,.14);border-color:var(--indigo);color:#fff}
+  .preview{margin-top:14px;border:1px solid var(--line);background:var(--bg2);padding:13px;display:flex;flex-direction:column;gap:9px}
+  .quote{border:1px solid var(--line2);padding:10px 12px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;transition:outline .12s,background .12s,border-color .12s}
+  .quote .text{font-family:var(--sans);font-weight:600;font-size:13px;color:var(--ink);flex:1 1 100%}
+  .quote .author{font-family:var(--mono);font-size:11px;color:var(--dim)}
+  .quote .tag{font-family:var(--mono);font-size:10px;color:var(--indigo2);border:1px solid var(--line);padding:1px 6px;text-decoration:none}
+  .match{outline:2px solid var(--indigo);outline-offset:1px;background:rgba(110,123,255,.10)!important;border-color:var(--indigo)!important}
+  .hint{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:10px}
+  .hint code{color:var(--dim)}
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="row1">
+    <input class="sel" id="sel" value=".quote" spellcheck="false" aria-label="selector" />
+    <span class="count" id="count"></span>
+  </div>
+  <div class="chips" id="chips"></div>
+
+  <div class="preview" id="preview">
+    <div class="quote" id="first"><p class="text">"Stay hungry, stay foolish."</p><span class="author">Jobs</span><a class="tag" href="#">life</a><a class="tag" href="#">work</a></div>
+    <div class="quote"><p class="text">"Less is more."</p><span class="author">Rohe</span><a class="tag" href="#">design</a></div>
+    <div class="quote featured"><p class="text">"Move fast, keep shipping."</p><span class="author">Zuck</span><a class="tag" href="#">tech</a><a class="tag" href="#">life</a></div>
+  </div>
+
+  <div class="hint">CSS by default. A selector starting with <code>/</code> or <code>./</code> runs as XPath, exactly how <code>tab.query()</code> routes it.</div>
+</div>
+
+<script>
+(function(){
+  var sel=document.getElementById('sel'),count=document.getElementById('count'),preview=document.getElementById('preview'),chips=document.getElementById('chips');
+  var PRESETS=['.quote','.author','.tag','#first','.featured','.quote .text','//a'];
+  PRESETS.forEach(function(p){
+    var b=document.createElement('button');b.className='chip';b.textContent=p;
+    b.addEventListener('click',function(){sel.value=p;evaluate();});
+    chips.appendChild(b);
+  });
+  function clearMatches(){ preview.querySelectorAll('.match').forEach(function(n){n.classList.remove('match');}); }
+  function evaluate(){
+    clearMatches();
+    var q=sel.value.trim();
+    chips.querySelectorAll('.chip').forEach(function(c){c.classList.toggle('on',c.textContent===q);});
+    if(!q){count.textContent='';count.className='count';return;}
+    var nodes=[];
+    try{
+      if(q[0]==='/'||q.slice(0,2)==='./'){
+        var r=document.evaluate(q,preview,null,XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,null);
+        for(var i=0;i<r.snapshotLength;i++)nodes.push(r.snapshotItem(i));
+      } else {
+        nodes=[].slice.call(preview.querySelectorAll(q));
+      }
+    }catch(e){ count.textContent='invalid selector'; count.className='count bad'; return; }
+    nodes.forEach(function(n){ if(n.nodeType===1)n.classList.add('match'); });
+    var n=nodes.length;
+    count.textContent = n===0 ? 'no matches' : n+' match'+(n===1?'':'es');
+    count.className = 'count'+(n===0?' bad':'');
+  }
+  sel.addEventListener('input',evaluate);
+  evaluate();
+})();
+</script>
+<script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>
+</body>
+</html>
