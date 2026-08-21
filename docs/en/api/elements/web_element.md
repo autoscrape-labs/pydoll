@@ -1,5 +1,7 @@
 # WebElement
 
+Represents a located element: click, type, read text and attributes, take a screenshot, and traverse the DOM. Learn more in [Element finding](../../guides/element-finding.md).
+
 ::: pydoll.elements.web_element.WebElement
     options:
       show_root_heading: true

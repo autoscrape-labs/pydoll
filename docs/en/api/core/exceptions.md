@@ -1,6 +1,6 @@
 # Exceptions
 
-This section documents all custom exceptions that can be raised by Pydoll operations.
+The exceptions Pydoll raises, such as `ElementNotFound` and `WaitElementTimeout`. Learn more in [Element finding](../../guides/element-finding.md#handle-missing-elements).
 
 ::: pydoll.exceptions
     options:
