@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Events firing and callbacks running</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+<style>
+  :root{
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;--panel2:#191c20;
+    --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
+    --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--pass:#35e0a1;
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
+  .widget{border:1px solid var(--line);padding:16px 18px}
+  .top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:14px}
+  .hint{font-family:var(--mono);font-size:11.5px;color:var(--dim)}
+  .hint code{color:var(--ink);background:var(--panel2);border:1px solid var(--line);padding:1px 5px}
+  .timer{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:600;font-size:22px;color:var(--ink)}
+
+  .stage{position:relative;height:120px;border:1px solid var(--line);background:var(--bg2);overflow:hidden}
+  .end{position:absolute;top:50%;transform:translateY(-50%);padding:9px 11px;border:1px solid var(--line2);background:var(--panel);text-align:center;z-index:2}
+  .end .t{font-family:var(--sans);font-weight:700;font-size:12px}
+  .end .s{font-family:var(--mono);font-size:9px;color:var(--faint);margin-top:2px}
+  .ev-page{left:12px}
+  .ev-gate{right:12px;border-color:var(--indigo)}
+  .ev-gate .s{color:var(--indigo2)}
+  .pk{position:absolute;font-family:var(--mono);font-size:10px;padding:3px 7px;border:1px solid var(--line2);background:var(--panel2);color:var(--dim);white-space:nowrap;z-index:1;opacity:0;
+    transition:left 1s linear,opacity .3s,color .2s,border-color .2s,background .2s}
+  .pk.go{opacity:1}
+  .pk.pass{color:var(--pass);border-color:rgba(53,224,161,.5);background:rgba(53,224,161,.08)}
+  .pk.drop{color:var(--faint);opacity:0}
+
+  .cbk{margin-top:12px}
+  .cbk h4{margin:0 0 8px;font-family:var(--sans);font-weight:700;font-size:12px;color:var(--dim)}
+  .log{border:1px solid var(--line);background:var(--bg2);min-height:74px;padding:9px 11px;display:flex;flex-direction:column;gap:6px}
+  .logline{font-family:var(--mono);font-size:11px;color:var(--pass);opacity:0;transform:translateX(-6px);transition:opacity .25s,transform .25s}
+  .logline.show{opacity:1;transform:none}
+
+  .controls{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:center}
+  button{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:8px 12px;cursor:pointer;transition:.15s}
+  button:hover{border-color:var(--indigo);color:#fff}
+  button:disabled{opacity:.5;cursor:default}
+  @media (prefers-reduced-motion:reduce){.pk{transition:opacity .2s!important}}
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="top">
+    <div class="hint">You subscribed to <code>RESPONSE_RECEIVED</code> and <code>LOAD_EVENT_FIRED</code>. Others fly past.</div>
+    <div class="timer" id="timer">0.0s</div>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="end ev-page"><div class="t">Page</div><div class="s">fires events</div></div>
+    <div class="end ev-gate"><div class="t">.on( )</div><div class="s">2 subscribed</div></div>
+  </div>
+
+  <div class="cbk">
+    <h4>Your callback output</h4>
+    <div class="log" id="log"></div>
+  </div>
+
+  <div class="controls"><button id="run">Navigate</button></div>
+</div>
+
+<script>
+(function(){
+  var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  var UNIT=reduce?0:1000;      // ms per simulated second
+  var TRAVEL=reduce?0:1000;    // ms a packet takes to cross the lane
+  var stage=document.getElementById('stage'),log=document.getElementById('log'),timer=document.getElementById('timer'),runBtn=document.getElementById('run');
+  var raf=null,timeouts=[],pkts=[];
+  var SEQ=[
+    {t:0.0,name:'requestWillBeSent',sub:false},
+    {t:0.4,name:'responseReceived',sub:true,log:'response 200 /'},
+    {t:0.7,name:'domContentEventFired',sub:false},
+    {t:1.0,name:'requestWillBeSent /app.js',sub:false},
+    {t:1.3,name:'responseReceived /app.js',sub:true,log:'response 200 /app.js'},
+    {t:1.7,name:'loadEventFired',sub:true,log:'page loaded'}
+  ];
+  function clearAll(){ if(raf)cancelAnimationFrame(raf); timeouts.forEach(clearTimeout);timeouts=[]; pkts.forEach(function(p){if(p.parentNode)p.parentNode.removeChild(p);}); pkts=[]; log.innerHTML=''; timer.textContent='0.0s'; }
+  function runTimer(total){
+    var start=performance.now();
+    function tick(now){var el=Math.min((now-start)/UNIT,total);timer.textContent=el.toFixed(1)+'s';if((now-start)<total*UNIT)raf=requestAnimationFrame(tick);else timer.textContent=total.toFixed(1)+'s';}
+    if(UNIT===0){timer.textContent=total.toFixed(1)+'s';return;}
+    raf=requestAnimationFrame(tick);
+  }
+  function addLog(text){ var l=document.createElement('div');l.className='logline';l.textContent='> '+text;log.appendChild(l);requestAnimationFrame(function(){l.classList.add('show');}); }
+  function emit(e,i){
+    var pk=document.createElement('div');pk.className='pk';pk.textContent=e.name;
+    pk.style.left='13%'; pk.style.top=(60+((i%3)-1)*22)+'px'; pk.style.transform='translateY(-50%)';
+    stage.appendChild(pk);pkts.push(pk);
+    requestAnimationFrame(function(){ pk.classList.add('go'); pk.style.left='66%'; });
+    timeouts.push(setTimeout(function(){
+      if(e.sub){ pk.classList.add('pass'); if(e.log)addLog(e.log); timeouts.push(setTimeout(function(){pk.style.opacity='0';},420)); }
+      else { pk.classList.add('drop'); }
+      timeouts.push(setTimeout(function(){ if(pk.parentNode)pk.parentNode.removeChild(pk); },700));
+    },TRAVEL));
+  }
+  function run(){
+    clearAll();runBtn.disabled=true;
+    var total=SEQ[SEQ.length-1].t; runTimer(total);
+    SEQ.forEach(function(e,i){ timeouts.push(setTimeout(function(){emit(e,i);},e.t*UNIT)); });
+    timeouts.push(setTimeout(function(){runBtn.disabled=false;},total*UNIT+TRAVEL+500));
+  }
+  runBtn.addEventListener('click',run);
+})();
+</script>
+<script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>
+</body>
+</html>

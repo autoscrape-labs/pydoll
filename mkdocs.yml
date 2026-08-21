@@ -8,72 +8,64 @@ docs_dir: docs
 # Configuração da navegação
 nav:
   - Pydoll: index.md
-  - Features:
-      - Overview: features/index.md
-      - Core Concepts: features/core-concepts.md
-      - Element Finding: features/element-finding.md
-      - Data Extraction:
-          - Structured Extraction: features/extraction/structured-extraction.md
-      - Automation:
-          - Human-Like Interactions: features/automation/human-interactions.md
-          - Keyboard Control: features/automation/keyboard-control.md
-          - Mouse Control: features/automation/mouse-control.md
-          - File Operations: features/automation/file-operations.md
-          - IFrames: features/automation/iframes.md
-          - Screenshots & PDF: features/automation/screenshots-and-pdfs.md
+  - Getting Started:
+      - Installation: getting-started.md
+      - Your first automation: first-automation.md
+      - Migrating from Selenium & Playwright: migrating.md
+  - Basics:
+      - Async Python in practice: basics/async-python.md
+      - Selectors, CSS and XPath: basics/selectors.md
+  - Guides:
+      - Overview: guides/index.md
+      - Core concepts: guides/core-concepts.md
+      - Finding and extracting:
+          - Element finding: guides/element-finding.md
+          - DOM traversal: guides/dom-traversal.md
+          - Structured extraction: guides/structured-extraction.md
+      - Interacting:
+          - Keyboard: guides/keyboard.md
+          - Mouse: guides/mouse.md
+          - File operations: guides/file-operations.md
+          - Iframes: guides/iframes.md
+          - Screenshots and PDFs: guides/screenshots-and-pdfs.md
       - Network:
-          - Network Monitoring: features/network/monitoring.md
-          - Request Interception: features/network/interception.md
-          - Browser-Context HTTP Requests: features/network/http-requests.md
-          - HAR Network Recording: features/network/network-recording.md
-      - Browser Management:
-          - Multi-Tab Management: features/browser-management/tabs.md
-          - Browser Contexts: features/browser-management/contexts.md
-          - Cookies & Sessions: features/browser-management/cookies-sessions.md
-      - Configuration:
-          - Browser Options: features/configuration/browser-options.md
-          - Browser Preferences: features/configuration/browser-preferences.md
-          - Proxy Configuration: features/configuration/proxy.md
-      - Advanced:
-          - Fingerprint Injection: features/advanced/fingerprint-injection.md
-          - Behavioral Captcha Bypass: features/advanced/behavioral-captcha-bypass.md
-          - Event System: features/advanced/event-system.md
-          - Remote Connections: features/advanced/remote-connections.md
-          - Retry Decorator: features/advanced/decorators.md
+          - Network monitoring: guides/network-monitoring.md
+          - Request interception: guides/request-interception.md
+          - Browser-context HTTP requests: guides/http-requests.md
+          - HAR recording: guides/network-recording.md
+      - Managing the browser:
+          - Tabs: guides/tabs.md
+          - Browser contexts: guides/browser-contexts.md
+          - Cookies and sessions: guides/cookies-and-sessions.md
+          - Browser options: guides/browser-options.md
+          - Browser preferences: guides/browser-preferences.md
+          - Proxies: guides/proxies.md
+          - Remote connections: guides/remote-connections.md
+      - Reacting to events:
+          - Events: guides/events.md
+          - Retrying: guides/retrying.md
+  - Stealth:
+      - Overview: stealth/index.md
+      - Evasion techniques: stealth/evasion-techniques.md
+      - Human-like interactions: stealth/human-like-interactions.md
+      - Captcha bypass: stealth/captcha-bypass.md
+      - Fingerprint injection: stealth/fingerprint-injection.md
   - Deep Dive:
       - Overview: deep-dive/index.md
-      - Core Fundamentals:
-          - Overview: deep-dive/fundamentals/index.md
-          - Chrome DevTools Protocol: deep-dive/fundamentals/cdp.md
-          - Connection Layer: deep-dive/fundamentals/connection-layer.md
-          - Python Type System: deep-dive/fundamentals/typing-system.md
-          - Iframes & Contexts: deep-dive/fundamentals/iframes-and-contexts.md
-      - Internal Architecture:
-          - Overview: deep-dive/architecture/index.md
-          - Browser Domain: deep-dive/architecture/browser-domain.md
-          - Tab Domain: deep-dive/architecture/tab-domain.md
-          - WebElement Domain: deep-dive/architecture/webelement-domain.md
-          - FindElements Mixin: deep-dive/architecture/find-elements-mixin.md
-          - Event Architecture: deep-dive/architecture/event-architecture.md
-          - Browser Requests Architecture: deep-dive/architecture/browser-requests-architecture.md
-          - Shadow DOM: deep-dive/architecture/shadow-dom.md
-      - Network & Security:
+      - Chrome DevTools Protocol: deep-dive/cdp.md
+      - Network & proxies:
           - Overview: deep-dive/network/index.md
-          - Network Fundamentals: deep-dive/network/network-fundamentals.md
-          - HTTP/HTTPS Proxies: deep-dive/network/http-proxies.md
-          - SOCKS Proxies: deep-dive/network/socks-proxies.md
-          - Proxy Detection: deep-dive/network/proxy-detection.md
-          - Building Proxy Servers: deep-dive/network/build-proxy.md
-          - Legal & Ethical: deep-dive/network/proxy-legal.md
+          - Network fundamentals: deep-dive/network/network-fundamentals.md
+          - HTTP/HTTPS proxies: deep-dive/network/http-proxies.md
+          - SOCKS proxies: deep-dive/network/socks-proxies.md
+          - Proxy detection: deep-dive/network/proxy-detection.md
+          - Building a proxy server: deep-dive/network/build-proxy.md
+          - Legal & ethical: deep-dive/network/proxy-legal.md
       - Fingerprinting:
           - Overview: deep-dive/fingerprinting/index.md
-          - Network Fingerprinting: deep-dive/fingerprinting/network-fingerprinting.md
-          - Browser Fingerprinting: deep-dive/fingerprinting/browser-fingerprinting.md
-          - Behavioral Fingerprinting: deep-dive/fingerprinting/behavioral-fingerprinting.md
-          - Evasion Techniques: deep-dive/fingerprinting/evasion-techniques.md
-      - Practical Guides:
-          - Overview: deep-dive/guides/index.md
-          - CSS Selectors vs XPath: deep-dive/guides/selectors-guide.md
+          - Network fingerprinting: deep-dive/fingerprinting/network-fingerprinting.md
+          - Browser fingerprinting: deep-dive/fingerprinting/browser-fingerprinting.md
+          - Behavioral fingerprinting: deep-dive/fingerprinting/behavioral-fingerprinting.md
   - API Reference:
       - Overview: api/index.md
       - Browser:
@@ -82,62 +74,25 @@ nav:
           - Options: api/browser/options.md
           - Tab: api/browser/tab.md
           - Requests: api/browser/requests.md
-          - Managers: api/browser/managers.md
       - Elements:
           - WebElement: api/elements/web_element.md
           - ShadowRoot: api/elements/shadow_root.md
-          - Mixins: api/elements/mixins.md
-      - Connection:
-          - Connection Handler: api/connection/connection.md
-          - Managers: api/connection/managers.md
-      - Commands:
-          - Overview: api/commands/index.md
-          - Browser: api/commands/browser.md
-          - DOM: api/commands/dom.md
-          - Input: api/commands/input.md
-          - Network: api/commands/network.md
-          - Page: api/commands/page.md
-          - Runtime: api/commands/runtime.md
-          - Storage: api/commands/storage.md
-          - Target: api/commands/target.md
-          - Fetch: api/commands/fetch.md
-      - Protocol:
-          - Base Types: api/protocol/base.md
-          - Browser: api/protocol/browser.md
-          - DOM: api/protocol/dom.md
-          - Fetch: api/protocol/fetch.md
-          - Input: api/protocol/input.md
-          - Network: api/protocol/network.md
-          - Page: api/protocol/page.md
-          - Runtime: api/protocol/runtime.md
-          - Storage: api/protocol/storage.md
-          - Target: api/protocol/target.md
+      - Extraction: api/extraction.md
+      - Connection: api/connection/connection.md
       - Core:
           - Constants: api/core/constants.md
           - Exceptions: api/core/exceptions.md
-          - Utils: api/core/utils.md
 
 theme:
   name: material
+  custom_dir: overrides
   font:
-    text: Roboto
-    code: Roboto Mono
+    text: Chivo
+    code: JetBrains Mono
   palette:
-    - media: "(prefers-color-scheme: dark)"
-      scheme: slate
-      primary: custom
-      accent: indigo
-      toggle:
-        icon: material/toggle-switch-off-outline
-        name: Dark Mode
-  
-    - media: "(prefers-color-scheme: light)"
-      scheme: default
-      primary: custom
-      accent: indigo
-      toggle:
-        icon: material/toggle-switch
-        name: Light Mode
+    scheme: slate
+    primary: custom
+    accent: indigo
   icon:
     repo: fontawesome/brands/github
     logo: material/lightning-bolt
@@ -176,206 +131,132 @@ plugins:
           site_name: "Pydoll - 异步网页自动化库"
           nav_translations:
             Pydoll: Pydoll
-            Features: 特性
+            Getting Started: 快速上手
+            Installation: 安装
+            Your first automation: 你的第一个自动化
+            Migrating from Selenium & Playwright: 从 Selenium 和 Playwright 迁移
+            Basics: 基础
+            Async Python in practice: 异步 Python 实践
+            Selectors, CSS and XPath: 选择器、CSS 和 XPath
+            Guides: 指南
             Overview: 概述
-            Core Concepts: 核心概念
-            Element Finding: 元素查找
-            Automation: 自动化
-            Human-Like Interactions: 类人交互
-            Keyboard Control: 键盘控制
-            Mouse Control: 鼠标控制
-            File Operations: 文件操作
-            IFrames: IFrame交互
-            Screenshots & PDF: 截图与PDF
+            Core concepts: 核心概念
+            Finding and extracting: 查找与提取
+            Element finding: 元素查找
+            DOM traversal: DOM 遍历
+            Structured extraction: 结构化提取
+            Interacting: 交互
+            Keyboard: 键盘
+            Mouse: 鼠标
+            File operations: 文件操作
+            Iframes: IFrame
+            Screenshots and PDFs: 截图与 PDF
             Network: 网络
-            Network Monitoring: 网络监控
-            Request Interception: 请求拦截
-            Browser-Context HTTP Requests: 浏览器上下文HTTP请求
-            HAR Network Recording: HAR网络录制
-            Browser Management: 浏览器管理
-            Multi-Tab Management: 多标签页管理
-            Browser Contexts: 浏览器上下文
-            Cookies & Sessions: Cookie与会话
-            Configuration: 配置
-            Browser Options: 浏览器选项
-            Browser Preferences: 浏览器偏好设置
-            Proxy Configuration: 代理配置
-            Advanced: 高级功能
-            Fingerprint Injection: 指纹注入
-            Behavioral Captcha Bypass: 行为验证码绕过
-            Event System: 事件系统
-            Remote Connections: 远程连接
-            Retry Decorator: Retry 装饰器
+            Network monitoring: 网络监控
+            Request interception: 请求拦截
+            Browser-context HTTP requests: 浏览器上下文 HTTP 请求
+            HAR recording: HAR 录制
+            Managing the browser: 管理浏览器
+            Tabs: 标签页
+            Browser contexts: 浏览器上下文
+            Cookies and sessions: Cookie 与会话
+            Browser options: 浏览器选项
+            Browser preferences: 浏览器偏好设置
+            Proxies: 代理
+            Remote connections: 远程连接
+            Reacting to events: 响应事件
+            Events: 事件
+            Retrying: 重试
+            Stealth: Stealth
+            Evasion techniques: 规避技术
+            Human-like interactions: 类人交互
+            Captcha bypass: 验证码绕过
+            Fingerprint injection: 指纹注入
             Deep Dive: 深入了解
-            Core Fundamentals: 核心基础
             Chrome DevTools Protocol: Chrome DevTools 协议
-            Connection Layer: 连接层
-            Python Type System: Python类型系统
-            Internal Architecture: 内部架构
-            Browser Domain: 浏览器域
-            Tab Domain: 标签页域
-            WebElement Domain: Web元素域
-            FindElements Mixin: 查找元素混合器
-            Event Architecture: 事件架构
-            Browser Requests Architecture: 浏览器请求架构
-            Shadow DOM: Shadow DOM 架构
-            Network & Security: 网络与安全
-            Network Fundamentals: 网络基础
-            HTTP/HTTPS Proxies: HTTP/HTTPS 代理
-            SOCKS Proxies: SOCKS 代理
-            Proxy Detection: 代理检测
-            Building Proxy Servers: 构建代理服务器
-            Legal & Ethical: 法律与道德
+            Network & proxies: 网络与代理
+            Network fundamentals: 网络基础
+            HTTP/HTTPS proxies: HTTP/HTTPS 代理
+            SOCKS proxies: SOCKS 代理
+            Proxy detection: 代理检测
+            Building a proxy server: 构建代理服务器
+            Legal & ethical: 法律与道德
             Fingerprinting: 指纹识别
-            Network Fingerprinting: 网络指纹识别
-            Browser Fingerprinting: 浏览器指纹识别
-            Behavioral Fingerprinting: 行为指纹识别
-            Evasion Techniques: 规避技术
-            Practical Guides: 实用指南
-            CSS Selectors vs XPath: CSS选择器 vs XPath
+            Network fingerprinting: 网络指纹识别
+            Browser fingerprinting: 浏览器指纹识别
+            Behavioral fingerprinting: 行为指纹识别
             API Reference: API 参考
             Browser: 浏览器
-            Chrome: Chrome
-            Edge: Edge
             Options: 选项
-            Tab: 标签页
-            Requests: 请求
-            Managers: 管理器
             Elements: 元素
-            WebElement: Web元素
-            ShadowRoot: Shadow根
-            Mixins: 混合器
-            Connection: 连接
-            Connection Handler: 连接处理器
-            Commands: 命令
-            DOM: DOM
-            Input: 输入
-            Network: 网络
-            Page: 页面
-            Runtime: 运行时
-            Storage: 存储
-            Target: 目标
-            Fetch: 获取
-            Protocol: 协议
-            Base Types: 基础类型
-            Overview: 概述
-            Events: 事件
-            Browser: 浏览器
-            DOM: DOM
-            Fetch: 获取
-            Input: 输入
-            Network: 网络
-            Page: 页面
-            Runtime: 运行时
-            Storage: 存储
-            Target: 目标
-            Core: 核心
             Constants: 常量
             Exceptions: 异常
-            Utils: 工具
         - locale: pt
           name: Português (BR)
           build: true
           site_name: "Pydoll - Biblioteca de Automação Web Assíncrona"
           nav_translations:
             Pydoll: Pydoll
-            Features: Recursos
-            Overview: Visão Geral
-            Core Concepts: Conceitos Fundamentais
-            Element Finding: Pesquisa de Elementos
-            Automation: Automação
-            Human-Like Interactions: Interações Humanas
-            Keyboard Control: Controle de Teclado
-            Mouse Control: Controle do Mouse
-            File Operations: Operações com Arquivos
-            IFrames: IFrames
-            Screenshots & PDF: Capturas e PDF
+            Getting Started: Primeiros passos
+            Installation: Instalação
+            Your first automation: Sua primeira automação
+            Migrating from Selenium & Playwright: Migrando do Selenium e Playwright
+            Basics: Fundamentos
+            Async Python in practice: Python assíncrono na prática
+            Selectors, CSS and XPath: Seletores, CSS e XPath
+            Guides: Guias
+            Overview: Visão geral
+            Core concepts: Conceitos fundamentais
+            Finding and extracting: Encontrar e extrair
+            Element finding: Encontrar elementos
+            DOM traversal: Percorrer o DOM
+            Structured extraction: Extração estruturada
+            Interacting: Interagir
+            Keyboard: Teclado
+            Mouse: Mouse
+            File operations: Operações com arquivos
+            Iframes: Iframes
+            Screenshots and PDFs: Capturas de tela e PDFs
             Network: Rede
-            Network Monitoring: Monitoramento de Rede
-            Request Interception: Interceptação de Requisições
-            Browser-Context HTTP Requests: Requisições HTTP no Contexto do Navegador
-            HAR Network Recording: Gravação de Rede HAR
-            Browser Management: Gerenciamento do Navegador
-            Multi-Tab Management: Gerenciamento de Abas
-            Browser Contexts: Contextos do Navegador
-            Cookies & Sessions: Cookies e Sessões
-            Configuration: Configuração
-            Browser Options: Opções do Navegador
-            Browser Preferences: Preferências do Navegador
-            Proxy Configuration: Configuração de Proxy
-            Advanced: Avançado
-            Fingerprint Injection: Injeção de Fingerprint
-            Behavioral Captcha Bypass: Bypass de Captcha Comportamental
-            Event System: Sistema de Eventos
-            Remote Connections: Conexões Remotas
-            Retry Decorator: Decorator Retry
-            Deep Dive: Análise Profunda
-            Core Fundamentals: Fundamentos Centrais
+            Network monitoring: Monitoramento de rede
+            Request interception: Interceptação de requisições
+            Browser-context HTTP requests: Requisições HTTP no contexto do navegador
+            HAR recording: Gravação HAR
+            Managing the browser: Gerenciar o navegador
+            Tabs: Abas
+            Browser contexts: Contextos do navegador
+            Cookies and sessions: Cookies e sessões
+            Browser options: Opções do navegador
+            Browser preferences: Preferências do navegador
+            Proxies: Proxies
+            Remote connections: Conexões remotas
+            Reacting to events: Reagir a eventos
+            Events: Eventos
+            Retrying: Repetição
+            Stealth: Stealth
+            Evasion techniques: Técnicas de evasão
+            Human-like interactions: Interações humanizadas
+            Captcha bypass: Bypass de captcha
+            Fingerprint injection: Injeção de fingerprint
+            Deep Dive: Análise profunda
             Chrome DevTools Protocol: Protocolo Chrome DevTools
-            Connection Layer: Camada de Conexão
-            Python Type System: Sistema de Tipos Python
-            Internal Architecture: Arquitetura Interna
-            Browser Domain: Domínio do Navegador
-            Tab Domain: Domínio da Aba
-            WebElement Domain: Domínio do WebElement
-            FindElements Mixin: Mixin FindElements
-            Event Architecture: Arquitetura de Eventos
-            Browser Requests Architecture: Arquitetura de Requisições do Navegador
-            Shadow DOM: Arquitetura Shadow DOM
-            Network & Security: Rede e Segurança
-            Network Fundamentals: Fundamentos de Rede
-            HTTP/HTTPS Proxies: Proxies HTTP/HTTPS
-            SOCKS Proxies: Proxies SOCKS
-            Proxy Detection: Detecção de Proxy
-            Building Proxy Servers: Construindo Servidores Proxy
-            Legal & Ethical: Legal & Ética
+            Network & proxies: Rede e proxies
+            Network fundamentals: Fundamentos de rede
+            HTTP/HTTPS proxies: Proxies HTTP/HTTPS
+            SOCKS proxies: Proxies SOCKS
+            Proxy detection: Detecção de proxy
+            Building a proxy server: Construindo um servidor proxy
+            Legal & ethical: Legal e ético
             Fingerprinting: Fingerprinting
-            Network Fingerprinting: Fingerprinting de Rede
-            Browser Fingerprinting: Fingerprinting do Navegador
-            Behavioral Fingerprinting: Fingerprinting Comportamental
-            Evasion Techniques: Técnicas de Evasão
-            Practical Guides: Guias Práticos
-            CSS Selectors vs XPath: Seletores CSS vs XPath
+            Network fingerprinting: Fingerprinting de rede
+            Browser fingerprinting: Fingerprinting de navegador
+            Behavioral fingerprinting: Fingerprinting comportamental
             API Reference: Referência da API
             Browser: Navegador
-            Chrome: Chrome
-            Edge: Edge
             Options: Opções
-            Tab: Aba
-            Requests: Requisições
-            Managers: Gerenciadores
             Elements: Elementos
-            WebElement: Elemento Web
-            ShadowRoot: Shadow Root
-            Mixins: Mixins
-            Connection: Conexão
-            Connection Handler: Manipulador de Conexão
-            Commands: Comandos
-            DOM: DOM
-            Input: Entrada
-            Network: Rede
-            Page: Página
-            Runtime: Tempo de Execução
-            Storage: Armazenamento
-            Target: Alvo
-            Fetch: Fetch
-            Protocol: Protocolo
-            Base Types: Tipos Base
-            Overview: Visão Geral
-            Events: Eventos
-            Browser: Navegador
-            DOM: DOM
-            Fetch: Fetch
-            Input: Entrada
-            Network: Rede
-            Page: Página
-            Runtime: Tempo de Execução
-            Storage: Armazenamento
-            Target: Alvo
-            Core: Núcleo
             Constants: Constantes
             Exceptions: Exceções
-            Utils: Utilitários
   - mkdocstrings:
       handlers:
         python:
@@ -412,6 +293,7 @@ extra:
 extra_css:
   - resources/stylesheets/termynal.css
   - resources/stylesheets/extra.css
+  - resources/stylesheets/landing-theme.css
 
 extra_javascript:
   - resources/scripts/termynal.js

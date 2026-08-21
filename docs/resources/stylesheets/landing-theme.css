@@ -1,0 +1,230 @@
+/* =====================================================================
+   Pydoll docs — landing identity (graphite + single indigo accent)
+   Loaded AFTER extra.css so these overrides win. Reversible: remove
+   this file from extra_css in mkdocs.yml to restore the old theme.
+   ===================================================================== */
+
+/* ---------- color tokens: dark (slate) is the landing look ---------- */
+[data-md-color-scheme="slate"] {
+  --md-hue: 220;
+  --md-default-bg-color:        #0c0d0f;
+  --md-default-fg-color:        #f4f5f7;
+  --md-default-fg-color--light: #9aa2ad;
+  --md-default-fg-color--lighter:#5b6570;
+  --md-default-fg-color--lightest: rgba(244,245,247,.10);
+
+  --md-primary-fg-color:        #0c0d0f;   /* header + top tabs bg */
+  --md-primary-fg-color--light: #6e7bff;
+  --md-primary-fg-color--dark:  #0c0d0f;
+  --md-primary-bg-color:        #f4f5f7;
+
+  --md-accent-fg-color:         #6e7bff;   /* THE accent */
+  --md-accent-fg-color--transparent: rgba(110,123,255,.12);
+  --md-accent-bg-color:         rgba(110,123,255,.12);
+
+  --md-code-bg-color:           #0f1113;
+  --md-code-fg-color:           #e6e8ee;
+  --md-typeset-a-color:         #8f99ff;
+
+  --md-footer-bg-color:         #0a0b0d;
+  --md-footer-bg-color--dark:   #08090b;
+}
+
+/* ---------- typography ---------- */
+body, .md-typeset {
+  font-feature-settings: "kern" 1;
+  letter-spacing: -0.003em;
+}
+.md-typeset h1, .md-typeset h2, .md-typeset h3, .md-typeset h4 {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.md-typeset h1 { font-weight: 900; }
+/* mono top-nav tabs, like the landing's nav */
+.md-tabs__link {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: .68rem;
+  letter-spacing: .01em;
+  opacity: .82;
+}
+.md-tabs__link--active, .md-tabs__link:hover { opacity: 1; }
+.md-nav__title { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: .66rem; letter-spacing: .1em; text-transform: uppercase; color: var(--md-default-fg-color--lighter); }
+
+/* ---------- header + tabs: graphite, hairline borders, no heavy shadow ---------- */
+.md-header {
+  box-shadow: none;
+  border-bottom: 1px solid var(--md-default-fg-color--lightest);
+  backdrop-filter: blur(12px);
+  background-color: rgba(12,13,15,.86);
+}
+.md-tabs {
+  background-color: transparent;
+  border-bottom: 1px solid var(--md-default-fg-color--lightest);
+}
+/* subtle indigo bloom behind the header */
+.md-header::after {
+  content: "";
+  position: absolute; inset: 0; pointer-events: none; z-index: -1;
+  background: radial-gradient(60% 240% at 82% 0%, rgba(110,123,255,.12), transparent 60%);
+}
+
+/* ---------- SHARP corners everywhere (landing rule) ---------- */
+.md-typeset pre > code,
+.md-typeset .highlight,
+.md-typeset .highlighttable,
+.md-typeset code,
+.md-typeset .admonition,
+.md-typeset details,
+.md-typeset .tabbed-set > .tabbed-content,
+.md-typeset .tabbed-set > label,
+.md-search__form,
+.md-search__output,
+.md-search-result__meta,
+.md-typeset table:not([class]),
+.md-typeset table:not([class]) th,
+.md-typeset .md-button,
+.md-code__nav,
+.highlight span.filename {
+  border-radius: 0 !important;
+}
+
+/* ---------- code blocks: match the landing ---------- */
+[data-md-color-scheme="slate"] .md-typeset pre > code,
+[data-md-color-scheme="slate"] .md-typeset .highlight {
+  border: 1px solid var(--md-default-fg-color--lightest);
+  background: var(--md-code-bg-color);
+}
+[data-md-color-scheme="slate"] .md-typeset :not(pre) > code {
+  background: #14161a;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  color: #e6e8ee;
+}
+.md-code__content { font-size: .78rem; line-height: 1.7; }
+
+/* ---------- links: indigo, not blue ---------- */
+[data-md-color-scheme="slate"] .md-content a,
+[data-md-color-scheme="slate"] .md-typeset ul a,
+[data-md-color-scheme="slate"] .md-typeset ol a,
+[data-md-color-scheme="slate"] .md-typeset table a,
+[data-md-color-scheme="slate"] .md-typeset .admonition a {
+  color: #8f99ff !important;
+  text-decoration: none;
+}
+[data-md-color-scheme="slate"] .md-content a:hover,
+[data-md-color-scheme="slate"] .md-typeset ul a:hover,
+[data-md-color-scheme="slate"] .md-typeset ol a:hover,
+[data-md-color-scheme="slate"] .md-typeset table a:hover {
+  color: #aab2ff !important;
+  text-decoration: underline;
+}
+
+/* ---------- sidebar nav: active = indigo bar ---------- */
+[data-md-color-scheme="slate"] .md-nav__link { color: var(--md-default-fg-color--light) !important; }
+[data-md-color-scheme="slate"] .md-nav__link:hover { color: var(--md-default-fg-color) !important; }
+[data-md-color-scheme="slate"] .md-nav__link--active,
+[data-md-color-scheme="slate"] .md-nav__item--active > .md-nav__link {
+  color: #8f99ff !important;
+  font-weight: 600;
+}
+
+/* ---------- table of contents: indigo active ---------- */
+.md-nav--secondary .md-nav__link--active { color: #8f99ff !important; }
+
+/* ---------- admonitions: sharpen + indigo default ---------- */
+.md-typeset .admonition, .md-typeset details {
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-left-width: 2px;
+  font-size: .74rem;
+}
+.md-typeset .admonition.note, .md-typeset details.note,
+.md-typeset .admonition.info, .md-typeset details.info,
+.md-typeset .admonition.abstract, .md-typeset details.abstract {
+  border-left-color: #6e7bff;
+}
+[data-md-color-scheme="slate"] .md-typeset .admonition {
+  background: #101216;
+}
+
+/* ---------- search ---------- */
+[data-md-color-scheme="slate"] .md-search__form { background: #14161a; border: 1px solid var(--md-default-fg-color--lightest); }
+[data-md-color-scheme="slate"] .md-search__form:hover { background: #181b20; }
+.md-search__input::placeholder { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: .74rem; }
+
+/* ---------- content headings get an eyebrow-ish accent on hover anchor ---------- */
+.md-typeset h2 { border-top: 1px solid var(--md-default-fg-color--lightest); padding-top: 1.4rem; margin-top: 2.4rem; }
+
+/* ---------- buttons / mkdocstrings symbol chips ---------- */
+.md-typeset .md-button {
+  border: 1px solid var(--md-default-fg-color--lightest);
+  color: var(--md-default-fg-color);
+}
+.md-typeset .md-button--primary {
+  background: #6e7bff; border-color: #6e7bff; color: #0a0b16;
+}
+/* mkdocstrings API: symbol type headings tinted indigo */
+.doc-symbol-heading, .doc-symbol { color: #8f99ff !important; }
+.doc-heading code { background: #14161a !important; }
+
+/* =====================================================================
+   Header + nav — mirror the landing bar
+   ===================================================================== */
+.md-header__inner { align-items: center; }
+
+/* "docs" chip next to the logo (like the landing's small label) */
+.md-header__docs-chip {
+  align-self: center;
+  margin-left: -0.25rem;
+  padding-left: 0.7rem;
+  border-left: 1px solid var(--md-default-fg-color--lightest);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: .58rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--md-default-fg-color--lighter);
+  line-height: 1;
+}
+
+/* indigo "Get started" CTA, far right */
+.md-header__cta {
+  align-self: center;
+  margin: 0 .1rem 0 .55rem;
+  padding: .5rem .95rem;
+  background: #6e7bff;
+  color: #0a0b16 !important;
+  font-family: "Chivo", sans-serif;
+  font-weight: 700;
+  font-size: .7rem;
+  white-space: nowrap;
+  text-decoration: none !important;
+  transition: background .15s ease;
+}
+.md-header__cta:hover { background: #8f99ff; }
+
+/* repo/source rendered like the landing (no box, just icon + facts) */
+.md-header__source { margin-left: .5rem; opacity: 1; }
+.md-header__source .md-source {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: .6rem;
+}
+.md-source__repository { font-weight: 500; }
+.md-source__facts { font-family: "JetBrains Mono", ui-monospace, monospace; opacity: .85; }
+.md-source__fact--version { color: #8f99ff; }
+
+/* hide the landing-only bits on mobile, keep Material's drawer flow */
+@media (max-width: 76.1875em) {
+  .md-header__docs-chip, .md-header__cta { display: none; }
+}
+
+/* top section tabs = landing nav (mono, lowercase, tight) */
+.md-tabs { font-family: "JetBrains Mono", ui-monospace, monospace; }
+.md-tabs__list { gap: .1rem; }
+.md-tabs__item { height: 2.3rem; }
+.md-tabs__link {
+  text-transform: lowercase;
+  font-size: .68rem;
+  letter-spacing: .01em;
+  margin: 0 .35rem;
+  opacity: .78;
+}
+.md-tabs__link:hover, .md-tabs__link--active { opacity: 1; }
+.md-tabs__link--active { color: #ffffff; }

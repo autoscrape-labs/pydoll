@@ -1,4 +1,6 @@
-# Chrome Browser
+# Chrome
+
+Launches and controls a Chrome browser over the DevTools Protocol. Learn more in [Getting started](../../getting-started.md).
  
 ::: pydoll.browser.chromium.Chrome
     options:

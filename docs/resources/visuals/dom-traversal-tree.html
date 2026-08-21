@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DOM traversal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+<style>
+  :root{
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;
+    --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
+    --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--pass:#35e0a1;
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
+  .widget{border:1px solid var(--line);padding:16px 18px}
+  .tree{border:1px solid var(--line);background:var(--bg2);padding:8px 6px}
+  .node{padding:5px 9px;margin:1px 0;font-family:var(--mono);font-size:12px;color:var(--dim);border:1px solid transparent;transition:background .18s,border-color .18s,color .18s;white-space:nowrap}
+  .node .tag{color:var(--indigo2)} .node .cls{color:var(--faint)}
+  .node.cur{color:var(--ink);border-color:var(--indigo);background:rgba(110,123,255,.14)}
+  .node.cur .tag{color:var(--indigo)}
+  .node.sib{border-color:rgba(53,224,161,.45)}
+  .node.sib .tag{color:var(--pass)}
+  .controls{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:center}
+  button{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:8px 12px;cursor:pointer;transition:.15s}
+  button:hover:not(:disabled){border-color:var(--indigo);color:#fff}
+  button:disabled{opacity:.4;cursor:default}
+  .caption{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-left:auto;min-height:16px;text-align:right}
+  .caption b{color:var(--indigo2)}
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="tree" id="tree"></div>
+  <div class="controls">
+    <button id="parent">get_parent_element()</button>
+    <button id="child">get_children_elements()</button>
+    <button id="prev">◂ sibling</button>
+    <button id="next">sibling ▸</button>
+    <span class="caption" id="caption">Start on a <b>li.item</b>. Move through the tree.</span>
+  </div>
+</div>
+
+<script>
+(function(){
+  var NODES=[
+    {id:0,tag:'div',cls:'#app',depth:0,parent:null,children:[1,3]},
+    {id:1,tag:'header',cls:'.bar',depth:1,parent:0,children:[2]},
+    {id:2,tag:'h1',cls:'.logo',depth:2,parent:1,children:[]},
+    {id:3,tag:'ul',cls:'.list',depth:1,parent:0,children:[4,6,8]},
+    {id:4,tag:'li',cls:'.item.first',depth:2,parent:3,children:[5]},
+    {id:5,tag:'span',cls:'.title',depth:3,parent:4,children:[]},
+    {id:6,tag:'li',cls:'.item',depth:2,parent:3,children:[7]},
+    {id:7,tag:'span',cls:'.title',depth:3,parent:6,children:[]},
+    {id:8,tag:'li',cls:'.item.last',depth:2,parent:3,children:[9,10]},
+    {id:9,tag:'span',cls:'.title',depth:3,parent:8,children:[]},
+    {id:10,tag:'a',cls:'.link',depth:3,parent:8,children:[]}
+  ];
+  var tree=document.getElementById('tree'),caption=document.getElementById('caption');
+  var pB=document.getElementById('parent'),cB=document.getElementById('child'),prevB=document.getElementById('prev'),nextB=document.getElementById('next');
+  var cur=6, sibT=null;
+  function label(n){return '<span class="tag">'+n.tag+'</span><span class="cls">'+n.cls+'</span>';}
+  NODES.forEach(function(n){
+    var d=document.createElement('div');d.className='node';d.style.paddingLeft=(9+n.depth*20)+'px';d.dataset.id=n.id;d.innerHTML=label(n);
+    tree.appendChild(d);n.el=d;
+  });
+  function siblingsOf(n){ return n.parent===null?[]:NODES[n.parent].children; }
+  function render(msg){
+    if(sibT){clearTimeout(sibT);sibT=null;}
+    NODES.forEach(function(n){n.el.classList.remove('cur','sib');});
+    NODES[cur].el.classList.add('cur');
+    var n=NODES[cur];
+    pB.disabled = n.parent===null;
+    cB.disabled = n.children.length===0;
+    var sibs=siblingsOf(n), idx=sibs.indexOf(cur);
+    prevB.disabled = idx<=0; nextB.disabled = idx<0||idx>=sibs.length-1;
+    if(msg)caption.innerHTML=msg;
+  }
+  function nodeName(id){return NODES[id].tag+NODES[id].cls;}
+  pB.addEventListener('click',function(){var p=NODES[cur].parent;cur=p;render('<b>get_parent_element()</b> → '+nodeName(cur));});
+  cB.addEventListener('click',function(){var c=NODES[cur].children[0];cur=c;render('<b>get_children_elements()</b> → first child '+nodeName(cur));});
+  prevB.addEventListener('click',function(){var s=siblingsOf(NODES[cur]);cur=s[s.indexOf(cur)-1];render('<b>get_siblings_elements()</b> → '+nodeName(cur));});
+  nextB.addEventListener('click',function(){var s=siblingsOf(NODES[cur]);cur=s[s.indexOf(cur)+1];render('<b>get_siblings_elements()</b> → '+nodeName(cur));});
+  render();
+})();
+</script>
+<script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>
+</body>
+</html>

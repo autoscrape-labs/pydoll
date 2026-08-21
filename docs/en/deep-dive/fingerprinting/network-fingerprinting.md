@@ -1,18 +1,14 @@
-# Network Fingerprinting
+# Network fingerprinting
 
 Network fingerprinting identifies clients by analyzing characteristics of the TCP/IP stack, TLS handshake, and HTTP/2 connection. These signals are set by the operating system kernel and the TLS library, not by the browser's JavaScript environment, which makes them harder to spoof than browser-level fingerprints. A proxy or VPN changes your IP address but does not alter your TCP window size, your TLS cipher suite list, or your HTTP/2 SETTINGS frame. Detection systems exploit this gap.
 
-!!! info "Module Navigation"
-    - [Browser Fingerprinting](./browser-fingerprinting.md): Canvas, WebGL, AudioContext
-    - [Evasion Techniques](./evasion-techniques.md): Multi-layer countermeasures
+This is the theory behind the [Stealth](../../stealth/index.md) guides. It pairs with [Browser fingerprinting](browser-fingerprinting.md) (the JavaScript-visible signals) and [Behavioral fingerprinting](behavioral-fingerprinting.md) (how you move and type). For how the protocols themselves work, see [Network fundamentals](../network/network-fundamentals.md).
 
-    For protocol fundamentals, see [Network Fundamentals](../network/network-fundamentals.md). For proxy detection context, see [Proxy Detection](../network/proxy-detection.md).
-
-## TCP/IP Fingerprinting
+## TCP/IP fingerprinting
 
 Every operating system implements the TCP/IP stack differently. The SYN packet that initiates a TCP connection carries enough information to identify the OS with high confidence: the initial TTL, the TCP window size, the Maximum Segment Size, and the order and selection of TCP options. None of these values are controlled by the browser. They come from the kernel.
 
-### TTL (Time To Live)
+### TTL (time to live)
 
 The initial TTL is one of the simplest OS identifiers. Linux and macOS set it to 64, Windows sets it to 128, and network devices (routers, firewalls) typically use 255. Each router hop decrements the TTL by one, so a packet arriving with TTL 118 likely started at 128 (Windows) and crossed 10 hops.
 
@@ -20,15 +16,15 @@ The fingerprinting value of TTL comes from cross-referencing it with the User-Ag
 
 When traffic flows through a proxy, the TTL resets because the proxy's kernel generates a new TCP connection to the target. The target sees the proxy's TTL, not yours. This is why TTL mismatches are a proxy detection signal: the User-Agent says Windows (TTL 128) but the TCP fingerprint shows Linux (TTL 64).
 
-### TCP Window Size and Scaling
+### TCP window size and scaling
 
 The initial TCP window size in the SYN packet varies by OS and kernel version. Modern Linux kernels (3.x and later) typically send an initial window of 29200 bytes, which is `20 * MSS` where MSS is 1460 for standard Ethernet. Some newer kernels (5.x, 6.x) may use 64240 depending on configuration and `initcwnd` settings. Windows 10 and 11 typically send 65535 with window scaling enabled, though the exact value depends on auto-tuning configuration and patch level. macOS also defaults to 65535.
 
 The window scale factor (a TCP option) multiplies the 16-bit window size field to support larger receive windows. Linux commonly uses a scale factor of 7 (allowing windows up to 8MB), while Windows often uses 8. Combined with the base window size, the scale factor creates a more granular fingerprint than either value alone.
 
-### TCP Options Order
+### TCP options order
 
-The selection and ordering of TCP options in the SYN packet is highly distinctive. Each OS arranges options in a fixed, version-specific order that the kernel does not expose as a configurable parameter. Linux sends `MSS, SACK_PERM, TIMESTAMP, NOP, WSCALE`. Windows sends `MSS, NOP, WSCALE, NOP, NOP, SACK_PERM` and notably omits the TIMESTAMP option in default configurations. macOS sends `MSS, NOP, WSCALE, NOP, NOP, TIMESTAMP, SACK_PERM`.
+The selection and ordering of TCP options in the SYN packet is highly distinctive. Each OS arranges options in a fixed, version-specific order that the kernel does not expose as a configurable parameter. Linux sends `MSS, SACK_PERM, TIMESTAMP, NOP, WSCALE`. Windows sends `MSS, NOP, WSCALE, NOP, NOP, SACK_PERM` and omits the TIMESTAMP option in default configurations. macOS sends `MSS, NOP, WSCALE, NOP, NOP, TIMESTAMP, SACK_PERM`.
 
 The presence or absence of specific options matters as much as the order. Windows historically omitted TCP timestamps, which Linux and macOS include by default. SACK (Selective Acknowledgment) is supported by all modern systems, but older or embedded systems may not advertise it. The combination of which options appear and in what order creates a signature that tools like p0f match against a database of known OS fingerprints.
 
@@ -44,7 +40,7 @@ The `ittl` is the inferred initial TTL, `mss` is the Maximum Segment Size, `wsiz
 
 A typical Linux 4.x+ signature in p0f looks like `4:64:0:*:mss*20,7:mss,sok,ts,nop,ws:df,id+:0`. A Windows 10 signature might look like `4:128:0:*:65535,8:mss,nop,ws,nop,nop,sok:df,id+:0`. Anti-bot services maintain similar databases internally, matching incoming connections against known OS profiles and flagging mismatches with the declared User-Agent.
 
-## TLS Fingerprinting
+## TLS fingerprinting
 
 The TLS ClientHello message is transmitted before encryption is established, so it is visible to any observer on the network path. It contains the TLS version, supported cipher suites, TLS extensions, supported elliptic curves (named groups), and EC point formats. Each browser and TLS library produces a characteristic combination of these fields.
 
@@ -66,7 +62,7 @@ def is_grease(value: int) -> bool:
     return (value & 0x0f0f) == 0x0a0a and (value >> 8) == (value & 0xff)
 ```
 
-!!! warning "JA3 Limitations with Modern Browsers"
+!!! warning "JA3 limitations with modern browsers"
     Since Chrome 110 (January 2023) and Firefox 114, browsers randomize the order of TLS extensions in every connection. This means the same browser produces different JA3 hashes on every connection, making JA3 effectively useless for identifying modern browsers. JA3 remains useful for fingerprinting non-browser clients (Python `requests`, `curl`, custom bots) that do not implement extension randomization.
 
 ### JA4
@@ -79,11 +75,11 @@ Section `b` is a truncated SHA-256 hash of the sorted cipher suites. Section `c`
 
 Cloudflare, AWS, and other major platforms have adopted JA4. The full JA4+ suite also includes JA4S (server fingerprinting), JA4H (HTTP client fingerprinting), JA4X (X.509 certificate fingerprinting), and JA4SSH (SSH fingerprinting). The specification and tools are available at [github.com/FoxIO-LLC/ja4](https://github.com/FoxIO-LLC/ja4).
 
-### JA3S (Server Fingerprinting)
+### JA3S (server fingerprinting)
 
 JA3S applies the same concept to the ServerHello message, but the format is simpler because the server selects a single cipher suite rather than offering a list. The JA3S string is `version,cipher,extensions` and its MD5 hash identifies the server's TLS implementation. Pairing JA3 (or JA4) with JA3S creates a bidirectional fingerprint: a specific client talking to a specific server produces a predictable JA3+JA3S pair, which is more distinctive than either fingerprint alone.
 
-### How Proxies Interact with TLS Fingerprints
+### How proxies interact with TLS fingerprints
 
 The type of proxy determines whether the TLS fingerprint is preserved. SOCKS5 proxies and HTTP CONNECT tunnels relay the TCP stream without terminating TLS, so the target server sees the original client's TLS fingerprint unchanged. This is the main advantage of these proxy types for fingerprint consistency.
 
@@ -91,7 +87,7 @@ MITM proxies (which terminate TLS and re-establish a new connection to the targe
 
 This is why Pydoll's approach of using `--proxy-server` (which creates a CONNECT tunnel, preserving the browser's TLS fingerprint) is preferable to external MITM proxy setups for stealth automation.
 
-## HTTP/2 Fingerprinting
+## HTTP/2 fingerprinting
 
 HTTP/2 connections expose a separate set of fingerprinting signals that are distinct from TLS. The first frame sent by the client is a SETTINGS frame containing parameters like `HEADER_TABLE_SIZE`, `ENABLE_PUSH`, `MAX_CONCURRENT_STREAMS`, `INITIAL_WINDOW_SIZE`, `MAX_FRAME_SIZE`, and `MAX_HEADER_LIST_SIZE`. Each browser uses different default values and includes different subsets of these parameters.
 
@@ -103,13 +99,21 @@ HTTP/2 fingerprinting is particularly effective against automation tools because
 
 You can check your HTTP/2 fingerprint at [browserleaks.com/http2](https://browserleaks.com/http2). Because Pydoll controls a real Chrome instance via CDP, the HTTP/2 fingerprint is always authentic, which is an inherent advantage over tools that construct HTTP requests programmatically.
 
-## Implications for Browser Automation
+## Implications for browser automation
 
-The practical takeaway for automation with Pydoll is that network fingerprinting is one area where controlling a real browser provides a significant advantage. Chrome's TCP/IP stack, TLS implementation (BoringSSL), and HTTP/2 stack produce authentic fingerprints by default. The main risk is environmental mismatch: running Chrome on a Linux server while the User-Agent claims Windows creates a TCP/IP fingerprint inconsistency (TTL 64 instead of 128, Linux TCP options order instead of Windows).
+The practical takeaway for automation with Pydoll is that network fingerprinting is one area where controlling a real browser is an advantage. Chrome's TCP/IP stack, TLS implementation (BoringSSL), and HTTP/2 stack produce authentic fingerprints by default. The main risk is environmental mismatch: running Chrome on a Linux server while the User-Agent claims Windows creates a TCP/IP fingerprint inconsistency (TTL 64 instead of 128, Linux TCP options order instead of Windows).
 
 For proxy-based setups, the fingerprint flow is: your machine's TCP/IP stack generates the connection to the proxy (which the proxy's operator can see but the target cannot), and the proxy's TCP/IP stack generates the connection to the target. The target sees the proxy server's TTL and TCP options. If the proxy runs Linux (as most do), the TCP fingerprint will indicate Linux regardless of the User-Agent. This is a well-known detection signal that residential proxies partially mitigate (the proxy endpoint is a real user's machine, so its TCP fingerprint is plausible) but datacenter proxies cannot.
 
 The TLS and HTTP/2 fingerprints, on the other hand, pass through SOCKS5 and CONNECT tunnels unmodified. These are the browser's fingerprints, not the proxy's. So with Pydoll through a CONNECT tunnel, the target sees authentic Chrome TLS and HTTP/2 fingerprints paired with the proxy's TCP/IP fingerprint. This combination is consistent with a real user browsing through a VPN or corporate proxy, which is a common and legitimate pattern.
+
+## Related
+
+- [Browser fingerprinting](browser-fingerprinting.md): canvas, WebGL, and navigator signals.
+- [Behavioral fingerprinting](behavioral-fingerprinting.md): mouse, keyboard, and timing analysis.
+- [Network fundamentals](../network/network-fundamentals.md): how TCP, TLS, and HTTP actually work.
+- [Evasion techniques](../../stealth/evasion-techniques.md): what Pydoll does about these signals, in practice.
+- [Fingerprint injection](../../stealth/fingerprint-injection.md): applying a coherent identity across layers.
 
 ## References
 

@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Proxy routing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+<style>
+  :root{
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;
+    --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
+    --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--pass:#35e0a1;--amber:#f5b544;--danger:#ff6b6b;
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
+  .widget{border:1px solid var(--line);padding:16px 18px}
+  .flow{position:relative;display:grid;grid-template-columns:repeat(3,1fr);align-items:center;height:96px}
+  .conn{position:absolute;top:50%;height:2px;background:var(--line2);transform:translateY(-50%);transition:background .3s}
+  .conn.on{background:var(--indigo)}
+  #c1{left:16.667%;width:33.333%} #c2{left:50%;width:33.333%}
+  .packet{position:absolute;left:0;top:50%;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:var(--indigo);
+    box-shadow:0 0 0 4px rgba(110,123,255,.16),0 0 12px 2px rgba(110,123,255,.55);transform:translate(0,-50%);z-index:2;opacity:0;
+    transition:transform .55s cubic-bezier(.4,0,.2,1),opacity .25s}
+  .node{position:relative;z-index:1;justify-self:center;width:120px;text-align:center;border:1px solid var(--line2);background:var(--bg);padding:12px 10px;transition:.3s}
+  .node .ic{display:grid;place-items:center;height:22px;color:var(--faint)}
+  .node .ic svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .node .cap{font-family:var(--sans);font-weight:700;font-size:12.5px;margin-top:7px}
+  .node.on{border-color:var(--indigo);color:var(--ink)} .node.on .ic{color:var(--indigo)}
+  .node.off{opacity:.36}
+  .node.dot{border-color:var(--pass)} .node.dot .ic{color:var(--pass)}
+  .seen{margin-top:16px;border:1px solid var(--line);background:var(--bg2);padding:12px 15px;display:flex;align-items:center;gap:12px;font-family:var(--mono);font-size:12.5px}
+  .seen .lbl{color:var(--faint)}
+  .seen .ip{color:var(--ink);font-weight:500}
+  .seen .flag{margin-left:auto;color:var(--dim)}
+  .seen.real .ip{color:var(--amber)} .seen.proxied .ip{color:var(--pass)}
+  .controls{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:center}
+  button{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:8px 12px;cursor:pointer;transition:.15s}
+  button:hover{border-color:var(--indigo);color:#fff}
+  button.active{background:rgba(110,123,255,.14);border-color:var(--indigo);color:#fff}
+  button:disabled{opacity:.5;cursor:default}
+  .region{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;color:var(--faint)}
+  #regionBtn{padding:6px 10px}
+  .caption{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-left:auto;min-height:16px;text-align:right}
+  @media (prefers-reduced-motion:reduce){.packet{transition:opacity .2s}}
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="flow" id="flow">
+    <div class="conn" id="c1"></div>
+    <div class="conn" id="c2"></div>
+    <div class="packet" id="packet"></div>
+    <div class="node" id="nYou"><div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="1"/><path d="M2 20h20M9 20v-4M15 20v-4"/></svg></div><div class="cap">Your browser</div></div>
+    <div class="node" id="nProxy"><div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="7"/><rect x="3" y="13" width="18" height="7"/><line x1="7" y1="7.5" x2="7.01" y2="7.5"/><line x1="7" y1="16.5" x2="7.01" y2="16.5"/></svg></div><div class="cap">Proxy</div></div>
+    <div class="node" id="nTarget"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18"/></svg></div><div class="cap">Target site</div></div>
+  </div>
+
+  <div class="seen real" id="seen"><span class="lbl">the target sees</span><span class="ip" id="ip">189.6.44.12</span><span class="flag" id="flag">Brazil (your real IP)</span></div>
+
+  <div class="controls">
+    <button id="direct">Send direct</button>
+    <button id="viaproxy">Send through proxy</button>
+    <span class="region">proxy region: <button id="regionBtn">United States</button></span>
+    <span class="caption" id="caption"></span>
+  </div>
+</div>
+
+<script>
+(function(){
+  var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  var flow=document.getElementById('flow'),packet=document.getElementById('packet');
+  var nYou=document.getElementById('nYou'),nProxy=document.getElementById('nProxy'),nTarget=document.getElementById('nTarget');
+  var c1=document.getElementById('c1'),c2=document.getElementById('c2');
+  var seen=document.getElementById('seen'),ipEl=document.getElementById('ip'),flagEl=document.getElementById('flag'),caption=document.getElementById('caption');
+  var dBtn=document.getElementById('direct'),pBtn=document.getElementById('viaproxy'),regionBtn=document.getElementById('regionBtn');
+  var timers=[],busy=false;
+  var REGIONS=[['United States','74.63.201.8','United States'],['Germany','185.220.14.6','Germany'],['Japan','133.242.9.71','Japan']];
+  var ri=0;
+  var YOURS=['189.6.44.12','Brazil (your real IP)'];
+
+  function cx(w){var W=flow.clientWidth;return w==='you'?W/6:w==='proxy'?W/2:W*5/6;}
+  var sleep=function(ms){return new Promise(function(r){setTimeout(r,reduce?0:ms);});};
+  function placeAt(w){packet.style.transition='none';packet.style.transform='translate('+cx(w)+'px,-50%)';}
+  function moveTo(w,ms){packet.style.transition='transform '+(reduce?0:ms)+'ms cubic-bezier(.4,0,.2,1),opacity .25s';packet.style.transform='translate('+cx(w)+'px,-50%)';return sleep(ms);}
+  function nodeCls(n,c){n.className='node'+(c?(' '+c):'');}
+  function reset(){timers.forEach(clearTimeout);timers=[];nodeCls(nYou);nodeCls(nProxy);nodeCls(nTarget);c1.className='conn';c2.className='conn';packet.style.opacity='0';caption.textContent='';}
+
+  async function direct(){
+    if(busy)return;busy=true;dBtn.disabled=true;pBtn.disabled=true;dBtn.classList.add('active');pBtn.classList.remove('active');
+    reset(); nodeCls(nProxy,'off');
+    nodeCls(nYou,'on'); placeAt('you'); packet.style.opacity='1'; c1.classList.add('on'); c2.classList.add('on');
+    await sleep(120); await moveTo('target',900);
+    nodeCls(nTarget,'dot');
+    seen.className='seen real'; ipEl.textContent=YOURS[0]; flagEl.textContent=YOURS[1];
+    caption.innerHTML='no proxy: the site sees your real address';
+    busy=false;dBtn.disabled=false;pBtn.disabled=false;
+  }
+  async function viaProxy(){
+    if(busy)return;busy=true;dBtn.disabled=true;pBtn.disabled=true;pBtn.classList.add('active');dBtn.classList.remove('active');
+    reset();
+    nodeCls(nYou,'on'); placeAt('you'); packet.style.opacity='1'; c1.classList.add('on');
+    await sleep(120); await moveTo('proxy',560); nodeCls(nProxy,'on');
+    await sleep(220); c2.classList.add('on'); await moveTo('target',560); nodeCls(nTarget,'dot');
+    var r=REGIONS[ri];
+    seen.className='seen proxied'; ipEl.textContent=r[1]; flagEl.textContent=r[2]+' (proxy exit)';
+    caption.innerHTML='--proxy-server: the site sees the proxy, not you';
+    busy=false;dBtn.disabled=false;pBtn.disabled=false;
+  }
+  dBtn.addEventListener('click',direct);
+  pBtn.addEventListener('click',viaProxy);
+  regionBtn.addEventListener('click',function(){ if(busy)return; ri=(ri+1)%REGIONS.length; regionBtn.textContent=REGIONS[ri][0]; if(pBtn.classList.contains('active')){viaProxy();} });
+})();
+</script>
+<script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>
+</body>
+</html>

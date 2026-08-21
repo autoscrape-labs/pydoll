@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Network monitor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+<style>
+  :root{
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;
+    --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
+    --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
+    --indigo:#6e7bff;--pass:#35e0a1;--amber:#f5b544;--violet:#b3a0ff;--blue:#7fb4ff;
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
+  .widget{border:1px solid var(--line);padding:16px 18px}
+  .top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:13px}
+  .hint{font-family:var(--mono);font-size:11.5px;color:var(--dim)}
+  .timer{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:600;font-size:22px;color:var(--ink)}
+  .net{border:1px solid var(--line);background:var(--bg2)}
+  .head,.row{display:grid;grid-template-columns:150px 52px 74px 1fr;gap:10px;align-items:center}
+  @media(max-width:520px){.head,.row{grid-template-columns:110px 46px 1fr}.type{display:none}}
+  .head{padding:8px 12px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint)}
+  .row{padding:8px 12px;border-bottom:1px solid rgba(244,245,247,.05);font-family:var(--mono);font-size:10.5px;opacity:0;transform:translateY(4px);transition:opacity .3s,transform .3s}
+  .row:last-child{border-bottom:none}
+  .row.show{opacity:1;transform:none}
+  .row .nm{color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .row .status{color:var(--faint)}
+  .row.done .status{color:var(--pass)}
+  .row .type{color:var(--faint)}
+  .row .wf{position:relative;height:12px}
+  .bar{position:absolute;top:0;height:100%;width:0}
+  .bar.doc{background:var(--indigo)}.bar.css{background:var(--pass)}.bar.js{background:var(--amber)}.bar.img{background:var(--violet)}.bar.xhr{background:var(--blue)}
+  .summary{margin-top:12px;font-family:var(--mono);font-size:11px;color:var(--dim);min-height:16px}
+  .summary b{color:var(--ink);font-weight:500}
+  .controls{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:center}
+  button{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:8px 12px;cursor:pointer;transition:.15s}
+  button:hover{border-color:var(--indigo);color:#fff}
+  button:disabled{opacity:.5;cursor:default}
+  @media (prefers-reduced-motion:reduce){.bar{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="top">
+    <div class="hint">Watch requests as the page loads. Monitoring observes, it never changes them.</div>
+    <div class="timer" id="timer">0.0s</div>
+  </div>
+
+  <div class="net">
+    <div class="head"><span>Name</span><span>Status</span><span class="type">Type</span><span>Waterfall</span></div>
+    <div id="rows"></div>
+  </div>
+  <div class="summary" id="summary">idle</div>
+
+  <div class="controls"><button id="load">Load the page</button></div>
+</div>
+
+<script>
+(function(){
+  var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  var UNIT=reduce?0:900;
+  var rowsEl=document.getElementById('rows'),timer=document.getElementById('timer'),loadBtn=document.getElementById('load'),summary=document.getElementById('summary');
+  var raf=null,timeouts=[];
+  // name, typeClass, typeLabel, start, dur, sizeKB
+  var REQS=[
+    ['GET /','doc','document',0.00,0.40,8.2],
+    ['GET /styles.css','css','stylesheet',0.45,0.25,21],
+    ['GET /app.js','js','script',0.45,0.55,96],
+    ['GET /logo.png','img','image',0.72,0.30,14],
+    ['GET /api/data','xhr','xhr',1.05,0.65,3.4]
+  ];
+  var MAXT=1.8;
+  function build(){
+    rowsEl.innerHTML='';var rows=[];
+    REQS.forEach(function(r){
+      var row=document.createElement('div');row.className='row';
+      row.innerHTML='<span class="nm">'+r[0]+'</span><span class="status">pending</span><span class="type">'+r[2]+'</span>'
+        +'<span class="wf"><span class="bar '+r[1]+'"></span></span>';
+      rowsEl.appendChild(row);
+      var bar=row.querySelector('.bar');bar.style.left=(r[3]/MAXT*100)+'%';
+      rows.push({row:row,bar:bar,status:row.querySelector('.status')});
+    });
+    return rows;
+  }
+  function runTimer(total){
+    var start=performance.now();
+    function tick(now){var el=Math.min((now-start)/UNIT,total);timer.textContent=el.toFixed(1)+'s';if((now-start)<total*UNIT)raf=requestAnimationFrame(tick);else timer.textContent=total.toFixed(1)+'s';}
+    if(UNIT===0){timer.textContent=total.toFixed(1)+'s';return;}
+    raf=requestAnimationFrame(tick);
+  }
+  function run(){
+    if(raf)cancelAnimationFrame(raf);timeouts.forEach(clearTimeout);timeouts=[];timer.textContent='0.0s';summary.textContent='loading...';
+    var rows=build();loadBtn.disabled=true;runTimer(MAXT);
+    var totalKB=0;
+    REQS.forEach(function(r,i){
+      totalKB+=r[5];
+      timeouts.push(setTimeout(function(){
+        rows[i].row.classList.add('show');
+        rows[i].bar.style.transition='width '+(r[4]*UNIT)+'ms linear';
+        requestAnimationFrame(function(){rows[i].bar.style.width=(r[4]/MAXT*100)+'%';});
+      },r[3]*UNIT));
+      timeouts.push(setTimeout(function(){ rows[i].row.classList.add('done'); rows[i].status.textContent='200'; },(r[3]+r[4])*UNIT));
+    });
+    timeouts.push(setTimeout(function(){
+      summary.innerHTML='<b>'+REQS.length+'</b> requests, <b>'+Math.round(totalKB)+' KB</b> transferred, finished in <b>'+MAXT.toFixed(1)+'s</b>';
+      loadBtn.disabled=false;
+    },MAXT*UNIT+120));
+  }
+  build();
+  loadBtn.addEventListener('click',run);
+})();
+</script>
+<script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>
+</body>
+</html>

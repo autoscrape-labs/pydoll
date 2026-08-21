@@ -1,6 +1,6 @@
 # Network Commands
 
-Network commands provide comprehensive control over network requests, responses, and browser networking behavior.
+Network commands provide control over network requests, responses, and browser networking behavior.
 
 ## Overview
 

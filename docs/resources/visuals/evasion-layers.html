@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cross-layer consistency</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+<style>
+  :root{
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;
+    --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
+    --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--pass:#35e0a1;--danger:#ff6b6b;--danger-dim:rgba(255,107,107,.1);--pass-dim:rgba(53,224,161,.1);
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
+  .widget{border:1px solid var(--line);padding:16px 18px}
+  .lead{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:14px}
+  .layers{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  @media(max-width:620px){.layers{grid-template-columns:1fr 1fr}}
+  .lay{border:1px solid var(--line2);background:var(--bg2);padding:13px 13px;display:flex;flex-direction:column;gap:6px;min-height:112px;transition:border-color .3s}
+  .lay.bad{border-color:rgba(255,107,107,.45)}
+  .lay .nm{font-family:var(--sans);font-weight:700;font-size:12.5px}
+  .lay .sub{font-family:var(--mono);font-size:9.5px;color:var(--faint)}
+  .chip{margin-top:auto;align-self:flex-start;font-family:var(--mono);font-size:10px;padding:3px 9px;border:1px solid;text-transform:uppercase;letter-spacing:.04em}
+  .chip.ok{color:var(--pass);border-color:rgba(53,224,161,.4);background:var(--pass-dim)}
+  .chip.bad{color:var(--danger);border-color:rgba(255,107,107,.4);background:var(--danger-dim)}
+  .tag{font-family:var(--mono);font-size:9px;color:var(--faint)}
+  .tag.lever{color:var(--indigo2)}
+  .verdict{display:flex;align-items:center;gap:12px;margin-top:14px;padding:13px 15px;border:1px solid var(--line);font-family:var(--mono);font-size:12.5px;color:var(--dim);transition:.3s}
+  .verdict .dot{width:9px;height:9px;border-radius:50%;flex:none;transition:.3s}
+  .verdict.pass{background:var(--pass-dim);border-color:rgba(53,224,161,.3)} .verdict.pass .dot{background:var(--pass)}
+  .verdict.fail{background:var(--danger-dim);border-color:rgba(255,107,107,.3)} .verdict.fail .dot{background:var(--danger)}
+  .verdict b.ok{color:var(--pass)} .verdict b.bad{color:var(--danger)}
+  .controls{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:center}
+  .ctl{display:flex;align-items:center;gap:8px}
+  .ctl .lbl{font-family:var(--mono);font-size:11px;color:var(--faint)}
+  button{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:7px 11px;cursor:pointer;transition:.15s}
+  button:hover{border-color:var(--indigo);color:#fff}
+  button.on{color:var(--pass);border-color:rgba(53,224,161,.45)}
+  button.off{color:var(--danger);border-color:rgba(255,107,107,.45)}
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="lead">Detection cross-checks the layers. Passing one while failing another still flags you.</div>
+  <div class="layers">
+    <div class="lay"><div class="nm">Network</div><div class="sub">TCP · TLS · HTTP/2</div><div class="chip ok">authentic</div><div class="tag">free with real Chrome</div></div>
+    <div class="lay"><div class="nm">Browser</div><div class="sub">canvas · WebGL · navigator</div><div class="chip ok">authentic</div><div class="tag">free with real Chrome</div></div>
+    <div class="lay" id="layBeh"><div class="nm">Behavior</div><div class="sub">mouse · keyboard · timing</div><div class="chip" id="behChip"></div><div class="tag lever">your lever: humanize</div></div>
+    <div class="lay" id="layIp"><div class="nm">IP reputation</div><div class="sub">egress address</div><div class="chip" id="ipChip"></div><div class="tag lever">your lever: proxy</div></div>
+  </div>
+
+  <div class="verdict" id="verdict"><span class="dot"></span><span id="vtext"></span></div>
+
+  <div class="controls">
+    <div class="ctl"><span class="lbl">behavior</span><button id="behBtn">humanize on</button></div>
+    <div class="ctl"><span class="lbl">ip</span><button id="ipBtn">residential</button></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var layBeh=document.getElementById('layBeh'),layIp=document.getElementById('layIp');
+  var behChip=document.getElementById('behChip'),ipChip=document.getElementById('ipChip');
+  var behBtn=document.getElementById('behBtn'),ipBtn=document.getElementById('ipBtn');
+  var verdict=document.getElementById('verdict'),vtext=document.getElementById('vtext');
+  var human=true,clean=true;
+
+  function render(){
+    behChip.className='chip '+(human?'ok':'bad'); behChip.textContent=human?'human':'robotic';
+    layBeh.classList.toggle('bad',!human);
+    ipChip.className='chip '+(clean?'ok':'bad'); ipChip.textContent=clean?'clean':'flagged';
+    layIp.classList.toggle('bad',!clean);
+    behBtn.textContent=human?'humanize on':'humanize off'; behBtn.className=human?'on':'off';
+    ipBtn.textContent=clean?'residential':'datacenter'; ipBtn.className=clean?'on':'off';
+
+    if(human&&clean){ verdict.className='verdict pass'; vtext.innerHTML='<b class="ok">Consistent across every layer.</b> Real network and browser fingerprints, human behavior, a clean IP. Nothing contradicts.'; }
+    else if(!human&&!clean){ verdict.className='verdict fail'; vtext.innerHTML='<b class="bad">Flagged on two layers.</b> A perfect fingerprint cannot save robotic input and a datacenter IP.'; }
+    else if(!human){ verdict.className='verdict fail'; vtext.innerHTML='<b class="bad">Flagged.</b> The fingerprints are perfect, but robotic clicks and typing give it away.'; }
+    else { verdict.className='verdict fail'; vtext.innerHTML='<b class="bad">Flagged.</b> Everything looks human, but a datacenter IP reputation fails on its own.'; }
+  }
+  behBtn.addEventListener('click',function(){human=!human;render();});
+  ipBtn.addEventListener('click',function(){clean=!clean;render();});
+  render();
+})();
+</script>
+<script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>
+</body>
+</html>

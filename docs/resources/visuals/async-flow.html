@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sequential vs concurrent async</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+<style>
+  :root{
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;
+    --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
+    --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--pass:#35e0a1;--amber:#f5b544;
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
+  .widget{border:1px solid var(--line);padding:16px 18px}
+  .top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:16px}
+  .mode{font-family:var(--mono);font-size:12px;color:var(--dim)}
+  .timer{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:600;font-size:24px;color:var(--ink)}
+  .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  @media(max-width:520px){.tiles{grid-template-columns:1fr}}
+  .tile{border:1px solid var(--line2);background:var(--bg2);padding:16px 14px;display:flex;flex-direction:column;align-items:center;gap:10px;transition:border-color .3s}
+  .tile.loading{border-color:var(--indigo)}
+  .tile.done{border-color:var(--pass)}
+  .ring{width:34px;height:34px;border-radius:50%;border:2px solid var(--line2);position:relative;display:grid;place-items:center}
+  .tile.loading .ring{border-top-color:var(--indigo);animation:spin .7s linear infinite}
+  .tile.done .ring{border-color:var(--pass);animation:none}
+  .ring .chk{width:16px;height:16px;color:var(--pass);opacity:0;transition:opacity .2s}
+  .ring .chk svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+  .tile.done .ring .chk{opacity:1}
+  .tile .nm{font-family:var(--mono);font-size:11.5px;color:var(--ink)}
+  .tile .st{font-family:var(--mono);font-size:10.5px;color:var(--faint)}
+  .tile.loading .st{color:var(--indigo2)} .tile.done .st{color:var(--pass)}
+  .controls{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;align-items:center}
+  button{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:8px 12px;cursor:pointer;transition:.15s}
+  button:hover{border-color:var(--indigo);color:#fff}
+  button.active{background:rgba(110,123,255,.14);border-color:var(--indigo);color:#fff}
+  button:disabled{opacity:.5;cursor:default}
+  .caption{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-left:auto;min-height:16px}
+  .caption b{color:var(--pass);font-weight:500}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="top">
+    <div class="mode" id="mode">Fetch three pages. Each waits about 1.3s on the network.</div>
+    <div class="timer" id="timer">0.0s</div>
+  </div>
+
+  <div class="tiles" id="tiles">
+    <div class="tile"><div class="ring"><span class="chk"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></div><div class="nm">GET /page-1</div><div class="st">idle</div></div>
+    <div class="tile"><div class="ring"><span class="chk"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></div><div class="nm">GET /page-2</div><div class="st">idle</div></div>
+    <div class="tile"><div class="ring"><span class="chk"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></div><div class="nm">GET /page-3</div><div class="st">idle</div></div>
+  </div>
+
+  <div class="controls">
+    <button id="seq">Run sequential</button>
+    <button id="con">Run concurrent (gather)</button>
+    <span class="caption" id="caption"></span>
+  </div>
+</div>
+
+<script>
+(function(){
+  var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  var DUR=reduce?0:1300;
+  var tiles=[].slice.call(document.querySelectorAll('.tile'));
+  var timer=document.getElementById('timer'),mode=document.getElementById('mode'),caption=document.getElementById('caption');
+  var seqBtn=document.getElementById('seq'),conBtn=document.getElementById('con');
+  var raf=null,timeouts=[];
+
+  function set(tile,state){ tile.className='tile'+(state?(' '+state):''); tile.querySelector('.st').textContent = state==='loading'?'loading':state==='done'?'done':'idle'; }
+  function reset(){ if(raf)cancelAnimationFrame(raf); timeouts.forEach(clearTimeout);timeouts=[]; tiles.forEach(function(t){set(t,'');}); timer.textContent='0.0s'; caption.innerHTML=''; }
+  function runTimer(total,done){
+    var start=performance.now();
+    function tick(now){var el=Math.min((now-start)/1000,total/1000);timer.textContent=el.toFixed(1)+'s';if(now-start<total)raf=requestAnimationFrame(tick);else{timer.textContent=(total/1000).toFixed(1)+'s';done&&done();}}
+    if(total===0){timer.textContent='0.0s';done&&done();return;}
+    raf=requestAnimationFrame(tick);
+  }
+  function busy(on){seqBtn.disabled=on;conBtn.disabled=on;}
+  function active(w){seqBtn.classList.toggle('active',w==='seq');conBtn.classList.toggle('active',w==='con');}
+
+  function runSequential(){
+    reset();busy(true);active('seq');
+    mode.textContent='sequential: await each page before starting the next';
+    runTimer(DUR*3,function(){caption.innerHTML='total <b>3.9s</b>';busy(false);});
+    tiles.forEach(function(t,i){
+      timeouts.push(setTimeout(function(){set(t,'loading');},i*DUR));
+      timeouts.push(setTimeout(function(){set(t,'done');},(i+1)*DUR));
+    });
+  }
+  function runConcurrent(){
+    reset();busy(true);active('con');
+    mode.textContent='concurrent: asyncio.gather starts all three, waits overlap';
+    runTimer(DUR,function(){caption.innerHTML='total <b>1.3s</b>';busy(false);});
+    tiles.forEach(function(t){ set(t,'loading'); timeouts.push(setTimeout(function(){set(t,'done');},DUR)); });
+  }
+  seqBtn.addEventListener('click',runSequential);
+  conBtn.addEventListener('click',runConcurrent);
+})();
+</script>
+<script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>
+</body>
+</html>
