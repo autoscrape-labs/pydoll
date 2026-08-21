@@ -93,7 +93,10 @@ await tab.mouse.click(500, 300, humanize=True)
 await tab.mouse.drag(100, 200, 500, 400, humanize=True)
 ```
 
-> 🎞️ **Placeholder de GIF** — o cursor traçando um caminho humanizado curvo e desacelerando com uma pequena ultrapassagem, ao lado de um salto em linha reta para contraste.
+<p align="center">
+  <img src="/docs/resources/images/gif-humanized-cursor-path.gif" alt="Cursor humanizado percorrendo dois caminhos curvos" width="760" />
+</p>
+<p align="center"><sub>Dois movimentos humanizados: caminhos curvos com easing e um leve overshoot, não saltos retos.</sub></p>
 
 Cliques humanizados em elementos funcionam da mesma forma. Como a posição é rastreada, clicar no elemento A e depois no elemento B traça uma curva natural de um para o outro:
 
@@ -155,7 +158,10 @@ start_y = bounds['y'] + bounds['height'] / 2
 await tab.mouse.drag(start_x, start_y, start_x + 200, start_y, humanize=True)
 ```
 
-> 🎞️ **Placeholder de GIF** — o controle do slider sendo arrastado 200px para a direita ao longo de um caminho humanizado.
+<p align="center">
+  <img src="/docs/resources/images/gif-humanized-slider-drag.gif" alt="Handle do slider arrastado por um caminho humanizado" width="760" />
+</p>
+<p align="center"><sub>Arrastando o handle por um caminho humanizado.</sub></p>
 
 ### Passar o cursor sobre um menu
 
@@ -172,7 +178,10 @@ await tab.mouse.move(
 )
 ```
 
-> 🎞️ **Placeholder de GIF** — o cursor se movendo até o gatilho do menu e seu dropdown se expandindo ao passar o cursor.
+<p align="center">
+  <img src="/docs/resources/images/gif-hover-menu.gif" alt="Cursor entrando no gatilho do menu e abrindo o dropdown" width="760" />
+</p>
+<p align="center"><sub>O cursor entra no gatilho, o dropdown expande e para em um item.</sub></p>
 
 ## Próximos passos
 

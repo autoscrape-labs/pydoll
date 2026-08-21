@@ -93,7 +93,10 @@ await tab.mouse.click(500, 300, humanize=True)
 await tab.mouse.drag(100, 200, 500, 400, humanize=True)
 ```
 
-> 🎞️ **GIF placeholder** — the cursor tracing a curved, decelerating humanized path with a small overshoot, next to a straight-line jump for contrast.
+<p align="center">
+  <img src="/docs/resources/images/gif-humanized-cursor-path.gif" alt="Humanized cursor moving along two curved paths" width="760" />
+</p>
+<p align="center"><sub>Two humanized moves: curved paths with easing and a slight overshoot, not straight jumps.</sub></p>
 
 Humanized element clicks work the same way. Because the position is tracked, clicking element A then element B traces a natural curve from one to the other:
 
@@ -155,7 +158,10 @@ start_y = bounds['y'] + bounds['height'] / 2
 await tab.mouse.drag(start_x, start_y, start_x + 200, start_y, humanize=True)
 ```
 
-> 🎞️ **GIF placeholder** — the slider handle being dragged 200px to the right along a humanized path.
+<p align="center">
+  <img src="/docs/resources/images/gif-humanized-slider-drag.gif" alt="Slider handle dragged along a humanized path" width="760" />
+</p>
+<p align="center"><sub>Dragging the handle along a humanized path.</sub></p>
 
 ### Hover over a menu
 
@@ -172,7 +178,10 @@ await tab.mouse.move(
 )
 ```
 
-> 🎞️ **GIF placeholder** — the cursor moving onto the menu trigger and its dropdown expanding on hover.
+<p align="center">
+  <img src="/docs/resources/images/gif-hover-menu.gif" alt="Cursor moving onto a menu trigger, opening the dropdown" width="760" />
+</p>
+<p align="center"><sub>Moving onto the trigger, the dropdown expands and the cursor settles on an item.</sub></p>
 
 ## What's next
 

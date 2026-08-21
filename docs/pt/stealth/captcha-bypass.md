@@ -80,7 +80,7 @@ Clicar no checkbox é apenas parte disso. O Turnstile decide se aceita a partir 
 
 Se o checkbox é clicado mas um desafio de quebra-cabeça ou de imagem aparece em seguida, a pontuação de confiança estava baixa demais. O Pydoll não consegue resolver esse desafio; melhore o IP e o fingerprint em vez disso.
 
-> 🎞️ **Placeholder visual interativo** — a decisão do Turnstile: reputação do IP + consistência do fingerprint + comportamento alimentam uma pontuação de confiança que resulta em aceito / desafiado / bloqueado, mostrando que o clique é apenas uma das entradas.
+<iframe src="/docs/resources/visuals/turnstile-trust-score.html" aria-label="Reputação do IP, consistência do fingerprint e o modo do navegador alimentam uma pontuação de confiança que resulta em aceito, desafiado ou bloqueado; o clique que o Pydoll automatiza é apenas uma das entradas" style="width: 100%; height: 430px; border: 0;" loading="lazy"></iframe>
 
 ## O que ele não faz
 

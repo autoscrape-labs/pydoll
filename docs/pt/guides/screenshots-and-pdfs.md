@@ -22,7 +22,10 @@ async def main():
 asyncio.run(main())
 ```
 
-> 📸 **Placeholder de captura de tela** — o arquivo `python.png` que isto produz: o artigo da Wikipedia como o Pydoll o capturou.
+<p align="center">
+  <img src="/docs/resources/images/screenshot-python-wikipedia.png" alt="Artigo da Wikipedia sobre Python capturado pela Pydoll" width="760" />
+</p>
+<p align="center"><sub>O python.png gerado, o artigo da Wikipedia como a Pydoll capturou.</sub></p>
 
 ### Escolher o formato
 

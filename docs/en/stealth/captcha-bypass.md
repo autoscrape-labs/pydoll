@@ -80,7 +80,7 @@ Clicking the checkbox is only part of it. Turnstile decides whether to accept it
 
 If the checkbox is clicked but a puzzle or image challenge follows, the trust score was too low. Pydoll cannot solve that challenge; improve the IP and fingerprint instead.
 
-> 🎞️ **Interactive visual placeholder** — the Turnstile decision: IP reputation + fingerprint consistency + behavior feed a trust score that resolves to accepted / challenged / blocked, showing that the click is only one input.
+<iframe src="/docs/resources/visuals/turnstile-trust-score.html" aria-label="IP reputation, fingerprint consistency, and browser mode feed a trust score that resolves to accepted, challenged, or blocked; the click Pydoll automates is only one input" style="width: 100%; height: 430px; border: 0;" loading="lazy"></iframe>
 
 ## What it does not do
 

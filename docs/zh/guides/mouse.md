@@ -93,7 +93,10 @@ await tab.mouse.click(500, 300, humanize=True)
 await tab.mouse.drag(100, 200, 500, 400, humanize=True)
 ```
 
-> 🎞️ **GIF 占位** — 光标沿着一条带弧度、逐渐减速的拟人化路径移动，并带一点过冲，旁边是一条直线跳跃作对比。
+<p align="center">
+  <img src="/docs/resources/images/gif-humanized-cursor-path.gif" alt="拟人化光标沿两段曲线路径移动" width="760" />
+</p>
+<p align="center"><sub>两段拟人化移动：带缓动和轻微过冲的曲线路径，而不是直线跳跃。</sub></p>
 
 拟人化的元素点击同理。由于位置是被追踪的，先点击元素 A 再点击元素 B，会从一个描出一条自然的弧线到另一个：
 
@@ -155,7 +158,10 @@ start_y = bounds['y'] + bounds['height'] / 2
 await tab.mouse.drag(start_x, start_y, start_x + 200, start_y, humanize=True)
 ```
 
-> 🎞️ **GIF 占位** — 滑块手柄沿着一条拟人化路径向右被拖动 200 像素。
+<p align="center">
+  <img src="/docs/resources/images/gif-humanized-slider-drag.gif" alt="沿拟人化路径拖动滑块手柄" width="760" />
+</p>
+<p align="center"><sub>沿拟人化路径拖动滑块手柄。</sub></p>
 
 ### 悬停在菜单上
 
@@ -172,7 +178,10 @@ await tab.mouse.move(
 )
 ```
 
-> 🎞️ **GIF 占位** — 光标移到菜单触发器上，其下拉菜单在悬停时展开。
+<p align="center">
+  <img src="/docs/resources/images/gif-hover-menu.gif" alt="光标移动到菜单触发器上并打开下拉菜单" width="760" />
+</p>
+<p align="center"><sub>移动到触发器上，下拉菜单展开，光标停在某一项上。</sub></p>
 
 ## 下一步
 

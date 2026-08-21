@@ -734,6 +734,7 @@ svg.i{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-l
       <div class="bar" id="qsWinbar"><button class="wdot r" id="qsClose" aria-label="minimize"></button><button class="wdot y" id="qsMin" aria-label="minimize"></button><button class="wdot g" id="qsMax" aria-label="restore"></button><span class="fn2">search.py</span><button id="copyCode">copy</button></div>
 <pre id="codeBlock"><span class="kw">import</span> asyncio
 <span class="kw">from</span> pydoll.browser <span class="kw">import</span> Chrome
+<span class="kw">from</span> pydoll.constants <span class="kw">import</span> Key
 
 <span class="kw">async def</span> <span class="fn">main</span>():
   <span class="kw">async with</span> <span class="bi">Chrome</span>() <span class="kw">as</span> browser:
@@ -742,7 +743,7 @@ svg.i{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-l
 
     box = <span class="kw">await</span> tab.<span class="fn">find</span>(name=<span class="st">'q'</span>)
     <span class="kw">await</span> box.<span class="fn">type_text</span>(<span class="st">'Pydoll'</span>, humanize=<span class="kw">True</span>)
-    <span class="kw">await</span> box.<span class="fn">press_keyboard_key</span>(<span class="st">'Enter'</span>)
+    <span class="kw">await</span> tab.keyboard.<span class="fn">press</span>(<span class="bi">Key</span>.ENTER)
 
 asyncio.<span class="fn">run</span>(<span class="fn">main</span>())</pre>
       <div class="qs-out" id="qsOut"><span class="p">$</span><span>python search.py</span><span class="qs-res" id="qsRes"></span><button class="qs-replay" id="qsReplay">↻ replay</button></div>

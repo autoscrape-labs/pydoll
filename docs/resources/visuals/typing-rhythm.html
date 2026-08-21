@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Typing rhythm compared</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+<style>
+  :root{
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;--panel2:#191c20;
+    --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
+    --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--pass:#35e0a1;--danger:#ff6b6b;
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
+  .widget{border:1px solid var(--line);padding:16px 18px}
+  .lead{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:18px;line-height:1.6}
+  .lead .word{color:var(--ink);font-weight:600}
+  .lane{margin-bottom:18px}
+  .lane-head{display:flex;align-items:baseline;gap:9px;margin-bottom:7px}
+  .lane-head .nm{font-family:var(--mono);font-size:12px;font-weight:600}
+  .lane-head .tag{font-family:var(--mono);font-size:10px;color:var(--faint)}
+  .lane.fixed .nm{color:var(--dim)}
+  .lane.human .nm{color:var(--indigo2)}
+  .plot{position:relative;height:52px;background:var(--bg2);border:1px solid var(--line)}
+  .gl{position:absolute;top:0;bottom:0;width:1px;background:rgba(244,245,247,.06)}
+  .base{position:absolute;left:0;right:0;top:50%;height:1px;background:var(--line)}
+  .dot{position:absolute;top:50%;transform:translate(-50%,-50%);opacity:0;transition:opacity .16s ease}
+  .dot.show{opacity:1}
+  .dot .pt{width:8px;height:8px;border-radius:50%;margin:0 auto}
+  .dot .ch{position:absolute;top:11px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:11px;color:var(--dim)}
+  .lane.fixed .dot .pt{background:var(--dim)}
+  .lane.human .dot .pt{background:var(--indigo)}
+  .dot.typo .pt{background:var(--danger);width:10px;height:10px}
+  .dot.typo .ch{top:auto;bottom:12px;color:var(--danger)}
+  .dot.typo .ch::after{content:" typo";font-size:8.5px;letter-spacing:.03em}
+  .dot.fix .pt{background:var(--indigo2)}
+  .dot.fix .ch::before{content:"⌫";color:var(--faint);font-size:9px;margin-right:2px}
+  .endcap{position:absolute;top:50%;transform:translateY(-50%);height:16px;width:1px;background:var(--line2)}
+  .endcap .t{position:absolute;top:-20px;left:6px;font-family:var(--mono);font-size:9.5px;color:var(--faint);white-space:nowrap}
+  .cap{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:8px}
+  .cap b{color:var(--dim);font-weight:500}
+  .lane.human .cap b{color:var(--indigo2)}
+  .axis{position:relative;height:16px;margin-top:2px}
+  .axis .m{position:absolute;transform:translateX(-50%);font-family:var(--mono);font-size:9.5px;color:var(--faint);top:0}
+  .axis .m::before{content:"";position:absolute;top:-6px;left:50%;width:1px;height:4px;background:var(--line2)}
+  .axis-lbl{text-align:center;font-family:var(--mono);font-size:9.5px;color:var(--faint);margin-top:3px;letter-spacing:.04em}
+  .controls{display:flex;gap:10px;margin-top:16px;align-items:center}
+  button{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:8px 13px;cursor:pointer;transition:.15s}
+  button:hover:not(:disabled){border-color:var(--indigo);color:#fff}
+  button:disabled{opacity:.5;cursor:default}
+  .note{font-family:var(--mono);font-size:11px;color:var(--faint);margin-left:auto;text-align:right}
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="lead">The same word, <span class="word">checkout</span>, on one shared clock. Detection reads the <span class="word">gaps</span> between keys, so a flat cadence is the tell.</div>
+
+  <div class="lane fixed">
+    <div class="lane-head"><span class="nm">fixed 50ms</span><span class="tag">no humanize</span></div>
+    <div class="plot" id="plotFixed"><div class="base"></div></div>
+    <div class="cap" id="capFixed"></div>
+  </div>
+
+  <div class="lane human">
+    <div class="lane-head"><span class="nm">humanize=True</span><span class="tag">variable gaps, occasional corrected typo</span></div>
+    <div class="plot" id="plotHuman"><div class="base"></div></div>
+    <div class="cap" id="capHuman"></div>
+  </div>
+
+  <div class="axis" id="axis"></div>
+  <div class="axis-lbl">time (seconds) — same scale for both</div>
+
+  <div class="controls">
+    <button id="run">Run again</button>
+    <span class="note">every humanized run is different</span>
+  </div>
+</div>
+
+<script>
+(function(){
+  var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  var WORD='checkout';
+  var plotFixed=document.getElementById('plotFixed'),plotHuman=document.getElementById('plotHuman');
+  var capFixed=document.getElementById('capFixed'),capHuman=document.getElementById('capHuman');
+  var axis=document.getElementById('axis'),runBtn=document.getElementById('run');
+  var timers=[],busy=false;
+  var PAD=4;
+  function rand(a,b){return a+Math.random()*(b-a);}
+  function wrongKey(c){var n='abcdefghijklmnopqrstuvwxyz'.replace(c,'');return n[Math.floor(Math.random()*n.length)];}
+
+  function buildFixed(){var ev=[],t=0;for(var i=0;i<WORD.length;i++){ev.push({ch:WORD[i],kind:'char',t:t,gap:i?50:0});t+=50;}return {ev:ev,total:t-50};}
+  function buildHuman(){
+    var ev=[],t=0,typos=0,typoAt=2+Math.floor(rand(0,WORD.length-3));
+    for(var i=0;i<WORD.length;i++){
+      if(i===typoAt){
+        var g1=i?rand(60,150):0;t+=g1;ev.push({ch:wrongKey(WORD[i]),kind:'typo',t:t,gap:g1});typos++;
+        var g2=rand(190,320);t+=g2;ev.push({ch:WORD[i],kind:'fix',t:t,gap:g2});
+      } else { var g=i?rand(45,180):0;t+=g;ev.push({ch:WORD[i],kind:'char',t:t,gap:g}); }
+    }
+    return {ev:ev,total:t,typos:typos};
+  }
+  function xpct(t,max){return PAD + (t/max)*(100-2*PAD);}
+  function renderDots(plot,data,max){
+    plot.querySelectorAll('.dot,.endcap').forEach(function(n){n.remove();});
+    data.ev.forEach(function(e){
+      var el=document.createElement('div');el.className='dot '+e.kind;
+      el.style.left=xpct(e.t,max)+'%';
+      el.innerHTML='<div class="pt"></div><span class="ch">'+e.ch+'</span>';
+      plot.appendChild(el);e.node=el;
+    });
+    var ec=document.createElement('div');ec.className='endcap';ec.style.left=xpct(data.total,max)+'%';
+    ec.innerHTML='<span class="t">'+(data.total/1000).toFixed(2)+'s</span>';
+    plot.appendChild(ec);
+  }
+  function renderGrid(plot,max){
+    plot.querySelectorAll('.gl').forEach(function(n){n.remove();});
+    for(var s=500;s<max+1;s+=500){var g=document.createElement('div');g.className='gl';g.style.left=xpct(s,max)+'%';plot.insertBefore(g,plot.firstChild);}
+  }
+  function renderAxis(max){
+    axis.innerHTML='';
+    for(var s=0;s<max+1;s+=500){var m=document.createElement('div');m.className='m';m.style.left=xpct(s,max)+'%';m.textContent=(s/1000).toFixed(1);axis.appendChild(m);}
+  }
+  function play(){
+    if(busy)return;busy=true;runBtn.disabled=true;
+    timers.forEach(clearTimeout);timers=[];
+    var fixed=buildFixed(),human=buildHuman();
+    var max=Math.max(1000,Math.ceil(human.total/500)*500);
+    renderGrid(plotFixed,max);renderGrid(plotHuman,max);renderAxis(max);
+    renderDots(plotFixed,fixed,max);renderDots(plotHuman,human,max);
+    capFixed.innerHTML='';capHuman.innerHTML='';
+    var seqs=[
+      {d:fixed,fin:function(){capFixed.innerHTML='<b>8 keys</b>, 50 ms apart · <b>0.40 s</b> · a flat, repeatable cadence';}},
+      {d:human,fin:function(){capHuman.innerHTML='<b>8 keys</b>, 45–180 ms apart · <b>'+(human.total/1000).toFixed(2)+' s</b> · '+human.typos+' corrected typo';}}
+    ];
+    var done=0;
+    seqs.forEach(function(s){
+      var i=0;
+      (function step(){
+        if(i>=s.d.ev.length){s.fin();if(++done===2){busy=false;runBtn.disabled=false;}return;}
+        var e=s.d.ev[i++];e.node.classList.add('show');
+        var wait=reduce?0:Math.min(Math.max(e.gap*1.2,70),560);
+        timers.push(setTimeout(step,wait));
+      })();
+    });
+  }
+  runBtn.addEventListener('click',play);
+  play();
+})();
+</script>
+<script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>
+</body>
+</html>

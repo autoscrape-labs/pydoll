@@ -80,7 +80,7 @@ async with tab.expect_and_bypass_cloudflare_captcha(time_to_wait_captcha=15):
 
 如果复选框被点击了，但接着出现拼图或图片挑战，说明信任分太低了。Pydoll 无法解决那种挑战；应该改善 IP 和 fingerprint。
 
-> 🎞️ **交互式视觉占位** — Turnstile 的决策过程：IP 信誉 + fingerprint 一致性 + 行为共同构成一个信任分，最终得出接受 / 挑战 / 封锁的结果，表明点击只是其中一个输入。
+<iframe src="/docs/resources/visuals/turnstile-trust-score.html" aria-label="IP 信誉、fingerprint 一致性和浏览器模式共同构成一个信任分，最终得出接受、挑战或封锁的结果；Pydoll 自动完成的点击只是其中一个输入" style="width: 100%; height: 430px; border: 0;" loading="lazy"></iframe>
 
 ## 它不做什么
 

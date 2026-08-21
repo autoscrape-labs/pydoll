@@ -30,7 +30,7 @@ asyncio.run(main())
 
 When a field's contents don't need to look typed (a hidden token, a value no one watches), `insert_text()` sets the whole string at once with no per-key events.
 
-> 🎞️ **Interactive visual placeholder** — two keystroke timelines for the same word: a fixed 50ms cadence versus the humanized rhythm with variable gaps and a corrected typo.
+<iframe src="/docs/resources/visuals/typing-rhythm.html" aria-label="The same word typed at a fixed 50ms cadence versus a humanized rhythm with variable gaps and a corrected typo, plotted on one shared time axis" style="width: 100%; height: 340px; border: 0;" loading="lazy"></iframe>
 
 ## Click like a human
 

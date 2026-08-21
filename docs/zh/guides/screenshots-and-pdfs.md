@@ -22,7 +22,10 @@ async def main():
 asyncio.run(main())
 ```
 
-> 📸 **截图占位** — 这段代码生成的 `python.png` 文件：Pydoll 捕获到的那篇维基百科文章。
+<p align="center">
+  <img src="/docs/resources/images/screenshot-python-wikipedia.png" alt="Pydoll 捕获的 Wikipedia Python 文章" width="760" />
+</p>
+<p align="center"><sub>生成的 python.png：Pydoll 捕获的 Wikipedia 文章。</sub></p>
 
 ### 选择格式
 
