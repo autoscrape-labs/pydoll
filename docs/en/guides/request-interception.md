@@ -4,7 +4,7 @@ Interception lets you sit between the browser and the network. Every matching re
 
 This is the active counterpart to [Network monitoring](network-monitoring.md), which only observes traffic. Interception can change it.
 
-<iframe src="../request-lifecycle.html" aria-label="What happens to an intercepted request under continue, block, or fulfill" style="width: 100%; height: 400px; border: 0;" loading="lazy"></iframe>
+<iframe src="/docs/resources/visuals/request-lifecycle.html" aria-label="What happens to an intercepted request under continue, block, or fulfill" style="width: 100%; height: 400px; border: 0;" loading="lazy"></iframe>
 
 Try each button: `continue_request()` lets it reach the server, `fail_request()` drops it, and `fulfill_request()` answers from your handler without ever contacting the server.
 

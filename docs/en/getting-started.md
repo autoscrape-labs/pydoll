@@ -8,7 +8,7 @@ Pydoll automates the Chrome or Edge you already have installed, so setup is two 
 - [How to write and run your first script](#write-your-first-script)
 - [How to run without a visible browser window](#run-headless)
 
-## Install Pydoll
+## Install Pydoll {#install-pydoll}
 
 Pydoll requires Python 3.10 or newer, and Google Chrome or Microsoft Edge installed on your machine. You don't need to download a webdriver; Pydoll talks to the browser directly.
 
@@ -28,7 +28,7 @@ To try the latest development version instead, install from GitHub:
 pip install git+https://github.com/autoscrape-labs/pydoll.git
 ```
 
-## Write your first script
+## Write your first script {#write-your-first-script}
 
 Create a file called `first_script.py`:
 
@@ -70,7 +70,7 @@ Three things happened there:
 !!! note "New to async Python?"
     Every Pydoll call is `await`ed inside an `async def` function, and `asyncio.run(main())` starts it. That's all the asyncio you need for now; the rest of the docs follow this same shape.
 
-## Run headless
+## Run headless {#run-headless}
 
 On a server or in CI there is no display, so run the browser headless. Pass options when creating the browser:
 

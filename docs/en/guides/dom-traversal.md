@@ -2,7 +2,7 @@
 
 Once you have an element, you often need the ones around it: its children, its siblings, elements inside a shadow root, or content inside an iframe. This guide covers moving through the DOM tree from a known starting point. To locate that starting element in the first place, see [Element finding](element-finding.md).
 
-<iframe src="../dom-traversal-tree.html" aria-label="Move a focus through a DOM tree with parent, child, and sibling methods" style="width: 100%; height: 480px; border: 0;" loading="lazy"></iframe>
+<iframe src="/docs/resources/visuals/dom-traversal-tree.html" aria-label="Move a focus through a DOM tree with parent, child, and sibling methods" style="width: 100%; height: 480px; border: 0;" loading="lazy"></iframe>
 
 ## Get child elements
 
@@ -77,7 +77,7 @@ print(link.get_attribute('title'))
 
 `text` is an awaitable property; `get_attribute(name)` returns the attribute string, or `None` when the attribute is absent.
 
-## Shadow DOM
+## Shadow DOM {#shadow-dom}
 
 Many components hide their internals inside a [shadow root](https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_shadow_DOM), which regular DOM queries can't see. Access the shadow host, get its shadow root, then search inside it.
 

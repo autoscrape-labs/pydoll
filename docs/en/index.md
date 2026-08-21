@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="resources/images/logo.png" alt="Pydoll Logo" /> <br><br>
+    <img src="/docs/resources/images/logo.png" alt="Pydoll Logo" /> <br><br>
 </p>
 
 # Pydoll
@@ -101,14 +101,14 @@ Models support CSS and XPath selectors, HTML attribute targeting, custom transfo
 
 <div class="sponsor-grid-top">
   <a class="sponsor-card" href="https://substack.thewebscraping.club/p/pydoll-webdriver-scraping?utm_source=github&utm_medium=repo&utm_campaign=pydoll" target="_blank" rel="noopener nofollow sponsored">
-    <span class="sponsor-banner"><img src="resources/images/banner-the-webscraping-club.png" alt="The Web Scraping Club" /></span>
+    <span class="sponsor-banner"><img src="/docs/resources/images/banner-the-webscraping-club.png" alt="The Web Scraping Club" /></span>
     <span class="sponsor-body">
       <span class="sponsor-name">The Web Scraping Club</span>
       <span class="sponsor-desc">The #1 newsletter dedicated to web scraping. Read their full review of Pydoll.</span>
     </span>
   </a>
   <a class="sponsor-card" href="https://go.nodemaven.com/pydollaugust" target="_blank" rel="noopener nofollow sponsored">
-    <span class="sponsor-banner"><img src="resources/images/nodemaven-banner.png" alt="NodeMaven" /></span>
+    <span class="sponsor-banner"><img src="/docs/resources/images/nodemaven-banner.png" alt="NodeMaven" /></span>
     <span class="sponsor-body">
       <span class="sponsor-name">NodeMaven</span>
       <span class="sponsor-desc">High-quality proxies for scraping and automation. ZIP targeting, 99.9% uptime, no KYC.</span>
@@ -119,7 +119,7 @@ Models support CSS and XPath selectors, HTML attribute targeting, custom transfo
     </span>
   </a>
   <a class="sponsor-card" href="https://niuproxy.com/?utm_source=pydoll&utm_medium=pydoll&ref=pydoll" target="_blank" rel="noopener nofollow sponsored">
-    <span class="sponsor-banner sponsor-banner--niuproxy"><img src="resources/images/niuproxy-banner.jpg" alt="NiuProxy" /></span>
+    <span class="sponsor-banner sponsor-banner--niuproxy"><img src="/docs/resources/images/niuproxy-banner.jpg" alt="NiuProxy" /></span>
     <span class="sponsor-body">
       <span class="sponsor-name">NiuProxy</span>
       <span class="sponsor-desc">Rotating residential proxies: 10TB at $0.35/GB or 1TB at $0.50/GB for Pydoll users.</span>
@@ -136,21 +136,21 @@ Sponsors keep the project running and help fund ongoing development. Thanks to e
 
 <div class="sponsor-grid-mini">
   <a class="sponsor-card sponsor-tile" href="https://proxy-seller.com/?partner=8DES01TZ1QGWR3" target="_blank" rel="noopener nofollow sponsored">
-    <span class="sponsor-tile-logo"><img src="resources/images/proxy-seller-logo-white.svg" alt="Proxy-Seller" /></span>
+    <span class="sponsor-tile-logo"><img src="/docs/resources/images/proxy-seller-logo-white.svg" alt="Proxy-Seller" /></span>
     <span class="sponsor-desc">Premium proxies for AI agents, scraping &amp; automation</span>
     <span class="sponsor-chip"><code>PYDOLL</code> 15% off</span>
   </a>
   <a class="sponsor-card sponsor-tile" href="https://www.thordata.com/?ls=github&lk=pydoll" target="_blank" rel="noopener nofollow sponsored">
-    <span class="sponsor-tile-logo"><img src="resources/images/Thordata-logo.png" alt="Thordata" /></span>
+    <span class="sponsor-tile-logo"><img src="/docs/resources/images/Thordata-logo.png" alt="Thordata" /></span>
     <span class="sponsor-desc">Residential proxy network with 190+ locations</span>
     <span class="sponsor-desc"><b>1GB free</b> via our link</span>
   </a>
   <a class="sponsor-card sponsor-tile" href="https://www.testmuai.com/?utm_medium=sponsor&utm_source=pydoll" target="_blank" rel="noopener nofollow sponsored">
-    <span class="sponsor-tile-logo"><img src="resources/images/logo-lamda-test.svg" alt="TestMu AI by LambdaTest" /></span>
+    <span class="sponsor-tile-logo"><img src="/docs/resources/images/logo-lamda-test.svg" alt="TestMu AI by LambdaTest" /></span>
     <span class="sponsor-desc">AI-native testing cloud by LambdaTest</span>
   </a>
   <a class="sponsor-card sponsor-tile" href="https://www.swiftproxy.net/?ref=pydoll" target="_blank" rel="noopener nofollow sponsored">
-    <span class="sponsor-tile-logo"><img src="resources/images/swiftproxy-logo.png" alt="Swiftproxy" /></span>
+    <span class="sponsor-tile-logo"><img src="/docs/resources/images/swiftproxy-logo.png" alt="Swiftproxy" /></span>
     <span class="sponsor-desc">Proxies for web scraping &amp; automation</span>
   </a>
   <a class="sponsor-card sponsor-tile sponsor-tile--ghost" href="https://github.com/sponsors/thalissonvs" target="_blank" rel="noopener">

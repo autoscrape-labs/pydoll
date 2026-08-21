@@ -4,7 +4,7 @@ Locating elements is the foundation of every automation. Pydoll gives you two wa
 
 Edit the attributes below and watch `find()` locate the element live. Pydoll turns the attributes you pass into a selector for you, and the matching element lights up.
 
-<iframe src="../element-find-playground.html" aria-label="Edit find() attributes and see which element it locates" style="width: 100%; height: 365px; border: 0;" loading="lazy"></iframe>
+<iframe src="/docs/resources/visuals/element-find-playground.html" aria-label="Edit find() attributes and see which element it locates" style="width: 100%; height: 365px; border: 0;" loading="lazy"></iframe>
 
 ## Find by attributes
 
@@ -117,7 +117,7 @@ cover = await book.query('img.thumbnail')
 
 To navigate the DOM tree deliberately (direct children only, siblings, shadow roots), see [DOM traversal](dom-traversal.md).
 
-## Handle missing elements
+## Handle missing elements {#handle-missing-elements}
 
 By default `find()` raises `ElementNotFound` when nothing matches. Pass `raise_exc=False` to get `None` instead, which keeps optional elements and OR logic in your hands.
 

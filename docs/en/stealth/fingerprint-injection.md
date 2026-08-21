@@ -34,14 +34,14 @@ asyncio.run(spoof_fingerprint())
 !!! note "Where `FINGERPRINTS` comes from"
     Pydoll does not ship fingerprint profiles. `FINGERPRINTS` lives in `examples/fingerprints.py` in the [pydoll repository](https://github.com/autoscrape-labs/pydoll), as reference profiles for the `FingerprintConfig` shape. Copy that file into your project to use them, then adapt each profile to your own machine and IP (the checklist below explains why). A profile reused as-is is a shared signature, not a disguise.
 
-## See the difference: a live bot-score test
+## See the difference: a live bot-score test {#see-the-difference-a-live-bot-score-test}
 
 Whether a fingerprint helps or hurts is measurable. [fingerprint-scan.com](https://fingerprint-scan.com/), built by the engineer behind the Castle anti-bot blog, runs a fingerprinting and bot-detection test inside the page and reports a **bot score** from 0 to 100, where lower reads as more human. The three runs below are from the same machine (an Apple Silicon Mac, Chrome 151, headful), captured with Pydoll driving the browser and taking the screenshot.
 
 **No fingerprint**, Pydoll driving real Chrome with nothing applied: score 15/100.
 
 <p align="center">
-  <img src="../../resources/images/fp-scan-no-fingerprint.png" alt="fingerprint-scan.com reporting a bot score of 15/100 for Pydoll with no fingerprint applied" width="760" />
+  <img src="/docs/resources/images/fp-scan-no-fingerprint.png" alt="fingerprint-scan.com reporting a bot score of 15/100 for Pydoll with no fingerprint applied" width="760" />
 </p>
 <p align="center"><sub>Real Chrome over CDP already reads as human: 15/100.</sub></p>
 
@@ -50,7 +50,7 @@ Pydoll starts low on its own. It drives a real Chrome over CDP, so the GPU, canv
 **A macOS profile on the Mac**, an OS-matched identity: score 15/100.
 
 <p align="center">
-  <img src="../../resources/images/fp-scan-mac-on-mac.png" alt="fingerprint-scan.com reporting a bot score of 15/100 for a macOS fingerprint applied on a macOS host" width="760" />
+  <img src="/docs/resources/images/fp-scan-mac-on-mac.png" alt="fingerprint-scan.com reporting a bot score of 15/100 for a macOS fingerprint applied on a macOS host" width="760" />
 </p>
 <p align="center"><sub>A matched macOS profile: still 15/100, consistent, not invisible.</sub></p>
 
@@ -59,7 +59,7 @@ Applying a Mac profile on a Mac changes the reported identity without contradict
 **A Windows profile on the Mac**, one field out of agreement: score 57/100.
 
 <p align="center">
-  <img src="../../resources/images/fp-scan-windows-on-mac.png" alt="fingerprint-scan.com reporting a bot score of 57/100 for a Windows fingerprint applied on a macOS host" width="760" />
+  <img src="/docs/resources/images/fp-scan-windows-on-mac.png" alt="fingerprint-scan.com reporting a bot score of 57/100 for a Windows fingerprint applied on a macOS host" width="760" />
 </p>
 <p align="center"><sub>One OS contradiction nearly quadruples the score: 57/100.</sub></p>
 
@@ -79,14 +79,14 @@ Two takeaways. Injection makes the fingerprint consistent; it does not make the 
 The same test in headless mode starts much higher. With no profile, headless Chrome scores the maximum:
 
 <p align="center">
-  <img src="../../resources/images/fp-scan-headless-nofp.png" alt="fingerprint-scan.com reporting a bot score of 100/100 for headless Chrome with no fingerprint" width="760" />
+  <img src="/docs/resources/images/fp-scan-headless-nofp.png" alt="fingerprint-scan.com reporting a bot score of 100/100 for headless Chrome with no fingerprint" width="760" />
 </p>
 <p align="center"><sub>Headless, no profile: the maximum, 100/100.</sub></p>
 
 Apply the macOS profile and the same headless run drops to 15, level with the headful result:
 
 <p align="center">
-  <img src="../../resources/images/fp-scan-headless-mac.png" alt="fingerprint-scan.com reporting a bot score of 15/100 for headless Chrome with a macOS fingerprint applied" width="760" />
+  <img src="/docs/resources/images/fp-scan-headless-mac.png" alt="fingerprint-scan.com reporting a bot score of 15/100 for headless Chrome with a macOS fingerprint applied" width="760" />
 </p>
 <p align="center"><sub>Headless with a macOS profile: 15/100, level with headful.</sub></p>
 
@@ -97,14 +97,14 @@ In headless mode the profile changes the result the most, from the maximum down 
 The easiest way to confirm a profile took effect is to read back a hardware signal. [browserleaks.com/webgl](https://browserleaks.com/webgl) reports the GPU behind WebGL. On this MacBook, with no profile applied, it reads the real chip, an Apple M4, with a macOS User-Agent:
 
 <p align="center">
-  <img src="../../resources/images/browserleaks-webgl-real.png" alt="browserleaks WebGL report showing a macOS User-Agent and unmasked renderer ANGLE (Apple, Apple M4)" width="760" />
+  <img src="/docs/resources/images/browserleaks-webgl-real.png" alt="browserleaks WebGL report showing a macOS User-Agent and unmasked renderer ANGLE (Apple, Apple M4)" width="760" />
 </p>
 <p align="center"><sub>No profile: the real Apple M4 and a macOS User-Agent.</sub></p>
 
 Apply the Windows profile and the same page, on the same machine, reports an NVIDIA GeForce RTX 3060 and a Windows User-Agent:
 
 <p align="center">
-  <img src="../../resources/images/browserleaks-webgl-rtx3060.png" alt="browserleaks WebGL report showing a Windows User-Agent and unmasked renderer ANGLE (NVIDIA, NVIDIA GeForce RTX 3060)" width="760" />
+  <img src="/docs/resources/images/browserleaks-webgl-rtx3060.png" alt="browserleaks WebGL report showing a Windows User-Agent and unmasked renderer ANGLE (NVIDIA, NVIDIA GeForce RTX 3060)" width="760" />
 </p>
 <p align="center"><sub>Windows profile, same machine: an NVIDIA RTX 3060 and a Windows User-Agent.</sub></p>
 
@@ -195,27 +195,27 @@ The worker check is the one a naive override fails most often. CreepJS reads eac
 In the main page, the `navigator` section reports the Windows identity end to end: platform `Win32`, `Windows 11`, the Windows User-Agent and `appVersion`, plus the plugin and mimeType lists, device memory, and core count.
 
 <p align="center">
-  <img src="../../resources/images/creepjs-navigator-windows.png" alt="CreepJS navigator section in the main page reporting platform Win32, Windows 11, a Windows User-Agent and appVersion, plugins, and cores/ram" width="760" />
+  <img src="/docs/resources/images/creepjs-navigator-windows.png" alt="CreepJS navigator section in the main page reporting platform Win32, Windows 11, a Windows User-Agent and appVersion, plugins, and cores/ram" width="760" />
 </p>
 <p align="center"><sub>Main page: navigator reports the Windows 11 identity.</sub></p>
 
 Its WebGL section reads an NVIDIA GeForce RTX 3060 at high confidence, with the screen metrics from the profile beside it:
 
 <p align="center">
-  <img src="../../resources/images/creepjs-webgl-windows.png" alt="CreepJS WebGL and Screen sections in the main page reading an NVIDIA GeForce RTX 3060 at high confidence and a 1920x1080 screen" width="760" />
+  <img src="/docs/resources/images/creepjs-webgl-windows.png" alt="CreepJS WebGL and Screen sections in the main page reading an NVIDIA GeForce RTX 3060 at high confidence and a 1920x1080 screen" width="760" />
 </p>
 <p align="center"><sub>Main page: WebGL reads the NVIDIA RTX 3060.</sub></p>
 
 The same fingerprint, re-read inside a service worker, reports the same GPU next to a Windows User-Agent, `Win32`, and Windows 11:
 
 <p align="center">
-  <img src="../../resources/images/creepjs-worker-windows.png" alt="CreepJS Worker panel showing the injected identity replayed inside the ServiceWorkerGlobalScope: a Windows User-Agent, an NVIDIA GeForce RTX 3060 at high confidence, Win32, and Windows 11, all on an Apple Mac" width="760" />
+  <img src="/docs/resources/images/creepjs-worker-windows.png" alt="CreepJS Worker panel showing the injected identity replayed inside the ServiceWorkerGlobalScope: a Windows User-Agent, an NVIDIA GeForce RTX 3060 at high confidence, Win32, and Windows 11, all on an Apple Mac" width="760" />
 </p>
 <p align="center"><sub>Inside a service worker: the same identity, replayed.</sub></p>
 
 An override installed only in the main realm would leak the real macOS and Apple GPU values in that worker panel, and the disagreement between the page and its worker is exactly the contradiction CreepJS reports as a lie. Because Pydoll replays the overrides into dedicated, shared, and service workers, the two realms agree.
 
-## Headless mode
+## Headless mode {#headless-mode}
 
 Headless Chrome exposes signals a headful browser does not, which is why bot checks often failed before fingerprint injection:
 
@@ -283,7 +283,7 @@ The `locale` field drives:
 All three are read by anti-abuse systems and have to agree with the timezone and the IP. Setting a Brazilian locale (matching the IP) removed the block with no other change.
 
 <p align="center">
-  <img src="../../resources/images/fingerprint-inconsistent-captcha.png" alt="Google serving a captcha because the injected fingerprint's US locale contradicts the Brazilian egress IP" width="720" />
+  <img src="/docs/resources/images/fingerprint-inconsistent-captcha.png" alt="Google serving a captcha because the injected fingerprint's US locale contradicts the Brazilian egress IP" width="720" />
 </p>
 <p align="center"><sub>US locale over a Brazilian IP: Google returns a captcha.</sub></p>
 
@@ -339,7 +339,7 @@ The TTL, window scaling, and TCP option order come from the host kernel, not the
 
 To pass, match the profile OS (and GPU family) to the host: a macOS profile on this Mac, a Windows profile on a Windows host. A forwarding proxy (SOCKS5/HTTP CONNECT) re-originates the TCP connection from the proxy's kernel, so the observed OS becomes the proxy host's; a Windows profile then requires a proxy running on Windows (a Linux proxy gives a Linux signature, still inconsistent with a Windows User-Agent).
 
-## Multiple fingerprints across contexts
+## Multiple fingerprints across contexts {#multiple-fingerprints-across-contexts}
 
 Service and shared workers are shared across every tab in a browser context, so a context holds a single identity. Applying a different fingerprint to a context that already has one raises `FingerprintContextConflict`:
 

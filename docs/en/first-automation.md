@@ -9,7 +9,7 @@ Real automation is more than loading a page: you fill forms, click buttons, wait
 - [How to extract typed data with a model](#extract-typed-data)
 - [How the full script looks](#the-full-script)
 
-## Log in like a person
+## Log in like a person {#log-in-like-a-person}
 
 `find()` locates elements by their attributes, and `type_text(humanize=True)` types with the variable rhythm of a real user, occasional corrected typos included. You don't need to focus the field first; Pydoll clicks it before typing.
 
@@ -28,7 +28,7 @@ await submit.click()
 
 The login form on this site accepts any username and password, so the values only need to look real.
 
-## Confirm the login worked
+## Confirm the login worked {#confirm-the-login-worked}
 
 After submitting, the page reloads and shows a Logout link. Finding that link is your confirmation. `find()` waits for it, so there is no sleep between clicking and checking:
 
@@ -42,7 +42,7 @@ else:
 
 `raise_exc=False` makes `find()` return `None` instead of raising when the element never appears, which keeps control flow in your hands.
 
-## Extract typed data
+## Extract typed data {#extract-typed-data}
 
 With the session active, switch from interacting to collecting. Declare what a quote looks like once, and `extract_all()` returns a list of validated objects:
 
@@ -65,7 +65,7 @@ for quote in quotes:
 
 Each `quote` is a real Pydantic object: `quote.tags` is a `list[str]`, your IDE autocompletes the fields, and `quote.model_dump_json()` serializes it. No element-by-element querying, no manual casting.
 
-## The full script
+## The full script {#the-full-script}
 
 Create `first_automation.py`:
 

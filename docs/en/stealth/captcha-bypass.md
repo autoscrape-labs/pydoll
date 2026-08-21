@@ -2,7 +2,7 @@
 
 Pydoll can click a Cloudflare Turnstile checkbox for you, the same click a person makes on the widget. It does not solve image or puzzle challenges, and whether the click is accepted depends on your IP reputation and fingerprint, not on Pydoll. Treat this as automating the click, not defeating the captcha.
 
-<iframe src="../captcha-turnstile.html" aria-label="Pydoll clicking a Turnstile checkbox, with the outcome depending on IP reputation" style="width: 100%; height: 345px; border: 0;" loading="lazy"></iframe>
+<iframe src="/docs/resources/visuals/captcha-turnstile.html" aria-label="Pydoll clicking a Turnstile checkbox, with the outcome depending on IP reputation" style="width: 100%; height: 345px; border: 0;" loading="lazy"></iframe>
 
 ## Handle Turnstile while you navigate
 

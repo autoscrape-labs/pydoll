@@ -90,7 +90,7 @@ asyncio.run(main())
 
 This time it is about **2 seconds**. The two waits overlap. The kettle boils while the bread toasts.
 
-<iframe src="../async-flow.html" aria-label="Sequential vs concurrent async, animated" style="width: 100%; height: 285px; border: 0;" loading="lazy"></iframe>
+<iframe src="/docs/resources/visuals/async-flow.html" aria-label="Sequential vs concurrent async, animated" style="width: 100%; height: 285px; border: 0;" loading="lazy"></iframe>
 
 Run each mode and watch the timer: sequential finishes at 4.0s, concurrent at 2.0s, because the two waits overlap.
 

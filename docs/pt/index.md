@@ -1,20 +1,12 @@
 <p align="center">
-    <img src="../resources/images/logo.png" alt="Pydoll Logo" /> <br><br>
+    <img src="/docs/resources/images/logo.png" alt="Pydoll Logo" /> <br><br>
 </p>
 
-# Bem-vindo ao Pydoll
+# Pydoll
 
-Olá! Obrigado por conferir o Pydoll, a próxima geração de automação de navegadores para Python. Se você está cansado de lidar com webdrivers e procura uma maneira mais suave e confiável de automatizar navegadores, você está no lugar certo.
-
-## O que é o Pydoll?
-
-O Pydoll está revolucionando a automação de navegadores, **eliminando completamente a necessidade de webdrivers**! Ao contrário de outras soluções que dependem de dependências externas, o Pydoll se conecta diretamente aos navegadores usando o Chrome DevTools Protocol, proporcionando uma experiência de automação perfeita e confiável com desempenho assíncrono nativo.
-
-Seja para extrair dados, [testar aplicativos web](https://www.lambdatest.com/web-testing) ou automatizar tarefas repetitivas, o Pydoll torna tudo surpreendentemente fácil com sua API intuitiva e recursos poderosos. 
+O Pydoll automatiza navegadores Chromium pelo Chrome DevTools Protocol, sem webdriver e sem esperas manuais. Use para extrair dados, testar aplicações web e automatizar fluxos reais de navegador em Python assíncrono.
 
 ## Instalação
-
-Crie e ative um [ambiente virtual](https://docs.python.org/3/tutorial/venv.html) primeiro e, em seguida, instale o Pydoll:
 
 <div class="termy">
 ```bash
@@ -24,52 +16,32 @@ $ pip install pydoll-python
 ```
 </div>
 
-Para a versão de desenvolvimento mais recente, você pode instalar diretamente do GitHub:
+O Pydoll controla o Chrome ou o Edge que já estão instalados na sua máquina. Você não precisa baixar um webdriver nem manter as versões do driver em sincronia com o navegador.
 
-```bash
-$ pip install git+https://github.com/autoscrape-labs/pydoll.git
-```
+Novo no Pydoll? Siga o [Primeiros passos](getting-started.md) para um passo a passo completo.
 
-## Por que escolher o Pydoll?
+## Início rápido
 
-- **Simplicidade Genuína**: Não queremos que você perca tempo configurando drivers ou lidando com problemas de compatibilidade. Com o Pydoll, você instala e está pronto para automatizar.
-- **Interações Verdadeiramente Humanas**: Nossos algoritmos simulam padrões de comportamento humano reais, desde o tempo entre os cliques até a forma como o mouse se move pela tela.
-- **Desempenho Assíncrono Nativo**: Construído do zero com `asyncio`, o Pydoll não apenas suporta operações assíncronas, mas foi projetado para elas.
-- **Inteligência Integrada**: Bypass automático de captchas Cloudflare Turnstile e reCAPTCHA v3, sem serviços externos ou configurações complexas.
-- **Monitoramento de Rede Poderoso**: Intercepte, modifique e analise todo o tráfego de rede com facilidade, dando a você controle total sobre as requisições.
-- **Arquitetura Orientada a Eventos**: Reaja a eventos da página, requisições de rede e interações do usuário em tempo real.
-- **Localização de Elementos Intuitiva**: Métodos modernos `find()` e `query()` que fazem sentido e funcionam como você esperaria.
-- **Extração Estruturada**: Defina um modelo [Pydantic](https://docs.pydantic.dev/), chame `tab.extract()` e receba dados tipados e validados. Sem consulta manual elemento por elemento.
-- **Segurança de Tipos Robusta**: Sistema de tipos abrangente para melhor suporte da IDE e prevenção de erros.
-
-
-Pronto para começar? As páginas a seguir guiarão você pela instalação, uso básico e recursos avançados para ajudá-lo a aproveitar ao máximo o Pydoll.
-
-Vamos começar a automatizar a web, da maneira certa! 🚀
-
-## Guia de Início Rápido
-
-### 1. Automação Stateful e Evasão
-
-Quando você precisa navegar, contornar desafios ou interagir com UIs dinâmicas, a API imperativa do Pydoll cuida de tudo com timing humanizado por padrão.
+Abra uma página, encontre elementos pela forma como você os descreveria para uma pessoa e interaja com timing humanizado:
 
 ```python
 import asyncio
+
 from pydoll.browser.chromium import Chrome
+
 
 async def main():
     async with Chrome() as browser:
         tab = await browser.start()
         await tab.go_to('https://github.com/autoscrape-labs/pydoll')
 
-        # Encontra elementos e interage com timing humano
         star_button = await tab.find(
             tag_name='button',
             timeout=5,
             raise_exc=False
         )
         if not star_button:
-            print("Ops! O botão não foi encontrado.")
+            print('Button not found.')
             return
 
         await star_button.click()
@@ -78,220 +50,81 @@ async def main():
 asyncio.run(main())
 ```
 
-### 2. Extração Estruturada de Dados
-
-Ao chegar na página alvo, mude para o motor declarativo. Defina o que você quer com um modelo, e o Pydoll extrai — tipado, validado e pronto para uso.
+Quando o objetivo é dado, e não interação, defina um modelo e deixe o Pydoll extraí-lo, tipado e validado:
 
 ```python
 import asyncio
+
 from pydoll.browser.chromium import Chrome
 from pydoll.extractor import ExtractionModel, Field
 
-class Quote(ExtractionModel):
-    text: str = Field(selector='.text', description='O texto da citação')
-    author: str = Field(selector='.author', description='Quem disse')
-    tags: list[str] = Field(selector='.tag', description='Tags')
-    year: int | None = Field(selector='.year', description='Ano', default=None)
 
-async def extract_quotes():
+class Quote(ExtractionModel):
+    text: str = Field(selector='.text')
+    author: str = Field(selector='.author')
+    tags: list[str] = Field(selector='.tag')
+
+
+async def main():
     async with Chrome() as browser:
         tab = await browser.start()
         await tab.go_to('https://quotes.toscrape.com')
 
         quotes = await tab.extract_all(Quote, scope='.quote', timeout=5)
+        for quote in quotes:
+            print(f'{quote.author}: {quote.text}')
 
-        for q in quotes:
-            print(f'{q.author}: {q.text}')  # totalmente tipado, autocomplete da IDE funciona
-            print(q.tags)                    # list[str], não um elemento bruto
-            print(q.model_dump_json())       # serialização pydantic embutida
-
-asyncio.run(extract_quotes())
+asyncio.run(main())
 ```
 
-Modelos suportam auto-detecção CSS/XPath, extração de atributos HTML, transforms customizados e modelos aninhados.
+Os modelos suportam seletores CSS e XPath, mira em atributos HTML, transformações personalizadas e modelos aninhados. Saiba mais em [Extração estruturada](guides/structured-extraction.md).
 
-??? note "Modelos aninhados, transforms e extração de atributos"
-    ```python
-    from datetime import datetime
-    from pydoll.extractor import ExtractionModel, Field
+## Por que Pydoll
 
-    def parse_date(raw: str) -> datetime:
-        return datetime.strptime(raw.strip(), '%B %d, %Y')
+- **Sem webdriver**: o Pydoll se conecta direto ao navegador pelo Chrome DevTools Protocol. Nada para baixar, nenhuma incompatibilidade de versão para depurar.
+- **Interações humanizadas**: os cliques seguem trajetórias curvas do mouse e a digitação tem ritmo variável, com erros de digitação corrigidos de vez em quando, então sua automação se comporta como uma pessoa no teclado.
+- **Assíncrono por natureza**: construído sobre `asyncio`, então um único processo pode controlar muitas abas e navegadores ao mesmo tempo.
+- **Tratamento do Cloudflare Turnstile**: o Pydoll detecta o widget Turnstile e clica nele nativamente. Nenhum serviço externo de captcha para pagar ou integrar.
+- **Controle de rede**: monitore, intercepte e modifique requisições conforme a página as faz.
+- **Extração tipada**: declare um modelo Pydantic e receba objetos validados e amigáveis à IDE, em vez de elementos crus.
 
-    class Author(ExtractionModel):
-        name: str = Field(selector='.author-title')
-        born: datetime = Field(
-            selector='.author-born-date',
-            transform=parse_date,
-        )
+## Próximos passos
 
-    class Article(ExtractionModel):
-        title: str = Field(selector='h1')
-        url: str = Field(selector='.source-link', attribute='href')
-        author: Author = Field(selector='.author-card', description='Modelo aninhado')
+- [Primeiros passos](getting-started.md): instale o Pydoll e rode seu primeiro script.
+- [Sua primeira automação](first-automation.md): faça login em um site e extraia dados tipados.
+- [Migrando do Selenium e do Playwright](migrating.md): mapeie os comandos que você conhece para o Pydoll.
+- [Passando despercebido](stealth/index.md): a configuração mínima para evitar os sinais óbvios de bot.
+- [Guias](guides/index.md): um guia por funcionalidade, do encontro de elementos à interceptação de requisições.
+- [Referência da API](api/index.md): cada classe e método público.
 
-    article = await tab.extract(Article, timeout=5)
-    article.author.born.year  # int — tipos preservados em toda a cadeia
-    ```
-
-## Exemplo Estendido: Combinando as Duas Abordagens
-
-Uma tarefa real de scraping tipicamente combina as duas abordagens: automação imperativa para navegar e contornar desafios, depois extração declarativa para coletar dados estruturados.
-
-```python
-import asyncio
-from typing import Optional
-
-from pydoll.browser.chromium import Chrome
-from pydoll.browser.options import ChromiumOptions
-from pydoll.extractor import ExtractionModel, Field
-
-
-class GitHubRepo(ExtractionModel):
-    name: str = Field(
-        selector='[itemprop="name"] a',
-        description='Nome do repositório',
-    )
-    description: Optional[str] = Field(
-        selector='[itemprop="description"]',
-        description='Descrição do repositório',
-        default=None,
-    )
-    language: Optional[str] = Field(
-        selector='[itemprop="programmingLanguage"]',
-        description='Linguagem de programação principal',
-        default=None,
-    )
-
-
-async def main():
-    options = ChromiumOptions()
-    options.add_argument('--headless=new')
-
-    async with Chrome(options=options) as browser:
-        tab = await browser.start()
-
-        # 1. Navegar e interagir (imperativo)
-        await tab.go_to('https://github.com/autoscrape-labs')
-
-        # 2. Extrair dados estruturados (declarativo)
-        repos = await tab.extract_all(
-            GitHubRepo,
-            scope='article.Box-row',
-            timeout=10,
-        )
-
-        for repo in repos:
-            print(f'{repo.name} ({repo.language}): {repo.description}')
-            print(repo.model_dump_json())
-
-if __name__ == "__main__":
-    asyncio.run(main())
-```
-
-Este exemplo demonstra:
-
-1. Definição de um modelo tipado para dados de repositórios GitHub
-2. Configuração do modo headless para operação invisível
-3. Uso de `extract_all` para coletar múltiplos repositórios de uma vez
-4. Objetos totalmente tipados com autocomplete da IDE e serialização pydantic
-
-??? info "Sobre as Opções do Chromium"
-    O método `options.add_argument()` permite que você passe qualquer argumento de linha de comando do Chromium para personalizar o comportamento do navegador. Existem centenas de opções disponíveis para controlar tudo, desde rede até comportamento de renderização. 
-
-    Opções comuns do Chrome
-
-    ```python
-    # Opções de Desempenho e Comportamento
-    options.add_argument('--headless=new')         # Executar o Chrome em modo headless
-    options.add_argument('--disable-gpu')          # Desabilitar a aceleração de hardware da GPU
-    options.add_argument('--no-sandbox')           # Desabilitar o sandbox (use com cuidado)
-    options.add_argument('--disable-dev-shm-usage') # Superar problemas de recursos limitados
-
-    # Opções de Aparência
-    options.add_argument('--start-maximized')      # Iniciar com a janela maximizada
-    options.add_argument('--window-size=1920,1080') # Definir tamanho específico da janela
-    options.add_argument('--hide-scrollbars')      # Ocultar barras de rolagem
-
-    # Opções de Rede
-    options.add_argument('--proxy-server=socks5://127.0.0.1:9050') # Usar proxy
-    options.add_argument('--disable-extensions')   # Desabilitar extensões
-    options.add_argument('--disable-notifications') # Desabilitar notificações
-
-    # Privacidade e Segurança
-    options.add_argument('--incognito')            # Executar em modo anônimo
-    options.add_argument('--disable-infobars')     # Desabilitar barras de informações
-    ```
-
-    Guias de Referência Completos
-
-    Para obter uma lista completa de todos os argumentos de linha de comando do Chrome disponíveis, consulte estes recursos:
-
-    - [Opções de Linha de Comando do Chromium](https://peter.sh/experiments/chromium-command-line-switches/) - Lista de referência completa
-    - [Flags do Chrome](chrome://flags) - Digite isso na barra de endereço do seu navegador Chrome para ver os recursos experimentais
-    - [Flags do Código-Fonte do Chromium](https://source.chromium.org/chromium/chromium/src/+/main:chrome/common/chrome_switches.cc) - Referência direta ao código-fonte
-
-    Lembre-se de que algumas opções podem se comportar de maneira diferente em diferentes versões do Chrome, portanto, é uma boa prática testar sua configuração ao atualizar o Chrome. 
-
-Com essas configurações, você pode executar o Pydoll em diversos ambientes, incluindo pipelines de CI/CD, servidores sem interface gráfica ou contêineres Docker.
-
-Continue lendo a documentação para explorar os recursos poderosos do Pydoll para lidar com captchas, trabalhar com várias abas, interagir com elementos e muito mais.
-
-## Dependências Mínimas
-
-Uma das vantagens do Pydoll é sua leveza. Ao contrário de outras ferramentas de automação de navegador que exigem inúmeras dependências, o Pydoll foi projetado intencionalmente para ser minimalista, mantendo recursos poderosos.
-
-### Dependências Principais
-
-O Pydoll depende de apenas alguns pacotes cuidadosamente selecionados:
-
-```
-python = "^3.10"
-websockets = "^14"
-aiohttp = "^3.9.5"
-aiofiles = "^25.1.0"
-pydantic = "^2.0"
-typing_extensions = "^4.14.0"
-```
-
-É só isso! Essa dependência mínima do Pydoll significa:
-
-- **Instalação mais rápida** - Sem árvore de dependências complexa para resolver
-- **Menos conflitos** - Menor chance de conflitos de versão com outros pacotes
-- **Menor consumo de recursos** - Menor uso de espaço em disco
-- **Melhor segurança** - Menor superfície de ataque e vulnerabilidades relacionadas a dependências
-- **Atualizações mais fáceis** - Manutenção mais simples e menos alterações que quebram a compatibilidade
-
-O pequeno número de dependências também contribui para a confiabilidade e o desempenho do Pydoll, pois há menos fatores externos que podem impactar seu funcionamento.
-
-## Top Sponsors
+## Principais patrocinadores
 
 <div class="sponsor-grid-top">
   <a class="sponsor-card" href="https://substack.thewebscraping.club/p/pydoll-webdriver-scraping?utm_source=github&utm_medium=repo&utm_campaign=pydoll" target="_blank" rel="noopener nofollow sponsored">
-    <span class="sponsor-banner"><img src="../resources/images/banner-the-webscraping-club.png" alt="The Web Scraping Club" /></span>
+    <span class="sponsor-banner"><img src="/docs/resources/images/banner-the-webscraping-club.png" alt="The Web Scraping Club" /></span>
     <span class="sponsor-body">
       <span class="sponsor-name">The Web Scraping Club</span>
-      <span class="sponsor-desc">A newsletter #1 dedicada a web scraping. Leia a review completa do Pydoll.</span>
+      <span class="sponsor-desc">A newsletter número 1 dedicada a web scraping. Leia a análise completa deles sobre o Pydoll.</span>
     </span>
   </a>
   <a class="sponsor-card" href="https://go.nodemaven.com/pydollaugust" target="_blank" rel="noopener nofollow sponsored">
-    <span class="sponsor-banner"><img src="../resources/images/nodemaven-banner.png" alt="NodeMaven" /></span>
+    <span class="sponsor-banner"><img src="/docs/resources/images/nodemaven-banner.png" alt="NodeMaven" /></span>
     <span class="sponsor-body">
       <span class="sponsor-name">NodeMaven</span>
-      <span class="sponsor-desc">Proxies de alta qualidade para scraping e automação. ZIP targeting, 99.9% de uptime, sem KYC.</span>
+      <span class="sponsor-desc">Proxies de alta qualidade para scraping e automação. Segmentação por CEP, 99,9% de uptime, sem KYC.</span>
       <span class="sponsor-chips">
-        <span class="sponsor-chip"><code>PYDOLL35</code> 35% off</span>
-        <span class="sponsor-chip"><code>PYDOLL40</code> 40% off ISP</span>
+        <span class="sponsor-chip"><code>PYDOLL35</code> 35% de desconto</span>
+        <span class="sponsor-chip"><code>PYDOLL40</code> 40% de desconto em ISP</span>
       </span>
     </span>
   </a>
   <a class="sponsor-card" href="https://niuproxy.com/?utm_source=pydoll&utm_medium=pydoll&ref=pydoll" target="_blank" rel="noopener nofollow sponsored">
-    <span class="sponsor-banner sponsor-banner--niuproxy"><img src="../resources/images/niuproxy-banner.jpg" alt="NiuProxy" /></span>
+    <span class="sponsor-banner sponsor-banner--niuproxy"><img src="/docs/resources/images/niuproxy-banner.jpg" alt="NiuProxy" /></span>
     <span class="sponsor-body">
       <span class="sponsor-name">NiuProxy</span>
       <span class="sponsor-desc">Proxies residenciais rotativos: 10TB a $0.35/GB ou 1TB a $0.50/GB para usuários do Pydoll.</span>
       <span class="sponsor-chips">
-        <span class="sponsor-chip"><code>PAY2</code> 10% off na recarga</span>
+        <span class="sponsor-chip"><code>PAY2</code> 10% de desconto na recarga</span>
       </span>
     </span>
   </a>
@@ -299,64 +132,38 @@ O pequeno número de dependências também contribui para a confiabilidade e o d
 
 ## Patrocinadores
 
-O apoio dos patrocinadores é essencial para manter o projeto vivo, em constante evolução e acessível a toda a comunidade. Cada parceria ajuda a cobrir custos, impulsionar novos recursos e garantir o desenvolvimento contínuo. Somos muito gratos a todos que acreditam e apoiam o projeto!
+Os patrocinadores mantêm o projeto funcionando e ajudam a financiar o desenvolvimento contínuo. Obrigado a todos que apoiam o Pydoll.
 
 <div class="sponsor-grid-mini">
   <a class="sponsor-card sponsor-tile" href="https://proxy-seller.com/?partner=8DES01TZ1QGWR3" target="_blank" rel="noopener nofollow sponsored">
-    <span class="sponsor-tile-logo"><img src="../resources/images/proxy-seller-logo-white.svg" alt="Proxy-Seller" /></span>
-    <span class="sponsor-desc">Proxies premium para agentes de IA, scraping e automação</span>
-    <span class="sponsor-chip"><code>PYDOLL</code> 15% off</span>
+    <span class="sponsor-tile-logo"><img src="/docs/resources/images/proxy-seller-logo-white.svg" alt="Proxy-Seller" /></span>
+    <span class="sponsor-desc">Proxies premium para agentes de IA, scraping &amp; automação</span>
+    <span class="sponsor-chip"><code>PYDOLL</code> 15% de desconto</span>
   </a>
   <a class="sponsor-card sponsor-tile" href="https://www.thordata.com/?ls=github&lk=pydoll" target="_blank" rel="noopener nofollow sponsored">
-    <span class="sponsor-tile-logo"><img src="../resources/images/Thordata-logo.png" alt="Thordata" /></span>
-    <span class="sponsor-desc">Rede de proxies residenciais com 190+ localizações</span>
+    <span class="sponsor-tile-logo"><img src="/docs/resources/images/Thordata-logo.png" alt="Thordata" /></span>
+    <span class="sponsor-desc">Rede de proxies residenciais com mais de 190 localidades</span>
     <span class="sponsor-desc"><b>1GB grátis</b> pelo nosso link</span>
   </a>
   <a class="sponsor-card sponsor-tile" href="https://www.testmuai.com/?utm_medium=sponsor&utm_source=pydoll" target="_blank" rel="noopener nofollow sponsored">
-    <span class="sponsor-tile-logo"><img src="../resources/images/logo-lamda-test.svg" alt="TestMu AI by LambdaTest" /></span>
-    <span class="sponsor-desc">Cloud de testes AI-native da LambdaTest</span>
+    <span class="sponsor-tile-logo"><img src="/docs/resources/images/logo-lamda-test.svg" alt="TestMu AI by LambdaTest" /></span>
+    <span class="sponsor-desc">Nuvem de testes nativa de IA da LambdaTest</span>
   </a>
   <a class="sponsor-card sponsor-tile" href="https://www.swiftproxy.net/?ref=pydoll" target="_blank" rel="noopener nofollow sponsored">
-    <span class="sponsor-tile-logo"><img src="../resources/images/swiftproxy-logo.png" alt="Swiftproxy" /></span>
-    <span class="sponsor-desc">Proxies para web scraping e automação</span>
+    <span class="sponsor-tile-logo"><img src="/docs/resources/images/swiftproxy-logo.png" alt="Swiftproxy" /></span>
+    <span class="sponsor-desc">Proxies para web scraping &amp; automação</span>
   </a>
   <a class="sponsor-card sponsor-tile sponsor-tile--ghost" href="https://github.com/sponsors/thalissonvs" target="_blank" rel="noopener">
     <span class="sponsor-ghost-plus">+</span>
     <span class="sponsor-name">Sua logo aqui</span>
-    <span class="sponsor-desc">Seja um patrocinador</span>
+    <span class="sponsor-desc">Torne-se um patrocinador</span>
   </a>
 </div>
 
 <p>
-  <a class="sponsor-cta" href="https://github.com/sponsors/thalissonvs" target="_blank" rel="noopener">&#10084;&#65039; Seja um patrocinador</a>
+  <a class="sponsor-cta" href="https://github.com/sponsors/thalissonvs" target="_blank" rel="noopener">&#10084;&#65039; Torne-se um patrocinador</a>
 </p>
-
 
 ## Licença
 
-O Pydoll é lançado sob a Licença MIT, que lhe dá a liberdade de usar, modificar e distribuir o código com restrições mínimas. Esta licença permissiva torna o Pydoll adequado para projetos pessoais e comerciais.
-
-??? info "Ver o texto completo da Licença MIT"
-    ```
-    MIT License
-    
-    Copyright (c) 2023 Pydoll Contributors
-    
-    Permission is hereby granted, free of charge, to any person obtaining a copy
-    of this software and associated documentation files (the "Software"), to deal
-    in the Software without restriction, including without limitation the rights
-    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-    copies of the Software, and to permit persons to whom the Software is
-    furnished to do so, subject to the following conditions:
-    
-    The above copyright notice and this permission notice shall be included in all
-    copies or substantial portions of the Software.
-    
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-    SOFTWARE.
-    ```
+O Pydoll é distribuído sob a [Licença MIT](https://github.com/autoscrape-labs/pydoll/blob/main/LICENSE), então você pode usá-lo livremente em projetos pessoais e comerciais.

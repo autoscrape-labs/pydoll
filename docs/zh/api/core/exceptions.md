@@ -1,6 +1,6 @@
-# 异常
+# Exceptions
 
-本节记录了 Pydoll 操作可能引发的所有自定义异常。
+Pydoll 抛出的异常，例如 `ElementNotFound` 和 `WaitElementTimeout`。详见 [查找元素](../../guides/element-finding.md#handle-missing-elements)。
 
 ::: pydoll.exceptions
     options:
@@ -8,4 +8,4 @@
       show_source: false
       heading_level: 2
       group_by_category: true
-      members_order: source 
+      members_order: source

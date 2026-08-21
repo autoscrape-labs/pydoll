@@ -10,13 +10,13 @@ Some of the hard parts you get for free: because Pydoll drives a real Chrome ove
 - [How to interact like a person](#interact-like-a-person)
 - [How to handle Cloudflare Turnstile](#handle-cloudflare-turnstile)
 
-## Keep the identity consistent
+## Keep the identity consistent {#keep-the-identity-consistent}
 
 Identity is the hardest layer, because the signals have to agree with each other and with your IP and OS. The User-Agent, Client Hints, language, timezone, WebGL renderer, and fonts are all cross-checked; overriding one in isolation usually makes you more detectable, not less. Pydoll already keeps some of this consistent for you (it fixes the User-Agent and Client Hints together when you set `--user-agent=`), and applies a full coherent identity through `apply_fingerprint()`.
 
 Start with [Evasion techniques](evasion-techniques.md) for the levers you control (User-Agent, language, WebRTC, realistic profile), and [Fingerprint Injection](fingerprint-injection.md) for applying a complete identity from one profile.
 
-## Interact like a person
+## Interact like a person {#interact-like-a-person}
 
 Instant clicks in the exact center of an element and keystrokes every 50ms are behavioral fingerprints. Pass `humanize=True` and Pydoll moves the cursor along a curved path with human timing before clicking, and types with variable rhythm and occasional corrected typos:
 
@@ -30,7 +30,7 @@ await submit.click(humanize=True)
 
 Humanization is opt-in per interaction, so you keep it where behavior is watched and skip it where speed matters. [Human-like interactions](human-like-interactions.md) explains the timing model and how to tune it.
 
-## Handle Cloudflare Turnstile
+## Handle Cloudflare Turnstile {#handle-cloudflare-turnstile}
 
 When a protected page shows the Turnstile checkbox, Pydoll can detect and click it for you:
 

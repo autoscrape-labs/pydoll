@@ -35,7 +35,7 @@ await field.type_text('search query', humanize=True)
 
 Type your own text below and run it both ways. With `humanize=True` the rhythm varies and the occasional typo is corrected, so every run differs; without it, every gap is a flat 50ms.
 
-<iframe src="../keyboard-humanize.html" aria-label="Interactive humanized typing: type text and watch it typed with human rhythm and corrected typos" style="width: 100%; height: 350px; border: 0;" loading="lazy"></iframe>
+<iframe src="/docs/resources/visuals/keyboard-humanize.html" aria-label="Interactive humanized typing: type text and watch it typed with human rhythm and corrected typos" style="width: 100%; height: 350px; border: 0;" loading="lazy"></iframe>
 
 If you only need the text to appear and don't care about per-key events, `insert_text` pastes the whole string at once:
 

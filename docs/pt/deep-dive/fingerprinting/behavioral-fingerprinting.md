@@ -1,200 +1,131 @@
-# Fingerprinting Comportamental
+# Behavioral fingerprinting
 
-O fingerprinting comportamental analisa como os usuários interagem com aplicações web, em vez de quais ferramentas eles usam. Enquanto fingerprints de rede e navegador podem ser falsificados definindo os valores corretos, o comportamento humano segue padrões biomecânicos difíceis de replicar de forma convincente. Sistemas de detecção coletam movimentos de mouse, tempos de digitação, comportamento de scroll e sequências de interação, e então usam modelos estatísticos para distinguir humanos de automação.
+O behavioral fingerprinting analisa como um usuário interage com uma página, e não quais ferramentas ele usa. Fingerprints de rede e de navegador podem ser forjados ao definir os valores certos, mas o comportamento humano segue padrões biomecânicos difíceis de replicar de forma convincente. Os sistemas de detecção coletam movimento do mouse, ritmo das teclas, comportamento de rolagem e sequências de interação, e então usam modelos estatísticos para separar humanos de automação. Esta página explica essas técnicas, a ciência por trás delas e como a humanização do Pydoll aborda cada uma.
 
-Este documento cobre as técnicas de detecção, a ciência por trás delas, e como os recursos de humanização do Pydoll abordam cada vetor.
+## Análise de movimento do mouse
 
-!!! info "Navegação do Módulo"
-    - [Network Fingerprinting](./network-fingerprinting.md): Fingerprinting de protocolo TCP/IP, TLS, HTTP/2
-    - [Browser Fingerprinting](./browser-fingerprinting.md): Canvas, WebGL, propriedades do navigator
-    - [Técnicas de Evasão](./evasion-techniques.md): Contramedidas práticas
-
-## Análise de Movimento do Mouse
-
-O movimento do mouse é um dos indicadores comportamentais mais poderosos porque o controle motor humano segue leis biomecânicas que automação simples não consegue replicar. Sistemas de detecção coletam eventos `mousemove` (cada um contendo coordenadas x, y e um timestamp) e analisam a trajetória em busca de propriedades que distinguem movimento orgânico de teleporte programático do cursor.
+O movimento do mouse é um dos indicadores comportamentais mais fortes, porque o controle motor humano segue leis biomecânicas que uma automação simples não reproduz. Os sistemas de detecção coletam eventos `mousemove` (cada um com coordenadas x, y e um timestamp) e analisam a trajetória em busca de propriedades que separam o movimento orgânico do teletransporte programático do cursor.
 
 ### Lei de Fitts
 
-A Lei de Fitts descreve o tempo necessário para mover um ponteiro até um alvo. A formulação de Shannon (MacKenzie, 1992), que é a versão mais amplamente utilizada, estabelece:
+A Lei de Fitts descreve o tempo necessário para mover um ponteiro até um alvo. A formulação de Shannon (MacKenzie, 1992) é a mais amplamente usada:
 
 ```
 T = a + b * log2(D/W + 1)
 ```
 
-Onde `T` é o tempo de movimento, `a` é uma constante representando tempo de reação/início, `b` é uma constante representando a velocidade inerente do dispositivo de entrada, `D` é a distância até o alvo, e `W` é a largura (tamanho) do alvo. A relação logarítmica significa que dobrar a distância adiciona uma quantidade fixa de tempo, enquanto reduzir pela metade o tamanho do alvo adiciona a mesma quantidade fixa.
+`T` é o tempo de movimento, `a` é uma constante de início/reação, `b` é a velocidade inerente do dispositivo de entrada, `D` é a distância até o alvo e `W` é a largura do alvo. O logaritmo significa que dobrar a distância adiciona uma quantidade fixa de tempo, e reduzir o tamanho do alvo pela metade adiciona a mesma quantidade fixa.
 
-As implicações para detecção de bots são significativas. Humanos levam mais tempo para alcançar alvos pequenos e distantes e alcançam alvos grandes e próximos rapidamente. Eles aceleram no início de um movimento, atingem velocidade máxima aproximadamente no meio do caminho e desaceleram ao se aproximar do alvo. Bots que movem o cursor em tempo constante independentemente da distância e tamanho do alvo violam a Lei de Fitts e são trivialmente detectáveis.
+A implicação para a detecção é direta. Humanos demoram mais para alcançar alvos pequenos e distantes, e alcançam alvos grandes e próximos rapidamente. Eles aceleram no início, atingem o pico de velocidade por volta do meio do caminho e desaceleram ao chegar. Um bot que se move em tempo constante independentemente da distância e do tamanho do alvo viola a Lei de Fitts e é trivialmente detectável. Os sistemas de detecção medem o tempo de movimento antes de cada clique, calculam o tempo que a Lei de Fitts prevê a partir da distância e do tamanho do alvo, e marcam movimentos que são muito mais rápidos do que o previsto ou que não mostram correlação entre distância/tamanho e tempo.
 
-Sistemas de detecção medem o tempo de movimento para cada evento de clique, calculam o tempo esperado a partir da distância e tamanho do alvo, e sinalizam movimentos significativamente mais rápidos do que a Lei de Fitts prevê ou que não mostram correlação entre distância/tamanho e tempo de movimento.
+### Formato da trajetória
 
-### Forma da Trajetória
-
-Movimentos humanos da mão entre dois pontos não são linhas retas. A pesquisa de Abend, Bizzi e Morasso (1982) mostrou que os caminhos das mãos são tipicamente curvados devido a restrições biomecânicas das articulações e músculos do braço. Flash e Hogan (1985) demonstraram que movimentos de alcance humanos seguem trajetórias de jerk mínimo, onde a trajetória minimiza a integral do jerk (a derivada da aceleração) ao longo da duração do movimento. O perfil de velocidade resultante tem forma de sino e é descrito por um polinômio quíntico (grau 5):
+Os movimentos da mão humana entre dois pontos não são linhas retas. Abend, Bizzi e Morasso (1982) mostraram que os caminhos da mão são curvos por causa das articulações e músculos do braço. Flash e Hogan (1985) mostraram que os movimentos de alcance seguem trajetórias de mínimo jerk, minimizando a integral do jerk (a derivada da aceleração) ao longo do movimento. O perfil de velocidade tem formato de sino, descrito por um polinômio quíntico:
 
 ```
 x(t) = x0 + (xf - x0) * (10t^3 - 15t^4 + 6t^5)
 ```
 
-onde `t` é o tempo normalizado de 0 a 1, e `x0`/`xf` são as posições inicial e final. Isso produz aceleração suave a partir do repouso, velocidade máxima aproximadamente no meio do caminho e desaceleração suave de volta ao repouso.
+onde `t` é o tempo normalizado de 0 a 1 e `x0`/`xf` são as posições de início e fim. Isso gera uma aceleração suave a partir do repouso, pico de velocidade perto do meio do caminho e desaceleração suave de volta ao repouso.
 
-Sistemas de detecção analisam curvatura da trajetória, perfis de velocidade e padrões de aceleração. Os sinais específicos que procuram incluem:
+Os sistemas de detecção analisam curvatura, velocidade e aceleração em busca de quatro indícios:
 
-**Detecção de linha reta.** Um caminho perfeitamente reto entre dois pontos (curvatura zero em cada amostra) é o sinal de bot mais óbvio. Caminhos humanos sempre têm alguma curvatura devido às articulações rotacionais do braço.
+- **Caminhos em linha reta.** Curvatura zero em cada amostra é o sinal de bot mais óbvio; os caminhos humanos sempre curvam porque o braço gira em torno das articulações.
+- **Velocidade constante.** Humanos mostram um perfil de velocidade em formato de sino. Velocidade constante indica interpolação linear, o padrão na maioria das ferramentas de automação.
+- **Ausência de submovimentos.** Movimentos longos são construídos a partir de submovimentos sobrepostos (Meyer et al., 1988), cada um com seu próprio pico de velocidade. Um movimento de 500 pixels com um único pico suave é suspeito; os reais mostram de 2 a 4 picos.
+- **Ausência de overshoot.** Humanos frequentemente ultrapassam o alvo em 5 a 15 pixels e corrigem de volta. Pousar exatamente no alvo toda vez é estatisticamente improvável.
 
-**Velocidade constante.** Humanos mostram um perfil de velocidade em forma de sino (acelerar, pico, desacelerar). Uma velocidade constante durante todo o movimento indica interpolação linear, que é o comportamento padrão da maioria das ferramentas de automação.
+### Entropia do movimento
 
-**Ausência de sub-movimentos.** Movimentos longos são compostos por múltiplos sub-movimentos sobrepostos (Meyer et al., 1988), cada um com seu próprio pico de velocidade. Um movimento cobrindo 500+ pixels com um único pico de velocidade suave é suspeito; movimentos reais dessa distância tipicamente mostram 2-4 picos de velocidade.
+A entropia aqui mede o quão imprevisível é o caminho. Os sistemas de detecção dividem a trajetória em segmentos, medem a mudança de direção em cada ponto e calculam a entropia de Shannon sobre a distribuição dessas mudanças. Uma linha reta tem entropia zero; uma caminhada aleatória tem entropia máxima; o movimento humano fica no meio, combinando intenção com variabilidade involuntária. Entropia baixa em muitos movimentos numa sessão é um forte sinal de bot, mesmo quando os movimentos individuais parecem plausivelmente curvos.
 
-**Sem overshoot.** Humanos frequentemente ultrapassam o alvo ligeiramente (por 5-15 pixels) e fazem uma pequena correção de volta. Movimentos perfeitamente precisos que acertam exatamente no alvo toda vez são estatisticamente improváveis.
+### Como o Pydoll humaniza o mouse
 
-### Entropia de Movimento
-
-Entropia, neste contexto, mede a imprevisibilidade do caminho do mouse. Sistemas de detecção dividem a trajetória em segmentos, medem a mudança de direção em cada ponto e calculam a entropia de Shannon sobre a distribuição de mudanças de direção. Uma linha reta tem entropia zero (cada segmento aponta na mesma direção). Uma caminhada aleatória tem entropia máxima. O movimento humano tem entropia moderada a alta, refletindo a combinação de direção intencional e variabilidade involuntária.
-
-Entropia baixa em muitos movimentos de mouse em uma sessão é um sinal forte de bot, mesmo que movimentos individuais tenham curvatura plausível.
-
-### Humanização de Mouse do Pydoll
-
-O Pydoll implementa humanização abrangente do mouse através do parâmetro `humanize=True` em operações de clique. Quando habilitado, o módulo de mouse gera movimentos que abordam cada um dos vetores de detecção descritos acima:
-
-O caminho segue uma curva Bezier cúbica com pontos de controle aleatorizados, produzindo curvatura natural em vez de linhas retas. A velocidade ao longo do caminho segue um perfil de jerk mínimo (`10t^3 - 15t^4 + 6t^5`), produzindo a curva de velocidade em forma de sino que a Lei de Fitts prevê. A duração do movimento é calculada usando a Lei de Fitts com constantes configuráveis (`a=0.070`, `b=0.150` por padrão).
-
-Tremor fisiológico é simulado adicionando ruído Gaussiano às posições do cursor, com amplitude inversamente proporcional à velocidade (tremor é mais visível quando a mão se move lentamente, o que corresponde à fisiologia real). Overshoot ocorre com 70% de probabilidade, ultrapassando o alvo em 3-12% da distância total antes de fazer um movimento de correção. Micro-pausas (15-40ms) ocorrem com 3% de probabilidade durante o movimento, simulando hesitações breves.
+Com `humanize=True`, o Pydoll gera movimentos que respondem a cada um dos indícios acima. O caminho segue uma curva de Bezier cúbica com pontos de controle aleatorizados, então ele curva em vez de correr reto. A velocidade ao longo dele segue o perfil de mínimo jerk (`10t^3 - 15t^4 + 6t^5`), gerando a curva em formato de sino que a Lei de Fitts prevê, e a duração é calculada a partir da própria Lei de Fitts. O tremor fisiológico é adicionado como ruído de posição escalado inversamente à velocidade (mais visível quando o cursor se move devagar, combinando com a fisiologia real), o overshoot acontece com uma probabilidade definida antes de uma correção, e micropausas ocasionais simulam breves hesitações.
 
 ```python
-# Clique humanizado básico
 await element.click(humanize=True)
-
-# A classe Mouse também pode ser usada diretamente para mais controle
-from pydoll.interactions.mouse import Mouse
-
-mouse = Mouse(connection_handler)
-await mouse.click(500, 300, humanize=True)
+await tab.mouse.click(500, 300, humanize=True)   # forma com coordenadas
 ```
 
-!!! note "O que o Pydoll Não Faz"
-    A humanização de mouse do Pydoll atualmente não modela sub-movimentos para distâncias muito longas (o caminho é um único segmento Bezier). Para a maioria das interações web, onde distâncias são menores que 500 pixels, isso é suficiente. Movimentos extremamente longos (travessias diagonais de tela inteira) podem se beneficiar de suporte futuro a múltiplos segmentos.
+O modelo de timing é configurável através de `MouseTimingConfig` atribuído a `tab.mouse.timing`. Veja [Human-like interactions](../../stealth/human-like-interactions.md) para o guia prático.
 
-## Dinâmica de Digitação
+!!! note "O que isto não modela"
+    O caminho do mouse do Pydoll é um único segmento de Bezier; ele não divide movimentos muito longos em múltiplos submovimentos. Para interações web típicas (abaixo de cerca de 500 pixels) isso é suficiente. Travessias diagonais de tela cheia são o caso em que os submovimentos importariam.
 
-A dinâmica de digitação analisa os padrões de tempo da entrada do teclado. A técnica remonta aos operadores de telégrafo na década de 1850, que podiam identificar uns aos outros pelo "punho" do código Morse (padrão de tempo característico). Sistemas modernos medem o tempo com precisão de milissegundos através de eventos `keydown` e `keyup`.
+## Dinâmica de digitação
 
-### Características de Tempo
+A dinâmica de digitação analisa o timing da entrada do teclado. A ideia é antiga: na década de 1850, os operadores de telégrafo reconheciam uns aos outros pelo seu "fist" no Morse, um padrão característico de timing. Os sistemas modernos medem a mesma coisa com precisão de milissegundos através dos eventos `keydown` e `keyup`.
 
-As duas medições fundamentais são tempo de permanência (a duração entre `keydown` e `keyup` para uma única tecla, tipicamente 50-200ms para humanos) e tempo de voo (a duração entre soltar uma tecla e pressionar a próxima, tipicamente 80-400ms). A combinação de tempos de permanência e voo para pares de teclas consecutivas é chamada de latência de digrafo.
+### Características de timing
 
-Latências de digrafo não são uniformes. Elas dependem do par de teclas específico (bigrama) sendo digitado, porque digitação é uma habilidade motora onde sequências comuns são armazenadas como memória procedural. Os fatores biomecânicos chave são:
+As duas medições fundamentais são o dwell time (do `keydown` ao `keyup` numa mesma tecla, geralmente de 50 a 200ms) e o flight time (de soltar uma tecla até pressionar a próxima, geralmente de 80 a 400ms). O dwell e o flight de um par consecutivo de teclas é uma latência de dígrafo, e ela não é uniforme, porque digitar é uma habilidade motora em que as sequências comuns residem na memória procedural:
 
-**Alternância de mãos.** Bigramas digitados com mãos alternadas (como "th", onde "t" é mão esquerda e "h" é mão direita no QWERTY) são geralmente mais rápidos que bigramas da mesma mão (como "de", onde ambas as teclas são na mão esquerda). A mão alternada pode começar seu movimento enquanto a primeira mão ainda está completando sua tecla.
+- **Alternância de mãos.** Bigramas digitados com mãos alternadas (como "th" no QWERTY) são mais rápidos do que os de mesma mão (como "de"), porque a segunda mão começa a se mover enquanto a primeira ainda está terminando.
+- **Deslocamento dos dedos.** Transições de home-row para home-row são as mais rápidas; alcançar a linha de cima ou de baixo custa tempo proporcional à distância.
+- **Independência dos dedos.** Combinações de anelar e mindinho são mais lentas do que de indicador e médio, porque esses dedos compartilham tendões e se movem com menos independência.
+- **Frequência.** Bigramas digitados com frequência ("th", "er", "in") saem mais rápido da memória motora, independentemente do layout.
 
-**Distância dos dedos.** Transições de tecla inicial para tecla inicial são mais rápidas. Alcançar a fileira superior ou inferior adiciona tempo proporcional à distância física que o dedo deve percorrer.
+### Sinais de detecção
 
-**Independência dos dedos.** Combinações de dedo anelar e mínimo na mesma mão são mais lentas que combinações de indicador e médio, porque o anelar e o mínimo compartilham tendões e têm menos controle motor independente.
+- **Dwell time zero ou constante.** Muitas ferramentas disparam `keydown` e `keyup` com atraso quase nulo; pressionamentos reais têm dwell mensurável e variável.
+- **Flight time uniforme.** Um intervalo fixo entre as teclas produz um timing perfeitamente regular, trivial de detectar. Os flight times humanos variam por bigrama, fadiga e carga.
+- **Ausência de erros de digitação.** Em mais de 50 caracteres, uma ausência total de backspace é incomum; humanos erram em torno de 1 a 5%.
+- **Velocidade sobre-humana.** Digitação sustentada acima de 150 WPM está além de todos, exceto os digitadores de elite, então qualquer coisa mais rápida é marcada.
 
-**Efeitos de frequência.** Bigramas frequentemente digitados (como "th", "er", "in" em inglês) são executados mais rapidamente devido à memória motora, independentemente de seu layout físico.
+### Como o Pydoll humaniza a digitação
 
-### Sinais de Detecção
-
-Sistemas de detecção procuram vários sinais que distinguem digitação humana de automação:
-
-**Tempo de permanência zero ou constante.** Muitas ferramentas de automação despacham eventos `keydown` e `keyup` com atraso zero ou quase zero entre eles (menos de 5ms). Pressionamentos reais de teclas têm tempos de permanência mensuráveis. Tempo de permanência constante em todas as teclas é igualmente suspeito.
-
-**Tempo de voo uniforme.** Definir um intervalo fixo entre teclas (como `type_text("hello", interval=0.1)`) produz tempo perfeitamente regular que é trivialmente detectável. Tempos de voo humanos variam por bigrama, fadiga e carga cognitiva.
-
-**Sem erros de digitação.** Em entrada de texto extensa (50+ caracteres), a ausência completa de pressionamentos de backspace ou delete é incomum. Humanos cometem erros a uma taxa de aproximadamente 1-5% dependendo da proficiência de digitação e complexidade do texto.
-
-**Velocidade sobre-humana.** Digitação sustentada acima de 150 WPM está além da capacidade de todos exceto digitadores competitivos de elite. Ferramentas de automação que despacham caracteres mais rápido que isso são imediatamente sinalizadas.
-
-### Humanização de Teclado do Pydoll
-
-O `type_text(humanize=True)` do Pydoll aborda cada vetor de detecção com parâmetros configuráveis:
-
-Atrasos entre teclas são extraídos de uma distribuição uniforme (30-120ms por padrão) em vez de um intervalo fixo. Caracteres de pontuação (`.!?;:,`) recebem atraso adicional (80-180ms), simulando a pausa que ocorre quando um digitador considera a estrutura da frase. Pausas de pensamento (300-700ms) ocorrem com 2% de probabilidade, simulando breves momentos de reflexão. Pausas de distração (500-1200ms) ocorrem com 0.5% de probabilidade, simulando o digitador desviando o olhar ou sendo brevemente interrompido.
-
-Erros de digitação realistas ocorrem com aproximadamente 2% de probabilidade por caractere, com cinco tipos de erro distintos ponderados por sua frequência no mundo real: erros de tecla adjacente (55%, pressionar uma tecla vizinha no QWERTY), transposições (20%, trocar dois caracteres consecutivos), pressionamentos duplos (12%, pressionar uma tecla duas vezes), caracteres pulados (8%, hesitar antes de digitar corretamente) e espaços esquecidos (5%, esquecer um espaço entre palavras). Cada tipo de erro inclui uma sequência de recuperação realista (pausa, backspace, correção) com tempo apropriado.
+Com `type_text(humanize=True)`, os atrasos entre as teclas são extraídos de uma distribuição, e não de um intervalo fixo. A pontuação recebe um atraso extra, simulando a pausa que um digitador faz na estrutura da frase; pausas ocasionais de reflexão e pausas de distração mais raras simulam momentos de pensamento ou interrupção. Erros de digitação realistas ocorrem em torno de 2% por caractere ao longo de cinco tipos de erro ponderados pela frequência no mundo real (tecla adjacente, transposição, pressionamento duplo, caractere pulado, espaço perdido), cada um seguido por uma sequência natural de correção.
 
 ```python
-# Digitação humanizada
-await element.type_text("Hello, world!", humanize=True)
-
-# Com configuração de tempo personalizada
-from pydoll.interactions.keyboard import Keyboard, TimingConfig, TypoConfig
-
-config = TimingConfig(
-    keystroke_min=0.04,
-    keystroke_max=0.15,
-    thinking_probability=0.03,
-)
-keyboard = Keyboard(connection_handler, timing_config=config)
-await keyboard.type_text("Custom timing example", humanize=True)
+await element.type_text('Hello, world!', humanize=True)
 ```
 
-!!! note "O que o Pydoll Não Faz"
-    A humanização de teclado do Pydoll usa atrasos aleatórios uniformes em vez de temporização ciente de bigramas. Não modela variação de tempo de permanência por tecla ou diferenças de velocidade de alternância de mãos. Para a maioria dos cenários de automação (preenchimento de formulários, consultas de busca), variação uniforme é suficiente para passar na detecção comportamental. Aplicações que requerem evasão de biometria de digitação em nível de autenticação precisariam de modelos de tempo personalizados.
+Veja [Human-like interactions](../../stealth/human-like-interactions.md) para saber como ajustá-lo.
 
-## Análise de Comportamento de Scroll
+!!! note "O que isto não modela"
+    O Pydoll usa atrasos aleatórios variáveis, não um timing consciente de bigramas, e não modela o dwell por tecla nem as diferenças de alternância de mãos. Para preenchimento de formulários e consultas de busca isso é suficiente. Evadir biometria de digitação de nível de autenticação exigiria um modelo de timing customizado.
 
-O fingerprinting de scroll analisa como os usuários navegam verticalmente (e horizontalmente) pelo conteúdo da página. A distinção entre scroll humano e automatizado é marcante: chamadas programáticas `window.scrollTo()` produzem saltos instantâneos e discretos, enquanto scroll humano via roda do mouse, trackpad ou toque produz um fluxo de pequenos eventos incrementais com momentum e desaceleração.
+## Comportamento de rolagem
 
-### Características Físicas do Scroll
+O fingerprinting de rolagem analisa como um usuário se move pelo conteúdo da página. Um `window.scrollTo()` programático é um salto instantâneo e discreto, enquanto uma rolagem humana (roda, trackpad ou toque) é um fluxo de pequenos eventos incrementais com momentum e desaceleração.
 
-Scroll por roda do mouse produz eventos `wheel` discretos com valores de delta consistentes (tipicamente 100 ou 120 pixels por notch, dependendo do SO e navegador). Os eventos chegam em intervalos irregulares refletindo quão rapidamente o usuário gira a roda. Scroll por trackpad produz muitos eventos pequenos com deltas decrescentes, simulando momentum físico. Scroll por toque é similar ao trackpad mas com deltas iniciais maiores e caudas de desaceleração mais longas.
+As rodas do mouse produzem eventos `wheel` discretos com deltas consistentes (frequentemente 100 ou 120 pixels por entalhe) em intervalos irregulares. Os trackpads produzem muitos eventos pequenos com deltas decrescentes que simulam momentum. O toque é parecido, com deltas iniciais maiores e uma cauda de desaceleração mais longa. Os sistemas de detecção leem a distribuição dos deltas, o timing entre eventos e a curva de desaceleração, e procuram por:
 
-Sistemas de detecção analisam a distribuição de delta, timing entre eventos e curva de desaceleração. Uma chamada `scrollTo(0, 5000)` produz um único salto sem eventos intermediários, que é fundamentalmente diferente das centenas de eventos incrementais que um scroll humano gera.
+- **Rolagem instantânea.** `scrollTo`/`scrollBy` com valores grandes muda a posição de rolagem num único frame, sem eventos intermediários.
+- **Deltas uniformes.** Valores de delta constantes não têm a variação de 10 a 30% da rolagem real.
+- **Ausência de desaceleração.** A rolagem humana, especialmente em trackpads, continua se movendo depois que o dedo levanta, com velocidade decrescendo exponencialmente. Uma automação que para bruscamente não tem cauda.
+- **Ausência de mudanças de direção.** Humanos rolam demais e corrigem, ou pausam para ler. Rolagem unidirecional em velocidade constante é suspeita.
 
-### Sinais de Detecção
-
-**Scroll instantâneo.** Usar `window.scrollTo()` ou `window.scrollBy()` com valores grandes produz zero eventos de scroll intermediários. Sistemas de detecção que escutam eventos `scroll` veem a posição de scroll mudar em um único frame.
-
-**Deltas uniformes.** Simulação programática de scroll que despacha eventos wheel com valores de delta constantes (ex: sempre 100 pixels) carece da variação natural no scroll humano, onde valores de delta flutuam em 10-30% devido à pressão inconsistente dos dedos.
-
-**Sem desaceleração.** Scroll humano, especialmente em trackpads, tem uma fase de momentum onde o scroll continua após o usuário levantar o dedo, com velocidade exponencialmente decrescente. Scroll automatizado que para abruptamente carece dessa cauda de desaceleração.
-
-**Ausência de mudanças de direção.** Humanos frequentemente scrollam demais e scrollam de volta ligeiramente, ou pausam no meio de uma página para ler conteúdo. Scroll automatizado que se move em uma direção com velocidade constante sem pausas ou reversões é suspeito.
-
-### Humanização de Scroll do Pydoll
-
-O módulo de scroll do Pydoll implementa scroll humanizado através de `scroll.by(position, distance, humanize=True)`:
-
-O scroll segue uma curva de easing Bezier cúbica (pontos de controle `0.645, 0.045, 0.355, 1.0` por padrão), produzindo aceleração e desaceleração naturais. Jitter por frame de ±3 pixels adiciona variação aos valores de delta. Micro-pausas (20-50ms) ocorrem com 5% de probabilidade, simulando paradas breves de leitura. Overshoot ocorre com 15% de probabilidade, scrollando 2-8% além do alvo e corrigindo de volta. Para grandes distâncias, o scroll é dividido em múltiplos gestos de "flick" (100-1200 pixels cada), simulando como um usuário real scrolla por uma página longa com deslizes repetidos em vez de um único movimento contínuo.
+A rolagem humanizada do Pydoll responde a esses pontos: ela segue uma curva de easing de Bezier para aceleração e desaceleração naturais, adiciona jitter por frame aos deltas, insere micropausas ocasionais, às vezes ultrapassa e corrige, e quebra distâncias longas em múltiplos gestos de "flick" em vez de um movimento contínuo.
 
 ```python
-from pydoll.interactions.scroll import Scroll, ScrollPosition
+from pydoll.constants import ScrollPosition
 
-scroll = Scroll(connection_handler)
-
-# Scroll humanizado para baixo 800 pixels
-await scroll.by(ScrollPosition.Y, 800, humanize=True)
-
-# Scroll até o topo/fundo usa múltiplos flicks semelhantes a humanos
-await scroll.to_bottom(humanize=True)
+await tab.scroll.by(ScrollPosition.DOWN, 800, humanize=True)
 ```
 
-## Vetores de Detecção Adicionais
+## Outros sinais comportamentais
 
-Além da análise de mouse, teclado e scroll, sistemas de detecção sofisticados monitoram vários outros sinais comportamentais.
+Além de mouse, teclado e rolagem, alguns sistemas observam vários outros sinais.
 
-### Foco e Visibilidade
+**Foco e visibilidade.** A Page Visibility API (`document.visibilityState`) e os eventos de foco revelam se o usuário está visualizando a página ativamente. Uma sessão real tem trocas de aba, minimizações e períodos ociosos; um script que mantém foco contínuo por horas sem um único blur é anômalo.
 
-A API de Visibilidade de Página (`document.visibilityState`) e eventos de foco (`window.onfocus`, `window.onblur`) revelam se o usuário está ativamente visualizando a página. Uma sessão de usuário real inclui trocas de aba, minimizações de janela e períodos de inatividade. Um script de automação que mantém foco contínuo por horas sem um único evento blur é comportamentalmente anômalo. Da mesma forma, `document.hasFocus()` retornando `true` continuamente por períodos prolongados é incomum.
+**Padrões de ociosidade.** Usuários reais pausam para ler e pensar. Uma sessão em que cada ação segue a anterior dentro de 100 a 500ms, sem intervalos mais longos, é estatisticamente distinta da navegação humana, na qual ociosidades de 2 a 30 segundos são normais.
 
-### Padrões de Inatividade
+**Integridade da sequência de eventos.** Um clique real produz `pointerdown`, `mousedown`, `pointerup`, `mouseup`, `click` em ordem, precedido por eventos de movimento aproximando-se do alvo. Ferramentas que disparam um `click` cru sem nenhum movimento anterior são detectáveis. O Pydoll dispara a entrada através da própria simulação de entrada do Chrome via CDP, então ele gera a mesma cadeia completa de eventos que a entrada real.
 
-Usuários reais têm períodos naturais de inatividade: lendo conteúdo, pensando antes de agir, sendo distraídos. Sistemas de detecção medem a distribuição de tempos de inatividade entre interações. Uma sessão onde cada ação segue a anterior dentro de 100-500ms sem pausas mais longas segue um padrão que é estatisticamente distinto da navegação humana, onde períodos de inatividade de 2-30 segundos entre ações são normais.
+## Detecção por machine learning
 
-### Integridade de Sequência de Eventos
+Os sistemas anti-bot modernos (DataDome, Akamai Bot Manager, Cloudflare Bot Management, HUMAN Security) não dependem de regras de limiar. Eles treinam modelos em milhões de sessões reais e de bots conhecidos, aprendendo a separá-las por mais de 50 características ao mesmo tempo: a distribuição conjunta de velocidade e curvatura, a correlação entre velocidade de digitação e taxa de erro, a relação entre profundidade de rolagem e tempo de leitura, o ritmo geral de uma sessão. Uma execução que passa em cada checagem individual mas tem correlações sutilmente erradas entre as características ainda pode ser marcada.
 
-Navegadores geram sequências de eventos específicas para interações do usuário. Um clique de mouse produz `pointerdown`, `mousedown`, `pointerup`, `mouseup`, `click` nessa ordem, precedido por eventos `pointermove`/`mousemove` mostrando o cursor se aproximando do alvo do clique. Ferramentas de automação que despacham um evento `click` sem o movimento precedente e eventos de ponteiro são detectáveis através de análise de sequência de eventos.
+A consequência prática é que o realismo comportamental precisa ser consistente entre os tipos de interação, não apenas plausível um de cada vez. O `humanize=True` do Pydoll dá uma camada de humanização coerente entre mouse, teclado e rolagem, mas a plausibilidade de nível mais alto ainda é sua: adicione atrasos de leitura entre carregamentos de página, varie o ritmo de um fluxo de múltiplas páginas e inclua períodos ociosos naturais.
 
-O despacho de eventos baseado em CDP do Pydoll gera sequências completas de eventos porque usa a simulação de entrada do Chrome, que produz a mesma cadeia de eventos que entrada real do usuário.
+## Relacionado
 
-## Detecção por Machine Learning
-
-Sistemas anti-bot modernos (DataDome, Akamai Bot Manager, Cloudflare Bot Management, PerimeterX/HUMAN Security) não usam regras de limiar simples. Eles treinam modelos de machine learning em milhões de sessões de usuários reais e milhões de sessões de bots conhecidos, aprendendo a distinguir humanos de automação com base em 50+ características simultaneamente.
-
-Esses modelos capturam propriedades estatísticas difíceis de enumerar como regras individuais: a distribuição conjunta de velocidade de movimento e curvatura, a correlação entre velocidade de digitação e taxa de erro, a relação entre profundidade de scroll e tempo de leitura, e o "ritmo" geral de uma sessão de navegação. Um sistema que passa em cada verificação individual mas tem correlações sutilmente erradas entre características ainda pode ser sinalizado por um modelo bem treinado.
-
-A implicação prática é que a evasão comportamental deve ser consistente em todos os tipos de interação, não apenas individualmente plausível. O parâmetro `humanize=True` do Pydoll fornece uma camada de humanização coerente entre interações de mouse, teclado e scroll, mas o desenvolvedor ainda é responsável pela plausibilidade comportamental de nível mais alto: adicionar atrasos de leitura entre carregamentos de página, variar o ritmo de workflows de múltiplas páginas e incluir períodos naturais de inatividade.
+- [Network fingerprinting](network-fingerprinting.md): a camada de protocolo (TCP/IP, TLS, HTTP/2).
+- [Browser fingerprinting](browser-fingerprinting.md): canvas, WebGL, fontes e navigator.
+- [Human-like interactions](../../stealth/human-like-interactions.md): o guia prático para `humanize=True`.
 
 ## Referências
 

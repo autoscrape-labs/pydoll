@@ -4,7 +4,7 @@ Preferences are the settings that live inside a Chromium profile: the download f
 
 Preferences are not the same as [command-line arguments](browser-options.md). Arguments are flags passed to the Chromium binary at launch (`--headless`, `--proxy-server`); preferences are entries in the profile's settings, the same ones the Settings UI writes. Use arguments for how the process starts, and preferences for how the profile behaves.
 
-## Set common preferences
+## Set common preferences {#set-common-preferences}
 
 The everyday preferences have helper methods and properties, so you set them without memorizing Chromium's internal keys or magic numbers.
 
@@ -70,7 +70,7 @@ Chromium documents preferences as dotted paths (for example `download.default_di
 !!! note "Do not wrap it in `prefs`"
     Assign the preference tree directly. Wrapping it in a top-level `{'prefs': {...}}` key raises an error; the helpers and the dict both expect the real paths at the top level.
 
-## Build a realistic profile for stealth
+## Build a realistic profile for stealth {#build-a-realistic-profile-for-stealth}
 
 Anti-bot systems read the profile, not just the page. A fresh, empty profile with every convenience feature disabled looks nothing like a real user, so preferences are a lever for looking normal. The guiding idea runs opposite to most privacy advice:
 

@@ -2,7 +2,7 @@
 
 Pydoll drives the mouse two ways: through an element you found, which is what you want most of the time, or at raw page coordinates when you need precise positions. Both support `humanize=True`, which moves the cursor along a curved, human-timed path instead of teleporting to the target.
 
-<iframe src="../mouse-humanize.html" aria-label="Humanized curved cursor path versus an instant robotic jump" style="width: 100%; height: 345px; border: 0;" loading="lazy"></iframe>
+<iframe src="/docs/resources/visuals/mouse-humanize.html" aria-label="Humanized curved cursor path versus an instant robotic jump" style="width: 100%; height: 345px; border: 0;" loading="lazy"></iframe>
 
 ## Click an element
 
@@ -109,7 +109,7 @@ await (await tab.find(id='second')).click(humanize=True)
 
 See [Human-like interactions](../stealth/human-like-interactions.md) for the full timing model and when humanization matters.
 
-### Tune the timing
+### Tune the timing {#tune-the-timing}
 
 The humanized physics are configurable through `MouseTimingConfig`. Assign a new config to `tab.mouse.timing`:
 
@@ -141,7 +141,7 @@ tab.mouse.debug = False
 
 ## Practical examples
 
-### Drag a slider
+### Drag a slider {#drag-a-slider}
 
 Read the handle's position from its bounds, then drag from there:
 
