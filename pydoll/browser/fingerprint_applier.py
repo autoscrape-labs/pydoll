@@ -25,6 +25,8 @@ from pydoll.utils.fingerprint_builder import build_fingerprint_js, build_fingerp
 if TYPE_CHECKING:
     from pydoll.browser.tab import Tab
     from pydoll.protocol.base import Command
+    from pydoll.protocol.emulation.methods import GetScreenInfosResponse
+    from pydoll.protocol.emulation.types import WorkAreaInsets
     from pydoll.protocol.fingerprint.types import FingerprintConfig, ScreenFingerprint
     from pydoll.protocol.target.methods import GetTargetInfoResponse
     from pydoll.utils.user_agent_parser import ParsedUserAgent
@@ -132,6 +134,7 @@ class FingerprintApplier:
             )
         if 'screen' in fingerprint:
             await self._apply_device_metrics(fingerprint['screen'], mobile=mobile)
+            await self._apply_headless_screen(fingerprint['screen'])
         if 'hardware' in fingerprint and 'hardware_concurrency' in fingerprint['hardware']:
             await tab._execute_command(
                 EmulationCommands.set_hardware_concurrency_override(
@@ -449,9 +452,7 @@ class FingerprintApplier:
             )
         )
 
-    async def _apply_device_metrics(
-        self, screen: ScreenFingerprint, mobile: bool = False
-    ) -> None:
+    async def _apply_device_metrics(self, screen: ScreenFingerprint, mobile: bool = False) -> None:
         """Apply device metrics override from screen fingerprint config.
 
         When ``inner_width`` / ``inner_height`` are omitted, the layout-size
@@ -489,3 +490,105 @@ class FingerprintApplier:
                 screen_orientation=screen_orientation,
             )
         )
+
+    async def _apply_headless_screen(self, screen: 'ScreenFingerprint') -> None:
+        """Match the browser-global headless virtual screen to the fingerprint.
+
+        Headless Chrome has a single hardcoded virtual screen (800x600,
+        colorDepth 24, no work area). ``setDeviceMetricsOverride`` is session
+        scoped, so cross-origin iframes (OOPIFs) never see it and read that raw
+        800x600 / ``availTop 0`` screen, contradicting the page's own overridden
+        ``window.screen`` and betraying headless. ``Emulation.updateScreen``
+        targets the browser-global device, so every frame - top page and OOPIFs -
+        reads one coherent desktop. Unsupported outside headless, so this no-ops
+        there (guarded, and defensive against an error response).
+
+        Two constraints are inherent to the headless one-screen model:
+
+        - The device is browser-global. Applying two screen-distinct
+          fingerprints to one headless browser (even in separate contexts) makes
+          the last one win globally, so an earlier tab's OOPIFs read the other
+          identity's screen. Use one browser process per screen-distinct identity.
+        - The virtual screen only accepts an INTEGER device pixel ratio. A
+          fractional dpr (Windows display scaling, mobile) is rounded for the
+          screen, so size / colorDepth / work-area stay coherent in OOPIFs while
+          the OOPIF ``devicePixelRatio`` becomes that rounded value; the top page
+          keeps the exact dpr via ``setDeviceMetricsOverride``.
+
+        Sizes and work-area insets are physical pixels (CSS = physical / dpr).
+        """
+        if not self._is_headless():
+            return
+        tab = self._tab
+        with suppress(CommandExecutionTimeout, WebSocketConnectionClosed):
+            response: GetScreenInfosResponse = await tab._execute_command(
+                EmulationCommands.get_screen_infos()
+            )
+            screen_id = self._primary_screen_id(response)
+            if screen_id is None:
+                return
+            dpr = screen.get('device_pixel_ratio') or 1.0
+            screen_dpr = max(1, round(dpr))
+            await tab._execute_command(
+                EmulationCommands.update_screen(
+                    screen_id,
+                    width=screen['width'] * screen_dpr,
+                    height=screen['height'] * screen_dpr,
+                    device_pixel_ratio=screen_dpr,
+                    color_depth=screen.get('color_depth'),
+                    work_area_insets=self._work_area_insets(screen, screen_dpr),
+                )
+            )
+
+    def _is_headless(self) -> bool:
+        """Whether this tab's browser was launched headless."""
+        options = getattr(self._tab._browser, 'options', None)
+        if options is None:
+            return False
+        if getattr(options, 'headless', False):
+            return True
+        arguments = getattr(options, 'arguments', None) or []
+        return any('--headless' in argument for argument in arguments)
+
+    @staticmethod
+    def _primary_screen_id(response: 'GetScreenInfosResponse') -> Optional[str]:
+        """Pick the primary screen id from a getScreenInfos response.
+
+        Returns ``None`` when the response carries no screens (e.g. an error
+        response returned outside headless), so the caller skips the update.
+        """
+        try:
+            screens = response['result']['screenInfos']
+        except (KeyError, TypeError):
+            return None
+        if not screens:
+            return None
+        for candidate in screens:
+            if candidate.get('isPrimary'):
+                return candidate.get('id')
+        return screens[0].get('id')
+
+    @staticmethod
+    def _work_area_insets(screen: 'ScreenFingerprint', dpr: int) -> Optional['WorkAreaInsets']:
+        """Build physical-pixel work-area insets from the fingerprint's avail_*.
+
+        The vertical gap ``height - avail_height`` is reserved at ``avail_top``
+        (menu bar) with the remainder at the bottom (dock); the horizontal gap
+        defaults entirely to the right of ``avail_left``. Each offset is clamped to
+        ``[0, gap]``, so an ``avail_top`` without a matching ``avail_height`` cannot
+        reserve absent space, and a negative ``avail_top``/``avail_left`` cannot
+        produce a negative inset. Returns ``None`` when there is no gap (nothing to
+        reserve).
+        """
+        width, height = screen['width'], screen['height']
+        vertical_gap = max(0, height - screen.get('avail_height', height))
+        horizontal_gap = max(0, width - screen.get('avail_width', width))
+        top = max(0, min(screen.get('avail_top', vertical_gap), vertical_gap))
+        left = max(0, min(screen.get('avail_left', 0), horizontal_gap))
+        insets: 'WorkAreaInsets' = {
+            'top': top * dpr,
+            'bottom': (vertical_gap - top) * dpr,
+            'left': left * dpr,
+            'right': (horizontal_gap - left) * dpr,
+        }
+        return insets if any(insets.values()) else None
