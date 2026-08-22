@@ -2628,6 +2628,12 @@
       
         
       
+        
+      
+        
+      
+        
+      
     
     
     
@@ -2755,6 +2761,90 @@
     
   
     行为指纹识别
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deep-dive/fingerprinting/spoofing-limits/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    伪造的极限
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deep-dive/fingerprinting/auditing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    审计一个 fingerprint
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deep-dive/fingerprinting/cloudflare-challenge/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cloudflare 的托管挑战
   
 
     
@@ -3793,6 +3883,7 @@
 <li>User-Agent 中的 Chrome 版本 = 真实二进制文件的版本。让 <code>CHROME_DESKTOP</code> / <code>CHROME_MOBILE</code> 等于 <code>browser.get_version()</code> 给出的主版本号，并在每次 Chrome 升级时更新它们（<a href="#case-study-a-chrome-version-mismatch-triggering-cloudflares-challenge">Chrome 版本不匹配</a>）。</li>
 <li>Locale、时区和地理位置 = 出口 IP 所在国家。<code>Accept-Language</code> 和时区会与 IP 做交叉比对（<a href="#case-study-a-locale-mismatch-triggering-googles-captcha">Locale/IP 不匹配</a>）。</li>
 <li>WebGL vendor/renderer = 主机的 GPU 系列（Apple 硬件上就用 Apple 的 renderer，以此类推）。渲染出的像素来自真实的 GPU，无法伪造。</li>
+<li>Color-gamut = 主机显示器（宽色域或 Apple 显示器用 <code>p3</code>，标准显示器用 <code>srgb</code>）。<code>dynamic-range</code> 无法通过 CDP 模拟，所以它必须自己与主机相匹配；不要想当然地认为某个色域就意味着某个 dynamic-range。</li>
 <li>在第一次导航之前应用 fingerprint。</li>
 <li>每个浏览器 context 一个身份；不同的身份使用不同的 context（<a href="#multiple-fingerprints-across-contexts">跨 context 使用多个 fingerprint</a>）。</li>
 <li>不要把 <code>--user-agent</code> 选项和 <code>apply_fingerprint()</code> 结合使用；User-Agent 由 fingerprint 掌管。</li>
@@ -3834,9 +3925,14 @@
 <td><code>navigator.hardwareConcurrency</code></td>
 <td><code>Emulation.setHardwareConcurrencyOverride</code></td>
 </tr>
+<tr>
+<td>CSS 媒体特性（<code>color-gamut</code>、<code>prefers-color-scheme</code>、<code>forced-colors</code> 等）</td>
+<td><code>Emulation.setEmulatedMedia</code></td>
+</tr>
 </tbody>
 </table>
 <p><code>hardwareConcurrency</code> 说明了其中的差别：一个 JavaScript getter 是可检测的（见下文），而 <code>Emulation.setHardwareConcurrencyOverride</code> 会改变这个值，同时让 getter 保持原生。</p>
+<p>CSS 媒体特性以同样的方式工作，通过 profile 的 <code>media_features</code> 字段来设置，所以 <code>window.matchMedia</code> 仍然返回一个真实的结果。Chrome 只原生模拟其中六个（<code>color-gamut</code>、<code>prefers-color-scheme</code>、<code>prefers-contrast</code>、<code>forced-colors</code>、<code>prefers-reduced-motion</code>、<code>prefers-reduced-transparency</code>）；<a href="../../deep-dive/fingerprinting/spoofing-limits/">伪造的极限</a> 解释了为什么其余的那些无法在不产生矛盾的情况下被伪造。</p>
 <h3 id="javascript">JavaScript 覆盖</h3>
 <p>CDP 触及不到的信号，由一段在每个新文档上、先于任何页面脚本注入的脚本来设置，并在 Web Worker 中重放。这涵盖了：</p>
 <ul>
@@ -4031,6 +4127,7 @@
 <ul>
 <li><a href="../evasion-techniques/">规避技术</a>：User-Agent 一致性、语言、WebRTC 泄露保护，以及 Pydoll 免费提供给你的部分。</li>
 <li><a href="../../deep-dive/fingerprinting/browser-fingerprinting/">浏览器指纹识别</a>：本页所覆盖的检测面（canvas、WebGL、navigator、字体）。</li>
+<li><a href="../../deep-dive/fingerprinting/spoofing-limits/">伪造的极限</a>：为什么有些信号可以安全地覆盖，而另一些则根本无法伪造。</li>
 <li><a href="../../deep-dive/fingerprinting/network-fingerprinting/">网络指纹识别</a>：注入无法触及的 TLS/TCP/HTTP2 层。</li>
 <li><a href="../../guides/browser-contexts/">浏览器上下文</a>：每个 context 运行一个身份。</li>
 <li><a href="../../guides/proxies/">Proxy</a>：让出口 IP 与 profile 的地理位置相匹配。</li>

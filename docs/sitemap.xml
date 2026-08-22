@@ -361,6 +361,14 @@
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/deep-dive/fingerprinting/"/>
     </url>
     <url>
+        <loc>https://pydoll.tech/docs/deep-dive/fingerprinting/auditing/</loc>
+        <lastmod>2026-08-22</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/fingerprinting/auditing/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/fingerprinting/auditing/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/deep-dive/fingerprinting/auditing/"/>
+    </url>
+    <url>
         <loc>https://pydoll.tech/docs/deep-dive/fingerprinting/behavioral-fingerprinting/</loc>
         <lastmod>2026-08-22</lastmod>
         <changefreq>daily</changefreq>
@@ -377,12 +385,28 @@
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/deep-dive/fingerprinting/browser-fingerprinting/"/>
     </url>
     <url>
+        <loc>https://pydoll.tech/docs/deep-dive/fingerprinting/cloudflare-challenge/</loc>
+        <lastmod>2026-08-22</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/fingerprinting/cloudflare-challenge/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/fingerprinting/cloudflare-challenge/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/deep-dive/fingerprinting/cloudflare-challenge/"/>
+    </url>
+    <url>
         <loc>https://pydoll.tech/docs/deep-dive/fingerprinting/network-fingerprinting/</loc>
         <lastmod>2026-08-22</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/fingerprinting/network-fingerprinting/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/fingerprinting/network-fingerprinting/"/>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/deep-dive/fingerprinting/network-fingerprinting/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/docs/deep-dive/fingerprinting/spoofing-limits/</loc>
+        <lastmod>2026-08-22</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/fingerprinting/spoofing-limits/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/fingerprinting/spoofing-limits/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/deep-dive/fingerprinting/spoofing-limits/"/>
     </url>
     <url>
         <loc>https://pydoll.tech/docs/deep-dive/network/</loc>
@@ -1025,6 +1049,14 @@
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/fingerprinting/"/>
     </url>
     <url>
+        <loc>https://pydoll.tech/docs/zh/deep-dive/fingerprinting/auditing/</loc>
+        <lastmod>2026-08-22</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/deep-dive/fingerprinting/auditing/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/fingerprinting/auditing/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/fingerprinting/auditing/"/>
+    </url>
+    <url>
         <loc>https://pydoll.tech/docs/zh/deep-dive/fingerprinting/behavioral-fingerprinting/</loc>
         <lastmod>2026-08-22</lastmod>
         <changefreq>daily</changefreq>
@@ -1041,12 +1073,28 @@
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/fingerprinting/browser-fingerprinting/"/>
     </url>
     <url>
+        <loc>https://pydoll.tech/docs/zh/deep-dive/fingerprinting/cloudflare-challenge/</loc>
+        <lastmod>2026-08-22</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/deep-dive/fingerprinting/cloudflare-challenge/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/fingerprinting/cloudflare-challenge/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/fingerprinting/cloudflare-challenge/"/>
+    </url>
+    <url>
         <loc>https://pydoll.tech/docs/zh/deep-dive/fingerprinting/network-fingerprinting/</loc>
         <lastmod>2026-08-22</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/deep-dive/fingerprinting/network-fingerprinting/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/fingerprinting/network-fingerprinting/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/fingerprinting/network-fingerprinting/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/docs/zh/deep-dive/fingerprinting/spoofing-limits/</loc>
+        <lastmod>2026-08-22</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/deep-dive/fingerprinting/spoofing-limits/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/fingerprinting/spoofing-limits/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/fingerprinting/spoofing-limits/"/>
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/deep-dive/network/</loc>
@@ -1689,6 +1737,14 @@
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/deep-dive/fingerprinting/"/>
     </url>
     <url>
+        <loc>https://pydoll.tech/docs/pt/deep-dive/fingerprinting/auditing/</loc>
+        <lastmod>2026-08-22</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/fingerprinting/auditing/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/fingerprinting/auditing/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/deep-dive/fingerprinting/auditing/"/>
+    </url>
+    <url>
         <loc>https://pydoll.tech/docs/pt/deep-dive/fingerprinting/behavioral-fingerprinting/</loc>
         <lastmod>2026-08-22</lastmod>
         <changefreq>daily</changefreq>
@@ -1705,12 +1761,28 @@
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/deep-dive/fingerprinting/browser-fingerprinting/"/>
     </url>
     <url>
+        <loc>https://pydoll.tech/docs/pt/deep-dive/fingerprinting/cloudflare-challenge/</loc>
+        <lastmod>2026-08-22</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/fingerprinting/cloudflare-challenge/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/fingerprinting/cloudflare-challenge/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/deep-dive/fingerprinting/cloudflare-challenge/"/>
+    </url>
+    <url>
         <loc>https://pydoll.tech/docs/pt/deep-dive/fingerprinting/network-fingerprinting/</loc>
         <lastmod>2026-08-22</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/fingerprinting/network-fingerprinting/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/fingerprinting/network-fingerprinting/"/>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/deep-dive/fingerprinting/network-fingerprinting/"/>
+    </url>
+    <url>
+        <loc>https://pydoll.tech/docs/pt/deep-dive/fingerprinting/spoofing-limits/</loc>
+        <lastmod>2026-08-22</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/fingerprinting/spoofing-limits/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/fingerprinting/spoofing-limits/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/deep-dive/fingerprinting/spoofing-limits/"/>
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/deep-dive/network/</loc>

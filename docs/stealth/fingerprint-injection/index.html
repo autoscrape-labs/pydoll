@@ -2626,6 +2626,12 @@
       
         
       
+        
+      
+        
+      
+        
+      
     
     
     
@@ -2753,6 +2759,90 @@
     
   
     Behavioral fingerprinting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deep-dive/fingerprinting/spoofing-limits/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The limits of spoofing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deep-dive/fingerprinting/auditing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Auditing a fingerprint
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deep-dive/fingerprinting/cloudflare-challenge/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cloudflare's managed challenge
   
 
     
@@ -3791,6 +3881,7 @@
 <li>User-Agent Chrome version = real binary version. Keep <code>CHROME_DESKTOP</code> / <code>CHROME_MOBILE</code> equal to the major from <code>browser.get_version()</code>, and update them on every Chrome upgrade (<a href="#case-study-a-chrome-version-mismatch-triggering-cloudflares-challenge">Chrome version mismatch</a>).</li>
 <li>Locale, timezone, and geolocation = egress IP country. <code>Accept-Language</code> and timezone are cross-referenced against the IP (<a href="#case-study-a-locale-mismatch-triggering-googles-captcha">Locale/IP mismatch</a>).</li>
 <li>WebGL vendor/renderer = host GPU family (an Apple renderer on Apple hardware, and so on). The rendered pixels come from the real GPU and cannot be forged.</li>
+<li>Color-gamut = host display (<code>p3</code> for a wide-gamut or Apple display, <code>srgb</code> for a standard monitor). <code>dynamic-range</code> is not emulable through CDP, so it must match the host on its own; do not assume a gamut implies a dynamic-range.</li>
 <li>Apply the fingerprint before the first navigation.</li>
 <li>One identity per browser context; use separate contexts for different identities (<a href="#multiple-fingerprints-across-contexts">Multiple fingerprints across contexts</a>).</li>
 <li>Do not combine the <code>--user-agent</code> option with <code>apply_fingerprint()</code>; the fingerprint owns the User-Agent.</li>
@@ -3832,9 +3923,14 @@
 <td><code>navigator.hardwareConcurrency</code></td>
 <td><code>Emulation.setHardwareConcurrencyOverride</code></td>
 </tr>
+<tr>
+<td>CSS media features (<code>color-gamut</code>, <code>prefers-color-scheme</code>, <code>forced-colors</code>, ...)</td>
+<td><code>Emulation.setEmulatedMedia</code></td>
+</tr>
 </tbody>
 </table>
 <p><code>hardwareConcurrency</code> illustrates the difference: a JavaScript getter is detectable (see below), while <code>Emulation.setHardwareConcurrencyOverride</code> changes the value with the getter staying native.</p>
+<p>CSS media features work the same way, set through the profile's <code>media_features</code> field so <code>window.matchMedia</code> keeps returning a genuine result. Chrome emulates only six natively (<code>color-gamut</code>, <code>prefers-color-scheme</code>, <code>prefers-contrast</code>, <code>forced-colors</code>, <code>prefers-reduced-motion</code>, <code>prefers-reduced-transparency</code>); <a href="../../deep-dive/fingerprinting/spoofing-limits/">The limits of spoofing</a> explains why the rest cannot be faked without a contradiction.</p>
 <h3 id="javascript-overrides">JavaScript overrides</h3>
 <p>Signals CDP cannot reach are set by a script injected before any page script on every new document, and replayed in Web Workers. This covers:</p>
 <ul>
@@ -4029,6 +4125,7 @@
 <ul>
 <li><a href="../evasion-techniques/">Evasion techniques</a>: User-Agent consistency, language, WebRTC leak protection, and what Pydoll gives you for free.</li>
 <li><a href="../../deep-dive/fingerprinting/browser-fingerprinting/">Browser fingerprinting</a>: the detection surface (canvas, WebGL, navigator, fonts) this page overrides.</li>
+<li><a href="../../deep-dive/fingerprinting/spoofing-limits/">The limits of spoofing</a>: why some signals are safe to override and others cannot be faked at all.</li>
 <li><a href="../../deep-dive/fingerprinting/network-fingerprinting/">Network fingerprinting</a>: the TLS/TCP/HTTP2 layer injection cannot reach.</li>
 <li><a href="../../guides/browser-contexts/">Browser contexts</a>: run one identity per context.</li>
 <li><a href="../../guides/proxies/">Proxies</a>: match the egress IP to the profile's geography.</li>

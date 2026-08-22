@@ -2630,6 +2630,12 @@
       
         
       
+        
+      
+        
+      
+        
+      
     
     
     
@@ -2757,6 +2763,90 @@
     
   
     Fingerprinting comportamental
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deep-dive/fingerprinting/spoofing-limits/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Os limites do spoofing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deep-dive/fingerprinting/auditing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Auditando um fingerprint
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deep-dive/fingerprinting/cloudflare-challenge/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    O managed challenge do Cloudflare
   
 
     
@@ -3795,6 +3885,7 @@
 <li>Versão do Chrome no User-Agent = versão do binário real. Mantenha <code>CHROME_DESKTOP</code> / <code>CHROME_MOBILE</code> iguais à major de <code>browser.get_version()</code>, e atualize-os a cada upgrade do Chrome (<a href="#case-study-a-chrome-version-mismatch-triggering-cloudflares-challenge">Incompatibilidade de versão do Chrome</a>).</li>
 <li>Locale, fuso horário e geolocalização = país do IP de saída. <code>Accept-Language</code> e o fuso horário são cruzados com o IP (<a href="#case-study-a-locale-mismatch-triggering-googles-captcha">Incompatibilidade de locale/IP</a>).</li>
 <li>Vendor/renderer do WebGL = família de GPU do host (um renderer Apple em hardware Apple, e assim por diante). Os pixels renderizados vêm da GPU real e não podem ser forjados.</li>
+<li><code>color-gamut</code> = display do host (<code>p3</code> para um display de gamut amplo ou da Apple, <code>srgb</code> para um monitor padrão). O <code>dynamic-range</code> não é emulável através do CDP, então ele tem que combinar com o host por conta própria; não presuma que um gamut implica um dynamic-range.</li>
 <li>Aplique o fingerprint antes da primeira navegação.</li>
 <li>Uma identidade por contexto de navegador; use contextos separados para identidades diferentes (<a href="#multiple-fingerprints-across-contexts">Múltiplos fingerprints entre contextos</a>).</li>
 <li>Não combine a opção <code>--user-agent</code> com <code>apply_fingerprint()</code>; o fingerprint é o dono do User-Agent.</li>
@@ -3836,9 +3927,14 @@
 <td><code>navigator.hardwareConcurrency</code></td>
 <td><code>Emulation.setHardwareConcurrencyOverride</code></td>
 </tr>
+<tr>
+<td>Media features CSS (<code>color-gamut</code>, <code>prefers-color-scheme</code>, <code>forced-colors</code>, ...)</td>
+<td><code>Emulation.setEmulatedMedia</code></td>
+</tr>
 </tbody>
 </table>
 <p><code>hardwareConcurrency</code> ilustra a diferença: um getter JavaScript é detectável (veja abaixo), enquanto <code>Emulation.setHardwareConcurrencyOverride</code> muda o valor com o getter permanecendo nativo.</p>
+<p>As media features CSS funcionam da mesma forma, definidas através do campo <code>media_features</code> do perfil, para que o <code>window.matchMedia</code> continue retornando um resultado genuíno. O Chrome emula apenas seis nativamente (<code>color-gamut</code>, <code>prefers-color-scheme</code>, <code>prefers-contrast</code>, <code>forced-colors</code>, <code>prefers-reduced-motion</code>, <code>prefers-reduced-transparency</code>); <a href="../../deep-dive/fingerprinting/spoofing-limits/">Os limites do spoofing</a> explica por que o resto não pode ser forjado sem uma contradição.</p>
 <h3 id="overrides-via-javascript">Overrides via JavaScript</h3>
 <p>Os sinais que o CDP não alcança são definidos por um script injetado antes de qualquer script da página em todo novo documento, e replicado em Web Workers. Isso cobre:</p>
 <ul>
@@ -4033,6 +4129,7 @@
 <ul>
 <li><a href="../evasion-techniques/">Técnicas de evasão</a>: consistência do User-Agent, idioma, proteção contra vazamento de WebRTC e o que o Pydoll te dá de graça.</li>
 <li><a href="../../deep-dive/fingerprinting/browser-fingerprinting/">Fingerprinting de navegador</a>: a superfície de detecção (canvas, WebGL, navigator, fontes) que esta página sobrescreve.</li>
+<li><a href="../../deep-dive/fingerprinting/spoofing-limits/">Os limites do spoofing</a>: por que alguns sinais são seguros de sobrescrever e outros não podem ser forjados de jeito nenhum.</li>
 <li><a href="../../deep-dive/fingerprinting/network-fingerprinting/">Fingerprinting de rede</a>: a camada TLS/TCP/HTTP2 que a injeção não alcança.</li>
 <li><a href="../../guides/browser-contexts/">Contextos de navegador</a>: rode uma identidade por contexto.</li>
 <li><a href="../../guides/proxies/">Proxies</a>: combine o IP de saída com a geografia do perfil.</li>
