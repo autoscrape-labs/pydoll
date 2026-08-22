@@ -6,6 +6,7 @@ from pydoll.protocol.base import Command
 from pydoll.protocol.emulation.methods import (
     EmulationMethod,
     SetDeviceMetricsOverrideParams,
+    SetEmulatedMediaParams,
     SetGeolocationOverrideParams,
     SetHardwareConcurrencyOverrideParams,
     SetLocaleOverrideParams,
@@ -16,6 +17,7 @@ from pydoll.protocol.emulation.methods import (
 if TYPE_CHECKING:
     from pydoll.protocol.emulation.methods import (
         SetDeviceMetricsOverrideCommand,
+        SetEmulatedMediaCommand,
         SetGeolocationOverrideCommand,
         SetHardwareConcurrencyOverrideCommand,
         SetLocaleOverrideCommand,
@@ -25,6 +27,7 @@ if TYPE_CHECKING:
     from pydoll.protocol.emulation.types import (
         DevicePosture,
         DisplayFeature,
+        MediaFeature,
         ScreenOrientation,
         UserAgentMetadata,
     )
@@ -233,3 +236,30 @@ class EmulationCommands:
         """
         params = SetHardwareConcurrencyOverrideParams(hardwareConcurrency=hardware_concurrency)
         return Command(method=EmulationMethod.SET_HARDWARE_CONCURRENCY_OVERRIDE, params=params)
+
+    @staticmethod
+    def set_emulated_media(
+        media: Optional[str] = None,
+        features: Optional[list[MediaFeature]] = None,
+    ) -> SetEmulatedMediaCommand:
+        """Emulate the given CSS media type and/or media features.
+
+        Applied natively by the browser, so ``window.matchMedia`` still reports
+        a genuine result for the emulated feature (no JavaScript wrapper to
+        detect). Each call replaces the previously emulated features.
+
+        Args:
+            media: Media type to emulate (e.g., 'screen', 'print').
+                Empty string disables the media-type override.
+            features: Media features to emulate, each ``{'name': ..., 'value': ...}``
+                (e.g., ``{'name': 'color-gamut', 'value': 'p3'}``).
+
+        Returns:
+            SetEmulatedMediaCommand: CDP command to emulate media features.
+        """
+        params = SetEmulatedMediaParams()
+        if media is not None:
+            params['media'] = media
+        if features is not None:
+            params['features'] = features
+        return Command(method=EmulationMethod.SET_EMULATED_MEDIA, params=params)

@@ -65,6 +65,26 @@ class TestDeviceMetrics:
         assert params['screenHeight'] == 1080
 
 
+class TestMediaFeatures:
+    async def test_features_mapped_to_css_names(self, fp_tab, fake_conn):
+        await FingerprintApplier(fp_tab)._apply_media_features(
+            {'color_gamut': 'p3', 'prefers_color_scheme': 'dark'}
+        )
+        params = fake_conn.last_command('Emulation.setEmulatedMedia')['params']
+        names = {f['name']: f['value'] for f in params['features']}
+        assert names['color-gamut'] == 'p3'
+        assert names['prefers-color-scheme'] == 'dark'
+
+    async def test_only_color_gamut_when_alone(self, fp_tab, fake_conn):
+        await FingerprintApplier(fp_tab)._apply_media_features({'color_gamut': 'srgb'})
+        params = fake_conn.last_command('Emulation.setEmulatedMedia')['params']
+        assert [f['name'] for f in params['features']] == ['color-gamut']
+
+    async def test_empty_sends_no_command(self, fp_tab, fake_conn):
+        await FingerprintApplier(fp_tab)._apply_media_features({})
+        assert not fake_conn.commands_for('Emulation.setEmulatedMedia')
+
+
 class TestIdempotency:
     async def test_repeat_identical_apply_is_noop(self, fp_tab, fake_conn):
         fingerprint = {'user_agent': UA, 'hardware': {'device_memory': 8}}
