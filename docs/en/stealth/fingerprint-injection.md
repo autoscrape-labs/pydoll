@@ -221,11 +221,17 @@ Headless Chrome exposes signals a headful browser does not, which is why bot che
 
 - WebGL renderer. Without GPU passthrough, headless Chrome renders through a software rasterizer (SwiftShader). `UNMASKED_RENDERER_WEBGL` reports `ANGLE (Google, Vulkan 1.3.0 (SwiftShader))` or `Google SwiftShader` instead of a real GPU string such as `ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 Direct3D11)` or `Apple M3`. Overriding the string alone is insufficient: the GPU capability surface (supported extensions, shader precision, max texture size) still reflects the software renderer and is cross-checked against the claimed GPU.
 - Empty `navigator.plugins` / `mimeTypes`, where headful Chrome exposes the built-in PDF viewer entries.
-- `screen.availWidth` / `availHeight` equal to the full screen size (no taskbar or dock gap), and a zeroed outer window.
+- A hardcoded `800x600` virtual screen: `availWidth` / `availHeight` equal the screen size (no taskbar or dock gap), `availTop` is `0` (no menu bar), and the outer window is zeroed. `setDeviceMetricsOverride` corrects the page's own `window.screen`, but it is session-scoped, so a cross-origin iframe (an out-of-process iframe, OOPIF) keeps reading this raw `800x600` screen and contradicts the page that embeds it.
 - Missing media devices, and font/audio rasterization differences from a machine with a display.
 - On the old `--headless`, a `HeadlessChrome` token in the User-Agent (removed in `--headless=new`; the rendering signals above remain).
 
-`apply_fingerprint()` overrides the WebGL vendor/renderer and the parameter/precision surface, reports `availWidth`/`availHeight` with a taskbar gap, restores media devices and fonts, and pins the User-Agent through CDP. With a profile applied, the detection sites tested report the browser as headful.
+`apply_fingerprint()` overrides the WebGL vendor/renderer and the parameter/precision surface, reports `availWidth`/`availHeight` with a taskbar gap, restores media devices and fonts, and pins the User-Agent through CDP. In headless it also reshapes the browser-global virtual screen (`Emulation.updateScreen`), so the top page and cross-origin iframes read one coherent screen, matching size, `devicePixelRatio`, `colorDepth`, and a real menu-bar/dock work area (`availTop`). With a profile applied, the detection sites tested report the browser as headful.
+
+Each frame reads its own `window.screen`. Without the reshape a cross-origin iframe reads the raw `800x600` headless screen; with it, the iframe matches the page:
+
+<iframe src="/docs/resources/visuals/headless-screen-oopif.html" aria-label="A headless page and its cross-origin iframe each reading window.screen; toggling the reshape flips the iframe from the raw 800x600 headless screen to matching the page" style="width: 100%; height: 460px; border: 0;" loading="lazy"></iframe>
+
+The work area comes from the profile's `avail_top` / `avail_left` (and `avail_width` / `avail_height`); the shipped macOS profile reserves a 25px menu bar, the Windows profile a bottom taskbar. The headless virtual screen only accepts an integer `devicePixelRatio`, so a fractional dpr (mobile, Windows display scaling) is rounded for iframes while the top page keeps the exact value.
 
 As the [bot-score test above](#see-the-difference-a-live-bot-score-test) shows, headless goes from 100/100 with no profile to 15/100 with the macOS profile, the same as the headful run. That is what lets a plain Google search run in headless mode:
 
@@ -367,6 +373,9 @@ tab_br = await browser.new_tab(browser_context_id=ctx_id)
 await tab_us.apply_fingerprint(FINGERPRINTS['windows11_rtx3060_nyc'])
 await tab_br.apply_fingerprint(FINGERPRINTS['android_s24_ultra_sao_paulo'])
 ```
+
+!!! warning "Headless screens are browser-global"
+    In headless mode the virtual screen is shared by the whole browser process, not per context. Two profiles with different screen geometry (like the Windows and Android profiles above) clash: each context's top page stays correct, but its cross-origin iframes read the last-applied screen. Run each screen-distinct identity in its own browser process.
 
 See [Browser Contexts](../guides/browser-contexts.md) for how isolated contexts work.
 

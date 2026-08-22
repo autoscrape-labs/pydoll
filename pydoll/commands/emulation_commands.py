@@ -11,22 +11,26 @@ from pydoll.protocol.emulation.methods import (
     SetLocaleOverrideParams,
     SetTimezoneOverrideParams,
     SetUserAgentOverrideParams,
+    UpdateScreenParams,
 )
 
 if TYPE_CHECKING:
     from pydoll.protocol.emulation.methods import (
+        GetScreenInfosCommand,
         SetDeviceMetricsOverrideCommand,
         SetGeolocationOverrideCommand,
         SetHardwareConcurrencyOverrideCommand,
         SetLocaleOverrideCommand,
         SetTimezoneOverrideCommand,
         SetUserAgentOverrideCommand,
+        UpdateScreenCommand,
     )
     from pydoll.protocol.emulation.types import (
         DevicePosture,
         DisplayFeature,
         ScreenOrientation,
         UserAgentMetadata,
+        WorkAreaInsets,
     )
     from pydoll.protocol.page.types import Viewport
 
@@ -233,3 +237,78 @@ class EmulationCommands:
         """
         params = SetHardwareConcurrencyOverrideParams(hardwareConcurrency=hardware_concurrency)
         return Command(method=EmulationMethod.SET_HARDWARE_CONCURRENCY_OVERRIDE, params=params)
+
+    @staticmethod
+    def get_screen_infos() -> GetScreenInfosCommand:
+        """Return the device's screen configuration.
+
+        In headless mode the virtual headless screen configuration is returned;
+        in headful mode the physical screens are returned. Only meaningful in
+        headless mode, where it pairs with :meth:`update_screen`.
+
+        Returns:
+            GetScreenInfosCommand: CDP command returning the list of screens.
+        """
+        return Command(method=EmulationMethod.GET_SCREEN_INFOS)
+
+    @staticmethod
+    def update_screen(
+        screen_id: str,
+        *,
+        left: Optional[int] = None,
+        top: Optional[int] = None,
+        width: Optional[int] = None,
+        height: Optional[int] = None,
+        work_area_insets: Optional[WorkAreaInsets] = None,
+        device_pixel_ratio: Optional[float] = None,
+        rotation: Optional[int] = None,
+        color_depth: Optional[int] = None,
+        label: Optional[str] = None,
+        is_internal: Optional[bool] = None,
+    ) -> UpdateScreenCommand:
+        """Update parameters of an existing screen (headless only).
+
+        Targets the browser-global virtual screen, so the new geometry is what
+        every frame reads via ``window.screen`` - including cross-origin iframes,
+        which ``Emulation.setDeviceMetricsOverride`` (session-scoped) cannot reach.
+        Sizes and ``work_area_insets`` are physical pixels; the CSS values a page
+        reads are those divided by ``device_pixel_ratio``.
+
+        Args:
+            screen_id: Target screen id (from :meth:`get_screen_infos`).
+            left: Offset of the left edge in physical pixels.
+            top: Offset of the top edge in physical pixels.
+            width: Screen width in physical pixels.
+            height: Screen height in physical pixels.
+            work_area_insets: Reserved work-area insets (menu bar / dock / taskbar).
+            device_pixel_ratio: Screen device pixel ratio.
+            rotation: Rotation angle (0, 90, 180 or 270).
+            color_depth: Color depth in bits.
+            label: Descriptive label for the screen.
+            is_internal: Whether the screen is internal to the device.
+
+        Returns:
+            UpdateScreenCommand: CDP command returning the updated screen info.
+        """
+        params = UpdateScreenParams(screenId=screen_id)
+        if left is not None:
+            params['left'] = left
+        if top is not None:
+            params['top'] = top
+        if width is not None:
+            params['width'] = width
+        if height is not None:
+            params['height'] = height
+        if work_area_insets is not None:
+            params['workAreaInsets'] = work_area_insets
+        if device_pixel_ratio is not None:
+            params['devicePixelRatio'] = device_pixel_ratio
+        if rotation is not None:
+            params['rotation'] = rotation
+        if color_depth is not None:
+            params['colorDepth'] = color_depth
+        if label is not None:
+            params['label'] = label
+        if is_internal is not None:
+            params['isInternal'] = is_internal
+        return Command(method=EmulationMethod.UPDATE_SCREEN, params=params)

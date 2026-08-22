@@ -2,12 +2,14 @@ from enum import Enum
 
 from typing_extensions import NotRequired, TypedDict
 
-from pydoll.protocol.base import Command, EmptyResponse, Response
+from pydoll.protocol.base import Command, EmptyParams, EmptyResponse, Response
 from pydoll.protocol.emulation.types import (
     DevicePosture,
     DisplayFeature,
+    ScreenInfo,
     ScreenOrientation,
     UserAgentMetadata,
+    WorkAreaInsets,
 )
 from pydoll.protocol.page.types import Viewport
 
@@ -19,6 +21,8 @@ class EmulationMethod(str, Enum):
     SET_DEVICE_METRICS_OVERRIDE = 'Emulation.setDeviceMetricsOverride'
     SET_LOCALE_OVERRIDE = 'Emulation.setLocaleOverride'
     SET_HARDWARE_CONCURRENCY_OVERRIDE = 'Emulation.setHardwareConcurrencyOverride'
+    GET_SCREEN_INFOS = 'Emulation.getScreenInfos'
+    UPDATE_SCREEN = 'Emulation.updateScreen'
 
 
 class SetUserAgentOverrideParams(TypedDict):
@@ -115,3 +119,42 @@ class SetHardwareConcurrencyOverrideParams(TypedDict):
 SetHardwareConcurrencyOverrideCommand = Command[
     SetHardwareConcurrencyOverrideParams, Response[EmptyResponse]
 ]
+
+
+class GetScreenInfosResult(TypedDict):
+    """Result for the getScreenInfos command."""
+
+    screenInfos: list[ScreenInfo]
+
+
+GetScreenInfosResponse = Response[GetScreenInfosResult]
+GetScreenInfosCommand = Command[EmptyParams, GetScreenInfosResponse]
+
+
+class UpdateScreenParams(TypedDict):
+    """Parameters for the updateScreen command (headless only).
+
+    See https://chromedevtools.github.io/devtools-protocol/tot/Emulation/#method-updateScreen
+    """
+
+    screenId: str
+    left: NotRequired[int]
+    top: NotRequired[int]
+    width: NotRequired[int]
+    height: NotRequired[int]
+    workAreaInsets: NotRequired[WorkAreaInsets]
+    devicePixelRatio: NotRequired[float]
+    rotation: NotRequired[int]
+    colorDepth: NotRequired[int]
+    label: NotRequired[str]
+    isInternal: NotRequired[bool]
+
+
+class UpdateScreenResult(TypedDict):
+    """Result for the updateScreen command."""
+
+    screenInfo: ScreenInfo
+
+
+UpdateScreenResponse = Response[UpdateScreenResult]
+UpdateScreenCommand = Command[UpdateScreenParams, UpdateScreenResponse]
