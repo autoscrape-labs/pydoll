@@ -16,7 +16,11 @@ from pydoll.exceptions import (
     FingerprintContextConflict,
     WebSocketConnectionClosed,
 )
-from pydoll.protocol.emulation.types import ScreenOrientation, ScreenOrientationType
+from pydoll.protocol.emulation.types import (
+    MediaFeature,
+    ScreenOrientation,
+    ScreenOrientationType,
+)
 from pydoll.protocol.target.events import TargetEvent
 from pydoll.protocol.target.types import FilterEntry
 from pydoll.utils import UserAgentParser
@@ -27,7 +31,11 @@ if TYPE_CHECKING:
     from pydoll.protocol.base import Command
     from pydoll.protocol.emulation.methods import GetScreenInfosResponse
     from pydoll.protocol.emulation.types import WorkAreaInsets
-    from pydoll.protocol.fingerprint.types import FingerprintConfig, ScreenFingerprint
+    from pydoll.protocol.fingerprint.types import (
+        FingerprintConfig,
+        MediaFeaturesFingerprint,
+        ScreenFingerprint,
+    )
     from pydoll.protocol.target.methods import GetTargetInfoResponse
     from pydoll.utils.user_agent_parser import ParsedUserAgent
 
@@ -78,6 +86,7 @@ class FingerprintApplier:
             - Geolocation (``Emulation.setGeolocationOverride``)
             - Device metrics / screen (``Emulation.setDeviceMetricsOverride``)
             - Locale (``Emulation.setLocaleOverride``)
+            - CSS media features / color-gamut (``Emulation.setEmulatedMedia``)
 
         JS-level overrides (injected on every new document):
             - Navigator properties, hardware, WebGL, screen extras,
@@ -147,6 +156,8 @@ class FingerprintApplier:
                 await tab._execute_command(
                     EmulationCommands.set_locale_override(languages[0].replace('-', '_'))
                 )
+        if 'media_features' in fingerprint:
+            await self._apply_media_features(fingerprint['media_features'])
 
         identity_ua = parsed.reduced_user_agent if parsed else ''
         identity_platform = parsed.platform if parsed else ''
@@ -168,6 +179,29 @@ class FingerprintApplier:
         )
         self._applied = fingerprint
         logger.info('Fingerprint profile applied')
+
+    async def _apply_media_features(self, media_features: MediaFeaturesFingerprint) -> None:
+        """Emulate the configured CSS media features via ``setEmulatedMedia``.
+
+        Applied natively so ``window.matchMedia`` stays genuine. Only the
+        features Chrome can emulate through CDP have a config field; unset
+        features keep the browser's real values.
+        """
+        candidates = (
+            ('color-gamut', media_features.get('color_gamut')),
+            ('forced-colors', media_features.get('forced_colors')),
+            ('prefers-color-scheme', media_features.get('prefers_color_scheme')),
+            ('prefers-contrast', media_features.get('prefers_contrast')),
+            ('prefers-reduced-motion', media_features.get('prefers_reduced_motion')),
+            ('prefers-reduced-transparency', media_features.get('prefers_reduced_transparency')),
+        )
+        features: list[MediaFeature] = [
+            MediaFeature(name=name, value=value) for name, value in candidates if value is not None
+        ]
+        if features:
+            await self._tab._execute_command(
+                EmulationCommands.set_emulated_media(features=features)
+            )
 
     def _warn_on_user_agent_option_conflict(self, fingerprint_user_agent: str) -> None:
         """Warn when a ``--user-agent`` option contradicts the fingerprint UA.

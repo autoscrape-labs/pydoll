@@ -118,6 +118,7 @@ Pydoll 本身起点就低。它通过 CDP 驱动真实的 Chrome，所以 GPU、
 - User-Agent 中的 Chrome 版本 = 真实二进制文件的版本。让 `CHROME_DESKTOP` / `CHROME_MOBILE` 等于 `browser.get_version()` 给出的主版本号，并在每次 Chrome 升级时更新它们（[Chrome 版本不匹配](#case-study-a-chrome-version-mismatch-triggering-cloudflares-challenge)）。
 - Locale、时区和地理位置 = 出口 IP 所在国家。`Accept-Language` 和时区会与 IP 做交叉比对（[Locale/IP 不匹配](#case-study-a-locale-mismatch-triggering-googles-captcha)）。
 - WebGL vendor/renderer = 主机的 GPU 系列（Apple 硬件上就用 Apple 的 renderer，以此类推）。渲染出的像素来自真实的 GPU，无法伪造。
+- Color-gamut = 主机显示器（宽色域或 Apple 显示器用 `p3`，标准显示器用 `srgb`）。`dynamic-range` 无法通过 CDP 模拟，所以它必须自己与主机相匹配；不要想当然地认为某个色域就意味着某个 dynamic-range。
 - 在第一次导航之前应用 fingerprint。
 - 每个浏览器 context 一个身份；不同的身份使用不同的 context（[跨 context 使用多个 fingerprint](#multiple-fingerprints-across-contexts)）。
 - 不要把 `--user-agent` 选项和 `apply_fingerprint()` 结合使用；User-Agent 由 fingerprint 掌管。
@@ -139,8 +140,11 @@ Chrome 自身能够覆盖的信号，通过 DevTools Protocol 的 `Emulation` �
 | 屏幕尺寸、`devicePixelRatio`、视口、朝向 | `Emulation.setDeviceMetricsOverride` |
 | Locale（`Intl` 格式化） | `Emulation.setLocaleOverride` |
 | `navigator.hardwareConcurrency` | `Emulation.setHardwareConcurrencyOverride` |
+| CSS 媒体特性（`color-gamut`、`prefers-color-scheme`、`forced-colors` 等） | `Emulation.setEmulatedMedia` |
 
 `hardwareConcurrency` 说明了其中的差别：一个 JavaScript getter 是可检测的（见下文），而 `Emulation.setHardwareConcurrencyOverride` 会改变这个值，同时让 getter 保持原生。
+
+CSS 媒体特性以同样的方式工作，通过 profile 的 `media_features` 字段来设置，所以 `window.matchMedia` 仍然返回一个真实的结果。Chrome 只原生模拟其中六个（`color-gamut`、`prefers-color-scheme`、`prefers-contrast`、`forced-colors`、`prefers-reduced-motion`、`prefers-reduced-transparency`）；[伪造的极限](../deep-dive/fingerprinting/spoofing-limits.md) 解释了为什么其余的那些无法在不产生矛盾的情况下被伪造。
 
 ### JavaScript 覆盖
 
@@ -394,6 +398,7 @@ Pydoll 不生成也不附带 fingerprint。`examples/fingerprints.py` 中的 pro
 
 - [规避技术](evasion-techniques.md)：User-Agent 一致性、语言、WebRTC 泄露保护，以及 Pydoll 免费提供给你的部分。
 - [浏览器指纹识别](../deep-dive/fingerprinting/browser-fingerprinting.md)：本页所覆盖的检测面（canvas、WebGL、navigator、字体）。
+- [伪造的极限](../deep-dive/fingerprinting/spoofing-limits.md)：为什么有些信号可以安全地覆盖，而另一些则根本无法伪造。
 - [网络指纹识别](../deep-dive/fingerprinting/network-fingerprinting.md)：注入无法触及的 TLS/TCP/HTTP2 层。
 - [浏览器上下文](../guides/browser-contexts.md)：每个 context 运行一个身份。
 - [Proxy](../guides/proxies.md)：让出口 IP 与 profile 的地理位置相匹配。

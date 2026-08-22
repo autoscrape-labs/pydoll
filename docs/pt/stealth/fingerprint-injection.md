@@ -118,6 +118,7 @@ Regras para um perfil que não é detectado. A maioria descreve uma camada que `
 - Versão do Chrome no User-Agent = versão do binário real. Mantenha `CHROME_DESKTOP` / `CHROME_MOBILE` iguais à major de `browser.get_version()`, e atualize-os a cada upgrade do Chrome ([Incompatibilidade de versão do Chrome](#case-study-a-chrome-version-mismatch-triggering-cloudflares-challenge)).
 - Locale, fuso horário e geolocalização = país do IP de saída. `Accept-Language` e o fuso horário são cruzados com o IP ([Incompatibilidade de locale/IP](#case-study-a-locale-mismatch-triggering-googles-captcha)).
 - Vendor/renderer do WebGL = família de GPU do host (um renderer Apple em hardware Apple, e assim por diante). Os pixels renderizados vêm da GPU real e não podem ser forjados.
+- `color-gamut` = display do host (`p3` para um display de gamut amplo ou da Apple, `srgb` para um monitor padrão). O `dynamic-range` não é emulável através do CDP, então ele tem que combinar com o host por conta própria; não presuma que um gamut implica um dynamic-range.
 - Aplique o fingerprint antes da primeira navegação.
 - Uma identidade por contexto de navegador; use contextos separados para identidades diferentes ([Múltiplos fingerprints entre contextos](#multiple-fingerprints-across-contexts)).
 - Não combine a opção `--user-agent` com `apply_fingerprint()`; o fingerprint é o dono do User-Agent.
@@ -139,8 +140,11 @@ Os sinais que o próprio Chrome consegue sobrescrever são definidos através do
 | Tamanho de tela, `devicePixelRatio`, viewport, orientação | `Emulation.setDeviceMetricsOverride` |
 | Locale (formatação `Intl`) | `Emulation.setLocaleOverride` |
 | `navigator.hardwareConcurrency` | `Emulation.setHardwareConcurrencyOverride` |
+| Media features CSS (`color-gamut`, `prefers-color-scheme`, `forced-colors`, ...) | `Emulation.setEmulatedMedia` |
 
 `hardwareConcurrency` ilustra a diferença: um getter JavaScript é detectável (veja abaixo), enquanto `Emulation.setHardwareConcurrencyOverride` muda o valor com o getter permanecendo nativo.
+
+As media features CSS funcionam da mesma forma, definidas através do campo `media_features` do perfil, para que o `window.matchMedia` continue retornando um resultado genuíno. O Chrome emula apenas seis nativamente (`color-gamut`, `prefers-color-scheme`, `prefers-contrast`, `forced-colors`, `prefers-reduced-motion`, `prefers-reduced-transparency`); [Os limites do spoofing](../deep-dive/fingerprinting/spoofing-limits.md) explica por que o resto não pode ser forjado sem uma contradição.
 
 ### Overrides via JavaScript
 
@@ -394,6 +398,7 @@ Um perfil público reutilizado amplamente se torna uma assinatura compartilhada 
 
 - [Técnicas de evasão](evasion-techniques.md): consistência do User-Agent, idioma, proteção contra vazamento de WebRTC e o que o Pydoll te dá de graça.
 - [Fingerprinting de navegador](../deep-dive/fingerprinting/browser-fingerprinting.md): a superfície de detecção (canvas, WebGL, navigator, fontes) que esta página sobrescreve.
+- [Os limites do spoofing](../deep-dive/fingerprinting/spoofing-limits.md): por que alguns sinais são seguros de sobrescrever e outros não podem ser forjados de jeito nenhum.
 - [Fingerprinting de rede](../deep-dive/fingerprinting/network-fingerprinting.md): a camada TLS/TCP/HTTP2 que a injeção não alcança.
 - [Contextos de navegador](../guides/browser-contexts.md): rode uma identidade por contexto.
 - [Proxies](../guides/proxies.md): combine o IP de saída com a geografia do perfil.

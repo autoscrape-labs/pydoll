@@ -6,6 +6,7 @@ from pydoll.protocol.base import Command, EmptyParams, EmptyResponse, Response
 from pydoll.protocol.emulation.types import (
     DevicePosture,
     DisplayFeature,
+    MediaFeature,
     ScreenInfo,
     ScreenOrientation,
     UserAgentMetadata,
@@ -21,6 +22,7 @@ class EmulationMethod(str, Enum):
     SET_DEVICE_METRICS_OVERRIDE = 'Emulation.setDeviceMetricsOverride'
     SET_LOCALE_OVERRIDE = 'Emulation.setLocaleOverride'
     SET_HARDWARE_CONCURRENCY_OVERRIDE = 'Emulation.setHardwareConcurrencyOverride'
+    SET_EMULATED_MEDIA = 'Emulation.setEmulatedMedia'
     GET_SCREEN_INFOS = 'Emulation.getScreenInfos'
     UPDATE_SCREEN = 'Emulation.updateScreen'
 
@@ -119,6 +121,19 @@ class SetHardwareConcurrencyOverrideParams(TypedDict):
 SetHardwareConcurrencyOverrideCommand = Command[
     SetHardwareConcurrencyOverrideParams, Response[EmptyResponse]
 ]
+
+
+class SetEmulatedMediaParams(TypedDict, total=False):
+    """Parameters for emulating CSS media type and media features.
+
+    See https://chromedevtools.github.io/devtools-protocol/tot/Emulation/#method-setEmulatedMedia
+    """
+
+    media: str
+    features: list[MediaFeature]
+
+
+SetEmulatedMediaCommand = Command[SetEmulatedMediaParams, Response[EmptyResponse]]
 
 
 class GetScreenInfosResult(TypedDict):
