@@ -38,7 +38,7 @@ Cloudflare 的托管挑战，也就是那个 "Just a moment…" 过渡页，是�
 
 ## 剖析 headless 拦截
 
-在一个匹配的 profile 下，对每一个 fingerprinting 工具来说，headful 和 headless 都无法区分。这正是那个谜题：挑战在没有可见差异的情况下，让其中一个通过、把另一个拦截。下面的一切都是直接测量的，在两次运行之间完全相同：
+在一个匹配的 profile 下，headful 和 headless 在下面这些工具和信号上看起来完全相同。这正是那个谜题：挑战让其中一个通过、把另一个拦截，尽管这些读数都是一样的。这张表里的一切都是直接测量的，在两次运行之间完全相同：
 
 | 信号 | headful 对比 headless |
 |---|---|

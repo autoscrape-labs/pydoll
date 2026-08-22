@@ -70,12 +70,12 @@
     <div class="arrow" id="a2">&#8595;&nbsp;&nbsp;&#8595;</div>
     <div class="paths">
       <div class="path" id="pMm">
-        <div class="k">window.matchMedia()</div>
+        <div class="k">matchMedia('(color-gamut: p3)')</div>
         <div class="val" id="mmVal"></div>
         <div class="tag" id="mmTag"></div>
       </div>
       <div class="path" id="pCss">
-        <div class="k">@media &middot; CSS cascade</div>
+        <div class="k">@media (color-gamut: p3)</div>
         <div class="val" id="cssVal"></div>
         <div class="tag" id="cssTag"></div>
       </div>
@@ -100,19 +100,19 @@
 
     g('srcM').textContent = cdp ? 'Emulation.setEmulatedMedia' : 'window.matchMedia = function(){ ... }';
 
-    // MediaValues holds the spoof only when the engine itself is overridden (CDP).
+    // MediaValues holds the claimed gamut only when the engine is overridden (CDP).
     g('mvM').textContent = cdp ? (SPOOF+'  (edited)') : (REAL+'  (untouched)');
     g('mv').className = cdp ? 'box hit' : 'box';
 
-    // matchMedia always reports the spoof here: CDP via MediaValues, JS via the wrapper.
-    g('mmVal').textContent = SPOOF;
+    // (color-gamut: p3) is false in both modes: CDP reads the srgb MediaValues, JS is faked by the wrapper.
+    g('mmVal').textContent = 'false';
     g('pMm').className = 'path spoof';
-    g('mmTag').textContent = 'spoofed';
+    g('mmTag').textContent = 'spoofed srgb';
 
-    // CSS reads MediaValues: spoofed under CDP, real under JS.
-    g('cssVal').textContent = cdp ? SPOOF : REAL;
+    // CSS reads MediaValues: srgb -> false under CDP, the real p3 -> true under JS.
+    g('cssVal').textContent = cdp ? 'false' : 'true';
     g('pCss').className = cdp ? 'path spoof' : 'path real';
-    g('cssTag').textContent = cdp ? 'spoofed' : 'real, untouched';
+    g('cssTag').textContent = cdp ? 'spoofed srgb' : 'real p3, untouched';
 
     g('a1').className = 'arrow live';
     g('a2').className = cdp ? 'arrow live' : 'arrow';
@@ -121,11 +121,11 @@
     if(cdp){
       v.className='verdict ok';
       g('chip').textContent='consistent';
-      g('txt').innerHTML='The override edits <b>MediaValues</b>, so both read paths return <b>'+SPOOF+'</b>. Nothing to catch.';
+      g('txt').innerHTML='The override edits <b>MediaValues</b> to srgb, so both paths report <b>(color-gamut: p3) = false</b>. They agree.';
     }else{
       v.className='verdict bad';
       g('chip').textContent='contradiction';
-      g('txt').innerHTML='The wrapper reaches only matchMedia. The CSS cascade still reads the real <b>'+REAL+'</b>, so the two paths disagree.';
+      g('txt').innerHTML='The wrapper only changes matchMedia, so it reports <b>false</b> while the CSS cascade reads the real p3 and reports <b>true</b>. The two disagree.';
     }
   }
 

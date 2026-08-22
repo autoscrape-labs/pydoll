@@ -30,7 +30,7 @@ Pydoll 暴露了这七个里的六个。被排除在外的那一个是 `prefers-
 !!! note "什么时候一个 JavaScript 覆盖是安全的"
     Pydoll 确实会使用 JS 覆盖，用于 `deviceMemory`、WebGL 字符串、插件等等。它们之所以安全，是因为 CDP 触及不到那些信号，**并且**没有第二条读取路径与之矛盾，而且每一个都经过加固，以经受住 `toString`、prototype 和 worker 检查（参见 [检测 JavaScript 覆盖](../../stealth/fingerprint-injection.md#detecting-javascript-overrides)）。规则是：一个 JS 覆盖只有在它是那个信号的唯一真相来源时才是安全的。
 
-## 硬性底线：任何覆盖都无法伪造的信号
+## 硬性底线：任何覆盖都无法伪造的信号 {#the-hard-floor-signals-no-override-can-fake}
 
 有些信号并不是浏览器所存储的一个值。它们是检测器在你真实硬件上运行一次计算、然后做哈希所得到的输出：
 
@@ -77,7 +77,7 @@ WebGL 说是 NVIDIA；WebGPU、它的各项上限以及 canvas 全都说是 Appl
 
 那个决定性的层是内核的 TCP/IP 栈。每一次连接的 SYN 包都携带着初始 TTL（macOS 和 Linux 上是 64，Windows 上是 128）、TCP 窗口大小和缩放，以及选项顺序，全都由主机内核在任何 JavaScript 运行之前设定。一个 Windows User-Agent 却经由一条 TTL-64 的连接到达，就是一个在传输层被读出的矛盾，而没有任何 CDP 或 JavaScript 覆盖能触碰它。[Network fingerprinting](network-fingerprinting.md) 深入讲解了这一整套栈；这正是为什么一个跑在 Mac 上的 Windows profile 会在 Cloudflare 的托管挑战面前失败。
 
-渲染同样承载着操作系统信息，透过文本渲染器（macOS 上的 CoreText，Windows 上的 DirectWrite），所以有理由问一句：canvas 会不会才是那个破绽。在这个情况下并不是。在这台 Mac 上，同一个 canvas 在 Windows profile 和 macOS profile 下都哈希成了 `d65506c6...`，而 `navigator.platform` 正确地报告了 `Win32` 和 `MacIntel`。无论哪种情况，canvas 都是在这台真实的 Mac 上渲染的，所以像素是相同的、真实的，并不构成矛盾。标记出这个不匹配的，是底下的内核栈，而不是像素。逐层的实测拆解在 [操作系统不匹配案例研究](../../stealth/fingerprint-injection.md#case-study-an-os-mismatch-triggering-cloudflares-managed-challenge) 中。
+渲染同样承载着操作系统信息，所以 canvas 也是答案的一部分。Canvas 和字体是通过操作系统的文本渲染器来绘制的，macOS 上是 CoreText，Windows 上是 DirectWrite，所以一个在 Windows profile 下由 Mac 渲染出来的 canvas，本身就已经描述了错误的操作系统。这处 canvas 泄露是真实的，但无法伪造，而且在实测的那次 Cloudflare 运行中，它并不是那个决定性的信号，内核栈才是。在这台 Mac 上，同一个 canvas 在 Windows profile 和 macOS profile 下都哈希成了 `d65506c6...`，而 `navigator.platform` 读到的是 `Win32` 和 `MacIntel`。相同的哈希只能说明 profile 没有改动 canvas，而不能说明 canvas 与那个 Windows 声称相符；它是这台真实 Mac 的，一个来自 [硬性底线](#the-hard-floor-signals-no-override-can-fake) 的、被渲染出来的信号。底下内核的 TCP/IP 栈第二次泄露了操作系统，而且同样无法触碰。一个真实的挑战如何逐层权衡这些，在 [Cloudflare 案例研究](cloudflare-challenge.md) 中。
 
 一个转发型 proxy 是那唯一的杠杆。它会从 proxy 的内核重新发起 TCP 连接，所以被观察到的操作系统就变成了 proxy 主机的。这样一来，一个 Windows profile 就需要一个运行在 Windows 上的 proxy；一个 Linux proxy 会给出 Linux 签名，矛盾又回来了。
 

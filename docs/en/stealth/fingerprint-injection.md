@@ -118,7 +118,7 @@ Rules for a profile that is not detected. Most describe a layer `apply_fingerpri
 - User-Agent Chrome version = real binary version. Keep `CHROME_DESKTOP` / `CHROME_MOBILE` equal to the major from `browser.get_version()`, and update them on every Chrome upgrade ([Chrome version mismatch](#case-study-a-chrome-version-mismatch-triggering-cloudflares-challenge)).
 - Locale, timezone, and geolocation = egress IP country. `Accept-Language` and timezone are cross-referenced against the IP ([Locale/IP mismatch](#case-study-a-locale-mismatch-triggering-googles-captcha)).
 - WebGL vendor/renderer = host GPU family (an Apple renderer on Apple hardware, and so on). The rendered pixels come from the real GPU and cannot be forged.
-- Color-gamut = host display: `p3` for a wide-gamut or Apple display, `srgb` for a standard monitor. Match it to the real `dynamic-range` (`p3` with `high`, `srgb` with `standard`), which CDP cannot emulate.
+- Color-gamut = host display (`p3` for a wide-gamut or Apple display, `srgb` for a standard monitor). `dynamic-range` is not emulable through CDP, so it must match the host on its own; do not assume a gamut implies a dynamic-range.
 - Apply the fingerprint before the first navigation.
 - One identity per browser context; use separate contexts for different identities ([Multiple fingerprints across contexts](#multiple-fingerprints-across-contexts)).
 - Do not combine the `--user-agent` option with `apply_fingerprint()`; the fingerprint owns the User-Agent.

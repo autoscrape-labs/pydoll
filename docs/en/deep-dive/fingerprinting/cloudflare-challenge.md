@@ -38,7 +38,7 @@ These two rows are [the limits of spoofing](spoofing-limits.md) in practice. The
 
 ## Anatomy of the headless block
 
-Under a matched profile, headful and headless are indistinguishable to every fingerprinting tool. That is the puzzle: the challenge passes one and blocks the other with no visible difference. Everything below was measured directly, identical between the two runs:
+Under a matched profile, headful and headless look identical across the tools and signals below. That is the puzzle: the challenge passes one and blocks the other, though these read the same. Everything in this table was measured directly, identical between the two runs:
 
 | Signal | headful vs headless |
 |---|---|

@@ -118,7 +118,7 @@ Pydoll 本身起点就低。它通过 CDP 驱动真实的 Chrome，所以 GPU、
 - User-Agent 中的 Chrome 版本 = 真实二进制文件的版本。让 `CHROME_DESKTOP` / `CHROME_MOBILE` 等于 `browser.get_version()` 给出的主版本号，并在每次 Chrome 升级时更新它们（[Chrome 版本不匹配](#case-study-a-chrome-version-mismatch-triggering-cloudflares-challenge)）。
 - Locale、时区和地理位置 = 出口 IP 所在国家。`Accept-Language` 和时区会与 IP 做交叉比对（[Locale/IP 不匹配](#case-study-a-locale-mismatch-triggering-googles-captcha)）。
 - WebGL vendor/renderer = 主机的 GPU 系列（Apple 硬件上就用 Apple 的 renderer，以此类推）。渲染出的像素来自真实的 GPU，无法伪造。
-- Color-gamut = 主机显示器：宽色域或 Apple 显示器用 p3，标准显示器用 srgb。让它与真实的 dynamic-range 相匹配（p3 配 high，srgb 配 standard），而 dynamic-range 是 CDP 无法模拟的。
+- Color-gamut = 主机显示器（宽色域或 Apple 显示器用 `p3`，标准显示器用 `srgb`）。`dynamic-range` 无法通过 CDP 模拟，所以它必须自己与主机相匹配；不要想当然地认为某个色域就意味着某个 dynamic-range。
 - 在第一次导航之前应用 fingerprint。
 - 每个浏览器 context 一个身份；不同的身份使用不同的 context（[跨 context 使用多个 fingerprint](#multiple-fingerprints-across-contexts)）。
 - 不要把 `--user-agent` 选项和 `apply_fingerprint()` 结合使用；User-Agent 由 fingerprint 掌管。

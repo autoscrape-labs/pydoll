@@ -75,17 +75,20 @@ Se o `matchMedia` e o caminho CSS discordam, um override está mentindo em apena
 
 ## Leia o que um detector real coleta
 
-A auditoria mais profunda é parar de adivinhar quais sinais importam e ler a lista que um detector de produção de fato lê. Os agentes comerciais de fingerprinting são distribuídos fortemente ofuscados, mas a superfície que eles medem é API pública do navegador, e a engenharia reversa da comunidade sobre os principais a documentou em detalhe.
+A auditoria mais profunda é parar de adivinhar quais sinais importam e ler a lista que um detector de produção de fato lê. Esses agentes são distribuídos fortemente ofuscados, mas a superfície que eles medem é API pública do navegador, então ela pode passar por engenharia reversa.
 
-Uma dessas análises de um grande agente comercial cataloga cerca de **143 sinais individuais**, entre tela e display, hardware, `navigator`, GPU (WebGL e WebGPU), áudio, fontes, mídia, armazenamento e flags de automação. Duas descobertas dela valem mais do que a lista:
+Uma análise pública do **Fingerprint Pro v4** (build `jsl/4.0.0`), medida contra o tenant de demonstração público do fornecedor numa máquina em agosto de 2026, cataloga cerca de **143 sinais individuais**, entre tela e display, hardware, `navigator`, GPU (WebGL e WebGPU), áudio, fontes, mídia, armazenamento e flags de automação. Esses números são específicos daquela build, daquele tenant e daquele momento, não uma lei universal, mas duas descobertas remodelam como você audita:
 
-- **Apenas cerca de sete dos 143 decidem a identidade por conta própria.** Mudar qualquer um desse punhado, num dispositivo que o detector não viu, cunha um novo visitante. O resto move o score um pouco ou nada. O esforço gasto forjando os outros 136 é, em grande parte, desperdiçado.
-- **O sinal de identidade mais forte de todos não é um fingerprint.** É um bearer token que o agente escreve no armazenamento do navegador na primeira visita e retransmite em toda requisição depois. Uma vez definido, o visitante é conhecido independentemente de canvas, GPU ou User-Agent.
+- **A maior parte da superfície não decide a identidade por conta própria.** Nas execuções testadas, mover canvas, WebGL, o User-Agent, a tela e o locale juntos não cunhou de forma independente um novo visitante; o fuzzy match o tolerou. Mudar os digests do canvas moveu sim a confiança reportada, de cerca de 0.99 para 0.97, sem cunhar um novo id. Então a maior parte do esforço de spoofing é desperdiçada na identidade.
+- **O sinal de identidade mais forte não é um fingerprint.** É um bearer token, `s56`, que o tenant emite no GET inicial do agente e o cliente retransmite em todo POST. Uma vez vinculado, o payload responde como aquele visitante independentemente de canvas, GPU ou User-Agent.
 
-!!! note "Identidade é um problema de armazenamento, não de fingerprint"
-    Para se apresentar como um novo visitante, comece a partir de um [contexto de navegador](../../guides/browser-contexts.md) limpo, para que o token armazenado e o armazenamento comecem vazios. Para persistir uma identidade, reutilize o contexto. Forjar canvas, WebGL e o User-Agent juntos mal move a identidade, porque o modelo de tolerância do detector os ignora. E o IP de saída não faz parte da identidade de forma alguma; ele alimenta um score separado de bot e de proxy, então rotacionar apenas o IP não muda nada sobre quem o detector pensa que você é.
+!!! note "Identidade é um problema de token de sessão, não de fingerprint"
+    Para se apresentar como um novo visitante, comece a partir de um [contexto de navegador](../../guides/browser-contexts.md) limpo, para que nenhum token `s56` anterior seja retransmitido e o agente emita um novo. Para persistir uma identidade, reutilize o contexto para que o mesmo token volte. Nesta análise, forjar canvas, WebGL e o User-Agent não mudou de forma independente o id do visitante, então esse esforço é mais bem gasto em coerência do que numa nova identidade. O IP de saída foi excluído da análise de identidade; ele alimenta um sinal separado de bot e de proxy, então rotacionar apenas o IP não muda quem o token diz que você é.
 
 ## Capture o que o agente envia
+
+!!! warning "Manuseie um payload capturado com cuidado"
+    Um payload capturado carrega tokens de sessão, identificadores de armazenamento, o seu IP e outros dados que identificam você. Capture apenas contra um site que você está autorizado a testar, rode isso sob uma identidade descartável que você possa jogar fora, e oculte os tokens, os ids de armazenamento e o IP antes de armazenar, compartilhar ou colar o payload em qualquer lugar.
 
 O agente não só lê esses sinais, ele os empacota e os envia via POST para o seu servidor, e esse payload é legível. Um agente típico serializa os sinais para JSON, os codifica numa forma compacta de bytes, comprime tudo o que passa de cerca de um kilobyte com DEFLATE puro, e envolve o resultado num envelope emoldurado cuja chave viaja dentro do quadro. Esse último passo é ofuscação, não criptografia; não há segredo nenhum que você esteja perdendo.
 

@@ -75,17 +75,20 @@ If `matchMedia` and the CSS path disagree, an override is lying on one path only
 
 ## Read what a real detector collects
 
-The deepest audit is to stop guessing which signals matter and read the list a production detector actually reads. Commercial fingerprinting agents ship heavily obfuscated, but the surface they measure is public browser API, and community reverse-engineering of the leading ones has documented it in detail.
+The deepest audit is to stop guessing which signals matter and read the list a production detector actually reads. These agents ship heavily obfuscated, but the surface they measure is public browser API, so it can be reverse-engineered.
 
-One such teardown of a major commercial agent catalogs roughly **143 individual signals**, across screen and display, hardware, `navigator`, GPU (WebGL and WebGPU), audio, fonts, media, storage, and automation flags. Two findings from it are worth more than the list:
+A public teardown of **Fingerprint Pro v4** (build `jsl/4.0.0`), measured against the vendor's public demo tenant on one machine in August 2026, catalogs roughly **143 individual signals**, across screen and display, hardware, `navigator`, GPU (WebGL and WebGPU), audio, fonts, media, storage, and automation flags. Those numbers are specific to that build, tenant, and moment, not a universal law, but two findings reshape how you audit:
 
-- **Only about seven of the 143 decide identity on their own.** Changing any one of that handful, on a device the detector has not seen, mints a new visitor. The rest move the score a little or not at all. Effort spent spoofing the other 136 is mostly wasted.
-- **The single strongest identity signal is not a fingerprint.** It is a bearer token the agent writes into browser storage on the first visit and replays on every request after. Once it is set, the visitor is known regardless of canvas, GPU, or User-Agent.
+- **Most of the surface does not decide identity on its own.** In the tested runs, moving canvas, WebGL, the User-Agent, screen, and locale together did not independently mint a new visitor; the fuzzy match tolerated it. Changing the canvas digests did move the reported confidence, from about 0.99 to 0.97, without minting a new id. So most spoofing effort is wasted on identity.
+- **The strongest identity signal is not a fingerprint.** It is a bearer token, `s56`, the tenant issues over the agent's initial GET and the client replays on every POST. Once it is bound, the payload answers as that visitor regardless of canvas, GPU, or User-Agent.
 
-!!! note "Identity is a storage problem, not a fingerprint one"
-    To present as a new visitor, start from a clean [browser context](../../guides/browser-contexts.md) so the stored token and storage begin empty. To persist one identity, reuse the context. Spoofing canvas, WebGL, and the User-Agent together barely moves the identity, because the detector's tolerance model ignores them. And the egress IP is not part of the identity at all; it feeds a separate bot and proxy score, so rotating the IP alone changes nothing about who the detector thinks you are.
+!!! note "Identity is a session-token problem, not a fingerprint one"
+    To present as a new visitor, start from a clean [browser context](../../guides/browser-contexts.md) so no prior `s56` token is replayed and the agent issues a fresh one. To persist one identity, reuse the context so the same token comes back. In this teardown, spoofing canvas, WebGL, and the User-Agent did not independently change the visitor id, so that effort is better spent on coherence than on a new identity. The egress IP was excluded from the identity analysis; it feeds a separate bot and proxy signal, so rotating the IP alone does not change who the token says you are.
 
 ## Capture what the agent sends
+
+!!! warning "Handle a captured payload with care"
+    A captured payload carries session tokens, storage identifiers, your IP, and other data that identifies you. Capture only against a site you are authorized to test, run it under a disposable identity you can throw away, and redact the tokens, storage ids, and IP before you store, share, or paste the payload anywhere.
 
 The agent does not only read those signals, it packages them and POSTs them to its server, and that payload is readable. A typical agent serializes the signals to JSON, encodes them to a compact byte form, compresses anything past roughly a kilobyte with raw DEFLATE, and wraps the result in a framed envelope whose key travels inside the frame. That last step is obfuscation, not encryption; there is no secret you are missing.
 

@@ -38,7 +38,7 @@ Essas duas linhas são [os limites do spoofing](spoofing-limits.md) na prática.
 
 ## Anatomia do bloqueio do headless
 
-Sob um perfil que combina, o headful e o headless são indistinguíveis para toda ferramenta de fingerprinting. Esse é o enigma: o challenge passa um e bloqueia o outro sem nenhuma diferença visível. Tudo abaixo foi medido diretamente, idêntico entre as duas execuções:
+Sob um perfil que combina, o headful e o headless parecem idênticos entre as ferramentas e sinais abaixo. Esse é o enigma: o challenge passa um e bloqueia o outro, embora estes leiam igual. Tudo nesta tabela foi medido diretamente, idêntico entre as duas execuções:
 
 | Sinal | headful vs headless |
 |---|---|
