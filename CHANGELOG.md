@@ -1,3 +1,10 @@
+## 2.25.0 (2026-08-22)
+
+### Feat
+
+- **fingerprint**: coherent headless screen via Emulation.updateScreen
+- **fingerprint**: emulate CSS media features via Emulation.setEmulatedMedia
+
 ## 2.24.0 (2026-08-13)
 
 ### Feat
