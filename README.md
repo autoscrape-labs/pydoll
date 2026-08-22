@@ -26,11 +26,6 @@
 
 You have probably watched a scraper work on your machine, then hit a wall of captchas and Cloudflare challenges the moment it ran for real. That wall is what Pydoll is built around. It drives Chrome directly over the DevTools Protocol, so there is no WebDriver binary and no `navigator.webdriver` flag to give you away, and it clicks, types, and scrolls like a real person. That is often enough to get past the bot protection that stops ordinary automation, all behind an async, fully typed API.
 
-<div align="center">
-  <h3>Be a good human, give it a star ⭐</h3>
-  <sub>No star, no bug fixes. Just kidding. Or not.</sub>
-</div>
-
 ### Why Pydoll?
 
 - **Fingerprint injection**: Make the browser report a fully consistent identity with [`tab.apply_fingerprint()`](#2-fingerprint-injection): User-Agent, Client Hints, `navigator`, WebGL, canvas, screen, fonts, timezone and locale, all aligned. The injected overrides survive `toString` and prototype introspection and propagate into Web Workers, so lie-detection checks like CreepJS's don't flag them.
