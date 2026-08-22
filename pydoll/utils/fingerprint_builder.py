@@ -240,9 +240,7 @@ def build_fingerprint_worker_js(
     nav_lines: list[str] = [_build_identity_js(user_agent, platform)]
     if 'hardware' in config and 'device_memory' in config['hardware']:
         val = json.dumps(config['hardware']['device_memory'])
-        nav_lines.append(
-            f"if ('deviceMemory' in navigator) _defG(NP, 'deviceMemory', {val});"
-        )
+        nav_lines.append(f"if ('deviceMemory' in navigator) _defG(NP, 'deviceMemory', {val});")
 
     parts: list[str] = ['\n'.join(p for p in nav_lines if p)]
     if 'locale' in config:
@@ -301,15 +299,19 @@ def _build_screen_js(scr: ScreenFingerprint) -> str:
 
     ``avail_width``/``avail_height`` ARE injected here (on ``Screen.prototype``):
     CDP forces ``availWidth``/``availHeight`` equal to the screen size, which is a
-    headless tell (no taskbar/dock gap). ``color_depth``/``pixel_depth`` are on
-    ``Screen.prototype`` and ``outer_*`` are own-properties on ``window``, both
-    matching the native location.
+    headless tell (no taskbar/dock gap). ``avail_top``/``avail_left`` are injected
+    too: ``availTop == 0`` on the main page is a headless tell, and it must match
+    the ``availTop`` that ``Emulation.updateScreen`` gives cross-origin iframes.
+    ``color_depth``/``pixel_depth`` are on ``Screen.prototype`` and ``outer_*`` are
+    own-properties on ``window``, both matching the native location.
     """
     items: dict[str, object] = dict(scr)
     lines: list[str] = []
     for py_key, js_prop in (
         ('avail_width', 'availWidth'),
         ('avail_height', 'availHeight'),
+        ('avail_top', 'availTop'),
+        ('avail_left', 'availLeft'),
         ('color_depth', 'colorDepth'),
         ('pixel_depth', 'pixelDepth'),
     ):
@@ -577,17 +579,27 @@ def _build_network_connection_js(nc: NetworkConnectionFingerprint) -> str:
     if not lines:
         return ''
     body = '\n'.join(lines)
-    return (
-        "if (typeof NetworkInformation !== 'undefined') {\n"
-        f'{body}\n'
-        '}'
-    )
+    return f"if (typeof NetworkInformation !== 'undefined') {{\n{body}\n}}"
 
 
 _OS_MARKER_FONTS = frozenset({
-    'Cambria Math', 'Nirmala UI', 'Leelawadee UI', 'HoloLens MDL2 Assets', 'Segoe Fluent Icons',
-    'Helvetica Neue', 'Luminari', 'PingFang HK Light', 'InaiMathi Bold', 'Galvji', 'Chakra Petch',
-    'Arimo', 'MONO', 'Ubuntu', 'Noto Color Emoji', 'Dancing Script', 'Droid Sans Mono',
+    'Cambria Math',
+    'Nirmala UI',
+    'Leelawadee UI',
+    'HoloLens MDL2 Assets',
+    'Segoe Fluent Icons',
+    'Helvetica Neue',
+    'Luminari',
+    'PingFang HK Light',
+    'InaiMathi Bold',
+    'Galvji',
+    'Chakra Petch',
+    'Arimo',
+    'MONO',
+    'Ubuntu',
+    'Noto Color Emoji',
+    'Dancing Script',
+    'Droid Sans Mono',
 })
 
 

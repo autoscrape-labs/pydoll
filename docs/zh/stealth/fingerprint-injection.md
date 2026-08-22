@@ -225,11 +225,17 @@ Headless Chrome 会暴露 headful 浏览器不会暴露的信号，这就是为�
 
 - WebGL renderer。在没有 GPU 直通的情况下，headless Chrome 会通过软件光栅化器（SwiftShader）来渲染。`UNMASKED_RENDERER_WEBGL` 报告的是 `ANGLE (Google, Vulkan 1.3.0 (SwiftShader))` 或 `Google SwiftShader`，而不是一个真实的 GPU 字符串，比如 `ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 Direct3D11)` 或 `Apple M3`。仅仅覆盖这个字符串是不够的：GPU 的能力面（支持的扩展、着色器精度、最大纹理尺寸）仍然反映的是软件 renderer，而且会与所声称的 GPU 做交叉比对。
 - 空的 `navigator.plugins` / `mimeTypes`，而 headful Chrome 会暴露内置 PDF 查看器的条目。
-- `screen.availWidth` / `availHeight` 等于完整的屏幕尺寸（没有任务栏或 dock 的空隙），以及一个被清零的外部窗口。
+- 一块硬编码的 `800x600` 虚拟屏幕：`availWidth` / `availHeight` 等于屏幕尺寸（没有任务栏或 dock 的空隙），`availTop` 为 `0`（没有菜单栏），外部窗口也被清零。`setDeviceMetricsOverride` 会修正页面自身的 `window.screen`，但它作用于会话范围，所以一个跨源 iframe（进程外 iframe，OOPIF）仍然读取这块原始的 `800x600` 屏幕，与嵌入它的页面相矛盾。
 - 缺少媒体设备，以及字体/音频的栅格化结果与一台带显示器的机器存在差异。
 - 在旧的 `--headless` 下，User-Agent 中会有一个 `HeadlessChrome` 标记（在 `--headless=new` 中已被移除；但上面那些渲染信号仍然存在）。
 
-`apply_fingerprint()` 会覆盖 WebGL 的 vendor/renderer 以及参数/精度面，用带任务栏空隙的方式报告 `availWidth`/`availHeight`，恢复媒体设备和字体，并通过 CDP 固定 User-Agent。在应用了 profile 之后，所测试的那些检测网站会把浏览器判读为 headful。
+`apply_fingerprint()` 会覆盖 WebGL 的 vendor/renderer 以及参数/精度面，用带任务栏空隙的方式报告 `availWidth`/`availHeight`，恢复媒体设备和字体，并通过 CDP 固定 User-Agent。在 headless 下，它还会重塑浏览器全局的虚拟屏幕（`Emulation.updateScreen`），使顶层页面和跨源 iframe 读取同一块一致的屏幕，尺寸、`devicePixelRatio`、`colorDepth` 以及真实的菜单栏/dock 工作区（`availTop`）都相互匹配。在应用了 profile 之后，所测试的那些检测网站会把浏览器判读为 headful。
+
+每个 frame 都读取自己的 `window.screen`。不做重塑时，跨源 iframe 读取的是原始的 `800x600` headless 屏幕；重塑之后，iframe 与页面一致：
+
+<iframe src="/docs/resources/visuals/headless-screen-oopif.html" aria-label="一个 headless 页面和它的跨源 iframe 各自读取 window.screen；切换重塑会让 iframe 从原始的 800x600 headless 屏幕变为与页面一致" style="width: 100%; height: 460px; border: 0;" loading="lazy"></iframe>
+
+工作区来自 profile 的 `avail_top` / `avail_left`（以及 `avail_width` / `avail_height`）；随附的 macOS profile 保留 25px 的菜单栏，Windows profile 则在底部保留任务栏。headless 虚拟屏幕只接受整数的 `devicePixelRatio`，所以小数 dpr（移动端、Windows 显示缩放）会为 iframe 取整，而顶层页面保留精确值。
 
 正如[上面的 bot score 测试](#see-the-difference-a-live-bot-score-test)所示，headless 从没有 profile 时的 100/100，降到应用 macOS profile 后的 15/100，与 headful 的运行结果相同。正是这一点让一次普通的 Google 搜索能够在 headless 模式下运行：
 
@@ -371,6 +377,9 @@ tab_br = await browser.new_tab(browser_context_id=ctx_id)
 await tab_us.apply_fingerprint(FINGERPRINTS['windows11_rtx3060_nyc'])
 await tab_br.apply_fingerprint(FINGERPRINTS['android_s24_ultra_sao_paulo'])
 ```
+
+!!! warning "Headless 屏幕是浏览器全局的"
+    在 headless 模式下，虚拟屏幕由整个浏览器进程共享，而不是按 context 划分。两个屏幕几何不同的 profile（比如上面的 Windows 和 Android profile）会冲突：每个 context 的顶层页面仍然正确，但它的跨源 iframe 读取的是最后应用的那块屏幕。让每个屏幕不同的身份运行在独立的浏览器进程中。
 
 关于隔离的 context 是如何工作的，参见 [浏览器上下文](../guides/browser-contexts.md)。
 

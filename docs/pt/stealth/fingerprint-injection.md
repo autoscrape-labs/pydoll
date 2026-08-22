@@ -225,11 +225,17 @@ O Chrome headless expõe sinais que um navegador headful não expõe, e é por i
 
 - Renderer do WebGL. Sem passthrough de GPU, o Chrome headless renderiza através de um rasterizador de software (SwiftShader). `UNMASKED_RENDERER_WEBGL` reporta `ANGLE (Google, Vulkan 1.3.0 (SwiftShader))` ou `Google SwiftShader` em vez de uma string de GPU real como `ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 Direct3D11)` ou `Apple M3`. Sobrescrever apenas a string é insuficiente: a superfície de capacidades da GPU (extensões suportadas, precisão de shader, tamanho máximo de textura) ainda reflete o renderer de software e é cruzada com a GPU declarada.
 - `navigator.plugins` / `mimeTypes` vazios, onde o Chrome headful expõe as entradas do visualizador de PDF embutido.
-- `screen.availWidth` / `availHeight` iguais ao tamanho total da tela (sem espaço de taskbar ou dock) e uma janela externa zerada.
+- Uma tela virtual fixa de `800x600`: `availWidth` / `availHeight` iguais ao tamanho da tela (sem espaço de taskbar ou dock), `availTop` igual a `0` (sem barra de menu) e a janela externa zerada. O `setDeviceMetricsOverride` corrige o `window.screen` da própria página, mas é limitado à sessão, então um iframe cross-origin (um iframe fora do processo, OOPIF) continua lendo essa tela `800x600` crua e contradiz a página que o embute.
 - Dispositivos de mídia ausentes, e diferenças de rasterização de fontes/áudio em relação a uma máquina com display.
 - No antigo `--headless`, um token `HeadlessChrome` no User-Agent (removido no `--headless=new`; os sinais de renderização acima permanecem).
 
-`apply_fingerprint()` sobrescreve o vendor/renderer do WebGL e a superfície de parâmetro/precisão, reporta `availWidth`/`availHeight` com um espaço de taskbar, restaura dispositivos de mídia e fontes, e fixa o User-Agent através do CDP. Com um perfil aplicado, os sites de detecção testados reportam o navegador como headful.
+`apply_fingerprint()` sobrescreve o vendor/renderer do WebGL e a superfície de parâmetro/precisão, reporta `availWidth`/`availHeight` com um espaço de taskbar, restaura dispositivos de mídia e fontes, e fixa o User-Agent através do CDP. No headless ele também remodela a tela virtual global do navegador (`Emulation.updateScreen`), então a página principal e os iframes cross-origin leem uma única tela coerente, com o mesmo tamanho, `devicePixelRatio`, `colorDepth` e uma área de trabalho real de barra de menu/dock (`availTop`). Com um perfil aplicado, os sites de detecção testados reportam o navegador como headful.
+
+Cada frame lê seu próprio `window.screen`. Sem a remodelagem, um iframe cross-origin lê a tela `800x600` crua do headless; com ela, o iframe combina com a página:
+
+<iframe src="/docs/resources/visuals/headless-screen-oopif.html" aria-label="Uma página headless e seu iframe cross-origin lendo window.screen; alternar a remodelagem faz o iframe passar da tela 800x600 crua do headless para combinar com a página" style="width: 100%; height: 460px; border: 0;" loading="lazy"></iframe>
+
+A área de trabalho vem do `avail_top` / `avail_left` do perfil (e `avail_width` / `avail_height`); o perfil macOS reserva uma barra de menu de 25px, o perfil Windows uma taskbar embaixo. A tela virtual headless só aceita um `devicePixelRatio` inteiro, então um dpr fracionário (mobile, escalonamento de tela do Windows) é arredondado para os iframes, enquanto a página principal mantém o valor exato.
 
 Como o [teste de bot score acima](#see-the-difference-a-live-bot-score-test) mostra, o headless vai de 100/100 sem perfil para 15/100 com o perfil de macOS, o mesmo que a execução headful. É isso que permite que uma busca simples no Google rode em modo headless:
 
@@ -371,6 +377,9 @@ tab_br = await browser.new_tab(browser_context_id=ctx_id)
 await tab_us.apply_fingerprint(FINGERPRINTS['windows11_rtx3060_nyc'])
 await tab_br.apply_fingerprint(FINGERPRINTS['android_s24_ultra_sao_paulo'])
 ```
+
+!!! warning "Telas em headless são globais do navegador"
+    No modo headless, a tela virtual é compartilhada por todo o processo do navegador, não por contexto. Dois perfis com geometria de tela diferente (como os perfis Windows e Android acima) entram em conflito: a página principal de cada contexto continua correta, mas seus iframes cross-origin leem a última tela aplicada. Rode cada identidade com tela distinta em um processo de navegador separado.
 
 Veja [Contextos de navegador](../guides/browser-contexts.md) para entender como os contextos isolados funcionam.
 

@@ -120,6 +120,12 @@ class ScreenFingerprint(TypedDict):
     ``width`` and ``height`` to account for the OS taskbar/dock. Setting
     them equal to width/height is a headless indicator.
 
+    ``avail_top`` (and ``avail_left``) place that reserved area: on macOS
+    ``avail_top`` is the menu-bar height (e.g. 25). When unset it defaults to
+    the whole vertical gap ``height - avail_height`` (all at the top). In
+    headless mode these also drive ``Emulation.updateScreen`` so cross-origin
+    iframes read the same work area (``availTop == 0`` there is a headless tell).
+
     ``outer_width`` and ``outer_height`` represent the browser window
     dimensions including chrome (toolbar, scrollbar). In headless mode
     these are often 0, which is an instant detection signal.
@@ -148,6 +154,8 @@ class ScreenFingerprint(TypedDict):
     height: int  # screen.height
     avail_width: NotRequired[int]  # screen.availWidth
     avail_height: NotRequired[int]  # screen.availHeight
+    avail_top: NotRequired[int]  # screen.availTop (top work-area inset, e.g. macOS menu bar)
+    avail_left: NotRequired[int]  # screen.availLeft (left work-area inset)
     outer_width: NotRequired[int]  # window.outerWidth
     outer_height: NotRequired[int]  # window.outerHeight
     color_depth: NotRequired[int]  # screen.colorDepth (typically 24)

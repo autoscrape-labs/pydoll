@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>A cross-origin iframe reads a different screen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+<style>
+  :root{
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;
+    --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
+    --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--pass:#35e0a1;--danger:#ff6b6b;
+    --pass-dim:rgba(53,224,161,.12);--danger-dim:rgba(255,107,107,.12);
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
+  .widget{border:1px solid var(--line);padding:16px 18px}
+  .lead{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:15px;line-height:1.5}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+  @media(max-width:520px){.cols{grid-template-columns:1fr}}
+  .col{border:1px solid var(--line2);background:var(--bg2);padding:13px 14px;min-width:0}
+  .col.iframe{transition:border-color .3s}
+  .col .h{font-family:var(--sans);font-weight:700;font-size:13px;margin-bottom:1px}
+  .col .u{font-family:var(--mono);font-size:9.5px;color:var(--faint);margin-bottom:11px}
+  .r{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid var(--line)}
+  .r .k{font-family:var(--mono);font-size:10.5px;color:var(--dim)}
+  .r .v{font-family:var(--mono);font-size:12px;font-weight:600;display:flex;align-items:center;gap:8px;transition:color .25s}
+  .r .dot{width:7px;height:7px;border-radius:50%;background:transparent;transition:background .25s}
+  .col.iframe .r.lie .v{color:var(--danger)} .col.iframe .r.lie .dot{background:var(--danger)}
+  .col.iframe .r.ok .v{color:var(--pass)} .col.iframe .r.ok .dot{background:var(--pass)}
+  .control{display:flex;align-items:center;gap:12px;margin-top:13px;flex-wrap:wrap}
+  .control button{font-family:var(--mono);font-size:12px;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:9px 14px;cursor:pointer;transition:.15s}
+  .control button:hover{border-color:var(--indigo);color:#fff}
+  .control .hint{font-family:var(--mono);font-size:10.5px;color:var(--faint)}
+  .verdict{display:flex;align-items:center;gap:12px;margin-top:14px;padding:13px 15px;border:1px solid var(--line);transition:.3s}
+  .verdict .chip{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:5px 11px;border:1px solid;flex:none}
+  .verdict .txt{font-family:var(--mono);font-size:11.5px;color:var(--dim);line-height:1.55}
+  .verdict.lie{background:var(--danger-dim);border-color:rgba(255,107,107,.3)} .verdict.lie .chip{color:var(--danger);border-color:rgba(255,107,107,.5)} .verdict.lie .txt b{color:var(--danger)}
+  .verdict.ok{background:var(--pass-dim);border-color:rgba(53,224,161,.3)} .verdict.ok .chip{color:var(--pass);border-color:rgba(53,224,161,.5)} .verdict.ok .txt b{color:var(--pass)}
+  .col.iframe.leak{border-color:rgba(255,107,107,.4)} .col.iframe.fixed{border-color:rgba(53,224,161,.35)}
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="lead">Headless Chrome, macOS profile. The top page and its <b>cross-origin iframe</b> each read their own <b>window.screen</b>. Reshape the virtual screen and watch the iframe stop contradicting the page.</div>
+
+  <div class="cols">
+    <div class="col">
+      <div class="h">Top page</div>
+      <div class="u">example.com &middot; window.screen</div>
+      <div id="topRows"></div>
+    </div>
+    <div class="col iframe" id="frameCol">
+      <div class="h">Cross-origin iframe</div>
+      <div class="u">challenges.example.net &middot; window.screen</div>
+      <div id="frameRows"></div>
+    </div>
+  </div>
+
+  <div class="control">
+    <button id="btn"></button>
+    <span class="hint" id="hint"></span>
+  </div>
+
+  <div class="verdict" id="verdict">
+    <span class="chip" id="chip"></span>
+    <span class="txt" id="txt"></span>
+  </div>
+</div>
+
+<script>
+(function(){
+  function g(id){return document.getElementById(id);}
+  var KEYS=['width × height','availTop','availHeight','colorDepth','devicePixelRatio'];
+  // Real captures (pydoll headless, macOS profile) for both states.
+  var TOP  ={'width × height':'1440 × 900','availTop':'25','availHeight':'860','colorDepth':'24','devicePixelRatio':'2'};
+  var TOP0 ={'width × height':'1440 × 900','availTop':'0','availHeight':'860','colorDepth':'24','devicePixelRatio':'2'};
+  var LEAK ={'width × height':'800 × 600','availTop':'0','availHeight':'600','colorDepth':'24','devicePixelRatio':'1'};
+  var reshaped=false;
+
+  function rows(host,data,ref){
+    host.innerHTML='';
+    KEYS.forEach(function(k){
+      var lying = ref ? (data[k]!==ref[k]) : false;
+      var r=document.createElement('div');
+      r.className='r'+(ref?(lying?' lie':' ok'):'');
+      r.innerHTML='<span class="k">'+k+'</span><span class="v">'+data[k]+'<span class="dot"></span></span>';
+      host.appendChild(r);
+    });
+  }
+
+  function render(){
+    var top = reshaped ? TOP : TOP0;
+    var frame = reshaped ? TOP : LEAK;
+    rows(g('topRows'), top, null);
+    rows(g('frameRows'), frame, top);
+    g('frameCol').className='col iframe '+(reshaped?'fixed':'leak');
+    g('btn').textContent = reshaped ? 'Reset to raw headless' : 'apply_fingerprint (reshape screen)';
+    g('hint').textContent = reshaped ? '' : 'Emulation.updateScreen on the browser-global screen';
+    var v=g('verdict');
+    if(reshaped){
+      v.className='verdict ok';
+      g('chip').textContent='coherent';
+      g('txt').innerHTML='The browser-global virtual screen is reshaped, so every frame, the page and its cross-origin iframes, reads the same desktop.';
+    }else{
+      v.className='verdict lie';
+      g('chip').textContent='headless leak';
+      g('txt').innerHTML='<b>setDeviceMetricsOverride</b> fixes the page but not the iframe, which reads the raw <b>800 × 600</b> headless screen and contradicts the page on 3 of 5 signals.';
+    }
+  }
+
+  g('btn').addEventListener('click',function(){ reshaped=!reshaped; render(); });
+  render();
+})();
+</script>
+<script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>
+</body>
+</html>

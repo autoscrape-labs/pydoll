@@ -93,6 +93,49 @@ class ScreenOrientation(TypedDict):
     angle: int  # Orientation angle
 
 
+class WorkAreaInsets(TypedDict, total=False):
+    """Screen work-area insets in physical pixels.
+
+    Models the area a real window manager reserves for a menu bar / taskbar /
+    dock. Used by ``Emulation.updateScreen`` / ``addScreen`` to give a headless
+    virtual screen a realistic work area: without it ``screen.availTop`` is 0 and
+    ``availHeight == height``, the signature of a browser with no window manager.
+    Values are physical pixels; the CSS ``screen.avail*`` values a page reads are
+    these divided by the screen's device pixel ratio.
+    """
+
+    top: int  # reserved at the top (e.g. macOS menu bar)
+    left: int
+    bottom: int  # reserved at the bottom (e.g. macOS dock)
+    right: int
+
+
+class ScreenInfo(TypedDict):
+    """A single screen in the device's screen configuration.
+
+    Returned by ``Emulation.getScreenInfos`` and ``addScreen``/``updateScreen``.
+    In headless mode this describes the virtual headless screen; the geometry is
+    what pages (including cross-origin iframes) read via ``window.screen``.
+    """
+
+    left: int
+    top: int
+    width: int
+    height: int
+    availLeft: int
+    availTop: int
+    availWidth: int
+    availHeight: int
+    devicePixelRatio: float
+    orientation: ScreenOrientation
+    colorDepth: int
+    isExtended: bool
+    isInternal: bool
+    isPrimary: bool
+    label: str
+    id: str  # ScreenId
+
+
 class DisplayFeature(TypedDict):
     """Display feature configuration."""
 
