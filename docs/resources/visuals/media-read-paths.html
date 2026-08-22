@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Where an override lands</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+<style>
+  :root{
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;--panel2:#191c20;
+    --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
+    --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--pass:#35e0a1;--danger:#ff6b6b;
+    --indigo-dim:rgba(110,123,255,.13);--pass-dim:rgba(53,224,161,.12);--danger-dim:rgba(255,107,107,.12);
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
+  .widget{border:1px solid var(--line);padding:16px 18px}
+  .lead{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:14px;line-height:1.5}
+  .toggle{display:inline-flex;border:1px solid var(--line2);margin-bottom:16px}
+  .toggle button{font-family:var(--mono);font-size:11.5px;color:var(--dim);background:var(--panel);border:0;padding:8px 15px;cursor:pointer;transition:.15s}
+  .toggle button+button{border-left:1px solid var(--line2)}
+  .toggle button.on{background:var(--indigo-dim);color:#fff}
+  .flow{display:flex;flex-direction:column;align-items:center;gap:0}
+  .box{border:1px solid var(--line2);background:var(--bg2);padding:11px 14px;width:100%;max-width:420px;transition:.25s;text-align:center}
+  .box .k{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);margin-bottom:5px}
+  .box .m{font-family:var(--mono);font-size:11.5px;color:var(--ink);word-break:break-word}
+  .box.hit{border-color:var(--indigo);background:var(--indigo-dim)}
+  .box.hit .k{color:var(--indigo2)}
+  .arrow{font-family:var(--mono);font-size:15px;color:var(--faint);line-height:1;margin:7px 0}
+  .arrow.live{color:var(--indigo2)}
+  .paths{display:grid;grid-template-columns:1fr 1fr;gap:11px;width:100%;max-width:420px}
+  @media(max-width:460px){.paths{grid-template-columns:1fr}}
+  .path{border:1px solid var(--line2);background:var(--bg2);padding:11px 12px;transition:.25s}
+  .path .k{font-family:var(--mono);font-size:9.5px;color:var(--faint);margin-bottom:6px}
+  .path .val{font-family:var(--sans);font-weight:800;font-size:18px}
+  .path .tag{font-family:var(--mono);font-size:9.5px;margin-top:5px;letter-spacing:.04em}
+  .path.spoof{border-color:rgba(110,123,255,.4)} .path.spoof .val{color:var(--indigo2)} .path.spoof .tag{color:var(--indigo2)}
+  .path.real{border-color:rgba(53,224,161,.35)} .path.real .val{color:var(--pass)} .path.real .tag{color:var(--pass)}
+  .verdict{display:flex;align-items:center;gap:11px;margin-top:15px;padding:12px 14px;border:1px solid var(--line);transition:.3s}
+  .verdict .chip{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:5px 11px;border:1px solid;flex:none}
+  .verdict .txt{font-family:var(--mono);font-size:11.5px;color:var(--dim);line-height:1.55}
+  .verdict.ok{background:var(--pass-dim);border-color:rgba(53,224,161,.3)} .verdict.ok .chip{color:var(--pass);border-color:rgba(53,224,161,.5)} .verdict.ok .txt b{color:var(--pass)}
+  .verdict.bad{background:var(--danger-dim);border-color:rgba(255,107,107,.3)} .verdict.bad .chip{color:var(--danger);border-color:rgba(255,107,107,.5)} .verdict.bad .txt b{color:var(--danger)}
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="lead">A profile claims <b>color-gamut: srgb</b> on a real <b>p3</b> display. Choose how the override is applied and follow where it lands.</div>
+
+  <div class="toggle">
+    <button id="bCdp" class="on">native (CDP)</button>
+    <button id="bJs">JavaScript</button>
+  </div>
+
+  <div class="flow">
+    <div class="box" id="src">
+      <div class="k">override</div>
+      <div class="m" id="srcM"></div>
+    </div>
+    <div class="arrow" id="a1">&#8595;</div>
+    <div class="box" id="mv">
+      <div class="k">MediaValues &middot; engine (C++)</div>
+      <div class="m" id="mvM"></div>
+    </div>
+    <div class="arrow" id="a2">&#8595;&nbsp;&nbsp;&#8595;</div>
+    <div class="paths">
+      <div class="path" id="pMm">
+        <div class="k">window.matchMedia()</div>
+        <div class="val" id="mmVal"></div>
+        <div class="tag" id="mmTag"></div>
+      </div>
+      <div class="path" id="pCss">
+        <div class="k">@media &middot; CSS cascade</div>
+        <div class="val" id="cssVal"></div>
+        <div class="tag" id="cssTag"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="verdict" id="verdict">
+    <span class="chip" id="chip"></span>
+    <span class="txt" id="txt"></span>
+  </div>
+</div>
+
+<script>
+(function(){
+  function g(id){return document.getElementById(id);}
+  var SPOOF='srgb', REAL='p3', mode='cdp';
+
+  function render(){
+    var cdp = mode==='cdp';
+    g('bCdp').className = cdp?'on':'';
+    g('bJs').className = cdp?'':'on';
+
+    g('srcM').textContent = cdp ? 'Emulation.setEmulatedMedia' : 'window.matchMedia = function(){ ... }';
+
+    // MediaValues holds the spoof only when the engine itself is overridden (CDP).
+    g('mvM').textContent = cdp ? (SPOOF+'  (edited)') : (REAL+'  (untouched)');
+    g('mv').className = cdp ? 'box hit' : 'box';
+
+    // matchMedia always reports the spoof here: CDP via MediaValues, JS via the wrapper.
+    g('mmVal').textContent = SPOOF;
+    g('pMm').className = 'path spoof';
+    g('mmTag').textContent = 'spoofed';
+
+    // CSS reads MediaValues: spoofed under CDP, real under JS.
+    g('cssVal').textContent = cdp ? SPOOF : REAL;
+    g('pCss').className = cdp ? 'path spoof' : 'path real';
+    g('cssTag').textContent = cdp ? 'spoofed' : 'real, untouched';
+
+    g('a1').className = 'arrow live';
+    g('a2').className = cdp ? 'arrow live' : 'arrow';
+
+    var v=g('verdict');
+    if(cdp){
+      v.className='verdict ok';
+      g('chip').textContent='consistent';
+      g('txt').innerHTML='The override edits <b>MediaValues</b>, so both read paths return <b>'+SPOOF+'</b>. Nothing to catch.';
+    }else{
+      v.className='verdict bad';
+      g('chip').textContent='contradiction';
+      g('txt').innerHTML='The wrapper reaches only matchMedia. The CSS cascade still reads the real <b>'+REAL+'</b>, so the two paths disagree.';
+    }
+  }
+
+  g('bCdp').addEventListener('click',function(){mode='cdp';render();});
+  g('bJs').addEventListener('click',function(){mode='js';render();});
+  render();
+})();
+</script>
+<script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>
+</body>
+</html>

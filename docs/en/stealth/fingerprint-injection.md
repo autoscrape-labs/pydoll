@@ -118,6 +118,7 @@ Rules for a profile that is not detected. Most describe a layer `apply_fingerpri
 - User-Agent Chrome version = real binary version. Keep `CHROME_DESKTOP` / `CHROME_MOBILE` equal to the major from `browser.get_version()`, and update them on every Chrome upgrade ([Chrome version mismatch](#case-study-a-chrome-version-mismatch-triggering-cloudflares-challenge)).
 - Locale, timezone, and geolocation = egress IP country. `Accept-Language` and timezone are cross-referenced against the IP ([Locale/IP mismatch](#case-study-a-locale-mismatch-triggering-googles-captcha)).
 - WebGL vendor/renderer = host GPU family (an Apple renderer on Apple hardware, and so on). The rendered pixels come from the real GPU and cannot be forged.
+- Color-gamut = host display: `p3` for a wide-gamut or Apple display, `srgb` for a standard monitor. Match it to the real `dynamic-range` (`p3` with `high`, `srgb` with `standard`), which CDP cannot emulate.
 - Apply the fingerprint before the first navigation.
 - One identity per browser context; use separate contexts for different identities ([Multiple fingerprints across contexts](#multiple-fingerprints-across-contexts)).
 - Do not combine the `--user-agent` option with `apply_fingerprint()`; the fingerprint owns the User-Agent.
@@ -139,8 +140,11 @@ Signals Chrome can override itself are set through the DevTools Protocol `Emulat
 | Screen size, `devicePixelRatio`, viewport, orientation | `Emulation.setDeviceMetricsOverride` |
 | Locale (`Intl` formatting) | `Emulation.setLocaleOverride` |
 | `navigator.hardwareConcurrency` | `Emulation.setHardwareConcurrencyOverride` |
+| CSS media features (`color-gamut`, `prefers-color-scheme`, `forced-colors`, ...) | `Emulation.setEmulatedMedia` |
 
 `hardwareConcurrency` illustrates the difference: a JavaScript getter is detectable (see below), while `Emulation.setHardwareConcurrencyOverride` changes the value with the getter staying native.
+
+CSS media features work the same way, set through the profile's `media_features` field so `window.matchMedia` keeps returning a genuine result. Chrome emulates only six natively (`color-gamut`, `prefers-color-scheme`, `prefers-contrast`, `forced-colors`, `prefers-reduced-motion`, `prefers-reduced-transparency`); [The limits of spoofing](../deep-dive/fingerprinting/spoofing-limits.md) explains why the rest cannot be faked without a contradiction.
 
 ### JavaScript overrides
 
@@ -385,6 +389,7 @@ A public profile reused widely becomes a shared signature rather than a disguise
 
 - [Evasion techniques](evasion-techniques.md): User-Agent consistency, language, WebRTC leak protection, and what Pydoll gives you for free.
 - [Browser fingerprinting](../deep-dive/fingerprinting/browser-fingerprinting.md): the detection surface (canvas, WebGL, navigator, fonts) this page overrides.
+- [The limits of spoofing](../deep-dive/fingerprinting/spoofing-limits.md): why some signals are safe to override and others cannot be faked at all.
 - [Network fingerprinting](../deep-dive/fingerprinting/network-fingerprinting.md): the TLS/TCP/HTTP2 layer injection cannot reach.
 - [Browser contexts](../guides/browser-contexts.md): run one identity per context.
 - [Proxies](../guides/proxies.md): match the egress IP to the profile's geography.

@@ -66,6 +66,9 @@ nav:
           - Network fingerprinting: deep-dive/fingerprinting/network-fingerprinting.md
           - Browser fingerprinting: deep-dive/fingerprinting/browser-fingerprinting.md
           - Behavioral fingerprinting: deep-dive/fingerprinting/behavioral-fingerprinting.md
+          - The limits of spoofing: deep-dive/fingerprinting/spoofing-limits.md
+          - Auditing a fingerprint: deep-dive/fingerprinting/auditing.md
+          - Cloudflare's managed challenge: deep-dive/fingerprinting/cloudflare-challenge.md
   - API Reference:
       - Overview: api/index.md
       - Browser:
@@ -185,6 +188,9 @@ plugins:
             Network fingerprinting: 网络指纹识别
             Browser fingerprinting: 浏览器指纹识别
             Behavioral fingerprinting: 行为指纹识别
+            The limits of spoofing: 伪造的极限
+            Auditing a fingerprint: 审计一个 fingerprint
+            Cloudflare's managed challenge: Cloudflare 的托管挑战
             API Reference: API 参考
             Browser: 浏览器
             Options: 选项
@@ -251,6 +257,9 @@ plugins:
             Network fingerprinting: Fingerprinting de rede
             Browser fingerprinting: Fingerprinting de navegador
             Behavioral fingerprinting: Fingerprinting comportamental
+            The limits of spoofing: Os limites do spoofing
+            Auditing a fingerprint: Auditando um fingerprint
+            Cloudflare's managed challenge: O managed challenge do Cloudflare
             API Reference: Referência da API
             Browser: Navegador
             Options: Opções

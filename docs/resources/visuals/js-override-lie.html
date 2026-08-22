@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>A JavaScript override the engine gives away</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+<style>
+  :root{
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;--panel2:#191c20;
+    --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
+    --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--pass:#35e0a1;--amber:#f5b544;--danger:#ff6b6b;
+    --pass-dim:rgba(53,224,161,.12);--amber-dim:rgba(245,181,68,.13);--danger-dim:rgba(255,107,107,.12);
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
+  /* CSS path: the engine sets --dr from the real display, no JS involved. */
+  .probe{--dr:"standard"}
+  @media (dynamic-range: high){.probe{--dr:"high"}}
+  .widget{border:1px solid var(--line);padding:16px 18px}
+  .lead{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:15px;line-height:1.5}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+  @media(max-width:520px){.cards{grid-template-columns:1fr}}
+  .card{border:1px solid var(--line2);background:var(--bg2);padding:13px 14px;display:flex;flex-direction:column;gap:8px;min-width:0;transition:.25s}
+  .card .k{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint)}
+  .card .q{font-family:var(--mono);font-size:10.5px;color:var(--dim);word-break:break-all}
+  .card .val{font-family:var(--sans);font-weight:800;font-size:20px;letter-spacing:.01em}
+  .card .src{font-family:var(--mono);font-size:9.5px;color:var(--faint);margin-top:auto}
+  .card.ok{border-color:rgba(53,224,161,.35)} .card.ok .val{color:var(--pass)}
+  .card.lie{border-color:rgba(255,107,107,.45)} .card.lie .val{color:var(--danger)}
+  .card.truth{border-color:rgba(110,123,255,.4)} .card.truth .val{color:var(--indigo2)}
+  .control{display:flex;align-items:center;gap:12px;margin-top:13px}
+  .control button{font-family:var(--mono);font-size:12px;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:9px 14px;cursor:pointer;transition:.15s}
+  .control button:hover{border-color:var(--indigo);color:#fff}
+  .control .hint{font-family:var(--mono);font-size:10.5px;color:var(--faint)}
+  .verdict{display:flex;align-items:center;gap:12px;margin-top:14px;padding:13px 15px;border:1px solid var(--line);transition:.3s}
+  .verdict .chip{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:5px 11px;border:1px solid;flex:none}
+  .verdict .txt{font-family:var(--mono);font-size:11.5px;color:var(--dim);line-height:1.55}
+  .verdict.ok{background:var(--pass-dim);border-color:rgba(53,224,161,.3)} .verdict.ok .chip{color:var(--pass);border-color:rgba(53,224,161,.5)} .verdict.ok .txt b{color:var(--pass)}
+  .verdict.lie{background:var(--danger-dim);border-color:rgba(255,107,107,.3)} .verdict.lie .chip{color:var(--danger);border-color:rgba(255,107,107,.5)} .verdict.lie .txt b{color:var(--danger)}
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="lead">Your display reports its <b>dynamic-range</b> two ways. Apply a JavaScript override and watch only one of them lie.</div>
+
+  <div class="cards">
+    <div class="card" id="jsCard">
+      <div class="k">JavaScript</div>
+      <div class="q">matchMedia('(dynamic-range: high)')</div>
+      <div class="val" id="jsVal">-</div>
+      <div class="src" id="jsSrc">reads the real display</div>
+    </div>
+    <div class="card truth" id="cssCard">
+      <div class="k">CSS &middot; the engine</div>
+      <div class="q">@media (dynamic-range: high)</div>
+      <div class="val" id="cssVal">-</div>
+      <div class="src">evaluated in C++, JS can't reach it</div>
+    </div>
+  </div>
+
+  <div class="control">
+    <button id="btn">Apply JavaScript override</button>
+    <span class="hint" id="hint"></span>
+  </div>
+
+  <div class="verdict" id="verdict">
+    <span class="chip" id="chip"></span>
+    <span class="txt" id="txt"></span>
+  </div>
+</div>
+
+<span class="probe" id="probe" style="display:none"></span>
+
+<script>
+(function(){
+  function g(id){return document.getElementById(id);}
+  var probe=g('probe');
+  var origMatchMedia=window.matchMedia;
+  var overridden=false;
+
+  function cssValue(){
+    // strip the quotes the custom property carries
+    return (getComputedStyle(probe).getPropertyValue('--dr')||'').replace(/["']/g,'').trim()||'standard';
+  }
+  function jsValue(){
+    return window.matchMedia('(dynamic-range: high)').matches ? 'high' : 'standard';
+  }
+
+  function applyOverride(){
+    var real=cssValue();
+    var lie = real==='high' ? 'standard' : 'high';   // always the opposite, so it always contradicts
+    window.matchMedia=function(q){
+      if(String(q).indexOf('dynamic-range')!==-1){
+        return {matches: lie==='high', media:q, onchange:null,
+          addEventListener:function(){}, removeEventListener:function(){},
+          addListener:function(){}, removeListener:function(){}, dispatchEvent:function(){return true;}};
+      }
+      return origMatchMedia.call(window,q);
+    };
+    overridden=true;
+  }
+  function removeOverride(){ window.matchMedia=origMatchMedia; overridden=false; }
+
+  function render(){
+    var css=cssValue(), js=jsValue(), lying=(css!==js);
+    g('cssVal').textContent=css;
+    g('jsVal').textContent=js;
+    g('jsCard').className='card '+(lying?'lie':'ok');
+    g('jsSrc').textContent=overridden?'overridden by JS':'reads the real display';
+    g('btn').textContent=overridden?'Remove override':'Apply JavaScript override';
+    g('hint').textContent=overridden?'':'window.matchMedia = function(){ ... }';
+    var v=g('verdict');
+    if(lying){
+      v.className='verdict lie';
+      g('chip').textContent='lie detected';
+      g('txt').innerHTML='matchMedia says <b>'+js+'</b>, the engine’s @media rule still says <b>'+css+'</b>. Any detector that reads the feature through CSS catches the contradiction.';
+    }else{
+      v.className='verdict ok';
+      g('chip').textContent='consistent';
+      g('txt').innerHTML='Both paths agree on <b>'+css+'</b>. This is your real display. A native (CDP) override changes both at once; a JavaScript override reaches only the left card.';
+    }
+  }
+
+  g('btn').addEventListener('click',function(){ overridden?removeOverride():applyOverride(); render(); });
+  render();
+})();
+</script>
+<script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>
+</body>
+</html>
