@@ -2,7 +2,7 @@
 
 Roteie o tráfego do navegador por um proxy para mudar seu IP de saída, distribuir requisições entre endereços ou alcançar um site de outra região. Você define um proxy com um argumento de inicialização, e o Pydoll cuida da autenticação do proxy para você.
 
-<iframe src="/docs/resources/visuals/proxy-routing.html" aria-label="Uma requisição roteada direta versus através de um proxy, mudando o IP que o alvo enxerga" style="width: 100%; height: 300px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/proxy-routing.html" aria-label="Uma requisição roteada direta versus através de um proxy, mudando o IP que o alvo enxerga" style="width: 100%; height: 300px; border: 0;" loading="lazy"></iframe>
 
 ## Definir um proxy
 

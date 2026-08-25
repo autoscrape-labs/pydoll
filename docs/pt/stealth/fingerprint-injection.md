@@ -233,7 +233,7 @@ O Chrome headless expõe sinais que um navegador headful não expõe, e é por i
 
 Cada frame lê seu próprio `window.screen`. Sem a remodelagem, um iframe cross-origin lê a tela `800x600` crua do headless; com ela, o iframe combina com a página:
 
-<iframe src="/docs/resources/visuals/headless-screen-oopif.html" aria-label="Uma página headless e seu iframe cross-origin lendo window.screen; alternar a remodelagem faz o iframe passar da tela 800x600 crua do headless para combinar com a página" style="width: 100%; height: 460px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/headless-screen-oopif.html" aria-label="Uma página headless e seu iframe cross-origin lendo window.screen; alternar a remodelagem faz o iframe passar da tela 800x600 crua do headless para combinar com a página" style="width: 100%; height: 460px; border: 0;" loading="lazy"></iframe>
 
 A área de trabalho vem do `avail_top` / `avail_left` do perfil (e `avail_width` / `avail_height`); o perfil macOS reserva uma barra de menu de 25px, o perfil Windows uma taskbar embaixo. A tela virtual headless só aceita um `devicePixelRatio` inteiro, então um dpr fracionário (mobile, escalonamento de tela do Windows) é arredondado para os iframes, enquanto a página principal mantém o valor exato.
 

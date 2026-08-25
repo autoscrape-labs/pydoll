@@ -4,6 +4,8 @@ Network fingerprinting identifies clients by analyzing characteristics of the TC
 
 This is the theory behind the [Stealth](../../stealth/index.md) guides. It pairs with [Browser fingerprinting](browser-fingerprinting.md) (the JavaScript-visible signals) and [Behavioral fingerprinting](behavioral-fingerprinting.md) (how you move and type). For how the protocols themselves work, see [Network fundamentals](../network/network-fundamentals.md).
 
+<iframe scrolling="no" src="/docs/resources/visuals/network-fingerprinting.html" aria-label="Below the JavaScript layer, the TLS ClientHello and HTTP/2 SETTINGS form a JA3 and JA4 fingerprint the page cannot spoof; a real Chrome matches its User-Agent while a Python client contradicts it" style="width: 100%; height: 900px; border: 0;" loading="lazy"></iframe>
+
 ## TCP/IP fingerprinting
 
 Every operating system implements the TCP/IP stack differently. The SYN packet that initiates a TCP connection carries enough information to identify the OS with high confidence: the initial TTL, the TCP window size, the Maximum Segment Size, and the order and selection of TCP options. None of these values are controlled by the browser. They come from the kernel.

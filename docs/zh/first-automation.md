@@ -67,6 +67,8 @@ for quote in quotes:
 
 ## 完整脚本 {#the-full-script}
 
+<iframe scrolling="no" src="/docs/resources/visuals/first-automation.html" aria-label="A read-along walkthrough of the first automation script: each line highlights as it runs while a browser window launches, navigates, finds elements, types, clicks, and extracts typed data" style="width: 100%; height: 860px; border: 0;" loading="lazy"></iframe>
+
 创建 `first_automation.py`：
 
 ```python

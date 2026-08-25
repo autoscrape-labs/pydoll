@@ -57,7 +57,7 @@ graph LR
     C2 --> T3[Aba C]
 ```
 
-<iframe src="/docs/resources/visuals/contexts-isolation.html" aria-label="Dois contextos de navegador, cada um com seu próprio pote de cookies, mostrando que um cookie definido em um não aparece no outro" style="width: 100%; height: 325px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/contexts-isolation.html" aria-label="Dois contextos de navegador, cada um com seu próprio pote de cookies, mostrando que um cookie definido em um não aparece no outro" style="width: 100%; height: 325px; border: 0;" loading="lazy"></iframe>
 
 Faça login em cada contexto: o cookie cai apenas no pote daquele contexto. Nada atravessa, e é isso que torna os contextos bons para rodar sessões separadas em um só navegador.
 

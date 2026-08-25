@@ -2,7 +2,7 @@
 
 检测系统会跨层关联各种信号：网络 fingerprint（TCP/TLS/HTTP2）、浏览器 fingerprint（canvas、WebGL、navigator）以及行为（鼠标、键盘、时序）。通过了一层却在另一层失败，仍然会让你被标记。一个住宅 IP 却带着不匹配的 TCP fingerprint，或者一个完美的浏览器 fingerprint 却配上机器人式的点击，都会被任何做交叉比对的系统抓住。本页讲的是 Pydoll 免费提供给你的部分，以及你能掌控、用来保持各层一致的杠杆。
 
-<iframe src="/docs/resources/visuals/evasion-layers.html" aria-label="网络、浏览器、行为和 IP 各层必须全部保持一致才能通过" style="width: 100%; height: 320px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/evasion-layers.html" aria-label="网络、浏览器、行为和 IP 各层必须全部保持一致才能通过" style="width: 100%; height: 320px; border: 0;" loading="lazy"></iframe>
 
 ## 你免费获得的部分
 

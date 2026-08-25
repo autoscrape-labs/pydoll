@@ -2,7 +2,7 @@
 
 O Pydoll consegue clicar num checkbox do Cloudflare Turnstile para você, o mesmo clique que uma pessoa faz no widget. Ele não resolve desafios de imagem ou de quebra-cabeça, e se o clique é aceito ou não depende da reputação do seu IP e do seu fingerprint, não do Pydoll. Encare isto como automatizar o clique, não como derrotar o captcha.
 
-<iframe src="/docs/resources/visuals/captcha-turnstile.html" aria-label="Pydoll clicando num checkbox do Turnstile, com o resultado dependendo da reputação do IP" style="width: 100%; height: 345px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/captcha-turnstile.html" aria-label="Pydoll clicando num checkbox do Turnstile, com o resultado dependendo da reputação do IP" style="width: 100%; height: 345px; border: 0;" loading="lazy"></iframe>
 
 ## Lide com o Turnstile enquanto navega
 
@@ -80,7 +80,7 @@ Clicar no checkbox é apenas parte disso. O Turnstile decide se aceita a partir 
 
 Se o checkbox é clicado mas um desafio de quebra-cabeça ou de imagem aparece em seguida, a pontuação de confiança estava baixa demais. O Pydoll não consegue resolver esse desafio; melhore o IP e o fingerprint em vez disso.
 
-<iframe src="/docs/resources/visuals/turnstile-trust-score.html" aria-label="Reputação do IP, consistência do fingerprint e o modo do navegador alimentam uma pontuação de confiança que resulta em aceito, desafiado ou bloqueado; o clique que o Pydoll automatiza é apenas uma das entradas" style="width: 100%; height: 430px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/turnstile-trust-score.html" aria-label="Reputação do IP, consistência do fingerprint e o modo do navegador alimentam uma pontuação de confiança que resulta em aceito, desafiado ou bloqueado; o clique que o Pydoll automatiza é apenas uma das entradas" style="width: 100%; height: 430px; border: 0;" loading="lazy"></iframe>
 
 ## O que ele não faz
 

@@ -15,13 +15,13 @@ Um sinal do navegador costuma ter mais de um caminho de leitura. `matchMedia('(c
 
 Uma media feature vive no `MediaValues` do motor, e ambos os caminhos de leitura resolvem contra ele. Alterne o tipo de override abaixo para ver quais caminhos cada um alcança:
 
-<iframe src="/docs/resources/visuals/media-read-paths.html" aria-label="Um override de CDP edita o MediaValues do motor, então o matchMedia e a cascata CSS mudam ambos; um override em JavaScript envolve apenas o matchMedia, deixando o caminho CSS lendo o valor real" style="width: 100%; height: 430px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/media-read-paths.html" aria-label="Um override de CDP edita o MediaValues do motor, então o matchMedia e a cascata CSS mudam ambos; um override em JavaScript envolve apenas o matchMedia, deixando o caminho CSS lendo o valor real" style="width: 100%; height: 430px; border: 0;" loading="lazy"></iframe>
 
 Um override de CDP edita o `MediaValues`, então o `matchMedia` e a cascata `@media` retornam ambos o novo valor. Um override em JavaScript substitui a função `matchMedia`; a cascata nunca a chama, então o CSS continua resolvendo contra o `MediaValues` real. Essa lacuna é a contradição.
 
 A demonstração abaixo roda no seu próprio display. Ambos os cartões leem o seu `dynamic-range` real e concordam. Aplique um override em JavaScript e só o `matchMedia` mente; a regra `@media` do motor continua reportando a verdade.
 
-<iframe src="/docs/resources/visuals/js-override-lie.html" aria-label="o matchMedia e uma regra CSS @media leem o mesmo dynamic-range; um override em JavaScript faz apenas o matchMedia mentir enquanto o caminho CSS permanece verdadeiro" style="width: 100%; height: 340px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/js-override-lie.html" aria-label="o matchMedia e uma regra CSS @media leem o mesmo dynamic-range; um override em JavaScript faz apenas o matchMedia mentir enquanto o caminho CSS permanece verdadeiro" style="width: 100%; height: 340px; border: 0;" loading="lazy"></iframe>
 
 É exatamente por isso que o Pydoll não forja o `dynamic-range`. O Chrome mantém uma allowlist fixa de media features sobrescrevíveis. No `MediaFeatureOverrides::SetOverride` do Blink, sete nomes são tratados, `color-gamut`, `prefers-color-scheme`, `prefers-contrast`, `prefers-reduced-motion`, `prefers-reduced-data`, `prefers-reduced-transparency` e `forced-colors`, e qualquer outro nome passa direto e não muda nada. `dynamic-range`, `inverted-colors` e `monochrome` não têm ramo ali, então o comando CDP é aceito e descartado silenciosamente. É um caminho de código ausente no motor, não um problema de formato de valor.
 

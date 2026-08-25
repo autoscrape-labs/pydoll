@@ -4,6 +4,8 @@ A detecção de proxy é probabilística: um site combina dezenas de sinais frac
 
 Ela se apoia no resto da seção de rede: [Fundamentos de rede](network-fundamentals.md) para as camadas envolvidas, e [Proxies HTTP/HTTPS](http-proxies.md) e [Proxies SOCKS](socks-proxies.md) para como cada tipo de proxy se comporta.
 
+<iframe scrolling="no" src="/docs/resources/visuals/proxy-detection-score.html" aria-label="Proxy detection folds many weak signals (ASN reputation, IP versus timezone and language, known-proxy databases, WebRTC leaks) into one confidence score that crosses a block threshold" style="width: 100%; height: 720px; border: 0;" loading="lazy"></iframe>
+
 ## Reputação de IP
 
 A reputação de IP é a técnica mais amplamente empregada. Ela combina dados públicos (registros de ASN, WHOIS, bancos de dados de geolocalização) com inteligência proprietária para ordenar endereços IP em categorias de risco.

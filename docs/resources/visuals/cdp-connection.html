@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>One WebSocket: id-correlated commands, queued events</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+<style>
+  :root{
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;--panel2:#191c20;
+    --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
+    --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--indigo-dim:rgba(110,123,255,.13);
+    --pass:#35e0a1;--pass-dim:rgba(53,224,161,.12);
+    --amber:#f5b544;--amber-dim:rgba(245,181,68,.13);
+    --danger:#ff6b6b;--danger-dim:rgba(255,107,107,.12);
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
+  .widget{border:1px solid var(--line);padding:16px 18px}
+  .lead{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:15px;line-height:1.55}
+  .lead b{color:var(--ink);font-weight:600}
+  .lead .i{color:var(--indigo2)} .lead .g{color:var(--pass)} .lead .a{color:var(--amber)}
+
+  .stage{position:relative;border:1px solid var(--line2);background:var(--bg2);padding:14px 14px 14px;overflow:hidden}
+
+  /* ---- wire band ---- */
+  .band{position:relative;height:104px}
+  .node{position:absolute;top:26px;width:112px;border:1px solid var(--line2);background:var(--panel);padding:9px 11px;z-index:4}
+  .node.pydoll{left:0;border-color:rgba(110,123,255,.4)}
+  .node.chrome{right:0;text-align:right}
+  .node .dot{width:8px;height:8px;border-radius:50%;position:absolute;top:11px}
+  .node.pydoll .dot{background:var(--indigo);left:11px;box-shadow:0 0 0 4px var(--indigo-dim)}
+  .node.chrome .dot{background:var(--faint);right:11px;box-shadow:0 0 0 4px rgba(91,101,112,.16)}
+  .node .ntitle{font-family:var(--sans);font-weight:800;font-size:13px;line-height:1}
+  .node.pydoll .ntitle{padding-left:14px} .node.chrome .ntitle{padding-right:14px}
+  .node .nsub{font-family:var(--mono);font-size:8.5px;color:var(--faint);margin-top:4px}
+  .node .idc{font-family:var(--mono);font-size:9.5px;color:var(--dim);margin-top:6px;border-top:1px solid var(--line);padding-top:5px}
+  .node .idc b{color:var(--indigo2);font-weight:600}
+  .node.pulse{animation:npulse .5s ease-out}
+  @keyframes npulse{0%{box-shadow:0 0 0 0 rgba(110,123,255,.35)}100%{box-shadow:0 0 0 10px rgba(110,123,255,0)}}
+  .node.chrome.pulse{animation:npulseC .5s ease-out}
+  @keyframes npulseC{0%{box-shadow:0 0 0 0 rgba(154,162,173,.30)}100%{box-shadow:0 0 0 10px rgba(154,162,173,0)}}
+
+  .wire{position:absolute;left:112px;right:112px;top:52px;height:2px;
+    background:linear-gradient(90deg,var(--line2),var(--line2));overflow:hidden}
+  .wire::after{content:"";position:absolute;inset:0;
+    background:repeating-linear-gradient(90deg,transparent 0 10px,rgba(110,123,255,.5) 10px 16px);
+    background-size:26px 100%;animation:flow 1.1s linear infinite;opacity:.5}
+  .wl{position:absolute;top:60px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:8.5px;color:var(--faint);white-space:nowrap;z-index:4}
+  .wl b{color:var(--dim);font-weight:500}
+  @keyframes flow{to{background-position:26px 0}}
+
+  .demux{position:absolute;top:34px;left:38%;transform:translateX(-50%);width:130px;text-align:center;z-index:5}
+  .demux .box{border:1px solid var(--line2);background:var(--panel2);padding:5px 6px}
+  .demux .dt{font-family:var(--mono);font-size:9px;color:var(--ink);font-weight:600}
+  .demux .ds{font-family:var(--mono);font-size:7.5px;color:var(--faint);margin-top:2px}
+  .demux .flag{font-family:var(--mono);font-size:8.5px;margin-top:5px;height:12px;opacity:0;transition:opacity .12s}
+  .demux .flag.on{opacity:1}
+  .demux .flag.resp{color:var(--pass)} .demux .flag.ev{color:var(--amber)}
+  .demux.hot .box{border-color:var(--indigo)}
+
+  /* ---- lower grid ---- */
+  .lower{display:grid;grid-template-columns:minmax(150px,.9fr) 1.35fr;gap:12px;margin-top:6px}
+  @media(max-width:540px){.lower{grid-template-columns:1fr}}
+  .panel{border:1px solid var(--line);background:var(--panel);padding:9px 10px}
+  .phead{display:flex;align-items:baseline;gap:7px;margin-bottom:8px;flex-wrap:wrap}
+  .phead .pt{font-family:var(--mono);font-size:10.5px;color:var(--indigo2);font-weight:600}
+  .phead .psub{font-family:var(--mono);font-size:8.5px;color:var(--faint)}
+  .phead .qc{margin-left:auto;font-family:var(--mono);font-size:9px;color:var(--dim)}
+  .phead .qc b{color:var(--amber);font-weight:600}
+
+  .rows{min-height:70px;display:flex;flex-direction:column;gap:5px}
+  .row{display:flex;align-items:center;gap:7px;padding:5px 7px;border:1px solid var(--line);background:var(--bg2);font-family:var(--mono);font-size:10px}
+  .row.new{animation:rin .3s ease-out}
+  @keyframes rin{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:none}}
+  .row .id{color:var(--indigo2);font-weight:600;min-width:26px}
+  .row .m{color:var(--dim);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .row .stt{font-size:8.5px;text-transform:uppercase;letter-spacing:.04em;padding:2px 7px;border:1px solid;white-space:nowrap;display:flex;align-items:center;gap:5px}
+  .row .stt.await{color:var(--amber);border-color:rgba(245,181,68,.4);background:var(--amber-dim)}
+  .row .stt.done{color:var(--pass);border-color:rgba(53,224,161,.4);background:var(--pass-dim)}
+  .row.resolved{border-color:rgba(53,224,161,.28)}
+  .spin{width:8px;height:8px;border:1.5px solid rgba(245,181,68,.35);border-top-color:var(--amber);border-radius:50%;animation:spin .7s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .stt.done svg{width:9px;height:9px;color:var(--pass)}
+
+  .queue{display:flex;gap:5px;flex-wrap:wrap;min-height:46px;align-content:flex-start;
+    border:1px dashed var(--line2);background:var(--bg2);padding:7px;position:relative}
+  .queue .empty{font-family:var(--mono);font-size:9px;color:var(--faint);align-self:center}
+  .qitem{border:1px solid rgba(245,181,68,.42);background:var(--amber-dim);color:var(--amber);
+    font-family:var(--mono);font-size:8.5px;padding:3px 6px;white-space:nowrap;animation:qin .22s ease-out}
+  @keyframes qin{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:none}}
+
+  .worker{display:flex;align-items:center;gap:9px;margin-top:9px}
+  .worker .wk{font-family:var(--mono);font-size:9px;color:var(--dim);white-space:nowrap}
+  .worker .wk b{color:var(--ink);font-weight:600}
+  .worker .track{flex:1;height:4px;background:var(--line);position:relative;overflow:hidden}
+  .worker .track i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--indigo);opacity:.85}
+  .worker.busy .wk .st{color:var(--indigo2)}
+  .worker .st{color:var(--faint)}
+
+  .cbs{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+  .cb{font-family:var(--mono);font-size:8.5px;color:var(--dim);border:1px solid var(--line);background:var(--bg2);padding:3px 7px;transition:.15s}
+  .cb b{color:var(--faint);font-weight:600;margin-left:4px}
+  .cb.hit{border-color:var(--pass);color:var(--pass);background:var(--pass-dim)}
+  .cb.hit b{color:var(--pass)}
+  .nlog{font-family:var(--mono);font-size:8.5px;color:var(--faint);margin-top:8px}
+  .nlog b{color:var(--dim);font-weight:600}
+
+  /* ---- traveling frames ---- */
+  .frame{position:absolute;left:0;top:0;font-family:var(--mono);font-size:9.5px;padding:4px 8px;border:1px solid;
+    white-space:nowrap;z-index:7;box-shadow:0 5px 16px rgba(0,0,0,.4);will-change:transform;pointer-events:none}
+  .frame.cmd{color:var(--indigo2);border-color:rgba(110,123,255,.55);background:linear-gradient(180deg,rgba(110,123,255,.16),var(--indigo-dim))}
+  .frame.resp{color:var(--pass);border-color:rgba(53,224,161,.55);background:linear-gradient(180deg,rgba(53,224,161,.14),var(--pass-dim))}
+  .frame.event{color:var(--amber);border-color:rgba(245,181,68,.55);background:linear-gradient(180deg,rgba(245,181,68,.15),var(--amber-dim))}
+
+  /* ---- controls ---- */
+  .controls{display:flex;align-items:center;gap:9px;margin-top:14px;flex-wrap:wrap}
+  button{font-family:var(--mono);font-size:11.5px;font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:8px 13px;cursor:pointer;transition:.15s}
+  button:hover{border-color:var(--indigo);color:#fff}
+  button.tgl.on{border-color:var(--indigo);color:var(--indigo2);background:var(--indigo-dim)}
+  button.tgl.slowon{border-color:var(--amber);color:var(--amber);background:var(--amber-dim)}
+  .legend{display:flex;align-items:center;gap:12px;font-family:var(--mono);font-size:9.5px;color:var(--faint);margin-left:auto;flex-wrap:wrap;justify-content:flex-end}
+  .legend i{display:inline-block;width:8px;height:8px;border:1px solid;vertical-align:0;margin-right:4px}
+  .legend i.c{border-color:rgba(110,123,255,.55);background:var(--indigo-dim)}
+  .legend i.r{border-color:rgba(53,224,161,.55);background:var(--pass-dim)}
+  .legend i.e{border-color:rgba(245,181,68,.55);background:var(--amber-dim)}
+  .caption{font-family:var(--mono);font-size:10.5px;color:var(--dim);width:100%;min-height:15px;margin-top:2px}
+  .caption b{color:var(--indigo2);font-weight:600} .caption .g{color:var(--pass)} .caption .a{color:var(--amber)}
+
+  @media (prefers-reduced-motion:reduce){
+    .wire::after{animation:none} .spin{animation:none;border-top-color:var(--amber)}
+    .frame{transition:none!important} .node.pulse,.node.chrome.pulse{animation:none}
+    .row.new,.qitem{animation:none}
+  }
+
+  /* theme-matched thin scrollbars for overflow-x boxes (replaces the default white bar) */
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--line2)}
+  ::-webkit-scrollbar-thumb:hover{background:var(--faint)}
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="lead">
+    One <b>WebSocket</b> carries everything. A command goes out with an <span class="i">id</span>; Chrome's reply comes back with the <b>same id</b>, so
+    <b>_process_single_message</b> resolves that command's <span class="i">Future</span> <b>inline</b>. Events have <b>no id</b>: they drop onto a separate
+    <span class="a">_event_queue</span> and a worker drains them in order to your callbacks. The <span class="g">reply lane</span> and the <span class="a">event lane</span> never block each other.
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="band">
+      <div class="node pydoll" id="pydoll">
+        <span class="dot"></span>
+        <div class="ntitle">pydoll</div>
+        <div class="nsub">ConnectionHandler</div>
+        <div class="idc">_id &rarr; <b id="idc">1</b></div>
+      </div>
+
+      <div class="wire" id="wire"></div>
+      <div class="wl"><b>ws.send()</b> &nbsp;&#8594;&nbsp;&nbsp;&#8592;&nbsp; <b>ws.recv()</b></div>
+
+      <div class="demux" id="demux">
+        <div class="box">
+          <div class="dt">_process_single_message</div>
+          <div class="ds">_is_command_response &rarr; &quot;id&quot; in msg ?</div>
+        </div>
+        <div class="flag" id="dxflag"></div>
+      </div>
+
+      <div class="node chrome" id="chrome">
+        <span class="dot"></span>
+        <div class="ntitle">Chrome</div>
+        <div class="nsub">--remote-debugging-port</div>
+        <div class="idc">runs cmds &middot; emits events</div>
+      </div>
+    </div>
+
+    <div class="lower">
+      <div class="panel">
+        <div class="phead"><span class="pt">_pending_commands</span><span class="psub">dict[int, Future]</span></div>
+        <div class="rows" id="rows"></div>
+      </div>
+
+      <div class="panel">
+        <div class="phead"><span class="pt">_event_queue</span><span class="psub">asyncio.Queue &middot; FIFO</span><span class="qc">queued: <b id="qc">0</b></span></div>
+        <div class="queue" id="queue"><span class="empty">events drop in here</span></div>
+        <div class="worker" id="worker">
+          <span class="wk"><b>_process_event_queue</b> &middot; <span class="st" id="wst">idle</span></span>
+          <span class="track"><i id="wbar"></i></span>
+        </div>
+        <div class="cbs" id="cbs">
+          <div class="cb" data-ev="Network.requestWillBeSent">on(Network.requestWillBeSent)<b>0</b></div>
+          <div class="cb" data-ev="Page.loadEventFired">on(Page.loadEventFired)<b>0</b></div>
+        </div>
+        <div class="nlog">network_logs &middot; deque(maxlen=10000): <b id="nlog">0</b></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button id="send">Send command</button>
+    <button id="stream" class="tgl on">Event stream: on</button>
+    <button id="slow" class="tgl">Slow callback: off</button>
+    <span class="legend">
+      <span><i class="c"></i>command</span>
+      <span><i class="r"></i>reply (by id)</span>
+      <span><i class="e"></i>event (no id)</span>
+    </span>
+    <span class="caption" id="caption">one WebSocket &middot; id-correlated replies resolve inline &middot; events flow through the queue</span>
+  </div>
+</div>
+
+<script>
+(function(){
+  var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  var U=function(ms){return reduce?0:ms;};
+  function g(id){return document.getElementById(id);}
+  var stage=g('stage');
+
+  var CMDS=['Page.navigate','DOM.getDocument','Runtime.evaluate','Input.dispatchMouseEvent','Page.enable'];
+  var EVENTS=['Network.requestWillBeSent','Page.frameStartedLoading','Network.responseReceived',
+              'Page.loadEventFired','Runtime.consoleAPICalled','Network.requestWillBeSent'];
+
+  var T=[];                 // pending timeouts
+  var nextId=1;             // mirrors CommandsManager._id
+  var rowsById={};          // id -> {el, sttEl}
+  var Q=[];                 // mirrors _event_queue (FIFO): {method, el}
+  var workerBusy=false;
+  var streamOn=true, slowOn=false;
+  var cmdTimer=null, evTimer=null;
+
+  // ---- geometry ----
+  function A(el){
+    var s=stage.getBoundingClientRect(), r=el.getBoundingClientRect();
+    return {cx:r.left-s.left+r.width/2, cy:r.top-s.top+r.height/2};
+  }
+  function aPydoll(){ var r=g('pydoll').getBoundingClientRect(), s=stage.getBoundingClientRect();
+    return {cx:r.right-s.left-6, cy:r.top-s.top+r.height/2}; }
+  function aChrome(){ var r=g('chrome').getBoundingClientRect(), s=stage.getBoundingClientRect();
+    return {cx:r.left-s.left+6, cy:r.top-s.top+r.height/2}; }
+  function aDemux(){ return A(g('demux').querySelector('.box')); }
+
+  // ---- traveling frame ----
+  function frame(kind,txt){ var f=document.createElement('div'); f.className='frame '+kind; f.textContent=txt; stage.appendChild(f); return f; }
+  function placeAt(f,cx,cy){ f.style.transition='none'; f.style.transform='translate('+(cx-f.offsetWidth/2)+'px,'+(cy-f.offsetHeight/2)+'px)'; }
+  function glide(f,cx,cy,ms,cb){
+    f.style.transition='transform '+ms+'ms cubic-bezier(.4,0,.2,1)';
+    f.style.transform='translate('+(cx-f.offsetWidth/2)+'px,'+(cy-f.offsetHeight/2)+'px)';
+    if(cb) T.push(setTimeout(cb, ms));
+  }
+  function pulse(el){ el.classList.remove('pulse'); void el.offsetWidth; el.classList.add('pulse'); }
+  function flagDemux(txt,cls){ var f=g('dxflag'); f.textContent=txt; f.className='flag on '+cls;
+    g('demux').classList.add('hot'); T.push(setTimeout(function(){ f.classList.remove('on'); g('demux').classList.remove('hot'); }, U(560))); }
+
+  function cap(html){ g('caption').innerHTML=html; }
+
+  // ---- pending futures table ----
+  function addRow(id,method){
+    var r=document.createElement('div'); r.className='row new'; r.dataset.cid=id;
+    r.innerHTML='<span class="id">'+id+'</span><span class="m">'+method+'</span>'+
+      '<span class="stt await"><span class="spin"></span>await</span>';
+    g('rows').appendChild(r);
+    rowsById[id]={el:r, stt:r.querySelector('.stt')};
+    prune();
+  }
+  function resolveRow(id){
+    var o=rowsById[id]; if(!o) return;
+    o.el.classList.add('resolved');
+    o.stt.className='stt done';
+    o.stt.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>resolved';
+    if(reduce){ delete rowsById[id]; return; }
+    T.push(setTimeout(function(){ if(o.el.parentNode){ o.el.style.transition='opacity .3s'; o.el.style.opacity='0';
+      T.push(setTimeout(function(){ if(o.el.parentNode)o.el.remove(); },U(320))); } delete rowsById[id]; }, U(1500)));
+  }
+  function prune(){
+    var rows=g('rows').children;
+    while(rows.length>5){ var dead=rows[0]; if(dead.dataset.cid) delete rowsById[dead.dataset.cid]; dead.remove(); }
+  }
+
+  // ---- queue plumbing ----
+  function refreshQC(){ g('qc').textContent=Q.length; var e=g('queue').querySelector('.empty');
+    if(e) e.style.display=Q.length?'none':''; }
+  function enqueue(method){
+    var e=g('queue').querySelector('.empty'); if(e) e.style.display='none';
+    var it=document.createElement('div'); it.className='qitem'; it.textContent=method.split('.')[1]||method;
+    g('queue').appendChild(it);
+    Q.push({method:method, el:it});
+    refreshQC();
+    pumpWorker();
+  }
+  function pumpWorker(){
+    if(workerBusy || !Q.length) return;
+    workerBusy=true;
+    var item=Q.shift();
+    var srect=A(item.el);
+    item.el.remove(); refreshQC();
+    g('worker').classList.add('busy'); g('wst').textContent='processing '+(item.method.split('.')[1]||item.method);
+    var dur=slowOn?1650:520;
+    var bar=g('wbar'); bar.style.transition='none'; bar.style.width='0'; void bar.offsetWidth;
+    bar.style.transition='width '+U(dur)+'ms linear'; bar.style.width='100%';
+    var fr=frame('event','{"method":"'+item.method+'"}');
+    placeAt(fr,srect.cx,srect.cy);
+    var w=A(g('worker'));
+    requestAnimationFrame(function(){
+      glide(fr,w.cx,w.cy,U(dur),function(){
+        deliver(item.method);
+        fr.remove();
+        bar.style.transition='none'; bar.style.width='0';
+        g('worker').classList.remove('busy'); g('wst').textContent='idle';
+        workerBusy=false;
+        if(slowOn && Q.length) cap('queue backed up: <b class="a">'+Q.length+'</b> waiting on the slow callback &middot; replies still resolved <b class="g">inline</b>');
+        pumpWorker();
+      });
+    });
+  }
+  function deliver(method){
+    var cb=document.querySelector('.cb[data-ev="'+method+'"]');
+    if(cb){ cb.classList.add('hit'); var b=cb.querySelector('b'); b.textContent=(+b.textContent+1);
+      T.push(setTimeout(function(){ cb.classList.remove('hit'); },U(520))); }
+    if(method==='Network.requestWillBeSent'){ var n=g('nlog'); n.textContent=(+n.textContent+1); }
+  }
+
+  // ---- command / response lane ----
+  function sendCommand(method, manual){
+    var id=nextId++; g('idc').textContent=nextId;
+    addRow(id,method);
+    var p=aPydoll(), c=aChrome();
+    var fr=frame('cmd','{"id":'+id+',"method":"'+method+'"}');
+    placeAt(fr,p.cx,p.cy); pulse(g('pydoll'));
+    if(manual) cap('<b>execute_command</b>(id='+id+', '+method+') &middot; future stored, awaiting reply');
+    requestAnimationFrame(function(){
+      glide(fr,c.cx,c.cy,U(660),function(){
+        pulse(g('chrome')); fr.remove();
+        T.push(setTimeout(function(){ sendResponse(id,method); }, U(520+Math.random()*280)));
+      });
+    });
+    if(reduce){ sendResponse(id,method); }
+  }
+  function sendResponse(id,method){
+    if(!rowsById[id]) return;
+    var c=aChrome(), d=aDemux();
+    var fr=frame('resp','{"id":'+id+',"result":{ ... }}');
+    placeAt(fr,c.cx,c.cy);
+    requestAnimationFrame(function(){
+      glide(fr,d.cx,d.cy,U(440),function(){
+        flagDemux('id '+id+' ✓ → Future','resp');
+        var o=rowsById[id];
+        var target=o?A(o.el):d;
+        glide(fr,target.cx,target.cy,U(320),function(){
+          resolveRow(id); fr.remove(); pulse(g('pydoll'));
+          cap('reply id='+id+' matched &rarr; <b class="g">Future resolved inline</b> &middot; execute_command returns');
+        });
+      });
+    });
+  }
+
+  // ---- event lane ----
+  function emitEvent(method){
+    var c=aChrome(), d=aDemux();
+    var fr=frame('event','{"method":"'+method+'"}');
+    placeAt(fr,c.cx,c.cy);
+    requestAnimationFrame(function(){
+      glide(fr,d.cx,d.cy,U(430),function(){
+        flagDemux('no id → queue','ev');
+        var q=A(g('queue'));
+        glide(fr,q.cx,q.cy,U(300),function(){ fr.remove(); enqueue(method); });
+      });
+    });
+    if(reduce){ enqueue(method); }
+  }
+
+  // ---- ambient loops (loop a gentle scripted demo; change only on user action) ----
+  var ci=0, ei=0;
+  function cmdTick(){ sendCommand(CMDS[ci++%CMDS.length],false); cmdTimer=setTimeout(cmdTick,U(4300)); }
+  function evTick(){ if(streamOn) emitEvent(EVENTS[ei++%EVENTS.length]); evTimer=setTimeout(evTick,U(1300)); }
+
+  // ---- controls ----
+  g('send').addEventListener('click',function(){ sendCommand(CMDS[ci++%CMDS.length],true); });
+  g('stream').addEventListener('click',function(){
+    streamOn=!streamOn; this.className='tgl'+(streamOn?' on':''); this.textContent='Event stream: '+(streamOn?'on':'off');
+    cap(streamOn?'event stream on &middot; Chrome trickles unsolicited events onto <b class="a">_event_queue</b>':'event stream paused &middot; commands still flow on the same socket');
+  });
+  g('slow').addEventListener('click',function(){
+    slowOn=!slowOn; this.className='tgl'+(slowOn?' slowon':''); this.textContent='Slow callback: '+(slowOn?'on':'off');
+    cap(slowOn?'slow callback: the worker lags, so <b class="a">_event_queue</b> backs up, but replies still resolve <b class="g">inline</b>':'callback fast again &middot; the worker drains the queue at full speed');
+  });
+
+  // ---- reduced-motion: compose a static, legible final state ----
+  function staticScene(){
+    nextId=1;
+    sendCommandStatic('Page.navigate',true);
+    sendCommandStatic('DOM.getDocument',false);
+    ['Network.requestWillBeSent','Page.frameStartedLoading','Network.requestWillBeSent'].forEach(function(m){
+      var it=document.createElement('div'); it.className='qitem'; it.textContent=m.split('.')[1];
+      g('queue').appendChild(it); Q.push({method:m,el:it});
+    });
+    refreshQC();
+    g('cbs').querySelector('[data-ev="Network.requestWillBeSent"] b').textContent='4';
+    g('cbs').querySelector('[data-ev="Page.loadEventFired"] b').textContent='1';
+    g('nlog').textContent='4';
+    cap('replies matched by id (resolved) &middot; events waiting in <b class="a">_event_queue</b> for the worker');
+  }
+  function sendCommandStatic(method,resolved){
+    var id=nextId++; g('idc').textContent=nextId; addRow(id,method);
+    if(resolved) resolveRow(id);
+  }
+
+  window.addEventListener('resize',function(){ /* anchors recomputed per spawn; nothing to redo */ });
+  window.addEventListener('load',function(){
+    if(reduce){ staticScene(); return; }
+    T.push(setTimeout(function(){ sendCommand(CMDS[ci++%CMDS.length],false); },500));
+    cmdTimer=setTimeout(cmdTick,U(4300));
+    evTimer=setTimeout(evTick,U(1600));
+  });
+})();
+</script>
+<script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>
+</body>
+</html>

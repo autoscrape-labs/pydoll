@@ -4,6 +4,8 @@ Cloudflare's managed challenge, the "Just a moment…" interstitial, is the stri
 
 It applies [network](network-fingerprinting.md) and [browser](browser-fingerprinting.md) fingerprinting and [the limits of spoofing](spoofing-limits.md) to a live target. Read those for the mechanisms; read this for how they combine, and where they run out.
 
+<iframe scrolling="no" src="/docs/resources/visuals/cloudflare-matrix.html" aria-label="A coherent headful identity passes Cloudflare; flip any single field (IP, host OS, Chrome version, headless) and a different layer catches it, so only coherence of everything passes" style="width: 100%; height: 760px; border: 0;" loading="lazy"></iframe>
+
 ## The controlled test
 
 One machine, one Chrome 151 binary, one residential IP. The only things that change between runs are the profile and the headless flag; [`apply_fingerprint()`](../../stealth/fingerprint-injection.md) is applied before navigating.

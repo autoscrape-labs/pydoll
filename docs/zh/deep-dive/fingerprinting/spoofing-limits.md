@@ -15,13 +15,13 @@ Fingerprint 注入会改变浏览器所报告的内容，但并非每个信号�
 
 一个媒体特性存在于引擎的 `MediaValues` 中，而两条读取路径都会针对它来解析。切换下面的覆盖类型，看看每一种分别能触及哪些路径：
 
-<iframe src="/docs/resources/visuals/media-read-paths.html" aria-label="一个 CDP 覆盖会编辑引擎的 MediaValues，使 matchMedia 和 CSS 级联都发生改变；而一个 JavaScript 覆盖只包装 matchMedia，让 CSS 路径读到真实值" style="width: 100%; height: 430px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/media-read-paths.html" aria-label="一个 CDP 覆盖会编辑引擎的 MediaValues，使 matchMedia 和 CSS 级联都发生改变；而一个 JavaScript 覆盖只包装 matchMedia，让 CSS 路径读到真实值" style="width: 100%; height: 430px; border: 0;" loading="lazy"></iframe>
 
 一个 CDP 覆盖会编辑 `MediaValues`，所以 `matchMedia` 和 `@media` 级联都会返回新值。一个 JavaScript 覆盖会替换 `matchMedia` 函数；级联从不调用它，所以 CSS 仍然针对真实的 `MediaValues` 来解析。那个缺口就是矛盾。
 
 下面这个演示运行在你自己的显示器上。两张卡片都读取你真实的 `dynamic-range` 并保持一致。应用一个 JavaScript 覆盖后，只有 `matchMedia` 在撒谎；而引擎的 `@media` 规则仍然报告真相。
 
-<iframe src="/docs/resources/visuals/js-override-lie.html" aria-label="matchMedia 和一条 CSS @media 规则读取相同的 dynamic-range；一个 JavaScript 覆盖只让 matchMedia 撒谎，而 CSS 路径保持真实" style="width: 100%; height: 340px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/js-override-lie.html" aria-label="matchMedia 和一条 CSS @media 规则读取相同的 dynamic-range；一个 JavaScript 覆盖只让 matchMedia 撒谎，而 CSS 路径保持真实" style="width: 100%; height: 340px; border: 0;" loading="lazy"></iframe>
 
 这正是为什么 Pydoll 不伪造 `dynamic-range`。Chrome 保留着一份固定的、可覆盖的媒体特性白名单。在 Blink 的 `MediaFeatureOverrides::SetOverride` 中，有七个名字会被处理，`color-gamut`、`prefers-color-scheme`、`prefers-contrast`、`prefers-reduced-motion`、`prefers-reduced-data`、`prefers-reduced-transparency` 以及 `forced-colors`，任何其他名字都会落空、什么也不改变。`dynamic-range`、`inverted-colors` 和 `monochrome` 在那里没有分支，所以这个 CDP 命令会被接受、然后被悄悄丢弃。这是引擎里缺失的一条代码路径，而不是一个值格式的问题。
 

@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cloudflare pass/block identity matrix</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+<style>
+  :root{
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;--panel2:#191c20;
+    --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
+    --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--indigo-dim:rgba(110,123,255,.13);
+    --pass:#35e0a1;--pass-dim:rgba(53,224,161,.12);
+    --amber:#f5b544;--amber-dim:rgba(245,181,68,.13);
+    --danger:#ff6b6b;--danger-dim:rgba(255,107,107,.12);
+    --box:#08090b;
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
+  .widget{border:1px solid var(--line);padding:16px 18px}
+  .lead{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:14px;line-height:1.55}
+  .lead b{color:var(--ink)} .lead .r{color:var(--danger)} .lead .g{color:var(--pass)}
+
+  .bar{display:flex;align-items:center;gap:11px;flex-wrap:wrap;margin-bottom:16px}
+  .status{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;color:var(--faint)}
+  .status .d{width:7px;height:7px;border-radius:50%;background:var(--indigo);box-shadow:0 0 0 3px var(--indigo-dim)}
+  .status.user .d{background:var(--faint);box-shadow:none}
+  .status .d.live{animation:blink 1.5s ease-in-out infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+  button.ctl{font-family:var(--mono);font-size:11px;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:8px 13px;cursor:pointer;transition:.15s}
+  button.ctl:hover{border-color:var(--indigo);color:#fff}
+  .reading{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--faint);text-align:right;line-height:1.4}
+  .reading b{color:var(--dim);font-weight:500}
+
+  .stage{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:48px}
+  svg.wires{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;overflow:visible}
+  .wire{fill:none;stroke:var(--pass);stroke-width:1.3;opacity:.14;stroke-dasharray:2 6;animation:flow 3.4s linear infinite}
+  .wire.active{opacity:.9;stroke-width:1.7;stroke-dasharray:5 7;animation:flow .85s linear infinite}
+  .wire.active.red{stroke:var(--danger)} .wire.active.amber{stroke:var(--amber)}
+  @keyframes flow{to{stroke-dashoffset:-24}}
+  .comet{fill:var(--danger)} .comet.amber{fill:var(--amber)}
+
+  .col{position:relative;z-index:2;display:flex;flex-direction:column;min-width:0}
+  .chdr{margin-bottom:11px}
+  .chdr .h{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--faint)}
+  .chdr .s{font-family:var(--sans);font-weight:700;font-size:13px;margin-top:3px}
+  .col.left .chdr .s{color:var(--indigo2)}
+  .col.right .chdr .s{color:var(--ink)}
+
+  /* identity fields */
+  .fields{display:flex;flex-direction:column;gap:9px}
+  .field{position:relative;border:1px solid var(--line2);background:linear-gradient(180deg,var(--indigo-dim),rgba(110,123,255,.03));padding:9px 12px 10px;transition:border-color .3s,background .3s}
+  .field.dev{border-color:rgba(255,107,107,.4);background:linear-gradient(180deg,var(--danger-dim),transparent)}
+  .field .top{display:flex;align-items:center;gap:8px}
+  .field .fpip{width:7px;height:7px;border-radius:50%;background:var(--pass);box-shadow:0 0 0 3px var(--pass-dim);flex:none;transition:.3s}
+  .field .fpip.bad{background:var(--danger);box-shadow:0 0 0 3px var(--danger-dim)}
+  .field .fname{font-family:var(--sans);font-weight:700;font-size:12px}
+  .field .fval{margin-left:auto;font-family:var(--mono);font-size:11px;font-weight:600;color:var(--pass);text-align:right}
+  .field.dev .fval{color:var(--danger)}
+  .field .fsub{font-family:var(--mono);font-size:9px;color:var(--faint);margin:5px 0 8px}
+  .field .fbot{display:flex;align-items:center;gap:9px}
+  .field button.ftog{font-family:var(--mono);font-size:10px;color:var(--dim);background:var(--panel);border:1px solid var(--line2);padding:5px 9px;cursor:pointer;transition:.15s}
+  .field button.ftog:hover{border-color:var(--indigo);color:#fff}
+  .field .caughtat{display:none;font-family:var(--mono);font-size:9.5px;color:var(--danger)}
+  .field.dev .caughtat.chal{color:var(--amber)}
+
+  /* correlation layers */
+  .layers{display:flex;flex-direction:column;gap:9px}
+  .layer{position:relative;border:1px solid var(--line2);background:var(--bg2);padding:9px 12px 10px;transition:border-color .3s,background .3s}
+  .layer .top{display:flex;align-items:center;gap:8px}
+  .layer .lpip{width:7px;height:7px;border-radius:50%;background:var(--faint);flex:none;transition:.3s}
+  .layer .lpip.ok{background:var(--pass);box-shadow:0 0 0 3px var(--pass-dim)}
+  .layer .lpip.bad{background:var(--danger);box-shadow:0 0 0 3px var(--danger-dim)}
+  .layer .lpip.amber{background:var(--amber);box-shadow:0 0 0 3px var(--amber-dim)}
+  .layer .lname{font-family:var(--sans);font-weight:700;font-size:12px}
+  .layer .lstatus{margin-left:auto;font-family:var(--mono);font-size:10px;font-weight:600;color:var(--faint);text-align:right}
+  .layer .lstatus.ok{color:var(--pass)} .layer .lstatus.bad{color:var(--danger)} .layer .lstatus.amber{color:var(--amber)}
+  .layer .lsub{font-family:var(--mono);font-size:9px;color:var(--faint);margin-top:5px;line-height:1.45}
+  .layer.pass{border-color:rgba(53,224,161,.28)}
+  .layer.catch{border-color:rgba(255,107,107,.42);background:linear-gradient(180deg,var(--danger-dim),transparent)}
+  .layer.chal{border-color:rgba(245,181,68,.42);background:linear-gradient(180deg,var(--amber-dim),transparent)}
+
+  /* the server-scored black box */
+  .layer.box{background:var(--box)}
+  .layer.box.pass{border-color:var(--line2)}
+  .layer.box .lname{display:flex;align-items:center;gap:6px}
+  .layer.box .lock{width:11px;height:11px;color:var(--faint);flex:none}
+  .layer.box .scr{font-family:var(--mono);font-size:9px;letter-spacing:.5px;color:var(--faint);opacity:.5;margin-top:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;user-select:none}
+  .layer.box .scr b{color:var(--dim);opacity:.9;font-weight:600}
+  .layer.box.chal .scr b{color:var(--amber)} .layer.box.catch .scr b{color:var(--danger)}
+
+  /* ports + wires anchors */
+  .port{position:absolute;top:26px;width:8px;height:8px;border-radius:50%;background:var(--faint);z-index:3;transition:.3s}
+  .port.out{right:-4px} .port.in{left:-4px}
+  .port.out{background:var(--pass)} .port.out.red{background:var(--danger)}
+  .port.in.ok{background:var(--pass)} .port.in.bad{background:var(--danger)} .port.in.amber{background:var(--amber)}
+
+  /* verdict */
+  .verdict{display:flex;align-items:stretch;gap:15px;margin-top:16px;padding:13px 15px;border:1px solid var(--line);transition:.3s}
+  .verdict.pass{background:var(--pass-dim);border-color:rgba(53,224,161,.3)}
+  .verdict.chal{background:var(--amber-dim);border-color:rgba(245,181,68,.3)}
+  .verdict.block{background:var(--danger-dim);border-color:rgba(255,107,107,.3)}
+  .inter{width:158px;flex:none;border:1px solid var(--line2);background:var(--panel);display:flex;flex-direction:column;overflow:hidden}
+  .inter .wbar{display:flex;align-items:center;gap:5px;padding:6px 8px;border-bottom:1px solid var(--line);background:var(--panel2)}
+  .inter .wbar i{width:7px;height:7px;border-radius:50%;flex:none}
+  .inter .wbar .u{margin-left:6px;font-family:var(--mono);font-size:8.5px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .inter .wbody{padding:11px 10px;display:flex;align-items:center;gap:9px;min-height:52px}
+  .inter .glyph{width:18px;height:18px;flex:none;display:grid;place-items:center}
+  .inter .spin{width:15px;height:15px;border-radius:50%;border:2px solid rgba(245,181,68,.25);border-top-color:var(--amber);animation:spin .8s linear infinite;display:none}
+  .inter .gk,.inter .gx{width:16px;height:16px;display:none}
+  .inter .gk{color:var(--pass)} .inter .gx{color:var(--danger)}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .inter .wtxt .t1{font-family:var(--sans);font-weight:700;font-size:11px;line-height:1.2}
+  .inter .wtxt .t2{font-family:var(--mono);font-size:8.5px;color:var(--faint);margin-top:3px;line-height:1.3}
+  .inter.pass .t1{color:var(--pass)} .inter.chal .t1{color:var(--amber)} .inter.block .t1{color:var(--danger)}
+  .inter.pass .gk{display:block} .inter.block .gx{display:block} .inter.chal .spin{display:block}
+
+  .vbody{display:flex;flex-direction:column;gap:8px;justify-content:center;min-width:0}
+  .vchip{align-self:flex-start;font-family:var(--mono);font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:4px 11px;border:1px solid}
+  .verdict.pass .vchip{color:var(--pass);border-color:rgba(53,224,161,.5)}
+  .verdict.chal .vchip{color:var(--amber);border-color:rgba(245,181,68,.5)}
+  .verdict.block .vchip{color:var(--danger);border-color:rgba(255,107,107,.5)}
+  .vtxt{font-family:var(--mono);font-size:11px;color:var(--dim);line-height:1.55}
+  .vtxt b{color:var(--ink);font-weight:600}
+  .verdict.pass .vtxt b.k{color:var(--pass)} .verdict.chal .vtxt b.k{color:var(--amber)} .verdict.block .vtxt b.k{color:var(--danger)}
+
+  @media(max-width:540px){
+    .stage{grid-template-columns:1fr;gap:14px}
+    svg.wires{display:none}
+    .port{display:none}
+    .field.dev .caughtat{display:inline}
+    .verdict{flex-direction:column}
+    .inter{width:100%}
+  }
+  @media(prefers-reduced-motion:reduce){
+    .wire,.wire.active{animation:none}
+    .inter .spin{animation:none}
+    .status .d.live{animation:none}
+  }
+
+  /* theme-matched thin scrollbars for overflow-x boxes (replaces the default white bar) */
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--line2)}
+  ::-webkit-scrollbar-thumb:hover{background:var(--faint)}
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="lead">One machine, one Chrome 151 binary, one residential IP. Cloudflare's managed challenge correlates <b>every layer at once</b>. Flip any single field to a deviation and a <span class="r">different layer</span> catches it, and the verdict flips. Only <span class="g">coherence of everything, headful</span>, passes, never any one field.</div>
+
+  <div class="bar">
+    <span class="status" id="status"><span class="d live" id="statusDot"></span><span id="statusTxt">auto-demo &middot; one deviation at a time</span></span>
+    <button class="ctl" id="replay">Replay demo</button>
+    <button class="ctl" id="reset">All coherent</button>
+    <span class="reading">one applied identity<br><b>correlated across every layer</b></span>
+  </div>
+
+  <div class="stage" id="stage">
+    <svg class="wires" id="wires" preserveAspectRatio="none"></svg>
+
+    <div class="col left">
+      <div class="chdr"><div class="h">Applied identity</div><div class="s">apply_fingerprint() &middot; one profile</div></div>
+      <div class="fields" id="fields"></div>
+    </div>
+
+    <div class="col right">
+      <div class="chdr"><div class="h">Cloudflare correlates</div><div class="s">every layer, at once</div></div>
+      <div class="layers" id="layers"></div>
+    </div>
+  </div>
+
+  <div class="verdict pass" id="verdict">
+    <div class="inter pass" id="inter">
+      <div class="wbar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="u">challenges.cloudflare.com</span></div>
+      <div class="wbody">
+        <div class="glyph">
+          <div class="spin"></div>
+          <svg class="gk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+          <svg class="gx" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </div>
+        <div class="wtxt"><div class="t1" id="interT1">Verified</div><div class="t2" id="interT2">Just a moment&hellip; cleared</div></div>
+      </div>
+    </div>
+    <div class="vbody">
+      <span class="vchip" id="vchip">pass</span>
+      <span class="vtxt" id="vtxt"></span>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  function g(id){return document.getElementById(id);}
+  var NS='http://www.w3.org/2000/svg';
+
+  // ---- the applied identity fields (left) and the layer each deviation is caught by (right) ----
+  var FIELDS=[
+    {id:'ip',  layer:'L1', name:'IP reputation',        ok:'residential',   dev:'datacenter',
+     subOk:'egress ASN · reputable',      subDev:'egress ASN · flagged'},
+    {id:'os',  layer:'L2', name:'Host OS = profile OS', ok:'macOS on macOS', dev:'Windows on macOS',
+     subOk:'rendered by the real OS',          subDev:'rendered by the real OS'},
+    {id:'ver', layer:'L3', name:'Chrome major = binary',ok:'UA 151 · bin 151', dev:'UA 140 · bin 151',
+     subOk:'engine answers to the binary',     subDev:'engine answers to the binary'},
+    {id:'disp',layer:'L4', name:'Display mode',         ok:'headful',        dev:'headless · no display',
+     subOk:'a presented surface',              subDev:'no presented surface'}
+  ];
+  var LAYERS=[
+    {id:'L1', name:'Network edge',           sub:'IP reputation · TCP TTL · passive, pre-JS',
+     pass:'trusted',       hit:'datacenter ASN'},
+    {id:'L2', name:'Rendered fingerprint',   sub:'fonts · canvas / WebGL raster · the real OS',
+     pass:'CoreText',      hit:'pixels are macOS'},
+    {id:'L3', name:'JS engine',              sub:'feature surface · Math precision · the real major',
+     pass:'answers 151',   hit:'engine is 151'},
+    {id:'L4', name:'Server-scored telemetry',sub:'obfuscated VM · off-main-thread · encrypted POST',
+     pass:'no display tell',hit:'no surface', box:true}
+  ];
+  var LNAME={L1:'the network edge', L2:'the rendered layer', L3:'the JS engine', L4:'the server-scored layer'};
+  var LSHORT={L1:'the edge', L2:'rendering', L3:'the engine', L4:'server-scored'};
+
+  var REASON={
+    pass:'Every field coherent and the run is <b>headful</b>. The four layers agree, <b class="k">Just a moment&hellip;</b> clears and the page loads. It is coherence of everything that passes, not any single field.',
+    ip:'<b>Datacenter ASN.</b> The edge reads IP reputation passively, before a line of JS runs. No browser tuning reaches it. Caught at <b class="k">the network edge</b>.',
+    os:'<b>Windows profile on a Mac.</b> Canvas and fonts rasterize through CoreText, not DirectWrite, so the pixels are macOS; the TCP TTL (64, not 128) is the floor beneath it. Caught in <b class="k">rendering</b>.',
+    ver:'<b>UA claims 140 on a 151 binary.</b> The engine still answers to 151: a newer feature responds and the Math hash matches 151. The string is spoofable, the engine is not. Caught at <b class="k">the JS engine</b>.',
+    disp:'<b>Headless, everything else coherent.</b> The fingerprint is byte-identical to headful, nothing client-readable is wrong. But with no presented surface the <b class="k">server-scored telemetry</b> flags it, and the interstitial never clears.'
+  };
+
+  var S={ip:true,os:true,ver:true,disp:true};
+  var prev={ip:true,os:true,ver:true,disp:true};
+  var wireMap={};
+
+  // ---- build the two columns ----
+  var LOCK='<svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+  (function build(){
+    var fc=g('fields');
+    FIELDS.forEach(function(f){
+      var d=document.createElement('div'); d.className='field'; d.id='fld-'+f.id;
+      d.innerHTML=
+        '<span class="port out" id="fp-'+f.id+'"></span>'+
+        '<div class="top"><span class="fpip" id="fpip-'+f.id+'"></span><span class="fname">'+f.name+'</span>'+
+          '<span class="fval" id="fv-'+f.id+'"></span></div>'+
+        '<div class="fsub" id="fs-'+f.id+'"></div>'+
+        '<div class="fbot"><button class="ftog" id="fb-'+f.id+'">→ deviate</button>'+
+          '<span class="caughtat" id="fc-'+f.id+'"></span></div>';
+      fc.appendChild(d);
+    });
+    var lc=g('layers');
+    LAYERS.forEach(function(l){
+      var d=document.createElement('div'); d.className='layer'+(l.box?' box':''); d.id='lyr-'+l.id;
+      var nameHtml = l.box ? (LOCK+l.name) : l.name;
+      var extra = l.box ? '<div class="scr" id="scr-'+l.id+'"></div>' : '';
+      d.innerHTML=
+        '<span class="port in" id="lp-'+l.id+'"></span>'+
+        '<div class="top"><span class="lpip" id="lpip-'+l.id+'"></span><span class="lname">'+nameHtml+'</span>'+
+          '<span class="lstatus" id="ls-'+l.id+'"></span></div>'+
+        '<div class="lsub">'+l.sub+'</div>'+extra;
+      lc.appendChild(d);
+    });
+  })();
+
+  // ---- the black-box scramble (the obfuscated, unreadable server-scored payload) ----
+  var CHARS='01xABCDEF{}[]<>#%*=/\\|~+'.split(''); var scrTimer=null;
+  function randStr(n){ var s=''; for(var i=0;i<n;i++)s+=CHARS[(Math.random()*CHARS.length)|0]; return s; }
+  function scrLabel(){
+    var lbl=(!S.disp)?'flag':'score';
+    return randStr(9)+' <b>'+lbl+'</b> '+randStr(11);
+  }
+  function paintScramble(){ var e=g('scr-L4'); if(e)e.innerHTML=scrLabel(); }
+  function startScramble(){ if(reduce){paintScramble();return;} if(scrTimer)clearInterval(scrTimer); paintScramble(); scrTimer=setInterval(paintScramble,620); }
+
+  // ---- wires (field → catching layer) ----
+  function isCompact(){ return g('stage').clientWidth < 540; }
+  function buildWires(){
+    var svg=g('wires'); svg.innerHTML=''; wireMap={};
+    var stage=g('stage'); if(!stage) return;
+    if(isCompact()){ svg.style.display='none'; return; }
+    svg.style.display='block';
+    var sr=stage.getBoundingClientRect();
+    svg.setAttribute('viewBox','0 0 '+sr.width+' '+sr.height);
+    svg.setAttribute('width',sr.width); svg.setAttribute('height',sr.height);
+    FIELDS.forEach(function(f){
+      var out=g('fp-'+f.id), inn=g('lp-'+f.layer); if(!out||!inn) return;
+      var orc=out.getBoundingClientRect(), irc=inn.getBoundingClientRect();
+      var x1=orc.left+orc.width/2-sr.left, y1=orc.top+orc.height/2-sr.top;
+      var x2=irc.left+irc.width/2-sr.left, y2=irc.top+irc.height/2-sr.top;
+      var c=Math.max(26,Math.abs(x2-x1)*0.42);
+      var d='M'+x1+' '+y1+' C '+(x1+c)+' '+y1+' '+(x2-c)+' '+y2+' '+x2+' '+y2;
+      var p=document.createElementNS(NS,'path'); p.setAttribute('class','wire'); p.setAttribute('d',d);
+      svg.appendChild(p);
+      var dot=document.createElementNS(NS,'circle'); dot.setAttribute('r','3.2'); dot.setAttribute('class','comet'); dot.style.opacity='0';
+      svg.appendChild(dot);
+      wireMap[f.id]={path:p,comet:dot,len:p.getTotalLength()};
+    });
+  }
+  function runComet(id,amber){
+    var w=wireMap[id]; if(!w) return;
+    var c=w.comet; c.setAttribute('class','comet'+(amber?' amber':'')); c.style.opacity='1';
+    var start=null,dur=520;
+    function step(ts){ if(start===null)start=ts; var p=Math.min(1,(ts-start)/dur);
+      var pt=w.path.getPointAtLength(p*w.len); c.setAttribute('cx',pt.x); c.setAttribute('cy',pt.y);
+      if(p<1) requestAnimationFrame(step); else c.style.opacity='0';
+    }
+    requestAnimationFrame(step);
+  }
+
+  // ---- verdict + interstitial ----
+  function setInter(state){
+    var i=g('inter'); i.className='inter '+state;
+    if(state==='pass'){ g('interT1').textContent='Verified'; g('interT2').innerHTML='Just a moment&hellip; cleared'; }
+    else if(state==='chal'){ g('interT1').textContent='Checking…'; g('interT2').innerHTML='re-serving · fresh Ray ID'; }
+    else { g('interT1').textContent='Blocked'; g('interT2').innerHTML='interstitial re-served'; }
+  }
+  function setVerdict(verdict,devs){
+    var v=g('verdict');
+    v.className='verdict '+(verdict==='pass'?'pass':verdict==='challenge'?'chal':'block');
+    var chip=g('vchip'), txt=g('vtxt');
+    if(verdict==='pass'){ chip.textContent='pass'; txt.innerHTML=REASON.pass; setInter('pass'); }
+    else if(verdict==='challenge'){ chip.textContent='challenge'; txt.innerHTML=REASON.disp; setInter('chal'); }
+    else {
+      chip.textContent='block';
+      if(devs.length===1){ txt.innerHTML=REASON[devs[0].id]; }
+      else {
+        var where=devs.map(function(f){return LSHORT[f.layer];}).join(', ');
+        txt.innerHTML='<b>'+devs.length+' contradictions.</b> Each is caught independently, at <b class="k">'+where+'</b>. Any one alone is enough; a bot needs every layer coherent at once.';
+      }
+      setInter('block');
+    }
+  }
+
+  // ---- render current state ----
+  function render(animate){
+    var devs=FIELDS.filter(function(f){return !S[f.id];});
+    var hard=(!S.ip||!S.os||!S.ver);
+    var verdict=devs.length===0?'pass':(hard?'block':'challenge');
+
+    FIELDS.forEach(function(f){
+      var ok=S[f.id];
+      g('fld-'+f.id).className='field'+(ok?'':' dev');
+      g('fv-'+f.id).textContent=ok?f.ok:f.dev;
+      g('fs-'+f.id).textContent=ok?f.subOk:f.subDev;
+      g('fb-'+f.id).textContent=ok?'→ deviate':'→ restore';
+      g('fpip-'+f.id).className='fpip'+(ok?'':' bad');
+      g('fp-'+f.id).className='port out'+(ok?'':' red');
+      var isChal=(f.id==='disp'&&verdict==='challenge');
+      var fc=g('fc-'+f.id); fc.className='caughtat'+(isChal?' chal':'');
+      fc.textContent=ok?'':('→ caught: '+LSHORT[f.layer]);
+    });
+
+    LAYERS.forEach(function(l){
+      var catching=devs.some(function(f){return f.layer===l.id;});
+      var cell=g('lyr-'+l.id), pip=g('lpip-'+l.id), inn=g('lp-'+l.id), st=g('ls-'+l.id);
+      var base='layer'+(l.box?' box':'');
+      if(!catching){ cell.className=base+' pass'; pip.className='lpip ok'; inn.className='port in ok'; st.className='lstatus ok'; st.textContent=l.pass; }
+      else{
+        var amber=(l.id==='L4'&&verdict==='challenge');
+        cell.className=base+(amber?' chal':' catch');
+        pip.className='lpip '+(amber?'amber':'bad');
+        inn.className='port in '+(amber?'amber':'bad');
+        st.className='lstatus '+(amber?'amber':'bad');
+        st.textContent=l.hit;
+      }
+    });
+
+    FIELDS.forEach(function(f){
+      var w=wireMap[f.id]; if(!w) return;
+      var dev=!S[f.id]; var amber=(f.id==='disp'&&verdict==='challenge');
+      w.path.setAttribute('class','wire'+(dev?(' active '+(amber?'amber':'red')):''));
+      if(animate&&!reduce&&dev&&prev[f.id]===true){ runComet(f.id,amber); }
+    });
+
+    if(g('scr-L4')) paintScramble();
+    setVerdict(verdict,devs);
+    prev={ip:S.ip,os:S.os,ver:S.ver,disp:S.disp};
+  }
+
+  // ---- auto-demo: walk one single deviation at a time, reset between ----
+  var DEMO=[
+    {act:'reset',hold:1700},
+    {act:'flip',id:'ip', hold:2300},
+    {act:'reset',hold:900},
+    {act:'flip',id:'os', hold:2300},
+    {act:'reset',hold:900},
+    {act:'flip',id:'ver',hold:2300},
+    {act:'reset',hold:900},
+    {act:'flip',id:'disp',hold:2600},
+    {act:'reset',hold:1500}
+  ];
+  var demoOn=false, di=0, demoTimers=[];
+  function clearDemo(){ demoTimers.forEach(clearTimeout); demoTimers=[]; }
+  function setAll(v){ S.ip=v;S.os=v;S.ver=v;S.disp=v; }
+  function setStatus(mode){
+    var s=g('status');
+    if(mode==='demo'){ s.className='status'; g('statusDot').className='d live'; g('statusTxt').innerHTML='auto-demo &middot; one deviation at a time'; }
+    else{ s.className='status user'; g('statusDot').className='d'; g('statusTxt').innerHTML='you drive &middot; toggle any field'; }
+  }
+  function demoStep(){
+    var s=DEMO[di];
+    setAll(true); if(s.act==='flip') S[s.id]=false;
+    render(true);
+    di=di+1;
+    if(di>=DEMO.length){ demoTimers.push(setTimeout(function(){ demoOn=false; clearDemo(); setAll(true); render(true); setStatus('user'); }, s.hold)); return; }
+    demoTimers.push(setTimeout(demoStep,s.hold));
+  }
+  function demoStart(){ demoOn=true; di=0; clearDemo(); setAll(true); prev={ip:true,os:true,ver:true,disp:true}; render(false); setStatus('demo'); demoTimers.push(setTimeout(demoStep,700)); }
+  function demoStop(){ demoOn=false; clearDemo(); setStatus('user'); }
+
+  // ---- controls ----
+  FIELDS.forEach(function(f){
+    g('fb-'+f.id).addEventListener('click',function(){ demoStop(); S[f.id]=!S[f.id]; render(true); });
+  });
+  g('reset').addEventListener('click',function(){ demoStop(); setAll(true); render(true); });
+  g('replay').addEventListener('click',function(){ if(reduce){ setAll(true); render(false); return; } demoStart(); });
+
+  var rz=null;
+  window.addEventListener('resize',function(){ if(rz)clearTimeout(rz); rz=setTimeout(function(){ buildWires(); render(false); },200); });
+
+  // ---- boot ----
+  function boot(){
+    buildWires();
+    startScramble();
+    if(reduce){ setAll(true); render(false); setStatus('user'); return; }
+    /* dense read view: rest on the coherent (PASS) state; Replay demo walks the deviations on demand */
+    setAll(true); render(false); setStatus('user');
+  }
+  window.addEventListener('load',function(){ setTimeout(function(){ buildWires(); render(demoOn); },300); });
+  boot();
+})();
+</script>
+<script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>
+</body>
+</html>

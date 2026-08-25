@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Browser contexts are isolated</title>
+<title>Browser contexts are isolated cookie jars</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
@@ -12,96 +12,307 @@
     --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;--panel2:#191c20;
     --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
     --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
-    --indigo:#6e7bff;--indigo2:#8f99ff;--pass:#35e0a1;--amber:#f5b544;
-    --sans:"Chivo",system-ui,-apple-system,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--indigo-dim:rgba(110,123,255,.13);
+    --pass:#35e0a1;--pass-dim:rgba(53,224,161,.12);
+    --amber:#f5b544;--amber2:#ffcf76;--amber-dim:rgba(245,181,68,.11);
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
   }
-  *{box-sizing:border-box}
-  html,body{margin:0}
+  *{box-sizing:border-box} html,body{margin:0}
   body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
   .widget{border:1px solid var(--line);padding:16px 18px}
-  .wins{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-  @media(max-width:560px){.wins{grid-template-columns:1fr}}
+  .lead{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:15px;line-height:1.55}
+  .lead b{color:var(--ink);font-weight:500}
+  .lead code{color:var(--indigo2)}
 
-  .win{border:1px solid var(--line2);border-radius:9px;overflow:hidden;background:var(--panel)}
-  .win.a{--accent:var(--indigo);--accent2:var(--indigo2)}
-  .win.b{--accent:var(--amber);--accent2:#ffcf76}
-  .chrome{display:flex;align-items:center;gap:9px;height:32px;padding:0 11px;background:var(--panel2);border-bottom:1px solid var(--line)}
-  .lights{display:flex;gap:6px}
-  .lights i{width:9px;height:9px;border-radius:50%;display:block}
+  .arena{display:grid;grid-template-columns:1fr 58px 1fr;gap:14px;align-items:stretch}
+
+  .ctx{border:1px solid var(--line2);background:var(--bg2);min-width:0;display:flex;flex-direction:column}
+  .ctx.a{--accent:var(--indigo);--accent2:var(--indigo2);--accdim:var(--indigo-dim)}
+  .ctx.b{--accent:var(--amber);--accent2:var(--amber2);--accdim:var(--amber-dim)}
+
+  .chead{display:flex;align-items:center;gap:9px;padding:8px 11px;border-bottom:1px solid var(--line);background:var(--panel2)}
+  .lights{display:flex;gap:5px;flex:none}
+  .lights i{width:8px;height:8px;border-radius:50%;display:block}
   .lights i.r{background:#ff5f57}.lights i.y{background:#febc2e}.lights i.g{background:#28c840}
-  .chrome .tag{font-family:var(--mono);font-size:11px;color:var(--dim)}
-  .toolbar{display:flex;align-items:center;padding:7px 10px;border-bottom:1px solid var(--line);background:var(--panel2)}
-  .url{flex:1;display:flex;align-items:center;gap:7px;background:var(--bg2);border:1px solid var(--line);padding:5px 9px;font-family:var(--mono);font-size:10.5px;color:var(--dim)}
-  .url svg{width:10px;height:10px;color:var(--pass);flex:none}
-  .page{padding:16px 15px;min-height:104px;display:flex;flex-direction:column;gap:13px}
-  .acct{display:flex;align-items:center;gap:11px}
-  .avatar{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--line2);display:grid;place-items:center;color:var(--faint);transition:.3s}
-  .avatar svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8}
-  .win.on .avatar{border-color:var(--accent);color:var(--accent);background:color-mix(in srgb, var(--accent) 12%, transparent)}
-  .who{font-family:var(--mono);font-size:12px;color:var(--faint)}
-  .who b{color:var(--ink);font-weight:500}
-  .win.on .who{color:var(--dim)}
-  .cookies{display:flex;gap:6px;flex-wrap:wrap;min-height:24px;align-content:flex-start}
-  .cookies:empty::before{content:'no session cookie';font-family:var(--mono);font-size:10.5px;font-style:italic;color:var(--faint)}
-  .chip{background:var(--panel2);border:1px solid var(--accent);color:var(--ink);padding:3px 8px;font-family:var(--mono);font-size:10.5px;opacity:0;transform:translateY(4px);transition:opacity .25s,transform .25s}
-  .chip.show{opacity:1;transform:none}
+  .cname{font-family:var(--sans);font-weight:700;font-size:12.5px}
+  .cname .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-right:6px;vertical-align:1px}
+  .cnt{margin-left:auto;font-family:var(--mono);font-size:9.5px;color:var(--faint);white-space:nowrap}
+  .cnt b{color:var(--accent2);font-weight:600}
+  .cprov{padding:6px 11px 0;font-family:var(--mono);font-size:9px;color:var(--faint);line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cprov .v{color:var(--accent2)}
+
+  .jarwrap{padding:9px 11px 3px}
+  .lid{height:11px;margin:0 16px -1px;border:1px solid var(--line2);border-bottom:none;border-radius:6px 6px 2px 2px;
+    background:linear-gradient(var(--panel2),var(--panel));position:relative;z-index:3}
+  .lid::after{content:'';position:absolute;left:12%;right:12%;top:3px;height:1px;background:var(--line)}
+  .jar{position:relative;height:150px;overflow:hidden;border:1px solid var(--line2);border-radius:3px 3px 15px 15px;
+    background:linear-gradient(180deg,rgba(244,245,247,.03),var(--bg2) 40%);
+    display:flex;flex-direction:column-reverse;justify-content:flex-start;gap:6px;padding:12px 12px 15px;transition:box-shadow .3s}
+  .jar::before{content:'';position:absolute;left:0;top:0;bottom:0;width:8px;background:linear-gradient(90deg,rgba(244,245,247,.06),transparent);pointer-events:none}
+  .jar.lit{box-shadow:inset 0 0 0 1px var(--accent),0 0 16px -6px var(--accent)}
+
+  .cookie{display:flex;align-items:center;gap:7px;padding:5px 8px;border:1px solid;border-radius:5px;
+    font-family:var(--mono);font-size:10px;line-height:1;flex:none;position:relative;z-index:2}
+  .cookie .cg{width:15px;height:15px;flex:none}
+  .cookie.a{color:var(--indigo2);border-color:rgba(110,123,255,.5);background:var(--indigo-dim)}
+  .cookie.b{color:var(--amber);border-color:rgba(245,181,68,.5);background:var(--amber-dim)}
+  .cookie .cn{color:var(--ink)} .cookie .eqs{color:var(--faint)} .cookie .cv{color:inherit;font-weight:500}
+  .cookie.drop{animation:drop .6s cubic-bezier(.34,1.16,.5,1)}
+  @keyframes drop{0%{transform:translateY(-96px);opacity:0}52%{opacity:1}100%{transform:translateY(0);opacity:1}}
+
+  .emptyhint{position:absolute;inset:0;display:none;align-items:center;justify-content:center;
+    font-family:var(--mono);font-size:10px;font-style:italic;color:var(--faint);pointer-events:none;z-index:1}
+  .jar.empty .emptyhint{display:flex}
+  .scan{position:absolute;left:0;right:0;top:0;height:16px;pointer-events:none;opacity:0;z-index:4;
+    background:linear-gradient(180deg,var(--accdim),transparent);border-top:1px solid var(--accent)}
+  .jar.reading .scan{animation:scan .72s ease-in-out}
+  @keyframes scan{0%{opacity:0;top:-16px}12%{opacity:.95}88%{opacity:.95}100%{opacity:0;top:100%}}
+
+  .console{margin:8px 11px 12px;padding:7px 9px;border:1px solid var(--line);background:var(--bg2);
+    font-family:var(--mono);font-size:10px;color:var(--dim);min-height:16px;line-height:1.5;
+    overflow-x:auto;white-space:nowrap;transition:border-color .3s}
+  .console .dimc{color:var(--faint)}
+  .console .ar{color:var(--faint);margin-right:2px}
+  .console .k{color:var(--ink);font-style:normal}
+  .console.a .v{color:var(--indigo2);font-style:normal} .console.b .v{color:var(--amber);font-style:normal}
+  .console.full{border-color:var(--line2)}
+  .console.empty{border-color:rgba(53,224,161,.4)}
+  .console .note{color:var(--pass);margin-left:8px}
+
+  /* the seal / wall between the two contexts */
+  .seal{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:11px}
+  .seal::before{content:'';position:absolute;top:4px;bottom:4px;left:50%;width:0;
+    border-left:2px dashed var(--line2);transform:translateX(-50%)}
+  .lockbadge{position:relative;z-index:2;width:34px;height:34px;border-radius:50%;border:1px solid var(--line2);
+    background:var(--panel2);display:grid;place-items:center;color:var(--dim);transition:.35s}
+  .lockbadge svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.7}
+  .seal.hold .lockbadge{color:var(--pass);border-color:var(--pass);box-shadow:0 0 0 5px var(--pass-dim)}
+  .sealtxt{position:relative;z-index:2;writing-mode:vertical-rl;transform:rotate(180deg);
+    font-family:var(--mono);font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);background:var(--bg2);padding:5px 0}
+
+  @media(max-width:560px){
+    .arena{grid-template-columns:1fr;gap:12px}
+    .seal{flex-direction:row;gap:12px;padding:2px 0}
+    .seal::before{top:50%;bottom:auto;left:8px;right:8px;width:auto;height:0;border-left:none;border-top:2px dashed var(--line2);transform:translateY(-50%)}
+    .sealtxt{writing-mode:horizontal-tb;transform:none;padding:0 6px}
+  }
 
   .controls{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;align-items:center}
-  button{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:8px 12px;cursor:pointer;transition:.15s}
-  button:hover{border-color:var(--indigo);color:#fff}
-  .caption{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-left:auto;min-height:16px}
-  .caption b{color:var(--pass);font-weight:500}
-  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+  button.op{font-family:var(--mono);font-size:11.5px;font-weight:500;color:var(--ink);background:var(--panel);
+    border:1px solid var(--line2);padding:7px 11px;cursor:pointer;transition:.15s;white-space:nowrap}
+  button.op:hover{border-color:var(--indigo);color:#fff}
+  button.op .t{color:var(--faint);transition:.15s}
+  button.op:hover .t{color:var(--indigo2)}
+  button.op.b:hover{border-color:var(--amber)} button.op.b:hover .t{color:var(--amber2)}
+  button.reset{margin-left:2px;color:var(--dim)}
+  .caption{font-family:var(--mono);font-size:10.5px;color:var(--dim);margin-left:auto;text-align:right;
+    min-height:15px;line-height:1.45;max-width:52%}
+  .caption .mono{color:var(--dim)} .caption b{color:var(--pass);font-weight:500}
+  @media(max-width:560px){.caption{max-width:100%;margin-left:0;text-align:left}}
+
+  @media (prefers-reduced-motion:reduce){
+    .cookie.drop{animation:none}
+    .jar.reading .scan{animation:none}
+    *{transition:none!important}
+  }
+
+  /* theme-matched thin scrollbars for overflow-x boxes (replaces the default white bar) */
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--line2)}
+  ::-webkit-scrollbar-thumb:hover{background:var(--faint)}
 </style>
 </head>
 <body>
 <div class="widget">
-  <div class="wins">
-    <div class="win a" id="winA">
-      <div class="chrome"><span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span><span class="tag">context A</span></div>
-      <div class="toolbar"><span class="url"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>shop.example/account</span></div>
-      <div class="page">
-        <div class="acct"><span class="avatar"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 12 0v1"/></svg></span><span class="who" id="whoA">signed out</span></div>
-        <div class="cookies" id="jarA"></div>
+  <div class="lead">Every browser context is its own storage partition. <code>create_browser_context()</code> hands you a <b>browser_context_id</b>; pass it to <code>set_cookies(...)</code> and <code>get_cookies(...)</code> and the cookie lives in that context alone. A cookie set on <b>A</b> never shows up when you read <b>B</b>, that wall is why one browser can hold many independent sessions.</div>
+
+  <div class="arena">
+    <div class="ctx a" id="ctxA">
+      <div class="chead">
+        <span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span>
+        <span class="cname"><span class="dot"></span>context A</span>
+        <span class="cnt"><b id="cntA">0</b> cookies</span>
       </div>
+      <div class="cprov"><span class="v">ctx_a</span> = await create_browser_context() &rarr; 9F3A&hellip;E7</div>
+      <div class="jarwrap">
+        <div class="lid"></div>
+        <div class="jar empty" id="jarA">
+          <span class="scan"></span>
+          <span class="emptyhint">empty · no cookies</span>
+        </div>
+      </div>
+      <div class="console a" id="conA"><span class="dimc">await get_cookies(browser_context_id=ctx_a)</span></div>
     </div>
-    <div class="win b" id="winB">
-      <div class="chrome"><span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span><span class="tag">context B</span></div>
-      <div class="toolbar"><span class="url"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>shop.example/account</span></div>
-      <div class="page">
-        <div class="acct"><span class="avatar"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 12 0v1"/></svg></span><span class="who" id="whoB">signed out</span></div>
-        <div class="cookies" id="jarB"></div>
+
+    <div class="seal" id="seal">
+      <div class="lockbadge"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
+      <span class="sealtxt">isolated storage</span>
+    </div>
+
+    <div class="ctx b" id="ctxB">
+      <div class="chead">
+        <span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span>
+        <span class="cname"><span class="dot"></span>context B</span>
+        <span class="cnt"><b id="cntB">0</b> cookies</span>
       </div>
+      <div class="cprov"><span class="v">ctx_b</span> = await create_browser_context() &rarr; 4B8D&hellip;C1</div>
+      <div class="jarwrap">
+        <div class="lid"></div>
+        <div class="jar empty" id="jarB">
+          <span class="scan"></span>
+          <span class="emptyhint">empty · no cookies</span>
+        </div>
+      </div>
+      <div class="console b" id="conB"><span class="dimc">await get_cookies(browser_context_id=ctx_b)</span></div>
     </div>
   </div>
 
   <div class="controls">
-    <button id="loginA">Log in on Context A</button>
-    <button id="loginB">Log in on Context B</button>
-    <button id="reset">Reset</button>
+    <button class="op a" id="setA">set_cookies <span class="t">&rarr; A</span></button>
+    <button class="op b" id="setB">set_cookies <span class="t">&rarr; B</span></button>
+    <button class="op a" id="readA">get_cookies <span class="t">(A)</span></button>
+    <button class="op b" id="readB">get_cookies <span class="t">(B)</span></button>
+    <button class="op reset" id="reset">reset demo</button>
     <span class="caption" id="caption"></span>
   </div>
 </div>
 
 <script>
 (function(){
-  var winA=document.getElementById('winA'),winB=document.getElementById('winB');
-  var whoA=document.getElementById('whoA'),whoB=document.getElementById('whoB');
-  var jarA=document.getElementById('jarA'),jarB=document.getElementById('jarB');
-  var caption=document.getElementById('caption');
-  function login(win,who,jar,name,token,other){
-    if(win.classList.contains('on'))return;
-    win.classList.add('on');
-    who.innerHTML='signed in as <b>'+name+'</b>';
-    var chip=document.createElement('span');chip.className='chip';chip.textContent='session='+token;jar.appendChild(chip);
-    requestAnimationFrame(function(){chip.classList.add('show');});
-    caption.innerHTML='Context '+(win.id.slice(-1))+' now has a session. <b>'+other+' is untouched.</b>';
+  var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  function g(id){return document.getElementById(id);}
+
+  var DOMAIN='httpbin.org';
+  // Each context gets a distinct pool so repeated clicks add real, distinct cookies.
+  var POOL={
+    a:[{name:'session',value:'a1b2c3'},{name:'cart',value:'42'},{name:'theme',value:'dark'}],
+    b:[{name:'session',value:'x9y8z7'},{name:'cart',value:'7'},{name:'theme',value:'light'}]
+  };
+  var CTX={
+    a:{key:'a',jar:g('jarA'),con:g('conA'),cnt:g('cntA'),cookies:[]},
+    b:{key:'b',jar:g('jarB'),con:g('conB'),cnt:g('cntB'),cookies:[]}
+  };
+  var seal=g('seal'),caption=g('caption');
+
+  var timers=[],sealT=null,auto=true;
+  function T(fn,ms){var t=setTimeout(fn,ms);timers.push(t);return t;}
+  function clearTimers(){timers.forEach(clearTimeout);timers=[];}
+
+  var COOKIE_SVG='<svg class="cg" viewBox="0 0 24 24" aria-hidden="true">'+
+    '<circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.6"/>'+
+    '<circle cx="9" cy="9.4" r="1" fill="currentColor"/><circle cx="14.6" cy="9" r="1.1" fill="currentColor"/>'+
+    '<circle cx="11" cy="14.2" r="1.1" fill="currentColor"/><circle cx="15.6" cy="14.4" r=".9" fill="currentColor"/>'+
+    '<circle cx="8" cy="13.4" r=".8" fill="currentColor"/></svg>';
+
+  function refresh(c){
+    c.cnt.textContent=c.cookies.length;
+    c.jar.classList.toggle('empty',c.cookies.length===0);
   }
-  document.getElementById('loginA').addEventListener('click',function(){login(winA,whoA,jarA,'alice','a1b2c3','Context B');});
-  document.getElementById('loginB').addEventListener('click',function(){login(winB,whoB,jarB,'bob','x9y8z7','Context A');});
-  document.getElementById('reset').addEventListener('click',function(){
-    [winA,winB].forEach(function(w){w.classList.remove('on');});
-    whoA.textContent='signed out';whoB.textContent='signed out';jarA.innerHTML='';jarB.innerHTML='';caption.textContent='';
+
+  function nextCookie(key){
+    var have={};CTX[key].cookies.forEach(function(k){have[k.name]=1;});
+    var pool=POOL[key];
+    for(var i=0;i<pool.length;i++){ if(!have[pool[i].name]) return pool[i]; }
+    return null;
+  }
+
+  function addCookie(key,animate){
+    var def=nextCookie(key);
+    if(!def) return false;
+    var c=CTX[key];
+    c.cookies.push({name:def.name,value:def.value,domain:DOMAIN});
+    var el=document.createElement('span');
+    el.className='cookie '+key+(animate&&!reduce?' drop':'');
+    el.innerHTML=COOKIE_SVG+'<span class="cn">'+def.name+'</span><span class="eqs">=</span><span class="cv">'+def.value+'</span>';
+    c.jar.appendChild(el);
+    refresh(c);
+    c.jar.classList.add('lit');
+    T(function(){c.jar.classList.remove('lit');},animate&&!reduce?620:0);
+    return true;
+  }
+
+  function fmtList(c){
+    if(!c.cookies.length) return '[]';
+    return '['+c.cookies.map(function(k){
+      return "{'name': <i class=\"k\">'"+k.name+"'</i>, 'value': <i class=\"v\">'"+k.value+"'</i>}";
+    }).join(', ')+']';
+  }
+
+  function pulseSeal(){
+    seal.classList.add('hold');
+    if(sealT)clearTimeout(sealT);
+    sealT=setTimeout(function(){seal.classList.remove('hold');},1400);
+  }
+
+  function printRead(key){
+    var c=CTX[key],other=key==='a'?'b':'a',empty=c.cookies.length===0;
+    c.con.className='console '+key+(empty?' empty':' full');
+    var html='<span class="ar">&rarr;</span> '+fmtList(c);
+    if(empty && CTX[other].cookies.length){ html+='<span class="note"># isolated: '+other.toUpperCase()+"'s cookies aren't here</span>"; pulseSeal(); }
+    else if(empty){ html+='<span class="note"># nothing stored yet</span>'; }
+    c.con.innerHTML=html;
+  }
+
+  function setCookies(key,animate){
+    var ok=addCookie(key,animate);
+    var v=(CTX[key].cookies.length?CTX[key].cookies[CTX[key].cookies.length-1].value:'');
+    if(ok) caption.innerHTML='<span class="mono">await browser.set_cookies([CookieParam(name=\''+CTX[key].cookies[CTX[key].cookies.length-1].name+'\', value=\''+v+'\', domain=\'httpbin.org\')], browser_context_id=ctx_'+key+')</span>';
+    else caption.innerHTML='<span class="mono">context '+key.toUpperCase()+' already holds every demo cookie · reset to replay</span>';
+  }
+
+  function readCookies(key){
+    var c=CTX[key];
+    caption.innerHTML='<span class="mono">await browser.get_cookies(browser_context_id=ctx_'+key+')</span>';
+    if(reduce){ printRead(key); return; }
+    c.jar.classList.remove('reading'); void c.jar.offsetWidth; c.jar.classList.add('reading');
+    T(function(){ printRead(key); c.jar.classList.remove('reading'); },700);
+  }
+
+  function clearJar(key){
+    var c=CTX[key];c.cookies=[];
+    Array.prototype.forEach.call(c.jar.querySelectorAll('.cookie'),function(n){n.remove();});
+    c.jar.classList.remove('reading','lit');
+    c.con.className='console '+key;
+    c.con.innerHTML='<span class="dimc">await get_cookies(browser_context_id=ctx_'+key+')</span>';
+    refresh(c);
+  }
+
+  // Guided demo: drop one cookie into A, then probe B (empty -> isolation holds),
+  // then read A (it is there). Same script every cycle; hands over on any manual call.
+  function demo(){
+    clearTimers();
+    clearJar('a');clearJar('b');seal.classList.remove('hold');
+    caption.innerHTML='<span class="mono">guided demo &middot; click any call to take over</span>';
+    T(function(){ setCookies('a',true); },600);
+    T(function(){ readCookies('b'); },1900);
+    T(function(){ readCookies('a'); },3500);
+    T(function(){ if(auto) demo(); },6000);
+  }
+
+  function stopAuto(){ if(auto){ auto=false; clearTimers(); } }
+
+  function composeStatic(){
+    clearJar('a');clearJar('b');
+    addCookie('a',false);
+    printRead('b'); pulseSeal();
+    printRead('a');
+    caption.innerHTML='<span class="mono">A holds <b>session</b>; reading B returns []. The wall is per-context storage.</span>';
+  }
+
+  g('setA').addEventListener('click',function(){stopAuto();setCookies('a',true);});
+  g('setB').addEventListener('click',function(){stopAuto();setCookies('b',true);});
+  g('readA').addEventListener('click',function(){stopAuto();readCookies('a');});
+  g('readB').addEventListener('click',function(){stopAuto();readCookies('b');});
+  g('reset').addEventListener('click',function(){
+    auto=true;clearTimers();
+    if(reduce){composeStatic();}else{demo();}
+  });
+
+  window.addEventListener('load',function(){
+    if(reduce){ auto=false; composeStatic(); return; }
+    T(demo,450);
   });
 })();
 </script>

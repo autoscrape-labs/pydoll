@@ -4,7 +4,7 @@
 
 编辑下面的属性，实时观察 `find()` 如何定位元素。Pydoll 会把你传入的属性转换成选择器，匹配到的元素会高亮显示。
 
-<iframe src="/docs/resources/visuals/element-find-playground.html" aria-label="Edit find() attributes and see which element it locates" style="width: 100%; height: 365px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/element-find-playground.html" aria-label="Edit find() attributes and see which element it locates" style="width: 100%; height: 365px; border: 0;" loading="lazy"></iframe>
 
 ## 通过属性查找
 

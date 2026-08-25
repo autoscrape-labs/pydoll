@@ -2,7 +2,7 @@
 
 Route the browser's traffic through a proxy to change your egress IP, spread requests across addresses, or reach a site from another region. You set a proxy with one launch argument, and Pydoll handles proxy authentication for you.
 
-<iframe src="/docs/resources/visuals/proxy-routing.html" aria-label="A request routed direct versus through a proxy, changing the IP the target sees" style="width: 100%; height: 300px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/proxy-routing.html" aria-label="A request routed direct versus through a proxy, changing the IP the target sees" style="width: 100%; height: 300px; border: 0;" loading="lazy"></iframe>
 
 ## Set a proxy
 

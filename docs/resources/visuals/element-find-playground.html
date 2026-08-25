@@ -3,107 +3,204 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Element finding playground</title>
+<title>find() builds your selector</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
 <style>
   :root{
-    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;--panel2:#191c20;
     --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
     --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
-    --indigo:#6e7bff;--indigo2:#8f99ff;--pass:#35e0a1;--danger:#ff6b6b;
-    --sans:"Chivo",system-ui,-apple-system,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--indigo-dim:rgba(110,123,255,.13);
+    --pass:#35e0a1;--pass-dim:rgba(53,224,161,.12);
+    --amber:#f5b544;--amber-dim:rgba(245,181,68,.13);
+    --danger:#ff6b6b;--danger-dim:rgba(255,107,107,.12);
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
   }
-  *{box-sizing:border-box}
-  html,body{margin:0}
+  *{box-sizing:border-box} html,body{margin:0}
   body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
   .widget{border:1px solid var(--line);padding:16px 18px}
-  .builder{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-  @media(max-width:560px){.builder{grid-template-columns:1fr 1fr}}
-  .fieldwrap{display:flex;flex-direction:column;gap:5px;min-width:0}
-  .fieldwrap label{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint)}
-  .fieldwrap input{width:100%;min-width:0;font-family:var(--mono);font-size:12.5px;color:var(--ink);background:var(--bg2);border:1px solid var(--line2);padding:8px 10px;outline:none}
-  .fieldwrap input:focus{border-color:var(--indigo)}
-  .callrow{display:flex;align-items:center;gap:12px;margin-top:13px}
-  .call{flex:1;font-family:var(--mono);font-size:12.5px;color:var(--dim);background:var(--bg2);border:1px solid var(--line);padding:9px 12px;overflow-x:auto;white-space:nowrap}
-  .call .kw{color:#b3a0ff}.call .fn{color:#7fb4ff}.call .st{color:var(--pass)}.call .k{color:var(--indigo2)}
-  .allbtn{font-family:var(--mono);font-size:11px;color:var(--dim);background:var(--panel);border:1px solid var(--line2);padding:8px 11px;cursor:pointer;white-space:nowrap;transition:.15s}
-  .allbtn.on{color:var(--indigo);border-color:var(--indigo);background:rgba(110,123,255,.12)}
-  .preview{margin-top:13px;border:1px solid var(--line);background:var(--bg2);padding:15px;display:flex;flex-wrap:wrap;gap:9px;align-items:center}
-  .preview .field{font-family:var(--mono);font-size:12px;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:8px 11px;flex:1 1 100%}
-  .preview .btn{font-family:var(--sans);font-weight:600;font-size:12px;padding:8px 14px;border:1px solid var(--line2);background:var(--panel);color:var(--ink);cursor:default}
-  .preview .btn.primary{background:var(--indigo);border-color:var(--indigo);color:#0a0b16}
-  .preview .link{font-family:var(--mono);font-size:11.5px;color:var(--indigo2);text-decoration:none;margin-left:auto}
-  .match{outline:2px solid var(--pass)!important;outline-offset:2px}
-  .count{font-family:var(--mono);font-size:12px;color:var(--pass);margin-top:11px}
-  .count.bad{color:var(--danger)}
-  .count.zero{color:var(--faint)}
+  .lead{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:14px;line-height:1.55}
+  .lead b{color:var(--ink);font-weight:500}
+
+  /* the five preset find() calls the reader steps through */
+  .presets{display:flex;flex-wrap:wrap;gap:7px}
+  .preset{font-family:var(--mono);font-size:11px;color:var(--dim);background:var(--panel);border:1px solid var(--line2);padding:6px 11px;cursor:pointer;transition:.15s;white-space:nowrap}
+  .preset:hover{border-color:var(--indigo);color:#fff}
+  .preset.on{background:var(--indigo-dim);border-color:var(--indigo);color:#fff}
+
+  .callbox{margin-top:13px;border:1px solid var(--line);background:var(--bg2)}
+  .callrow{padding:11px 12px;overflow-x:auto}
+  .call{font-family:var(--mono);font-size:12.5px;color:var(--dim);white-space:nowrap;display:block}
+  .call .kw{color:var(--indigo2)}.call .fn{color:#7fb4ff}.call .st{color:var(--pass)}.call .k{color:#c8b6ff}
+  .buildrow{display:flex;align-items:center;gap:9px;padding:9px 12px;border-top:1px solid var(--line);overflow-x:auto}
+  .buildrow .lbl{font-family:var(--mono);font-size:10px;color:var(--faint);white-space:nowrap}
+  .badge{font-family:var(--mono);font-size:9.5px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;padding:2px 8px;border:1px solid;white-space:nowrap;transition:color .25s,border-color .25s,background .25s}
+  .badge.css{color:var(--indigo2);border-color:rgba(110,123,255,.42);background:var(--indigo-dim)}
+  .badge.xpath{color:var(--amber);border-color:rgba(245,181,68,.42);background:var(--amber-dim)}
+  .built{font-family:var(--mono);font-size:11px;color:var(--ink);white-space:nowrap;transition:color .25s}
+  .built.x{color:var(--amber)} .built.c{color:var(--indigo2)}
+
+  .stage{margin-top:13px;border:1px solid var(--line2);background:var(--bg2);overflow:hidden}
+  .chrome{display:flex;align-items:center;gap:7px;padding:8px 11px;border-bottom:1px solid var(--line);background:var(--panel2)}
+  .chrome .dots{display:flex;gap:5px}
+  .chrome .dots i{width:9px;height:9px;border-radius:50%;display:block}
+  .chrome .dots i:nth-child(1){background:#ff5f57}.chrome .dots i:nth-child(2){background:#febc2e}.chrome .dots i:nth-child(3){background:#28c840}
+  .chrome .tab{font-family:var(--mono);font-size:10px;color:var(--faint);margin-left:6px}
+  .page{padding:16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  .page .field{font-family:var(--mono);font-size:12px;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:9px 11px;flex:1 1 100%;outline:none}
+  .page .btn{font-family:var(--sans);font-weight:600;font-size:12.5px;padding:9px 15px;border:1px solid var(--indigo);background:var(--indigo);color:#0a0b16;cursor:default;margin-left:auto}
+
+  /* match highlight: smooth pop-in, a gentle living pulse, smooth fade-out.
+     box-shadow ring works on every element type, inputs included. */
+  .page .field,.page .btn{transition:box-shadow .35s ease,background-color .35s ease,border-color .35s ease}
+  .page .match{border-color:var(--pass)!important;animation:matchIn .45s ease-out,matchPulse 2.1s ease-in-out .45s infinite}
+  .page .field.match{background-color:var(--pass-dim)}
+  @keyframes matchIn{0%{box-shadow:0 0 0 0 rgba(53,224,161,0)}55%{box-shadow:0 0 0 3px rgba(53,224,161,.5),0 0 22px 0 rgba(53,224,161,.6)}100%{box-shadow:0 0 0 1.6px rgba(53,224,161,.9),0 0 12px -2px rgba(53,224,161,.4)}}
+  @keyframes matchPulse{0%,100%{box-shadow:0 0 0 1.6px rgba(53,224,161,.85),0 0 11px -3px rgba(53,224,161,.35)}50%{box-shadow:0 0 0 1.6px rgba(53,224,161,.95),0 0 20px -1px rgba(53,224,161,.75)}}
+
+  .hint{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:12px;line-height:1.5}
+  .hint b.c{color:var(--indigo2);font-weight:500} .hint b.x{color:var(--amber);font-weight:500}
+
+  @media (prefers-reduced-motion:reduce){
+    .page .field,.page .btn,.badge,.built{transition:none}
+    .page .match{animation:none;box-shadow:0 0 0 1.6px var(--pass)}
+  }
+
+  /* theme-matched thin scrollbars for overflow-x boxes (replaces the default white bar) */
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--line2)}
+  ::-webkit-scrollbar-thumb:hover{background:var(--faint)}
 </style>
 </head>
 <body>
 <div class="widget">
-  <div class="builder">
-    <div class="fieldwrap"><label>tag_name</label><input id="f_tag" value="button" spellcheck="false" /></div>
-    <div class="fieldwrap"><label>id</label><input id="f_id" value="" spellcheck="false" /></div>
-    <div class="fieldwrap"><label>class_name</label><input id="f_class" value="" spellcheck="false" /></div>
-    <div class="fieldwrap"><label>text</label><input id="f_text" value="" spellcheck="false" /></div>
-  </div>
-  <div class="callrow">
-    <div class="call" id="call"></div>
-    <button class="allbtn" id="allBtn">find_all</button>
+  <div class="lead"><b>find()</b> turns the keyword arguments you pass into a selector for you. One simple criterion (<b>id</b>, <b>class_name</b>, <b>tag_name</b>) becomes a plain <b>CSS</b> selector. Combine criteria, or match by <b>text</b> or a custom attribute, and it switches to <b>XPath</b>. Step through the calls below.</div>
+
+  <div class="presets" id="presets"></div>
+
+  <div class="callbox">
+    <div class="callrow"><code class="call" id="call"></code></div>
+    <div class="buildrow"><span class="lbl">pydoll builds &rarr;</span><span class="badge" id="badge"></span><code class="built" id="built"></code></div>
   </div>
 
-  <div class="preview" id="page">
-    <input class="field" id="email" placeholder="email" />
-    <input class="field" id="pass" placeholder="password" />
-    <button class="btn primary" type="submit">Sign up</button>
-    <button class="btn ghost" type="button">Cancel</button>
-    <a class="link" href="#">Forgot password?</a>
+  <div class="stage">
+    <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="tab">signup.html</span></div>
+    <div class="page" id="page">
+      <input class="field" id="email" name="email" type="email" placeholder="Email" />
+      <input class="field" id="password" name="password" type="password" placeholder="Password" />
+      <button class="btn" type="submit" data-testid="signup">Sign up</button>
+    </div>
   </div>
-  <div class="count" id="count"></div>
+
+  <div class="hint">One simple criterion &rarr; a <b class="c">CSS</b> selector. Combine criteria, or match by text or a custom attribute &rarr; find() writes the <b class="x">XPath</b> for you.</div>
 </div>
 
 <script>
 (function(){
-  var page=document.getElementById('page'),call=document.getElementById('call'),count=document.getElementById('count'),allBtn=document.getElementById('allBtn');
-  var fTag=document.getElementById('f_tag'),fId=document.getElementById('f_id'),fClass=document.getElementById('f_class'),fText=document.getElementById('f_text');
-  var findAll=false;
-  function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;');}
-  function clearMatches(){ page.querySelectorAll('.match').forEach(function(n){n.classList.remove('match');}); }
-  function buildCall(tag,id,cls,text){
+  var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  function g(id){return document.getElementById(id);}
+  var page=g('page'),call=g('call'),built=g('built'),badge=g('badge'),presetsEl=g('presets');
+
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function clearMatches(){ Array.prototype.forEach.call(page.querySelectorAll('.match'),function(n){n.classList.remove('match');}); }
+
+  // The five calls the reader steps through. Two land on a CSS selector, three
+  // on an XPath (one combines criteria, one matches text, one a custom attribute).
+  var PRESETS=[
+    {label:'id',              p:{id:'email'}},
+    {label:'class_name',      p:{class_name:'btn'}},
+    {label:'tag_name + name', p:{tag_name:'input', name:'email'}},
+    {label:'text',            p:{text:'Sign up'}},
+    {label:'data_testid',     p:{attrs:{data_testid:'signup'}}}
+  ];
+
+  // mirror of FindElementsMixin._get_by_and_value + SelectorParser.build_xpath
+  function classify(p){
+    var attrs=p.attrs||{}, attrKeys=Object.keys(attrs);
+    var simple={id:p.id,class_name:p.class_name,name:p.name,tag_name:p.tag_name};
+    var provided=Object.keys(simple).filter(function(k){return simple[k];});
+    var hasText=!!p.text, hasAttr=attrKeys.length>0;
+    if(provided.length===1 && !hasText && !hasAttr){
+      var k=provided[0];
+      if(k==='id') return {kind:'css', sel:'#'+p.id};
+      if(k==='class_name') return {kind:'css', sel:'.'+p.class_name};
+      if(k==='tag_name') return {kind:'css', sel:p.tag_name};
+      if(k==='name') return {kind:'xpath', sel:'//*[@name="'+p.name+'"]'};
+    }
+    var base = p.tag_name ? ('//'+p.tag_name) : '//*';
+    var c=[];
+    if(p.id) c.push('@id="'+p.id+'"');
+    if(p.class_name) c.push('contains(concat(" ", normalize-space(@class), " "), " '+p.class_name+' ")');
+    if(p.name) c.push('@name="'+p.name+'"');
+    if(hasText) c.push('contains(text(), "'+p.text+'")');
+    attrKeys.forEach(function(ak){ c.push('@'+ak.replace(/_/g,'-')+'="'+attrs[ak]+'"'); });
+    return {kind:'xpath', sel: c.length ? base+'['+c.join(' and ')+']' : base};
+  }
+
+  function matchNodes(info){
+    if(info.kind==='css'){ return [].slice.call(page.querySelectorAll(info.sel)); }
+    var r=document.evaluate('.'+info.sel,page,null,XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,null), out=[];
+    for(var i=0;i<r.snapshotLength;i++){ var n=r.snapshotItem(i); if(n&&n.nodeType===1) out.push(n); }
+    return out;
+  }
+
+  function kv(k,v){ return '<span class="k">'+esc(k)+'</span>=<span class="st">\''+esc(v)+'\'</span>'; }
+  function buildCall(p){
     var parts=[];
-    if(tag)parts.push('<span class="k">tag_name</span>=<span class="st">\''+esc(tag)+'\'</span>');
-    if(id)parts.push('<span class="k">id</span>=<span class="st">\''+esc(id)+'\'</span>');
-    if(cls)parts.push('<span class="k">class_name</span>=<span class="st">\''+esc(cls)+'\'</span>');
-    if(text)parts.push('<span class="k">text</span>=<span class="st">\''+esc(text)+'\'</span>');
-    if(findAll)parts.push('<span class="k">find_all</span>=<span class="kw">True</span>');
-    if(!parts.length)return '<span class="kw">await</span> tab.<span class="fn">find</span>()  <span style="color:var(--faint)"># fill an attribute above</span>';
+    if(p.tag_name) parts.push(kv('tag_name',p.tag_name));
+    if(p.id) parts.push(kv('id',p.id));
+    if(p.class_name) parts.push(kv('class_name',p.class_name));
+    if(p.name) parts.push(kv('name',p.name));
+    if(p.text) parts.push(kv('text',p.text));
+    Object.keys(p.attrs||{}).forEach(function(ak){ parts.push(kv(ak,p.attrs[ak])); });
     return '<span class="kw">await</span> tab.<span class="fn">find</span>('+parts.join(', ')+')';
   }
-  function evaluate(){
-    clearMatches();
-    var tag=fTag.value.trim(),id=fId.value.trim(),cls=fClass.value.trim(),text=fText.value.trim();
-    call.innerHTML=buildCall(tag,id,cls,text);
-    if(!tag&&!id&&!cls&&!text){ count.textContent=''; count.className='count'; return; }
-    var sel=(tag||'')+(id?'#'+id:'')+(cls?'.'+cls.split(/\s+/).filter(Boolean).join('.'):'');
-    if(!sel)sel='*';
-    var nodes;
-    try{ nodes=[].slice.call(page.querySelectorAll(sel)); }
-    catch(e){ count.textContent='invalid attribute'; count.className='count bad'; return; }
-    if(text){
-      nodes=nodes.filter(function(n){ return n.textContent.trim()===text; });
-      nodes=nodes.filter(function(n){ return !nodes.some(function(m){ return m!==n && n.contains(m); }); });
-    }
-    if(!findAll)nodes=nodes.slice(0,1);
-    nodes.forEach(function(n){ n.classList.add('match'); });
-    var n=nodes.length;
-    if(n===0){ count.textContent='find() would raise ElementNotFound'; count.className='count zero'; }
-    else { count.textContent=findAll?(n+' element'+(n===1?'':'s')+' matched'):'1 element matched (find returns the first)'; count.className='count'; }
+
+  function setBadge(kind){
+    if(kind==='css'){ badge.className='badge css'; badge.textContent='CSS'; built.className='built c'; }
+    else { badge.className='badge xpath'; badge.textContent='XPath'; built.className='built x'; }
   }
-  [fTag,fId,fClass,fText].forEach(function(i){i.addEventListener('input',evaluate);});
-  allBtn.addEventListener('click',function(){findAll=!findAll;allBtn.classList.toggle('on',findAll);evaluate();});
-  evaluate();
+
+  var current=0;
+  function markActive(){ Array.prototype.forEach.call(presetsEl.children,function(b,i){ b.classList.toggle('on', i===current); }); }
+
+  function render(i){
+    current=i; markActive();
+    var p=PRESETS[i].p;
+    clearMatches();
+    call.innerHTML=buildCall(p);
+    var info=classify(p);
+    setBadge(info.kind);
+    built.textContent=info.sel;
+    matchNodes(info).slice(0,1).forEach(function(n){ n.classList.add('match'); });
+  }
+
+  // build the preset buttons
+  PRESETS.forEach(function(ex,i){
+    var b=document.createElement('button'); b.className='preset'; b.textContent=ex.label;
+    b.addEventListener('click',function(){ stopAuto(); render(i); });
+    presetsEl.appendChild(b);
+  });
+
+  // gentle auto-advance through the presets; any click hands control to the reader
+  var alive=true, timer=null;
+  function stopAuto(){ if(!alive)return; alive=false; if(timer)clearTimeout(timer); timer=null; }
+  function autoAdvance(){
+    if(!alive) return;
+    render(current);
+    timer=setTimeout(function(){ if(!alive)return; current=(current+1)%PRESETS.length; autoAdvance(); }, 2800);
+  }
+
+  if(reduce){
+    // no auto-cycle: settle on one representative preset (text -> XPath) resolved
+    alive=false; render(3);
+  } else {
+    autoAdvance();
+  }
 })();
 </script>
 <script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>

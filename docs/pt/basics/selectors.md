@@ -6,7 +6,7 @@ Você só precisa de seletores para o `query()`. O método `find()` recebe atrib
 
 Experimente: digite um seletor abaixo e os elementos correspondentes se acendem. Ele roda o mesmo `querySelectorAll` / XPath que o navegador roda, então o que corresponde aqui corresponde na sua automação.
 
-<iframe src="/docs/resources/visuals/selector-playground.html" aria-label="Digite um seletor CSS ou XPath e veja quais elementos ele corresponde" style="width: 100%; height: 500px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/selector-playground.html" aria-label="Digite um seletor CSS ou XPath e veja quais elementos ele corresponde" style="width: 100%; height: 500px; border: 0;" loading="lazy"></iframe>
 
 ```python
 import asyncio

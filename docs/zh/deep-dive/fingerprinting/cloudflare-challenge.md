@@ -4,6 +4,8 @@ Cloudflare 的托管挑战，也就是那个 "Just a moment…" 过渡页，是�
 
 它把 [网络](network-fingerprinting.md) 和 [浏览器](browser-fingerprinting.md) fingerprinting 以及 [伪造的极限](spoofing-limits.md) 应用到一个实时目标上。机制请读那几页；而它们如何组合、又在哪里失效，请读本页。
 
+<iframe scrolling="no" src="/docs/resources/visuals/cloudflare-matrix.html" aria-label="A coherent headful identity passes Cloudflare; flip any single field (IP, host OS, Chrome version, headless) and a different layer catches it, so only coherence of everything passes" style="width: 100%; height: 760px; border: 0;" loading="lazy"></iframe>
+
 ## 受控测试
 
 一台机器，一个 Chrome 151 二进制文件，一个住宅 IP。各次运行之间唯一变化的就是 profile 和 headless 标志；[`apply_fingerprint()`](../../stealth/fingerprint-injection.md) 在导航之前应用。

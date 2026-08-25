@@ -30,7 +30,7 @@ asyncio.run(main())
 
 当某个字段的内容不需要看起来像是打出来的（比如隐藏的 token，或没人关注的值），`insert_text()` 会一次性设置整个字符串，不产生逐键事件。
 
-<iframe src="/docs/resources/visuals/typing-rhythm.html" aria-label="同一个单词以固定 50ms 节奏输入，对比带有变化间隔和一次被纠正拼写错误的拟人化节奏，绘制在同一时间轴上" style="width: 100%; height: 340px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/typing-rhythm.html" aria-label="同一个单词以固定 50ms 节奏输入，对比带有变化间隔和一次被纠正拼写错误的拟人化节奏，绘制在同一时间轴上" style="width: 100%; height: 340px; border: 0;" loading="lazy"></iframe>
 
 ## 像人一样点击
 

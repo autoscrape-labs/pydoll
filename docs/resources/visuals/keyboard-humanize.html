@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Humanized typing playground</title>
+<title>Humanized keyboard typing</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
@@ -12,114 +12,386 @@
     --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;--panel2:#191c20;
     --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
     --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
-    --indigo:#6e7bff;--indigo2:#8f99ff;--pass:#35e0a1;--danger:#ff6b6b;
-    --sans:"Chivo",system-ui,-apple-system,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--indigo-dim:rgba(110,123,255,.13);
+    --pass:#35e0a1;--pass-dim:rgba(53,224,161,.12);
+    --amber:#f5b544;--amber-dim:rgba(245,181,68,.13);
+    --danger:#ff6b6b;--danger-dim:rgba(255,107,107,.12);
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
   }
-  *{box-sizing:border-box}
-  html,body{margin:0}
+  *{box-sizing:border-box} html,body{margin:0}
   body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
   .widget{border:1px solid var(--line);padding:16px 18px}
-  .top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:13px}
-  .mode{font-family:var(--mono);font-size:12px;color:var(--dim)}
-  .lbl{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--faint);margin-bottom:6px}
+  .lead{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:14px;line-height:1.55}
+  .lead b{color:var(--ink)} .lead .k{color:var(--indigo2)}
+  .lbl{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--faint);margin-bottom:6px}
   .src{width:100%;font-family:var(--mono);font-size:13px;color:var(--ink);background:var(--bg2);border:1px solid var(--line2);padding:9px 12px;outline:none}
   .src:focus{border-color:var(--indigo)}
-  .field{margin-top:14px;min-height:44px;display:flex;align-items:center;gap:1px;background:var(--panel);border:1px solid var(--line2);padding:11px 13px;font-family:var(--mono);font-size:14px}
+  .field{margin-top:13px;min-height:46px;display:flex;align-items:center;gap:0;background:var(--panel);border:1px solid var(--line2);padding:11px 13px;font-family:var(--mono);font-size:15px;overflow:hidden}
   .field .typed{white-space:pre-wrap;word-break:break-word}
-  .field .typed:empty::after{content:'Pydoll types here';color:var(--faint);font-style:italic;font-size:12.5px}
-  .field .typed .typo{color:var(--danger)}
-  .caret{width:1.5px;height:17px;background:var(--indigo);display:inline-block;animation:blink 1s step-end infinite}
+  .field .typed:empty::after{content:'text lands here';color:var(--faint);font-style:italic;font-size:12.5px}
+  .field .typed .bad{color:var(--danger)}
+  .caret{width:1.5px;height:19px;flex:none;background:var(--indigo);display:inline-block;margin-left:1px;animation:blink 1.05s step-end infinite}
   @keyframes blink{50%{opacity:0}}
-  .rhythm{margin-top:14px;height:46px;display:flex;align-items:flex-end;gap:3px;overflow:hidden;border-bottom:1px solid var(--line);padding-bottom:1px}
-  .bar{width:5px;flex:0 0 5px;background:var(--indigo);opacity:.75;transition:height .05s}
-  .bar.typo{background:var(--danger);opacity:.9}
-  .rhythm-lbl{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:6px}
-  .controls{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:center}
-  button{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:8px 12px;cursor:pointer;transition:.15s}
-  button:hover{border-color:var(--indigo);color:#fff}
-  button.active{background:rgba(110,123,255,.14);border-color:var(--indigo);color:#fff}
-  button:disabled{opacity:.5;cursor:default}
-  .caption{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-left:auto;min-height:16px;text-align:right}
-  .caption b{color:var(--pass);font-weight:500}
-  @media (prefers-reduced-motion:reduce){.caret{animation:none}}
+
+  .tl{margin-top:16px}
+  .tlhead{display:flex;align-items:baseline;gap:12px;margin-bottom:7px;flex-wrap:wrap}
+  .tlhead .h{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--faint)}
+  .legend{display:flex;align-items:center;gap:12px;font-family:var(--mono);font-size:9.5px;color:var(--faint)}
+  .legend i{display:inline-block;width:8px;height:8px;vertical-align:0;margin-right:5px}
+  .legend i.ok{background:var(--indigo)} .legend i.bad{background:var(--danger)}
+  .legend i.back{background:var(--amber)} .legend i.fix{background:var(--pass)}
+  .gapnow{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--dim)}
+  .gapnow b{color:var(--indigo2);font-weight:600}
+  .track{position:relative;height:66px;background:var(--bg2);border:1px solid var(--line);overflow:hidden}
+  .base{position:absolute;left:0;right:0;top:66%;height:1px;background:var(--line2)}
+  .tick{position:absolute;width:2px;opacity:0;transition:opacity .12s ease}
+  .tick.show{opacity:1}
+  .tick.ok{bottom:34%;height:25px;background:var(--indigo)}
+  .tick.fix{bottom:34%;height:25px;background:var(--pass)}
+  .tick.bad{bottom:34%;height:25px;background:var(--danger)}
+  .tick.back{top:66%;height:13px;background:var(--amber)}
+  .playhead{position:absolute;top:0;bottom:0;width:1.5px;background:linear-gradient(var(--indigo2),rgba(143,153,255,.15));left:0;opacity:0}
+  .playhead.on{opacity:.9}
+  .axis{position:relative;height:15px;margin-top:3px}
+  .axis .m{position:absolute;transform:translateX(-50%);font-family:var(--mono);font-size:9px;color:var(--faint);top:0}
+  .axis .m::before{content:"";position:absolute;top:-6px;left:50%;width:1px;height:4px;background:var(--line2)}
+  .axislbl{font-family:var(--mono);font-size:9.5px;color:var(--faint);margin-top:3px;letter-spacing:.03em}
+
+  .params{display:flex;gap:16px;flex-wrap:wrap;margin-top:15px;padding:11px 13px;border:1px solid var(--line);background:var(--bg2)}
+  .pctl{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:10.5px;color:var(--faint);flex:1;min-width:210px}
+  .pctl .pl{white-space:nowrap;color:var(--dim)}
+  .pctl b{color:var(--indigo2);font-weight:600;min-width:56px;text-align:right}
+  .pctl code{color:var(--faint);font-size:8.5px}
+  input[type=range]{-webkit-appearance:none;appearance:none;flex:1;height:3px;background:var(--line2);border-radius:2px;outline:none;cursor:pointer;min-width:60px}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:13px;height:13px;border-radius:50%;background:var(--indigo);border:2px solid var(--panel);cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:11px;height:11px;border-radius:50%;background:var(--indigo);border:2px solid var(--panel);cursor:pointer}
+
+  .controls{display:flex;align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap}
+  button.run{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:8px 14px;cursor:pointer;transition:.15s}
+  button.run:hover{border-color:var(--indigo);color:#fff}
+  .cap{font-family:var(--mono);font-size:10.5px;color:var(--dim);margin-left:auto;text-align:right;line-height:1.5;min-height:16px}
+  .cap b{color:var(--ink);font-weight:600} .cap b.ok{color:var(--pass)}
+  .foot{font-family:var(--mono);font-size:9.5px;color:var(--faint);margin-top:9px}
+  @media (prefers-reduced-motion:reduce){.caret{animation:none}.tick{transition:none}}
+
+  /* theme-matched thin scrollbars for overflow-x boxes (replaces the default white bar) */
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--line2)}
+  ::-webkit-scrollbar-thumb:hover{background:var(--faint)}
 </style>
 </head>
 <body>
 <div class="widget">
-  <div class="top"><div class="mode" id="mode">Type anything, then watch Pydoll type it back. Each run is different.</div></div>
+  <div class="lead">This is <b>tab.keyboard</b> typing with <span class="k">humanize=True</span>, the real per-key timing from Pydoll's <b>TimingConfig</b>. Watch the caret land each character; when the algorithm mis-hits a key it types the wrong one, pauses, presses <b>&#9003; backspace</b>, and corrects. The timeline drops one tick per keystroke at its <b>real inter-key gap</b>, so the human rhythm and the typo burst are visible. It loops the same run; <b>Type it</b> generates a fresh one.</div>
 
-  <div class="lbl">your text</div>
-  <input class="src" id="src" value="web scraping is fun" maxlength="42" spellcheck="false" />
+  <div class="lbl">your text &middot; field.type_text(&hellip;, humanize=True)</div>
+  <input class="src" id="src" value="pydoll types like a human" maxlength="44" spellcheck="false" autocomplete="off" />
 
-  <div class="field"><span class="typed" id="typed"></span><span class="caret"></span></div>
-  <div class="rhythm" id="rhythm"></div>
-  <div class="rhythm-lbl">delay between keystrokes</div>
+  <div class="field"><span class="typed" id="typed"></span><span class="caret" id="caret"></span></div>
+
+  <div class="tl">
+    <div class="tlhead">
+      <span class="h">keystroke timeline</span>
+      <span class="legend"><span><i class="ok"></i>key</span><span><i class="bad"></i>typo</span><span><i class="back"></i>backspace</span><span><i class="fix"></i>correction</span></span>
+      <span class="gapnow" id="gapnow">gap <b>·</b></span>
+    </div>
+    <div class="track" id="track"><div class="base"></div><div class="playhead" id="playhead"></div></div>
+    <div class="axis" id="axis"></div>
+    <div class="axislbl">time (seconds) &middot; gaps drawn to real scale</div>
+  </div>
+
+  <div class="params">
+    <div class="pctl"><span class="pl">typo rate</span><input type="range" id="sTypo" min="0" max="20" value="2"><b id="vTypo">2%</b><code>DEFAULT_TYPO_PROBABILITY</code></div>
+    <div class="pctl"><span class="pl">keystroke</span><input type="range" id="sSpd" min="60" max="180" value="100"><b id="vSpd">30-120 ms</b><code>TimingConfig</code></div>
+  </div>
 
   <div class="controls">
-    <button id="human">Type it (humanize=True)</button>
-    <button id="fixed">Type it (fixed 50ms)</button>
-    <span class="caption" id="caption"></span>
+    <button class="run" id="run">Type it</button>
+    <button class="run" id="rand">Randomize</button>
+    <span class="cap" id="cap">generating&hellip;</span>
   </div>
+  <div class="foot">Faithful JS port of <b>pydoll/interactions/keyboard.py</b> &middot; pydoll's real default typo rate is 2%; the demo surfaces a run that contains a correction so the burst is visible.</div>
 </div>
 
 <script>
 (function(){
   var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
-  var src=document.getElementById('src'),typed=document.getElementById('typed'),rhythm=document.getElementById('rhythm');
-  var mode=document.getElementById('mode'),caption=document.getElementById('caption');
-  var hBtn=document.getElementById('human'),fBtn=document.getElementById('fixed');
-  var timers=[],busy=false;
+  function g(id){return document.getElementById(id);}
 
-  function rand(a,b){return a+Math.random()*(b-a);}
-  function wrongKey(c){ var n='abcdefghijklmnopqrstuvwxyz'.replace(c.toLowerCase(),''); return n[Math.floor(Math.random()*n.length)]; }
-  function render(cur,typoCh){
-    typed.textContent=cur;
-    if(typoCh){ var s=document.createElement('span'); s.className='typo'; s.textContent=typoCh; typed.appendChild(s); }
-  }
-  function addBar(ms,typo){
-    var b=document.createElement('div'); b.className='bar'+(typo?' typo':'');
-    var h=Math.max(6,Math.min(42,(ms-30)/170*40+8)); b.style.height=h+'px';
-    rhythm.appendChild(b);
-  }
-  function reset(){ timers.forEach(clearTimeout);timers=[]; typed.textContent='';rhythm.innerHTML='';caption.innerHTML=''; }
+  /* ---- faithful port of pydoll/interactions/keyboard.py (TimingConfig + typo model) ---- */
+  var TIMING={
+    keystroke_min:0.03, keystroke_max:0.12,
+    punctuation_min:0.08, punctuation_max:0.18,
+    thinking_probability:0.02, thinking_min:0.3, thinking_max:0.7,
+    distraction_probability:0.005, distraction_min:0.5, distraction_max:1.2,
+    mistake_realize_min:0.1, mistake_realize_max:0.25,
+    after_correction_min:0.03, after_correction_max:0.08,
+    double_press_min:0.02, double_press_max:0.05,
+    hesitation_min:0.15, hesitation_max:0.3
+  };
+  /* TypoConfig weights */
+  var TYPO_TYPES=['adjacent','transpose','double','skip','missed_space'];
+  var TYPO_WEIGHTS=[0.55,0.20,0.12,0.08,0.05];
+  var PAUSE_CHARS=" .,!?;:\n";
+  var QWERTY={
+    '1':['2','q'],'2':['1','3','q','w'],'3':['2','4','w','e'],'4':['3','5','e','r'],
+    '5':['4','6','r','t'],'6':['5','7','t','y'],'7':['6','8','y','u'],'8':['7','9','u','i'],
+    '9':['8','0','i','o'],'0':['9','-','o','p'],'-':['0','=','p','['],'=':['-','[',']'],
+    'q':['1','2','w','a','s'],'w':['q','2','3','e','a','s','d'],'e':['w','3','4','r','s','d','f'],
+    'r':['e','4','5','t','d','f','g'],'t':['r','5','6','y','f','g','h'],'y':['t','6','7','u','g','h','j'],
+    'u':['y','7','8','i','h','j','k'],'i':['u','8','9','o','j','k','l'],'o':['i','9','0','p','k','l',';'],
+    'p':['o','0','-','[','l',';',"'"],'[':['p','-','=',']',';',"'"],']':['[','=',"'"],
+    'a':['q','w','s','z','x'],'s':['q','w','e','a','d','z','x','c'],'d':['w','e','r','s','f','x','c','v'],
+    'f':['e','r','t','d','g','c','v','b'],'g':['r','t','y','f','h','v','b','n'],'h':['t','y','u','g','j','b','n','m'],
+    'j':['y','u','i','h','k','n','m',','],'k':['u','i','o','j','l','m',',','.'],'l':['i','o','p','k',';',',','.','/'],
+    ';':['o','p','[','l',"'",'.','/'],"'":['p','[',']',';','/'],
+    'z':['a','s','x'],'x':['z','a','s','d','c'],'c':['x','s','d','f','v'],'v':['c','d','f','g','b'],
+    'b':['v','f','g','h','n'],'n':['b','g','h','j','m'],'m':['n','h','j','k',','],
+    ',':['m','j','k','l','.'],'.':[',','k','l',';','/'],'/':['.','l',';',"'"],
+    ' ':['c','v','b','n','m']
+  };
 
-  function buildActions(text,human){
-    var acts=[],typos=0;
-    for(var i=0;i<text.length;i++){
-      var c=text[i];
-      if(human && c!==' ' && Math.random()<0.06){
-        acts.push({k:'typo',ch:wrongKey(c),wait:rand(70,150)});
-        acts.push({k:'del',wait:rand(180,300)});
-        typos++;
-      }
-      acts.push({k:'char',ch:c,wait:human?rand(45,180):50});
-    }
-    return {acts:acts,typos:typos};
+  function U(a,b){return a+Math.random()*(b-a);}
+  function isAlpha(c){return /^[a-z]$/i.test(c);}
+  function pickWeighted(items,weights){
+    var s=0,i;for(i=0;i<weights.length;i++)s+=weights[i];
+    var r=Math.random()*s;for(i=0;i<items.length;i++){r-=weights[i];if(r<=0)return items[i];}
+    return items[items.length-1];
   }
-  function run(human){
-    if(busy)return; var text=src.value; if(!text){return;}
-    busy=true;hBtn.disabled=true;fBtn.disabled=true;reset();
-    hBtn.classList.toggle('active',human);fBtn.classList.toggle('active',!human);
-    mode.textContent = human ? 'humanize=True: variable rhythm, with occasional corrected typos' : 'no humanize: a flat, fixed 50ms rhythm, a timing fingerprint';
-    var built=buildActions(text,human),acts=built.acts,cur='',i=0,t0=performance.now();
-    function step(){
-      if(i>=acts.length){
-        var secs=((performance.now()-t0)/1000).toFixed(1);
-        caption.innerHTML = human
-          ? 'typed <b>'+text.length+'</b> chars in <b>'+secs+'s</b>, '+built.typos+' corrected typo'+(built.typos===1?'':'s')
-          : 'typed <b>'+text.length+'</b> chars in <b>'+secs+'s</b>, every gap identical';
-        busy=false;hBtn.disabled=false;fBtn.disabled=false;return;
-      }
-      var a=acts[i++];var wait=reduce?0:a.wait;
-      if(a.k==='char'){ cur+=a.ch; render(cur); addBar(a.wait,false); }
-      else if(a.k==='typo'){ render(cur,a.ch); addBar(a.wait,true); }
-      else if(a.k==='del'){ render(cur); }
-      timers.push(setTimeout(step,wait));
-    }
-    step();
+  function createAdjacent(ch){
+    var lc=ch.toLowerCase();
+    if(!QWERTY[lc]) return {type:'double',wrong:ch};
+    var adj=QWERTY[lc][Math.floor(Math.random()*QWERTY[lc].length)];
+    if(ch!==lc && ch===ch.toUpperCase()) adj=adj.toUpperCase();
+    return {type:'adjacent',wrong:adj};
   }
-  hBtn.addEventListener('click',function(){run(true);});
-  fBtn.addEventListener('click',function(){run(false);});
+  function createTypo(type,cur,nxt){
+    if(type==='adjacent') return createAdjacent(cur);
+    if(type==='transpose') return (nxt&&isAlpha(nxt))?{type:'transpose',wrong:nxt}:createAdjacent(cur);
+    if(type==='missed_space') return (cur===' ')?{type:'missed_space'}:createAdjacent(cur);
+    if(type==='double') return {type:'double',wrong:cur};
+    return {type:'skip'};
+  }
+
+  /* Build the exact keystroke+sleep sequence _type_text_humanized would dispatch.
+     strokes: {type:'key'|'back', ch, cls, gap}  gap = seconds slept AFTER this stroke. */
+  function buildPlan(text, typoProb, speedFactor){
+    var km=TIMING.keystroke_min*speedFactor, kM=TIMING.keystroke_max*speedFactor;
+    var strokes=[], leadingGap=0, corrEvents=0;
+    function key(ch,cls){strokes.push({type:'key',ch:ch,cls:cls,gap:0});}
+    function back(){strokes.push({type:'back',ch:null,cls:'back',gap:0});}
+    function sleep(s){ if(strokes.length) strokes[strokes.length-1].gap+=s; else leadingGap+=s; }
+
+    function doAdjacent(correct,wrong){
+      corrEvents++;
+      key(wrong,'bad');
+      sleep(U(TIMING.mistake_realize_min,TIMING.mistake_realize_max));
+      back();
+      sleep(U(TIMING.after_correction_min,TIMING.after_correction_max));
+      key(correct,'fix');
+    }
+    function doTranspose(cur,nxt){
+      corrEvents++;
+      key(nxt,'bad');
+      sleep(U(km,kM));
+      key(cur,'bad');
+      sleep(U(TIMING.mistake_realize_min,TIMING.mistake_realize_max));
+      back(); back();
+      sleep(U(TIMING.after_correction_min,TIMING.after_correction_max));
+      key(cur,'fix');
+      sleep(U(km,kM));
+      key(nxt,'fix');
+    }
+    function doDouble(cur){
+      corrEvents++;
+      key(cur,'ok');
+      sleep(U(TIMING.double_press_min,TIMING.double_press_max));
+      key(cur,'bad');
+      sleep(U(TIMING.mistake_realize_min,TIMING.mistake_realize_max));
+      back();
+    }
+    function doSkip(cur){
+      sleep(U(TIMING.hesitation_min,TIMING.hesitation_max));
+      key(cur,'ok');
+    }
+    function doMissedSpace(space,nxt){
+      corrEvents++;
+      key(nxt,'bad');
+      sleep(U(TIMING.mistake_realize_min,TIMING.mistake_realize_max));
+      back();
+      sleep(U(TIMING.after_correction_min,TIMING.after_correction_max));
+      key(space,'fix');
+      sleep(U(TIMING.after_correction_min,TIMING.after_correction_max));
+      key(nxt,'fix');
+    }
+    function handleTypo(cur,nxt,t){
+      if(t.type==='adjacent'){ doAdjacent(cur,t.wrong); return false; }
+      if(t.type==='transpose'&&nxt){ doTranspose(cur,nxt); return true; }
+      if(t.type==='double'){ doDouble(cur); return false; }
+      if(t.type==='skip'){ doSkip(cur); return false; }
+      if(t.type==='missed_space'&&cur===' '&&nxt){ doMissedSpace(cur,nxt); return true; }
+      key(cur,'ok'); return false;
+    }
+    function processChar(cur,nxt){
+      if(Math.random()>=typoProb){ key(cur,'ok'); return false; }
+      var t=createTypo(pickWeighted(TYPO_TYPES,TYPO_WEIGHTS),cur,nxt);
+      return handleTypo(cur,nxt,t);
+    }
+    function applyDelay(cur){
+      var d=U(km,kM);
+      if(PAUSE_CHARS.indexOf(cur)>=0) d+=U(TIMING.punctuation_min,TIMING.punctuation_max);
+      if(Math.random()<TIMING.thinking_probability) d+=U(TIMING.thinking_min,TIMING.thinking_max);
+      if(Math.random()<TIMING.distraction_probability) d+=U(TIMING.distraction_min,TIMING.distraction_max);
+      sleep(d);
+    }
+
+    var i=0;
+    while(i<text.length){
+      var cur=text[i], nxt=(i+1<text.length)?text[i+1]:null;
+      var skipNext=processChar(cur,nxt);
+      if(skipNext) i++;
+      applyDelay(cur);
+      i++;
+    }
+
+    var acc=leadingGap*1000;
+    strokes.forEach(function(s){ s.t=acc; acc+=s.gap*1000; });
+    var lastTick=strokes.length?strokes[strokes.length-1].t:0;
+    return {strokes:strokes, lastTick:lastTick, corrEvents:corrEvents, chars:text.length, keystrokes:strokes.length, kmin:km, kmax:kM};
+  }
+
+  /* ---- config from controls ---- */
+  function typoProb(){ return (+g('sTypo').value)/100; }
+  function speedFactor(){ return (+g('sSpd').value)/100; }
+  function syncLabels(){
+    g('vTypo').textContent=(+g('sTypo').value)+'%';
+    var f=speedFactor();
+    g('vSpd').textContent=Math.round(TIMING.keystroke_min*1000*f)+'-'+Math.round(TIMING.keystroke_max*1000*f)+' ms';
+  }
+
+  /* ---- axis / geometry ---- */
+  var PAD=3.2;
+  function axisMax(plan){
+    var lt=plan.lastTick, step=lt>2600?500:250;
+    return Math.max(750, Math.ceil((lt+step*0.25)/step)*step);
+  }
+  function xpct(t,max){ return PAD + (t/max)*(100-2*PAD); }
+
+  function renderTrack(plan){
+    var track=g('track');
+    Array.prototype.forEach.call(track.querySelectorAll('.tick'),function(n){n.remove();});
+    var max=axisMax(plan);
+    plan.strokes.forEach(function(s){
+      var el=document.createElement('div');
+      el.className='tick '+s.cls;
+      el.style.left=xpct(s.t,max)+'%';
+      track.appendChild(el);
+      s.node=el;
+    });
+    var axis=g('axis'); axis.innerHTML='';
+    var step=max>2600?500:250;
+    for(var t=0;t<=max+1;t+=step){
+      var m=document.createElement('div'); m.className='m';
+      m.style.left=xpct(t,max)+'%'; m.textContent=(t/1000).toFixed(t%1000===0?1:2);
+      axis.appendChild(m);
+    }
+    g('playhead').__max=max;
+  }
+
+  /* ---- field ---- */
+  var fieldChars=[];
+  function renderField(){
+    var typed=g('typed'); typed.innerHTML='';
+    fieldChars.forEach(function(c){
+      var sp=document.createElement('span');
+      if(c.cls==='bad') sp.className='bad';
+      sp.textContent=c.ch;
+      typed.appendChild(sp);
+    });
+  }
+  function fireStroke(s){
+    if(s.type==='key') fieldChars.push({ch:s.ch,cls:s.cls});
+    else fieldChars.pop();
+    renderField();
+    s.node.classList.add('show');
+  }
+  function finalChars(plan){
+    var arr=[];
+    plan.strokes.forEach(function(s){ if(s.type==='key')arr.push({ch:s.ch,cls:'ok'}); else arr.pop(); });
+    return arr;
+  }
+
+  /* ---- playback ---- */
+  var MULT=2.15, rafId=null, loopT=null, curPlan=null;
+  function clearAnim(){ if(rafId)cancelAnimationFrame(rafId); rafId=null; if(loopT)clearTimeout(loopT); loopT=null; }
+  function setPlayhead(realT,max){
+    var ph=g('playhead'); ph.classList.add('on');
+    var t=Math.min(realT,max); ph.style.left=xpct(t,max)+'%';
+  }
+  function finish(plan){
+    var s=(plan.lastTick/1000).toFixed(2);
+    var k=plan.corrEvents;
+    g('cap').innerHTML='typed <b>'+plan.chars+'</b> chars in <b>'+s+'s</b> &middot; <b>'+plan.keystrokes+'</b> keystrokes &middot; '+
+      (k>0?('<b class="ok">'+k+'</b> corrected typo'+(k===1?'':'s')):'no typos this run');
+    g('gapnow').innerHTML='mean gap <b>'+Math.round(plan.lastTick/Math.max(1,plan.keystrokes-1))+'</b> ms';
+  }
+  function play(plan){
+    clearAnim();
+    fieldChars=[]; renderField();
+    plan.strokes.forEach(function(s){ if(s.node)s.node.classList.remove('show'); });
+    var max=axisMax(plan);
+    g('gapnow').innerHTML='gap <b>·</b>';
+    if(reduce){
+      fieldChars=finalChars(plan); renderField();
+      plan.strokes.forEach(function(s){ s.node.classList.add('show'); });
+      setPlayhead(max,max); finish(plan); return;
+    }
+    g('cap').innerHTML='typing&hellip;';
+    var start=performance.now(), idx=0, prevKeyT=0;
+    function frame(now){
+      var realT=(now-start)/MULT;
+      setPlayhead(realT,max);
+      while(idx<plan.strokes.length && plan.strokes[idx].t<=realT){
+        var s=plan.strokes[idx];
+        fireStroke(s);
+        if(s.type==='key'){ var gp=Math.round(s.t-prevKeyT); if(idx>0) g('gapnow').innerHTML='gap <b>'+gp+'</b> ms'; prevKeyT=s.t; }
+        else { g('gapnow').innerHTML='<b style="color:var(--amber)">&#9003; backspace</b>'; prevKeyT=s.t; }
+        idx++;
+      }
+      if(realT < plan.lastTick+60){ rafId=requestAnimationFrame(frame); }
+      else { setPlayhead(max,max); finish(plan); loopT=setTimeout(function(){ play(plan); }, 1500); }
+    }
+    rafId=requestAnimationFrame(frame);
+  }
+
+  /* ---- generate (explicit action): new random run of the SAME text ---- */
+  function generate(){
+    syncLabels();
+    var text=g('src').value;
+    if(!text){ clearAnim(); fieldChars=[]; renderField(); g('cap').textContent='type something above'; return; }
+    var tp=typoProb(), sf=speedFactor(), plan, tries=0;
+    do{ plan=buildPlan(text,tp,sf); tries++; }
+    while(tp>0 && plan.corrEvents===0 && text.length>1 && tries<60);
+    curPlan=plan;
+    renderTrack(plan);
+    play(plan);
+  }
+
+  var editT=null;
+  function debouncedGenerate(){ if(editT)clearTimeout(editT); editT=setTimeout(generate,260); }
+
+  ['sTypo','sSpd'].forEach(function(id){ g(id).addEventListener('input',function(){ syncLabels(); debouncedGenerate(); }); });
+  g('src').addEventListener('input',debouncedGenerate);
+  g('run').addEventListener('click',generate);
+  g('rand').addEventListener('click',function(){
+    g('sTypo').value=Math.round(U(3,14));
+    g('sSpd').value=Math.round(U(72,150));
+    generate();
+  });
+  window.addEventListener('resize',function(){ if(curPlan)renderTrack(curPlan); });
+  window.addEventListener('load',function(){ syncLabels(); setTimeout(generate,300); });
 })();
 </script>
 <script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>

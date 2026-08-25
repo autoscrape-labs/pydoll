@@ -15,13 +15,13 @@ That is what splits a good override from a detectable one:
 
 A media feature lives in the engine's `MediaValues`, and both read paths resolve against it. Toggle the override type below to see which paths each one reaches:
 
-<iframe src="/docs/resources/visuals/media-read-paths.html" aria-label="A CDP override edits the engine's MediaValues so matchMedia and the CSS cascade both change; a JavaScript override wraps only matchMedia, leaving the CSS path reading the real value" style="width: 100%; height: 430px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/media-read-paths.html" aria-label="A CDP override edits the engine's MediaValues so matchMedia and the CSS cascade both change; a JavaScript override wraps only matchMedia, leaving the CSS path reading the real value" style="width: 100%; height: 430px; border: 0;" loading="lazy"></iframe>
 
 A CDP override edits `MediaValues`, so `matchMedia` and the `@media` cascade both return the new value. A JavaScript override replaces the `matchMedia` function; the cascade never calls it, so CSS keeps resolving against the real `MediaValues`. That gap is the contradiction.
 
 The demo below runs on your own display. Both cards read your real `dynamic-range` and agree. Apply a JavaScript override and only `matchMedia` lies; the engine's `@media` rule keeps reporting the truth.
 
-<iframe src="/docs/resources/visuals/js-override-lie.html" aria-label="matchMedia and a CSS @media rule read the same dynamic-range; a JavaScript override makes only matchMedia lie while the CSS path stays truthful" style="width: 100%; height: 340px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/js-override-lie.html" aria-label="matchMedia and a CSS @media rule read the same dynamic-range; a JavaScript override makes only matchMedia lie while the CSS path stays truthful" style="width: 100%; height: 340px; border: 0;" loading="lazy"></iframe>
 
 This is exactly why Pydoll does not spoof `dynamic-range`. Chrome keeps a fixed allowlist of overridable media features. In Blink's `MediaFeatureOverrides::SetOverride`, seven names are handled, `color-gamut`, `prefers-color-scheme`, `prefers-contrast`, `prefers-reduced-motion`, `prefers-reduced-data`, `prefers-reduced-transparency`, and `forced-colors`, and any other name falls through and changes nothing. `dynamic-range`, `inverted-colors`, and `monochrome` have no branch there, so the CDP command is accepted and silently dropped. It is a missing code path in the engine, not a value-format problem.
 

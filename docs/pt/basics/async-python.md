@@ -90,7 +90,7 @@ asyncio.run(main())
 
 Desta vez são cerca de **2 segundos**. As duas esperas se sobrepõem. A água ferve enquanto o pão torra.
 
-<iframe src="/docs/resources/visuals/async-flow.html" aria-label="Async sequencial vs concorrente, animado" style="width: 100%; height: 285px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/async-flow.html" aria-label="Async sequencial vs concorrente, animado" style="width: 100%; height: 285px; border: 0;" loading="lazy"></iframe>
 
 Rode cada modo e observe o cronômetro: o sequencial termina em 4.0s, o concorrente em 2.0s, porque as duas esperas se sobrepõem.
 

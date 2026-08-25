@@ -233,7 +233,7 @@ Headless Chrome 会暴露 headful 浏览器不会暴露的信号，这就是为�
 
 每个 frame 都读取自己的 `window.screen`。不做重塑时，跨源 iframe 读取的是原始的 `800x600` headless 屏幕；重塑之后，iframe 与页面一致：
 
-<iframe src="/docs/resources/visuals/headless-screen-oopif.html" aria-label="一个 headless 页面和它的跨源 iframe 各自读取 window.screen；切换重塑会让 iframe 从原始的 800x600 headless 屏幕变为与页面一致" style="width: 100%; height: 460px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/headless-screen-oopif.html" aria-label="一个 headless 页面和它的跨源 iframe 各自读取 window.screen；切换重塑会让 iframe 从原始的 800x600 headless 屏幕变为与页面一致" style="width: 100%; height: 460px; border: 0;" loading="lazy"></iframe>
 
 工作区来自 profile 的 `avail_top` / `avail_left`（以及 `avail_width` / `avail_height`）；随附的 macOS profile 保留 25px 的菜单栏，Windows profile 则在底部保留任务栏。headless 虚拟屏幕只接受整数的 `devicePixelRatio`，所以小数 dpr（移动端、Windows 显示缩放）会为 iframe 取整，而顶层页面保留精确值。
 

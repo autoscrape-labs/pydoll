@@ -30,7 +30,7 @@ asyncio.run(main())
 
 Quando o conteúdo de um campo não precisa parecer digitado (um token oculto, um valor que ninguém observa), `insert_text()` define a string inteira de uma vez, sem eventos por tecla.
 
-<iframe src="/docs/resources/visuals/typing-rhythm.html" aria-label="A mesma palavra digitada numa cadência fixa de 50ms versus um ritmo humanizado com intervalos variáveis e um erro de digitação corrigido, no mesmo eixo de tempo" style="width: 100%; height: 340px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/typing-rhythm.html" aria-label="A mesma palavra digitada numa cadência fixa de 50ms versus um ritmo humanizado com intervalos variáveis e um erro de digitação corrigido, no mesmo eixo de tempo" style="width: 100%; height: 340px; border: 0;" loading="lazy"></iframe>
 
 ## Clique como um humano
 

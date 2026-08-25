@@ -233,7 +233,7 @@ Headless Chrome exposes signals a headful browser does not, which is why bot che
 
 Each frame reads its own `window.screen`. Without the reshape a cross-origin iframe reads the raw `800x600` headless screen; with it, the iframe matches the page:
 
-<iframe src="/docs/resources/visuals/headless-screen-oopif.html" aria-label="A headless page and its cross-origin iframe each reading window.screen; toggling the reshape flips the iframe from the raw 800x600 headless screen to matching the page" style="width: 100%; height: 460px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/headless-screen-oopif.html" aria-label="A headless page and its cross-origin iframe each reading window.screen; toggling the reshape flips the iframe from the raw 800x600 headless screen to matching the page" style="width: 100%; height: 460px; border: 0;" loading="lazy"></iframe>
 
 The work area comes from the profile's `avail_top` / `avail_left` (and `avail_width` / `avail_height`); the shipped macOS profile reserves a 25px menu bar, the Windows profile a bottom taskbar. The headless virtual screen only accepts an integer `devicePixelRatio`, so a fractional dpr (mobile, Windows display scaling) is rounded for iframes while the top page keeps the exact value.
 

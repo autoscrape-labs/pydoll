@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SOCKS5 forwarder double handshake</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+<style>
+  :root{
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;--panel2:#191c20;
+    --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
+    --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--indigo-dim:rgba(110,123,255,.13);
+    --pass:#35e0a1;--pass-dim:rgba(53,224,161,.12);
+    --amber:#f5b544;--amber-dim:rgba(245,181,68,.13);
+    --danger:#ff6b6b;--danger-dim:rgba(255,107,107,.12);
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
+  .widget{border:1px solid var(--line);padding:16px 18px}
+  .lead{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:14px;line-height:1.55}
+  .lead b{color:var(--ink)} .lead code{color:var(--indigo2)}
+
+  .stage{position:relative;border:1px solid var(--line2);background:var(--bg2);overflow:hidden;transition:height .3s}
+  svg#wire{position:absolute;left:0;top:0;display:block}
+  .lifeline{stroke:var(--line2);stroke-width:1.4;stroke-dasharray:2 5}
+  .lifeline.fwd{stroke:var(--indigo);opacity:.55;stroke-dasharray:none}
+  .guide{stroke:var(--line2);stroke-width:1.3;fill:none;opacity:.4;transition:stroke .25s,opacity .25s}
+  .guide.done.gi{stroke:var(--indigo);opacity:.5} .guide.done.ga{stroke:var(--amber);opacity:.5} .guide.done.gg{stroke:var(--pass);opacity:.5}
+  .guide.active{opacity:1;stroke-width:1.7}
+  .guide.active.gi{stroke:var(--indigo2)} .guide.active.ga{stroke:var(--amber)} .guide.active.gg{stroke:var(--pass)}
+  .ev{opacity:0;transition:opacity .25s}
+  .ev.on{opacity:1}
+  .destline{stroke:var(--pass);stroke-width:1.3;stroke-dasharray:3 4;opacity:0;transition:opacity .3s} .destline.on{opacity:.7}
+
+  .zone{position:absolute;top:0;bottom:0;z-index:0;pointer-events:none;border-left:1px solid transparent;border-right:1px solid transparent}
+  .zone.left{background:linear-gradient(180deg,rgba(110,123,255,.05),rgba(110,123,255,.02))}
+  .zone.right{background:linear-gradient(180deg,rgba(245,181,68,.06),rgba(245,181,68,.02))}
+  .zone .zl{position:absolute;top:8px;left:0;width:100%;text-align:center;font-family:var(--mono);font-size:9px;
+    letter-spacing:.05em;text-transform:uppercase;white-space:nowrap}
+  .zone.left .zl{color:var(--indigo2)} .zone.right .zl{color:var(--amber)}
+  .zone .zl .sub{display:block;color:var(--faint);font-size:8px;margin-top:2px;letter-spacing:.03em}
+
+  .peer{position:absolute;top:34px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:5px;z-index:5}
+  .peer .box{display:flex;align-items:center;gap:8px;border:1px solid var(--line2);background:var(--panel);padding:6px 11px}
+  .peer .box svg{width:15px;height:15px;color:var(--indigo2);flex:none}
+  .peer.rem .box svg{color:var(--amber)}
+  .peer .nm{font-family:var(--sans);font-weight:700;font-size:12px;white-space:nowrap}
+  .peer .adr{font-family:var(--mono);font-size:8.5px;color:var(--faint)}
+  .badge{font-family:var(--mono);font-size:8.5px;letter-spacing:.03em;padding:2px 7px;border:1px solid;white-space:nowrap;text-transform:uppercase;transition:.3s}
+  .badge.idle{color:var(--faint);border-color:var(--line2);background:var(--bg2)}
+  .badge.wait{color:var(--amber);border-color:rgba(245,181,68,.45);background:var(--amber-dim)}
+  .badge.ok{color:var(--pass);border-color:rgba(53,224,161,.45);background:var(--pass-dim)}
+
+  /* forwarder held-state vault */
+  .vault{position:absolute;transform:translateX(-50%);z-index:6;display:flex;flex-direction:column;gap:4px;align-items:stretch;width:162px}
+  .held{display:flex;align-items:center;gap:6px;border:1px solid var(--line2);background:var(--panel2);padding:3px 7px;
+    font-family:var(--mono);font-size:8.5px;color:var(--dim);transition:.25s}
+  .held .ik{width:11px;height:11px;flex:none;color:var(--faint)}
+  .held .ik svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:1.8}
+  .held .hv{flex:1;min-width:0;color:var(--ink);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .held.creds{border-color:rgba(245,181,68,.4)} .held.creds .ik{color:var(--amber)}
+  .held.creds.pulse{box-shadow:0 0 0 3px var(--amber-dim);border-color:var(--amber)}
+  .held.tgt{border-color:var(--line2)} .held.tgt.filled{border-color:rgba(110,123,255,.5)} .held.tgt.filled .ik{color:var(--indigo2)}
+  .held.tgt.pulse{box-shadow:0 0 0 3px var(--indigo-dim);border-color:var(--indigo)}
+  .held .tinylbl{flex:none;margin-left:auto;padding-left:6px;font-family:var(--mono);font-size:7.5px;color:var(--faint);letter-spacing:.03em;text-transform:uppercase}
+  .held.creds.pulse .tinylbl,.held.tgt.filled .tinylbl{color:var(--dim)}
+
+  .pkt{position:absolute;left:0;top:0;display:flex;align-items:center;gap:6px;white-space:nowrap;z-index:7;opacity:0;
+    font-family:var(--mono);font-size:10px;padding:4px 9px;border:1px solid var(--indigo);
+    background:var(--panel);color:var(--ink);box-shadow:0 0 0 3px var(--indigo-dim);transition:opacity .3s,box-shadow .3s}
+  .pkt b{color:var(--indigo2);font-weight:700} .pkt .n{color:var(--dim)}
+  .pkt.amber{border-color:var(--amber);box-shadow:0 0 0 3px var(--amber-dim)} .pkt.amber b{color:var(--amber)}
+  .pkt.pass{border-color:var(--pass);box-shadow:0 0 0 3px var(--pass-dim)} .pkt.pass b{color:var(--pass)}
+  .pkt.inflight{box-shadow:0 0 14px 2px rgba(110,123,255,.4),0 0 0 3px var(--indigo-dim)}
+  .pkt.amber.inflight{box-shadow:0 0 14px 2px rgba(245,181,68,.4),0 0 0 3px var(--amber-dim)}
+  .pkt.pass.inflight{box-shadow:0 0 14px 2px rgba(53,224,161,.4),0 0 0 3px var(--pass-dim)}
+
+  .callout{position:absolute;transform:translate(-50%,0);z-index:8;font-family:var(--mono);font-size:9px;line-height:1.4;
+    max-width:210px;text-align:center;padding:5px 9px;border:1px solid var(--amber);color:var(--amber);background:var(--bg2);
+    box-shadow:0 0 0 3px var(--amber-dim);opacity:0;transition:opacity .3s;pointer-events:none}
+  .callout.on{opacity:1}
+  .callout.ind{border-color:var(--indigo);color:var(--indigo2);box-shadow:0 0 0 3px var(--indigo-dim)}
+  .callout b{color:var(--ink)}
+
+  .destnote{position:absolute;transform:translate(-50%,-50%);z-index:6;font-family:var(--mono);font-size:9px;color:var(--pass);
+    border:1px solid rgba(53,224,161,.4);background:var(--pass-dim);padding:3px 7px;white-space:nowrap;opacity:0;transition:opacity .3s}
+  .destnote.on{opacity:1}
+
+  .relay{position:absolute;left:0;transform:translateY(-50%);z-index:5;text-align:center;opacity:0;transition:opacity .4s;pointer-events:none}
+  .relay.on{opacity:1}
+  .relay .rl{position:absolute;left:0;top:50%;width:100%;height:2px;background:linear-gradient(90deg,var(--indigo),var(--amber),var(--pass));opacity:.45}
+  .relay .rt{position:relative;font-family:var(--sans);font-weight:800;font-size:11px;color:var(--pass);letter-spacing:.03em;background:var(--bg2);padding:0 10px;display:inline-block}
+  .relay .rd{position:absolute;top:50%;width:6px;height:6px;border-radius:50%;background:var(--indigo2);transform:translate(-50%,-50%);box-shadow:0 0 8px 1px rgba(110,123,255,.6)}
+  .relay .rd.b{background:var(--pass);box-shadow:0 0 8px 1px rgba(53,224,161,.6)}
+  @keyframes relFwd{0%{left:0;opacity:0}10%{opacity:1}90%{opacity:1}100%{left:100%;opacity:0}}
+  @keyframes relBwd{0%{left:100%;opacity:0}10%{opacity:1}90%{opacity:1}100%{left:0;opacity:0}}
+  .relay.on .rd.a{animation:relFwd 2.1s linear infinite}
+  .relay.on .rd.b{animation:relBwd 2.1s linear 1.05s infinite}
+
+  .decoder{margin-top:13px;border:1px solid var(--line);background:var(--panel2);padding:10px 12px}
+  .decoder .dh{font-family:var(--mono);font-size:9px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:9px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .decoder .dh .dir{color:var(--ink)} .decoder .dh .cnt{margin-left:auto} .decoder .dh .side{padding:1px 6px;border:1px solid var(--line2)}
+  .decoder .dh .side.l{color:var(--indigo2);border-color:rgba(110,123,255,.4)} .decoder .dh .side.r{color:var(--amber);border-color:rgba(245,181,68,.4)}
+  .decoder .dh .tag{font-weight:600;color:var(--indigo2)} .decoder .dh .tag.amber{color:var(--amber)} .decoder .dh .tag.pass{color:var(--pass)}
+  .bytes{display:flex;gap:6px;overflow-x:auto;padding-bottom:3px;min-height:44px}
+  .bcell{flex:0 0 auto;border:1px solid var(--line2);background:var(--bg2);padding:5px 8px;text-align:center;min-width:32px;animation:cellIn .3s both}
+  @keyframes cellIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .bcell .bh{font-family:var(--mono);font-size:12px;color:var(--indigo2);font-weight:600;white-space:nowrap}
+  .bcell .bl{font-family:var(--mono);font-size:8px;color:var(--faint);margin-top:4px;white-space:nowrap;text-transform:uppercase}
+  .bcell.ok{background:var(--pass-dim);border-color:rgba(53,224,161,.4)} .bcell.ok .bh{color:var(--pass)}
+  .bcell.amber{background:var(--amber-dim);border-color:rgba(245,181,68,.4)} .bcell.amber .bh{color:var(--amber)}
+  .bcell.ascii .bh{color:var(--ink)}
+  .decoder .empty{font-family:var(--mono);font-size:10.5px;color:var(--faint);padding:12px 2px}
+
+  .narr{margin-top:13px;font-family:var(--mono);font-size:11px;color:var(--dim);line-height:1.55;min-height:52px;border-left:2px solid var(--line2);padding-left:11px}
+  .narr b{color:var(--ink)} .narr code{color:var(--indigo2)}
+
+  .controls{display:flex;align-items:center;gap:10px;margin-top:15px;flex-wrap:wrap}
+  button.btn{font-family:var(--mono);font-size:12px;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:8px 13px;cursor:pointer;transition:.15s}
+  button.btn:hover:not(:disabled){border-color:var(--indigo);color:#fff}
+  button.btn:disabled{opacity:.35;cursor:default}
+  button.btn.primary{border-color:var(--indigo);color:var(--indigo2)}
+  .step{font-family:var(--mono);font-size:11px;color:var(--dim);margin-left:auto} .step b{color:var(--ink)}
+  .foot{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:13px;line-height:1.55}
+  .foot a{color:var(--dim)}
+
+  @media(max-width:560px){
+    .pkt{font-size:8.5px;padding:3px 6px;gap:4px}
+    .peer .adr{display:none} .vault{width:118px} .step{margin-left:0;width:100%}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .pkt{transition:none} .guide,.ev,.badge,.held,.callout,.relay,.bcell,.destline,.destnote{transition:none;animation:none}
+    .relay.on .rd{animation:none;display:none}
+  }
+
+  /* theme-matched thin scrollbars for overflow-x boxes (replaces the default white bar) */
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--line2)}
+  ::-webkit-scrollbar-thumb:hover{background:var(--faint)}
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="lead">Chrome cannot do SOCKS5 username/password auth (<code>crbug 40323993</code>), so pydoll's <b>SOCKS5Forwarder</b> bridges two handshakes. On its <b>left face</b> it speaks a no-auth handshake to Chrome; on its <b>right face</b> it speaks the full authenticated handshake to the remote proxy, injecting the credentials Chrome cannot. Press <b>Replay</b>, or step with <b>Prev</b> / <b>Next</b>.</div>
+
+  <div class="stage" id="stage">
+    <div class="zone left" id="zoneL"><span class="zl">no-auth SOCKS5<span class="sub">Chrome ↔ forwarder</span></span></div>
+    <div class="zone right" id="zoneR"><span class="zl">authenticated SOCKS5<span class="sub">forwarder ↔ remote proxy</span></span></div>
+
+    <svg id="wire" aria-hidden="true">
+      <defs>
+        <marker id="ahF" markerWidth="8" markerHeight="8" refX="5.6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="rgba(244,245,247,.30)"/></marker>
+        <marker id="ahI" markerWidth="8" markerHeight="8" refX="5.6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#6e7bff"/></marker>
+        <marker id="ahA" markerWidth="8" markerHeight="8" refX="5.6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f5b544"/></marker>
+        <marker id="ahG" markerWidth="8" markerHeight="8" refX="5.6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#35e0a1"/></marker>
+      </defs>
+      <line id="llC" class="lifeline"/>
+      <line id="llF" class="lifeline fwd"/>
+      <line id="llR" class="lifeline"/>
+      <g id="lanes"></g>
+      <line id="destLine" class="destline"/>
+    </svg>
+
+    <div class="peer" id="peerC">
+      <div class="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M2 20h20M9 16l-1 4M15 16l1 4"/></svg><span class="nm">Chrome</span></div>
+      <span class="adr">no SOCKS5 auth</span>
+      <span class="badge idle" id="bC">ready</span>
+    </div>
+    <div class="peer" id="peerF">
+      <div class="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 8h13l-3-3M4 8l3 3"/><path d="M20 16H7l3 3M20 16l-3-3"/></svg><span class="nm">forwarder</span></div>
+      <span class="adr">127.0.0.1:1081</span>
+      <span class="badge idle" id="bF">listening</span>
+    </div>
+    <div class="peer rem" id="peerR">
+      <div class="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="16" height="7" rx="1.4"/><rect x="4" y="14" width="16" height="7" rx="1.4"/><path d="M7.5 6.5h.01M7.5 17.5h.01"/></svg><span class="nm">remote proxy</span></div>
+      <span class="adr">proxy:1080</span>
+      <span class="badge idle" id="bR">idle</span>
+    </div>
+
+    <div class="vault" id="vault">
+      <div class="held creds" id="hCreds"><span class="ik"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span><span class="hv">user / ••••</span><span class="tinylbl" id="credLbl">held</span></div>
+      <div class="held tgt" id="hTgt"><span class="ik"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg></span><span class="hv" id="tgtVal">awaiting</span><span class="tinylbl" id="tgtLbl">pending</span></div>
+    </div>
+
+    <div id="lanesHTML"></div>
+    <div class="callout" id="callout"></div>
+    <div class="destnote" id="destNote">→ example.com:443</div>
+    <div class="relay" id="relay"><span class="rl"></span><span class="rt">bidirectional byte relay</span><span class="rd a"></span><span class="rd b"></span></div>
+  </div>
+
+  <div class="decoder" id="decoder">
+    <div class="dh" id="decHead"><span class="dir">on the wire</span></div>
+    <div class="bytes" id="decBytes"></div>
+  </div>
+
+  <div class="narr" id="narr"></div>
+
+  <div class="controls">
+    <button class="btn primary" id="replay">Replay</button>
+    <button class="btn" id="prev">Prev</button>
+    <button class="btn" id="next">Next</button>
+    <span class="step" id="step">step <b>0</b> / 10</span>
+  </div>
+
+  <div class="foot">The forwarder holds the credentials and the CONNECT target as state. It injects the credentials on the right (Chrome never sends them) and forwards Chrome's CONNECT to the remote <b>verbatim</b>, preserving the exact address bytes and type. It binds to <code>127.0.0.1</code> only, so it is reachable solely from your machine. Pure-Python, zero-dependency: <code>pydoll.utils.SOCKS5Forwarder</code>. Refs: RFC 1928, RFC 1929, crbug 40323993.</div>
+</div>
+
+<script>
+(function(){
+  var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  function g(id){return document.getElementById(id);}
+  function el(tag,cls,html){var e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e;}
+  var SVGNS='http://www.w3.org/2000/svg';
+  function svgLine(cls){var l=document.createElementNS(SVGNS,'line');l.setAttribute('class',cls);return l;}
+  function svgCirc(cls){var c=document.createElementNS(SVGNS,'circle');c.setAttribute('class',cls);c.setAttribute('r','3.3');return c;}
+
+  var stage=g('stage'), svg=g('wire'), lanes=g('lanes'), lanesHTML=g('lanesHTML');
+
+  var CONNECT_BYTES=[{h:'05',l:'VER · 5'},{h:'01',l:'CMD · CONNECT'},{h:'00',l:'RSV'},{h:'03',l:'ATYP · domain'},
+    {h:'0B',l:'LEN · 11'},{h:'example.com',l:'DST.ADDR',k:'ascii'},{h:'01 BB',l:'DST.PORT · 443'}];
+  var REPLY_BYTES=[{h:'05',l:'VER · 5'},{h:'00',l:'REP · success',k:'ok'},{h:'00',l:'RSV'},{h:'01',l:'ATYP · IPv4'},
+    {h:'00 00 00 00',l:'BND.ADDR'},{h:'00 00',l:'BND.PORT'}];
+
+  // ---- the real SOCKS5Forwarder flow (pydoll.utils.socks5_proxy_forwarder) ----
+  var MSGS=[
+    {seg:'L',from:'C',to:'F',cls:'i',tag:'Hello',sum:'05 01 00',
+      narr:'Chrome opens the local forwarder and offers its methods. It supports exactly one: <code>00</code>, no authentication. Chrome cannot do SOCKS5 auth (crbug 40323993).',
+      bytes:[{h:'05',l:'VER · 5'},{h:'01',l:'NMETHODS'},{h:'00',l:'no-auth'}], fb:{t:'negotiating',c:'wait'}},
+    {seg:'L',from:'F',to:'C',cls:'i',tag:'Method',sum:'05 00',
+      narr:'The forwarder accepts <code>00</code>: no-auth on this hop. Chrome is satisfied and never has to prove anything.',
+      bytes:[{h:'05',l:'VER · 5'},{h:'00',l:'METHOD · no-auth',k:'ok'}], cb:{t:'no-auth ok',c:'ok'}},
+    {seg:'L',from:'C',to:'F',cls:'i',tag:'CONNECT',sum:'→ example.com:443',captures:true,
+      narr:'Chrome sends its <b>CONNECT</b> naming the real target, <code>example.com:443</code>. The forwarder reads and <b>holds</b> this target, then opens its own connection to the remote proxy.',
+      bytes:CONNECT_BYTES, fb:{t:'target held',c:'wait'}},
+    {seg:'R',from:'F',to:'R',cls:'i',tag:'Hello',sum:'05 02 00 02',
+      narr:'On its right face the forwarder speaks a different handshake. It greets the remote proxy offering <code>00</code> and <code>02</code>: no-auth and username/password.',
+      bytes:[{h:'05',l:'VER · 5'},{h:'02',l:'NMETHODS'},{h:'00',l:'no-auth'},{h:'02',l:'user/pass'}], rb:{t:'negotiating',c:'wait'}},
+    {seg:'R',from:'R',to:'F',cls:'a',tag:'Method',sum:'05 02',
+      narr:'The remote proxy requires credentials and selects <code>02</code>, username/password (RFC 1929).',
+      bytes:[{h:'05',l:'VER · 5'},{h:'02',l:'METHOD · user/pass',k:'amber'}], fb:{t:'auth: user/pass',c:'wait'}},
+    {seg:'R',from:'F',to:'R',cls:'a',tag:'Auth',sum:'01 · user / pass',inject:true,
+      narr:'The forwarder <b>injects the credentials Chrome could not</b>: <code>VER=1</code>, <code>ULEN</code>+username, <code>PLEN</code>+password. This is the whole reason the forwarder exists.',
+      bytes:[{h:'01',l:'VER · 1'},{h:'04',l:'ULEN'},{h:'75 73 65 72',l:'UNAME · "user"',k:'amber'},{h:'04',l:'PLEN'},{h:'70 61 73 73',l:'PASSWD · "pass"',k:'amber'}], rb:{t:'verifying',c:'wait'}},
+    {seg:'R',from:'R',to:'F',cls:'g',tag:'Auth OK',sum:'01 00',
+      narr:'The remote proxy replies <code>01 00</code>: <code>STATUS=0</code>, authentication accepted.',
+      bytes:[{h:'01',l:'VER · 1'},{h:'00',l:'STATUS · success',k:'ok'}], fb:{t:'authenticated',c:'ok'}},
+    {seg:'R',from:'F',to:'R',cls:'i',tag:'CONNECT',sum:'→ example.com:443',uses:true,
+      narr:'The forwarder now sends the CONNECT it held from Chrome, <b>forwarded verbatim</b>: the same address bytes and type, so the target is preserved exactly.',
+      bytes:CONNECT_BYTES, rb:{t:'dialing target',c:'wait'}},
+    {seg:'R',from:'R',to:'F',cls:'g',tag:'Reply',sum:'05 00 · ok',dialDest:true,
+      narr:'The remote proxy dials <b>example.com:443</b> and replies <code>REP=0</code>, success, with the bound address.',
+      bytes:REPLY_BYTES, fb:{t:'remote ready',c:'ok'}, rb:{t:'connected',c:'ok'}},
+    {seg:'L',from:'F',to:'C',cls:'g',tag:'Reply',sum:'05 00 · ok',
+      narr:'Only now does the forwarder answer Chrome with its own <code>REP=0</code> success. Both handshakes are bridged; from here bytes relay Chrome ↔ forwarder ↔ remote ↔ destination.',
+      bytes:REPLY_BYTES, cb:{t:'relaying',c:'ok'}, fb:{t:'relaying',c:'ok'}, rb:{t:'relaying',c:'ok'}}
+  ];
+  var N=MSGS.length;
+
+  // ---- geometry ----
+  var TOP=150, PITCH=32, SPAN_INSET=0.12, LL_TOP=104, BOT_PAD=52, H=560;
+  var xC=90, xF=330, xR=560, xD=640;
+  var pktEls=[], guideEls=[], evEls=[];
+  var capIdx=-1, injIdx=-1, usesIdx=-1, dialIdx=-1;
+
+  MSGS.forEach(function(m,i){ if(m.captures)capIdx=i; if(m.inject)injIdx=i; if(m.uses)usesIdx=i; if(m.dialDest)dialIdx=i; });
+
+  // badge snapshots per step 0..N
+  var SNAPS=[]; (function(){
+    var cur={c:{t:'ready',c:'idle'},f:{t:'listening',c:'idle'},r:{t:'idle',c:'idle'}};
+    SNAPS.push(snap(cur));
+    MSGS.forEach(function(m){ if(m.cb)cur.c=m.cb; if(m.fb)cur.f=m.fb; if(m.rb)cur.r=m.rb; SNAPS.push(snap(cur)); });
+    function snap(o){return {c:Object.assign({},o.c),f:Object.assign({},o.f),r:Object.assign({},o.r)};}
+  })();
+
+  function xOf(node){return node==='C'?xC:(node==='F'?xF:xR);}
+  function markerFor(cls){return cls==='a'?'ahA':(cls==='g'?'ahG':'ahI');}
+
+  function buildDOM(){
+    lanes.innerHTML=''; lanesHTML.innerHTML=''; guideEls=[]; pktEls=[]; evEls=[];
+    MSGS.forEach(function(m){
+      var gl=svgLine('guide g'+m.cls); gl.setAttribute('marker-end','url(#ahF)'); lanes.appendChild(gl); guideEls.push(gl);
+      var ev=svgCirc('ev'); ev.style.fill=(m.cls==='a'?'var(--amber)':(m.cls==='g'?'var(--pass)':'var(--indigo2)')); lanes.appendChild(ev); evEls.push(ev);
+      var p=el('div','pkt'+(m.cls==='a'?' amber':(m.cls==='g'?' pass':'')),'<b>'+m.tag+'</b><span class="n">'+m.sum+'</span>');
+      lanesHTML.appendChild(p); pktEls.push(p);
+    });
+  }
+
+  function lerp(a,b,t){return a+(b-a)*t;}
+  function setLine(e,x1,y1,x2,y2){e.setAttribute('x1',x1);e.setAttribute('y1',y1);e.setAttribute('x2',x2);e.setAttribute('y2',y2);}
+  function setC(e,x,y){e.setAttribute('cx',x);e.setAttribute('cy',y);}
+  function tokXY(e,x,y){e.style.transform='translate(-50%,-50%) translate('+x+'px,'+y+'px)';}
+
+  function layout(){
+    var W=stage.clientWidth;
+    var off=Math.max(70,Math.min(W*0.11,104));
+    xC=off; xF=W*0.46; xR=W*0.77; xD=xR+(W-xR)*0.5;
+    H=TOP + N*PITCH + BOT_PAD;
+    stage.style.height=H+'px';
+    svg.setAttribute('width',W); svg.setAttribute('height',H);
+
+    g('peerC').style.left=xC+'px'; g('peerF').style.left=xF+'px'; g('peerR').style.left=xR+'px';
+    g('vault').style.left=xF+'px'; g('vault').style.top=(LL_TOP+6)+'px';
+    setLine(g('llC'),xC,LL_TOP+56,xC,H-14);
+    setLine(g('llF'),xF,LL_TOP+56,xF,H-14);
+    setLine(g('llR'),xR,LL_TOP+56,xR,H-14);
+
+    // zones
+    g('zoneL').style.left=(xC)+'px'; g('zoneL').style.width=(xF-xC)+'px';
+    g('zoneR').style.left=(xF)+'px'; g('zoneR').style.width=(xR-xF)+'px';
+
+    MSGS.forEach(function(m,i){
+      var y=TOP+i*PITCH+16;
+      var x1=xOf(m.from), x2=xOf(m.to);
+      m._x1=x1;m._x2=x2;m._y=y;
+      m._sx=lerp(x1,x2,SPAN_INSET); m._ex=lerp(x1,x2,1-SPAN_INSET);
+      setLine(guideEls[i],lerp(x1,x2,0.02),y,lerp(x1,x2,0.98),y);
+      setC(evEls[i],m._ex,y);
+    });
+    // dest dial line off the remote
+    if(dialIdx>=0){ var dy=MSGS[dialIdx]._y; setLine(g('destLine'),xR,dy,xD,dy); g('destNote').style.left=xD+'px'; g('destNote').style.top=dy+'px'; }
+    // relay across all three near bottom
+    var relay=g('relay'), ry=H-28; relay.style.left=xC+'px'; relay.style.width=(xR-xC)+'px'; relay.style.top=ry+'px';
+    applyStatic(cur);
+  }
+
+  // ---- state ----
+  function setBadge(who,st){var e=g('b'+who);e.textContent=st.t;e.className='badge '+st.c;}
+  function applyBadges(k){var s=SNAPS[k];setBadge('C',s.c);setBadge('F',s.f);setBadge('R',s.r);}
+  function setVault(k){
+    var cap = capIdx>=0 && k>capIdx;
+    g('hTgt').classList.toggle('filled',cap);
+    g('tgtVal').textContent = cap?'example.com:443':'awaiting';
+    g('tgtLbl').textContent = cap?'held':'pending';
+    var injected = injIdx>=0 && k>injIdx;
+    g('credLbl').textContent = injected?'injected':'held';
+    g('hCreds').classList.remove('pulse'); g('hTgt').classList.remove('pulse');
+  }
+  function showCallout(x,y,txt,ind){
+    var c=g('callout'); c.innerHTML=txt; c.className='callout on'+(ind?' ind':'');
+    c.style.left=x+'px'; c.style.top=y+'px';
+  }
+  function hideCallout(){ g('callout').className='callout'; }
+
+  function renderDecoder(m){
+    var head=g('decHead'), bytes=g('decBytes');
+    if(!m){ head.innerHTML='<span class="dir">on the wire</span><span class="cnt">idle</span>';
+      bytes.innerHTML='<div class="empty">Chrome is about to connect to <b style="color:var(--dim)">127.0.0.1:1081</b>. Press <b style="color:var(--dim)">Next</b> to send the first message.</div>'; return; }
+    var tcls=m.cls==='a'?'amber':(m.cls==='g'?'pass':'');
+    var side=m.seg==='L'?'<span class="side l">no-auth · Chrome↔fwd</span>':'<span class="side r">auth · fwd↔remote</span>';
+    var dir=(m.from==='C'?'Chrome':(m.from==='F'?'Forwarder':'Remote'))+' → '+(m.to==='C'?'Chrome':(m.to==='F'?'Forwarder':'Remote'));
+    head.innerHTML=side+' <span class="dir">'+dir+'</span> <span class="tag '+tcls+'">'+m.tag+'</span><span class="cnt">'+m.bytes.length+' fields</span>';
+    bytes.innerHTML='';
+    m.bytes.forEach(function(b){ bytes.appendChild(el('div','bcell'+(b.k?' '+b.k:''),'<div class="bh">'+b.h+'</div><div class="bl">'+b.l+'</div>')); });
+  }
+
+  var cur=0, timers=[], looping=false;
+  function stopTimers(){timers.forEach(clearTimeout);timers=[];}
+
+  function applyStatic(k){
+    stopTimers(); cur=k;
+    applyBadges(k); setVault(k); hideCallout();
+    for(var i=0;i<N;i++){
+      var landed=(i+1)<=k, m=MSGS[i], p=pktEls[i], gl=guideEls[i];
+      gl.className='guide g'+m.cls+(landed?' done':'');
+      gl.setAttribute('marker-end','url(#'+(landed?markerFor(m.cls):'ahF')+')');
+      evEls[i].classList.toggle('on',landed);
+      p.classList.remove('inflight'); p.style.transition='none';
+      if(landed){ tokXY(p,m._ex,m._y); p.style.opacity='1'; }
+      else{ tokXY(p,m._sx,m._y); p.style.opacity='0'; }
+    }
+    var dialed = dialIdx>=0 && k>dialIdx;
+    g('destLine').classList.toggle('on',dialed); g('destNote').classList.toggle('on',dialed);
+    g('relay').classList.toggle('on',k>=N);
+    if(k>=1) renderDecoder(MSGS[k-1]); else renderDecoder(null);
+    g('narr').innerHTML = k>=1?MSGS[k-1].narr :
+      'A local forwarder bridges two SOCKS5 handshakes. Left face: no-auth to Chrome. Right face: full username/password to the remote proxy, injecting the credentials Chrome cannot send. Press <b>Replay</b>, or step with <b>Prev</b> / <b>Next</b>.';
+    refreshStepUI();
+  }
+  function refreshStepUI(){ g('step').innerHTML='step <b>'+cur+'</b> / '+N; g('prev').disabled=cur<=0; g('next').disabled=cur>=N; }
+
+  var FLIGHT=620, GAP=340, HOLD=2600, DIAL=520;
+  function animate(i, done){
+    var idx=i-1, m=MSGS[idx], p=pktEls[idx], gl=guideEls[idx];
+    g('narr').innerHTML=m.narr; renderDecoder(m); hideCallout();
+    gl.className='guide g'+m.cls+' active'; gl.setAttribute('marker-end','url(#'+markerFor(m.cls)+')');
+    // pre-flight highlights on the forwarder's held state
+    if(m.inject){ g('hCreds').classList.add('pulse'); showCallout(lerp(m._x1,m._x2,0.5),m._y+14,'credentials <b>injected here</b><br>Chrome offers only no-auth (crbug 40323993)',false); }
+    if(m.uses){ g('hTgt').classList.add('pulse'); showCallout(lerp(m._x1,m._x2,0.5),m._y+14,'the held CONNECT, <b>forwarded verbatim</b><br>same address bytes as Chrome sent',true); }
+    p.style.transition='none'; p.style.opacity='1'; p.classList.add('inflight'); tokXY(p,m._sx,m._y);
+    void p.offsetWidth;
+    function land(){
+      applyBadges(i); setVault(i);
+      evEls[idx].classList.add('on');
+      gl.className='guide g'+m.cls+' done'; gl.setAttribute('marker-end','url(#'+markerFor(m.cls)+')');
+      p.classList.remove('inflight'); cur=i; refreshStepUI();
+      if(m.inject) g('credLbl').textContent='injected';
+      if(m.captures){ g('hTgt').classList.add('filled'); g('tgtVal').textContent='example.com:443'; g('tgtLbl').textContent='held'; }
+      if(m.dialDest){ dialDest(function(){ if(i>=N)g('relay').classList.add('on'); if(done)done(); }); return; }
+      if(i>=N) g('relay').classList.add('on');
+      if(done) done();
+    }
+    if(reduce){ tokXY(p,m._ex,m._y); land(); return; }
+    p.style.transition='transform '+FLIGHT+'ms cubic-bezier(.45,.05,.35,1)';
+    requestAnimationFrame(function(){ tokXY(p,m._ex,m._y); });
+    timers.push(setTimeout(land,FLIGHT+30));
+  }
+
+  function dialDest(cb){
+    g('destLine').classList.add('on');
+    if(reduce){ g('destNote').classList.add('on'); if(cb)cb(); return; }
+    timers.push(setTimeout(function(){ g('destNote').classList.add('on'); if(cb)cb(); },DIAL));
+  }
+
+  function seqRun(i){
+    animate(i,function(){
+      if(i<N){ var extra=(MSGS[i-1].inject||MSGS[i-1].uses||MSGS[i-1].dialDest)?260:0; timers.push(setTimeout(function(){seqRun(i+1);},GAP+extra)); }
+      else if(looping){ timers.push(setTimeout(function(){ if(looping)play(); },HOLD)); }
+    });
+  }
+  function play(){
+    stopTimers();
+    if(reduce){ looping=false; applyStatic(N); return; }
+    looping=false; applyStatic(0); timers.push(setTimeout(function(){seqRun(1);},300));
+  }
+
+  g('replay').addEventListener('click',play);
+  g('next').addEventListener('click',function(){ if(cur>=N)return; looping=false; stopTimers(); applyStatic(cur); animate(cur+1); });
+  g('prev').addEventListener('click',function(){ if(cur<=0)return; looping=false; stopTimers(); applyStatic(cur-1); });
+
+  var rt=null;
+  window.addEventListener('resize',function(){ if(rt)clearTimeout(rt); rt=setTimeout(layout,180); });
+  window.addEventListener('load',function(){
+    buildDOM(); layout();
+    if(reduce) applyStatic(N);
+    else timers.push(setTimeout(play,450));
+  });
+})();
+</script>
+<script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>
+</body>
+</html>

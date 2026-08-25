@@ -31,7 +31,7 @@ asyncio.run(main())
 
 `on(event_name, callback)` retorna um id inteiro que você pode usar depois para remover o callback. O callback pode ser síncrono ou assíncrono, e recebe um argumento: o evento.
 
-<iframe src="/docs/resources/visuals/events-flow.html" aria-label="Events firing on a page and your callbacks running" style="width: 100%; height: 395px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/events-flow.html" aria-label="Events firing on a page and your callbacks running" style="width: 100%; height: 395px; border: 0;" loading="lazy"></iframe>
 
 Pressione Navigate: os eventos disparam na página em ordem, e os callbacks que você registrou rodam conforme cada evento dispara.
 

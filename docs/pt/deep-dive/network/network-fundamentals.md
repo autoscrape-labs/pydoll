@@ -10,18 +10,7 @@ Proxies operam em camadas diferentes, e a camada determina seu alcance. Caracter
 
 O modelo OSI (7 camadas) é uma referência didática; redes reais rodam o modelo TCP/IP (4 camadas). A terminologia do OSI ainda é como as pessoas descrevem onde um proxy opera, então vale conhecê-la.
 
-```mermaid
-graph TD
-    L7[Camada 7: Aplicação - HTTP, FTP, SMTP, DNS]
-    L6[Camada 6: Apresentação - Criptografia, Compressão]
-    L5[Camada 5: Sessão - SOCKS]
-    L4[Camada 4: Transporte - TCP, UDP]
-    L3[Camada 3: Rede - IP, ICMP]
-    L2[Camada 2: Enlace - Ethernet, WiFi]
-    L1[Camada 1: Física - Cabos, Ondas de Rádio]
-
-    L7 --> L6 --> L5 --> L4 --> L3 --> L2 --> L1
-```
+<iframe scrolling="no" src="/docs/resources/visuals/osi-proxy-layers.html" aria-label="The OSI layer stack: a proxy reaches only the layer it sits at and the layers above; the TCP/IP fingerprint at L4/L3 is stamped by the OS kernel below any proxy and still leaks" style="width: 100%; height: 820px; border: 0;" loading="lazy"></iframe>
 
 As camadas que importam para automação:
 
@@ -68,16 +57,7 @@ Todos os protocolos de proxy (HTTP, HTTPS, SOCKS4, SOCKS5) usam TCP para seu can
 
 Antes de qualquer dado se mover, o TCP realiza um handshake de três vias para sincronizar números de sequência e o estado da conexão.
 
-```mermaid
-sequenceDiagram
-    participant Client
-    participant Server
-
-    Client->>Server: SYN (seq=x)
-    Server->>Client: SYN-ACK (seq=y, ack=x+1)
-    Client->>Server: ACK (ack=y+1)
-    Note over Client,Server: Conexão estabelecida
-```
+<iframe scrolling="no" src="/docs/resources/visuals/tcp-handshake.html" aria-label="The TCP three-way handshake: SYN, SYN-ACK and ACK packets cross between client and server with sequence numbers, and each side's connection state advances to ESTABLISHED" style="width: 100%; height: 720px; border: 0;" loading="lazy"></iframe>
 
 O cliente envia um SYN com um Initial Sequence Number aleatório e suas opções TCP (tamanho de janela, MSS, timestamps, SACK). O servidor responde com um SYN-ACK: seu próprio ISN aleatório mais uma confirmação do ISN do cliente. O cliente envia um ACK final, e a conexão está aberta nos dois sentidos. O ISN é aleatorizado (RFC 6528) para impedir que um atacante injete pacotes adivinhando números de sequência.
 
@@ -119,18 +99,7 @@ Para montar uma conexão P2P, o WebRTC descobre seu IP público através de serv
 
 O WebRTC usa ICE (RFC 8445) para reunir possíveis caminhos de conexão, chamados candidatos, e essa reunião é o que expõe sua rede.
 
-```mermaid
-sequenceDiagram
-    participant Browser
-    participant STUN as STUN Server
-    participant Peer as Remote Peer
-
-    Browser->>Browser: Reúne IPs locais (LAN)
-    Browser->>STUN: Binding Request (UDP, contorna o proxy)
-    STUN->>Browser: Resposta com o IP público real
-    Browser->>Peer: Envia todos os candidatos ICE (local + público)
-    Note over Browser,Peer: P2P direto contorna o proxy por completo
-```
+<iframe scrolling="no" src="/docs/resources/visuals/webrtc-leak.html" aria-label="WebRTC fires a STUN binding request over UDP that bypasses a TCP proxy, so the STUN server returns your real public IP and it appears in the ICE candidates a page can read; leak_protection blocks the non-proxied UDP" style="width: 100%; height: 700px; border: 0;" loading="lazy"></iframe>
 
 Três tipos de candidato são reunidos:
 

@@ -3,89 +3,183 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Selector playground</title>
+<title>query() selector playground</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
 <style>
   :root{
-    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;--panel2:#191c20;
     --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
     --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
-    --indigo:#6e7bff;--indigo2:#8f99ff;--pass:#35e0a1;--danger:#ff6b6b;
-    --sans:"Chivo",system-ui,-apple-system,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--indigo-dim:rgba(110,123,255,.13);
+    --pass:#35e0a1;--pass-dim:rgba(53,224,161,.12);
+    --amber:#f5b544;--amber-dim:rgba(245,181,68,.13);
+    --danger:#ff6b6b;--danger-dim:rgba(255,107,107,.12);
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
   }
-  *{box-sizing:border-box}
-  html,body{margin:0}
+  *{box-sizing:border-box} html,body{margin:0}
   body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
   .widget{border:1px solid var(--line);padding:16px 18px}
-  .row1{display:flex;gap:10px;align-items:center}
-  .sel{flex:1;min-width:0;font-family:var(--mono);font-size:13px;color:var(--ink);background:var(--bg2);border:1px solid var(--line2);padding:10px 12px;outline:none}
-  .sel:focus{border-color:var(--indigo)}
-  .count{font-family:var(--mono);font-size:12px;color:var(--pass);white-space:nowrap;min-width:96px;text-align:right}
-  .count.bad{color:var(--danger)}
+  .lead{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:14px;line-height:1.55}
+  .lead b{color:var(--ink);font-weight:500}
+
+  /* the query call, with the selector typed straight into the argument */
+  .callbox{border:1px solid var(--line2);background:var(--bg2);display:flex;align-items:center;gap:0;padding:10px 12px;flex-wrap:wrap;transition:border-color .15s}
+  .callbox.focus{border-color:var(--indigo)}
+  .callbox .pre,.callbox .post{font-family:var(--mono);font-size:13px;white-space:nowrap}
+  .callbox .kw{color:var(--indigo2)} .callbox .fn{color:#7fb4ff} .callbox .qt{color:var(--pass)}
+  .sel{flex:0 1 auto;width:10ch;min-width:50px;max-width:100%;font-family:var(--mono);font-size:13px;color:var(--pass);background:transparent;border:none;outline:none;padding:0 2px}
+  .sel::placeholder{color:var(--faint)}
+  .meta{display:flex;align-items:center;gap:9px;margin-left:auto;padding-left:10px}
+  .badge{font-family:var(--mono);font-size:9.5px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;padding:2px 8px;border:1px solid;white-space:nowrap;transition:color .25s,border-color .25s,background .25s}
+  .badge.css{color:var(--indigo2);border-color:rgba(110,123,255,.42);background:var(--indigo-dim)}
+  .badge.xpath{color:var(--amber);border-color:rgba(245,181,68,.42);background:var(--amber-dim)}
+  .badge.none{color:var(--faint);border-color:var(--line2);background:transparent}
+  .count{font-family:var(--mono);font-size:11.5px;color:var(--pass);white-space:nowrap;min-width:78px;text-align:right}
+  .count.bad{color:var(--danger)} .count.zero{color:var(--faint)}
+
   .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:11px}
   .chip{font-family:var(--mono);font-size:11px;color:var(--dim);background:var(--panel);border:1px solid var(--line2);padding:5px 9px;cursor:pointer;transition:.15s}
   .chip:hover{border-color:var(--indigo);color:#fff}
-  .chip.on{background:rgba(110,123,255,.14);border-color:var(--indigo);color:#fff}
-  .preview{margin-top:14px;border:1px solid var(--line);background:var(--bg2);padding:13px;display:flex;flex-direction:column;gap:9px}
-  .quote{border:1px solid var(--line2);padding:10px 12px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;transition:outline .12s,background .12s,border-color .12s}
-  .quote .text{font-family:var(--sans);font-weight:600;font-size:13px;color:var(--ink);flex:1 1 100%}
+  .chip.on{background:var(--indigo-dim);border-color:var(--indigo);color:#fff}
+
+  .stage{margin-top:14px;border:1px solid var(--line2);background:var(--bg2);overflow:hidden}
+  .chrome{display:flex;align-items:center;gap:7px;padding:8px 11px;border-bottom:1px solid var(--line);background:var(--panel2)}
+  .chrome .dots{display:flex;gap:5px}
+  .chrome .dots i{width:9px;height:9px;border-radius:50%;display:block}
+  .chrome .dots i:nth-child(1){background:#ff5f57}.chrome .dots i:nth-child(2){background:#febc2e}.chrome .dots i:nth-child(3){background:#28c840}
+  .chrome .tab{font-family:var(--mono);font-size:10px;color:var(--faint);margin-left:6px}
+  .preview{padding:13px;display:flex;flex-direction:column;gap:9px}
+  .quote{border:1px solid var(--line2);padding:10px 12px;display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+  .quote .text{font-family:var(--sans);font-weight:600;font-size:13px;color:var(--ink);flex:1 1 100%;margin:0}
   .quote .author{font-family:var(--mono);font-size:11px;color:var(--dim)}
   .quote .tag{font-family:var(--mono);font-size:10px;color:var(--indigo2);border:1px solid var(--line);padding:1px 6px;text-decoration:none}
-  .match{outline:2px solid var(--indigo);outline-offset:1px;background:rgba(110,123,255,.10)!important;border-color:var(--indigo)!important}
-  .hint{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:10px}
-  .hint code{color:var(--dim)}
+
+  /* match highlight: same language as the find() playground.
+     smooth pop-in, gentle living pulse, smooth fade-out (box-shadow ring). */
+  .preview .quote,.preview .quote *{transition:box-shadow .35s ease,background-color .35s ease,border-color .35s ease}
+  .match{border-color:var(--pass)!important;background-color:var(--pass-dim);animation:matchIn .45s ease-out,matchPulse 2.1s ease-in-out .45s infinite}
+  @keyframes matchIn{0%{box-shadow:0 0 0 0 rgba(53,224,161,0)}55%{box-shadow:0 0 0 3px rgba(53,224,161,.5),0 0 22px 0 rgba(53,224,161,.6)}100%{box-shadow:0 0 0 1.6px rgba(53,224,161,.9),0 0 12px -2px rgba(53,224,161,.4)}}
+  @keyframes matchPulse{0%,100%{box-shadow:0 0 0 1.6px rgba(53,224,161,.85),0 0 11px -3px rgba(53,224,161,.35)}50%{box-shadow:0 0 0 1.6px rgba(53,224,161,.95),0 0 20px -1px rgba(53,224,161,.75)}}
+
+  .hint{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:11px;line-height:1.5}
+  .hint code{color:var(--dim)} .hint b.x{color:var(--amber);font-weight:500} .hint b.c{color:var(--indigo2);font-weight:500}
+
+  @media (prefers-reduced-motion:reduce){
+    .preview .quote,.preview .quote *,.badge{transition:none}
+    .match{animation:none;box-shadow:0 0 0 1.6px var(--pass)}
+  }
+
+  /* theme-matched thin scrollbars for overflow-x boxes (replaces the default white bar) */
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--line2)}
+  ::-webkit-scrollbar-thumb:hover{background:var(--faint)}
 </style>
 </head>
 <body>
 <div class="widget">
-  <div class="row1">
-    <input class="sel" id="sel" value=".quote" spellcheck="false" aria-label="selector" />
-    <span class="count" id="count"></span>
+  <div class="lead"><b>query()</b> takes one string and auto-detects the engine: a plain string runs as a <b>CSS</b> selector, one starting with <b>/</b>, <b>./</b> or <b>(/</b> runs as <b>XPath</b>. Type a selector into the argument and the matches light up.</div>
+
+  <div class="callbox" id="callbox">
+    <span class="pre"><span class="kw">await</span> tab.<span class="fn">query</span>(<span class="qt">"</span></span><input class="sel" id="sel" spellcheck="false" aria-label="CSS or XPath selector" /><span class="post"><span class="qt">"</span>)</span>
+    <span class="meta"><span class="badge none" id="badge">·</span><span class="count" id="count"></span></span>
   </div>
+
   <div class="chips" id="chips"></div>
 
-  <div class="preview" id="preview">
-    <div class="quote" id="first"><p class="text">"Stay hungry, stay foolish."</p><span class="author">Jobs</span><a class="tag" href="#">life</a><a class="tag" href="#">work</a></div>
-    <div class="quote"><p class="text">"Less is more."</p><span class="author">Rohe</span><a class="tag" href="#">design</a></div>
-    <div class="quote featured"><p class="text">"Move fast, keep shipping."</p><span class="author">Zuck</span><a class="tag" href="#">tech</a><a class="tag" href="#">life</a></div>
+  <div class="stage">
+    <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="tab">quotes.html</span></div>
+    <div class="preview" id="preview">
+      <div class="quote" id="first"><p class="text">"Stay hungry, stay foolish."</p><span class="author">Jobs</span><a class="tag" href="#">life</a><a class="tag" href="#">work</a></div>
+      <div class="quote"><p class="text">"Less is more."</p><span class="author">Rohe</span><a class="tag" href="#">design</a></div>
+      <div class="quote featured"><p class="text">"Move fast, keep shipping."</p><span class="author">Zuck</span><a class="tag" href="#">tech</a><a class="tag" href="#">life</a></div>
+    </div>
   </div>
 
-  <div class="hint">CSS by default. A selector starting with <code>/</code> or <code>./</code> runs as XPath, exactly how <code>tab.query()</code> routes it.</div>
+  <div class="hint">Leading <code>/</code>, <code>./</code> or <code>(/</code> &rarr; <b class="x">XPath</b>. Anything else &rarr; <b class="c">CSS</b>. It runs the same <code>querySelectorAll</code> / XPath the browser does, so what matches here matches in your automation.</div>
 </div>
 
 <script>
 (function(){
-  var sel=document.getElementById('sel'),count=document.getElementById('count'),preview=document.getElementById('preview'),chips=document.getElementById('chips');
-  var PRESETS=['.quote','.author','.tag','#first','.featured','.quote .text','//a'];
-  PRESETS.forEach(function(p){
-    var b=document.createElement('button');b.className='chip';b.textContent=p;
-    b.addEventListener('click',function(){sel.value=p;evaluate();});
-    chips.appendChild(b);
-  });
-  function clearMatches(){ preview.querySelectorAll('.match').forEach(function(n){n.classList.remove('match');}); }
+  var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  function g(id){return document.getElementById(id);}
+  var sel=g('sel'),count=g('count'),preview=g('preview'),chips=g('chips'),badge=g('badge'),callbox=g('callbox');
+
+  // mirror of SelectorParser.get_expression_type: XPath if it starts with ./ , / or (/
+  function isXPath(q){ return q.indexOf('./')===0 || q.indexOf('/')===0 || q.indexOf('(/')===0; }
+
+  function clearMatches(){ Array.prototype.forEach.call(preview.querySelectorAll('.match'),function(n){n.classList.remove('match');}); }
+  function setBadge(kind){
+    if(kind==='css'){ badge.className='badge css'; badge.textContent='CSS'; }
+    else if(kind==='xpath'){ badge.className='badge xpath'; badge.textContent='XPath'; }
+    else { badge.className='badge none'; badge.innerHTML='·'; }
+  }
+
+  function xpathNodes(q){
+    // scope the (absolute) XPath to the mock page so it only matches inside the preview
+    var scoped;
+    if(q.indexOf('//')===0) scoped='.'+q;
+    else if(q.indexOf('./')===0) scoped=q;
+    else if(q.indexOf('(/')===0) scoped='('+'.'+q.slice(1);
+    else if(q.indexOf('/')===0) scoped='.'+q;
+    else scoped=q;
+    var r=document.evaluate(scoped,preview,null,XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,null), out=[];
+    for(var i=0;i<r.snapshotLength;i++){ var n=r.snapshotItem(i); if(n&&n.nodeType===1) out.push(n); }
+    return out;
+  }
+
   function evaluate(){
     clearMatches();
+    sel.style.width=Math.max(2, sel.value.length+1)+'ch';
     var q=sel.value.trim();
-    chips.querySelectorAll('.chip').forEach(function(c){c.classList.toggle('on',c.textContent===q);});
-    if(!q){count.textContent='';count.className='count';return;}
-    var nodes=[];
-    try{
-      if(q[0]==='/'||q.slice(0,2)==='./'){
-        var r=document.evaluate(q,preview,null,XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,null);
-        for(var i=0;i<r.snapshotLength;i++)nodes.push(r.snapshotItem(i));
-      } else {
-        nodes=[].slice.call(preview.querySelectorAll(q));
-      }
-    }catch(e){ count.textContent='invalid selector'; count.className='count bad'; return; }
-    nodes.forEach(function(n){ if(n.nodeType===1)n.classList.add('match'); });
+    chips.querySelectorAll('.chip').forEach(function(c){ c.classList.toggle('on',c.getAttribute('data-q')===q); });
+    if(!q){ setBadge('none'); count.textContent=''; count.className='count'; return; }
+    var xp=isXPath(q); setBadge(xp?'xpath':'css');
+    var nodes;
+    try{ nodes = xp ? xpathNodes(q) : [].slice.call(preview.querySelectorAll(q)); }
+    catch(e){ count.textContent='invalid'; count.className='count bad'; return; }
+    nodes.forEach(function(n){ n.classList.add('match'); });
     var n=nodes.length;
-    count.textContent = n===0 ? 'no matches' : n+' match'+(n===1?'':'es');
-    count.className = 'count'+(n===0?' bad':'');
+    if(n===0){ count.textContent='0 matches'; count.className='count zero'; }
+    else { count.textContent=n+' match'+(n===1?'':'es'); count.className='count'; }
   }
-  sel.addEventListener('input',evaluate);
-  evaluate();
+
+  // ---- preset chips ----
+  var PRESETS=['.quote','.author','.tag','#first','.featured','.quote .text','//a','//span[@class="author"]'];
+  PRESETS.forEach(function(p){
+    var b=document.createElement('button'); b.className='chip'; b.textContent=p; b.setAttribute('data-q',p);
+    b.addEventListener('click',function(){ stopIdle(); sel.value=p; evaluate(); });
+    chips.appendChild(b);
+  });
+
+  // ---- idle demo: type through a few selectors, hand over on first real input ----
+  var demo=['.quote','.tag','.featured','//a'];
+  var alive=true, timers=[];
+  function T(fn,ms){ var t=setTimeout(fn,ms); timers.push(t); return t; }
+  function stopIdle(){ if(!alive)return; alive=false; timers.forEach(clearTimeout); timers=[]; }
+
+  function typeSelector(q,doneCb){
+    sel.value=''; evaluate();
+    var ci=0;
+    function typeChar(){
+      if(!alive) return;
+      if(ci>=q.length){ T(function(){ if(alive)doneCb(); },1600); return; }
+      sel.value+=q.charAt(ci); ci++; evaluate();
+      T(typeChar,60);
+    }
+    typeChar();
+  }
+  function idleLoop(i){ if(!alive)return; typeSelector(demo[i],function(){ idleLoop((i+1)%demo.length); }); }
+
+  sel.addEventListener('input', function(){ stopIdle(); evaluate(); });
+  sel.addEventListener('focus', function(){ stopIdle(); callbox.classList.add('focus'); });
+  sel.addEventListener('blur', function(){ callbox.classList.remove('focus'); });
+
+  if(reduce){ sel.value='.quote'; alive=false; evaluate(); }
+  else { idleLoop(0); }
 })();
 </script>
 <script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>

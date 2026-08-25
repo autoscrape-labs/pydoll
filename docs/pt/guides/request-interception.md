@@ -4,7 +4,7 @@ A interceptação permite que você se coloque entre o navegador e a rede. Cada 
 
 Esta é a contraparte ativa do [Monitoramento de rede](network-monitoring.md), que apenas observa o tráfego. A interceptação pode alterá-lo.
 
-<iframe src="/docs/resources/visuals/request-lifecycle.html" aria-label="What happens to an intercepted request under continue, block, or fulfill" style="width: 100%; height: 400px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/request-lifecycle.html" aria-label="What happens to an intercepted request under continue, block, or fulfill" style="width: 100%; height: 400px; border: 0;" loading="lazy"></iframe>
 
 Experimente cada botão: `continue_request()` deixa a requisição chegar ao servidor, `fail_request()` a descarta e `fulfill_request()` responde a partir do seu handler sem nunca contatar o servidor.
 

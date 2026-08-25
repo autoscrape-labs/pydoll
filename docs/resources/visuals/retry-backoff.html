@@ -3,132 +3,254 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Retry with backoff</title>
+<title>Retry backoff timeline</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
 <style>
   :root{
-    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;--panel2:#191c20;
     --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
     --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
-    --indigo:#6e7bff;--indigo2:#8f99ff;--pass:#35e0a1;--amber:#f5b544;--danger:#ff6b6b;
-    --sans:"Chivo",system-ui,-apple-system,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--indigo-dim:rgba(110,123,255,.13);
+    --pass:#35e0a1;--pass-dim:rgba(53,224,161,.12);
+    --amber:#f5b544;--danger:#ff6b6b;--danger-dim:rgba(255,107,107,.12);
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
   }
-  *{box-sizing:border-box}
-  html,body{margin:0}
+  *{box-sizing:border-box} html,body{margin:0}
   body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
   .widget{border:1px solid var(--line);padding:16px 18px}
-  .top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:4px}
-  .mode{font-family:var(--mono);font-size:12px;color:var(--dim)}
-  .timer{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:600;font-size:22px;color:var(--ink)}
 
-  .axis{position:relative;height:104px;margin:16px 0 2px;padding:0 40px}
-  .track{position:relative;height:100%}
-  .axis-line{position:absolute;left:0;right:0;top:54px;height:2px;background:var(--line2)}
-  .fillline{position:absolute;top:54px;left:0;height:2px;width:0;background:var(--indigo);opacity:.55}
-  .cursor{position:absolute;top:32px;height:44px;width:1px;background:var(--indigo);left:0;opacity:0;box-shadow:0 0 8px 1px rgba(110,123,255,.5)}
-  .cursor::after{content:"";position:absolute;top:20px;left:-3px;width:7px;height:7px;border-radius:50%;background:var(--indigo)}
+  .head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:4px}
+  .mode{font-family:var(--mono);font-size:11.5px;color:var(--dim);line-height:1.5;flex:1}
+  .mode b{color:var(--ink);font-weight:600}
+  .legend{display:flex;gap:12px;font-family:var(--mono);font-size:10px;color:var(--faint);white-space:nowrap;padding-top:2px}
+  .legend i{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px}
+  .legend i.f{background:var(--danger)} .legend i.s{background:var(--pass)}
 
-  .mk{position:absolute;top:54px;transform:translate(-50%,-50%)}
-  .mk .dot{width:26px;height:26px;border:1.5px solid var(--line2);background:var(--bg);display:grid;place-items:center;
-    font-family:var(--mono);font-size:12px;color:var(--dim);opacity:0;transform:scale(.5);
-    transition:opacity .25s,transform .25s,border-color .25s,color .25s,box-shadow .25s}
-  .mk.show .dot{opacity:1;transform:none}
-  .mk.fail .dot{border-color:var(--danger);color:var(--danger)}
-  .mk.ok .dot{border-color:var(--pass);color:var(--pass);box-shadow:0 0 0 4px rgba(53,224,161,.16)}
-  .mk .lbl{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);white-space:nowrap;
-    font-family:var(--mono);font-size:10px;color:var(--faint);opacity:0;transition:opacity .25s}
-  .mk.show .lbl{opacity:1}
-  .mk.fail .lbl{color:var(--danger)}
-  .mk.ok .lbl{color:var(--pass)}
-  .mk .time{position:absolute;top:30px;left:50%;transform:translateX(-50%);white-space:nowrap;
-    font-family:var(--mono);font-size:10px;color:var(--faint);opacity:0;transition:opacity .25s}
-  .mk.show .time{opacity:1}
+  .plot{position:relative;margin:16px 0 2px}
+  .playhead{position:absolute;top:2px;bottom:22px;width:1px;background:var(--indigo);opacity:.42;z-index:0;pointer-events:none;left:3%}
+  .playhead::after{content:"";position:absolute;bottom:-3px;left:-3px;width:7px;height:7px;border-radius:50%;background:var(--indigo);box-shadow:0 0 8px rgba(110,123,255,.7)}
 
-  .controls{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;align-items:center}
-  button{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:8px 12px;cursor:pointer;transition:.15s}
-  button:hover{border-color:var(--indigo);color:#fff}
-  button.active{background:rgba(110,123,255,.14);border-color:var(--indigo);color:#fff}
-  button:disabled{opacity:.5;cursor:default}
-  .caption{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-left:auto;min-height:16px}
-  .caption b{color:var(--pass);font-weight:500}
-  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+  .lanes{position:relative;z-index:1}
+  .lane{margin-bottom:12px}
+  .lhead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:5px}
+  .lname{font-family:var(--sans);font-weight:700;font-size:12.5px}
+  .lname em{font-family:var(--mono);font-style:normal;font-weight:400;font-size:10px;color:var(--faint);margin-left:8px}
+  .ltot{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:600;font-size:14px;color:var(--indigo2);white-space:nowrap}
+  .track{position:relative;height:40px}
+  .base{position:absolute;top:22px;height:2px;background:var(--line2)}
+  .fill{position:absolute;top:22px;height:2px;background:var(--indigo);opacity:.6;width:0}
+  .mk{position:absolute;top:22px;transform:translate(-50%,-50%);z-index:2}
+  .mk .dot{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line2);background:var(--bg);
+    display:grid;place-items:center;font-family:var(--mono);font-size:11px;color:var(--faint);
+    transform:scale(.55);opacity:.32;transition:transform .3s,opacity .3s,border-color .3s,color .3s,box-shadow .3s}
+  .mk.lit .dot{transform:none;opacity:1}
+  .mk.fail .dot{border-color:var(--danger);color:var(--danger);background:var(--danger-dim)}
+  .mk.ok .dot{border-color:var(--pass);color:var(--pass);background:var(--pass-dim);box-shadow:0 0 0 4px rgba(53,224,161,.16)}
+  .gap{position:absolute;top:1px;transform:translateX(-50%);font-family:var(--mono);font-size:9.5px;color:var(--amber);white-space:nowrap;opacity:.85}
+
+  .axis{position:relative;height:22px;border-top:1px solid var(--line);z-index:1}
+  .tick{position:absolute;top:0}
+  .tick i{position:absolute;top:0;left:0;width:1px;height:5px;background:var(--line2)}
+  .tick span{position:absolute;top:7px;left:0;transform:translateX(-50%);font-family:var(--mono);font-size:9px;color:var(--faint);white-space:nowrap}
+
+  .controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:15px}
+  .seg{display:inline-flex;border:1px solid var(--line2)}
+  .seg button{font-family:var(--mono);font-size:11px;color:var(--dim);background:var(--panel);border:0;border-right:1px solid var(--line2);padding:7px 11px;cursor:pointer;transition:.15s}
+  .seg button:last-child{border-right:0}
+  .seg button:hover{color:#fff}
+  .seg button.on{background:rgba(110,123,255,.16);color:#fff}
+  .sld{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10.5px;color:var(--dim)}
+  .sld b{color:var(--indigo2);font-weight:600;min-width:20px;text-align:right}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:88px;height:3px;background:var(--line2);border-radius:2px;outline:none;cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:13px;height:13px;border-radius:50%;background:var(--indigo);border:2px solid var(--panel);cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:11px;height:11px;border-radius:50%;background:var(--indigo);border:2px solid var(--panel);cursor:pointer}
+  .replay{font-family:var(--mono);font-size:11.5px;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:7px 13px;cursor:pointer;transition:.15s;margin-left:auto}
+  .replay:hover{border-color:var(--indigo);color:#fff}
+  .codeline{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:11px;padding-top:10px;border-top:1px solid var(--line);white-space:nowrap;overflow-x:auto}
+  .codeline b{color:var(--indigo2);font-weight:600}
+
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+  /* theme-matched thin scrollbars for overflow-x boxes (replaces the default white bar) */
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--line2)}
+  ::-webkit-scrollbar-thumb:hover{background:var(--faint)}
 </style>
 </head>
 <body>
 <div class="widget">
-  <div class="top">
-    <div class="mode" id="mode">Pick a strategy. The call fails and retries until it succeeds.</div>
-    <div class="timer" id="timer">0.0s</div>
+  <div class="head">
+    <div class="mode" id="mode"></div>
+    <div class="legend"><span><i class="f"></i>failed</span><span><i class="s"></i>succeeded</span></div>
   </div>
 
-  <div class="axis"><div class="track" id="track">
-    <div class="axis-line"></div>
-    <div class="fillline" id="fill"></div>
-    <div class="cursor" id="cursor"></div>
-    <div id="marks"></div>
-  </div></div>
+  <div class="plot">
+    <div class="playhead" id="playhead"></div>
+    <div class="lanes" id="lanes"></div>
+    <div class="axis" id="axis"></div>
+  </div>
 
   <div class="controls">
-    <button id="fixed">Fixed delay</button>
-    <button id="exp">Exponential backoff</button>
-    <span class="caption" id="caption"></span>
+    <div class="seg" role="group" aria-label="which strategy to show">
+      <button data-view="fixed">Fixed</button>
+      <button data-view="exp">Exponential</button>
+      <button data-view="both" class="on">Both</button>
+    </div>
+    <label class="sld">attempts<input type="range" id="sN" min="2" max="5" value="4" aria-label="attempts"><b id="vN">4</b></label>
+    <label class="sld">base delay<input type="range" id="sD" min="1" max="4" value="1" aria-label="base delay seconds"><b id="vD">1s</b></label>
+    <button class="replay" id="replay">Replay</button>
   </div>
+  <div class="codeline" id="code"></div>
 </div>
 
 <script>
 (function(){
   var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
-  var UNIT=reduce?0:430;
-  var TIMES={ fixed:[0,1,2,3], exp:[0,2,6,14] };
-  var LBLS={ fixed:['call','retry +1s','retry +1s','retry +1s'], exp:['call','retry +2s','retry +4s','retry +8s'] };
-  var marks=document.getElementById('marks'),cursor=document.getElementById('cursor'),fill=document.getElementById('fill');
-  var timer=document.getElementById('timer'),mode=document.getElementById('mode'),caption=document.getElementById('caption');
-  var fixedBtn=document.getElementById('fixed'),expBtn=document.getElementById('exp');
-  var raf=null,timeouts=[];
+  function g(id){return document.getElementById(id);}
+  function el(c){var d=document.createElement('div'); if(c)d.className=c; return d;}
+  function clamp(v,a,b){return v<a?a:v>b?b:v;}
+  function trim(x){return Math.abs(x-Math.round(x))<1e-9?String(Math.round(x)):x.toFixed(1);}
+  function fmt(x){return x.toFixed(1)+'s';}
 
-  function buildMarks(kind){
-    marks.innerHTML='';var arr=TIMES[kind],lbl=LBLS[kind],total=arr[arr.length-1],nodes=[];
-    for(var i=0;i<arr.length;i++){
-      var mk=document.createElement('div');mk.className='mk';mk.style.left=(arr[i]/total*100)+'%';
-      mk.innerHTML='<div class="lbl">'+lbl[i]+'</div><div class="dot">'+(i+1)+'</div><div class="time">'+arr[i]+'s</div>';
-      marks.appendChild(mk);nodes.push(mk);
+  var PADL=3, SPAN=94;                       // map [0,axisMax] -> [3%,97%]
+  function X(t){return PADL + t/S.axisMax*SPAN;}
+
+  var N=4, D=1, view='both', S=null;
+  var LANES=[
+    {key:'fixed', name:'fixed delay',          sub:'wait stays constant'},
+    {key:'exp',   name:'exponential backoff',  sub:'wait doubles each retry'}
+  ];
+
+  function schedule(N,D){
+    var fixed=[], exp=[0], t=0;
+    for(var i=0;i<N;i++) fixed.push(i*D);
+    for(var j=1;j<N;j++){ t+=D*Math.pow(2,j); exp.push(t); }   // gap_j = delay * 2^j  (real: handle_delay(attempt+1))
+    return {fixed:fixed, exp:exp, fixedTotal:fixed[N-1], expTotal:exp[N-1], axisMax:exp[N-1]};
+  }
+  function niceStep(max){
+    var raw=max/6, p=Math.pow(10,Math.floor(Math.log(raw)/Math.LN10));
+    var c=[1,2,2.5,5,10];
+    for(var i=0;i<c.length;i++){ if(c[i]*p>=raw) return c[i]*p; }
+    return 10*p;
+  }
+
+  var laneEls={};
+  function build(){
+    S=schedule(N,D);
+    var lanesWrap=g('lanes'), axisRow=g('axis');
+    lanesWrap.innerHTML=''; axisRow.innerHTML=''; laneEls={};
+    var visible = view==='both' ? ['fixed','exp'] : [view];
+
+    LANES.forEach(function(L){
+      if(visible.indexOf(L.key)<0) return;
+      var times=S[L.key], total=S[L.key+'Total'];
+      var lane=el('lane');
+      var head=el('lhead');
+      head.innerHTML='<span class="lname">'+L.name+' <em>'+L.sub+'</em></span><span class="ltot">0.0s</span>';
+      lane.appendChild(head);
+
+      var track=el('track');
+      var base=el('base'); base.style.left=PADL+'%'; base.style.width=(total/S.axisMax*SPAN)+'%';
+      var fill=el('fill'); fill.style.left=PADL+'%';
+      track.appendChild(base); track.appendChild(fill);
+
+      for(var k=1;k<times.length;k++){
+        var gapSec=times[k]-times[k-1], wPct=gapSec/S.axisMax*SPAN;
+        if(wPct>=7){                                  // only label gaps wide enough to read
+          var ge=el('gap'); ge.style.left=X((times[k-1]+times[k])/2)+'%'; ge.textContent='+'+trim(gapSec)+'s';
+          track.appendChild(ge);
+        }
+      }
+      var marks=[];
+      for(var i=0;i<times.length;i++){
+        var mk=el('mk'); mk.style.left=X(times[i])+'%';
+        var dot=el('dot'); dot.textContent=(i+1);
+        mk.appendChild(dot);
+        mk.setAttribute('data-t', times[i]);
+        mk.setAttribute('data-ok', i===times.length-1 ? '1':'0');
+        track.appendChild(mk); marks.push(mk);
+      }
+      lane.appendChild(track);
+      lanesWrap.appendChild(lane);
+      laneEls[L.key]={fill:fill, marks:marks, total:total, readout:head.querySelector('.ltot')};
+    });
+
+    var step=niceStep(S.axisMax);
+    for(var v=0; v<=S.axisMax+1e-6; v+=step){
+      var tk=el('tick'); tk.style.left=X(v)+'%';
+      tk.innerHTML='<i></i><span>'+trim(v)+'s</span>';
+      axisRow.appendChild(tk);
     }
-    return nodes;
+    updateText();
+    start();
   }
-  function reset(){ if(raf)cancelAnimationFrame(raf); timeouts.forEach(clearTimeout);timeouts=[]; timer.textContent='0.0s';caption.innerHTML='';
-    cursor.style.transition='none';cursor.style.left='0';cursor.style.opacity='0'; fill.style.transition='none';fill.style.width='0'; }
-  function runTimer(totalSec){
-    var start=performance.now();
-    function tick(now){var el=Math.min((now-start)/UNIT,totalSec);timer.textContent=el.toFixed(1)+'s';if((now-start)<totalSec*UNIT)raf=requestAnimationFrame(tick);else timer.textContent=totalSec.toFixed(1)+'s';}
-    if(UNIT===0){timer.textContent=totalSec.toFixed(1)+'s';return;}
-    raf=requestAnimationFrame(tick);
-  }
-  function run(kind){
-    reset();
-    var nodes=buildMarks(kind); var arr=TIMES[kind]; var total=arr[arr.length-1];
-    fixedBtn.classList.toggle('active',kind==='fixed'); expBtn.classList.toggle('active',kind==='exp');
-    fixedBtn.disabled=true; expBtn.disabled=true;
-    mode.textContent = kind==='exp' ? 'exponential backoff: the wait doubles each retry (2s, 4s, 8s)' : 'fixed delay: the wait stays the same (1s each)';
-    runTimer(total);
-    requestAnimationFrame(function(){
-      cursor.style.opacity='1';
-      cursor.style.transition='left '+(total*UNIT)+'ms linear';
-      fill.style.transition='width '+(total*UNIT)+'ms linear';
-      cursor.style.left='100%'; fill.style.width='100%';
-    });
-    nodes.forEach(function(mk,i){
-      timeouts.push(setTimeout(function(){
-        mk.classList.add('show');
-        if(i===nodes.length-1){ mk.classList.add('ok'); caption.innerHTML='succeeded on attempt <b>'+(i+1)+'</b>, after <b>'+total+'s</b>'; cursor.style.opacity='0'; fixedBtn.disabled=false; expBtn.disabled=false; }
-        else { mk.classList.add('fail'); }
-      }, arr[i]*UNIT));
+
+  function render(elapsed){
+    g('playhead').style.left=X(elapsed)+'%';
+    ['fixed','exp'].forEach(function(k){
+      var L=laneEls[k]; if(!L) return;
+      var e=Math.min(elapsed, L.total);
+      L.fill.style.width=(e/S.axisMax*SPAN)+'%';
+      L.readout.textContent=fmt(e);
+      L.marks.forEach(function(mk){
+        if(elapsed >= (+mk.getAttribute('data-t'))-1e-9 && !mk.classList.contains('lit')){
+          mk.classList.add('lit');
+          mk.classList.add(mk.getAttribute('data-ok')==='1' ? 'ok':'fail');
+        }
+      });
     });
   }
-  buildMarks('fixed');
-  fixedBtn.addEventListener('click',function(){run('fixed');});
-  expBtn.addEventListener('click',function(){run('exp');});
+
+  function sweepMs(){ var units=Math.pow(2,N)-2; return clamp(units*260, 2600, 5200); }
+
+  var raf=null, replayT=null;
+  function start(){
+    if(raf)cancelAnimationFrame(raf);
+    if(replayT)clearTimeout(replayT);
+    Object.keys(laneEls).forEach(function(k){
+      var L=laneEls[k]; L.fill.style.width='0'; L.readout.textContent='0.0s';
+      L.marks.forEach(function(m){ m.classList.remove('lit','ok','fail'); });
+    });
+    var ph=g('playhead'); ph.style.left=X(0)+'%';
+    if(reduce){ ph.style.opacity='0'; render(S.axisMax); return; }
+    ph.style.opacity='0.42';
+    var dur=sweepMs(), t0=performance.now();
+    (function frame(now){
+      var p=(now-t0)/dur, elapsed=Math.min(p,1)*S.axisMax;
+      render(elapsed);
+      if(p<1) raf=requestAnimationFrame(frame);
+      else { render(S.axisMax); replayT=setTimeout(start, 1200); }
+    })(t0);
+  }
+
+  function updateText(){
+    var mr=N-1;
+    if(view==='fixed')
+      g('mode').innerHTML='<b>Fixed delay.</b> Every retry waits the same '+trim(D)+'s, so the calls stay tightly bunched and keep hitting a server that may still be down.';
+    else if(view==='exp')
+      g('mode').innerHTML='<b>Exponential backoff.</b> Each wait doubles ('+trim(D*2)+'s, '+trim(D*4)+'s, '+trim(D*8)+'s…), spacing the retries out so an overloaded server gets room to recover.';
+    else
+      g('mode').innerHTML='One failing call, two wait strategies on a shared clock. <b>Fixed</b> hammers in a tight cluster; <b>backoff</b> spreads out and finishes later.';
+    g('code').innerHTML='@retry(max_retries=<b>'+mr+'</b>, exceptions=[ConnectionFailed], delay=<b>'+trim(D)+'</b>, exponential_backoff=<b>'
+      +(view==='fixed'?'False':view==='exp'?'True':'True | False')+'</b>)';
+    g('vN').textContent=N; g('vD').textContent=trim(D)+'s';
+  }
+
+  g('sN').addEventListener('input',function(){ N=+this.value; build(); });
+  g('sD').addEventListener('input',function(){ D=+this.value; build(); });
+  Array.prototype.forEach.call(document.querySelectorAll('.seg button'),function(b){
+    b.addEventListener('click',function(){
+      view=b.getAttribute('data-view');
+      document.querySelectorAll('.seg button').forEach(function(x){ x.classList.toggle('on', x===b); });
+      build();
+    });
+  });
+  g('replay').addEventListener('click', start);
+  build();
 })();
 </script>
 <script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>

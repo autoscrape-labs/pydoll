@@ -4,6 +4,8 @@ Proxy 检测是概率性的：一个站点把几十个微弱的信号（从一�
 
 它建立在网络章节其余部分之上：[网络基础](network-fundamentals.md) 讲相关的各层，[HTTP/HTTPS proxy](http-proxies.md) 和 [SOCKS proxy](socks-proxies.md) 讲每种 proxy 类型的行为。
 
+<iframe scrolling="no" src="/docs/resources/visuals/proxy-detection-score.html" aria-label="Proxy detection folds many weak signals (ASN reputation, IP versus timezone and language, known-proxy databases, WebRTC leaks) into one confidence score that crosses a block threshold" style="width: 100%; height: 720px; border: 0;" loading="lazy"></iframe>
+
 ## IP 信誉
 
 IP 信誉是部署最广泛的技术。它把公开数据（ASN 记录、WHOIS、地理定位数据库）与专有情报结合起来，把 IP 地址归入不同的风险类别。

@@ -2,7 +2,7 @@
 
 Pydoll drives the mouse two ways: through an element you found, which is what you want most of the time, or at raw page coordinates when you need precise positions. Both support `humanize=True`, which moves the cursor along a curved, human-timed path instead of teleporting to the target.
 
-<iframe src="/docs/resources/visuals/mouse-humanize.html" aria-label="Humanized curved cursor path versus an instant robotic jump" style="width: 100%; height: 345px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/mouse-humanize.html" aria-label="Humanized curved cursor path versus an instant robotic jump" style="width: 100%; height: 345px; border: 0;" loading="lazy"></iframe>
 
 ## Click an element
 

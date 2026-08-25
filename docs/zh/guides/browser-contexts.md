@@ -57,7 +57,7 @@ graph LR
     C2 --> T3[标签页 C]
 ```
 
-<iframe src="/docs/resources/visuals/contexts-isolation.html" aria-label="Two browser contexts, each with its own cookie jar, showing that a cookie set in one does not appear in the other" style="width: 100%; height: 325px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/contexts-isolation.html" aria-label="Two browser contexts, each with its own cookie jar, showing that a cookie set in one does not appear in the other" style="width: 100%; height: 325px; border: 0;" loading="lazy"></iframe>
 
 在每个上下文里各自登录：cookie 只会落在那个上下文的 jar 里。什么都不会互相越界，这正是上下文适合在一个浏览器里运行多个独立会话的原因。
 

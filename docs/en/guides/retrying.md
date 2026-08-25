@@ -79,7 +79,7 @@ async def fetch(tab, url):
     return await tab.find(id='content', timeout=10)
 ```
 
-<iframe src="/docs/resources/visuals/retry-backoff.html" aria-label="Fixed delay vs exponential backoff retry timeline" style="width: 100%; height: 290px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/retry-backoff.html" aria-label="Fixed delay vs exponential backoff retry timeline" style="width: 100%; height: 290px; border: 0;" loading="lazy"></iframe>
 
 Run each mode: a fixed delay keeps the same gap between attempts, while exponential backoff doubles it (2s, 4s, 8s), spacing the retries further apart.
 
