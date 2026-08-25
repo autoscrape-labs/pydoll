@@ -72,7 +72,9 @@ class FingerprintApplier:
         self._tab = tab
         self._applied: Optional[FingerprintConfig] = None
 
-    async def apply(self, fingerprint: FingerprintConfig) -> None:
+    async def apply(
+        self, fingerprint: FingerprintConfig, cross_origin_iframes: bool = True
+    ) -> None:
         """Apply a browser fingerprint profile to the tab.
 
         Overrides browser identity signals via CDP commands and JavaScript
@@ -100,6 +102,10 @@ class FingerprintApplier:
         Args:
             fingerprint: Fingerprint configuration. Only specified fields
                 are overridden; unspecified fields keep real browser values.
+            cross_origin_iframes: When true (default), the identity is also
+                replayed into every cross-site iframe (OOPIF) so the fingerprint
+                stays coherent across process boundaries. Set false to cover only
+                the top page, same-origin frames, and workers.
         """
         tab = self._tab
         if self._applied == fingerprint:
@@ -176,6 +182,8 @@ class FingerprintApplier:
             accept_language,
             mobile=mobile,
             setup_browser_scope=not context_already_set,
+            cross_origin_iframes=cross_origin_iframes,
+            page_js=js,
         )
         self._applied = fingerprint
         logger.info('Fingerprint profile applied')
@@ -187,21 +195,9 @@ class FingerprintApplier:
         features Chrome can emulate through CDP have a config field; unset
         features keep the browser's real values.
         """
-        candidates = (
-            ('color-gamut', media_features.get('color_gamut')),
-            ('forced-colors', media_features.get('forced_colors')),
-            ('prefers-color-scheme', media_features.get('prefers_color_scheme')),
-            ('prefers-contrast', media_features.get('prefers_contrast')),
-            ('prefers-reduced-motion', media_features.get('prefers_reduced_motion')),
-            ('prefers-reduced-transparency', media_features.get('prefers_reduced_transparency')),
-        )
-        features: list[MediaFeature] = [
-            MediaFeature(name=name, value=value) for name, value in candidates if value is not None
-        ]
-        if features:
-            await self._tab._execute_command(
-                EmulationCommands.set_emulated_media(features=features)
-            )
+        command = self._media_features_command(media_features)
+        if command is not None:
+            await self._tab._execute_command(command)
 
     def _warn_on_user_agent_option_conflict(self, fingerprint_user_agent: str) -> None:
         """Warn when a ``--user-agent`` option contradicts the fingerprint UA.
@@ -250,8 +246,10 @@ class FingerprintApplier:
         accept_language: Optional[str],
         mobile: bool,
         setup_browser_scope: bool = True,
+        cross_origin_iframes: bool = True,
+        page_js: str = '',
     ) -> None:
-        """Auto-attach to every Web Worker type and replay the fingerprint on it.
+        """Auto-attach to Web Workers (and optionally OOPIFs) and replay the fingerprint.
 
         Workers keep their own ``WorkerNavigator``: CDP overrides scoped to the
         page session and ``addScriptToEvaluateOnNewDocument`` do not reach them,
@@ -263,6 +261,12 @@ class FingerprintApplier:
         the browser connection; that handler is registered once per browser
         context (``setup_browser_scope``), scoped to this context, to avoid
         stacking a handler for every tab in the same context.
+
+        A cross-site iframe (OOPIF) is also a child of the page target, so it
+        attaches over the tab connection too. When ``cross_origin_iframes`` is set,
+        the tab handler additionally replays the full identity on each OOPIF
+        session (see :meth:`_apply_oopif_session`). The single tab handler branches
+        by target type and resumes last, so there is no race with the worker path.
         """
         tab = self._tab
         worker_js = build_fingerprint_worker_js(
@@ -274,15 +278,27 @@ class FingerprintApplier:
 
         tab_conn = tab._connection_handler
         tab_handler = self._build_worker_handler(
-            tab_conn, {'worker'}, parsed, accept_language, mobile, hardware_concurrency, worker_js
+            tab_conn,
+            {'worker'},
+            parsed,
+            accept_language,
+            mobile,
+            hardware_concurrency,
+            worker_js,
+            include_iframes=cross_origin_iframes,
+            fingerprint=fingerprint,
+            page_js=page_js,
         )
         await tab.on(TargetEvent.ATTACHED_TO_TARGET, tab_handler)
+        tab_filters = [FilterEntry(type='worker')]
+        if cross_origin_iframes:
+            tab_filters.append(FilterEntry(type='iframe'))
         await tab._execute_command(
             TargetCommands.set_auto_attach(
                 auto_attach=True,
                 wait_for_debugger_on_start=True,
                 flatten=True,
-                filter=[FilterEntry(type='worker')],
+                filter=tab_filters,
             )
         )
 
@@ -348,6 +364,9 @@ class FingerprintApplier:
         hardware_concurrency: Optional[int],
         worker_js: str,
         scope_context_id: object = _NO_WORKER_SCOPE,
+        include_iframes: bool = False,
+        fingerprint: Optional['FingerprintConfig'] = None,
+        page_js: str = '',
     ) -> Callable[[dict], Awaitable[None]]:
         """Build an attachedToTarget handler that replays the fingerprint on workers.
 
@@ -387,8 +406,19 @@ class FingerprintApplier:
                         hardware_concurrency,
                         worker_js,
                     )
+                elif include_iframes and target_info['type'] == 'iframe':
+                    if fingerprint is not None:
+                        await self._apply_oopif_session(
+                            connection,
+                            session_id,
+                            parsed,
+                            accept_language,
+                            mobile,
+                            fingerprint,
+                            page_js,
+                        )
             except (CommandExecutionTimeout, WebSocketConnectionClosed, KeyError) as exc:
-                logger.debug('Skipped fingerprint on worker session %s: %s', session_id, exc)
+                logger.debug('Skipped fingerprint on attached session %s: %s', session_id, exc)
             finally:
                 if params.get('waitingForDebugger'):
                     resume = RuntimeCommands.run_if_waiting_for_debugger()
@@ -413,16 +443,7 @@ class FingerprintApplier:
         """Replay UA / hardwareConcurrency / JS overrides on a single worker session."""
         commands: list[Command] = []
         if parsed is not None:
-            metadata = parsed.user_agent_metadata
-            metadata['mobile'] = mobile
-            commands.append(
-                EmulationCommands.set_user_agent_override(
-                    user_agent=parsed.reduced_user_agent,
-                    accept_language=accept_language,
-                    platform=parsed.platform,
-                    user_agent_metadata=metadata,
-                )
-            )
+            commands.append(self._user_agent_command(parsed, accept_language, mobile))
         if hardware_concurrency is not None:
             commands.append(
                 EmulationCommands.set_hardware_concurrency_override(hardware_concurrency)
@@ -432,6 +453,127 @@ class FingerprintApplier:
         for command in commands:
             command['sessionId'] = session_id
             await connection.execute_command(command, timeout=self._WORKER_COMMAND_TIMEOUT)
+
+    async def _apply_oopif_session(
+        self,
+        connection: ConnectionHandler,
+        session_id: str,
+        parsed: Optional['ParsedUserAgent'],
+        accept_language: Optional[str],
+        mobile: bool,
+        fingerprint: FingerprintConfig,
+        page_js: str,
+    ) -> None:
+        """Replay the full identity on a single cross-site iframe (OOPIF) session.
+
+        A cross-site iframe runs in its own process, so the page-session Emulation
+        overrides and the page ``addScriptToEvaluateOnNewDocument`` never reach it.
+        This reapplies the whole override set on the iframe's own session, then the
+        page JS after enabling the Page domain (required for
+        ``addScriptToEvaluateOnNewDocument`` to take effect on this session). The
+        caller resumes the paused target afterwards, so the overrides are in place
+        before the iframe runs a line. Every command is sent on ``connection`` (the
+        one that received ``attachedToTarget``), since a flattened session answers
+        only there.
+        """
+        commands: list[Command] = []
+        if parsed is not None:
+            commands.append(self._user_agent_command(parsed, accept_language, mobile))
+        if 'timezone' in fingerprint:
+            commands.append(EmulationCommands.set_timezone_override(fingerprint['timezone']))
+        languages = fingerprint.get('locale', {}).get('languages')
+        if languages:
+            commands.append(EmulationCommands.set_locale_override(languages[0].replace('-', '_')))
+        if 'geolocation' in fingerprint:
+            geo = fingerprint['geolocation']
+            commands.append(
+                EmulationCommands.set_geolocation_override(
+                    latitude=geo['latitude'],
+                    longitude=geo['longitude'],
+                    accuracy=geo.get('accuracy'),
+                )
+            )
+        hardware_concurrency = fingerprint.get('hardware', {}).get('hardware_concurrency')
+        if hardware_concurrency is not None:
+            commands.append(
+                EmulationCommands.set_hardware_concurrency_override(hardware_concurrency)
+            )
+        if 'screen' in fingerprint:
+            commands.append(self._device_metrics_command(fingerprint['screen'], mobile))
+        if 'media_features' in fingerprint:
+            media_command = self._media_features_command(fingerprint['media_features'])
+            if media_command is not None:
+                commands.append(media_command)
+        commands.append(PageCommands.enable())
+        if page_js:
+            commands.append(
+                PageCommands.add_script_to_evaluate_on_new_document(
+                    source=page_js, run_immediately=True
+                )
+            )
+        for command in commands:
+            command['sessionId'] = session_id
+            await connection.execute_command(command, timeout=self._WORKER_COMMAND_TIMEOUT)
+
+    @staticmethod
+    def _user_agent_command(
+        parsed: 'ParsedUserAgent', accept_language: Optional[str], mobile: bool
+    ) -> 'Command':
+        """Build the ``setUserAgentOverride`` command for a parsed User-Agent."""
+        metadata = parsed.user_agent_metadata
+        metadata['mobile'] = mobile
+        return EmulationCommands.set_user_agent_override(
+            user_agent=parsed.reduced_user_agent,
+            accept_language=accept_language,
+            platform=parsed.platform,
+            user_agent_metadata=metadata,
+        )
+
+    def _device_metrics_command(self, screen: 'ScreenFingerprint', mobile: bool) -> 'Command':
+        """Build the ``setDeviceMetricsOverride`` command from screen config.
+
+        When ``inner_width`` / ``inner_height`` are omitted, the layout-size is
+        disabled (``0``) so the real window drives ``window.innerWidth`` /
+        ``innerHeight`` instead of ``screen.width`` (a headless-like tell). The
+        ``screen.width`` / ``screen.height`` overrides are always applied.
+        """
+        screen_orientation: Optional[ScreenOrientation] = None
+        orientation_type = screen.get('orientation_type')
+        if orientation_type:
+            cdp_type = self._ORIENTATION_CDP_MAP.get(orientation_type)
+            if cdp_type:
+                screen_orientation = ScreenOrientation(
+                    type=cdp_type, angle=screen.get('orientation_angle', 0)
+                )
+        return EmulationCommands.set_device_metrics_override(
+            width=screen.get('inner_width', 0),
+            height=screen.get('inner_height', 0),
+            device_scale_factor=screen.get('device_pixel_ratio', 0),
+            mobile=mobile,
+            screen_width=screen['width'],
+            screen_height=screen['height'],
+            screen_orientation=screen_orientation,
+        )
+
+    @staticmethod
+    def _media_features_command(
+        media_features: 'MediaFeaturesFingerprint',
+    ) -> Optional['Command']:
+        """Build the ``setEmulatedMedia`` command, or ``None`` when nothing is set."""
+        candidates = (
+            ('color-gamut', media_features.get('color_gamut')),
+            ('forced-colors', media_features.get('forced_colors')),
+            ('prefers-color-scheme', media_features.get('prefers_color_scheme')),
+            ('prefers-contrast', media_features.get('prefers_contrast')),
+            ('prefers-reduced-motion', media_features.get('prefers_reduced_motion')),
+            ('prefers-reduced-transparency', media_features.get('prefers_reduced_transparency')),
+        )
+        features: list[MediaFeature] = [
+            MediaFeature(name=name, value=value) for name, value in candidates if value is not None
+        ]
+        if not features:
+            return None
+        return EmulationCommands.set_emulated_media(features=features)
 
     @staticmethod
     def _build_accept_language(fingerprint: FingerprintConfig) -> Optional[str]:
@@ -475,15 +617,8 @@ class FingerprintApplier:
             mobile: Whether to emulate a mobile device. Propagated to
                 Client Hints (``Sec-CH-UA-Mobile``).
         """
-        metadata = parsed.user_agent_metadata
-        metadata['mobile'] = mobile
         await self._tab._execute_command(
-            EmulationCommands.set_user_agent_override(
-                user_agent=parsed.reduced_user_agent,
-                accept_language=accept_language,
-                platform=parsed.platform,
-                user_agent_metadata=metadata,
-            )
+            self._user_agent_command(parsed, accept_language, mobile)
         )
 
     async def _apply_device_metrics(self, screen: ScreenFingerprint, mobile: bool = False) -> None:
@@ -500,30 +635,7 @@ class FingerprintApplier:
             screen: Screen fingerprint configuration.
             mobile: Whether to emulate a mobile device.
         """
-        screen_orientation: Optional[ScreenOrientation] = None
-        orientation_type = screen.get('orientation_type')
-        if orientation_type:
-            cdp_type = self._ORIENTATION_CDP_MAP.get(orientation_type)
-            if cdp_type:
-                screen_orientation = ScreenOrientation(
-                    type=cdp_type,
-                    angle=screen.get('orientation_angle', 0),
-                )
-
-        viewport_width = screen.get('inner_width', 0)
-        viewport_height = screen.get('inner_height', 0)
-
-        await self._tab._execute_command(
-            EmulationCommands.set_device_metrics_override(
-                width=viewport_width,
-                height=viewport_height,
-                device_scale_factor=screen.get('device_pixel_ratio', 0),
-                mobile=mobile,
-                screen_width=screen['width'],
-                screen_height=screen['height'],
-                screen_orientation=screen_orientation,
-            )
-        )
+        await self._tab._execute_command(self._device_metrics_command(screen, mobile))
 
     async def _apply_headless_screen(self, screen: 'ScreenFingerprint') -> None:
         """Match the browser-global headless virtual screen to the fingerprint.

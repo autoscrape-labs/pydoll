@@ -179,3 +179,81 @@ async def test_fractional_dpr_screen_reaches_oopif_rounded(
         assert data['height'] == 832
         assert data['colorDepth'] == 24
         assert data['dpr'] == 4
+
+
+# A Windows/NVIDIA identity whose WebGL renderer is a host-independent marker: no
+# CI runner has an "RTX 3060", so it only appears inside a frame the injection reached.
+IDENTITY_FP = {
+    'user_agent': (
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+        '(KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36'
+    ),
+    'navigator': {'platform': 'Win32', 'vendor': 'Google Inc.'},
+    'hardware': {'device_memory': 8, 'hardware_concurrency': 12},
+    'webgl': {
+        'vendor': 'Google Inc. (NVIDIA)',
+        'renderer': 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 Direct3D11 vs_5_0 ps_5_0, D3D11)',
+    },
+    'timezone': 'America/New_York',
+}
+
+
+def _identity_main_url(port_a: int, port_b: int) -> str:
+    """Main page on ``localhost`` embedding the identity reporter on ``127.0.0.1``."""
+    try:
+        with socket.create_connection(('localhost', port_a), timeout=0.5):
+            pass
+    except OSError:
+        pytest.skip('localhost is not reachable on the IPv4 loopback server')
+    return f'http://localhost:{port_a}/identity_main.html?port={port_b}'
+
+
+async def _read_oopif_identity(browser, tab) -> dict:
+    """Assert a real OOPIF exists, then read the identity it reports from its own realm."""
+    assert any(t['type'] == 'iframe' for t in await browser.get_targets()), \
+        'expected a true out-of-process iframe target'
+    iframe = await tab.find(id='cross-origin-iframe', timeout=10)
+    assert iframe.is_iframe
+    reporter = await iframe.find(id='identity-info', timeout=10)
+    return json.loads(await reporter.text)
+
+
+@pytest.mark.asyncio
+async def test_identity_reaches_true_cross_origin_oopif(ci_chrome_options, cross_origin_servers):
+    """With cross_origin_iframes=True the injected identity reaches the OOPIF's own realm."""
+    port_a, port_b = cross_origin_servers
+    url = _identity_main_url(port_a, port_b)
+    ci_chrome_options.add_argument('--site-per-process')
+    async with Chrome(options=ci_chrome_options) as browser:
+        tab = await browser.start()
+        await tab.apply_fingerprint(IDENTITY_FP, cross_origin_iframes=True)
+        await tab.go_to(url)
+
+        data = await _read_oopif_identity(browser, tab)
+        # Windows UA/platform are the injected values; a non-Windows CI host is not Win32.
+        # deviceMemory is JS-injected. WebGL is asserted only when a renderer is available
+        # (CI may run software WebGL gated behind a flag).
+        assert data['platform'] == 'Win32'
+        assert 'Windows NT 10.0' in data['ua']
+        assert data['deviceMemory'] == 8
+        if data['webgl'] not in ('no-webgl', 'no-ext', 'err'):
+            assert 'RTX 3060' in data['webgl']
+
+
+@pytest.mark.asyncio
+async def test_identity_absent_from_oopif_when_disabled(ci_chrome_options, cross_origin_servers):
+    """With cross_origin_iframes=False the OOPIF keeps the real host identity."""
+    port_a, port_b = cross_origin_servers
+    url = _identity_main_url(port_a, port_b)
+    ci_chrome_options.add_argument('--site-per-process')
+    async with Chrome(options=ci_chrome_options) as browser:
+        tab = await browser.start()
+        await tab.apply_fingerprint(IDENTITY_FP, cross_origin_iframes=False)
+        await tab.go_to(url)
+
+        data = await _read_oopif_identity(browser, tab)
+        # The OOPIF kept the real (non-Windows CI) host identity, distinct from the page.
+        assert data['platform'] != 'Win32'
+        assert 'Windows NT 10.0' not in data['ua']
+        if data['webgl'] not in ('no-webgl', 'no-ext', 'err'):
+            assert 'RTX 3060' not in data['webgl']

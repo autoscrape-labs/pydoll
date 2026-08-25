@@ -68,6 +68,7 @@ nav:
           - Behavioral fingerprinting: deep-dive/fingerprinting/behavioral-fingerprinting.md
           - The limits of spoofing: deep-dive/fingerprinting/spoofing-limits.md
           - Auditing a fingerprint: deep-dive/fingerprinting/auditing.md
+          - Workers and cross-origin iframes: deep-dive/fingerprinting/execution-realms.md
           - Cloudflare's managed challenge: deep-dive/fingerprinting/cloudflare-challenge.md
   - API Reference:
       - Overview: api/index.md
@@ -190,6 +191,7 @@ plugins:
             Behavioral fingerprinting: 行为指纹识别
             The limits of spoofing: 伪造的极限
             Auditing a fingerprint: 审计一个 fingerprint
+            Workers and cross-origin iframes: Worker 与跨域 iframe
             Cloudflare's managed challenge: Cloudflare 的托管挑战
             API Reference: API 参考
             Browser: 浏览器
@@ -259,6 +261,7 @@ plugins:
             Behavioral fingerprinting: Fingerprinting comportamental
             The limits of spoofing: Os limites do spoofing
             Auditing a fingerprint: Auditando um fingerprint
+            Workers and cross-origin iframes: Workers e iframes cross-origin
             Cloudflare's managed challenge: O managed challenge do Cloudflare
             API Reference: Referência da API
             Browser: Navegador

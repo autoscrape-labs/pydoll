@@ -75,8 +75,10 @@ async with tab.expect_and_bypass_cloudflare_captcha(time_to_wait_captcha=15):
 点击复选框只是其中一部分。Turnstile 会根据 Pydoll 无法控制的信号来决定是否接受它：
 
 - **IP 信誉。** 干净的住宅或移动 IP 通常会被接受；数据中心 IP 往往会被挑战或封锁。没有任何浏览器配置能弥补一个被标记的 IP。参见 [Proxy](../guides/proxies.md)。
-- **Fingerprint 一致性。** 你的浏览器所呈现的身份必须与自身一致，也要与你的 IP 一致。一个常见的失败原因是 Chrome 版本不匹配：如果你把它和 [Fingerprint 注入](fingerprint-injection.md) 结合使用，profile 所声明的版本必须与真实的二进制文件一致，否则 Turnstile 会一直停留在 "Just a moment..." 上。请让它与 `await browser.get_version()` 对齐。
-- **Headful 与 headless。** Headless 会泄露降低信任分的渲染信号。对于 Turnstile，优先使用 headful，或者先把 headless 信号中和掉（参见 [Fingerprint 注入](fingerprint-injection.md)）。
+- **Fingerprint 一致性。** 你的浏览器所呈现的身份必须与自身一致，也要与你的 IP 一致。最容易让 Turnstile 出问题的有两点：
+    - **Chrome 版本不匹配。** 如果你使用 [Fingerprint 注入](fingerprint-injection.md)，profile 所声明的版本必须与真实的二进制文件一致（请让它与 `await browser.get_version()` 对齐），否则页面会一直停留在 "Just a moment..." 上。
+    - **只停留在页面这一层的身份。** 控件会在它自己的跨源 iframe 内部读取 fingerprint，所以 profile 也必须能作用到那里。`apply_fingerprint()` 默认就会这么做（`cross_origin_iframes`），再把 profile 的 locale、时区和地理位置与出口 IP 相匹配，就更完善了。
+- **Headful 与 headless。** Headless 会发出较弱的显示信号，可能降低信任分，但这并不是一堵无法逾越的墙。只要 fingerprint 完全自洽（包括跨源 iframe），并且 locale 与 IP 相匹配，在一个不错的 IP 上 headless 也能通过 Turnstile。在勉强及格的 IP 上，优先使用 headful，或者在服务器上用虚拟帧缓冲（Xvfb）跑 headful，让显示信号不再对你不利。[Cloudflare 托管挑战](../deep-dive/fingerprinting/cloudflare-challenge.md) 深入解析里有完整的拆解。
 
 如果复选框被点击了，但接着出现拼图或图片挑战，说明信任分太低了。Pydoll 无法解决那种挑战；应该改善 IP 和 fingerprint。
 

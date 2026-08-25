@@ -1,8 +1,13 @@
 # Cloudflare's managed challenge
 
-Cloudflare's managed challenge, the "Just a moment…" interstitial, is the strictest real-world test of a fingerprint. It correlates every layer at once and decides on its own server, so it catches contradictions a single-page bot score misses. This page is a full case study: the pass/block matrix, why each mismatch is caught, and a reverse-engineering pass on the one row a perfect fingerprint still fails, headless.
+Cloudflare's managed challenge, the "Just a moment…" interstitial, is the strictest real-world test of a fingerprint. It correlates every layer at once and decides on its own server, so it catches contradictions a single-page bot score misses. This page is a full case study: the pass/block matrix, why each mismatch is caught, and what it takes to clear the challenge in headless, where the identity has to stay coherent all the way into the cross-origin iframe the challenge runs in.
 
-It applies [network](network-fingerprinting.md) and [browser](browser-fingerprinting.md) fingerprinting and [the limits of spoofing](spoofing-limits.md) to a live target. Read those for the mechanisms; read this for how they combine, and where they run out.
+It applies [network](network-fingerprinting.md) and [browser](browser-fingerprinting.md) fingerprinting and [the limits of spoofing](spoofing-limits.md) to a live target. Read those for the mechanisms; read this for how they combine into a single server-side verdict, and how to make every layer agree.
+
+<p align="center">
+  <img src="/docs/resources/images/cloudflare-headless-bypass.gif" alt="Headless Chrome clearing a Cloudflare managed challenge, from the interstitial to the cleared page" width="760" />
+</p>
+<p align="center"><sub>Headless Chrome clearing a live managed challenge, recorded with the CDP screencast (<code>Page.startScreencast</code>). The interstitial is Portuguese because the profile's locale is matched to the Brazilian egress IP, the same coherence the challenge checks for.</sub></p>
 
 ## The controlled test
 
@@ -16,9 +21,9 @@ One machine, one Chrome 151 binary, one residential IP. The only things that cha
 | Windows (mismatched OS) | headful | 151 | blocked |
 | Windows | headless | 151 | blocked |
 
-Only the fully-consistent, headful run passes. Every other row is a single deviation, and each is caught by a different layer.
+Only the fully-consistent, headful run passes *this bare profile*, and each mismatched row is caught by a different layer, covered below. The headless row is the one to read carefully: it is not a hard wall. This profile changes only the OS, version, and headless flag, so it leaves out the two things a headless pass also needs, the identity inside the challenge's cross-origin iframe and a locale matched to the egress IP. Add those and click the Turnstile, and the matched-OS headless run clears the challenge too (see [What actually works](#what-actually-works)). The Windows rows are different: an OS mismatch is unspoofable, so they fail in either mode.
 
-## The OS must match the host
+## The OS must match the host {#the-os-must-match-the-host}
 
 A Windows profile on a Mac is blocked even in headful, because the OS leaks through paths `apply_fingerprint()` cannot touch:
 
@@ -28,13 +33,13 @@ A Windows profile on a Mac is blocked even in headful, because the OS leaks thro
 
 The client-side font leak alone is enough; the TCP signal is the floor underneath it.
 
-## The Chrome version must match the binary
+## The Chrome version must match the binary {#the-chrome-version-must-match-the-binary}
 
 A User-Agent that claims Chrome 140 on a 151 binary is blocked, because the version leaks through the engine, not just the string.
 
-Declare Chrome 110 and the feature surface still answers to 151: `Promise.withResolvers` (added in Chrome 119), `Array.fromAsync` (121), and `Uint8Array.prototype.toBase64` (140+) are all present. One API newer than the version you claim exposes the lie. The engine leaks it a second way: `Math` precision to the last bit, error-message text, and syntax support change between V8 versions, so two Chrome builds produce different `Math` fingerprint hashes. The string is spoofable; the engine behind it is not.
+Declare an even older version, Chrome 110, and the feature surface still answers to 151: `Promise.withResolvers` (added in Chrome 119), `Array.fromAsync` (121), and `Uint8Array.prototype.toBase64` (140+) are all present. One API newer than the version you claim exposes the lie. The engine leaks it a second way: `Math` precision to the last bit, error-message text, and syntax support change between V8 versions, so two Chrome builds produce different `Math` fingerprint hashes. The string is spoofable; the engine behind it is not.
 
-These two rows are [the limits of spoofing](spoofing-limits.md) in practice. The third, headless, is different, and it is worth the rest of this page.
+These two rows are [the limits of spoofing](spoofing-limits.md) in practice. The third, headless, is different, and is the subject of the rest of this page.
 
 ## Anatomy of the headless block
 
@@ -93,32 +98,34 @@ The challenge renders inside a cross-origin iframe on `challenges.cloudflare.com
 
 Pydoll closes this with `Emulation.updateScreen` on the browser-global virtual screen, which every frame reads, OOPIFs included (see [Fingerprint injection → Headless mode](../../stealth/fingerprint-injection.md#headless-mode)). After it, the iframe reports the same 1440x900 / `availTop 25` / dpr 2 as the page. The one catch is that the virtual screen accepts only an integer `devicePixelRatio`, so a fractional dpr is rounded for the iframe.
 
-### The wall: a server-side verdict
+Geometry is only the first signal the iframe exposes. Its `navigator`, WebGL, timezone, and languages come from its own process too, so `updateScreen` alone leaves them reading the real machine. `apply_fingerprint(..., cross_origin_iframes=True)`, the default, replays the full identity on the iframe's own session, so the OOPIF matches the page on every signal, not just the screen (see [Workers and cross-origin iframes](execution-realms.md)).
 
-Make the OOPIF geometry byte-perfect, matching the page on every field, and the challenge still blocks. So the geometry was a real leak but not the deciding one.
+### The verdict is one additive server-side score
 
-The verdict is not a client value you can read or override. The first-stage script on the challenge page is a ~226KB string-table VM interpreter: its config lives in `_cf_chl_opt`, it carries a XOR decryptor (`o[i] = k[i] ^ s.charCodeAt(i % s.length)`), base64 blobs, and whitespace-padded `honk` canary scripts. It collects its telemetry, encrypts it, and POSTs it to `/cdn-cgi/challenge-platform/h/b/fo/<numbers>:<ray>/<token>`; Cloudflare scores it server-side and re-serves the interstitial with a fresh Ray ID on a fail. The payload is opaque, so the deciding input cannot be isolated from the client without breaking the encryption.
+You cannot read the score from the client. The first-stage script on the challenge page is a ~226KB string-table VM interpreter: its config lives in `_cf_chl_opt`, it carries a XOR decryptor (`o[i] = k[i] ^ s.charCodeAt(i % s.length)`), base64 blobs, and whitespace-padded `honk` canary scripts. It collects its telemetry, encrypts it, and POSTs it to `/cdn-cgi/challenge-platform/h/b/fo/<numbers>:<ray>/<token>`; Cloudflare scores it server-side and re-serves the interstitial with a fresh Ray ID on a fail. The payload is opaque, so no single input can be isolated from the client without breaking the encryption.
 
-What survives a flawless client fingerprint is something the browser produces only with a real display, a compositor or frame-timing trait, or a behavioral one, computed inside that rotating obfuscated payload. That is as far as client-side reverse engineering reaches.
+The score is additive, not one gate. IP reputation, cross-layer fingerprint coherence, and a display/presentation term all feed it, and a suspect client is *escalated* to an interactive Turnstile rather than hard-blocked. Two consequences follow. A displayless headless browser emits a weaker presentation signal than one with a real surface, so on a marginal IP that term is what tips the score over the line, and there a real display (headful, or headful under Xvfb on a server) is the fix. But when the rest of the score is already favorable, a fingerprint made coherent *and matched to the IP*, plus the Turnstile click, clears it, headless included.
 
-**The honest conclusion:** headless Chrome does not clear the managed challenge, even with a perfect fingerprint. The reliable fix is a real display, run headful, or headful under a virtual framebuffer (Xvfb) on a server. Every serious stealth project converges on the same answer.
+So the levers that carry a headless client under the line are covering the challenge's cross-origin iframe (`cross_origin_iframes`, on by default) and matching the profile's timezone, locale, and geolocation to the egress IP. The cross-origin iframe identity is the decisive one: left on the real machine it contradicts the page and the challenge blocks; covered, with the Turnstile click, headless clears.
 
-!!! warning "The screen fix is a hardening, not a bypass"
-    `updateScreen` removes a genuine cross-frame leak, and it helps against detectors that read screen geometry in iframes. It does not pass Cloudflare's managed challenge on its own. Nothing at the fingerprint layer does; the deciding signal lives below it.
+!!! note "It still depends on the IP"
+    A coherent headless client clears the challenge on a clean residential IP; a flagged IP is challenged or blocked no matter how coherent the browser is. Fingerprint coherence removes the contradictions you can fix. It does not launder a bad IP.
 
-## What actually works
+## What actually works {#what-actually-works}
 
 - **Match the host and the binary.** OS equals the host OS, Chrome major equals the binary major.
-- **Match locale, timezone, and geolocation to the egress IP.** A separate consistency check the challenge also runs (see [Locale/IP mismatch](../../stealth/fingerprint-injection.md#case-study-a-locale-mismatch-triggering-googles-captcha)).
-- **Use a display for managed challenges.** Headful, or headful under Xvfb on a server. Displayless headless is a losing configuration here.
-- **Treat injection as necessary, not sufficient.** It removes the contradictions you can fix. IP reputation and the display requirement are not among them.
+- **Match locale, timezone, and geolocation to the egress IP.** The challenge cross-references `Accept-Language` and timezone against the IP's country (see [Locale/IP mismatch](../../stealth/fingerprint-injection.md#case-study-a-locale-mismatch-triggering-googles-captcha)). On a real deployment this is often the single lever between block and pass.
+- **Cover the cross-origin iframe.** The challenge reads the fingerprint inside its own `challenges.cloudflare.com` frame; `apply_fingerprint(..., cross_origin_iframes=True)`, the default, replays the identity there too. Left on the real machine, the iframe contradicts the page and the challenge blocks; covered, it is the term that lets a headless client clear.
+- **Click the Turnstile.** The managed challenge now serves an interactive Turnstile, so the checkbox has to be clicked. Use [`expect_and_bypass_cloudflare_captcha()`](../../stealth/captcha-bypass.md); waiting for an auto-clear leaves you blocked.
+- **Fall back to a real display on a marginal IP.** When the IP is not clean enough for a coherent headless client to clear, run headful or headful under Xvfb on a server, so the presentation term stops counting against you.
+- **Treat injection as necessary, not always sufficient.** It removes the contradictions you can fix; IP reputation is not one of them.
 
 ## Reproducing this
 
 The reverse-engineering pass above is a method you can rerun on any challenge:
 
 - **A/B on one variable.** Change only the headless flag, or one profile field, between runs and diff the outcome. Attribute a block to a signal instead of guessing.
-- **Instrument the client, everywhere it runs.** `Page.addScriptToEvaluateOnNewDocument` before navigation logs main-thread API access; `URL.createObjectURL` hooks catch blob workers; a CDP session per worker and per cross-origin OOPIF reaches the code that page-injected scripts do not, since neither inherits them.
+- **Instrument the client, everywhere it runs.** `Page.addScriptToEvaluateOnNewDocument` before navigation logs main-thread API access; `URL.createObjectURL` hooks catch blob workers; a CDP session per worker and per OOPIF reaches the code that page-injected scripts do not, since neither inherits them.
 - **Read the OOPIF on its own session.** The challenge lives in a cross-origin iframe; its `window.screen` and every other read are visible only through its own target.
 - **Measure, do not assume.** [Auditing a fingerprint](auditing.md) covers the read-two-paths method that turns "it is blocked" into "this exact field leaks".
 
