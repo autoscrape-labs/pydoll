@@ -1,8 +1,13 @@
 # Cloudflare 的托管挑战
 
-Cloudflare 的托管挑战，也就是那个 "Just a moment…" 过渡页，是对一个 fingerprint 最严格的真实世界测试。它会同时关联每一层，并在它自己的服务器上做出判定，所以它能抓住那些单页 bot score 会漏掉的矛盾。本页是一个完整的案例研究：通过/拦截矩阵，每一处不匹配为什么会被抓住，以及针对那唯一一行即便有完美 fingerprint 仍会失败的情况（headless）所做的一次逆向工程。
+Cloudflare 的托管挑战，也就是那个 "Just a moment…" 过渡页，是对一个 fingerprint 最严格的真实世界测试。它会同时关联每一层，并在它自己的服务器上做出判定，所以它能抓住那些单页 bot score 会漏掉的矛盾。本页是一个完整的案例研究：通过/拦截矩阵，每一处不匹配为什么会被抓住，以及在 headless 下通过这个挑战需要什么，因为在 headless 下，身份必须一路保持一致，直到进入挑战所运行的那个跨源 iframe 里。
 
-它把 [网络](network-fingerprinting.md) 和 [浏览器](browser-fingerprinting.md) fingerprinting 以及 [伪造的极限](spoofing-limits.md) 应用到一个实时目标上。机制请读那几页；而它们如何组合、又在哪里失效，请读本页。
+它把 [网络](network-fingerprinting.md) 和 [浏览器](browser-fingerprinting.md) fingerprinting 以及 [伪造的极限](spoofing-limits.md) 应用到一个实时目标上。机制请读那几页；而它们如何组合成一个单一的服务器端判定、又如何让每一层都保持一致，请读本页。
+
+<p align="center">
+  <img src="/docs/resources/images/cloudflare-headless-bypass.gif" alt="Headless Chrome 通过一个 Cloudflare 托管挑战，从过渡页一路到通过后的页面" width="760" />
+</p>
+<p align="center"><sub>Headless Chrome 通过一个实时的托管挑战，使用 CDP 屏幕录制（<code>Page.startScreencast</code>）录制。过渡页之所以是葡萄牙语，是因为 profile 的 locale 与巴西的出口 IP 相匹配，这正是挑战所检查的那种一致性。</sub></p>
 
 <iframe scrolling="no" src="/docs/resources/visuals/cloudflare-matrix.html" aria-label="A coherent headful identity passes Cloudflare; flip any single field (IP, host OS, Chrome version, headless) and a different layer catches it, so only coherence of everything passes" style="width: 100%; height: 760px; border: 0;" loading="lazy"></iframe>
 
@@ -18,9 +23,9 @@ Cloudflare 的托管挑战，也就是那个 "Just a moment…" 过渡页，是�
 | Windows（操作系统不匹配） | headful | 151 | 拦截 |
 | Windows | headless | 151 | 拦截 |
 
-只有完全一致的那次 headful 运行通过。其他每一行都是一处单一的偏差，而每一处都被一个不同的层抓住。
+只有完全一致的那次 headful 运行才能通过*这个原始 profile*，而每一处不匹配的行都被一个不同的层抓住，下面会逐一讲解。headless 那一行是需要仔细读的：它并不是一堵硬墙。这个 profile 只改变了操作系统、版本和 headless 标志，所以它遗漏了 headless 要通过所同样需要的另外两样东西，即挑战的跨源 iframe 内部的身份，以及一个与出口 IP 相匹配的 locale。把这两样加上，再点击 Turnstile，那次操作系统匹配的 headless 运行同样能通过挑战（参见 [真正有效的做法](#what-actually-works)）。Windows 那几行则不同：操作系统不匹配是无法伪造的，所以它们在两种模式下都会失败。
 
-## 操作系统必须与主机匹配
+## 操作系统必须与主机匹配 {#the-os-must-match-the-host}
 
 一个跑在 Mac 上的 Windows profile 即便在 headful 下也会被拦截，因为操作系统会透过 `apply_fingerprint()` 触及不到的路径泄露出来：
 
@@ -30,13 +35,13 @@ Cloudflare 的托管挑战，也就是那个 "Just a moment…" 过渡页，是�
 
 单是客户端的字体泄露就已足够；而 TCP 信号是它底下的那道底线。
 
-## Chrome 版本必须与二进制文件匹配
+## Chrome 版本必须与二进制文件匹配 {#the-chrome-version-must-match-the-binary}
 
 一个在 151 二进制文件上声称是 Chrome 140 的 User-Agent 会被拦截，因为版本会透过引擎泄露，而不只是透过那个字符串。
 
-声明 Chrome 110，而特性面仍然对应 151：`Promise.withResolvers`（在 Chrome 119 中加入）、`Array.fromAsync`（121）以及 `Uint8Array.prototype.toBase64`（140+）全都存在。一个比你所声称的版本更新的 API 就会暴露这个谎言。引擎还会以第二种方式泄露它：`Math` 精确到最后一位的精度、错误消息文本以及语法支持都会在各个 V8 版本之间变化，所以两个 Chrome 构建会产生不同的 `Math` fingerprint 哈希。字符串是可以伪造的；而它背后的引擎不行。
+声明一个更老的版本，Chrome 110，而特性面仍然对应 151：`Promise.withResolvers`（在 Chrome 119 中加入）、`Array.fromAsync`（121）以及 `Uint8Array.prototype.toBase64`（140+）全都存在。一个比你所声称的版本更新的 API 就会暴露这个谎言。引擎还会以第二种方式泄露它：`Math` 精确到最后一位的精度、错误消息文本以及语法支持都会在各个 V8 版本之间变化，所以两个 Chrome 构建会产生不同的 `Math` fingerprint 哈希。字符串是可以伪造的；而它背后的引擎不行。
 
-这两行就是 [伪造的极限](spoofing-limits.md) 的实际体现。第三行，headless，则不一样，它值得本页余下的篇幅。
+这两行就是 [伪造的极限](spoofing-limits.md) 的实际体现。第三行，headless，则不一样，它是本页余下部分的主题。
 
 ## 剖析 headless 拦截
 
@@ -95,25 +100,27 @@ onmessage = e => e.isTrusted && e.origin === '' && e.source === null
 
 Pydoll 用作用于浏览器全局虚拟屏幕的 `Emulation.updateScreen` 来堵住这个缺口，每一个 frame 都会读取这个虚拟屏幕，包括 OOPIF（参见 [Fingerprint 注入 → Headless 模式](../../stealth/fingerprint-injection.md#headless-mode)）。在此之后，这个 iframe 报告的就和页面一样是 1440x900 / `availTop 25` / dpr 2。唯一的一个小问题是，虚拟屏幕只接受整数的 `devicePixelRatio`，所以一个小数 dpr 会为这个 iframe 做四舍五入。
 
-### 那堵墙：一个服务器端的判定
+几何信息只是这个 iframe 暴露出来的第一个信号。它的 `navigator`、WebGL、时区和 languages 同样来自它自己的进程，所以单靠 `updateScreen` 会让这些仍然读到真实的机器。`apply_fingerprint(..., cross_origin_iframes=True)`（默认值）会在 iframe 自己的会话上重放完整的身份，所以这个 OOPIF 在每一个信号上都与页面匹配，而不只是屏幕（参见 [Worker 与跨源 iframe](execution-realms.md)）。
 
-把 OOPIF 的几何信息做到逐字节完美，在每一个字段上都与页面匹配，挑战仍然会拦截。所以几何信息是一处真实的泄露，但不是那个决定性的。
+### 判定是一个累加的服务器端得分
 
-这个判定不是一个你能读取或覆盖的客户端值。挑战页面上的第一阶段脚本是一个约 226KB 的字符串表 VM 解释器：它的配置存放在 `_cf_chl_opt` 里，它带着一个 XOR 解密器（`o[i] = k[i] ^ s.charCodeAt(i % s.length)`）、base64 数据块，以及用空白填充的 `honk` 金丝雀脚本。它收集自己的遥测，加密它，并把它 POST 到 `/cdn-cgi/challenge-platform/h/b/fo/<numbers>:<ray>/<token>`；Cloudflare 在服务器端为它打分，并在失败时用一个新的 Ray ID 重新提供过渡页。这个负载是不透明的，所以在不破解加密的情况下，无法从客户端把那个决定性的输入孤立出来。
+你无法从客户端读取这个得分。挑战页面上的第一阶段脚本是一个约 226KB 的字符串表 VM 解释器：它的配置存放在 `_cf_chl_opt` 里，它带着一个 XOR 解密器（`o[i] = k[i] ^ s.charCodeAt(i % s.length)`）、base64 数据块，以及用空白填充的 `honk` 金丝雀脚本。它收集自己的遥测，加密它，并把它 POST 到 `/cdn-cgi/challenge-platform/h/b/fo/<numbers>:<ray>/<token>`；Cloudflare 在服务器端为它打分，并在失败时用一个新的 Ray ID 重新提供过渡页。这个负载是不透明的，所以在不破解加密的情况下，无法从客户端把任何单一的输入孤立出来。
 
-在一个完美无瑕的客户端 fingerprint 之后仍然幸存下来的，是某种浏览器只有在拥有真实显示器时才会产生的东西，一个合成器或帧计时特征，或者一个行为特征，在那个不断轮换的混淆负载内部被计算出来。这就是客户端逆向工程所能到达的极限。
+这个得分是累加的，而不是单一的关卡。IP 信誉、跨层 fingerprint 一致性，以及一个显示/呈现项，都会汇入其中，而一个可疑的客户端会被*升级*到一个交互式 Turnstile，而不是被硬性拦截。由此有两个推论。一个无显示器的 headless 浏览器所发出的呈现信号，比一个拥有真实表面的浏览器更弱，所以在一个临界的 IP 上，正是这一项把得分推过了那条线，而在那里，一个真实的显示器（headful，或者在服务器上于 Xvfb 之下以 headful 运行）就是解决办法。但当得分的其余部分已经有利时，一个做到了一致*并且与 IP 相匹配*的 fingerprint，再加上点击 Turnstile，就能通过它，headless 也包括在内。
 
-**诚实的结论：** headless Chrome 无法通过托管挑战，即便有一个完美的 fingerprint。可靠的解决办法是一个真实的显示器，以 headful 运行，或者在服务器上于一个虚拟帧缓冲（Xvfb）之下以 headful 运行。每一个认真的隐身项目都会汇聚到同一个答案。
+所以，能把一个 headless 客户端带到那条线以下的那些杠杆，是覆盖挑战的跨源 iframe（`cross_origin_iframes`，默认开启），以及让 profile 的时区、locale 和地理位置与出口 IP 相匹配。跨源 iframe 的身份是那个决定性的：如果把它留在真实的机器上，它会与页面矛盾，挑战就会拦截；一旦覆盖了它，再加上点击 Turnstile，headless 就能通过。
 
-!!! warning "屏幕修复是一种加固，而不是一次绕过"
-    `updateScreen` 移除了一处真实的跨 frame 泄露，而且它对那些在 iframe 中读取屏幕几何信息的检测器有帮助。但它本身并不能通过 Cloudflare 的托管挑战。fingerprint 层的任何东西都做不到；那个决定性的信号位于它之下。
+!!! note "它仍然取决于 IP"
+    一个一致的 headless 客户端能在一个干净的住宅 IP 上通过挑战；而一个被标记的 IP，无论浏览器多么一致，都会被挑战或被拦截。fingerprint 一致性移除的是那些你能修复的矛盾。它并不能洗白一个糟糕的 IP。
 
-## 真正有效的做法
+## 真正有效的做法 {#what-actually-works}
 
 - **匹配主机和二进制文件。** 操作系统等于主机的操作系统，Chrome 主版本等于二进制文件的主版本。
-- **让 locale、时区和地理位置与出口 IP 相匹配。** 这是挑战同样会运行的一项单独的一致性检查（参见 [Locale/IP 不匹配](../../stealth/fingerprint-injection.md#case-study-a-locale-mismatch-triggering-googles-captcha)）。
-- **为托管挑战使用一个显示器。** headful，或者在服务器上于 Xvfb 之下以 headful 运行。无显示器的 headless 在这里是一种必输的配置。
-- **把注入当作必要条件，而不是充分条件。** 它移除了你能修复的那些矛盾。IP 信誉和显示器要求不在其中。
+- **让 locale、时区和地理位置与出口 IP 相匹配。** 挑战会把 `Accept-Language` 和时区与 IP 所在的国家做交叉核对（参见 [Locale/IP 不匹配](../../stealth/fingerprint-injection.md#case-study-a-locale-mismatch-triggering-googles-captcha)）。在一个真实的部署中，这往往是拦截与通过之间唯一的那个杠杆。
+- **覆盖跨源 iframe。** 挑战会在它自己的 `challenges.cloudflare.com` frame 内部读取 fingerprint；`apply_fingerprint(..., cross_origin_iframes=True)`（默认值）也会在那里重放身份。如果把它留在真实的机器上，iframe 会与页面矛盾，挑战就会拦截；一旦覆盖，它就是那个让 headless 客户端得以通过的项。
+- **点击 Turnstile。** 托管挑战现在会提供一个交互式 Turnstile，所以那个复选框必须被点击。使用 [`expect_and_bypass_cloudflare_captcha()`](../../stealth/captcha-bypass.md)；等待自动通过只会让你继续被拦截。
+- **在一个临界的 IP 上回退到真实的显示器。** 当 IP 不够干净、无法让一个一致的 headless 客户端通过时，就以 headful 运行，或者在服务器上于 Xvfb 之下以 headful 运行，好让那个呈现项不再对你不利。
+- **把注入当作必要条件，而不总是充分条件。** 它移除了你能修复的那些矛盾；IP 信誉不在其中。
 
 ## 复现这一过程
 

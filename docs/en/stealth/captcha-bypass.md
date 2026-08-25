@@ -75,8 +75,10 @@ async with tab.expect_and_bypass_cloudflare_captcha(time_to_wait_captcha=15):
 Clicking the checkbox is only part of it. Turnstile decides whether to accept it from signals Pydoll does not control:
 
 - **IP reputation.** A clean residential or mobile IP is usually accepted; a datacenter IP is often challenged or blocked. No browser configuration overcomes a flagged IP. See [Proxies](../guides/proxies.md).
-- **Fingerprint consistency.** The identity your browser presents must agree with itself and with your IP. A common failure is a Chrome version mismatch: if you combine this with [Fingerprint Injection](fingerprint-injection.md), the profile's advertised version must match the real binary, or Turnstile stays on "Just a moment...". Align it to `await browser.get_version()`.
-- **Headful vs headless.** Headless leaks rendering signals that lower the trust score. Prefer headful for Turnstile, or neutralize the headless signals first (see [Fingerprint Injection](fingerprint-injection.md)).
+- **Fingerprint consistency.** The identity your browser presents must agree with itself and with your IP. Two things trip Turnstile most:
+    - **A Chrome version mismatch.** With [Fingerprint injection](fingerprint-injection.md), the profile's advertised version must match the real binary (align it to `await browser.get_version()`), or the page stays on "Just a moment...".
+    - **An identity that stops at the page.** The widget reads the fingerprint inside its own cross-origin iframe, so the profile has to reach there too. `apply_fingerprint()` does that by default (`cross_origin_iframes`), and matching the profile's locale, timezone, and geolocation to the egress IP rounds it out.
+- **Headful vs headless.** Headless emits a weaker display signal that can lower the trust score, but it is not a wall. With a fully coherent fingerprint (the cross-origin iframe included) and a locale matched to the IP, headless clears Turnstile on a decent IP. On a marginal IP, prefer headful, or headful under a virtual framebuffer (Xvfb) on a server, so the display signal stops counting against you. The [Cloudflare managed challenge](../deep-dive/fingerprinting/cloudflare-challenge.md) deep dive has the full breakdown.
 
 If the checkbox is clicked but a puzzle or image challenge follows, the trust score was too low. Pydoll cannot solve that challenge; improve the IP and fingerprint instead.
 

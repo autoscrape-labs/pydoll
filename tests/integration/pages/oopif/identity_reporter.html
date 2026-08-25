@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Identity Reporter</title>
+</head>
+<body>
+    <pre id="identity-info"></pre>
+    <script>
+        function webgl() {
+            try {
+                var c = document.createElement('canvas').getContext('webgl')
+                    || document.createElement('canvas').getContext('experimental-webgl');
+                if (!c) return 'no-webgl';
+                var e = c.getExtension('WEBGL_debug_renderer_info');
+                return e ? c.getParameter(e.UNMASKED_RENDERER_WEBGL) : 'no-ext';
+            } catch (err) { return 'err'; }
+        }
+        document.getElementById('identity-info').textContent = JSON.stringify({
+            ua: navigator.userAgent,
+            platform: navigator.platform,
+            deviceMemory: navigator.deviceMemory,
+            hardwareConcurrency: navigator.hardwareConcurrency,
+            timezone: (Intl.DateTimeFormat().resolvedOptions().timeZone) || '',
+            webgl: webgl()
+        });
+    </script>
+</body>
+</html>

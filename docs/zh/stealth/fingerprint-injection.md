@@ -71,7 +71,7 @@ Pydoll 本身起点就低。它通过 CDP 驱动真实的 Chrome，所以 GPU、
 | macOS profile 用于 macOS（匹配） | 15 / 100 |
 | Windows profile 用于 macOS（不匹配） | 57 / 100 |
 
-两点结论。注入让 fingerprint 变得一致；但它并不能让浏览器隐形：即便是匹配的那次运行，得分也是 15，而不是 0，而缩小这段差距的工作仍在进行中。而价值在于*匹配*，这正是为什么一个不一致的 profile 得分比完全不用 profile 还要糟糕，也是为什么下面检查清单里的每一条规则都是关于各层之间的一致性。
+两点结论。注入让 fingerprint 变得一致；但它并不能让浏览器隐形：即便是匹配的那次运行，得分也是 15，而不是 0。而价值在于*匹配*，这正是为什么一个不一致的 profile 得分比完全不用 profile 还要糟糕，也是为什么下面检查清单里的每一条规则都是关于各层之间的一致性。
 
 !!! warning "这些数字只是一个快照"
     一台机器、一个 IP、一个 Chrome 构建、一个时间点。你的情况会有所不同，而且检测网站也会改变它们的评分。请把这些分数当作方向上的示范（匹配的保持低分，不匹配的会跳高），而不是有保证的结果。
@@ -110,7 +110,7 @@ Pydoll 本身起点就低。它通过 CDP 驱动真实的 Chrome，所以 GPU、
 
 `apply_fingerprint()` 通过注入的覆盖设置了未掩码的 WebGL vendor 和 renderer，同时也设置了 User-Agent 和 Client Hints。在这同样的两张截图里，有一个诚实的局限是可见的：**WebGL Image Hash 完全相同**（`52497E30...`）。renderer *字符串*现在写的是 NVIDIA，但这些像素仍然是由真实的 Apple GPU 绘制的，所以渲染图像的 fingerprint 并没有变化。覆盖字符串是必要的，但还不够：一个把输出栅格化并对其求哈希的检测器，仍然会看到真实的硬件。这正是为什么在一台 Apple 机器上声称拥有 NVIDIA GPU，会成为上面把得分推到 57 的那个矛盾，也是为什么检查清单坚持要求 profile 的操作系统和 GPU 与主机相匹配。
 
-## 检查清单
+## 检查清单 {#checklist}
 
 让一个 profile 不被检测的规则。其中大多数描述的是 `apply_fingerprint()` 无法控制的层，所以必须选择一个能与之匹配的 profile，而不是去对抗它。
 
@@ -161,7 +161,7 @@ CDP 触及不到的信号，由一段在每个新文档上、先于任何页面�
 
 Canvas 和 WebGL 的读回结果不会被修改。检测系统会反复请求 fingerprint，所以一个在多次读取之间发生变化的值，本身就是一个自动化信号；而真实 Chrome 的 canvas 是稳定的。WebGL 的 vendor 和 renderer 字符串会被覆盖，以匹配所声称的平台，但渲染出的像素保持不变。
 
-## 检测 JavaScript 覆盖
+## 检测 JavaScript 覆盖 {#detecting-javascript-overrides}
 
 Fingerprinting 脚本不只是读取一个属性的值；它们还会检查这个属性是如何被定义的，以及周围的对象是否被改动过。有三种标准的检查方法，而一个幼稚的覆盖会在这三项上全部失败。CreepJS 就是其参考实现。
 
@@ -186,11 +186,11 @@ Object.getOwnPropertyDescriptor(Navigator.prototype, 'hardwareConcurrency').get.
 
 跨 realm 读取。一个同源的 `iframe` 或一个 Web Worker 是一个全新的 realm，它的 `navigator` 和 prototype 不会被一个只安装在主 realm 中的 hook 所改动。一个 worker 的 `WorkerNavigator` 报告真实值，而页面报告的却是覆盖值，这就是一个矛盾。
 
-### pydoll 如何规避这些信号
+### Pydoll 如何规避这些信号
 
 - getter 定义在 prototype 上（`Navigator.prototype`、`Screen.prototype`），所以实例不会新增任何自有属性。
 - 被打补丁的 getter 和方法在 `toString` 下会报告为原生，而 `toString` 补丁本身也不会变成一个新的信号。
-- 这些覆盖会在专用 worker、共享 worker 和 service worker 中重放，所以页面和它派生出的各个 realm 报告的是相同的值。
+- 这些覆盖会在专用 worker、共享 worker 和 service worker 中重放，所以页面和它派生出的各个 realm 报告的是相同的值（参见 [Workers 和跨源 iframe](../deep-dive/fingerprinting/execution-realms.md)）。
 
 这就是为什么一个注入的 profile 能通过 CreepJS 的谎言检测、prototype、worker 和字体检查，而不只是改变了那些可见的值。
 
@@ -218,6 +218,20 @@ worker 检查是幼稚的覆盖最常失败的那一项。CreepJS 会在主页�
 <p align="center"><sub>在 service worker 内部：同样的身份，被重放。</sub></p>
 
 一个只安装在主 realm 中的覆盖，会在那个 worker 面板里泄露真实的 macOS 和 Apple GPU 值，而页面与它的 worker 之间的不一致，正是 CreepJS 判定为谎言的那个矛盾。因为 Pydoll 会把覆盖重放到专用 worker、共享 worker 和 service worker 中，所以这两个 realm 是一致的。
+
+### 跨源 iframe
+
+worker 是独立 realm 的一种；跨源 iframe 则是另一种。当 Chrome 把它隔离到自己的进程中（一个进程外 iframe，即 OOPIF），它就有了自己的 `navigator` 和 GPU，所以页面级的覆盖会止步于进程边界。一个嵌入在跨源挑战或验证码 frame 中的 fingerprinting 脚本，会在那里读到真实的机器。`apply_fingerprint()` 默认会把这个缺口堵上，把完整的身份重放到那个 frame 里：
+
+```python
+# 默认：身份也覆盖跨源 iframe。
+await tab.apply_fingerprint(FINGERPRINTS['windows11_rtx3060_nyc'])
+
+# 选择退出，就只覆盖顶层页面、同源 frame 和 worker。
+await tab.apply_fingerprint(FINGERPRINTS['windows11_rtx3060_nyc'], cross_origin_iframes=False)
+```
+
+`cross_origin_iframes` 标志（默认为 `True`）控制着这一点。当反机器人检查（包括验证码挑战）运行在一个跨源 iframe 中并在那里读取 fingerprint 时，它就很重要；把那个 iframe 留在真实身份上，正是它会看到的一个矛盾。同源和同站的 iframe 已经被页面注入所覆盖，所以这会追加进程外的那些，也就是 Chrome 隔离到各自进程中的跨站 frame。覆盖范围被限定在那些确实会读取 fingerprint 的 frame 上，比如一个挑战或验证码小组件；Pydoll 不会附着到页面嵌入的每一个第三方广告或分析 iframe 上，所以这个标志不会拖慢那些页面。关于身份是如何到达每个 realm 的，参见 [Workers 和跨源 iframe](../deep-dive/fingerprinting/execution-realms.md)。
 
 ## Headless 模式 {#headless-mode}
 
@@ -266,7 +280,7 @@ asyncio.run(headless_google_search())
 
 Fingerprint 注入只移除 headless 的渲染信号。它不会改变 IP：一个信誉不佳的数据中心 IP，无论在 headless 还是 headful 下，同样都会被挑战（参见 [哪些因素决定成败](captcha-bypass.md)）。
 
-对于 Cloudflare Turnstile，在应用了 fingerprint 的情况下最常见的失败原因是 Chrome 版本不匹配，而不是 headless（参见 [Chrome 版本不匹配](#case-study-a-chrome-version-mismatch-triggering-cloudflares-challenge)）。Headless 下的 Turnstile 仍在验证中；请优先使用 headful。
+对于 Cloudflare Turnstile，在应用了 fingerprint 的情况下最常见的失败原因是 Chrome 版本不匹配，而不是 headless（参见 [Chrome 版本不匹配](#case-study-a-chrome-version-mismatch-triggering-cloudflares-challenge)）。当身份一直连贯地延续到跨源 iframe 中（`cross_origin_iframes`，默认开启）并且 locale 与出口 IP 匹配时，headless 能通过托管挑战；在一个勉强的 IP 上，请优先使用 headful，或者在 Xvfb 之下以 headful 运行。参见 [Cloudflare 的托管挑战](../deep-dive/fingerprinting/cloudflare-challenge.md)。
 
 ## 跨层一致性 {#consistency-is-the-whole-game}
 
@@ -301,14 +315,9 @@ Fingerprint 注入只移除 headless 的渲染信号。它不会改变 IP：一�
 
 要把 [Cloudflare Turnstile](captcha-bypass.md) 交互与一个 fingerprint 结合起来，所声明的 Chrome 版本必须与真实的二进制文件相匹配。这是在应用了 fingerprint 的情况下 Turnstile 失败的最常见原因。
 
-应用 `macos_m3_new_york` profile 会让 Turnstile 即便在 headful 下也失败：页面停留在 "Just a moment…" 的过渡页上，而移除 `apply_fingerprint()` 调用就让它通过了。这个 profile 在 User-Agent 中硬编码了 Chrome 145，而二进制文件却是 Chrome 151；`apply_fingerprint()` 把 `navigator.userAgent`、`Sec-CH-UA` 和 `navigator.userAgentData` 设成了 145，而 TLS/HTTP2 握手和引擎仍然是 151。一次单变量二分法确认了这一点：只把所声明的主版本号从 145 改成 151，就把每一次失败都变成了通过。
+应用 `macos_m3_new_york` profile 让 Cloudflare 的托管挑战即便在 headful 下也无法通过：页面停留在 "Just a moment…" 的过渡页上，而移除 `apply_fingerprint()` 调用就让它通过了。这个 profile 在 User-Agent 中硬编码了 Chrome 145，而二进制文件却是 Chrome 151；`apply_fingerprint()` 把 `navigator.userAgent`、`Sec-CH-UA` 和 `navigator.userAgentData` 设成了 145，而 TLS/HTTP2 握手和 JavaScript 引擎仍然报告 151。一次单变量二分法确认了这一点：只把所声明的主版本号从 145 改成 151，就把每一次失败都变成了通过。
 
-有两层会报告真实的版本，且无法通过 CDP 覆盖：
-
-- TLS fingerprint（JA3/JA4）和 HTTP/2 `SETTINGS` 帧，它们由真实的二进制文件在任何 JavaScript 运行之前产生。
-- JavaScript 引擎面（可用的 API 及其行为），它反映的是真实的 V8/Blink 构建。
-
-Cloudflare 的托管挑战会把所声明的版本（User-Agent + Client Hints）与观察到的版本（握手和引擎）做比对。一个真实的浏览器不会声明一个它并未运行的版本，所以 145 配上一个 151 的握手就是一种不一致，过渡页也就不会消失。
+版本会通过两层 CDP 无法覆盖的地方泄露，即网络握手（TLS JA3/JA4、HTTP/2 `SETTINGS`）和 V8/Blink 引擎面，所以声明一个二进制文件并未运行的版本，就是挑战会给它打分的一个矛盾。[Cloudflare 的托管挑战](../deep-dive/fingerprinting/cloudflare-challenge.md#the-chrome-version-must-match-the-binary) 给出了逐层的拆解。
 
 读取二进制文件的版本，并让 profile 的 User-Agent 与之匹配：
 
@@ -335,17 +344,7 @@ async with Chrome() as browser:
 
 在这台 macOS 主机上，任何非 macOS 的操作系统都会失败。一个声明 NVIDIA GPU 的 macOS profile 能通过；而一个声明真实 Apple GPU 的 Windows profile 却失败。
 
-逐层测量，两个 profile，同一个 Chrome：
-
-- TCP/IP：服务器对两个 profile 观察到的都是相同的初始 TTL 64（macOS/Unix）；一台 Windows 主机则会发出 128。无法通过 CDP 触及。
-- TLS（JA3/JA4）：每次连接都会变化（Chrome 的 padding 扩展开关）；无 fingerprint 的基线会产生两种变体。它不编码操作系统。
-- HTTP/2（Akamai）：两个 profile 之间完全相同。它不编码操作系统。
-- Client Hints：被完全覆盖为所声明的操作系统（Windows 报告 `architecture` 为 `x86`，没有 `arm` 泄露）。
-- Canvas/WebGL：两个 profile 之间渲染图像的哈希完全相同（两者都是真实的 Apple GPU 像素）。这不是区分因素。
-
-`apply_fingerprint()` 所控制的一切都报告 Windows；而内核的 TCP/IP 栈报告 macOS。Cloudflare 的托管挑战会把所声明的操作系统与被动的协议栈签名做比对，当两者不一致时就保留过渡页。
-
-TTL、窗口缩放和 TCP 选项顺序都来自主机内核，而不是浏览器，任何 CDP 或 JavaScript 覆盖都触及不到它们。GPU 渲染和文本度量（macOS 上的 CoreText）同样属于主机。伪造 TLS 的客户端（curl_cffi、tls-client）在这里帮不上忙：失败并不在 TLS，而且它们仍然使用主机内核的 TCP/IP 栈。
+`apply_fingerprint()` 所控制的一切都报告所声明的操作系统，但主机内核的 TCP/IP 栈（macOS/Linux 上初始 TTL 为 64，Windows 上为 128）和操作系统的文本渲染（macOS 上的 CoreText）不会改变，任何 CDP 或 JavaScript 覆盖都触及不到它们。Cloudflare 会把所声明的操作系统与那个被动签名做比对，当两者不一致时就保留过渡页。伪造 TLS 的客户端（curl_cffi、tls-client）在这里帮不上忙：失败并不在 TLS，而且它们仍然使用主机内核的协议栈。[Cloudflare 的托管挑战](../deep-dive/fingerprinting/cloudflare-challenge.md#the-os-must-match-the-host) 给出了逐层的测量。
 
 要通过，就让 profile 的操作系统（以及 GPU 系列）与主机相匹配：在这台 Mac 上用 macOS profile，在 Windows 主机上用 Windows profile。一个转发型 proxy（SOCKS5/HTTP CONNECT）会从 proxy 的内核重新发起 TCP 连接，所以被观察到的操作系统会变成 proxy 主机的；这样一来，一个 Windows profile 就需要一个运行在 Windows 上的 proxy（一个 Linux proxy 会给出 Linux 签名，仍然与 Windows 的 User-Agent 不一致）。
 
@@ -399,6 +398,7 @@ Pydoll 不生成也不附带 fingerprint。`examples/fingerprints.py` 中的 pro
 - [规避技术](evasion-techniques.md)：User-Agent 一致性、语言、WebRTC 泄露保护，以及 Pydoll 免费提供给你的部分。
 - [浏览器指纹识别](../deep-dive/fingerprinting/browser-fingerprinting.md)：本页所覆盖的检测面（canvas、WebGL、navigator、字体）。
 - [伪造的极限](../deep-dive/fingerprinting/spoofing-limits.md)：为什么有些信号可以安全地覆盖，而另一些则根本无法伪造。
+- [Workers 和跨源 iframe](../deep-dive/fingerprinting/execution-realms.md)：注入的身份如何被重放到每一个 realm 中，以及 tab 与 browser 的作用范围。
 - [网络指纹识别](../deep-dive/fingerprinting/network-fingerprinting.md)：注入无法触及的 TLS/TCP/HTTP2 层。
 - [浏览器上下文](../guides/browser-contexts.md)：每个 context 运行一个身份。
 - [Proxy](../guides/proxies.md)：让出口 IP 与 profile 的地理位置相匹配。
