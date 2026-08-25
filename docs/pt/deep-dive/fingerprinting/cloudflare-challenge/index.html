@@ -11,7 +11,7 @@
         <link rel="canonical" href="https://pydoll.tech/docs/pt/deep-dive/fingerprinting/cloudflare-challenge/">
       
       
-        <link rel="prev" href="../auditing/">
+        <link rel="prev" href="../execution-realms/">
       
       
         <link rel="next" href="../../../api/">
@@ -2395,6 +2395,8 @@
       
         
       
+        
+      
     
     
     
@@ -2596,6 +2598,34 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../execution-realms/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workers e iframes cross-origin
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -2670,7 +2700,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#o-sistema-operacional-tem-que-combinar-com-o-host" class="md-nav__link">
+  <a href="#the-os-must-match-the-host" class="md-nav__link">
     <span class="md-ellipsis">
       
         O sistema operacional tem que combinar com o host
@@ -2681,7 +2711,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#a-versao-do-chrome-tem-que-combinar-com-o-binario" class="md-nav__link">
+  <a href="#the-chrome-version-must-match-the-binary" class="md-nav__link">
     <span class="md-ellipsis">
       
         A versão do Chrome tem que combinar com o binário
@@ -2737,10 +2767,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#o-muro-um-veredito-do-lado-do-servidor" class="md-nav__link">
+  <a href="#o-veredito-e-um-unico-score-aditivo-do-lado-do-servidor" class="md-nav__link">
     <span class="md-ellipsis">
       
-        O muro: um veredito do lado do servidor
+        O veredito é um único score aditivo do lado do servidor
       
     </span>
   </a>
@@ -2753,7 +2783,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#o-que-de-fato-funciona" class="md-nav__link">
+  <a href="#what-actually-works" class="md-nav__link">
     <span class="md-ellipsis">
       
         O que de fato funciona
@@ -3451,7 +3481,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#o-sistema-operacional-tem-que-combinar-com-o-host" class="md-nav__link">
+  <a href="#the-os-must-match-the-host" class="md-nav__link">
     <span class="md-ellipsis">
       
         O sistema operacional tem que combinar com o host
@@ -3462,7 +3492,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#a-versao-do-chrome-tem-que-combinar-com-o-binario" class="md-nav__link">
+  <a href="#the-chrome-version-must-match-the-binary" class="md-nav__link">
     <span class="md-ellipsis">
       
         A versão do Chrome tem que combinar com o binário
@@ -3518,10 +3548,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#o-muro-um-veredito-do-lado-do-servidor" class="md-nav__link">
+  <a href="#o-veredito-e-um-unico-score-aditivo-do-lado-do-servidor" class="md-nav__link">
     <span class="md-ellipsis">
       
-        O muro: um veredito do lado do servidor
+        O veredito é um único score aditivo do lado do servidor
       
     </span>
   </a>
@@ -3534,7 +3564,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#o-que-de-fato-funciona" class="md-nav__link">
+  <a href="#what-actually-works" class="md-nav__link">
     <span class="md-ellipsis">
       
         O que de fato funciona
@@ -3653,8 +3683,13 @@
 
 
 <h1 id="o-managed-challenge-do-cloudflare">O managed challenge do Cloudflare</h1>
-<p>O managed challenge do Cloudflare, o interstício "Just a moment…", é o teste mais rigoroso de um fingerprint no mundo real. Ele correlaciona todas as camadas de uma vez e decide no próprio servidor, então pega contradições que um bot score de página única deixa passar. Esta página é um estudo de caso completo: a matriz de aprovação/bloqueio, por que cada incompatibilidade é pega, e uma passagem de engenharia reversa sobre a única linha que um fingerprint perfeito ainda falha, o headless.</p>
-<p>Ela aplica o fingerprinting de <a href="../network-fingerprinting/">rede</a> e de <a href="../browser-fingerprinting/">navegador</a> e <a href="../spoofing-limits/">os limites do spoofing</a> a um alvo ao vivo. Leia aqueles para os mecanismos; leia este para como eles se combinam, e onde eles se esgotam.</p>
+<p>O managed challenge do Cloudflare, o interstício "Just a moment…", é o teste mais rigoroso de um fingerprint no mundo real. Ele correlaciona todas as camadas de uma vez e decide no próprio servidor, então pega contradições que um bot score de página única deixa passar. Esta página é um estudo de caso completo: a matriz de aprovação/bloqueio, por que cada incompatibilidade é pega, e o que é preciso para passar no challenge em headless, onde a identidade tem que permanecer coerente até dentro do iframe cross-origin em que o challenge roda.</p>
+<p>Ela aplica o fingerprinting de <a href="../network-fingerprinting/">rede</a> e de <a href="../browser-fingerprinting/">navegador</a> e <a href="../spoofing-limits/">os limites do spoofing</a> a um alvo ao vivo. Leia aqueles para os mecanismos; leia este para como eles se combinam num único veredito do lado do servidor, e como fazer todas as camadas concordarem.</p>
+<p align="center">
+  <img src="/docs/resources/images/cloudflare-headless-bypass.gif" alt="Chrome headless passando por um managed challenge do Cloudflare, do interstício até a página liberada" width="760" />
+</p>
+<p align="center"><sub>Chrome headless passando por um managed challenge ao vivo, gravado com o CDP screencast (<code>Page.startScreencast</code>). O interstício está em português porque o locale do perfil combina com o IP de saída brasileiro, a mesma coerência que o challenge verifica.</sub></p>
+
 <h2 id="o-teste-controlado">O teste controlado</h2>
 <p>Uma máquina, um binário do Chrome 151, um IP residencial. As únicas coisas que mudam entre as execuções são o perfil e a flag de headless; <a href="../../../stealth/fingerprint-injection/"><code>apply_fingerprint()</code></a> é aplicado antes de navegar.</p>
 <table>
@@ -3699,8 +3734,8 @@
 </tr>
 </tbody>
 </table>
-<p>Apenas a execução totalmente consistente e em headful passa. Toda outra linha é um único desvio, e cada uma é pega por uma camada diferente.</p>
-<h2 id="o-sistema-operacional-tem-que-combinar-com-o-host">O sistema operacional tem que combinar com o host</h2>
+<p>Apenas a execução totalmente consistente e em headful passa <em>neste perfil básico</em>, e cada linha incompatível é pega por uma camada diferente, cobertas abaixo. A linha do headless é a que se deve ler com atenção: ela não é um muro intransponível. Este perfil muda apenas o sistema operacional, a versão e a flag de headless, então deixa de fora as duas coisas que uma passagem em headless também precisa, a identidade dentro do iframe cross-origin do challenge e um locale que combine com o IP de saída. Adicione essas e clique no Turnstile, e a execução headless com o sistema operacional compatível também passa no challenge (veja <a href="#what-actually-works">O que de fato funciona</a>). As linhas do Windows são diferentes: uma incompatibilidade de sistema operacional não é forjável, então elas falham em qualquer modo.</p>
+<h2 id="the-os-must-match-the-host">O sistema operacional tem que combinar com o host</h2>
 <p>Um perfil de Windows num Mac é bloqueado até em headful, porque o sistema operacional vaza através de caminhos que o <code>apply_fingerprint()</code> não consegue tocar:</p>
 <ul>
 <li><strong>Fontes.</strong> A lista de fontes do perfil é um valor JavaScript, mas o <code>measureText</code> e o dimensionamento de elementos renderizam através do motor de fontes real do SO. Um navegador "Windows" sem Segoe UI ou Calibri, e com Helvetica Neue presente, é um Mac.</li>
@@ -3708,10 +3743,10 @@
 <li><strong>A stack TCP/IP.</strong> O kernel define o TTL inicial (64 no macOS e no Linux, 128 no Windows) e outras opções que o navegador não pode mudar. O Cloudflare as lê passivamente na borda (veja <a href="../network-fingerprinting/">Fingerprinting de rede</a>).</li>
 </ul>
 <p>O vazamento de fontes do lado do cliente já basta por si só; o sinal TCP é o piso por baixo dele.</p>
-<h2 id="a-versao-do-chrome-tem-que-combinar-com-o-binario">A versão do Chrome tem que combinar com o binário</h2>
+<h2 id="the-chrome-version-must-match-the-binary">A versão do Chrome tem que combinar com o binário</h2>
 <p>Um User-Agent que alega Chrome 140 num binário 151 é bloqueado, porque a versão vaza através do motor, não apenas da string.</p>
-<p>Declare Chrome 110 e a superfície de recursos ainda responde como 151: <code>Promise.withResolvers</code> (adicionado no Chrome 119), <code>Array.fromAsync</code> (121) e <code>Uint8Array.prototype.toBase64</code> (140+) estão todos presentes. Uma API mais nova do que a versão que você alega expõe a mentira. O motor a vaza de um segundo jeito: a precisão de <code>Math</code> até o último bit, o texto das mensagens de erro e o suporte de sintaxe mudam entre versões do V8, então duas builds do Chrome produzem hashes de fingerprint de <code>Math</code> diferentes. A string é forjável; o motor por trás dela não.</p>
-<p>Essas duas linhas são <a href="../spoofing-limits/">os limites do spoofing</a> na prática. A terceira, o headless, é diferente, e vale o resto desta página.</p>
+<p>Declare uma versão ainda mais antiga, o Chrome 110, e a superfície de recursos ainda responde como 151: <code>Promise.withResolvers</code> (adicionado no Chrome 119), <code>Array.fromAsync</code> (121) e <code>Uint8Array.prototype.toBase64</code> (140+) estão todos presentes. Uma API mais nova do que a versão que você alega expõe a mentira. O motor a vaza de um segundo jeito: a precisão de <code>Math</code> até o último bit, o texto das mensagens de erro e o suporte de sintaxe mudam entre versões do V8, então duas builds do Chrome produzem hashes de fingerprint de <code>Math</code> diferentes. A string é forjável; o motor por trás dela não.</p>
+<p>Essas duas linhas são <a href="../spoofing-limits/">os limites do spoofing</a> na prática. A terceira, o headless, é diferente, e é o assunto do resto desta página.</p>
 <h2 id="anatomia-do-bloqueio-do-headless">Anatomia do bloqueio do headless</h2>
 <p>Sob um perfil que combina, o headful e o headless parecem idênticos entre as ferramentas e sinais abaixo. Esse é o enigma: o challenge passa um e bloqueia o outro, embora estes leiam igual. Tudo nesta tabela foi medido diretamente, idêntico entre as duas execuções:</p>
 <table>
@@ -3825,27 +3860,29 @@
 </table>
 <p>800x600 com <code>availTop</code> 0 é a tela virtual headless codificada do Chrome: nenhum gerenciador de janelas, impossível para o Mac alegado, e em contradição direta com a página de topo, que reporta o 1440x900 do perfil. O <code>setDeviceMetricsOverride</code> corrigiu a página de topo mas tem escopo de sessão; o iframe nunca o viu.</p>
 <p>O Pydoll fecha isso com <code>Emulation.updateScreen</code> na tela virtual global do navegador, que todo frame lê, OOPIFs incluídos (veja <a href="../../../stealth/fingerprint-injection/#headless-mode">Injeção de fingerprint → Modo headless</a>). Depois dele, o iframe reporta o mesmo 1440x900 / <code>availTop 25</code> / dpr 2 que a página. O único porém é que a tela virtual aceita apenas um <code>devicePixelRatio</code> inteiro, então um dpr fracionário é arredondado para o iframe.</p>
-<h3 id="o-muro-um-veredito-do-lado-do-servidor">O muro: um veredito do lado do servidor</h3>
-<p>Torne a geometria do OOPIF perfeita byte a byte, combinando com a página em todos os campos, e o challenge ainda bloqueia. Então a geometria era um vazamento real mas não o decisivo.</p>
-<p>O veredito não é um valor do cliente que você possa ler ou sobrescrever. O script de primeiro estágio na página do challenge é um interpretador de VM baseado em tabela de strings de ~226KB: sua config vive em <code>_cf_chl_opt</code>, ele carrega um decodificador XOR (<code>o[i] = k[i] ^ s.charCodeAt(i % s.length)</code>), blobs base64, e scripts canário <code>honk</code> preenchidos com espaços em branco. Ele coleta sua telemetria, a criptografa e a envia via POST para <code>/cdn-cgi/challenge-platform/h/b/fo/&lt;numbers&gt;:&lt;ray&gt;/&lt;token&gt;</code>; o Cloudflare a pontua no lado do servidor e reentrega o interstício com um Ray ID novo em caso de falha. O payload é opaco, então a entrada decisiva não pode ser isolada a partir do cliente sem quebrar a criptografia.</p>
-<p>O que sobrevive a um fingerprint de cliente impecável é algo que o navegador só produz com um display real, uma característica de compositor ou de timing de frame, ou uma comportamental, computada dentro daquele payload ofuscado e rotativo. É até onde a engenharia reversa do lado do cliente alcança.</p>
-<p><strong>A conclusão honesta:</strong> o Chrome headless não passa no managed challenge, mesmo com um fingerprint perfeito. A correção confiável é um display real, rode em headful, ou em headful sob um framebuffer virtual (Xvfb) num servidor. Todo projeto sério de stealth converge para a mesma resposta.</p>
-<div class="admonition warning">
-<p class="admonition-title">A correção de tela é um reforço, não um bypass</p>
-<p>O <code>updateScreen</code> remove um vazamento genuíno entre frames, e ajuda contra detectores que leem a geometria da tela em iframes. Ele não passa no managed challenge do Cloudflare por conta própria. Nada na camada de fingerprint passa; o sinal decisivo vive abaixo dela.</p>
+<p>A geometria é apenas o primeiro sinal que o iframe expõe. Seu <code>navigator</code>, WebGL, fuso horário e idiomas também vêm do próprio processo dele, então o <code>updateScreen</code> sozinho os deixa lendo a máquina real. <code>apply_fingerprint(..., cross_origin_iframes=True)</code>, o padrão, replica a identidade completa na própria sessão do iframe, então o OOPIF combina com a página em todos os sinais, não apenas na tela (veja <a href="../execution-realms/">Workers e iframes cross-origin</a>).</p>
+<h3 id="o-veredito-e-um-unico-score-aditivo-do-lado-do-servidor">O veredito é um único score aditivo do lado do servidor</h3>
+<p>Você não consegue ler o score a partir do cliente. O script de primeiro estágio na página do challenge é um interpretador de VM baseado em tabela de strings de ~226KB: sua config vive em <code>_cf_chl_opt</code>, ele carrega um decodificador XOR (<code>o[i] = k[i] ^ s.charCodeAt(i % s.length)</code>), blobs base64, e scripts canário <code>honk</code> preenchidos com espaços em branco. Ele coleta sua telemetria, a criptografa e a envia via POST para <code>/cdn-cgi/challenge-platform/h/b/fo/&lt;numbers&gt;:&lt;ray&gt;/&lt;token&gt;</code>; o Cloudflare a pontua no lado do servidor e reentrega o interstício com um Ray ID novo em caso de falha. O payload é opaco, então nenhuma entrada isolada pode ser separada a partir do cliente sem quebrar a criptografia.</p>
+<p>O score é aditivo, não um único portão. A reputação do IP, a coerência do fingerprint entre camadas e um termo de display/apresentação alimentam todos ele, e um cliente suspeito é <em>escalado</em> para um Turnstile interativo em vez de ser bloqueado de imediato. Duas consequências decorrem disso. Um navegador headless sem display emite um sinal de apresentação mais fraco do que um com uma superfície real, então num IP marginal esse termo é o que empurra o score para além do limite, e ali um display real (headful, ou headful sob o Xvfb num servidor) é a correção. Mas quando o resto do score já é favorável, um fingerprint tornado coerente <em>e combinado com o IP</em>, mais o clique no Turnstile, passa nele, incluindo em headless.</p>
+<p>Então as alavancas que levam um cliente headless para baixo do limite são cobrir o iframe cross-origin do challenge (<code>cross_origin_iframes</code>, ligado por padrão) e combinar o fuso horário, o locale e a geolocalização do perfil com o IP de saída. A identidade do iframe cross-origin é a decisiva: deixada na máquina real, ela contradiz a página e o challenge bloqueia; coberta, com o clique no Turnstile, o headless passa.</p>
+<div class="admonition note">
+<p class="admonition-title">Ainda depende do IP</p>
+<p>Um cliente headless coerente passa no challenge num IP residencial limpo; um IP sinalizado é desafiado ou bloqueado por mais coerente que o navegador seja. A coerência do fingerprint remove as contradições que você consegue corrigir. Ela não limpa a reputação de um IP ruim.</p>
 </div>
-<h2 id="o-que-de-fato-funciona">O que de fato funciona</h2>
+<h2 id="what-actually-works">O que de fato funciona</h2>
 <ul>
 <li><strong>Combine com o host e o binário.</strong> O sistema operacional igual ao do host, a major do Chrome igual à major do binário.</li>
-<li><strong>Combine locale, fuso horário e geolocalização com o IP de saída.</strong> Uma verificação de consistência separada que o challenge também roda (veja <a href="../../../stealth/fingerprint-injection/#case-study-a-locale-mismatch-triggering-googles-captcha">Incompatibilidade de locale/IP</a>).</li>
-<li><strong>Use um display para os managed challenges.</strong> Headful, ou headful sob o Xvfb num servidor. Headless sem display é uma configuração perdedora aqui.</li>
-<li><strong>Trate a injeção como necessária, não suficiente.</strong> Ela remove as contradições que você consegue corrigir. A reputação do IP e a exigência de display não estão entre elas.</li>
+<li><strong>Combine locale, fuso horário e geolocalização com o IP de saída.</strong> O challenge cruza <code>Accept-Language</code> e o fuso horário contra o país do IP (veja <a href="../../../stealth/fingerprint-injection/#case-study-a-locale-mismatch-triggering-googles-captcha">Incompatibilidade de locale/IP</a>). Num deployment real, essa costuma ser a única alavanca entre bloquear e passar.</li>
+<li><strong>Cubra o iframe cross-origin.</strong> O challenge lê o fingerprint dentro do próprio frame dele em <code>challenges.cloudflare.com</code>; <code>apply_fingerprint(..., cross_origin_iframes=True)</code>, o padrão, replica a identidade ali também. Deixado na máquina real, o iframe contradiz a página e o challenge bloqueia; coberto, é o termo que permite que um cliente headless passe.</li>
+<li><strong>Clique no Turnstile.</strong> O managed challenge agora serve um Turnstile interativo, então a caixa de seleção tem que ser clicada. Use <a href="../../../stealth/captcha-bypass/"><code>expect_and_bypass_cloudflare_captcha()</code></a>; esperar por uma liberação automática deixa você bloqueado.</li>
+<li><strong>Recorra a um display real num IP marginal.</strong> Quando o IP não é limpo o bastante para um cliente headless coerente passar, rode em headful ou em headful sob o Xvfb num servidor, para que o termo de apresentação pare de contar contra você.</li>
+<li><strong>Trate a injeção como necessária, não sempre suficiente.</strong> Ela remove as contradições que você consegue corrigir; a reputação do IP não é uma delas.</li>
 </ul>
 <h2 id="reproduzindo-isto">Reproduzindo isto</h2>
 <p>A passagem de engenharia reversa acima é um método que você pode reexecutar em qualquer challenge:</p>
 <ul>
 <li><strong>A/B em uma variável.</strong> Mude apenas a flag de headless, ou um campo do perfil, entre as execuções e compare o resultado. Atribua um bloqueio a um sinal em vez de adivinhar.</li>
-<li><strong>Instrumente o cliente, em todo lugar em que ele roda.</strong> O <code>Page.addScriptToEvaluateOnNewDocument</code> antes da navegação registra o acesso a APIs da thread principal; hooks em <code>URL.createObjectURL</code> pegam os workers de blob; uma sessão CDP por worker e por OOPIF cross-origin alcança o código que os scripts injetados na página não alcançam, já que nenhum dos dois os herda.</li>
+<li><strong>Instrumente o cliente, em todo lugar em que ele roda.</strong> O <code>Page.addScriptToEvaluateOnNewDocument</code> antes da navegação registra o acesso a APIs da thread principal; hooks em <code>URL.createObjectURL</code> pegam os workers de blob; uma sessão CDP por worker e por OOPIF alcança o código que os scripts injetados na página não alcançam, já que nenhum dos dois os herda.</li>
 <li><strong>Leia o OOPIF na própria sessão dele.</strong> O challenge vive num iframe cross-origin; o <code>window.screen</code> dele e toda outra leitura são visíveis apenas através do próprio target dele.</li>
 <li><strong>Meça, não presuma.</strong> <a href="../auditing/">Auditando um fingerprint</a> cobre o método de ler-dois-caminhos que transforma "está bloqueado" em "este campo exato vaza".</li>
 </ul>

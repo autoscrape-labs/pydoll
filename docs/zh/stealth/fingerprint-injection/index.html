@@ -2068,7 +2068,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_3" class="md-nav__link">
+  <a href="#checklist" class="md-nav__link">
     <span class="md-ellipsis">
       
         检查清单
@@ -2079,7 +2079,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
+  <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       
         覆盖
@@ -2118,7 +2118,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#javascript_1" class="md-nav__link">
+  <a href="#detecting-javascript-overrides" class="md-nav__link">
     <span class="md-ellipsis">
       
         检测 JavaScript 覆盖
@@ -2133,7 +2133,18 @@
   <a href="#pydoll" class="md-nav__link">
     <span class="md-ellipsis">
       
-        pydoll 如何规避这些信号
+        Pydoll 如何规避这些信号
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#iframe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        跨源 iframe
       
     </span>
   </a>
@@ -2223,7 +2234,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
+  <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
       
         相关
@@ -2634,6 +2645,8 @@
       
         
       
+        
+      
     
     
     
@@ -2817,6 +2830,34 @@
     
   
     审计一个 fingerprint
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deep-dive/fingerprinting/execution-realms/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Worker 与跨域 iframe
   
 
     
@@ -3537,7 +3578,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_3" class="md-nav__link">
+  <a href="#checklist" class="md-nav__link">
     <span class="md-ellipsis">
       
         检查清单
@@ -3548,7 +3589,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
+  <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       
         覆盖
@@ -3587,7 +3628,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#javascript_1" class="md-nav__link">
+  <a href="#detecting-javascript-overrides" class="md-nav__link">
     <span class="md-ellipsis">
       
         检测 JavaScript 覆盖
@@ -3602,7 +3643,18 @@
   <a href="#pydoll" class="md-nav__link">
     <span class="md-ellipsis">
       
-        pydoll 如何规避这些信号
+        Pydoll 如何规避这些信号
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#iframe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        跨源 iframe
       
     </span>
   </a>
@@ -3692,7 +3744,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
+  <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
       
         相关
@@ -3844,7 +3896,7 @@
 </tr>
 </tbody>
 </table>
-<p>两点结论。注入让 fingerprint 变得一致；但它并不能让浏览器隐形：即便是匹配的那次运行，得分也是 15，而不是 0，而缩小这段差距的工作仍在进行中。而价值在于<em>匹配</em>，这正是为什么一个不一致的 profile 得分比完全不用 profile 还要糟糕，也是为什么下面检查清单里的每一条规则都是关于各层之间的一致性。</p>
+<p>两点结论。注入让 fingerprint 变得一致；但它并不能让浏览器隐形：即便是匹配的那次运行，得分也是 15，而不是 0。而价值在于<em>匹配</em>，这正是为什么一个不一致的 profile 得分比完全不用 profile 还要糟糕，也是为什么下面检查清单里的每一条规则都是关于各层之间的一致性。</p>
 <div class="admonition warning">
 <p class="admonition-title">这些数字只是一个快照</p>
 <p>一台机器、一个 IP、一个 Chrome 构建、一个时间点。你的情况会有所不同，而且检测网站也会改变它们的评分。请把这些分数当作方向上的示范（匹配的保持低分，不匹配的会跳高），而不是有保证的结果。</p>
@@ -3876,7 +3928,7 @@
 <p align="center"><sub>Windows profile，同一台机器：一颗 NVIDIA RTX 3060 和一个 Windows User-Agent。</sub></p>
 
 <p><code>apply_fingerprint()</code> 通过注入的覆盖设置了未掩码的 WebGL vendor 和 renderer，同时也设置了 User-Agent 和 Client Hints。在这同样的两张截图里，有一个诚实的局限是可见的：<strong>WebGL Image Hash 完全相同</strong>（<code>52497E30...</code>）。renderer <em>字符串</em>现在写的是 NVIDIA，但这些像素仍然是由真实的 Apple GPU 绘制的，所以渲染图像的 fingerprint 并没有变化。覆盖字符串是必要的，但还不够：一个把输出栅格化并对其求哈希的检测器，仍然会看到真实的硬件。这正是为什么在一台 Apple 机器上声称拥有 NVIDIA GPU，会成为上面把得分推到 57 的那个矛盾，也是为什么检查清单坚持要求 profile 的操作系统和 GPU 与主机相匹配。</p>
-<h2 id="_3">检查清单</h2>
+<h2 id="checklist">检查清单</h2>
 <p>让一个 profile 不被检测的规则。其中大多数描述的是 <code>apply_fingerprint()</code> 无法控制的层，所以必须选择一个能与之匹配的 profile，而不是去对抗它。</p>
 <ul>
 <li>Profile 的操作系统 = 主机的操作系统。不要在 macOS 上运行 Windows profile，反之亦然；内核的 TCP/IP 栈以及 GPU/文本渲染会在 CDP 触及不到的层里暴露真实的操作系统（<a href="#case-study-an-os-mismatch-triggering-cloudflares-managed-challenge">操作系统不匹配</a>）。</li>
@@ -3889,7 +3941,7 @@
 <li>不要把 <code>--user-agent</code> 选项和 <code>apply_fingerprint()</code> 结合使用；User-Agent 由 fingerprint 掌管。</li>
 <li>使用一个干净的住宅 IP。注入不会改变 IP 信誉。</li>
 </ul>
-<h2 id="_4">覆盖</h2>
+<h2 id="_3">覆盖</h2>
 <p>覆盖通过两种机制来应用。</p>
 <h3 id="cdp">CDP 覆盖</h3>
 <p>Chrome 自身能够覆盖的信号，通过 DevTools Protocol 的 <code>Emulation</code> 域来设置。浏览器在 JavaScript 层之下应用这些覆盖，所以检测脚本读取的 getter 仍然是原生的，也没有可供检查的 JavaScript 包装器。当某个信号存在 CDP 覆盖时，就会使用它，而不是 JavaScript 覆盖。</p>
@@ -3946,7 +3998,7 @@
 <li>WebRTC 的 IP 处理策略</li>
 </ul>
 <p>Canvas 和 WebGL 的读回结果不会被修改。检测系统会反复请求 fingerprint，所以一个在多次读取之间发生变化的值，本身就是一个自动化信号；而真实 Chrome 的 canvas 是稳定的。WebGL 的 vendor 和 renderer 字符串会被覆盖，以匹配所声称的平台，但渲染出的像素保持不变。</p>
-<h2 id="javascript_1">检测 JavaScript 覆盖</h2>
+<h2 id="detecting-javascript-overrides">检测 JavaScript 覆盖</h2>
 <p>Fingerprinting 脚本不只是读取一个属性的值；它们还会检查这个属性是如何被定义的，以及周围的对象是否被改动过。有三种标准的检查方法，而一个幼稚的覆盖会在这三项上全部失败。CreepJS 就是其参考实现。</p>
 <p>自有属性 vs prototype 访问器。在真实的浏览器上，<code>hardwareConcurrency</code> 是 <code>Navigator.prototype</code> 上的一个访问器，而不是 <code>navigator</code> 实例上的一个数据属性：</p>
 <div class="language-javascript highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nb">Object</span><span class="p">.</span><span class="nx">defineProperty</span><span class="p">(</span><span class="nx">navigator</span><span class="p">,</span><span class="w"> </span><span class="s1">'hardwareConcurrency'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">get</span><span class="o">:</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="mf">8</span><span class="w"> </span><span class="p">});</span>
@@ -3960,11 +4012,11 @@
 </span></code></pre></div>
 <p><code>Function.prototype.toString</code> 会返回一个手写 getter 的 JavaScript 源代码，所以一次调用就能暴露它。</p>
 <p>跨 realm 读取。一个同源的 <code>iframe</code> 或一个 Web Worker 是一个全新的 realm，它的 <code>navigator</code> 和 prototype 不会被一个只安装在主 realm 中的 hook 所改动。一个 worker 的 <code>WorkerNavigator</code> 报告真实值，而页面报告的却是覆盖值，这就是一个矛盾。</p>
-<h3 id="pydoll">pydoll 如何规避这些信号</h3>
+<h3 id="pydoll">Pydoll 如何规避这些信号</h3>
 <ul>
 <li>getter 定义在 prototype 上（<code>Navigator.prototype</code>、<code>Screen.prototype</code>），所以实例不会新增任何自有属性。</li>
 <li>被打补丁的 getter 和方法在 <code>toString</code> 下会报告为原生，而 <code>toString</code> 补丁本身也不会变成一个新的信号。</li>
-<li>这些覆盖会在专用 worker、共享 worker 和 service worker 中重放，所以页面和它派生出的各个 realm 报告的是相同的值。</li>
+<li>这些覆盖会在专用 worker、共享 worker 和 service worker 中重放，所以页面和它派生出的各个 realm 报告的是相同的值（参见 <a href="../../deep-dive/fingerprinting/execution-realms/">Workers 和跨源 iframe</a>）。</li>
 </ul>
 <p>这就是为什么一个注入的 profile 能通过 CreepJS 的谎言检测、prototype、worker 和字体检查，而不只是改变了那些可见的值。</p>
 <p>worker 检查是幼稚的覆盖最常失败的那一项。CreepJS 会在主页面中读取每个信号，然后在一个 Web Worker 中再次运行整个 fingerprint，那是一个主线程 hook 永远触及不到的独立 realm。下面的截图来自这台 Mac，并应用了 Windows profile。</p>
@@ -3987,6 +4039,15 @@
 <p align="center"><sub>在 service worker 内部：同样的身份，被重放。</sub></p>
 
 <p>一个只安装在主 realm 中的覆盖，会在那个 worker 面板里泄露真实的 macOS 和 Apple GPU 值，而页面与它的 worker 之间的不一致，正是 CreepJS 判定为谎言的那个矛盾。因为 Pydoll 会把覆盖重放到专用 worker、共享 worker 和 service worker 中，所以这两个 realm 是一致的。</p>
+<h3 id="iframe">跨源 iframe</h3>
+<p>worker 是独立 realm 的一种；跨源 iframe 则是另一种。当 Chrome 把它隔离到自己的进程中（一个进程外 iframe，即 OOPIF），它就有了自己的 <code>navigator</code> 和 GPU，所以页面级的覆盖会止步于进程边界。一个嵌入在跨源挑战或验证码 frame 中的 fingerprinting 脚本，会在那里读到真实的机器。<code>apply_fingerprint()</code> 默认会把这个缺口堵上，把完整的身份重放到那个 frame 里：</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># 默认：身份也覆盖跨源 iframe。</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">apply_fingerprint</span><span class="p">(</span><span class="n">FINGERPRINTS</span><span class="p">[</span><span class="s1">'windows11_rtx3060_nyc'</span><span class="p">])</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># 选择退出，就只覆盖顶层页面、同源 frame 和 worker。</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">apply_fingerprint</span><span class="p">(</span><span class="n">FINGERPRINTS</span><span class="p">[</span><span class="s1">'windows11_rtx3060_nyc'</span><span class="p">],</span> <span class="n">cross_origin_iframes</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span></code></pre></div>
+<p><code>cross_origin_iframes</code> 标志（默认为 <code>True</code>）控制着这一点。当反机器人检查（包括验证码挑战）运行在一个跨源 iframe 中并在那里读取 fingerprint 时，它就很重要；把那个 iframe 留在真实身份上，正是它会看到的一个矛盾。同源和同站的 iframe 已经被页面注入所覆盖，所以这会追加进程外的那些，也就是 Chrome 隔离到各自进程中的跨站 frame。覆盖范围被限定在那些确实会读取 fingerprint 的 frame 上，比如一个挑战或验证码小组件；Pydoll 不会附着到页面嵌入的每一个第三方广告或分析 iframe 上，所以这个标志不会拖慢那些页面。关于身份是如何到达每个 realm 的，参见 <a href="../../deep-dive/fingerprinting/execution-realms/">Workers 和跨源 iframe</a>。</p>
 <h2 id="headless-mode">Headless 模式</h2>
 <p>Headless Chrome 会暴露 headful 浏览器不会暴露的信号，这就是为什么在 fingerprint 注入之前，机器人检查经常失败：</p>
 <ul>
@@ -4002,31 +4063,31 @@
 
 <p>工作区来自 profile 的 <code>avail_top</code> / <code>avail_left</code>（以及 <code>avail_width</code> / <code>avail_height</code>）；随附的 macOS profile 保留 25px 的菜单栏，Windows profile 则在底部保留任务栏。headless 虚拟屏幕只接受整数的 <code>devicePixelRatio</code>，所以小数 dpr（移动端、Windows 显示缩放）会为 iframe 取整，而顶层页面保留精确值。</p>
 <p>正如<a href="#see-the-difference-a-live-bot-score-test">上面的 bot score 测试</a>所示，headless 从没有 profile 时的 100/100，降到应用 macOS profile 后的 15/100，与 headful 的运行结果相同。正是这一点让一次普通的 Google 搜索能够在 headless 模式下运行：</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.chromium</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">Key</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="kn">from</span><span class="w"> </span><span class="nn">examples.fingerprints</span><span class="w"> </span><span class="kn">import</span> <span class="n">FINGERPRINTS</span>
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">headless_google_search</span><span class="p">():</span>
-</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">()</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
-</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>        <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">headless</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>
-</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>        <span class="c1"># 在第一次导航之前中和 headless 渲染信号。</span>
-</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">apply_fingerprint</span><span class="p">(</span><span class="n">FINGERPRINTS</span><span class="p">[</span><span class="s1">'windows11_rtx3060_nyc'</span><span class="p">])</span>
-</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>
-</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">'https://www.google.com'</span><span class="p">)</span>
-</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>        <span class="n">search_box</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">tag_name</span><span class="o">=</span><span class="s1">'textarea'</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'q'</span><span class="p">)</span>
-</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>        <span class="k">await</span> <span class="n">search_box</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s1">'pydoll'</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">keyboard</span><span class="o">.</span><span class="n">press</span><span class="p">(</span><span class="n">Key</span><span class="o">.</span><span class="n">ENTER</span><span class="p">)</span>
-</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
-</span><span id="__span-3-20"><a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>        <span class="nb">print</span><span class="p">(</span><span class="s1">'Google search completed in headless mode.'</span><span class="p">)</span>
-</span><span id="__span-3-21"><a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>
-</span><span id="__span-3-22"><a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">headless_google_search</span><span class="p">())</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.chromium</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">Key</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="kn">from</span><span class="w"> </span><span class="nn">examples.fingerprints</span><span class="w"> </span><span class="kn">import</span> <span class="n">FINGERPRINTS</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">headless_google_search</span><span class="p">():</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>    <span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">()</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>        <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">headless</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>        <span class="c1"># 在第一次导航之前中和 headless 渲染信号。</span>
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">apply_fingerprint</span><span class="p">(</span><span class="n">FINGERPRINTS</span><span class="p">[</span><span class="s1">'windows11_rtx3060_nyc'</span><span class="p">])</span>
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>
+</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">'https://www.google.com'</span><span class="p">)</span>
+</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>        <span class="n">search_box</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">tag_name</span><span class="o">=</span><span class="s1">'textarea'</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'q'</span><span class="p">)</span>
+</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>        <span class="k">await</span> <span class="n">search_box</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s1">'pydoll'</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">keyboard</span><span class="o">.</span><span class="n">press</span><span class="p">(</span><span class="n">Key</span><span class="o">.</span><span class="n">ENTER</span><span class="p">)</span>
+</span><span id="__span-4-19"><a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</span><span id="__span-4-20"><a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>        <span class="nb">print</span><span class="p">(</span><span class="s1">'Google search completed in headless mode.'</span><span class="p">)</span>
+</span><span id="__span-4-21"><a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>
+</span><span id="__span-4-22"><a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">headless_google_search</span><span class="p">())</span>
 </span></code></pre></div>
 <p>Fingerprint 注入只移除 headless 的渲染信号。它不会改变 IP：一个信誉不佳的数据中心 IP，无论在 headless 还是 headful 下，同样都会被挑战（参见 <a href="../captcha-bypass/">哪些因素决定成败</a>）。</p>
-<p>对于 Cloudflare Turnstile，在应用了 fingerprint 的情况下最常见的失败原因是 Chrome 版本不匹配，而不是 headless（参见 <a href="#case-study-a-chrome-version-mismatch-triggering-cloudflares-challenge">Chrome 版本不匹配</a>）。Headless 下的 Turnstile 仍在验证中；请优先使用 headful。</p>
+<p>对于 Cloudflare Turnstile，在应用了 fingerprint 的情况下最常见的失败原因是 Chrome 版本不匹配，而不是 headless（参见 <a href="#case-study-a-chrome-version-mismatch-triggering-cloudflares-challenge">Chrome 版本不匹配</a>）。当身份一直连贯地延续到跨源 iframe 中（<code>cross_origin_iframes</code>，默认开启）并且 locale 与出口 IP 匹配时，headless 能通过托管挑战；在一个勉强的 IP 上，请优先使用 headful，或者在 Xvfb 之下以 headful 运行。参见 <a href="../../deep-dive/fingerprinting/cloudflare-challenge/">Cloudflare 的托管挑战</a>。</p>
 <h2 id="consistency-is-the-whole-game">跨层一致性</h2>
 <p>反机器人系统会跨层关联各种信号。<code>apply_fingerprint()</code> 会让它所控制的那些层保持一致，但有三层在 CDP 的触及范围之外，必须单独去匹配：</p>
 <ol>
@@ -4052,19 +4113,14 @@
 
 <h2 id="case-study-a-chrome-version-mismatch-triggering-cloudflares-challenge">Chrome 版本不匹配（Cloudflare Turnstile）</h2>
 <p>要把 <a href="../captcha-bypass/">Cloudflare Turnstile</a> 交互与一个 fingerprint 结合起来，所声明的 Chrome 版本必须与真实的二进制文件相匹配。这是在应用了 fingerprint 的情况下 Turnstile 失败的最常见原因。</p>
-<p>应用 <code>macos_m3_new_york</code> profile 会让 Turnstile 即便在 headful 下也失败：页面停留在 "Just a moment…" 的过渡页上，而移除 <code>apply_fingerprint()</code> 调用就让它通过了。这个 profile 在 User-Agent 中硬编码了 Chrome 145，而二进制文件却是 Chrome 151；<code>apply_fingerprint()</code> 把 <code>navigator.userAgent</code>、<code>Sec-CH-UA</code> 和 <code>navigator.userAgentData</code> 设成了 145，而 TLS/HTTP2 握手和引擎仍然是 151。一次单变量二分法确认了这一点：只把所声明的主版本号从 145 改成 151，就把每一次失败都变成了通过。</p>
-<p>有两层会报告真实的版本，且无法通过 CDP 覆盖：</p>
-<ul>
-<li>TLS fingerprint（JA3/JA4）和 HTTP/2 <code>SETTINGS</code> 帧，它们由真实的二进制文件在任何 JavaScript 运行之前产生。</li>
-<li>JavaScript 引擎面（可用的 API 及其行为），它反映的是真实的 V8/Blink 构建。</li>
-</ul>
-<p>Cloudflare 的托管挑战会把所声明的版本（User-Agent + Client Hints）与观察到的版本（握手和引擎）做比对。一个真实的浏览器不会声明一个它并未运行的版本，所以 145 配上一个 151 的握手就是一种不一致，过渡页也就不会消失。</p>
+<p>应用 <code>macos_m3_new_york</code> profile 让 Cloudflare 的托管挑战即便在 headful 下也无法通过：页面停留在 "Just a moment…" 的过渡页上，而移除 <code>apply_fingerprint()</code> 调用就让它通过了。这个 profile 在 User-Agent 中硬编码了 Chrome 145，而二进制文件却是 Chrome 151；<code>apply_fingerprint()</code> 把 <code>navigator.userAgent</code>、<code>Sec-CH-UA</code> 和 <code>navigator.userAgentData</code> 设成了 145，而 TLS/HTTP2 握手和 JavaScript 引擎仍然报告 151。一次单变量二分法确认了这一点：只把所声明的主版本号从 145 改成 151，就把每一次失败都变成了通过。</p>
+<p>版本会通过两层 CDP 无法覆盖的地方泄露，即网络握手（TLS JA3/JA4、HTTP/2 <code>SETTINGS</code>）和 V8/Blink 引擎面，所以声明一个二进制文件并未运行的版本，就是挑战会给它打分的一个矛盾。<a href="../../deep-dive/fingerprinting/cloudflare-challenge/#the-chrome-version-must-match-the-binary">Cloudflare 的托管挑战</a> 给出了逐层的拆解。</p>
 <p>读取二进制文件的版本，并让 profile 的 User-Agent 与之匹配：</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">()</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="n">version</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">get_version</span><span class="p">()</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">version</span><span class="p">[</span><span class="s1">'product'</span><span class="p">])</span>  <span class="c1"># 例如 'Chrome/151.0.7922.137'</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">()</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="n">version</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">get_version</span><span class="p">()</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">version</span><span class="p">[</span><span class="s1">'product'</span><span class="p">])</span>  <span class="c1"># 例如 'Chrome/151.0.7922.137'</span>
 </span></code></pre></div>
 <p>在 <code>examples/fingerprints.py</code> 中，<code>CHROME_DESKTOP</code> 和 <code>CHROME_MOBILE</code> 设置每个 profile 的 User-Agent 里的版本。把它们设为二进制文件的主版本号（完整的构建号会供给 <code>Sec-CH-UA-Full-Version-List</code>；<code>navigator.userAgent</code> 会被精简为 <code>Chrome/&lt;MAJOR&gt;.0.0.0</code>）。在 Chrome 更新时更新它们。</p>
 <h2 id="case-study-an-os-mismatch-triggering-cloudflares-managed-challenge">操作系统不匹配（Cloudflare）</h2>
@@ -4077,38 +4133,29 @@
 <li>GPU/WebGL（renderer、参数、扩展）、canvas、字体、屏幕、硬件、音频、语音、地理位置、locale：没有影响。</li>
 </ul>
 <p>在这台 macOS 主机上，任何非 macOS 的操作系统都会失败。一个声明 NVIDIA GPU 的 macOS profile 能通过；而一个声明真实 Apple GPU 的 Windows profile 却失败。</p>
-<p>逐层测量，两个 profile，同一个 Chrome：</p>
-<ul>
-<li>TCP/IP：服务器对两个 profile 观察到的都是相同的初始 TTL 64（macOS/Unix）；一台 Windows 主机则会发出 128。无法通过 CDP 触及。</li>
-<li>TLS（JA3/JA4）：每次连接都会变化（Chrome 的 padding 扩展开关）；无 fingerprint 的基线会产生两种变体。它不编码操作系统。</li>
-<li>HTTP/2（Akamai）：两个 profile 之间完全相同。它不编码操作系统。</li>
-<li>Client Hints：被完全覆盖为所声明的操作系统（Windows 报告 <code>architecture</code> 为 <code>x86</code>，没有 <code>arm</code> 泄露）。</li>
-<li>Canvas/WebGL：两个 profile 之间渲染图像的哈希完全相同（两者都是真实的 Apple GPU 像素）。这不是区分因素。</li>
-</ul>
-<p><code>apply_fingerprint()</code> 所控制的一切都报告 Windows；而内核的 TCP/IP 栈报告 macOS。Cloudflare 的托管挑战会把所声明的操作系统与被动的协议栈签名做比对，当两者不一致时就保留过渡页。</p>
-<p>TTL、窗口缩放和 TCP 选项顺序都来自主机内核，而不是浏览器，任何 CDP 或 JavaScript 覆盖都触及不到它们。GPU 渲染和文本度量（macOS 上的 CoreText）同样属于主机。伪造 TLS 的客户端（curl_cffi、tls-client）在这里帮不上忙：失败并不在 TLS，而且它们仍然使用主机内核的 TCP/IP 栈。</p>
+<p><code>apply_fingerprint()</code> 所控制的一切都报告所声明的操作系统，但主机内核的 TCP/IP 栈（macOS/Linux 上初始 TTL 为 64，Windows 上为 128）和操作系统的文本渲染（macOS 上的 CoreText）不会改变，任何 CDP 或 JavaScript 覆盖都触及不到它们。Cloudflare 会把所声明的操作系统与那个被动签名做比对，当两者不一致时就保留过渡页。伪造 TLS 的客户端（curl_cffi、tls-client）在这里帮不上忙：失败并不在 TLS，而且它们仍然使用主机内核的协议栈。<a href="../../deep-dive/fingerprinting/cloudflare-challenge/#the-os-must-match-the-host">Cloudflare 的托管挑战</a> 给出了逐层的测量。</p>
 <p>要通过，就让 profile 的操作系统（以及 GPU 系列）与主机相匹配：在这台 Mac 上用 macOS profile，在 Windows 主机上用 Windows profile。一个转发型 proxy（SOCKS5/HTTP CONNECT）会从 proxy 的内核重新发起 TCP 连接，所以被观察到的操作系统会变成 proxy 主机的；这样一来，一个 Windows profile 就需要一个运行在 Windows 上的 proxy（一个 Linux proxy 会给出 Linux 签名，仍然与 Windows 的 User-Agent 不一致）。</p>
 <h2 id="multiple-fingerprints-across-contexts">跨 context 使用多个 fingerprint</h2>
 <p>service worker 和 shared worker 在一个浏览器 context 内的所有标签页之间是共享的，所以一个 context 只持有单一身份。对一个已经拥有 fingerprint 的 context 再应用另一个不同的 fingerprint，会抛出 <code>FingerprintContextConflict</code>：</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">FingerprintContextConflict</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="c1"># 同一个 context，两个不同的 fingerprint -&gt; 冲突</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="n">tab_a</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="k">await</span> <span class="n">tab_a</span><span class="o">.</span><span class="n">apply_fingerprint</span><span class="p">(</span><span class="n">FINGERPRINTS</span><span class="p">[</span><span class="s1">'windows11_rtx3060_nyc'</span><span class="p">])</span>
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
-</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="n">tab_b</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">new_tab</span><span class="p">()</span>               <span class="c1"># 同一个（默认）context</span>
-</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="k">try</span><span class="p">:</span>
-</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>    <span class="k">await</span> <span class="n">tab_b</span><span class="o">.</span><span class="n">apply_fingerprint</span><span class="p">(</span><span class="n">FINGERPRINTS</span><span class="p">[</span><span class="s1">'macos_m3_new_york'</span><span class="p">])</span>
-</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="k">except</span> <span class="n">FingerprintContextConflict</span><span class="p">:</span>
-</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>    <span class="nb">print</span><span class="p">(</span><span class="s1">'One context holds one identity.'</span><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">FingerprintContextConflict</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="c1"># 同一个 context，两个不同的 fingerprint -&gt; 冲突</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="n">tab_a</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="k">await</span> <span class="n">tab_a</span><span class="o">.</span><span class="n">apply_fingerprint</span><span class="p">(</span><span class="n">FINGERPRINTS</span><span class="p">[</span><span class="s1">'windows11_rtx3060_nyc'</span><span class="p">])</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="n">tab_b</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">new_tab</span><span class="p">()</span>               <span class="c1"># 同一个（默认）context</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="k">try</span><span class="p">:</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>    <span class="k">await</span> <span class="n">tab_b</span><span class="o">.</span><span class="n">apply_fingerprint</span><span class="p">(</span><span class="n">FINGERPRINTS</span><span class="p">[</span><span class="s1">'macos_m3_new_york'</span><span class="p">])</span>
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="k">except</span> <span class="n">FingerprintContextConflict</span><span class="p">:</span>
+</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>    <span class="nb">print</span><span class="p">(</span><span class="s1">'One context holds one identity.'</span><span class="p">)</span>
 </span></code></pre></div>
 <p>要并发地运行不同的 fingerprint，请为每个身份使用一个单独的浏览器 context：</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">ctx_id</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">create_browser_context</span><span class="p">()</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="n">tab_us</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">tab_br</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">new_tab</span><span class="p">(</span><span class="n">browser_context_id</span><span class="o">=</span><span class="n">ctx_id</span><span class="p">)</span>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="k">await</span> <span class="n">tab_us</span><span class="o">.</span><span class="n">apply_fingerprint</span><span class="p">(</span><span class="n">FINGERPRINTS</span><span class="p">[</span><span class="s1">'windows11_rtx3060_nyc'</span><span class="p">])</span>
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="k">await</span> <span class="n">tab_br</span><span class="o">.</span><span class="n">apply_fingerprint</span><span class="p">(</span><span class="n">FINGERPRINTS</span><span class="p">[</span><span class="s1">'android_s24_ultra_sao_paulo'</span><span class="p">])</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">ctx_id</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">create_browser_context</span><span class="p">()</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">tab_us</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="n">tab_br</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">new_tab</span><span class="p">(</span><span class="n">browser_context_id</span><span class="o">=</span><span class="n">ctx_id</span><span class="p">)</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="k">await</span> <span class="n">tab_us</span><span class="o">.</span><span class="n">apply_fingerprint</span><span class="p">(</span><span class="n">FINGERPRINTS</span><span class="p">[</span><span class="s1">'windows11_rtx3060_nyc'</span><span class="p">])</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="k">await</span> <span class="n">tab_br</span><span class="o">.</span><span class="n">apply_fingerprint</span><span class="p">(</span><span class="n">FINGERPRINTS</span><span class="p">[</span><span class="s1">'android_s24_ultra_sao_paulo'</span><span class="p">])</span>
 </span></code></pre></div>
 <div class="admonition warning">
 <p class="admonition-title">Headless 屏幕是浏览器全局的</p>
@@ -4123,11 +4170,12 @@
 <li>出口 IP 的地理位置（locale、时区、地理位置）。</li>
 </ul>
 <p>一个被广泛复用的公开 profile，会变成一个共享的签名，而不是一种伪装。</p>
-<h2 id="_5">相关</h2>
+<h2 id="_4">相关</h2>
 <ul>
 <li><a href="../evasion-techniques/">规避技术</a>：User-Agent 一致性、语言、WebRTC 泄露保护，以及 Pydoll 免费提供给你的部分。</li>
 <li><a href="../../deep-dive/fingerprinting/browser-fingerprinting/">浏览器指纹识别</a>：本页所覆盖的检测面（canvas、WebGL、navigator、字体）。</li>
 <li><a href="../../deep-dive/fingerprinting/spoofing-limits/">伪造的极限</a>：为什么有些信号可以安全地覆盖，而另一些则根本无法伪造。</li>
+<li><a href="../../deep-dive/fingerprinting/execution-realms/">Workers 和跨源 iframe</a>：注入的身份如何被重放到每一个 realm 中，以及 tab 与 browser 的作用范围。</li>
 <li><a href="../../deep-dive/fingerprinting/network-fingerprinting/">网络指纹识别</a>：注入无法触及的 TLS/TCP/HTTP2 层。</li>
 <li><a href="../../guides/browser-contexts/">浏览器上下文</a>：每个 context 运行一个身份。</li>
 <li><a href="../../guides/proxies/">Proxy</a>：让出口 IP 与 profile 的地理位置相匹配。</li>

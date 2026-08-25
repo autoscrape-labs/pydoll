@@ -2385,6 +2385,8 @@
       
         
       
+        
+      
     
     
     
@@ -2568,6 +2570,34 @@
     
   
     审计一个 fingerprint
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../deep-dive/fingerprinting/execution-realms/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Worker 与跨域 iframe
   
 
     
@@ -6901,7 +6931,7 @@ within the specified duration.</p>
   </span>
 
 </h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">apply_fingerprint</span><span class="p">(</span><span class="n">fingerprint</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">apply_fingerprint</span><span class="p">(</span><span class="n">fingerprint</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">cross_origin_iframes</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6909,9 +6939,9 @@ within the specified duration.</p>
         <p>Apply a browser fingerprint profile to this tab.</p>
 <p>Delegates to a per-tab :class:<code>FingerprintApplier</code> (created once and
 reused), which overrides browser identity signals via CDP commands and
-JavaScript injection and replays them on Web Worker targets. Call before
-navigating to any page for full effect, since JS overrides register via
-<code>Page.addScriptToEvaluateOnNewDocument</code>.</p>
+JavaScript injection and replays them on Web Worker targets and cross-site
+iframes. Call before navigating to any page for full effect, since JS
+overrides register via <code>Page.addScriptToEvaluateOnNewDocument</code>.</p>
 
 
 <table>
@@ -6935,6 +6965,30 @@ are overridden; unspecified fields keep real browser values.</p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
                       <code><span title="pydoll.protocol.fingerprint.types.FingerprintConfig">FingerprintConfig</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>cross_origin_iframes</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>When true (default), the identity is also
+replayed into every cross-site iframe (OOPIF), so a fingerprinting
+script embedded in a cross-origin challenge or captcha frame reads
+the same identity as the page. Set false to cover only the top
+page, same-origin frames, and workers.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="bool">bool</span></code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>True</code>
                   </span>
               </p>
             </td>

@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
     <url>
         <loc>https://pydoll.tech/docs/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/"/>
@@ -10,7 +10,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/first-automation/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/first-automation/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/first-automation/"/>
@@ -18,7 +18,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/getting-started/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/getting-started/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/getting-started/"/>
@@ -26,7 +26,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/migrating/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/migrating/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/migrating/"/>
@@ -34,7 +34,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/api/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/"/>
@@ -42,7 +42,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/api/extraction/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/extraction/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/extraction/"/>
@@ -50,7 +50,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/api/browser/chrome/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/browser/chrome/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/browser/chrome/"/>
@@ -58,7 +58,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/api/browser/edge/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/browser/edge/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/browser/edge/"/>
@@ -66,7 +66,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/api/browser/managers/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/browser/managers/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/browser/managers/"/>
@@ -74,7 +74,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/api/browser/options/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/browser/options/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/browser/options/"/>
@@ -82,7 +82,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/api/browser/requests/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/browser/requests/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/browser/requests/"/>
@@ -90,7 +90,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/api/browser/tab/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/browser/tab/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/browser/tab/"/>
@@ -98,7 +98,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/api/commands/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/commands/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/commands/"/>
@@ -106,7 +106,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/api/commands/browser/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/commands/browser/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/commands/browser/"/>
@@ -114,7 +114,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/api/commands/dom/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/commands/dom/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/commands/dom/"/>
@@ -122,7 +122,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/api/commands/fetch/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/commands/fetch/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/commands/fetch/"/>
@@ -130,7 +130,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/api/commands/input/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/commands/input/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/commands/input/"/>
@@ -138,7 +138,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/api/commands/network/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/commands/network/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/commands/network/"/>
@@ -146,7 +146,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/api/commands/page/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/commands/page/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/commands/page/"/>
@@ -154,7 +154,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/api/commands/runtime/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/commands/runtime/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/commands/runtime/"/>
@@ -162,7 +162,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/api/commands/storage/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/commands/storage/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/commands/storage/"/>
@@ -170,7 +170,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/api/commands/target/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/commands/target/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/commands/target/"/>
@@ -178,7 +178,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/api/connection/connection/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/connection/connection/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/connection/connection/"/>
@@ -186,7 +186,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/api/connection/managers/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/connection/managers/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/connection/managers/"/>
@@ -194,7 +194,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/api/core/constants/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/core/constants/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/core/constants/"/>
@@ -202,7 +202,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/api/core/exceptions/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/core/exceptions/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/core/exceptions/"/>
@@ -210,7 +210,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/api/core/utils/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/core/utils/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/core/utils/"/>
@@ -218,7 +218,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/api/elements/mixins/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/elements/mixins/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/elements/mixins/"/>
@@ -226,7 +226,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/api/elements/shadow_root/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/elements/shadow_root/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/elements/shadow_root/"/>
@@ -234,7 +234,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/api/elements/web_element/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/elements/web_element/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/elements/web_element/"/>
@@ -242,7 +242,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/api/protocol/base/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/protocol/base/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/protocol/base/"/>
@@ -250,7 +250,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/api/protocol/browser/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/protocol/browser/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/protocol/browser/"/>
@@ -258,7 +258,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/api/protocol/dom/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/protocol/dom/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/protocol/dom/"/>
@@ -266,7 +266,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/api/protocol/fetch/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/protocol/fetch/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/protocol/fetch/"/>
@@ -274,7 +274,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/api/protocol/input/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/protocol/input/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/protocol/input/"/>
@@ -282,7 +282,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/api/protocol/network/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/protocol/network/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/protocol/network/"/>
@@ -290,7 +290,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/api/protocol/page/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/protocol/page/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/protocol/page/"/>
@@ -298,7 +298,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/api/protocol/runtime/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/protocol/runtime/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/protocol/runtime/"/>
@@ -306,7 +306,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/api/protocol/storage/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/protocol/storage/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/protocol/storage/"/>
@@ -314,7 +314,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/api/protocol/target/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/protocol/target/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/protocol/target/"/>
@@ -322,7 +322,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/basics/async-python/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/basics/async-python/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/basics/async-python/"/>
@@ -330,7 +330,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/basics/selectors/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/basics/selectors/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/basics/selectors/"/>
@@ -338,7 +338,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/deep-dive/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/"/>
@@ -346,7 +346,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/deep-dive/cdp/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/cdp/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/cdp/"/>
@@ -354,7 +354,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/deep-dive/fingerprinting/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/fingerprinting/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/fingerprinting/"/>
@@ -362,7 +362,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/deep-dive/fingerprinting/auditing/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/fingerprinting/auditing/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/fingerprinting/auditing/"/>
@@ -370,7 +370,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/deep-dive/fingerprinting/behavioral-fingerprinting/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/fingerprinting/behavioral-fingerprinting/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/fingerprinting/behavioral-fingerprinting/"/>
@@ -378,7 +378,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/deep-dive/fingerprinting/browser-fingerprinting/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/fingerprinting/browser-fingerprinting/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/fingerprinting/browser-fingerprinting/"/>
@@ -386,15 +386,23 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/deep-dive/fingerprinting/cloudflare-challenge/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/fingerprinting/cloudflare-challenge/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/fingerprinting/cloudflare-challenge/"/>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/deep-dive/fingerprinting/cloudflare-challenge/"/>
     </url>
     <url>
+        <loc>https://pydoll.tech/docs/deep-dive/fingerprinting/execution-realms/</loc>
+        <lastmod>2026-08-25</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/fingerprinting/execution-realms/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/fingerprinting/execution-realms/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/deep-dive/fingerprinting/execution-realms/"/>
+    </url>
+    <url>
         <loc>https://pydoll.tech/docs/deep-dive/fingerprinting/network-fingerprinting/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/fingerprinting/network-fingerprinting/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/fingerprinting/network-fingerprinting/"/>
@@ -402,7 +410,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/deep-dive/fingerprinting/spoofing-limits/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/fingerprinting/spoofing-limits/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/fingerprinting/spoofing-limits/"/>
@@ -410,7 +418,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/deep-dive/network/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/network/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/network/"/>
@@ -418,7 +426,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/deep-dive/network/build-proxy/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/network/build-proxy/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/network/build-proxy/"/>
@@ -426,7 +434,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/deep-dive/network/http-proxies/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/network/http-proxies/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/network/http-proxies/"/>
@@ -434,7 +442,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/deep-dive/network/network-fundamentals/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/network/network-fundamentals/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/network/network-fundamentals/"/>
@@ -442,7 +450,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/deep-dive/network/proxy-detection/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/network/proxy-detection/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/network/proxy-detection/"/>
@@ -450,7 +458,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/deep-dive/network/proxy-legal/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/network/proxy-legal/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/network/proxy-legal/"/>
@@ -458,7 +466,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/deep-dive/network/socks-proxies/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/network/socks-proxies/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/network/socks-proxies/"/>
@@ -466,7 +474,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/guides/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/"/>
@@ -474,7 +482,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/guides/browser-contexts/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/browser-contexts/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/browser-contexts/"/>
@@ -482,7 +490,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/guides/browser-options/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/browser-options/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/browser-options/"/>
@@ -490,7 +498,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/guides/browser-preferences/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/browser-preferences/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/browser-preferences/"/>
@@ -498,7 +506,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/guides/cookies-and-sessions/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/cookies-and-sessions/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/cookies-and-sessions/"/>
@@ -506,7 +514,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/guides/core-concepts/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/core-concepts/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/core-concepts/"/>
@@ -514,7 +522,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/guides/dom-traversal/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/dom-traversal/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/dom-traversal/"/>
@@ -522,7 +530,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/guides/element-finding/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/element-finding/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/element-finding/"/>
@@ -530,7 +538,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/guides/events/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/events/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/events/"/>
@@ -538,7 +546,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/guides/file-operations/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/file-operations/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/file-operations/"/>
@@ -546,7 +554,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/guides/http-requests/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/http-requests/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/http-requests/"/>
@@ -554,7 +562,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/guides/iframes/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/iframes/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/iframes/"/>
@@ -562,7 +570,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/guides/keyboard/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/keyboard/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/keyboard/"/>
@@ -570,7 +578,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/guides/mouse/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/mouse/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/mouse/"/>
@@ -578,7 +586,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/guides/network-monitoring/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/network-monitoring/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/network-monitoring/"/>
@@ -586,7 +594,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/guides/network-recording/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/network-recording/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/network-recording/"/>
@@ -594,7 +602,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/guides/proxies/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/proxies/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/proxies/"/>
@@ -602,7 +610,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/guides/remote-connections/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/remote-connections/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/remote-connections/"/>
@@ -610,7 +618,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/guides/request-interception/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/request-interception/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/request-interception/"/>
@@ -618,7 +626,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/guides/retrying/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/retrying/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/retrying/"/>
@@ -626,7 +634,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/guides/screenshots-and-pdfs/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/screenshots-and-pdfs/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/screenshots-and-pdfs/"/>
@@ -634,7 +642,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/guides/structured-extraction/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/structured-extraction/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/structured-extraction/"/>
@@ -642,7 +650,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/guides/tabs/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/tabs/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/tabs/"/>
@@ -650,7 +658,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/stealth/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/stealth/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/stealth/"/>
@@ -658,7 +666,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/stealth/captcha-bypass/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/stealth/captcha-bypass/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/stealth/captcha-bypass/"/>
@@ -666,7 +674,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/stealth/evasion-techniques/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/stealth/evasion-techniques/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/stealth/evasion-techniques/"/>
@@ -674,7 +682,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/stealth/fingerprint-injection/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/stealth/fingerprint-injection/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/stealth/fingerprint-injection/"/>
@@ -682,7 +690,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/stealth/human-like-interactions/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/stealth/human-like-interactions/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/stealth/human-like-interactions/"/>
@@ -690,7 +698,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/"/>
@@ -698,7 +706,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/first-automation/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/first-automation/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/first-automation/"/>
@@ -706,7 +714,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/getting-started/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/getting-started/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/getting-started/"/>
@@ -714,7 +722,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/migrating/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/migrating/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/migrating/"/>
@@ -722,7 +730,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/api/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/api/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/"/>
@@ -730,7 +738,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/api/extraction/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/api/extraction/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/extraction/"/>
@@ -738,7 +746,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/api/browser/chrome/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/api/browser/chrome/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/browser/chrome/"/>
@@ -746,7 +754,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/api/browser/edge/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/api/browser/edge/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/browser/edge/"/>
@@ -754,7 +762,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/api/browser/managers/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/api/browser/managers/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/browser/managers/"/>
@@ -762,7 +770,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/api/browser/options/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/api/browser/options/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/browser/options/"/>
@@ -770,7 +778,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/api/browser/requests/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/api/browser/requests/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/browser/requests/"/>
@@ -778,7 +786,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/api/browser/tab/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/api/browser/tab/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/browser/tab/"/>
@@ -786,7 +794,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/api/commands/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/api/commands/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/commands/"/>
@@ -794,7 +802,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/api/commands/browser/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/api/commands/browser/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/commands/browser/"/>
@@ -802,7 +810,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/api/commands/dom/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/api/commands/dom/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/commands/dom/"/>
@@ -810,7 +818,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/api/commands/fetch/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/api/commands/fetch/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/commands/fetch/"/>
@@ -818,7 +826,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/api/commands/input/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/api/commands/input/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/commands/input/"/>
@@ -826,7 +834,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/api/commands/network/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/api/commands/network/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/commands/network/"/>
@@ -834,7 +842,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/api/commands/page/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/api/commands/page/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/commands/page/"/>
@@ -842,7 +850,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/api/commands/runtime/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/api/commands/runtime/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/commands/runtime/"/>
@@ -850,7 +858,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/api/commands/storage/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/api/commands/storage/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/commands/storage/"/>
@@ -858,7 +866,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/api/commands/target/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/api/commands/target/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/commands/target/"/>
@@ -866,7 +874,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/api/connection/connection/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/api/connection/connection/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/connection/connection/"/>
@@ -874,7 +882,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/api/connection/managers/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/api/connection/managers/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/connection/managers/"/>
@@ -882,7 +890,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/api/core/constants/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/api/core/constants/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/core/constants/"/>
@@ -890,7 +898,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/api/core/exceptions/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/api/core/exceptions/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/core/exceptions/"/>
@@ -898,7 +906,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/api/core/utils/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/api/core/utils/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/core/utils/"/>
@@ -906,7 +914,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/api/elements/mixins/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/api/elements/mixins/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/elements/mixins/"/>
@@ -914,7 +922,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/api/elements/shadow_root/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/api/elements/shadow_root/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/elements/shadow_root/"/>
@@ -922,7 +930,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/api/elements/web_element/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/api/elements/web_element/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/elements/web_element/"/>
@@ -930,7 +938,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/api/protocol/base/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/api/protocol/base/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/protocol/base/"/>
@@ -938,7 +946,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/api/protocol/browser/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/api/protocol/browser/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/protocol/browser/"/>
@@ -946,7 +954,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/api/protocol/dom/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/api/protocol/dom/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/protocol/dom/"/>
@@ -954,7 +962,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/api/protocol/fetch/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/api/protocol/fetch/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/protocol/fetch/"/>
@@ -962,7 +970,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/api/protocol/input/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/api/protocol/input/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/protocol/input/"/>
@@ -970,7 +978,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/api/protocol/network/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/api/protocol/network/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/protocol/network/"/>
@@ -978,7 +986,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/api/protocol/page/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/api/protocol/page/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/protocol/page/"/>
@@ -986,7 +994,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/api/protocol/runtime/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/api/protocol/runtime/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/protocol/runtime/"/>
@@ -994,7 +1002,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/api/protocol/storage/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/api/protocol/storage/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/protocol/storage/"/>
@@ -1002,7 +1010,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/api/protocol/target/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/api/protocol/target/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/protocol/target/"/>
@@ -1010,7 +1018,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/basics/async-python/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/basics/async-python/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/basics/async-python/"/>
@@ -1018,7 +1026,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/basics/selectors/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/basics/selectors/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/basics/selectors/"/>
@@ -1026,7 +1034,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/deep-dive/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/deep-dive/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/"/>
@@ -1034,7 +1042,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/deep-dive/cdp/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/deep-dive/cdp/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/cdp/"/>
@@ -1042,7 +1050,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/deep-dive/fingerprinting/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/deep-dive/fingerprinting/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/fingerprinting/"/>
@@ -1050,7 +1058,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/deep-dive/fingerprinting/auditing/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/deep-dive/fingerprinting/auditing/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/fingerprinting/auditing/"/>
@@ -1058,7 +1066,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/deep-dive/fingerprinting/behavioral-fingerprinting/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/deep-dive/fingerprinting/behavioral-fingerprinting/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/fingerprinting/behavioral-fingerprinting/"/>
@@ -1066,7 +1074,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/deep-dive/fingerprinting/browser-fingerprinting/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/deep-dive/fingerprinting/browser-fingerprinting/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/fingerprinting/browser-fingerprinting/"/>
@@ -1074,15 +1082,23 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/deep-dive/fingerprinting/cloudflare-challenge/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/deep-dive/fingerprinting/cloudflare-challenge/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/fingerprinting/cloudflare-challenge/"/>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/fingerprinting/cloudflare-challenge/"/>
     </url>
     <url>
+        <loc>https://pydoll.tech/docs/zh/deep-dive/fingerprinting/execution-realms/</loc>
+        <lastmod>2026-08-25</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/deep-dive/fingerprinting/execution-realms/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/fingerprinting/execution-realms/"/>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/fingerprinting/execution-realms/"/>
+    </url>
+    <url>
         <loc>https://pydoll.tech/docs/zh/deep-dive/fingerprinting/network-fingerprinting/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/deep-dive/fingerprinting/network-fingerprinting/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/fingerprinting/network-fingerprinting/"/>
@@ -1090,7 +1106,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/deep-dive/fingerprinting/spoofing-limits/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/deep-dive/fingerprinting/spoofing-limits/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/fingerprinting/spoofing-limits/"/>
@@ -1098,7 +1114,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/deep-dive/network/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/deep-dive/network/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/network/"/>
@@ -1106,7 +1122,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/deep-dive/network/build-proxy/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/deep-dive/network/build-proxy/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/network/build-proxy/"/>
@@ -1114,7 +1130,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/deep-dive/network/http-proxies/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/deep-dive/network/http-proxies/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/network/http-proxies/"/>
@@ -1122,7 +1138,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/deep-dive/network/network-fundamentals/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/deep-dive/network/network-fundamentals/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/network/network-fundamentals/"/>
@@ -1130,7 +1146,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/deep-dive/network/proxy-detection/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/deep-dive/network/proxy-detection/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/network/proxy-detection/"/>
@@ -1138,7 +1154,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/deep-dive/network/proxy-legal/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/deep-dive/network/proxy-legal/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/network/proxy-legal/"/>
@@ -1146,7 +1162,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/deep-dive/network/socks-proxies/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/deep-dive/network/socks-proxies/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/network/socks-proxies/"/>
@@ -1154,7 +1170,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/guides/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/guides/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/"/>
@@ -1162,7 +1178,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/guides/browser-contexts/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/guides/browser-contexts/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/browser-contexts/"/>
@@ -1170,7 +1186,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/guides/browser-options/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/guides/browser-options/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/browser-options/"/>
@@ -1178,7 +1194,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/guides/browser-preferences/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/guides/browser-preferences/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/browser-preferences/"/>
@@ -1186,7 +1202,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/guides/cookies-and-sessions/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/guides/cookies-and-sessions/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/cookies-and-sessions/"/>
@@ -1194,7 +1210,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/guides/core-concepts/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/guides/core-concepts/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/core-concepts/"/>
@@ -1202,7 +1218,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/guides/dom-traversal/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/guides/dom-traversal/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/dom-traversal/"/>
@@ -1210,7 +1226,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/guides/element-finding/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/guides/element-finding/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/element-finding/"/>
@@ -1218,7 +1234,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/guides/events/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/guides/events/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/events/"/>
@@ -1226,7 +1242,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/guides/file-operations/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/guides/file-operations/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/file-operations/"/>
@@ -1234,7 +1250,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/guides/http-requests/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/guides/http-requests/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/http-requests/"/>
@@ -1242,7 +1258,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/guides/iframes/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/guides/iframes/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/iframes/"/>
@@ -1250,7 +1266,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/guides/keyboard/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/guides/keyboard/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/keyboard/"/>
@@ -1258,7 +1274,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/guides/mouse/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/guides/mouse/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/mouse/"/>
@@ -1266,7 +1282,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/guides/network-monitoring/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/guides/network-monitoring/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/network-monitoring/"/>
@@ -1274,7 +1290,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/guides/network-recording/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/guides/network-recording/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/network-recording/"/>
@@ -1282,7 +1298,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/guides/proxies/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/guides/proxies/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/proxies/"/>
@@ -1290,7 +1306,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/guides/remote-connections/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/guides/remote-connections/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/remote-connections/"/>
@@ -1298,7 +1314,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/guides/request-interception/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/guides/request-interception/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/request-interception/"/>
@@ -1306,7 +1322,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/guides/retrying/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/guides/retrying/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/retrying/"/>
@@ -1314,7 +1330,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/guides/screenshots-and-pdfs/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/guides/screenshots-and-pdfs/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/screenshots-and-pdfs/"/>
@@ -1322,7 +1338,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/guides/structured-extraction/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/guides/structured-extraction/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/structured-extraction/"/>
@@ -1330,7 +1346,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/guides/tabs/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/guides/tabs/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/tabs/"/>
@@ -1338,7 +1354,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/stealth/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/stealth/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/stealth/"/>
@@ -1346,7 +1362,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/stealth/captcha-bypass/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/stealth/captcha-bypass/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/stealth/captcha-bypass/"/>
@@ -1354,7 +1370,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/stealth/evasion-techniques/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/stealth/evasion-techniques/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/stealth/evasion-techniques/"/>
@@ -1362,7 +1378,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/stealth/fingerprint-injection/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/stealth/fingerprint-injection/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/stealth/fingerprint-injection/"/>
@@ -1370,7 +1386,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/zh/stealth/human-like-interactions/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/stealth/human-like-interactions/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/stealth/human-like-interactions/"/>
@@ -1378,7 +1394,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/"/>
@@ -1386,7 +1402,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/first-automation/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/first-automation/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/first-automation/"/>
@@ -1394,7 +1410,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/getting-started/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/getting-started/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/getting-started/"/>
@@ -1402,7 +1418,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/migrating/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/migrating/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/migrating/"/>
@@ -1410,7 +1426,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/api/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/"/>
@@ -1418,7 +1434,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/api/extraction/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/extraction/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/extraction/"/>
@@ -1426,7 +1442,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/api/browser/chrome/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/browser/chrome/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/browser/chrome/"/>
@@ -1434,7 +1450,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/api/browser/edge/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/browser/edge/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/browser/edge/"/>
@@ -1442,7 +1458,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/api/browser/managers/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/browser/managers/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/browser/managers/"/>
@@ -1450,7 +1466,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/api/browser/options/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/browser/options/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/browser/options/"/>
@@ -1458,7 +1474,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/api/browser/requests/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/browser/requests/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/browser/requests/"/>
@@ -1466,7 +1482,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/api/browser/tab/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/browser/tab/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/browser/tab/"/>
@@ -1474,7 +1490,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/api/commands/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/commands/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/commands/"/>
@@ -1482,7 +1498,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/api/commands/browser/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/commands/browser/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/commands/browser/"/>
@@ -1490,7 +1506,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/api/commands/dom/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/commands/dom/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/commands/dom/"/>
@@ -1498,7 +1514,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/api/commands/fetch/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/commands/fetch/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/commands/fetch/"/>
@@ -1506,7 +1522,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/api/commands/input/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/commands/input/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/commands/input/"/>
@@ -1514,7 +1530,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/api/commands/network/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/commands/network/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/commands/network/"/>
@@ -1522,7 +1538,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/api/commands/page/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/commands/page/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/commands/page/"/>
@@ -1530,7 +1546,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/api/commands/runtime/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/commands/runtime/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/commands/runtime/"/>
@@ -1538,7 +1554,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/api/commands/storage/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/commands/storage/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/commands/storage/"/>
@@ -1546,7 +1562,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/api/commands/target/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/commands/target/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/commands/target/"/>
@@ -1554,7 +1570,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/api/connection/connection/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/connection/connection/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/connection/connection/"/>
@@ -1562,7 +1578,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/api/connection/managers/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/connection/managers/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/connection/managers/"/>
@@ -1570,7 +1586,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/api/core/constants/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/core/constants/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/core/constants/"/>
@@ -1578,7 +1594,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/api/core/exceptions/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/core/exceptions/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/core/exceptions/"/>
@@ -1586,7 +1602,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/api/core/utils/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/core/utils/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/core/utils/"/>
@@ -1594,7 +1610,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/api/elements/mixins/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/elements/mixins/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/elements/mixins/"/>
@@ -1602,7 +1618,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/api/elements/shadow_root/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/elements/shadow_root/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/elements/shadow_root/"/>
@@ -1610,7 +1626,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/api/elements/web_element/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/elements/web_element/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/elements/web_element/"/>
@@ -1618,7 +1634,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/api/protocol/base/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/protocol/base/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/protocol/base/"/>
@@ -1626,7 +1642,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/api/protocol/browser/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/protocol/browser/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/protocol/browser/"/>
@@ -1634,7 +1650,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/api/protocol/dom/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/protocol/dom/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/protocol/dom/"/>
@@ -1642,7 +1658,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/api/protocol/fetch/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/protocol/fetch/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/protocol/fetch/"/>
@@ -1650,7 +1666,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/api/protocol/input/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/protocol/input/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/protocol/input/"/>
@@ -1658,7 +1674,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/api/protocol/network/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/protocol/network/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/protocol/network/"/>
@@ -1666,7 +1682,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/api/protocol/page/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/protocol/page/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/protocol/page/"/>
@@ -1674,7 +1690,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/api/protocol/runtime/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/protocol/runtime/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/protocol/runtime/"/>
@@ -1682,7 +1698,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/api/protocol/storage/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/protocol/storage/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/protocol/storage/"/>
@@ -1690,7 +1706,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/api/protocol/target/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/api/protocol/target/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/api/protocol/target/"/>
@@ -1698,7 +1714,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/basics/async-python/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/basics/async-python/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/basics/async-python/"/>
@@ -1706,7 +1722,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/basics/selectors/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/basics/selectors/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/basics/selectors/"/>
@@ -1714,7 +1730,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/deep-dive/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/"/>
@@ -1722,7 +1738,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/deep-dive/cdp/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/cdp/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/cdp/"/>
@@ -1730,7 +1746,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/deep-dive/fingerprinting/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/fingerprinting/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/fingerprinting/"/>
@@ -1738,7 +1754,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/deep-dive/fingerprinting/auditing/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/fingerprinting/auditing/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/fingerprinting/auditing/"/>
@@ -1746,7 +1762,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/deep-dive/fingerprinting/behavioral-fingerprinting/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/fingerprinting/behavioral-fingerprinting/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/fingerprinting/behavioral-fingerprinting/"/>
@@ -1754,7 +1770,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/deep-dive/fingerprinting/browser-fingerprinting/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/fingerprinting/browser-fingerprinting/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/fingerprinting/browser-fingerprinting/"/>
@@ -1762,15 +1778,23 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/deep-dive/fingerprinting/cloudflare-challenge/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/fingerprinting/cloudflare-challenge/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/fingerprinting/cloudflare-challenge/"/>
         <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/deep-dive/fingerprinting/cloudflare-challenge/"/>
     </url>
     <url>
+        <loc>https://pydoll.tech/docs/pt/deep-dive/fingerprinting/execution-realms/</loc>
+        <lastmod>2026-08-25</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/fingerprinting/execution-realms/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/fingerprinting/execution-realms/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://pydoll.tech/docs/zh/deep-dive/fingerprinting/execution-realms/"/>
+    </url>
+    <url>
         <loc>https://pydoll.tech/docs/pt/deep-dive/fingerprinting/network-fingerprinting/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/fingerprinting/network-fingerprinting/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/fingerprinting/network-fingerprinting/"/>
@@ -1778,7 +1802,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/deep-dive/fingerprinting/spoofing-limits/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/fingerprinting/spoofing-limits/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/fingerprinting/spoofing-limits/"/>
@@ -1786,7 +1810,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/deep-dive/network/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/network/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/network/"/>
@@ -1794,7 +1818,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/deep-dive/network/build-proxy/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/network/build-proxy/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/network/build-proxy/"/>
@@ -1802,7 +1826,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/deep-dive/network/http-proxies/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/network/http-proxies/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/network/http-proxies/"/>
@@ -1810,7 +1834,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/deep-dive/network/network-fundamentals/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/network/network-fundamentals/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/network/network-fundamentals/"/>
@@ -1818,7 +1842,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/deep-dive/network/proxy-detection/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/network/proxy-detection/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/network/proxy-detection/"/>
@@ -1826,7 +1850,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/deep-dive/network/proxy-legal/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/network/proxy-legal/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/network/proxy-legal/"/>
@@ -1834,7 +1858,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/deep-dive/network/socks-proxies/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/deep-dive/network/socks-proxies/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/deep-dive/network/socks-proxies/"/>
@@ -1842,7 +1866,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/guides/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/"/>
@@ -1850,7 +1874,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/guides/browser-contexts/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/browser-contexts/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/browser-contexts/"/>
@@ -1858,7 +1882,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/guides/browser-options/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/browser-options/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/browser-options/"/>
@@ -1866,7 +1890,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/guides/browser-preferences/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/browser-preferences/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/browser-preferences/"/>
@@ -1874,7 +1898,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/guides/cookies-and-sessions/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/cookies-and-sessions/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/cookies-and-sessions/"/>
@@ -1882,7 +1906,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/guides/core-concepts/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/core-concepts/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/core-concepts/"/>
@@ -1890,7 +1914,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/guides/dom-traversal/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/dom-traversal/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/dom-traversal/"/>
@@ -1898,7 +1922,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/guides/element-finding/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/element-finding/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/element-finding/"/>
@@ -1906,7 +1930,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/guides/events/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/events/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/events/"/>
@@ -1914,7 +1938,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/guides/file-operations/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/file-operations/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/file-operations/"/>
@@ -1922,7 +1946,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/guides/http-requests/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/http-requests/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/http-requests/"/>
@@ -1930,7 +1954,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/guides/iframes/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/iframes/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/iframes/"/>
@@ -1938,7 +1962,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/guides/keyboard/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/keyboard/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/keyboard/"/>
@@ -1946,7 +1970,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/guides/mouse/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/mouse/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/mouse/"/>
@@ -1954,7 +1978,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/guides/network-monitoring/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/network-monitoring/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/network-monitoring/"/>
@@ -1962,7 +1986,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/guides/network-recording/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/network-recording/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/network-recording/"/>
@@ -1970,7 +1994,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/guides/proxies/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/proxies/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/proxies/"/>
@@ -1978,7 +2002,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/guides/remote-connections/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/remote-connections/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/remote-connections/"/>
@@ -1986,7 +2010,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/guides/request-interception/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/request-interception/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/request-interception/"/>
@@ -1994,7 +2018,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/guides/retrying/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/retrying/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/retrying/"/>
@@ -2002,7 +2026,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/guides/screenshots-and-pdfs/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/screenshots-and-pdfs/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/screenshots-and-pdfs/"/>
@@ -2010,7 +2034,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/guides/structured-extraction/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/structured-extraction/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/structured-extraction/"/>
@@ -2018,7 +2042,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/guides/tabs/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/guides/tabs/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/guides/tabs/"/>
@@ -2026,7 +2050,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/stealth/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/stealth/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/stealth/"/>
@@ -2034,7 +2058,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/stealth/captcha-bypass/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/stealth/captcha-bypass/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/stealth/captcha-bypass/"/>
@@ -2042,7 +2066,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/stealth/evasion-techniques/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/stealth/evasion-techniques/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/stealth/evasion-techniques/"/>
@@ -2050,7 +2074,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/stealth/fingerprint-injection/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/stealth/fingerprint-injection/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/stealth/fingerprint-injection/"/>
@@ -2058,7 +2082,7 @@
     </url>
     <url>
         <loc>https://pydoll.tech/docs/pt/stealth/human-like-interactions/</loc>
-        <lastmod>2026-08-22</lastmod>
+        <lastmod>2026-08-25</lastmod>
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="pt" href="https://pydoll.tech/docs/pt/stealth/human-like-interactions/"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://pydoll.tech/docs/stealth/human-like-interactions/"/>

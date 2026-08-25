@@ -2514,6 +2514,8 @@
       
         
       
+        
+      
     
     
     
@@ -2697,6 +2699,34 @@
     
   
     Auditando um fingerprint
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deep-dive/fingerprinting/execution-realms/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workers e iframes cross-origin
   
 
     
@@ -3587,8 +3617,12 @@
 <p>Clicar no checkbox é apenas parte disso. O Turnstile decide se aceita a partir de sinais que o Pydoll não controla:</p>
 <ul>
 <li><strong>Reputação do IP.</strong> Um IP residencial ou móvel limpo costuma ser aceito; um IP de datacenter é frequentemente desafiado ou bloqueado. Nenhuma configuração de navegador supera um IP marcado. Veja <a href="../../guides/proxies/">Proxies</a>.</li>
-<li><strong>Consistência do fingerprint.</strong> A identidade que o seu navegador apresenta tem que concordar consigo mesma e com o seu IP. Uma falha comum é uma incompatibilidade de versão do Chrome: se você combinar isto com a <a href="../fingerprint-injection/">Injeção de fingerprint</a>, a versão anunciada pelo perfil tem que corresponder ao binário real, ou o Turnstile fica preso em "Just a moment...". Alinhe-a a <code>await browser.get_version()</code>.</li>
-<li><strong>Headful vs headless.</strong> O headless vaza sinais de renderização que reduzem a pontuação de confiança. Prefira headful para o Turnstile, ou neutralize os sinais de headless antes (veja <a href="../fingerprint-injection/">Injeção de fingerprint</a>).</li>
+<li><strong>Consistência do fingerprint.</strong> A identidade que o seu navegador apresenta tem que concordar consigo mesma e com o seu IP. Duas coisas fazem o Turnstile tropeçar com mais frequência:<ul>
+<li><strong>Uma incompatibilidade de versão do Chrome.</strong> Com a <a href="../fingerprint-injection/">Injeção de fingerprint</a>, a versão anunciada pelo perfil tem que corresponder ao binário real (alinhe-a a <code>await browser.get_version()</code>), ou a página fica presa em "Just a moment...".</li>
+<li><strong>Uma identidade que para na página.</strong> O widget lê o fingerprint dentro do seu próprio iframe cross-origin, então o perfil precisa alcançar lá também. <code>apply_fingerprint()</code> faz isso por padrão (<code>cross_origin_iframes</code>), e combinar o locale, o fuso horário e a geolocalização do perfil com o IP de saída completa o quadro.</li>
+</ul>
+</li>
+<li><strong>Headful vs headless.</strong> O headless emite um sinal de display mais fraco que pode reduzir a pontuação de confiança, mas não é uma barreira. Com um fingerprint totalmente coerente (incluindo o iframe cross-origin) e um locale combinado com o IP, o headless passa pelo Turnstile num IP decente. Num IP marginal, prefira headful, ou headful sob um framebuffer virtual (Xvfb) num servidor, para que o sinal de display pare de pesar contra você. O aprofundamento sobre o <a href="../../deep-dive/fingerprinting/cloudflare-challenge/">managed challenge do Cloudflare</a> traz o detalhamento completo.</li>
 </ul>
 <p>Se o checkbox é clicado mas um desafio de quebra-cabeça ou de imagem aparece em seguida, a pontuação de confiança estava baixa demais. O Pydoll não consegue resolver esse desafio; melhore o IP e o fingerprint em vez disso.</p>
 <iframe src="/docs/resources/visuals/turnstile-trust-score.html" aria-label="Reputação do IP, consistência do fingerprint e o modo do navegador alimentam uma pontuação de confiança que resulta em aceito, desafiado ou bloqueado; o clique que o Pydoll automatiza é apenas uma das entradas" style="width: 100%; height: 430px; border: 0;" loading="lazy"></iframe>
