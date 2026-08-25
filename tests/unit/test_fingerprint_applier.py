@@ -7,6 +7,7 @@ emitted and the per-tab / per-context state the applier maintains.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 
 import pytest
@@ -275,3 +276,74 @@ class TestHeadlessScreen:
                                                    'device_pixel_ratio': 2.0}})
 
         assert fake_conn.commands_for('Emulation.updateScreen')
+
+
+class TestCrossOriginIframes:
+    """The ``cross_origin_iframes`` option that reaches OOPIF targets.
+
+    OOPIFs attach on the tab connection paused; the single tab handler branches by
+    target type, replays the full identity on the iframe session, and resumes last.
+    FakeConnection does not fire callbacks, so the handler is invoked directly with a
+    simulated ``Target.attachedToTarget`` iframe event.
+    """
+
+    FP = {
+        'user_agent': UA,
+        'timezone': 'America/New_York',
+        'hardware': {'hardware_concurrency': 8},
+        'screen': {'width': 1920, 'height': 1080},
+        'media_features': {'color_gamut': 'srgb'},
+    }
+
+    @staticmethod
+    async def _fire_iframe_attach(fake_conn, session_id='oopif-1'):
+        event = {
+            'params': {
+                'sessionId': session_id,
+                'targetInfo': {'type': 'iframe', 'url': ''},
+                'waitingForDebugger': True,
+            }
+        }
+        for callback in fake_conn.callbacks_for('Target.attachedToTarget'):
+            await callback(event)
+        # Tab.on wraps handlers in asyncio.create_task; let those tasks run.
+        await asyncio.sleep(0.05)
+
+    async def test_default_enables_iframe_auto_attach(self, fp_tab, fake_conn):
+        await fp_tab.apply_fingerprint(dict(self.FP))
+        tab_filter = fake_conn.commands_for('Target.setAutoAttach')[0]['params']['filter']
+        assert {entry['type'] for entry in tab_filter} == {'worker', 'iframe'}
+
+    async def test_disabled_keeps_worker_only_filter(self, fp_tab, fake_conn):
+        await fp_tab.apply_fingerprint(dict(self.FP), cross_origin_iframes=False)
+        tab_filter = fake_conn.commands_for('Target.setAutoAttach')[0]['params']['filter']
+        assert {entry['type'] for entry in tab_filter} == {'worker'}
+
+    async def test_iframe_attach_replays_full_identity(self, fp_tab, fake_conn):
+        await fp_tab.apply_fingerprint(dict(self.FP))
+        await self._fire_iframe_attach(fake_conn)
+
+        methods = [c['method'] for c in fake_conn.commands if c.get('sessionId') == 'oopif-1']
+        assert 'Emulation.setUserAgentOverride' in methods
+        assert 'Emulation.setTimezoneOverride' in methods
+        assert 'Emulation.setHardwareConcurrencyOverride' in methods
+        assert 'Emulation.setDeviceMetricsOverride' in methods
+        assert 'Emulation.setEmulatedMedia' in methods
+        assert 'Page.enable' in methods
+        assert 'Page.addScriptToEvaluateOnNewDocument' in methods
+        assert 'Runtime.runIfWaitingForDebugger' in methods
+        # Page enabled before the script; the target resumed last.
+        assert methods.index('Page.enable') < methods.index('Page.addScriptToEvaluateOnNewDocument')
+        assert methods.index('Page.addScriptToEvaluateOnNewDocument') < methods.index(
+            'Runtime.runIfWaitingForDebugger'
+        )
+
+    async def test_iframe_attach_not_replayed_when_disabled(self, fp_tab, fake_conn):
+        await fp_tab.apply_fingerprint(dict(self.FP), cross_origin_iframes=False)
+        await self._fire_iframe_attach(fake_conn)
+
+        methods = [c['method'] for c in fake_conn.commands if c.get('sessionId') == 'oopif-1']
+        assert 'Page.addScriptToEvaluateOnNewDocument' not in methods
+        assert 'Emulation.setUserAgentOverride' not in methods
+        # A paused iframe is still resumed so it never hangs.
+        assert 'Runtime.runIfWaitingForDebugger' in methods

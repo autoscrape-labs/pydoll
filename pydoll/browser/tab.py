@@ -963,22 +963,31 @@ class Tab(FindElementsMixin):
         logger.info('Clearing all cookies from current browser context')
         return await self._execute_command(StorageCommands.clear_cookies(self._browser_context_id))
 
-    async def apply_fingerprint(self, fingerprint: FingerprintConfig) -> None:
+    async def apply_fingerprint(
+        self, fingerprint: FingerprintConfig, *, cross_origin_iframes: bool = True
+    ) -> None:
         """Apply a browser fingerprint profile to this tab.
 
         Delegates to a per-tab :class:`FingerprintApplier` (created once and
         reused), which overrides browser identity signals via CDP commands and
-        JavaScript injection and replays them on Web Worker targets. Call before
-        navigating to any page for full effect, since JS overrides register via
-        ``Page.addScriptToEvaluateOnNewDocument``.
+        JavaScript injection and replays them on Web Worker targets and cross-site
+        iframes. Call before navigating to any page for full effect, since JS
+        overrides register via ``Page.addScriptToEvaluateOnNewDocument``.
 
         Args:
             fingerprint: Fingerprint configuration. Only specified fields
                 are overridden; unspecified fields keep real browser values.
+            cross_origin_iframes: When true (default), the identity is also
+                replayed into every cross-site iframe (OOPIF), so a fingerprinting
+                script embedded in a cross-origin challenge or captcha frame reads
+                the same identity as the page. Set false to cover only the top
+                page, same-origin frames, and workers.
         """
         if self._fingerprint_applier is None:
             self._fingerprint_applier = FingerprintApplier(self)
-        await self._fingerprint_applier.apply(fingerprint)
+        await self._fingerprint_applier.apply(
+            fingerprint, cross_origin_iframes=cross_origin_iframes
+        )
 
     async def go_to(self, url: str, timeout: int = 300):
         """
