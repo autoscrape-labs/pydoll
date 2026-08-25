@@ -45,7 +45,7 @@ Se um fingerprint ajuda ou atrapalha é mensurável. O [fingerprint-scan.com](ht
 </p>
 <p align="center"><sub>Um Chrome real via CDP já é lido como humano: 15/100.</sub></p>
 
-O Pydoll começa baixo por conta própria. Ele controla um Chrome real via CDP, então a GPU, o canvas e o TLS são autênticos e `navigator.webdriver` é `false`. Fechar a distância restante até 0 é uma área que ainda está sendo aprimorada.
+O Pydoll começa baixo por conta própria. Ele controla um Chrome real via CDP, então a GPU, o canvas e o TLS são autênticos e `navigator.webdriver` é `false`. Fechar a distância restante até 0 é uma área em aberto.
 
 **Um perfil de macOS no Mac**, uma identidade que combina com o sistema operacional: score 15/100.
 
@@ -71,7 +71,7 @@ Mesma injeção, mesma máquina; o perfil agora afirma ser Windows num host cujo
 | Perfil de macOS no macOS (combinando) | 15 / 100 |
 | Perfil de Windows no macOS (incompatível) | 57 / 100 |
 
-Duas conclusões. A injeção torna o fingerprint consistente; ela não torna o navegador invisível: mesmo a execução que combina marca 15, não 0, e fechar essa distância ainda está sendo trabalhado. E o valor está em *combinar*, e é por isso que um perfil inconsistente marca pior do que nenhum perfil, e por que toda regra no checklist abaixo é sobre concordância entre camadas.
+Duas conclusões. A injeção torna o fingerprint consistente; ela não torna o navegador invisível: mesmo a execução que combina marca 15, não 0. E o valor está em *combinar*, e é por isso que um perfil inconsistente marca pior do que nenhum perfil, e por que toda regra no checklist abaixo é sobre concordância entre camadas.
 
 !!! warning "Esses números são um retrato de um momento"
     Uma máquina, um IP, uma build do Chrome, um ponto no tempo. Os seus vão diferir, e os sites de detecção mudam a pontuação deles. Encare os scores como uma demonstração da direção (o que combina fica baixo, o incompatível dispara), não como um resultado garantido.
@@ -110,7 +110,7 @@ Aplique o perfil de Windows e a mesma página, na mesma máquina, reporta uma NV
 
 `apply_fingerprint()` definiu o vendor e o renderer sem máscara do WebGL através dos overrides injetados, junto com o User-Agent e os Client Hints. Um limite honesto fica visível nas mesmas duas capturas: o **WebGL Image Hash é idêntico** (`52497E30...`). A *string* do renderer agora diz NVIDIA, mas os pixels ainda são desenhados pela GPU Apple real, então o fingerprint da imagem renderizada não se move. Sobrescrever a string é necessário, mas não suficiente: um detector que rasteriza a saída e a passa por hash ainda vê o hardware real. É exatamente por isso que afirmar uma GPU NVIDIA numa máquina Apple é a contradição que empurrou o score para 57 acima, e por que o checklist insiste que o sistema operacional e a GPU do perfil combinem com o host.
 
-## Checklist
+## Checklist {#checklist}
 
 Regras para um perfil que não é detectado. A maioria descreve uma camada que `apply_fingerprint()` não consegue controlar, então o perfil tem que ser escolhido para combinar com ela em vez de brigar com ela.
 
@@ -161,7 +161,7 @@ Os sinais que o CDP não alcança são definidos por um script injetado antes de
 
 O readback de canvas e WebGL não é modificado. Os sistemas de detecção requisitam o fingerprint repetidamente, então um valor que muda entre leituras é, por si só, um sinal de automação; o canvas de um Chrome real é estável. As strings de vendor e renderer do WebGL são sobrescritas para combinar com a plataforma declarada, mas os pixels renderizados são deixados inalterados.
 
-## Detectando overrides em JavaScript
+## Detectando overrides em JavaScript {#detecting-javascript-overrides}
 
 Os scripts de fingerprinting não leem apenas o valor de uma propriedade; eles inspecionam como ela foi definida e se os objetos ao redor foram modificados. Três verificações são padrão, e um override ingênuo falha em todas as três. O CreepJS é a implementação de referência.
 
@@ -186,11 +186,11 @@ Object.getOwnPropertyDescriptor(Navigator.prototype, 'hardwareConcurrency').get.
 
 Leituras entre realms. Um `iframe` de mesma origem ou um Web Worker é um realm novo cujo `navigator` e prototypes estão intocados por um hook instalado apenas no realm principal. Um `WorkerNavigator` de um worker reportando o valor real enquanto a página reporta o override é uma contradição.
 
-### Como o pydoll evita esses sinais
+### Como o Pydoll evita esses sinais
 
 - Os getters são definidos no prototype (`Navigator.prototype`, `Screen.prototype`), então a instância não ganha propriedades próprias.
 - Os getters e métodos com patch se reportam como nativos sob `toString`, e o próprio patch de `toString` não se torna um novo sinal.
-- Os overrides são replicados em dedicated, shared e service workers, então a página e os realms que ela gera reportam os mesmos valores.
+- Os overrides são replicados em dedicated, shared e service workers, então a página e os realms que ela gera reportam os mesmos valores (veja [Workers e iframes cross-origin](../deep-dive/fingerprinting/execution-realms.md)).
 
 É por isso que um perfil injetado passa nas verificações de detecção de mentiras, de prototype, de worker e de fontes do CreepJS, em vez de apenas mudar os valores visíveis.
 
@@ -218,6 +218,20 @@ O mesmo fingerprint, relido dentro de um service worker, reporta a mesma GPU ao 
 <p align="center"><sub>Dentro de um service worker: a mesma identidade, replicada.</sub></p>
 
 Um override instalado apenas no realm principal vazaria os valores reais de macOS e da GPU Apple naquele painel de worker, e a divergência entre a página e o seu worker é exatamente a contradição que o CreepJS reporta como mentira. Como o Pydoll replica os overrides em dedicated, shared e service workers, os dois realms concordam.
+
+### Iframes cross-origin
+
+Um worker é um tipo de realm separado; um iframe cross-origin é o outro. Quando o Chrome o isola em seu próprio processo (um iframe fora do processo, ou OOPIF), ele tem seu próprio `navigator` e GPU, então os overrides no nível da página param na fronteira do processo. Um script de fingerprinting embutido em um frame cross-origin de challenge ou de captcha leria a máquina real ali. `apply_fingerprint()` fecha isso por padrão, replicando a identidade completa naquele frame:
+
+```python
+# Padrão: a identidade também cobre iframes cross-origin.
+await tab.apply_fingerprint(FINGERPRINTS['windows11_rtx3060_nyc'])
+
+# Desative para cobrir apenas a página de topo, frames de mesma origem e workers.
+await tab.apply_fingerprint(FINGERPRINTS['windows11_rtx3060_nyc'], cross_origin_iframes=False)
+```
+
+A flag `cross_origin_iframes` (padrão `True`) controla isso. Ela importa para verificações antibot, incluindo challenges de captcha, quando a verificação roda dentro de um iframe cross-origin e lê o fingerprint ali; deixar aquele iframe com a identidade real é uma contradição que ela vê. Os iframes de mesma origem e de mesmo site já são cobertos pela injeção da página, então isso adiciona os que ficam fora do processo, os frames cross-site que o Chrome isola em seu próprio processo. A cobertura tem escopo limitado aos frames que de fato leem um fingerprint, como um widget de challenge ou de captcha; o Pydoll não se anexa a todo iframe de anúncio ou de analytics de terceiros que uma página embute, então a flag não deixa essas páginas mais lentas. Veja [Workers e iframes cross-origin](../deep-dive/fingerprinting/execution-realms.md) para saber como a identidade alcança cada realm.
 
 ## Modo headless {#headless-mode}
 
@@ -266,7 +280,7 @@ asyncio.run(headless_google_search())
 
 A injeção de fingerprint remove apenas os sinais de renderização do headless. Ela não muda o IP: um IP de datacenter com má reputação continua sendo desafiado tanto em headless quanto em headful (veja [O que determina o sucesso](captcha-bypass.md)).
 
-Para o Cloudflare Turnstile, a falha mais comum com um fingerprint aplicado é uma incompatibilidade de versão do Chrome, não o headless (veja [Incompatibilidade de versão do Chrome](#case-study-a-chrome-version-mismatch-triggering-cloudflares-challenge)). O Turnstile em headless ainda está sendo validado; prefira headful para ele.
+Para o Cloudflare Turnstile, a falha mais comum com um fingerprint aplicado é uma incompatibilidade de versão do Chrome, não o headless (veja [Incompatibilidade de versão do Chrome](#case-study-a-chrome-version-mismatch-triggering-cloudflares-challenge)). O headless limpa o managed challenge quando a identidade permanece coerente até dentro do iframe cross-origin (`cross_origin_iframes`, ativado por padrão) e o locale combina com o IP de saída; num IP marginal, prefira headful, ou headful sob o Xvfb. Veja [O managed challenge do Cloudflare](../deep-dive/fingerprinting/cloudflare-challenge.md).
 
 ## Consistência entre camadas {#consistency-is-the-whole-game}
 
@@ -301,14 +315,9 @@ Todos os três são lidos por sistemas anti-abuso e têm que concordar com o fus
 
 Para combinar a interação do [Cloudflare Turnstile](captcha-bypass.md) com um fingerprint, a versão do Chrome anunciada tem que corresponder ao binário real. Esta é a causa mais comum de falha do Turnstile com um fingerprint aplicado.
 
-Aplicar o perfil `macos_m3_new_york` fez o Turnstile falhar até em headful: a página ficou presa no interstício "Just a moment…", e remover a chamada `apply_fingerprint()` fez ele passar. O perfil fixava o Chrome 145 no User-Agent enquanto o binário era o Chrome 151; `apply_fingerprint()` definiu `navigator.userAgent`, `Sec-CH-UA` e `navigator.userAgentData` para 145 enquanto o handshake TLS/HTTP2 e o motor permaneciam em 151. Uma bisseção de variável única confirmou: mudar apenas a major anunciada de 145 para 151 transformou toda falha em aprovação.
+Aplicar o perfil `macos_m3_new_york` impediu o managed challenge do Cloudflare de se limpar até em headful: a página ficou presa no interstício "Just a moment…", e remover a chamada `apply_fingerprint()` fez ele passar. O perfil fixava o Chrome 145 no User-Agent enquanto o binário era o Chrome 151; `apply_fingerprint()` definiu `navigator.userAgent`, `Sec-CH-UA` e `navigator.userAgentData` para 145, mas o handshake TLS/HTTP2 e o motor JavaScript ainda reportavam 151. Uma bisseção de variável única confirmou: mudar apenas a major anunciada de 145 para 151 transformou toda falha em aprovação.
 
-Duas camadas reportam a versão real e não podem ser sobrescritas através do CDP:
-
-- O fingerprint TLS (JA3/JA4) e o frame `SETTINGS` do HTTP/2, produzidos pelo binário real antes de qualquer JavaScript rodar.
-- A superfície do motor JavaScript (APIs disponíveis e seu comportamento), que reflete a build real do V8/Blink.
-
-O managed challenge do Cloudflare compara a versão anunciada (User-Agent + Client Hints) com a versão observada (handshake e motor). Um navegador real não anuncia uma versão que não está rodando, então 145 sobre um handshake 151 é uma inconsistência e o interstício não se limpa.
+A versão vaza através de duas camadas que o CDP não consegue sobrescrever, o handshake de rede (TLS JA3/JA4, `SETTINGS` do HTTP/2) e a superfície do motor V8/Blink, então anunciar uma versão que o binário não está rodando é uma contradição que o challenge pontua. [O managed challenge do Cloudflare](../deep-dive/fingerprinting/cloudflare-challenge.md#the-chrome-version-must-match-the-binary) tem o detalhamento por camada.
 
 Leia a versão do binário e combine o User-Agent do perfil com ela:
 
@@ -335,17 +344,7 @@ Uma bisseção de variável única do perfil que passa em direção ao que falha
 
 Qualquer sistema operacional que não seja macOS falha neste host macOS. Um perfil de macOS anunciando uma GPU NVIDIA passa; um perfil de Windows anunciando a GPU Apple real falha.
 
-Medição por camada, ambos os perfis, mesmo Chrome:
-
-- TCP/IP: o servidor observa o mesmo TTL inicial de 64 (macOS/Unix) para ambos os perfis; um host Windows emite 128. Não alcançável através do CDP.
-- TLS (JA3/JA4): varia por conexão (o toggle de extensão de padding do Chrome); a baseline sem fingerprint produz ambas as variantes. Não codifica o sistema operacional.
-- HTTP/2 (Akamai): idêntico entre os perfis. Não codifica o sistema operacional.
-- Client Hints: totalmente sobrescritos para o sistema operacional anunciado (o Windows reporta `architecture` `x86`, sem vazamento de `arm`).
-- Canvas/WebGL: o hash da imagem renderizada é idêntico entre os perfis (pixels da GPU Apple real em ambos). Não é o diferenciador.
-
-Tudo o que `apply_fingerprint()` controla reporta Windows; a stack TCP/IP do kernel reporta macOS. O managed challenge do Cloudflare compara o sistema operacional anunciado com a assinatura passiva da stack e mantém o interstício quando eles discordam.
-
-O TTL, o window scaling e a ordem das opções TCP vêm do kernel do host, não do navegador, e nenhum override de CDP ou JavaScript os alcança. A renderização de GPU e as métricas de texto (CoreText no macOS) também são do host. Clientes que forjam TLS (curl_cffi, tls-client) não ajudam aqui: a falha não está no TLS, e eles ainda usam a stack TCP/IP do kernel do host.
+Tudo o que `apply_fingerprint()` controla reporta o sistema operacional anunciado, mas a stack TCP/IP do kernel do host (TTL inicial 64 no macOS/Linux, 128 no Windows) e a renderização de texto do sistema operacional (CoreText no macOS) não se movem, e nenhum override de CDP ou JavaScript os alcança. O Cloudflare compara o sistema operacional anunciado com essa assinatura passiva e mantém o interstício quando eles discordam. Clientes que forjam TLS (curl_cffi, tls-client) não ajudam: a falha não está no TLS, e eles ainda usam a stack do kernel do host. [O managed challenge do Cloudflare](../deep-dive/fingerprinting/cloudflare-challenge.md#the-os-must-match-the-host) tem a medição por camada.
 
 Para passar, combine o sistema operacional do perfil (e a família de GPU) com o host: um perfil de macOS neste Mac, um perfil de Windows num host Windows. Um proxy de encaminhamento (SOCKS5/HTTP CONNECT) reorigina a conexão TCP a partir do kernel do proxy, então o sistema operacional observado passa a ser o do host do proxy; um perfil de Windows então exige um proxy rodando em Windows (um proxy Linux dá uma assinatura de Linux, ainda inconsistente com um User-Agent de Windows).
 
@@ -399,6 +398,7 @@ Um perfil público reutilizado amplamente se torna uma assinatura compartilhada 
 - [Técnicas de evasão](evasion-techniques.md): consistência do User-Agent, idioma, proteção contra vazamento de WebRTC e o que o Pydoll te dá de graça.
 - [Fingerprinting de navegador](../deep-dive/fingerprinting/browser-fingerprinting.md): a superfície de detecção (canvas, WebGL, navigator, fontes) que esta página sobrescreve.
 - [Os limites do spoofing](../deep-dive/fingerprinting/spoofing-limits.md): por que alguns sinais são seguros de sobrescrever e outros não podem ser forjados de jeito nenhum.
+- [Workers e iframes cross-origin](../deep-dive/fingerprinting/execution-realms.md): como a identidade injetada é replicada em cada realm, e o escopo de tab vs navegador.
 - [Fingerprinting de rede](../deep-dive/fingerprinting/network-fingerprinting.md): a camada TLS/TCP/HTTP2 que a injeção não alcança.
 - [Contextos de navegador](../guides/browser-contexts.md): rode uma identidade por contexto.
 - [Proxies](../guides/proxies.md): combine o IP de saída com a geografia do perfil.

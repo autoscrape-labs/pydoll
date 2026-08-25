@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Which realms report the injected identity</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+<style>
+  :root{
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;--panel2:#191c20;
+    --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
+    --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--pass:#35e0a1;--danger:#ff6b6b;
+    --indigo-dim:rgba(110,123,255,.13);--pass-dim:rgba(53,224,161,.12);--danger-dim:rgba(255,107,107,.12);
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
+  .widget{border:1px solid var(--line);padding:16px 18px}
+  .lead{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:14px;line-height:1.5}
+  .lead b{color:var(--ink)}
+  .toggle{display:inline-flex;border:1px solid var(--line2);margin-bottom:16px}
+  .toggle button{font-family:var(--mono);font-size:11.5px;color:var(--dim);background:var(--panel);border:0;padding:8px 15px;cursor:pointer;transition:.15s}
+  .toggle button+button{border-left:1px solid var(--line2)}
+  .toggle button.on{background:var(--indigo-dim);color:#fff}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  @media(max-width:620px){.grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:420px){.grid{grid-template-columns:1fr}}
+  .card{border:1px solid var(--line2);background:var(--bg2);padding:11px 12px;transition:.25s;min-height:104px;display:flex;flex-direction:column}
+  .card .k{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);margin-bottom:8px}
+  .card .val{font-family:var(--sans);font-weight:800;font-size:19px;line-height:1;margin-bottom:auto}
+  .card .via{font-family:var(--mono);font-size:9.5px;color:var(--faint);margin-top:9px;letter-spacing:.02em}
+  .card .tag{font-family:var(--mono);font-size:9.5px;margin-top:4px;letter-spacing:.03em}
+  .card.match{border-color:var(--indigo)} .card.match .val{color:var(--indigo2)} .card.match .tag{color:var(--indigo2)}
+  .card.leak{border-color:rgba(255,107,107,.42)} .card.leak .val{color:var(--danger)} .card.leak .tag{color:var(--danger)}
+  .verdict{display:flex;align-items:center;gap:11px;margin-top:15px;padding:12px 14px;border:1px solid var(--line);transition:.3s}
+  .verdict .chip{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:5px 11px;border:1px solid;flex:none}
+  .verdict .txt{font-family:var(--mono);font-size:11.5px;color:var(--dim);line-height:1.55}
+  .verdict.ok{background:var(--pass-dim);border-color:rgba(53,224,161,.3)} .verdict.ok .chip{color:var(--pass);border-color:rgba(53,224,161,.5)} .verdict.ok .txt b{color:var(--pass)}
+  .verdict.bad{background:var(--danger-dim);border-color:rgba(255,107,107,.3)} .verdict.bad .chip{color:var(--danger);border-color:rgba(255,107,107,.5)} .verdict.bad .txt b{color:var(--danger)}
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="lead">A Windows profile is applied on a real Mac. A detector reads <b>navigator.platform</b> inside every realm the page can spawn. Choose how far the override reaches.</div>
+
+  <div class="toggle">
+    <button id="bNaive" class="on">top-page hook</button>
+    <button id="bPydoll">pydoll</button>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="verdict" id="verdict">
+    <span class="chip" id="chip"></span>
+    <span class="txt" id="txt"></span>
+  </div>
+</div>
+
+<script>
+(function(){
+  function g(id){return document.getElementById(id);}
+  var SPOOF='Win32', REAL='MacIntel', mode='naive';
+
+  // realm: name, how pydoll reaches it, and whether a naive top-page hook reaches it
+  var REALMS = [
+    {name:'Main document',        via:'page script',        naive:true },
+    {name:'Same-origin iframe',   via:'page script',        naive:false},
+    {name:'Cross-origin iframe (OOPIF)', via:'iframe-target attach', naive:false},
+    {name:'Dedicated worker',     via:'tab-scope attach',   naive:false},
+    {name:'Shared worker',        via:'browser-scope attach', naive:false},
+    {name:'Service worker',       via:'browser-scope attach', naive:false},
+  ];
+
+  function render(){
+    var pydoll = mode==='pydoll';
+    g('bNaive').className = pydoll?'':'on';
+    g('bPydoll').className = pydoll?'on':'';
+
+    var grid = g('grid');
+    grid.innerHTML='';
+    var anyLeak=false;
+    REALMS.forEach(function(r){
+      var reached = pydoll ? true : r.naive;
+      if(!reached) anyLeak=true;
+      var card=document.createElement('div');
+      card.className='card '+(reached?'match':'leak');
+      var via = pydoll ? ('via '+r.via) : (r.naive ? 'via page hook' : 'not reached');
+      var tag = reached ? 'matched' : 'real value leaks';
+      card.innerHTML =
+        '<div class="k">'+r.name+'</div>'+
+        '<div class="val">'+(reached?SPOOF:REAL)+'</div>'+
+        '<div class="via">'+via+'</div>'+
+        '<div class="tag">'+tag+'</div>';
+      grid.appendChild(card);
+    });
+
+    var v=g('verdict');
+    if(pydoll){
+      v.className='verdict ok';
+      g('chip').textContent='consistent';
+      g('txt').innerHTML='Every realm reports <b>Win32</b>. The page script covers same-origin frames; workers and the OOPIF are attached and replayed, each over the right connection.';
+    }else{
+      v.className='verdict bad';
+      g('chip').textContent='contradiction';
+      g('txt').innerHTML='A hook in the top document only patches its own realm. Every other realm still reports the real <b>MacIntel</b>, and the disagreement is the tell.';
+    }
+  }
+
+  g('bNaive').addEventListener('click',function(){mode='naive';render();});
+  g('bPydoll').addEventListener('click',function(){mode='pydoll';render();});
+  render();
+})();
+</script>
+<script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>
+</body>
+</html>
