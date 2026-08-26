@@ -218,6 +218,10 @@
   background: linear-gradient(180deg, #0a0f52, #0d24ad);
 }
 
+.md-typeset .sponsor-banner--serpapi {
+  background: #4668ea;
+}
+
 .md-typeset .sponsor-banner img {
   width: 100%;
   height: 100%;

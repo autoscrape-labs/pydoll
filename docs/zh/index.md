@@ -100,6 +100,13 @@ asyncio.run(main())
 ## Top Sponsors
 
 <div class="sponsor-grid-top">
+  <a class="sponsor-card" href="http://serpapi.com/?utm_source=github_sponsorship&utm_campaign=pydoll" target="_blank" rel="noopener nofollow sponsored">
+    <span class="sponsor-banner sponsor-banner--serpapi"><img src="/docs/resources/images/serp-api-banner.png" alt="SerpApi" /></span>
+    <span class="sponsor-body">
+      <span class="sponsor-name">SerpApi</span>
+      <span class="sponsor-desc">面向 AI 应用的 Web Search API。提供 Markdown 和 JSON，适配任意集成。</span>
+    </span>
+  </a>
   <a class="sponsor-card" href="https://substack.thewebscraping.club/p/pydoll-webdriver-scraping?utm_source=github&utm_medium=repo&utm_campaign=pydoll" target="_blank" rel="noopener nofollow sponsored">
     <span class="sponsor-banner"><img src="/docs/resources/images/banner-the-webscraping-club.png" alt="The Web Scraping Club" /></span>
     <span class="sponsor-body">

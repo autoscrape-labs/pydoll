@@ -46,6 +46,15 @@ You have probably watched a scraper work on your machine, then hit a wall of cap
 <table>
   <tr>
     <td width="300" align="center" valign="middle">
+      <a href="http://serpapi.com/?utm_source=github_sponsorship&utm_campaign=pydoll"><img src="public/images/serp-api-banner.png" width="280" alt="SerpApi" /></a>
+    </td>
+    <td valign="middle">
+      <b><a href="http://serpapi.com/?utm_source=github_sponsorship&utm_campaign=pydoll">SerpApi</a></b><br />
+      <sub>Web Search API for your AI apps. Available in Markdown and JSON for any integration.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="300" align="center" valign="middle">
       <a href="https://substack.thewebscraping.club/p/pydoll-webdriver-scraping?utm_source=github&utm_medium=repo&utm_campaign=pydoll"><img src="public/images/banner-the-webscraping-club.png" width="280" alt="The Web Scraping Club" /></a>
     </td>
     <td valign="middle">

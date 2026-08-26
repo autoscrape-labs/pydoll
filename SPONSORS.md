@@ -4,6 +4,14 @@ Pydoll is supported by these amazing sponsors. Their contributions help keep the
 
 ## Top Sponsors
 
+<a href="http://serpapi.com/?utm_source=github_sponsorship&utm_campaign=pydoll">
+<img width="100%" alt="SerpApi" src="public/images/serp-api-banner.png" />
+</a>
+
+**[SerpApi](http://serpapi.com/?utm_source=github_sponsorship&utm_campaign=pydoll)** is a Web Search API for your AI apps. Available in Markdown and JSON for any integration.
+
+---
+
 <a href="https://substack.thewebscraping.club/p/pydoll-webdriver-scraping?utm_source=github&utm_medium=repo&utm_campaign=pydoll">
 <img alt="The Web Scraping Club" src="public/images/banner-the-webscraping-club.png" />
 </a>
