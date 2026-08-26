@@ -64,10 +64,10 @@
   .cbs .ch .n{font-family:var(--mono);font-size:9px;color:var(--faint)}
   .cb{display:grid;grid-template-columns:16px 1fr auto;gap:8px;align-items:center;border:1px solid var(--line);background:var(--panel);padding:6px 9px;cursor:pointer;user-select:none;transition:border-color .25s,background .25s}
   .cb input{margin:0;accent-color:var(--indigo);cursor:pointer;width:13px;height:13px}
-  .cb .txt{min-width:0}
-  .cb .fn{font-family:var(--mono);font-size:10.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cb .txt{min-width:0;overflow:hidden}
+  .cb .fn{display:block;font-family:var(--mono);font-size:10.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .cb .fn .kw{color:var(--indigo2)}
-  .cb .ev{font-family:var(--mono);font-size:8.5px;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cb .ev{display:block;font-family:var(--mono);font-size:8.5px;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .cb .ev.page{color:var(--indigo)} .cb .ev.net{color:var(--blue)}
   .cb .cnt{font-family:var(--mono);font-size:9px;color:var(--faint);display:flex;align-items:center;gap:5px;white-space:nowrap}
   .cb .cnt .dot{width:7px;height:7px;border-radius:50%;background:var(--faint);transition:.2s}
