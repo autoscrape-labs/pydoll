@@ -288,7 +288,7 @@
     T(function(){ setCookies('a',true); },600);
     T(function(){ readCookies('b'); },1900);
     T(function(){ readCookies('a'); },3500);
-    T(function(){ if(auto) demo(); },6000);
+    /* run once and hold (dense read view); reset demo replays, any call hands over */
   }
 
   function stopAuto(){ if(auto){ auto=false; clearTimers(); } }
