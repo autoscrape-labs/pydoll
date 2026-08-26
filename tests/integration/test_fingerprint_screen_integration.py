@@ -12,6 +12,7 @@ Same-host, different-port is same-site and would keep the iframe in-process.
 import http.server
 import json
 import socket
+import sys
 import threading
 from pathlib import Path
 
@@ -252,8 +253,22 @@ async def test_identity_absent_from_oopif_when_disabled(ci_chrome_options, cross
         await tab.go_to(url)
 
         data = await _read_oopif_identity(browser, tab)
-        # The OOPIF kept the real (non-Windows CI) host identity, distinct from the page.
-        assert data['platform'] != 'Win32'
-        assert 'Windows NT 10.0' not in data['ua']
-        if data['webgl'] not in ('no-webgl', 'no-ext', 'err'):
+
+        # The WebGL renderer is the host-independent proof: no CI GPU is an RTX 3060,
+        # so its absence means the injected identity did not reach this realm.
+        webgl_available = data['webgl'] not in ('no-webgl', 'no-ext', 'err')
+        if webgl_available:
             assert 'RTX 3060' not in data['webgl']
+
+        # platform and User-Agent only discriminate when the host OS differs from the
+        # injected Windows profile. On the Windows CI runner the real values ARE Win32 /
+        # 'Windows NT 10.0', so they cannot tell a leaked identity from the host's own.
+        if sys.platform != 'win32':
+            assert data['platform'] != 'Win32'
+            assert 'Windows NT 10.0' not in data['ua']
+        elif not webgl_available:
+            pytest.skip(
+                'No host-independent identity marker on this Windows host '
+                '(WebGL unavailable); the injected Win32 profile is indistinguishable '
+                'from the real host identity.'
+            )

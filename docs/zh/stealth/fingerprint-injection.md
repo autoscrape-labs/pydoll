@@ -50,7 +50,7 @@ headless Chrome 通常一上来就通不过 bot 检查：软件 WebGL 渲染器�
 <p align="center">
   <img src="/docs/resources/images/cloudflare-headless-bypass.gif" alt="Pydoll 在 headless 模式下加载一个受 Cloudflare 保护的站点，并在应用了 fingerprint 后通过托管挑战" width="760" />
 </p>
-<p align="center"><sub>Headless，配上一个匹配的 fingerprint：托管挑战通过。</sub></p>
+<p align="center"><sub>Headless 没有可见窗口，这是它的 CDP screencast。配上一个匹配的 fingerprint，托管挑战通过。</sub></p>
 
 ```python
 async with Chrome() as browser:

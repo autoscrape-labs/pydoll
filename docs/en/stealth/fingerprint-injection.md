@@ -50,7 +50,7 @@ Headless Chrome normally fails bot checks on sight: a software WebGL renderer, a
 <p align="center">
   <img src="/docs/resources/images/cloudflare-headless-bypass.gif" alt="Pydoll in headless mode loading a Cloudflare-protected site and clearing the managed challenge with a fingerprint applied" width="760" />
 </p>
-<p align="center"><sub>Headless, with a matched fingerprint: the managed challenge clears.</sub></p>
+<p align="center"><sub>Headless has no visible window; this is its CDP screencast. With a matched fingerprint, the managed challenge clears.</sub></p>
 
 ```python
 async with Chrome() as browser:

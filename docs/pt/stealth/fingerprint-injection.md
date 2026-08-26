@@ -50,7 +50,7 @@ O Chrome headless normalmente falha em checagens de bot de cara: um renderizador
 <p align="center">
   <img src="/docs/resources/images/cloudflare-headless-bypass.gif" alt="Pydoll em modo headless carregando um site protegido pelo Cloudflare e passando o desafio gerenciado com um fingerprint aplicado" width="760" />
 </p>
-<p align="center"><sub>Headless, com um fingerprint compatível: o desafio gerenciado passa.</sub></p>
+<p align="center"><sub>Headless não tem janela visível; isto é o screencast do CDP dele. Com um fingerprint compatível, o desafio gerenciado passa.</sub></p>
 
 ```python
 async with Chrome() as browser:
