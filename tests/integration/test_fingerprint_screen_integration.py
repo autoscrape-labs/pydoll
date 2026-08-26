@@ -9,6 +9,7 @@ iframe: the top page is served from ``localhost`` and the iframe from
 Same-host, different-port is same-site and would keep the iframe in-process.
 """
 
+import asyncio
 import http.server
 import json
 import socket
@@ -95,10 +96,25 @@ def cross_origin_servers():
     srv_b.shutdown()
 
 
+async def _wait_for_oopif_target(browser, timeout: float = 10.0):
+    """Poll until a true out-of-process iframe target exists.
+
+    The OOPIF is created asynchronously after the main page sets the iframe src,
+    so a one-shot get_targets() snapshot races with it and flakes on a loaded CI
+    runner. Every other reach into the iframe already waits with a timeout.
+    """
+    loop = asyncio.get_running_loop()
+    deadline = loop.time() + timeout
+    while loop.time() < deadline:
+        if any(t['type'] == 'iframe' for t in await browser.get_targets()):
+            return
+        await asyncio.sleep(0.1)
+    raise AssertionError('expected a true out-of-process iframe target')
+
+
 async def _read_oopif_screen(browser, tab):
     """Assert a real OOPIF exists, then read its window.screen JSON."""
-    assert any(t['type'] == 'iframe' for t in await browser.get_targets()), \
-        'expected a true out-of-process iframe target'
+    await _wait_for_oopif_target(browser)
     iframe = await tab.find(id='cross-origin-iframe', timeout=10)
     assert iframe.is_iframe
     reporter = await iframe.find(id='screen-info', timeout=10)
@@ -211,8 +227,7 @@ def _identity_main_url(port_a: int, port_b: int) -> str:
 
 async def _read_oopif_identity(browser, tab) -> dict:
     """Assert a real OOPIF exists, then read the identity it reports from its own realm."""
-    assert any(t['type'] == 'iframe' for t in await browser.get_targets()), \
-        'expected a true out-of-process iframe target'
+    await _wait_for_oopif_target(browser)
     iframe = await tab.find(id='cross-origin-iframe', timeout=10)
     assert iframe.is_iframe
     reporter = await iframe.find(id='identity-info', timeout=10)
