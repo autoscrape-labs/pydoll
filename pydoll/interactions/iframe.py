@@ -261,28 +261,19 @@ class IFrameContextResolver:
         )
 
     async def _resolve_oopif_by_parent(
-        self,
-        content_frame_id: str,
-        backend_node_id: Optional[int],
-        base_handler: Optional[ConnectionHandler] = None,
-        base_session_id: Optional[str] = None,
-    ) -> tuple[Optional[ConnectionHandler], Optional[str], Optional[str], Optional[str]]:
-        """Resolve out-of-process iframe using content frame id.
+            self,
+            content_frame_id: str,
+            backend_node_id: Optional[int],
+            base_handler: Optional[ConnectionHandler] = None,
+            base_session_id: Optional[str] = None,
+    ):
+        element_handler = self._element._connection_handler
 
-        ``content_frame_id`` is the frame ID of the frame *created* by the
-        ``<iframe>`` element (obtained from ``DOM.describeNode``'s
-        ``node.frameId``).  For OOPIF targets the root frame of the target
-        shares this ID, so we can match directly without needing
-        ``DOM.getFrameOwner``.
-
-        When a direct frame-ID match is not possible (e.g. nested sub-frames
-        inside the OOPIF), the method falls back to ``DOM.getFrameOwner``
-        using the routing handler/session that has DOM visibility into the
-        parent context.
-        """
         browser_handler = ConnectionHandler(
-            connection_port=self._element._connection_handler._connection_port
+            connection_port=element_handler._connection_port,
+            ws_address=element_handler._ws_address,
         )
+
         try:
             return await self._try_resolve_oopif(
                 browser_handler,
