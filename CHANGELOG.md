@@ -1,3 +1,9 @@
+## 2.26.0 (2026-08-26)
+
+### Feat
+
+- **fingerprint**: propagate identity into cross-origin OOPIF iframes
+
 ## 2.25.0 (2026-08-22)
 
 ### Feat
