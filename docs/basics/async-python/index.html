@@ -3647,7 +3647,7 @@
 </span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </span></code></pre></div>
 <p>This time it is about <strong>2 seconds</strong>. The two waits overlap. The kettle boils while the bread toasts.</p>
-<iframe src="/docs/resources/visuals/async-flow.html" aria-label="Sequential vs concurrent async, animated" style="width: 100%; height: 285px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/async-flow.html" aria-label="Sequential vs concurrent async, animated" style="width: 100%; height: 285px; border: 0;" loading="lazy"></iframe>
 
 <p>Run each mode and watch the timer: sequential finishes at 4.0s, concurrent at 2.0s, because the two waits overlap.</p>
 <p><code>asyncio.gather(*coroutines)</code> runs everything you pass it concurrently and returns their results in order once all are done.</p>

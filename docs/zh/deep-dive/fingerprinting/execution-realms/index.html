@@ -3614,7 +3614,7 @@
 <p align="center"><sub>CreepJS 在一个 worker 内部第二次读取 fingerprint。这里它报告的是注入的身份，而不是真实的 Mac。</sub></p>
 
 <p>下面这张交互式地图在一台真实的 Mac 上应用一个 Windows profile，并在每一个 realm 中读取 <code>navigator.platform</code>。在一个幼稚的顶层页面 hook 和 Pydoll 的逐 realm 重放之间切换：</p>
-<iframe src="/docs/resources/visuals/realm-coverage.html" aria-label="一个 Windows profile 应用在一台 Mac 上；在主文档、一个同源 iframe、一个跨源 OOPIF，以及 dedicated、shared 和 service worker 中读取 navigator.platform。一个顶层页面 hook 只匹配主文档；Pydoll 的重放匹配每一个 realm。" style="width: 100%; height: 430px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/realm-coverage.html" aria-label="一个 Windows profile 应用在一台 Mac 上；在主文档、一个同源 iframe、一个跨源 OOPIF，以及 dedicated、shared 和 service worker 中读取 navigator.platform。一个顶层页面 hook 只匹配主文档；Pydoll 的重放匹配每一个 realm。" style="width: 100%; height: 430px; border: 0;" loading="lazy"></iframe>
 
 <h2 id="realm_1">两种覆盖能免费触及每一个同进程 realm</h2>
 <p>Pydoll 的两种机制会自行跨越 realm 边界，但仅限于单个进程之内：</p>

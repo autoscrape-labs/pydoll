@@ -9,61 +9,101 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
 <style>
   :root{
-    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;--panel2:#191c20;
     --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
     --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
-    --indigo:#6e7bff;--indigo2:#8f99ff;--pass:#35e0a1;--danger:#ff6b6b;
-    --pass-dim:rgba(53,224,161,.12);--danger-dim:rgba(255,107,107,.12);
-    --sans:"Chivo",system-ui,-apple-system,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--indigo-dim:rgba(110,123,255,.13);
+    --pass:#35e0a1;--pass-dim:rgba(53,224,161,.12);
+    --amber:#f5b544;--amber-dim:rgba(245,181,68,.13);
+    --danger:#ff6b6b;--danger-dim:rgba(255,107,107,.12);
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
   }
-  *{box-sizing:border-box}
-  html,body{margin:0}
+  *{box-sizing:border-box} html,body{margin:0}
   body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
   .widget{border:1px solid var(--line);padding:16px 18px}
-  .lead{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:15px;line-height:1.5}
-  .cols{display:grid;grid-template-columns:1fr 1fr;gap:11px}
-  @media(max-width:520px){.cols{grid-template-columns:1fr}}
-  .col{border:1px solid var(--line2);background:var(--bg2);padding:13px 14px;min-width:0}
-  .col.iframe{transition:border-color .3s}
-  .col .h{font-family:var(--sans);font-weight:700;font-size:13px;margin-bottom:1px}
-  .col .u{font-family:var(--mono);font-size:9.5px;color:var(--faint);margin-bottom:11px}
-  .r{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid var(--line)}
-  .r .k{font-family:var(--mono);font-size:10.5px;color:var(--dim)}
-  .r .v{font-family:var(--mono);font-size:12px;font-weight:600;display:flex;align-items:center;gap:8px;transition:color .25s}
-  .r .dot{width:7px;height:7px;border-radius:50%;background:transparent;transition:background .25s}
-  .col.iframe .r.lie .v{color:var(--danger)} .col.iframe .r.lie .dot{background:var(--danger)}
-  .col.iframe .r.ok .v{color:var(--pass)} .col.iframe .r.ok .dot{background:var(--pass)}
-  .control{display:flex;align-items:center;gap:12px;margin-top:13px;flex-wrap:wrap}
+  .lead{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:15px;line-height:1.55}
+  .lead b{color:var(--ink)}
+
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:540px){.cols{grid-template-columns:1fr}}
+  .win{border:1px solid var(--line2);background:var(--bg2);overflow:hidden;min-width:0;transition:border-color .5s}
+  .chrome{display:flex;align-items:center;gap:8px;padding:8px 11px;border-bottom:1px solid var(--line);background:var(--panel2)}
+  .dots{display:flex;gap:5px}.dots i{width:8px;height:8px;border-radius:50%;display:block}
+  .dots i:nth-child(1){background:#ff5f57}.dots i:nth-child(2){background:#febc2e}.dots i:nth-child(3){background:#28c840}
+  .chrome .nm{font-family:var(--sans);font-weight:700;font-size:11.5px}
+  .chrome .badge{margin-left:auto;font-family:var(--mono);font-size:8.5px;text-transform:uppercase;letter-spacing:.04em;padding:2px 7px;border:1px solid var(--line2);color:var(--faint);white-space:nowrap;transition:.4s}
+  .win.oopif .badge.leak{color:var(--danger);border-color:rgba(255,107,107,.45);background:var(--danger-dim)}
+  .win.oopif .badge.ok{color:var(--pass);border-color:rgba(53,224,161,.45);background:var(--pass-dim)}
+  .url{display:flex;align-items:center;gap:6px;padding:6px 11px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:9.5px;color:var(--faint)}
+  .url svg{width:9px;height:9px;color:var(--faint)}
+
+  .bay{height:118px;display:flex;align-items:flex-end;justify-content:center;padding:12px 12px 10px;position:relative}
+  .monitor{position:relative;border:1.5px solid var(--line2);background:var(--panel);overflow:hidden;box-shadow:0 0 0 3px rgba(0,0,0,.25)}
+  .monitor .work{position:absolute;left:0;right:0;bottom:0;top:0;z-index:0;background:repeating-linear-gradient(135deg,rgba(110,123,255,.06) 0 6px,transparent 6px 12px)}
+  .monitor .menubar{position:absolute;top:0;left:0;right:0;z-index:3;background:rgba(244,245,247,.16);border-bottom:1px solid rgba(244,245,247,.24)}
+  .win.oopif .monitor{border-color:rgba(255,107,107,.5)}
+  .win.oopif.fixed .monitor{border-color:rgba(53,224,161,.5)}
+  .monitor .mlabel{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;font-family:var(--mono);font-size:10px;font-weight:600;color:var(--dim);z-index:2}
+  .monitor .dpr{position:absolute;right:3px;bottom:2px;font-family:var(--mono);font-size:8px;color:var(--faint);z-index:2}
+  .monitor .scan{position:absolute;left:0;right:0;top:0;height:22px;background:linear-gradient(180deg,rgba(110,123,255,.18),transparent);z-index:1}
+  @keyframes scan{0%{transform:translateY(-30px)}100%{transform:translateY(130px)}}
+  .monitor .scan{animation:scan 3.4s linear infinite}
+
+  .rows{padding:2px 13px 11px}
+  .r{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid var(--line)}
+  .r .k{font-family:var(--mono);font-size:10px;color:var(--dim)}
+  .r .v{font-family:var(--mono);font-size:12px;font-weight:600;display:flex;align-items:center;gap:8px;transition:color .3s}
+  .r .dot{width:7px;height:7px;border-radius:50%;background:transparent;transition:background .3s}
+  .win.oopif .r.lie .v{color:var(--danger)} .win.oopif .r.lie .dot{background:var(--danger)}
+  .win.oopif .r.ok .v{color:var(--pass)} .win.oopif .r.ok .dot{background:var(--pass)}
+  .win.oopif.morphing .r .v{color:var(--amber)} .win.oopif.morphing .r .dot{background:var(--amber)}
+
+  .control{display:flex;align-items:center;gap:12px;margin-top:14px;flex-wrap:wrap}
   .control button{font-family:var(--mono);font-size:12px;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:9px 14px;cursor:pointer;transition:.15s}
   .control button:hover{border-color:var(--indigo);color:#fff}
-  .control .hint{font-family:var(--mono);font-size:10.5px;color:var(--faint)}
-  .verdict{display:flex;align-items:center;gap:12px;margin-top:14px;padding:13px 15px;border:1px solid var(--line);transition:.3s}
+  .control button.primary{border-color:rgba(110,123,255,.5);background:var(--indigo-dim);color:var(--indigo2)}
+  .control .hint{font-family:var(--mono);font-size:10px;color:var(--faint);line-height:1.4}
+
+  .verdict{display:flex;align-items:center;gap:12px;margin-top:14px;padding:12px 15px;border:1px solid var(--line);transition:.4s}
   .verdict .chip{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:5px 11px;border:1px solid;flex:none}
-  .verdict .txt{font-family:var(--mono);font-size:11.5px;color:var(--dim);line-height:1.55}
+  .verdict .txt{font-family:var(--mono);font-size:11px;color:var(--dim);line-height:1.55}
   .verdict.lie{background:var(--danger-dim);border-color:rgba(255,107,107,.3)} .verdict.lie .chip{color:var(--danger);border-color:rgba(255,107,107,.5)} .verdict.lie .txt b{color:var(--danger)}
   .verdict.ok{background:var(--pass-dim);border-color:rgba(53,224,161,.3)} .verdict.ok .chip{color:var(--pass);border-color:rgba(53,224,161,.5)} .verdict.ok .txt b{color:var(--pass)}
-  .col.iframe.leak{border-color:rgba(255,107,107,.4)} .col.iframe.fixed{border-color:rgba(53,224,161,.35)}
+
+  .foot{font-family:var(--mono);font-size:9.5px;color:var(--faint);margin-top:11px;line-height:1.5}
+
+  @media(prefers-reduced-motion:reduce){ .monitor .scan{animation:none;opacity:0} }
+
+  /* theme-matched thin scrollbars for overflow-x boxes (replaces the default white bar) */
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--line2)}
+  ::-webkit-scrollbar-thumb:hover{background:var(--faint)}
 </style>
 </head>
 <body>
 <div class="widget">
-  <div class="lead">Headless Chrome, macOS profile. The top page and its <b>cross-origin iframe</b> each read their own <b>window.screen</b>. Reshape the virtual screen and watch the iframe stop contradicting the page.</div>
+  <div class="lead">Headless Chrome, macOS profile. The page and its <b>cross-origin iframe</b> each read their own <b>window.screen</b>. The iframe is an out-of-process frame, so it reads the raw <b>800 × 600</b> headless screen until the browser-global screen is reshaped.</div>
 
   <div class="cols">
-    <div class="col">
-      <div class="h">Top page</div>
-      <div class="u">example.com &middot; window.screen</div>
-      <div id="topRows"></div>
+    <div class="win page" id="pageWin">
+      <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="nm">Top page</span><span class="badge">reference</span></div>
+      <div class="url"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>example.com</div>
+      <div class="bay"><div class="monitor" id="mPage"><div class="menubar"></div><div class="work"></div><div class="scan"></div><div class="mlabel" id="lPage"></div><div class="dpr" id="dPage"></div></div></div>
+      <div class="rows" id="rowsPage"></div>
     </div>
-    <div class="col iframe" id="frameCol">
-      <div class="h">Cross-origin iframe</div>
-      <div class="u">challenges.example.net &middot; window.screen</div>
-      <div id="frameRows"></div>
+
+    <div class="win oopif" id="oopifWin">
+      <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="nm">Cross-origin iframe</span><span class="badge leak" id="oBadge">OOPIF</span></div>
+      <div class="url"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>challenges.cloudflare.com</div>
+      <div class="bay"><div class="monitor" id="mFrame"><div class="menubar"></div><div class="work"></div><div class="scan"></div><div class="mlabel" id="lFrame"></div><div class="dpr" id="dFrame"></div></div></div>
+      <div class="rows" id="rowsFrame"></div>
     </div>
   </div>
 
   <div class="control">
-    <button id="btn"></button>
+    <button id="btn" class="primary"></button>
     <span class="hint" id="hint"></span>
   </div>
 
@@ -71,51 +111,112 @@
     <span class="chip" id="chip"></span>
     <span class="txt" id="txt"></span>
   </div>
+
+  <div class="foot">The headless virtual screen accepts only an integer <b>devicePixelRatio</b>: a fractional dpr is rounded for iframes while the top page keeps the exact value.</div>
 </div>
 
 <script>
 (function(){
+  var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
   function g(id){return document.getElementById(id);}
-  var KEYS=['width × height','availTop','availHeight','colorDepth','devicePixelRatio'];
-  // Real captures (pydoll headless, macOS profile) for both states.
-  var TOP  ={'width × height':'1440 × 900','availTop':'25','availHeight':'860','colorDepth':'24','devicePixelRatio':'2'};
-  var TOP0 ={'width × height':'1440 × 900','availTop':'0','availHeight':'860','colorDepth':'24','devicePixelRatio':'2'};
-  var LEAK ={'width × height':'800 × 600','availTop':'0','availHeight':'600','colorDepth':'24','devicePixelRatio':'1'};
-  var reshaped=false;
 
-  function rows(host,data,ref){
+  var K=0.12, BAYH=118;
+  var PAGE={W:1440,H:900,availTop:25,availHeight:875,dpr:2,colorDepth:24};
+  var RAW ={W:800, H:600,availTop:0, availHeight:600,dpr:1,colorDepth:24};
+  var reshaped=false;
+  var cur={W:800,H:600,availTop:0,availHeight:600,dpr:1,colorDepth:24};
+
+  var ROWS=[
+    {k:'screen.width × height', f:function(v){return Math.round(v.W)+' × '+Math.round(v.H);}, cmp:function(v){return Math.round(v.W)===PAGE.W&&Math.round(v.H)===PAGE.H;}},
+    {k:'screen.availTop',       f:function(v){return ''+Math.round(v.availTop);},               cmp:function(v){return Math.round(v.availTop)===PAGE.availTop;}},
+    {k:'screen.availHeight',    f:function(v){return ''+Math.round(v.availHeight);},            cmp:function(v){return Math.round(v.availHeight)===PAGE.availHeight;}},
+    {k:'devicePixelRatio',      f:function(v){return ''+v.dpr;},                                 cmp:function(v){return v.dpr===PAGE.dpr;}},
+    {k:'screen.colorDepth',     f:function(v){return ''+v.colorDepth;},                          cmp:function(v){return v.colorDepth===PAGE.colorDepth;}}
+  ];
+
+  function buildRows(host){
     host.innerHTML='';
-    KEYS.forEach(function(k){
-      var lying = ref ? (data[k]!==ref[k]) : false;
-      var r=document.createElement('div');
-      r.className='r'+(ref?(lying?' lie':' ok'):'');
-      r.innerHTML='<span class="k">'+k+'</span><span class="v">'+data[k]+'<span class="dot"></span></span>';
-      host.appendChild(r);
+    ROWS.forEach(function(r,i){
+      var el=document.createElement('div'); el.className='r'; el.id=host.id+'-r'+i;
+      el.innerHTML='<span class="k">'+r.k+'</span><span class="v"><span class="vt"></span><span class="dot"></span></span>';
+      host.appendChild(el);
     });
   }
+  function paintRows(hostId,vals,ref){
+    ROWS.forEach(function(r,i){
+      var el=g(hostId+'-r'+i);
+      el.querySelector('.vt').textContent=r.f(vals);
+      if(ref){ el.className='r '+(r.cmp(vals)?'ok':'lie'); }
+    });
+  }
+  function drawMonitor(pfx,vals){
+    var m=g('m'+pfx);
+    m.style.width=(vals.W*K)+'px'; m.style.height=(vals.H*K)+'px';
+    var mb=m.querySelector('.menubar'); mb.style.height=(vals.availTop>0?Math.max(3.5,vals.availTop*K):0)+'px'; mb.style.opacity=vals.availTop>0?1:0;
+    g('l'+pfx).textContent=Math.round(vals.W)+' × '+Math.round(vals.H);
+    g('d'+pfx).textContent='@'+vals.dpr+'x';
+  }
 
-  function render(){
-    var top = reshaped ? TOP : TOP0;
-    var frame = reshaped ? TOP : LEAK;
-    rows(g('topRows'), top, null);
-    rows(g('frameRows'), frame, top);
-    g('frameCol').className='col iframe '+(reshaped?'fixed':'leak');
-    g('btn').textContent = reshaped ? 'Reset to raw headless' : 'apply_fingerprint (reshape screen)';
-    g('hint').textContent = reshaped ? '' : 'Emulation.updateScreen on the browser-global screen';
+  function mismatchCount(){ var n=0; ROWS.forEach(function(r){ if(!r.cmp(cur))n++; }); return n; }
+
+  function setVerdict(){
     var v=g('verdict');
     if(reshaped){
-      v.className='verdict ok';
-      g('chip').textContent='coherent';
-      g('txt').innerHTML='The browser-global virtual screen is reshaped, so every frame, the page and its cross-origin iframes, reads the same desktop.';
+      v.className='verdict ok'; g('chip').textContent='coherent';
+      g('txt').innerHTML='<b>Emulation.updateScreen</b> reshapes the browser-global virtual screen, so the page and every cross-origin iframe read one desktop: matching size, dpr, colorDepth, and menu-bar work area.';
     }else{
-      v.className='verdict lie';
-      g('chip').textContent='headless leak';
-      g('txt').innerHTML='<b>setDeviceMetricsOverride</b> fixes the page but not the iframe, which reads the raw <b>800 × 600</b> headless screen and contradicts the page on 3 of 5 signals.';
+      v.className='verdict lie'; g('chip').textContent='headless leak';
+      g('txt').innerHTML='setDeviceMetricsOverride fixes the page but is session-scoped, so the OOPIF still reads the raw <b>800 × 600</b> screen and contradicts the page on <b>'+mismatchCount()+' of 5</b> signals.';
+    }
+  }
+  function setControls(){
+    g('btn').textContent = reshaped ? 'Reset to raw headless' : 'Reshape screen · Emulation.updateScreen';
+    g('hint').textContent = reshaped ? 'reshaping the browser-global virtual screen reaches every frame' : 'the OOPIF lives in its own process; a page-scoped override never reaches it';
+    g('oBadge').textContent = reshaped ? 'coherent' : 'OOPIF · own process';
+    g('oBadge').className = 'badge '+(reshaped?'ok':'leak');
+    g('oopifWin').classList.toggle('fixed',reshaped);
+  }
+
+  var raf=null;
+  function animateTo(target){
+    if(raf)cancelAnimationFrame(raf);
+    g('oopifWin').classList.add('morphing');
+    var from={W:cur.W,H:cur.H,availTop:cur.availTop,availHeight:cur.availHeight};
+    var dprFrom=cur.dpr, dprTo=target.dpr;
+    var D=760, t0=null;
+    function frame(ts){
+      if(!t0)t0=ts; var p=Math.min(1,(ts-t0)/D); var e=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+      cur.W=from.W+(target.W-from.W)*e;
+      cur.H=from.H+(target.H-from.H)*e;
+      cur.availTop=from.availTop+(target.availTop-from.availTop)*e;
+      cur.availHeight=from.availHeight+(target.availHeight-from.availHeight)*e;
+      cur.dpr = e<.5?dprFrom:dprTo;
+      cur.colorDepth=target.colorDepth;
+      drawMonitor('Frame',cur); paintRows('rowsFrame',cur,null);
+      if(p<1){ raf=requestAnimationFrame(frame); }
+      else{ cur={W:target.W,H:target.H,availTop:target.availTop,availHeight:target.availHeight,dpr:target.dpr,colorDepth:target.colorDepth};
+        g('oopifWin').classList.remove('morphing'); drawMonitor('Frame',cur); paintRows('rowsFrame',cur,PAGE); setVerdict(); }
+    }
+    raf=requestAnimationFrame(frame);
+  }
+
+  function apply(){
+    var target = reshaped ? PAGE : RAW;
+    setControls();
+    if(reduce){
+      cur={W:target.W,H:target.H,availTop:target.availTop,availHeight:target.availHeight,dpr:target.dpr,colorDepth:target.colorDepth};
+      drawMonitor('Frame',cur); paintRows('rowsFrame',cur,PAGE); setVerdict();
+    }else{
+      animateTo(target);
     }
   }
 
-  g('btn').addEventListener('click',function(){ reshaped=!reshaped; render(); });
-  render();
+  buildRows(g('rowsPage')); buildRows(g('rowsFrame'));
+  drawMonitor('Page',PAGE); paintRows('rowsPage',PAGE,null);
+  drawMonitor('Frame',cur); paintRows('rowsFrame',cur,PAGE);
+  setControls(); setVerdict();
+
+  g('btn').addEventListener('click',function(){ reshaped=!reshaped; apply(); });
 })();
 </script>
 <script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>

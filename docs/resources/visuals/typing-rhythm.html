@@ -12,145 +12,305 @@
     --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;--panel2:#191c20;
     --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
     --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
-    --indigo:#6e7bff;--indigo2:#8f99ff;--pass:#35e0a1;--danger:#ff6b6b;
-    --sans:"Chivo",system-ui,-apple-system,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--indigo-dim:rgba(110,123,255,.13);
+    --pass:#35e0a1;--pass-dim:rgba(53,224,161,.12);
+    --amber:#f5b544;--danger:#ff6b6b;
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
   }
-  *{box-sizing:border-box}
-  html,body{margin:0}
+  *{box-sizing:border-box} html,body{margin:0}
   body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
   .widget{border:1px solid var(--line);padding:16px 18px}
-  .lead{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:18px;line-height:1.6}
-  .lead .word{color:var(--ink);font-weight:600}
-  .lane{margin-bottom:18px}
-  .lane-head{display:flex;align-items:baseline;gap:9px;margin-bottom:7px}
+  .lead{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:14px;line-height:1.55}
+  .lead b{color:var(--ink)} .lead .k{color:var(--indigo2)}
+  .lbl{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--faint);margin-bottom:6px}
+  .src{width:100%;font-family:var(--mono);font-size:13px;color:var(--ink);background:var(--bg2);border:1px solid var(--line2);padding:9px 12px;outline:none;margin-bottom:16px}
+  .src:focus{border-color:var(--indigo)}
+
+  .lane{margin-bottom:15px}
+  .lane-head{display:flex;align-items:baseline;gap:9px;margin-bottom:8px;flex-wrap:wrap}
   .lane-head .nm{font-family:var(--mono);font-size:12px;font-weight:600}
-  .lane-head .tag{font-family:var(--mono);font-size:10px;color:var(--faint)}
-  .lane.fixed .nm{color:var(--dim)}
-  .lane.human .nm{color:var(--indigo2)}
-  .plot{position:relative;height:52px;background:var(--bg2);border:1px solid var(--line)}
-  .gl{position:absolute;top:0;bottom:0;width:1px;background:rgba(244,245,247,.06)}
-  .base{position:absolute;left:0;right:0;top:50%;height:1px;background:var(--line)}
-  .dot{position:absolute;top:50%;transform:translate(-50%,-50%);opacity:0;transition:opacity .16s ease}
-  .dot.show{opacity:1}
-  .dot .pt{width:8px;height:8px;border-radius:50%;margin:0 auto}
-  .dot .ch{position:absolute;top:11px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:11px;color:var(--dim)}
-  .lane.fixed .dot .pt{background:var(--dim)}
-  .lane.human .dot .pt{background:var(--indigo)}
-  .dot.typo .pt{background:var(--danger);width:10px;height:10px}
-  .dot.typo .ch{top:auto;bottom:12px;color:var(--danger)}
-  .dot.typo .ch::after{content:" typo";font-size:8.5px;letter-spacing:.03em}
-  .dot.fix .pt{background:var(--indigo2)}
-  .dot.fix .ch::before{content:"⌫";color:var(--faint);font-size:9px;margin-right:2px}
-  .endcap{position:absolute;top:50%;transform:translateY(-50%);height:16px;width:1px;background:var(--line2)}
-  .endcap .t{position:absolute;top:-20px;left:6px;font-family:var(--mono);font-size:9.5px;color:var(--faint);white-space:nowrap}
-  .cap{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:8px}
-  .cap b{color:var(--dim);font-weight:500}
-  .lane.human .cap b{color:var(--indigo2)}
-  .axis{position:relative;height:16px;margin-top:2px}
-  .axis .m{position:absolute;transform:translateX(-50%);font-family:var(--mono);font-size:9.5px;color:var(--faint);top:0}
+  .lane-head .tag{font-family:var(--mono);font-size:9.5px;color:var(--faint)}
+  .lane.fixed .nm{color:var(--dim)} .lane.human .nm{color:var(--indigo2)}
+  .plot{position:relative;height:58px;background:var(--bg2);border:1px solid var(--line);overflow:hidden}
+  .gl{position:absolute;top:0;bottom:0;width:1px;background:rgba(244,245,247,.05)}
+  .base{position:absolute;left:0;right:0;top:60%;height:1px;background:var(--line2)}
+  .ph{position:absolute;top:0;bottom:0;width:1.5px;left:0;opacity:0;background:linear-gradient(var(--indigo2),rgba(143,153,255,.12))}
+  .ph.on{opacity:.85}
+  .tick{position:absolute;top:0;bottom:0;left:0;width:0;opacity:0;transition:opacity .14s ease}
+  .tick.show{opacity:1}
+  .tick .mk{position:absolute;left:-1px;width:2px}
+  .tick.fwd .mk{bottom:40%;height:22px}
+  .tick.back .mk{top:60%;height:12px;background:var(--amber)}
+  .tick .ch{position:absolute;bottom:64%;left:0;transform:translateX(-50%);font-family:var(--mono);font-size:10.5px;white-space:nowrap}
+  .lane.fixed .tick .mk{background:var(--dim)} .lane.fixed .tick .ch{color:var(--faint)}
+  .lane.human .tick.ok .mk{background:var(--indigo)} .lane.human .tick.ok .ch{color:var(--dim)}
+  .tick.bad .mk{background:var(--danger)} .tick.bad .ch{color:var(--danger)}
+  .tick.fix .mk{background:var(--pass)} .tick.fix .ch{color:var(--pass)}
+  .tick.back .ch{color:var(--amber);bottom:auto;top:64%}
+  .cap{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:8px;min-height:15px}
+  .cap b{color:var(--dim);font-weight:600} .cap b.ok{color:var(--pass)}
+  .lane.human .cap b{color:var(--indigo2)} .lane.human .cap b.ok{color:var(--pass)}
+
+  .axis{position:relative;height:15px;margin-top:2px}
+  .axis .m{position:absolute;transform:translateX(-50%);font-family:var(--mono);font-size:9px;color:var(--faint);top:0}
   .axis .m::before{content:"";position:absolute;top:-6px;left:50%;width:1px;height:4px;background:var(--line2)}
-  .axis-lbl{text-align:center;font-family:var(--mono);font-size:9.5px;color:var(--faint);margin-top:3px;letter-spacing:.04em}
-  .controls{display:flex;gap:10px;margin-top:16px;align-items:center}
-  button{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:8px 13px;cursor:pointer;transition:.15s}
-  button:hover:not(:disabled){border-color:var(--indigo);color:#fff}
-  button:disabled{opacity:.5;cursor:default}
-  .note{font-family:var(--mono);font-size:11px;color:var(--faint);margin-left:auto;text-align:right}
+  .axislbl{text-align:center;font-family:var(--mono);font-size:9.5px;color:var(--faint);margin-top:3px;letter-spacing:.03em}
+
+  .controls{display:flex;align-items:center;gap:10px;margin-top:15px;flex-wrap:wrap}
+  button.run{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:8px 14px;cursor:pointer;transition:.15s}
+  button.run:hover:not(:disabled){border-color:var(--indigo);color:#fff}
+  button.run:disabled{opacity:.5;cursor:default}
+  .note{font-family:var(--mono);font-size:10px;color:var(--faint);margin-left:auto;text-align:right;line-height:1.5}
+  @media (prefers-reduced-motion:reduce){.tick{transition:none}}
+
+  /* theme-matched thin scrollbars for overflow-x boxes (replaces the default white bar) */
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--line2)}
+  ::-webkit-scrollbar-thumb:hover{background:var(--faint)}
 </style>
 </head>
 <body>
 <div class="widget">
-  <div class="lead">The same word, <span class="word">checkout</span>, on one shared clock. Detection reads the <span class="word">gaps</span> between keys, so a flat cadence is the tell.</div>
+  <div class="lead">The same text on one shared clock. A detector reads the <b>gaps between keystrokes</b>, so a flat 50&nbsp;ms beat is the tell. <span class="k">humanize=True</span> scatters the gaps and slips in an occasional corrected typo · <b>wrong key &rarr; &#9003; backspace &rarr; retype</b> · using Pydoll's real timing model.</div>
+
+  <div class="lbl">word to type</div>
+  <input class="src" id="src" value="checkout" maxlength="22" spellcheck="false" autocomplete="off" />
 
   <div class="lane fixed">
-    <div class="lane-head"><span class="nm">fixed 50ms</span><span class="tag">no humanize</span></div>
-    <div class="plot" id="plotFixed"><div class="base"></div></div>
+    <div class="lane-head"><span class="nm">no humanize</span><span class="tag">type_text(text) &middot; fixed 50 ms</span></div>
+    <div class="plot" id="plotFixed"><div class="base"></div><div class="ph" id="phFixed"></div></div>
     <div class="cap" id="capFixed"></div>
   </div>
 
   <div class="lane human">
-    <div class="lane-head"><span class="nm">humanize=True</span><span class="tag">variable gaps, occasional corrected typo</span></div>
-    <div class="plot" id="plotHuman"><div class="base"></div></div>
+    <div class="lane-head"><span class="nm">humanize=True</span><span class="tag">type_text(text, humanize=True) &middot; variable gaps + correction</span></div>
+    <div class="plot" id="plotHuman"><div class="base"></div><div class="ph" id="phHuman"></div></div>
     <div class="cap" id="capHuman"></div>
   </div>
 
   <div class="axis" id="axis"></div>
-  <div class="axis-lbl">time (seconds) — same scale for both</div>
+  <div class="axislbl">time (seconds) &middot; one shared scale for both rows</div>
 
   <div class="controls">
-    <button id="run">Run again</button>
-    <span class="note">every humanized run is different</span>
+    <button class="run" id="replay">Replay</button>
+    <button class="run" id="sample">New sample</button>
+    <span class="note">the robotic row is identical every run;<br>each humanized sample differs</span>
   </div>
 </div>
 
 <script>
 (function(){
   var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
-  var WORD='checkout';
-  var plotFixed=document.getElementById('plotFixed'),plotHuman=document.getElementById('plotHuman');
-  var capFixed=document.getElementById('capFixed'),capHuman=document.getElementById('capHuman');
-  var axis=document.getElementById('axis'),runBtn=document.getElementById('run');
-  var timers=[],busy=false;
-  var PAD=4;
-  function rand(a,b){return a+Math.random()*(b-a);}
-  function wrongKey(c){var n='abcdefghijklmnopqrstuvwxyz'.replace(c,'');return n[Math.floor(Math.random()*n.length)];}
+  function g(id){return document.getElementById(id);}
 
-  function buildFixed(){var ev=[],t=0;for(var i=0;i<WORD.length;i++){ev.push({ch:WORD[i],kind:'char',t:t,gap:i?50:0});t+=50;}return {ev:ev,total:t-50};}
-  function buildHuman(){
-    var ev=[],t=0,typos=0,typoAt=2+Math.floor(rand(0,WORD.length-3));
-    for(var i=0;i<WORD.length;i++){
-      if(i===typoAt){
-        var g1=i?rand(60,150):0;t+=g1;ev.push({ch:wrongKey(WORD[i]),kind:'typo',t:t,gap:g1});typos++;
-        var g2=rand(190,320);t+=g2;ev.push({ch:WORD[i],kind:'fix',t:t,gap:g2});
-      } else { var g=i?rand(45,180):0;t+=g;ev.push({ch:WORD[i],kind:'char',t:t,gap:g}); }
+  /* ---- faithful port of pydoll/interactions/keyboard.py humanized typing ---- */
+  var TIMING={
+    keystroke_min:0.03, keystroke_max:0.12,
+    punctuation_min:0.08, punctuation_max:0.18,
+    thinking_probability:0.02, thinking_min:0.3, thinking_max:0.7,
+    distraction_probability:0.005, distraction_min:0.5, distraction_max:1.2,
+    mistake_realize_min:0.1, mistake_realize_max:0.25,
+    after_correction_min:0.03, after_correction_max:0.08,
+    double_press_min:0.02, double_press_max:0.05,
+    hesitation_min:0.15, hesitation_max:0.3
+  };
+  var TYPO_TYPES=['adjacent','transpose','double','skip','missed_space'];
+  var TYPO_WEIGHTS=[0.55,0.20,0.12,0.08,0.05];
+  var PAUSE_CHARS=" .,!?;:\n";
+  var QWERTY={
+    '1':['2','q'],'2':['1','3','q','w'],'3':['2','4','w','e'],'4':['3','5','e','r'],
+    '5':['4','6','r','t'],'6':['5','7','t','y'],'7':['6','8','y','u'],'8':['7','9','u','i'],
+    '9':['8','0','i','o'],'0':['9','-','o','p'],'-':['0','=','p','['],'=':['-','[',']'],
+    'q':['1','2','w','a','s'],'w':['q','2','3','e','a','s','d'],'e':['w','3','4','r','s','d','f'],
+    'r':['e','4','5','t','d','f','g'],'t':['r','5','6','y','f','g','h'],'y':['t','6','7','u','g','h','j'],
+    'u':['y','7','8','i','h','j','k'],'i':['u','8','9','o','j','k','l'],'o':['i','9','0','p','k','l',';'],
+    'p':['o','0','-','[','l',';',"'"],'[':['p','-','=',']',';',"'"],']':['[','=',"'"],
+    'a':['q','w','s','z','x'],'s':['q','w','e','a','d','z','x','c'],'d':['w','e','r','s','f','x','c','v'],
+    'f':['e','r','t','d','g','c','v','b'],'g':['r','t','y','f','h','v','b','n'],'h':['t','y','u','g','j','b','n','m'],
+    'j':['y','u','i','h','k','n','m',','],'k':['u','i','o','j','l','m',',','.'],'l':['i','o','p','k',';',',','.','/'],
+    ';':['o','p','[','l',"'",'.','/'],"'":['p','[',']',';','/'],
+    'z':['a','s','x'],'x':['z','a','s','d','c'],'c':['x','s','d','f','v'],'v':['c','d','f','g','b'],
+    'b':['v','f','g','h','n'],'n':['b','g','h','j','m'],'m':['n','h','j','k',','],
+    ',':['m','j','k','l','.'],'.':[',','k','l',';','/'],'/':['.','l',';',"'"],
+    ' ':['c','v','b','n','m']
+  };
+  function U(a,b){return a+Math.random()*(b-a);}
+  function isAlpha(c){return /^[a-z]$/i.test(c);}
+  function pickWeighted(items,weights){
+    var s=0,i;for(i=0;i<weights.length;i++)s+=weights[i];
+    var r=Math.random()*s;for(i=0;i<items.length;i++){r-=weights[i];if(r<=0)return items[i];}
+    return items[items.length-1];
+  }
+  function createAdjacent(ch){
+    var lc=ch.toLowerCase();
+    if(!QWERTY[lc]) return {type:'double',wrong:ch};
+    var adj=QWERTY[lc][Math.floor(Math.random()*QWERTY[lc].length)];
+    if(ch!==lc && ch===ch.toUpperCase()) adj=adj.toUpperCase();
+    return {type:'adjacent',wrong:adj};
+  }
+  function createTypo(type,cur,nxt){
+    if(type==='adjacent') return createAdjacent(cur);
+    if(type==='transpose') return (nxt&&isAlpha(nxt))?{type:'transpose',wrong:nxt}:createAdjacent(cur);
+    if(type==='missed_space') return (cur===' ')?{type:'missed_space'}:createAdjacent(cur);
+    if(type==='double') return {type:'double',wrong:cur};
+    return {type:'skip'};
+  }
+  function buildHuman(text, typoProb){
+    var strokes=[], leadingGap=0, corrEvents=0;
+    function key(ch,cls){strokes.push({type:'key',ch:ch,cls:cls,gap:0});}
+    function back(){strokes.push({type:'back',ch:null,cls:'back',gap:0});}
+    function sleep(s){ if(strokes.length) strokes[strokes.length-1].gap+=s; else leadingGap+=s; }
+    function doAdjacent(correct,wrong){
+      corrEvents++; key(wrong,'bad');
+      sleep(U(TIMING.mistake_realize_min,TIMING.mistake_realize_max)); back();
+      sleep(U(TIMING.after_correction_min,TIMING.after_correction_max)); key(correct,'fix');
     }
-    return {ev:ev,total:t,typos:typos};
+    function doTranspose(cur,nxt){
+      corrEvents++; key(nxt,'bad'); sleep(U(TIMING.keystroke_min,TIMING.keystroke_max)); key(cur,'bad');
+      sleep(U(TIMING.mistake_realize_min,TIMING.mistake_realize_max)); back(); back();
+      sleep(U(TIMING.after_correction_min,TIMING.after_correction_max)); key(cur,'fix');
+      sleep(U(TIMING.keystroke_min,TIMING.keystroke_max)); key(nxt,'fix');
+    }
+    function doDouble(cur){
+      corrEvents++; key(cur,'ok'); sleep(U(TIMING.double_press_min,TIMING.double_press_max)); key(cur,'bad');
+      sleep(U(TIMING.mistake_realize_min,TIMING.mistake_realize_max)); back();
+    }
+    function doSkip(cur){ sleep(U(TIMING.hesitation_min,TIMING.hesitation_max)); key(cur,'ok'); }
+    function doMissedSpace(space,nxt){
+      corrEvents++; key(nxt,'bad'); sleep(U(TIMING.mistake_realize_min,TIMING.mistake_realize_max)); back();
+      sleep(U(TIMING.after_correction_min,TIMING.after_correction_max)); key(space,'fix');
+      sleep(U(TIMING.after_correction_min,TIMING.after_correction_max)); key(nxt,'fix');
+    }
+    function handleTypo(cur,nxt,t){
+      if(t.type==='adjacent'){ doAdjacent(cur,t.wrong); return false; }
+      if(t.type==='transpose'&&nxt){ doTranspose(cur,nxt); return true; }
+      if(t.type==='double'){ doDouble(cur); return false; }
+      if(t.type==='skip'){ doSkip(cur); return false; }
+      if(t.type==='missed_space'&&cur===' '&&nxt){ doMissedSpace(cur,nxt); return true; }
+      key(cur,'ok'); return false;
+    }
+    function processChar(cur,nxt){
+      if(Math.random()>=typoProb){ key(cur,'ok'); return false; }
+      return handleTypo(cur,nxt,createTypo(pickWeighted(TYPO_TYPES,TYPO_WEIGHTS),cur,nxt));
+    }
+    function applyDelay(cur){
+      var d=U(TIMING.keystroke_min,TIMING.keystroke_max);
+      if(PAUSE_CHARS.indexOf(cur)>=0) d+=U(TIMING.punctuation_min,TIMING.punctuation_max);
+      if(Math.random()<TIMING.thinking_probability) d+=U(TIMING.thinking_min,TIMING.thinking_max);
+      if(Math.random()<TIMING.distraction_probability) d+=U(TIMING.distraction_min,TIMING.distraction_max);
+      sleep(d);
+    }
+    var i=0;
+    while(i<text.length){
+      var cur=text[i], nxt=(i+1<text.length)?text[i+1]:null;
+      if(processChar(cur,nxt)) i++;
+      applyDelay(cur); i++;
+    }
+    var acc=leadingGap*1000;
+    strokes.forEach(function(s){ s.t=acc; acc+=s.gap*1000; });
+    return {strokes:strokes, lastTick:strokes.length?strokes[strokes.length-1].t:0, corrEvents:corrEvents, chars:text.length, keystrokes:strokes.length};
   }
-  function xpct(t,max){return PAD + (t/max)*(100-2*PAD);}
-  function renderDots(plot,data,max){
-    plot.querySelectorAll('.dot,.endcap').forEach(function(n){n.remove();});
-    data.ev.forEach(function(e){
-      var el=document.createElement('div');el.className='dot '+e.kind;
-      el.style.left=xpct(e.t,max)+'%';
-      el.innerHTML='<div class="pt"></div><span class="ch">'+e.ch+'</span>';
-      plot.appendChild(el);e.node=el;
+  /* type_text without humanize: one keystroke per char, fixed 50 ms apart */
+  function buildFixed(text){
+    var strokes=[];
+    for(var i=0;i<text.length;i++) strokes.push({type:'key',ch:text[i],cls:'robo',t:i*50,gap:50});
+    return {strokes:strokes, lastTick:(text.length-1)*50, corrEvents:0, chars:text.length, keystrokes:strokes.length};
+  }
+
+  /* ---- geometry ---- */
+  var PAD=3.5;
+  function xpct(t,max){ return PAD + (t/max)*(100-2*PAD); }
+  function axisMax(){
+    var lt=Math.max(curFixed.lastTick,curHuman.lastTick), step=lt>2600?500:250;
+    return Math.max(600, Math.ceil((lt+step*0.3)/step)*step);
+  }
+  function glyph(s){ return s.type==='back'?'⌫':s.ch; }
+  function renderLane(plot,plan,max){
+    Array.prototype.forEach.call(plot.querySelectorAll('.tick,.gl'),function(n){n.remove();});
+    var step=max>2600?500:250, t;
+    for(t=step;t<max;t+=step){ var gl=document.createElement('div'); gl.className='gl'; gl.style.left=xpct(t,max)+'%'; plot.insertBefore(gl,plot.firstChild); }
+    plan.strokes.forEach(function(s){
+      var el=document.createElement('div');
+      el.className='tick '+(s.type==='back'?'back':'fwd')+' '+s.cls;
+      el.style.left=xpct(s.t,max)+'%';
+      el.innerHTML='<span class="mk"></span><span class="ch">'+glyph(s)+'</span>';
+      plot.appendChild(el); s.node=el;
     });
-    var ec=document.createElement('div');ec.className='endcap';ec.style.left=xpct(data.total,max)+'%';
-    ec.innerHTML='<span class="t">'+(data.total/1000).toFixed(2)+'s</span>';
-    plot.appendChild(ec);
-  }
-  function renderGrid(plot,max){
-    plot.querySelectorAll('.gl').forEach(function(n){n.remove();});
-    for(var s=500;s<max+1;s+=500){var g=document.createElement('div');g.className='gl';g.style.left=xpct(s,max)+'%';plot.insertBefore(g,plot.firstChild);}
   }
   function renderAxis(max){
-    axis.innerHTML='';
-    for(var s=0;s<max+1;s+=500){var m=document.createElement('div');m.className='m';m.style.left=xpct(s,max)+'%';m.textContent=(s/1000).toFixed(1);axis.appendChild(m);}
+    var axis=g('axis'); axis.innerHTML='';
+    var step=max>2600?500:250;
+    for(var t=0;t<=max+1;t+=step){ var m=document.createElement('div'); m.className='m'; m.style.left=xpct(t,max)+'%'; m.textContent=(t/1000).toFixed(t%1000===0?1:2); axis.appendChild(m); }
   }
+
+  function capFixed(plan){
+    return '<b>'+plan.chars+'</b> keys &middot; 50 ms apart &middot; <b>'+(plan.lastTick/1000).toFixed(2)+'s</b> &middot; flat, repeatable cadence';
+  }
+  function capHuman(plan){
+    var k=plan.corrEvents;
+    return '<b>'+plan.keystrokes+'</b> keystrokes &middot; variable gaps &middot; <b>'+(plan.lastTick/1000).toFixed(2)+'s</b> &middot; '+
+      (k>0?('<b class="ok">'+k+'</b> corrected typo'+(k===1?'':'s')):'no typo this run');
+  }
+
+  /* ---- playback: one clock sweeps both rows ---- */
+  var MULT=2.9, rafId=null, loopT=null, curFixed=null, curHuman=null;
+  function clearAnim(){ if(rafId)cancelAnimationFrame(rafId); rafId=null; if(loopT)clearTimeout(loopT); loopT=null; }
+  function hide(plan){ plan.strokes.forEach(function(s){ if(s.node)s.node.classList.remove('show'); }); }
+  function revealAll(plan){ plan.strokes.forEach(function(s){ s.node.classList.add('show'); }); }
+  function setPh(el,realT,max){ el.classList.add('on'); el.style.left=xpct(Math.min(realT,max),max)+'%'; }
+
   function play(){
-    if(busy)return;busy=true;runBtn.disabled=true;
-    timers.forEach(clearTimeout);timers=[];
-    var fixed=buildFixed(),human=buildHuman();
-    var max=Math.max(1000,Math.ceil(human.total/500)*500);
-    renderGrid(plotFixed,max);renderGrid(plotHuman,max);renderAxis(max);
-    renderDots(plotFixed,fixed,max);renderDots(plotHuman,human,max);
-    capFixed.innerHTML='';capHuman.innerHTML='';
-    var seqs=[
-      {d:fixed,fin:function(){capFixed.innerHTML='<b>8 keys</b>, 50 ms apart · <b>0.40 s</b> · a flat, repeatable cadence';}},
-      {d:human,fin:function(){capHuman.innerHTML='<b>8 keys</b>, 45–180 ms apart · <b>'+(human.total/1000).toFixed(2)+' s</b> · '+human.typos+' corrected typo';}}
-    ];
-    var done=0;
-    seqs.forEach(function(s){
-      var i=0;
-      (function step(){
-        if(i>=s.d.ev.length){s.fin();if(++done===2){busy=false;runBtn.disabled=false;}return;}
-        var e=s.d.ev[i++];e.node.classList.add('show');
-        var wait=reduce?0:Math.min(Math.max(e.gap*1.2,70),560);
-        timers.push(setTimeout(step,wait));
-      })();
-    });
+    clearAnim();
+    var max=axisMax();
+    renderAxis(max);
+    renderLane(g('plotFixed'),curFixed,max);
+    renderLane(g('plotHuman'),curHuman,max);
+    g('capFixed').innerHTML=capFixed(curFixed);
+    g('capHuman').innerHTML=capHuman(curHuman);
+    hide(curFixed); hide(curHuman);
+    var setBtns=function(dis){ g('replay').disabled=dis; g('sample').disabled=dis; };
+
+    if(reduce){
+      revealAll(curFixed); revealAll(curHuman);
+      setPh(g('phFixed'),max,max); setPh(g('phHuman'),max,max);
+      return;
+    }
+    setBtns(true);
+    var start=performance.now(), iF=0, iH=0, end=Math.max(curFixed.lastTick,curHuman.lastTick);
+    function frame(now){
+      var realT=(now-start)/MULT;
+      setPh(g('phFixed'),realT,max); setPh(g('phHuman'),realT,max);
+      while(iF<curFixed.strokes.length && curFixed.strokes[iF].t<=realT){ curFixed.strokes[iF].node.classList.add('show'); iF++; }
+      while(iH<curHuman.strokes.length && curHuman.strokes[iH].t<=realT){ curHuman.strokes[iH].node.classList.add('show'); iH++; }
+      if(realT<end+60){ rafId=requestAnimationFrame(frame); }
+      else{ setPh(g('phFixed'),max,max); setPh(g('phHuman'),max,max); setBtns(false); loopT=setTimeout(play,1600); }
+    }
+    rafId=requestAnimationFrame(frame);
   }
-  runBtn.addEventListener('click',play);
-  play();
+
+  /* human sample is re-rolled until a correction is visible (the comparison's whole point) */
+  function newHuman(text){
+    var plan, tries=0;
+    do{ plan=buildHuman(text,0.05); tries++; }
+    while(plan.corrEvents===0 && text.length>1 && tries<80);
+    return plan;
+  }
+  function generate(){
+    var text=g('src').value;
+    if(!text){ clearAnim(); g('capFixed').textContent='type a word above'; g('capHuman').textContent=''; return; }
+    curFixed=buildFixed(text);
+    curHuman=newHuman(text);
+    play();
+  }
+
+  var editT=null;
+  g('src').addEventListener('input',function(){ if(editT)clearTimeout(editT); editT=setTimeout(generate,260); });
+  g('replay').addEventListener('click',function(){ if(curFixed&&curHuman) play(); });
+  g('sample').addEventListener('click',function(){ if(!curFixed)return; curHuman=newHuman(g('src').value); play(); });
+  window.addEventListener('resize',function(){ if(curFixed&&curHuman){ var max=axisMax(); renderAxis(max); renderLane(g('plotFixed'),curFixed,max); renderLane(g('plotHuman'),curHuman,max); revealAll(curFixed); revealAll(curHuman); } });
+  window.addEventListener('load',function(){ setTimeout(generate,300); });
 })();
 </script>
 <script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>

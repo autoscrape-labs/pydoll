@@ -3,189 +3,348 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>What happens to an intercepted request</title>
+<title>Intercepted request: continue / block / fulfill</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
 <style>
   :root{
-    --bg:#0c0d0f; --bg2:#0f1113; --panel:#141618; --code:#14161a;
-    --line:rgba(244,245,247,.10); --line2:rgba(244,245,247,.18);
-    --ink:#f4f5f7; --dim:#9aa2ad; --faint:#5b6570;
-    --indigo:#6e7bff; --indigo2:#8f99ff; --pass:#35e0a1; --danger:#ff6b6b;
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;--panel2:#191c20;--code:#14161a;
+    --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
+    --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--indigo-dim:rgba(110,123,255,.13);
+    --pass:#35e0a1;--pass-dim:rgba(53,224,161,.12);
+    --amber:#f5b544;--danger:#ff6b6b;--danger-dim:rgba(255,107,107,.12);
     --sans:"Chivo",system-ui,-apple-system,sans-serif;
     --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;
   }
   *{box-sizing:border-box}
   html,body{margin:0}
-  body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px}
-  .widget{border:1px solid var(--line);padding:18px 20px 20px}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
+  .widget{border:1px solid var(--line);padding:16px 18px}
+  .lead{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:13px;line-height:1.5}
+  .lead b{color:var(--ink)}
 
-  .flow{position:relative;display:grid;grid-template-columns:repeat(3,1fr);align-items:center;height:96px}
-  .conn{position:absolute;top:50%;height:2px;background:var(--line2);transform:translateY(-50%);z-index:0;transition:background .3s}
-  .conn.on{background:var(--indigo)} .conn.ok{background:var(--pass)} .conn.off{opacity:.3}
-  #c1{left:16.667%;width:33.333%} #c2{left:50%;width:33.333%}
+  .stage{width:100%;overflow:hidden;border:1px solid var(--line);background:var(--bg2)}
+  svg#diagram{width:100%;max-width:680px;height:auto;display:block;margin:0 auto}
 
-  .packet{position:absolute;left:0;top:50%;width:12px;height:12px;margin-left:-6px;border-radius:50%;
-    background:var(--indigo);box-shadow:0 0 0 4px rgba(110,123,255,.16),0 0 12px 2px rgba(110,123,255,.55);
-    transform:translate(0,-50%);z-index:2;
-    transition:transform .6s cubic-bezier(.4,0,.2,1),background .25s,box-shadow .25s,opacity .3s}
-  .packet.resp{background:var(--pass);box-shadow:0 0 0 4px rgba(53,224,161,.16),0 0 12px 2px rgba(53,224,161,.55)}
-  .packet.blocked{background:var(--danger);box-shadow:0 0 0 4px rgba(255,107,107,.16),0 0 12px 2px rgba(255,107,107,.55)}
-  .packet.gone{opacity:0}
+  /* roads */
+  .road{fill:none;stroke:var(--line2);stroke-width:2}
+  .lit{fill:none;stroke-width:2.6;stroke-linecap:round;opacity:0;transition:opacity .2s}
+  .lit.show{opacity:1}
+  .lit.go{stroke:var(--indigo)} .lit.ok{stroke:var(--pass)} .lit.stop{stroke:var(--danger)}
 
-  .node{position:relative;z-index:1;justify-self:center;width:118px;text-align:center;
-    border:1px solid var(--line2);background:var(--bg);color:var(--dim);padding:12px 10px;
-    transition:border-color .3s,color .3s,background .3s,opacity .3s}
-  .node .ic{display:grid;place-items:center;height:22px;color:var(--faint);transition:color .3s}
-  .node .ic svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-  .node .cap{font-family:var(--sans);font-weight:700;font-size:12.5px;margin-top:7px;letter-spacing:-.01em}
-  .node.on{border-color:var(--indigo);color:var(--ink)} .node.on .ic{color:var(--indigo)}
-  .node.paused{border-color:var(--indigo);color:var(--ink);animation:pulse 1.5s infinite} .node.paused .ic{color:var(--indigo)}
-  .node.ok{border-color:var(--pass);color:var(--ink)} .node.ok .ic{color:var(--pass)}
-  .node.mock{border-color:var(--pass);color:var(--ink)} .node.mock .ic{color:var(--pass)}
-  .node.blocked{border-color:var(--danger);color:var(--danger)} .node.blocked .ic{color:var(--danger)}
-  .node.off{opacity:.36}
-  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(110,123,255,.5)}70%{box-shadow:0 0 0 8px rgba(110,123,255,0)}100%{box-shadow:0 0 0 0 rgba(110,123,255,0)}}
-  .node .xb{position:absolute;top:-8px;right:-8px;width:18px;height:18px;background:var(--danger);color:#0a0b16;
-    display:grid;place-items:center;font-family:var(--mono);font-size:11px;font-weight:600;opacity:0;transform:scale(.4);transition:.2s}
-  .node.blocked .xb{opacity:1;transform:scale(1)}
+  /* nodes */
+  .nbox{fill:var(--panel);stroke:var(--line2);stroke-width:1.4;transition:stroke .3s,fill .3s}
+  .glyph{stroke:var(--faint);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;transition:stroke .3s}
+  .glyph.f{fill:var(--faint);stroke:none;transition:fill .3s}
+  .node.on .nbox{stroke:var(--indigo)} .node.on .glyph{stroke:var(--indigo)} .node.on .glyph.f{fill:var(--indigo)}
+  .node.ok .nbox{stroke:var(--pass)} .node.ok .glyph{stroke:var(--pass)} .node.ok .glyph.f{fill:var(--pass)}
+  .node.live .nbox{stroke:var(--pass);fill:var(--pass-dim)} .node.live .glyph{stroke:var(--pass)} .node.live .glyph.f{fill:var(--pass)}
+  .node.mock .nbox{stroke:var(--indigo);fill:var(--indigo-dim)} .node.mock .glyph{stroke:var(--indigo)} .node.mock .glyph.f{fill:var(--indigo)}
+  .node.err .nbox{stroke:var(--danger)} .node.err .glyph{stroke:var(--danger)} .node.err .glyph.f{fill:var(--danger)}
+  .node.dead .nbox{stroke:var(--danger);fill:var(--danger-dim)}
 
+  /* gate */
+  #gate{fill:var(--panel2);stroke:var(--indigo);stroke-width:1.8;stroke-opacity:.6;transition:stroke-opacity .3s}
+  #gate.paused{animation:gatep 1.7s ease-in-out infinite}
+  @keyframes gatep{0%,100%{stroke-opacity:.5}50%{stroke-opacity:1}}
+  #pill{opacity:0;transition:opacity .3s}
+
+  /* text */
+  text{font-family:var(--mono)}
+  .t-api{font-size:9px;font-weight:600}
+  .t-go{fill:var(--indigo2)} .t-stop{fill:var(--danger)} .t-ok{fill:var(--pass)}
+  .t-dim{fill:var(--faint)} .t-mid{fill:var(--dim)}
+  .t-title{font-family:var(--sans);font-weight:700;font-size:11.5px;fill:var(--ink)}
+  .t-tag{font-size:8px}
+
+  /* packet */
+  .pkt .core{fill:var(--indigo)} .pkt .halo{fill:var(--indigo);opacity:.2}
+  .pkt .pring{fill:none;stroke:var(--indigo);stroke-width:2;opacity:0;transform-box:fill-box;transform-origin:center}
+  .pkt.go .core,.pkt.go .halo{fill:var(--indigo)} .pkt.go .pring{stroke:var(--indigo)}
+  .pkt.ok .core,.pkt.ok .halo{fill:var(--pass)} .pkt.ok .pring{stroke:var(--pass)}
+  .pkt.stop .core,.pkt.stop .halo{fill:var(--danger)} .pkt.stop .pring{stroke:var(--danger)}
+  .pkt.paused .pring{animation:pring 1.7s ease-out infinite}
+  @keyframes pring{0%{transform:scale(1);opacity:.55}100%{transform:scale(2.7);opacity:0}}
+  .pkt{transition:opacity .35s}
+  .pkt.gone{opacity:0}
+
+  /* status + controls + code */
   .status{border:1px solid var(--line);background:var(--panel);padding:11px 14px;font-size:13px;color:var(--dim);
-    min-height:44px;margin:16px 0 13px;line-height:1.55}
-  .status code{font-family:var(--mono);font-size:.84em;color:var(--ink);background:var(--code);border:1px solid var(--line);padding:1px 5px}
-  .status b.go{color:var(--indigo2)} .status b.stop{color:var(--danger)} .status b.mock{color:var(--pass)}
+    min-height:46px;margin:14px 0 12px;line-height:1.55}
+  .status code{font-family:var(--mono);font-size:.83em;color:var(--ink);background:var(--code);border:1px solid var(--line);padding:1px 5px}
+  .status b.go{color:var(--indigo2)} .status b.stop{color:var(--danger)} .status b.mock{color:var(--indigo2)}
 
   .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
   button{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink);background:var(--panel);
     border:1px solid var(--line2);padding:8px 12px;cursor:pointer;transition:.15s}
   button:hover{border-color:var(--indigo);color:#fff}
-  button.active{background:rgba(110,123,255,.14);border-color:var(--indigo);color:#fff}
+  button.g:hover{border-color:var(--indigo)} button.g.active{background:var(--indigo-dim);border-color:var(--indigo);color:#fff}
+  button.r:hover{border-color:var(--danger)} button.r.active{background:var(--danger-dim);border-color:var(--danger);color:#fff}
+  button.m:hover{border-color:var(--indigo)} button.m.active{background:var(--indigo-dim);border-color:var(--indigo);color:#fff}
   button.replay{margin-left:auto;color:var(--dim);border-style:dashed}
   button.replay[hidden]{display:none}
 
-  .code{margin:14px 0 0;border:1px solid var(--line);background:var(--bg2);padding:13px 15px;
-    font-family:var(--mono);font-size:12px;line-height:1.75;color:var(--ink);overflow-x:auto;white-space:pre;min-height:64px}
-  .code .kw{color:#b3a0ff} .code .fn{color:#7fb4ff} .code .st{color:var(--pass)} .code .cm{color:var(--faint)}
+  .code{margin:13px 0 0;border:1px solid var(--line);background:var(--bg2);padding:13px 15px;
+    font-family:var(--mono);font-size:12px;line-height:1.75;color:var(--ink);overflow-x:auto;white-space:pre;min-height:78px}
+  .code .kw{color:#b3a0ff} .code .fn{color:#7fb4ff} .code .st{color:var(--pass)} .code .nm{color:var(--amber)} .code .cm{color:var(--faint)}
 
   @media (prefers-reduced-motion:reduce){
-    .packet,.node,.conn{transition:none!important;animation:none!important}
+    #gate,.pkt,.lit,.nbox,.glyph{animation:none!important;transition:none!important}
+    .pkt.paused .pring{animation:none!important;opacity:.4}
   }
+
+  /* theme-matched thin scrollbars for overflow-x boxes (replaces the default white bar) */
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--line2)}
+  ::-webkit-scrollbar-thumb:hover{background:var(--faint)}
 </style>
 </head>
 <body>
 <div class="widget">
-  <div class="flow" id="flow">
-    <div class="conn" id="c1"></div>
-    <div class="conn" id="c2"></div>
-    <div class="packet" id="packet"></div>
-    <div class="node" id="nPage">
-      <div class="ic"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
-      <div class="cap">Page</div>
-    </div>
-    <div class="node" id="nHandler">
-      <span class="xb">✕</span>
-      <div class="ic"><svg viewBox="0 0 24 24"><path d="M3 4h18l-7 8v6l-4 2v-8z"/></svg></div>
-      <div class="cap">Your handler</div>
-    </div>
-    <div class="node" id="nServer">
-      <div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="7"/><rect x="3" y="13" width="18" height="7"/><line x1="7" y1="7.5" x2="7.01" y2="7.5"/><line x1="7" y1="16.5" x2="7.01" y2="16.5"/></svg></div>
-      <div class="cap">Server</div>
-    </div>
+  <div class="lead">One request, paused at the fork. It is <b>held open</b> until your handler resolves it, exactly once, and each resolver sends it somewhere different. Pick a branch and watch the <b>same</b> paused request take it.</div>
+
+  <div class="stage">
+    <svg id="diagram" viewBox="0 0 660 300" preserveAspectRatio="xMidYMid meet" role="img" aria-label="A paused request forking into continue, block and fulfill outcomes">
+      <!-- roads (base + lit overlay) -->
+      <path id="roadIn"   class="road" d="M124 150 L250 150"/>
+      <path id="roadCont" class="road" d="M250 150 C 360 150 410 68 530 68"/>
+      <path id="roadFail" class="road" d="M250 150 L 424 150"/>
+      <path id="roadFul"  class="road" d="M250 150 C 360 150 410 236 498 236"/>
+      <path id="litIn"   class="lit" d="M124 150 L250 150"/>
+      <path id="litCont" class="lit" d="M250 150 C 360 150 410 68 530 68"/>
+      <path id="litFail" class="lit" d="M250 150 L 424 150"/>
+      <path id="litFul"  class="lit" d="M250 150 C 360 150 410 236 498 236"/>
+
+      <!-- road / api labels -->
+      <text class="t-dim t-tag" x="176" y="141" text-anchor="middle">GET /api/data</text>
+      <text class="t-go t-api" x="416" y="90"  text-anchor="middle">continue_request()</text>
+      <text class="t-stop t-api" x="350" y="140" text-anchor="middle">fail_request()</text>
+      <text class="t-go t-api" x="416" y="210" text-anchor="middle">fulfill_request()</text>
+
+      <!-- PAGE / browser -->
+      <g class="node on" id="nPage">
+        <rect class="nbox" x="32" y="114" width="92" height="70" rx="8"/>
+        <line class="glyph" x1="32" y1="132" x2="124" y2="132"/>
+        <circle class="glyph f" cx="45" cy="123" r="2.4"/><circle class="glyph f" cx="54" cy="123" r="2.4"/><circle class="glyph f" cx="63" cy="123" r="2.4"/>
+        <rect class="glyph f" x="44" y="144" width="60" height="5" rx="2.5"/>
+        <rect class="glyph f" x="44" y="156" width="42" height="5" rx="2.5"/>
+        <rect class="glyph f" x="44" y="168" width="52" height="5" rx="2.5"/>
+        <text class="t-title" x="78" y="203" text-anchor="middle">Browser</text>
+        <text class="t-dim t-tag" x="78" y="215" text-anchor="middle">the page that asked</text>
+      </g>
+
+      <!-- SERVER (continue destination) -->
+      <g class="node" id="nServer">
+        <rect class="nbox" x="530" y="40" width="94" height="56" rx="8"/>
+        <rect class="glyph" x="546" y="52" width="62" height="13" rx="2.5"/>
+        <rect class="glyph" x="546" y="70" width="62" height="13" rx="2.5"/>
+        <circle class="glyph f" cx="555" cy="58.5" r="1.7"/><circle class="glyph f" cx="555" cy="76.5" r="1.7"/>
+        <text class="t-title" x="577" y="112" text-anchor="middle">Server</text>
+        <text class="t-ok t-tag" x="577" y="123" text-anchor="middle">returns the real response</text>
+      </g>
+
+      <!-- WALL (fail destination) -->
+      <g class="node" id="nWall">
+        <rect class="nbox" x="426" y="126" width="52" height="48" rx="8"/>
+        <line class="glyph" x1="439" y1="139" x2="465" y2="161"/>
+        <line class="glyph" x1="465" y1="139" x2="439" y2="161"/>
+        <text class="t-stop t-tag" x="452" y="190" text-anchor="middle" style="font-weight:600">blocked here</text>
+        <text class="t-stop t-tag" x="452" y="201" text-anchor="middle">page sees a net error</text>
+      </g>
+
+      <!-- CARD (fulfill destination) -->
+      <g class="node" id="nCard">
+        <rect class="nbox" x="498" y="214" width="104" height="46" rx="8"/>
+        <text x="550" y="234" text-anchor="middle" class="t-go" style="font-size:11px;font-weight:600">200 OK</text>
+        <text x="550" y="248" text-anchor="middle" class="t-dim" style="font-size:8px">{ your body, base64 }</text>
+        <text class="t-go t-tag" x="550" y="275" text-anchor="middle" style="font-weight:600">built locally, server never contacted</text>
+      </g>
+
+      <!-- GATE (interception point) -->
+      <text class="t-go t-api" x="250" y="105" text-anchor="middle">Fetch.requestPaused</text>
+      <polygon id="gate" class="paused" points="250,124 280,150 250,176 220,150"/>
+      <g id="pill">
+        <rect x="222" y="188" width="56" height="16" rx="8" fill="var(--indigo-dim)" stroke="var(--indigo)" stroke-width="1"/>
+        <text x="250" y="199.5" text-anchor="middle" class="t-go" style="font-size:8.5px;font-weight:700;letter-spacing:.08em">PAUSED</text>
+      </g>
+
+      <!-- PACKET -->
+      <g id="packet" class="pkt go paused" transform="translate(124,150)">
+        <circle class="pring" r="9"/>
+        <circle class="halo" r="11"/>
+        <circle class="core" r="6"/>
+      </g>
+    </svg>
   </div>
 
-  <div class="status" id="status">A request to <code>/api/data</code> is paused at your handler. Choose how to resolve it.</div>
+  <div class="status" id="status"></div>
 
   <div class="controls">
-    <button data-act="continue" id="bCont">continue_request()</button>
-    <button data-act="fail" id="bFail">fail_request()</button>
-    <button data-act="fulfill" id="bFul">fulfill_request()</button>
-    <button class="replay" id="bReplay" hidden>↻ replay</button>
+    <button class="g" data-act="continue" id="bCont">continue_request()</button>
+    <button class="r" data-act="fail" id="bFail">fail_request()</button>
+    <button class="m" data-act="fulfill" id="bFul">fulfill_request()</button>
+    <button class="replay" id="bReplay" hidden>&#8635; intercept again</button>
   </div>
 
-  <pre class="code" id="code"><span class="cm"># a request is paused, pick a resolver above</span></pre>
+  <pre class="code" id="code"></pre>
 </div>
 
 <script>
 (function(){
-  var flow=document.getElementById('flow'), packet=document.getElementById('packet');
-  var nPage=document.getElementById('nPage'), nHandler=document.getElementById('nHandler'), nServer=document.getElementById('nServer');
-  var c1=document.getElementById('c1'), c2=document.getElementById('c2');
-  var status=document.getElementById('status'), code=document.getElementById('code');
-  var bCont=document.getElementById('bCont'), bFail=document.getElementById('bFail'), bFul=document.getElementById('bFul'), bReplay=document.getElementById('bReplay');
-  var reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
-  var busy=false, at='page';
+  var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  function g(id){return document.getElementById(id);}
+  var packet=g('packet'), gate=g('gate'), pill=g('pill');
+  var nPage=g('nPage'), nServer=g('nServer'), nWall=g('nWall'), nCard=g('nCard');
+  var status=g('status'), code=g('code');
+  var bCont=g('bCont'), bFail=g('bFail'), bFul=g('bFul'), bReplay=g('bReplay');
+
+  var roadIn=g('roadIn'), roadCont=g('roadCont'), roadFail=g('roadFail'), roadFul=g('roadFul');
+  var litIn=g('litIn'), litCont=g('litCont'), litFail=g('litFail'), litFul=g('litFul');
 
   var CODE={
-    continue:'<span class="kw">await</span> tab.<span class="fn">continue_request</span>(request_id)\n<span class="cm"># or modify it on the way:</span>\n<span class="kw">await</span> tab.<span class="fn">continue_request</span>(request_id, headers=headers)',
-    fail:'<span class="kw">from</span> pydoll.protocol.network.types <span class="kw">import</span> ErrorReason\n\n<span class="kw">await</span> tab.<span class="fn">fail_request</span>(request_id, ErrorReason.BLOCKED_BY_CLIENT)',
-    fulfill:'<span class="kw">await</span> tab.<span class="fn">fulfill_request</span>(\n    request_id, response_code=<span class="st">200</span>,\n    body=<span class="st">\'{"ok": true}\'</span>,\n)'
+    paused:'<span class="kw">await</span> tab.<span class="fn">enable_fetch_events</span>()\n<span class="kw">await</span> tab.<span class="fn">on</span>(FetchEvent.REQUEST_PAUSED, handler)\n\n<span class="cm"># inside handler(tab, event):</span>\nrequest_id = event[<span class="st">\'params\'</span>][<span class="st">\'requestId\'</span>]\n<span class="cm"># resolve it exactly once, one of three ways &#8595;</span>',
+    continue:'<span class="cm"># let it reach the server unchanged...</span>\n<span class="kw">await</span> tab.<span class="fn">continue_request</span>(request_id)\n\n<span class="cm"># ...or rewrite it on the way out:</span>\n<span class="kw">await</span> tab.<span class="fn">continue_request</span>(request_id, headers=headers)',
+    fail:'<span class="kw">from</span> pydoll.protocol.network.types <span class="kw">import</span> ErrorReason\n\n<span class="cm"># kill it at the fork, the request never leaves</span>\n<span class="kw">await</span> tab.<span class="fn">fail_request</span>(request_id, ErrorReason.<span class="nm">BLOCKED_BY_CLIENT</span>)',
+    fulfill:'<span class="cm"># answer it yourself, the server is never contacted</span>\n<span class="kw">await</span> tab.<span class="fn">fulfill_request</span>(\n    request_id, response_code=<span class="st">200</span>,\n    body=base64.<span class="fn">b64encode</span>(<span class="st">b\'{"ok": true}\'</span>).<span class="fn">decode</span>(),\n)'
   };
   var MSG={
-    paused:'A request to <code>/api/data</code> is paused at your handler. Choose how to resolve it.',
-    continue:'<b class="go">continue_request()</b> forwards it to the server, and the page gets the real response. Pass <code>url=</code> or <code>headers=</code> to modify it on the way.',
-    fail:'<b class="stop">fail_request()</b> drops it at your handler with <code>BLOCKED_BY_CLIENT</code>. The server is never contacted. Great for killing images, trackers and ads.',
-    fulfill:'<b class="mock">fulfill_request()</b> answers from your handler with a mock response. The server is never contacted, and the page receives your body.'
+    paused:'The request left the browser and <b>froze</b> at <code>Fetch.requestPaused</code>. It stays open, holding the page, until you resolve it. Choose a branch below.',
+    continue:'<b class="go">continue_request()</b> sends it down the wire to the real server, and the genuine response comes back to the page. Pass <code>url=</code>, <code>headers=</code> or <code>post_data=</code> to rewrite it on the way.',
+    fail:'<b class="stop">fail_request(BLOCKED_BY_CLIENT)</b> drops it right at the fork. Nothing is sent; the page just sees <code>net::ERR_BLOCKED_BY_CLIENT</code>. Ideal for killing trackers, ads and images.',
+    fulfill:'<b class="mock">fulfill_request()</b> answers from the fork itself. The server is never contacted; the page receives <b>your</b> status code and body (base64-encoded).'
   };
 
-  function cx(which){ var w=flow.clientWidth; return which==='page'? w/6 : which==='handler'? w/2 : w*5/6; }
-  var sleep=function(ms){ return new Promise(function(r){ setTimeout(r, reduce?0:ms); }); };
-  function placeAt(which){ at=which; packet.style.transitionDuration='0ms'; packet.style.transform='translate('+cx(which)+'px,-50%)'; }
-  function moveTo(which, ms){ at=which; packet.style.transitionDuration=(reduce?0:ms)+'ms'; packet.style.transform='translate('+cx(which)+'px,-50%)'; return sleep(ms); }
+  var EI=function(t){return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;};
+  var curToken=0, busy=false, mode='paused', loopT=null;
+  function newAction(){ curToken++; if(loopT){clearTimeout(loopT); loopT=null;} return curToken; }
+  function sleep(ms){ return new Promise(function(r){ setTimeout(r, reduce?0:ms); }); }
+  function place(pt){ packet.setAttribute('transform','translate('+pt.x.toFixed(1)+','+pt.y.toFixed(1)+')'); }
 
-  function setNode(n, cls){ n.className='node'+(cls?(' '+cls):''); }
-  function clearAll(){ setNode(nPage); setNode(nHandler); setNode(nServer); c1.className='conn'; c2.className='conn'; packet.className='packet'; packet.style.opacity=''; }
+  function travel(path, dur, token, opts){
+    opts=opts||{};
+    return new Promise(function(res){
+      var L=path.getTotalLength(), rev=opts.reverse, lit=opts.lit;
+      if(lit){ lit.style.strokeDasharray=L; lit.style.strokeDashoffset=(rev?-L:L); }
+      if(reduce){ place(path.getPointAtLength(rev?0:L)); if(lit) lit.style.strokeDashoffset=0; return res(); }
+      var t0=null;
+      function fr(ts){
+        if(token!==curToken) return res();
+        if(t0===null)t0=ts;
+        var p=Math.min(1,(ts-t0)/dur), e=EI(p), d=rev?(1-e)*L:e*L;
+        place(path.getPointAtLength(d));
+        if(lit) lit.style.strokeDashoffset=(rev?-(1-e)*L:(1-e)*L);
+        if(p<1) requestAnimationFrame(fr); else res();
+      }
+      requestAnimationFrame(fr);
+    });
+  }
+
+  function setNode(n,cls){ n.setAttribute('class','node'+(cls?(' '+cls):'')); }
+  function setLit(el,cls){ el.setAttribute('class','lit show '+cls); }
+  function setPkt(cls){ packet.setAttribute('class','pkt '+cls); }
   function setBtn(act){ [bCont,bFail,bFul].forEach(function(b){ b.classList.toggle('active', b.dataset.act===act); }); }
 
-  async function toPaused(instant){
-    clearAll(); setBtn(null); bReplay.hidden=true;
-    setNode(nPage,'on'); c1.classList.add('on');
-    if(instant){ placeAt('handler'); }
-    else { placeAt('page'); await sleep(220); await moveTo('handler', 640); }
-    setNode(nHandler,'paused');
-    status.innerHTML=MSG.paused;
-    code.innerHTML='<span class="cm"># a request is paused, pick a resolver above</span>';
+  function resetLits(){
+    [litIn,litCont,litFail,litFul].forEach(function(l){ l.setAttribute('class','lit'); l.style.strokeDasharray=''; l.style.strokeDashoffset=''; });
+  }
+  function baseState(){
+    setNode(nPage); setNode(nServer); setNode(nWall); setNode(nCard);
+    resetLits();
   }
 
-  async function runContinue(){
-    if(busy) return; busy=true; setBtn('continue');
-    clearAll(); setNode(nPage,'on'); c1.classList.add('on'); placeAt('handler'); setNode(nHandler,'on');
-    await sleep(120);
-    c2.classList.add('on'); await moveTo('server', 560); setNode(nServer,'on');
-    await sleep(220);
-    packet.classList.add('resp'); c1.classList.remove('on'); c1.classList.add('ok'); c2.classList.remove('on'); c2.classList.add('ok');
-    await moveTo('handler', 480); await moveTo('page', 480); setNode(nPage,'ok');
-    finish('continue');
+  function showPaused(){
+    baseState();
+    setNode(nPage,'on'); setLit(litIn,'go'); litIn.style.strokeDashoffset=0;
+    gate.classList.add('paused'); pill.style.opacity='1';
+    setPkt('go paused'); packet.classList.remove('gone');
+    status.innerHTML=MSG.paused; code.innerHTML=CODE.paused;
+    bReplay.hidden=true; setBtn(null);
   }
-  async function runFail(){
-    if(busy) return; busy=true; setBtn('fail');
-    clearAll(); setNode(nPage,'on'); c1.classList.add('on'); placeAt('handler');
-    setNode(nHandler,'blocked'); packet.classList.add('blocked'); c2.classList.add('off'); setNode(nServer,'off');
-    await sleep(520); packet.classList.add('gone');
-    finish('fail');
+
+  function toPaused(token, animate){
+    showPaused();
+    if(animate && !reduce){
+      packet.classList.remove('paused'); place(roadIn.getPointAtLength(0));
+      return travel(roadIn, 700, token, {}).then(function(){ if(token===curToken) packet.classList.add('paused'); });
+    }
+    place({x:250,y:150});
+    return Promise.resolve();
   }
-  async function runFulfill(){
-    if(busy) return; busy=true; setBtn('fulfill');
-    clearAll(); setNode(nPage,'on'); c1.classList.add('on'); placeAt('handler');
-    c2.classList.add('off'); setNode(nServer,'off'); setNode(nHandler,'mock');
-    await sleep(160);
-    packet.classList.add('resp'); c1.classList.remove('on'); c1.classList.add('ok');
-    await moveTo('page', 560); setNode(nPage,'ok');
-    finish('fulfill');
+
+  function scheduleLoop(){
+    if(reduce) return;
+    loopT=setTimeout(function(){
+      if(mode!=='paused' || busy){ scheduleLoop(); return; }
+      var token=curToken;
+      packet.classList.remove('paused'); place(roadIn.getPointAtLength(0));
+      travel(roadIn, 700, token, {}).then(function(){
+        if(token===curToken && mode==='paused'){ packet.classList.add('paused'); scheduleLoop(); }
+      });
+    }, 3200);
   }
+
   function finish(kind){ status.innerHTML=MSG[kind]; code.innerHTML=CODE[kind]; bReplay.hidden=false; busy=false; }
 
-  bCont.addEventListener('click', runContinue);
-  bFail.addEventListener('click', runFail);
-  bFul.addEventListener('click', runFulfill);
-  bReplay.addEventListener('click', function(){ if(!busy) toPaused(false); });
+  function leaveGate(){ gate.classList.remove('paused'); pill.style.opacity='0'; packet.classList.remove('paused'); place({x:250,y:150}); }
 
-  var rt;
-  window.addEventListener('resize', function(){ clearTimeout(rt); rt=setTimeout(function(){ if(!busy) packet.style.transform='translate('+cx(at)+'px,-50%)'; }, 120); });
+  async function runContinue(token){
+    setBtn('continue'); leaveGate(); setNode(nPage,'on'); setPkt('go');
+    setLit(litCont,'go');
+    await travel(roadCont, 760, token, {lit:litCont}); if(token!==curToken)return;
+    setNode(nServer,'live'); await sleep(420); if(token!==curToken)return;
+    setNode(nServer,'ok'); setPkt('ok'); setLit(litCont,'ok'); setLit(litIn,'ok');
+    await travel(roadCont, 600, token, {reverse:true}); if(token!==curToken)return;
+    await travel(roadIn, 480, token, {reverse:true}); if(token!==curToken)return;
+    setNode(nPage,'ok'); finish('continue');
+  }
 
-  // intro: request arrives and pauses at the handler
-  placeAt('page');
-  toPaused(false);
+  async function runFail(token){
+    setBtn('fail'); leaveGate(); setNode(nPage,'on'); setPkt('go');
+    setLit(litFail,'go');
+    await travel(roadFail, 340, token, {lit:litFail}); if(token!==curToken)return;
+    setNode(nWall,'dead'); setPkt('stop'); setLit(litFail,'stop');
+    await sleep(300); if(token!==curToken)return;
+    setLit(litIn,'stop');
+    await travel(roadFail, 300, token, {reverse:true}); if(token!==curToken)return;
+    await travel(roadIn, 460, token, {reverse:true}); if(token!==curToken)return;
+    setNode(nPage,'err'); packet.classList.add('gone'); finish('fail');
+  }
+
+  async function runFulfill(token){
+    setBtn('fulfill'); leaveGate(); setNode(nPage,'on'); setPkt('go');
+    setLit(litFul,'go');
+    await travel(roadFul, 700, token, {lit:litFul}); if(token!==curToken)return;
+    setNode(nCard,'mock'); await sleep(420); if(token!==curToken)return;
+    setLit(litIn,'go');
+    await travel(roadFul, 560, token, {reverse:true}); if(token!==curToken)return;
+    await travel(roadIn, 480, token, {reverse:true}); if(token!==curToken)return;
+    setNode(nPage,'mock'); finish('fulfill');
+  }
+
+  function choose(kind){
+    if(busy) return;
+    var token=newAction(); mode='result'; busy=true;
+    baseState(); setNode(nPage,'on'); setLit(litIn,'go'); litIn.style.strokeDashoffset=0;
+    if(kind==='continue') runContinue(token);
+    else if(kind==='fail') runFail(token);
+    else runFulfill(token);
+  }
+
+  bCont.addEventListener('click', function(){ choose('continue'); });
+  bFail.addEventListener('click', function(){ choose('fail'); });
+  bFul.addEventListener('click', function(){ choose('fulfill'); });
+  bReplay.addEventListener('click', function(){
+    if(busy) return;
+    var token=newAction(); mode='paused'; busy=false;
+    toPaused(token, true).then(function(){ if(token===curToken) scheduleLoop(); });
+  });
+
+  // intro: the request arrives and freezes at the fork
+  var token=newAction(); mode='paused';
+  toPaused(token, true).then(function(){ if(token===curToken) scheduleLoop(); });
 })();
 </script>
 <script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>

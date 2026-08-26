@@ -3848,6 +3848,8 @@
 
 <h1 id="browser-fingerprinting">Browser fingerprinting</h1>
 <p>Browser fingerprinting 通过客户端经由 JavaScript API、HTTP 头和渲染引擎所暴露的属性来识别它们。<a href="../network-fingerprinting/">network fingerprinting</a> 检查的是来自操作系统内核和 TLS 库的协议级信号，而 browser fingerprinting 瞄准的是应用层：具体的浏览器、它的版本、它的配置，以及它运行其上的硬件。任何网站都能通过标准的 web API 读取这些信号，而足够多的信号组合起来所创建的 fingerprint，在数百万访客中往往是唯一的。</p>
+<iframe scrolling="no" src="/docs/resources/visuals/fingerprint-uniqueness.html" aria-label="Dozens of individually common browser signals combine into one near-unique fingerprint, and a single contradiction between two of them (User-Agent vs platform, timezone vs language) flags you" style="width: 100%; height: 920px; border: 0;" loading="lazy"></iframe>
+
 <h2 id="javascript-navigator">JavaScript navigator 属性</h2>
 <p><code>navigator</code> 对象是浏览器 fingerprinting 数据最丰富的单一来源。它暴露了数十个属性，揭示浏览器、它的能力以及它运行其上的系统。检测系统收集这些属性，把它们相互交叉引用、并与 HTTP 头交叉引用，然后标记不一致之处。</p>
 <p>下面这段 JavaScript 收集了 fingerprinting 系统通常会检查的核心属性集：</p>

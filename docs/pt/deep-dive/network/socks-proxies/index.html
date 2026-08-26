@@ -3812,30 +3812,8 @@
 <p>O SOCKS5 é a melhor escolha em todo caso prático. Use o SOCKS4 apenas quando um proxy não suportar SOCKS5.</p>
 <h2 id="o-handshake-do-socks5">O handshake do SOCKS5</h2>
 <p>Uma conexão SOCKS5 segue a RFC 1928 em três fases: negociação de método, autenticação opcional, e então a requisição de conexão.</p>
-<pre class="mermaid"><code>sequenceDiagram
-    participant Client
-    participant SOCKS5 as SOCKS5 Proxy
-    participant Server as Target Server
+<iframe scrolling="no" src="/docs/resources/visuals/socks5-handshake.html" aria-label="The SOCKS5 handshake in real RFC 1928/1929 bytes: method negotiation, optional username/password auth, then the CONNECT request, decoded field by field" style="width: 100%; height: 860px; border: 0;" loading="lazy"></iframe>
 
-    Note over Client,SOCKS5: Fase 1: negociação de método
-    Client-&gt;&gt;SOCKS5: Hello [VER=5, NMETHODS, METHODS]
-    SOCKS5-&gt;&gt;Client: Método selecionado [VER=5, METHOD]
-
-    Note over Client,SOCKS5: Fase 2: autenticação (se necessária)
-    Client-&gt;&gt;SOCKS5: Auth [VER=1, ULEN, UNAME, PLEN, PASSWD]
-    SOCKS5-&gt;&gt;Client: Resposta de auth [VER=1, STATUS]
-
-    Note over Client,SOCKS5: Fase 3: requisição de conexão
-    Client-&gt;&gt;SOCKS5: Connect [VER=5, CMD, DST.ADDR, DST.PORT]
-    SOCKS5-&gt;&gt;Server: Estabelece conexão TCP
-    Server--&gt;&gt;SOCKS5: Conectado
-    SOCKS5-&gt;&gt;Client: Reply [VER=5, REP=SUCCESS, BND.ADDR, BND.PORT]
-
-    Note over Client,Server: Relay de dados
-    Client-&gt;&gt;SOCKS5: Dados de aplicação
-    SOCKS5-&gt;&gt;Server: Encaminha
-    Server-&gt;&gt;SOCKS5: Resposta
-    SOCKS5-&gt;&gt;Client: Encaminha</code></pre>
 <h3 id="fase-1-negociacao-de-metodo">Fase 1: negociação de método</h3>
 <p>O cliente abre uma conexão TCP ao proxy e envia a versão do protocolo (<code>0x05</code>) e os métodos de autenticação que suporta.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Client hello</span>
@@ -3930,31 +3908,8 @@
 <p>Isso difere da autenticação de proxy HTTP. Proxies HTTP autenticam com um status <code>407 Proxy Authentication Required</code>, que o Chrome expõe através do domínio Fetch do CDP; o Pydoll responde a esses eventos <code>Fetch.authRequired</code> com suas credenciais automaticamente. A autenticação SOCKS5 acontece em um handshake binário antes de qualquer HTTP existir, então não há 407, não há <code>Fetch.authRequired</code>, e não há como uma ferramenta baseada em CDP injetar credenciais nela.</p>
 <h3 id="o-socks5forwarder-do-pydoll">O SOCKS5Forwarder do Pydoll</h3>
 <p>A correção padrão é um forwarder local: um pequeno servidor SOCKS5 no localhost que aceita conexões não autenticadas do Chrome e as encaminha ao proxy remoto com autenticação completa.</p>
-<pre class="mermaid"><code>sequenceDiagram
-    participant Chrome
-    participant Forwarder as Local forwarder&lt;br/&gt;(127.0.0.1:1081)
-    participant Remote as Remote SOCKS5 proxy&lt;br/&gt;(proxy:1080)
-    participant Server as Destination
+<iframe scrolling="no" src="/docs/resources/visuals/socks5-forwarder.html" aria-label="The pydoll SOCKS5Forwarder bridges two handshakes: a no-auth SOCKS5 handshake to Chrome on one side and a full authenticated handshake to the remote proxy on the other, injecting the credentials Chrome cannot send" style="width: 100%; height: 900px; border: 0;" loading="lazy"></iframe>
 
-    Note over Chrome,Forwarder: sem autenticação
-    Chrome-&gt;&gt;Forwarder: Hello [methods: 0x00]
-    Forwarder-&gt;&gt;Chrome: Método selecionado [0x00]
-    Chrome-&gt;&gt;Forwarder: CONNECT example.com:443
-
-    Note over Forwarder,Remote: com autenticação
-    Forwarder-&gt;&gt;Remote: Hello [methods: 0x02]
-    Remote-&gt;&gt;Forwarder: Método selecionado [0x02]
-    Forwarder-&gt;&gt;Remote: Auth [username, password]
-    Remote-&gt;&gt;Forwarder: Auth OK
-    Forwarder-&gt;&gt;Remote: CONNECT example.com:443
-    Remote-&gt;&gt;Server: Conexão TCP
-    Remote-&gt;&gt;Forwarder: Conectado
-    Forwarder-&gt;&gt;Chrome: Conectado
-
-    Note over Chrome,Server: relay bidirecional
-    Chrome-&gt;&gt;Forwarder: TLS + dados de aplicação
-    Forwarder-&gt;&gt;Remote: Encaminha
-    Remote-&gt;&gt;Server: Encaminha</code></pre>
 <p>O Pydoll traz o <code>SOCKS5Forwarder</code> em <code>pydoll.utils</code>. É uma implementação assíncrona em Python puro, sem dependências, que lida com o handshake completo com o proxy remoto, incluindo autenticação por usuário/senha e os tipos de endereço IPv4, IPv6 e domínio.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 </span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>

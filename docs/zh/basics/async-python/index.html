@@ -3649,7 +3649,7 @@
 </span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </span></code></pre></div>
 <p>这一次大约只需 <strong>2 秒</strong>。两段等待重叠了。水烧开的同时面包也在烤。</p>
-<iframe src="/docs/resources/visuals/async-flow.html" aria-label="Sequential vs concurrent async, animated" style="width: 100%; height: 285px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/async-flow.html" aria-label="Sequential vs concurrent async, animated" style="width: 100%; height: 285px; border: 0;" loading="lazy"></iframe>
 
 <p>分别运行这两种模式，盯着计时器看：顺序执行在 4.0s 结束，并发执行在 2.0s 结束，因为两段等待重叠了。</p>
 <p><code>asyncio.gather(*coroutines)</code> 会并发地运行你传给它的所有内容，并在全部完成后按顺序返回它们的结果。</p>

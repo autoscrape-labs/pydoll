@@ -3703,6 +3703,8 @@
 <h1 id="proxy-detection">Proxy detection</h1>
 <p>Proxy detection is probabilistic: a site combines dozens of weak signals, from a simple IP reputation lookup to TCP/IP stack analysis, into a confidence score. No single signal is proof, but enough of them together produce a high-confidence decision. This page covers the main techniques, how they work, and what they mean for automation.</p>
 <p>It builds on the rest of the network section: <a href="../network-fundamentals/">Network fundamentals</a> for the layers involved, and <a href="../http-proxies/">HTTP/HTTPS proxies</a> and <a href="../socks-proxies/">SOCKS proxies</a> for how each proxy type behaves.</p>
+<iframe scrolling="no" src="/docs/resources/visuals/proxy-detection-score.html" aria-label="Proxy detection folds many weak signals (ASN reputation, IP versus timezone and language, known-proxy databases, WebRTC leaks) into one confidence score that crosses a block threshold" style="width: 100%; height: 720px; border: 0;" loading="lazy"></iframe>
+
 <h2 id="ip-reputation">IP reputation</h2>
 <p>IP reputation is the most widely deployed technique. It combines public data (ASN records, WHOIS, geolocation databases) with proprietary intelligence to sort IP addresses into risk categories.</p>
 <h3 id="asn-classification">ASN classification</h3>

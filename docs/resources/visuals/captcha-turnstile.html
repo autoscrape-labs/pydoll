@@ -54,6 +54,12 @@
   #ipBtn.dc{color:var(--danger);border-color:rgba(255,107,107,.4)}
   .caption{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-left:auto;min-height:16px;text-align:right}
   @media (prefers-reduced-motion:reduce){.cursor{transition:opacity .2s}.spin{animation:none}}
+
+  /* theme-matched thin scrollbars for overflow-x boxes (replaces the default white bar) */
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--line2)}
+  ::-webkit-scrollbar-thumb:hover{background:var(--faint)}
 </style>
 </head>
 <body>

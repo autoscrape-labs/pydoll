@@ -3855,7 +3855,7 @@
 
 <h1 id="structured-extraction">Structured extraction</h1>
 <p>Pydoll's extraction engine lets you define <strong>what</strong> you want from a page using typed models, and handles the <strong>how</strong> automatically. Instead of manually querying elements one by one, you declare a model with selectors and call <code>tab.extract()</code>. The result is a fully typed, validated Python object built on <a href="https://docs.pydantic.dev/">Pydantic</a>.</p>
-<iframe src="/docs/resources/visuals/extraction-flow.html" aria-label="A page and a model producing a typed, validated object through tab.extract" style="width: 100%; height: 360px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/extraction-flow.html" aria-label="A page and a model producing a typed, validated object through tab.extract" style="width: 100%; height: 360px; border: 0;" loading="lazy"></iframe>
 
 <h2 id="why-use-a-model">Why use a model</h2>
 <p>Traditional scraping code spreads <code>find()</code> calls, <code>await element.text</code>, attribute reads, and manual type conversions across dozens of lines. When the page changes, you hunt through that code to find which selector broke.</p>

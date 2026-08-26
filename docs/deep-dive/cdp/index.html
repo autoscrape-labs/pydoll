@@ -3571,15 +3571,8 @@
 <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>chrome --remote-debugging-port=9222
 </span></code></pre></div>
 <p>Pydoll connects to that WebSocket and holds the connection open for the whole session. The channel is bidirectional: your code sends commands to the browser, and the browser pushes events back as they happen, over the same connection.</p>
-<pre class="mermaid"><code>sequenceDiagram
-    participant App as Your code
-    participant WS as WebSocket
-    participant Browser as Chrome
+<iframe scrolling="no" src="/docs/resources/visuals/cdp-connection.html" aria-label="Pydoll and Chrome exchange framed JSON over one WebSocket: commands are matched to their responses by id and resolved inline, while unsolicited events flow through a separate queue drained to callbacks" style="width: 100%; height: 560px; border: 0;" loading="lazy"></iframe>
 
-    App -&gt;&gt; WS: command: Page.navigate
-    WS -&gt;&gt; Browser: run it
-    Browser --&gt;&gt; WS: event: Page.loadEventFired
-    WS --&gt;&gt; App: deliver the event</code></pre>
 <p>A persistent WebSocket suits automation better than the request/response HTTP endpoints older protocols used: the browser notifies you the moment something happens, instead of you polling to find out.</p>
 <h2 id="domains">Domains</h2>
 <p>CDP groups its methods and events into domains. The ones you meet most in automation:</p>

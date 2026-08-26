@@ -3734,16 +3734,8 @@
 <h2 id="a-pilha-de-rede">A pilha de rede</h2>
 <p>Proxies operam em camadas diferentes, e a camada determina seu alcance. Características de camadas inferiores podem fazer o fingerprint do seu sistema real mesmo através de um proxy impecável em camada superior, então ajuda ver onde cada protocolo fica.</p>
 <p>O modelo OSI (7 camadas) é uma referência didática; redes reais rodam o modelo TCP/IP (4 camadas). A terminologia do OSI ainda é como as pessoas descrevem onde um proxy opera, então vale conhecê-la.</p>
-<pre class="mermaid"><code>graph TD
-    L7[Camada 7: Aplicação - HTTP, FTP, SMTP, DNS]
-    L6[Camada 6: Apresentação - Criptografia, Compressão]
-    L5[Camada 5: Sessão - SOCKS]
-    L4[Camada 4: Transporte - TCP, UDP]
-    L3[Camada 3: Rede - IP, ICMP]
-    L2[Camada 2: Enlace - Ethernet, WiFi]
-    L1[Camada 1: Física - Cabos, Ondas de Rádio]
+<iframe scrolling="no" src="/docs/resources/visuals/osi-proxy-layers.html" aria-label="The OSI layer stack: a proxy reaches only the layer it sits at and the layers above; the TCP/IP fingerprint at L4/L3 is stamped by the OS kernel below any proxy and still leaks" style="width: 100%; height: 820px; border: 0;" loading="lazy"></iframe>
 
-    L7 --&gt; L6 --&gt; L5 --&gt; L4 --&gt; L3 --&gt; L2 --&gt; L1</code></pre>
 <p>As camadas que importam para automação:</p>
 <ul>
 <li><strong>Camada 7, Aplicação.</strong> HTTP, HTTPS, FTP, SMTP, DNS. Os dados de fato com os quais seu código se importa. Proxies HTTP ficam aqui, com visibilidade completa sobre requisições e respostas.</li>
@@ -3815,14 +3807,8 @@
 <p>Todos os protocolos de proxy (HTTP, HTTPS, SOCKS4, SOCKS5) usam TCP para seu canal de controle, porque autenticação e sequências de comando precisam de entrega garantida. O SOCKS5 pode adicionalmente fazer proxy de UDP, o que SOCKS4 e proxies HTTP não conseguem.</p>
 <h3 id="o-handshake-tcp-de-tres-vias">O handshake TCP de três vias</h3>
 <p>Antes de qualquer dado se mover, o TCP realiza um handshake de três vias para sincronizar números de sequência e o estado da conexão.</p>
-<pre class="mermaid"><code>sequenceDiagram
-    participant Client
-    participant Server
+<iframe scrolling="no" src="/docs/resources/visuals/tcp-handshake.html" aria-label="The TCP three-way handshake: SYN, SYN-ACK and ACK packets cross between client and server with sequence numbers, and each side's connection state advances to ESTABLISHED" style="width: 100%; height: 720px; border: 0;" loading="lazy"></iframe>
 
-    Client-&gt;&gt;Server: SYN (seq=x)
-    Server-&gt;&gt;Client: SYN-ACK (seq=y, ack=x+1)
-    Client-&gt;&gt;Server: ACK (ack=y+1)
-    Note over Client,Server: Conexão estabelecida</code></pre>
 <p>O cliente envia um SYN com um Initial Sequence Number aleatório e suas opções TCP (tamanho de janela, MSS, timestamps, SACK). O servidor responde com um SYN-ACK: seu próprio ISN aleatório mais uma confirmação do ISN do cliente. O cliente envia um ACK final, e a conexão está aberta nos dois sentidos. O ISN é aleatorizado (RFC 6528) para impedir que um atacante injete pacotes adivinhando números de sequência.</p>
 <h3 id="fingerprinting-de-tcp">Fingerprinting de TCP</h3>
 <p>O handshake expõe valores específicos do SO: tamanho de janela inicial, ordem das opções, TTL e window scale. O kernel define esses valores, não o navegador, então um proxy não pode mudá-los. Padrões ilustrativos (eles variam por versão e ajuste):</p>
@@ -3869,16 +3855,8 @@
 <p>Para montar uma conexão P2P, o WebRTC descobre seu IP público através de servidores STUN sobre UDP. Essas consultas contornam um proxy que só carrega TCP, o IP acaba nos candidatos ICE da conexão, e o JavaScript na página pode ler os candidatos e enviar seu IP real a um servidor.</p>
 <h3 id="ice-stun-e-os-candidatos-que-vazam">ICE, STUN e os candidatos que vazam</h3>
 <p>O WebRTC usa ICE (RFC 8445) para reunir possíveis caminhos de conexão, chamados candidatos, e essa reunião é o que expõe sua rede.</p>
-<pre class="mermaid"><code>sequenceDiagram
-    participant Browser
-    participant STUN as STUN Server
-    participant Peer as Remote Peer
+<iframe scrolling="no" src="/docs/resources/visuals/webrtc-leak.html" aria-label="WebRTC fires a STUN binding request over UDP that bypasses a TCP proxy, so the STUN server returns your real public IP and it appears in the ICE candidates a page can read; leak_protection blocks the non-proxied UDP" style="width: 100%; height: 700px; border: 0;" loading="lazy"></iframe>
 
-    Browser-&gt;&gt;Browser: Reúne IPs locais (LAN)
-    Browser-&gt;&gt;STUN: Binding Request (UDP, contorna o proxy)
-    STUN-&gt;&gt;Browser: Resposta com o IP público real
-    Browser-&gt;&gt;Peer: Envia todos os candidatos ICE (local + público)
-    Note over Browser,Peer: P2P direto contorna o proxy por completo</code></pre>
 <p>Três tipos de candidato são reunidos:</p>
 <ul>
 <li><strong>Host candidates</strong>: seus IPs locais de LAN. O Chrome 75+ os substitui por nomes mDNS efêmeros (<code>a1b2c3d4.local</code>) a menos que a permissão de câmera/microfone seja concedida, então esse vazamento está em grande parte mitigado.</li>

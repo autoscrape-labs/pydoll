@@ -3860,7 +3860,7 @@
 <p>selector 是你交给 <code>tab.query()</code>（以及提取模型中 <code>selector=</code>）的字符串，用来指向某个元素。Pydoll 会说两种 selector 语言，CSS 和 XPath，并会替你挑选合适的引擎：如果字符串以 <code>/</code> 或 <code>./</code> 开头，它就作为 XPath 运行，否则作为 CSS selector 运行。这一页会教你足够的两种语言知识，让你能在页面上找到任何东西。</p>
 <p>只有 <code>query()</code> 才需要 selector。<code>find()</code> 方法接受的是普通属性（参见 <a href="../../guides/element-finding/">Element finding</a>）；当你需要表达一种 <code>find()</code> 无法表达的关系时，才动用 selector。</p>
 <p>试试看：在下面输入一个 selector，匹配到的元素就会高亮。它运行的正是浏览器使用的那套 <code>querySelectorAll</code> / XPath，所以在这里匹配到什么，在你的自动化里就匹配到什么。</p>
-<iframe src="/docs/resources/visuals/selector-playground.html" aria-label="Type a CSS or XPath selector and see which elements it matches" style="width: 100%; height: 500px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/selector-playground.html" aria-label="Type a CSS or XPath selector and see which elements it matches" style="width: 100%; height: 500px; border: 0;" loading="lazy"></iframe>
 
 <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>

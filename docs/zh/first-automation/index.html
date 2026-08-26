@@ -3563,6 +3563,8 @@
 </span></code></pre></div>
 <p>每个 <code>quote</code> 都是一个真正的 Pydantic 对象：<code>quote.tags</code> 是一个 <code>list[str]</code>，你的 IDE 会自动补全字段，<code>quote.model_dump_json()</code> 会将它序列化。无需逐个元素查询，也无需手动类型转换。</p>
 <h2 id="the-full-script">完整脚本</h2>
+<iframe scrolling="no" src="/docs/resources/visuals/first-automation.html" aria-label="A read-along walkthrough of the first automation script: each line highlights as it runs while a browser window launches, navigates, finds elements, types, clicks, and extracts typed data" style="width: 100%; height: 860px; border: 0;" loading="lazy"></iframe>
+
 <p>创建 <code>first_automation.py</code>：</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>

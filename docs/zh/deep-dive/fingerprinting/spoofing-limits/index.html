@@ -3603,11 +3603,11 @@
 <li><strong>JavaScript 覆盖</strong>只包装某一个 API，一个 <code>navigator</code> getter 或 <code>matchMedia</code>。它只改变那一条路径。任何其他读取同一信号的路径仍然返回真实值。</li>
 </ul>
 <p>一个媒体特性存在于引擎的 <code>MediaValues</code> 中，而两条读取路径都会针对它来解析。切换下面的覆盖类型，看看每一种分别能触及哪些路径：</p>
-<iframe src="/docs/resources/visuals/media-read-paths.html" aria-label="一个 CDP 覆盖会编辑引擎的 MediaValues，使 matchMedia 和 CSS 级联都发生改变；而一个 JavaScript 覆盖只包装 matchMedia，让 CSS 路径读到真实值" style="width: 100%; height: 430px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/media-read-paths.html" aria-label="一个 CDP 覆盖会编辑引擎的 MediaValues，使 matchMedia 和 CSS 级联都发生改变；而一个 JavaScript 覆盖只包装 matchMedia，让 CSS 路径读到真实值" style="width: 100%; height: 430px; border: 0;" loading="lazy"></iframe>
 
 <p>一个 CDP 覆盖会编辑 <code>MediaValues</code>，所以 <code>matchMedia</code> 和 <code>@media</code> 级联都会返回新值。一个 JavaScript 覆盖会替换 <code>matchMedia</code> 函数；级联从不调用它，所以 CSS 仍然针对真实的 <code>MediaValues</code> 来解析。那个缺口就是矛盾。</p>
 <p>下面这个演示运行在你自己的显示器上。两张卡片都读取你真实的 <code>dynamic-range</code> 并保持一致。应用一个 JavaScript 覆盖后，只有 <code>matchMedia</code> 在撒谎；而引擎的 <code>@media</code> 规则仍然报告真相。</p>
-<iframe src="/docs/resources/visuals/js-override-lie.html" aria-label="matchMedia 和一条 CSS @media 规则读取相同的 dynamic-range；一个 JavaScript 覆盖只让 matchMedia 撒谎，而 CSS 路径保持真实" style="width: 100%; height: 340px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/js-override-lie.html" aria-label="matchMedia 和一条 CSS @media 规则读取相同的 dynamic-range；一个 JavaScript 覆盖只让 matchMedia 撒谎，而 CSS 路径保持真实" style="width: 100%; height: 340px; border: 0;" loading="lazy"></iframe>
 
 <p>这正是为什么 Pydoll 不伪造 <code>dynamic-range</code>。Chrome 保留着一份固定的、可覆盖的媒体特性白名单。在 Blink 的 <code>MediaFeatureOverrides::SetOverride</code> 中，有七个名字会被处理，<code>color-gamut</code>、<code>prefers-color-scheme</code>、<code>prefers-contrast</code>、<code>prefers-reduced-motion</code>、<code>prefers-reduced-data</code>、<code>prefers-reduced-transparency</code> 以及 <code>forced-colors</code>，任何其他名字都会落空、什么也不改变。<code>dynamic-range</code>、<code>inverted-colors</code> 和 <code>monochrome</code> 在那里没有分支，所以这个 CDP 命令会被接受、然后被悄悄丢弃。这是引擎里缺失的一条代码路径，而不是一个值格式的问题。</p>
 <p>Pydoll 暴露了这七个里的六个。被排除在外的那一个是 <code>prefers-reduced-data</code>：它在白名单里，但在 Chrome 中是禁用发布的，所以 <code>matchMedia</code> 对任何值都报告不匹配，而设置它就会声称一个真实 Chrome 从不会返回的东西。对于那些未列入白名单的特性，唯一剩下的杠杆就是 JavaScript，而它只能在一条路径上撒谎，所以 Pydoll 让 <code>dynamic-range</code> 保持真实，转而要求你把 <code>color-gamut</code> 与之匹配。</p>

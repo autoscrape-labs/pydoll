@@ -3,90 +3,378 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Cross-layer consistency</title>
+<title>Cross-layer consistency sweep</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
 <style>
   :root{
-    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;--panel2:#191c20;
     --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
     --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
-    --indigo:#6e7bff;--indigo2:#8f99ff;--pass:#35e0a1;--danger:#ff6b6b;--danger-dim:rgba(255,107,107,.1);--pass-dim:rgba(53,224,161,.1);
-    --sans:"Chivo",system-ui,-apple-system,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--indigo-dim:rgba(110,123,255,.13);
+    --pass:#35e0a1;--pass-dim:rgba(53,224,161,.12);
+    --amber:#f5b544;--amber-dim:rgba(245,181,68,.13);
+    --danger:#ff6b6b;--danger-dim:rgba(255,107,107,.12);
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
   }
-  *{box-sizing:border-box}
-  html,body{margin:0}
+  *{box-sizing:border-box} html,body{margin:0}
   body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
   .widget{border:1px solid var(--line);padding:16px 18px}
-  .lead{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:14px}
-  .layers{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-  @media(max-width:620px){.layers{grid-template-columns:1fr 1fr}}
-  .lay{border:1px solid var(--line2);background:var(--bg2);padding:13px 13px;display:flex;flex-direction:column;gap:6px;min-height:112px;transition:border-color .3s}
-  .lay.bad{border-color:rgba(255,107,107,.45)}
-  .lay .nm{font-family:var(--sans);font-weight:700;font-size:12.5px}
-  .lay .sub{font-family:var(--mono);font-size:9.5px;color:var(--faint)}
-  .chip{margin-top:auto;align-self:flex-start;font-family:var(--mono);font-size:10px;padding:3px 9px;border:1px solid;text-transform:uppercase;letter-spacing:.04em}
-  .chip.ok{color:var(--pass);border-color:rgba(53,224,161,.4);background:var(--pass-dim)}
-  .chip.bad{color:var(--danger);border-color:rgba(255,107,107,.4);background:var(--danger-dim)}
-  .tag{font-family:var(--mono);font-size:9px;color:var(--faint)}
+  .lead{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:14px;line-height:1.5}
+  .lead b{color:var(--ink)}
+
+  .detector{border:1px solid var(--line2);background:var(--bg2);padding:11px;transition:border-color .35s,box-shadow .35s}
+  .detector.flagged{border-color:rgba(255,107,107,.4);box-shadow:0 0 0 1px rgba(255,107,107,.12) inset}
+  .dhead{display:flex;align-items:center;gap:8px;margin:0 2px 9px}
+  .dhead .t{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--faint)}
+  .dhead .pill{margin-left:auto;font-family:var(--mono);font-size:9px;color:var(--faint);border:1px solid var(--line);padding:2px 7px;letter-spacing:.04em}
+
+  .scanArea{position:relative}
+  .scan{position:absolute;left:-6px;right:-6px;top:0;height:2px;z-index:6;opacity:0;pointer-events:none;
+    background:linear-gradient(90deg,transparent,var(--indigo2) 22%,var(--ink) 50%,var(--indigo2) 78%,transparent);
+    box-shadow:0 0 15px 2px rgba(110,123,255,.55)}
+  .scan.live{opacity:1}
+  .scan::after{content:"";position:absolute;left:0;right:0;top:-24px;height:24px;background:linear-gradient(transparent,var(--indigo-dim))}
+
+  .layer{position:relative;display:grid;grid-template-columns:128px 1fr 118px;gap:12px;align-items:center;
+    border:1px solid var(--line);background:var(--panel);padding:9px 12px;transition:border-color .3s,background .3s}
+  .layer + .layer{margin-top:9px}
+  .layer.scanning{border-color:rgba(110,123,255,.55)}
+  .layer.res.ok{border-color:rgba(53,224,161,.32)}
+  .layer.res.bad{border-color:rgba(255,107,107,.45);background:rgba(255,107,107,.045)}
+
+  .meta{min-width:0}
+  .meta .nm{font-family:var(--sans);font-weight:700;font-size:12.5px}
+  .meta .sub{font-family:var(--mono);font-size:9px;color:var(--faint);margin-top:2px}
+
+  .sig{display:flex;align-items:center;gap:11px;min-width:0;opacity:.2;transition:opacity .45s ease}
+  .layer.res .sig{opacity:1}
+  .sig svg{flex:none;height:34px;width:96px}
+  .sig .mono{font-family:var(--mono);font-size:9.5px;color:var(--dim);line-height:1.45;min-width:0;overflow:hidden;text-overflow:ellipsis}
+  .sig .mono em{font-style:normal;color:var(--faint)}
+  .sig .mono b{font-weight:600;color:var(--ink)}
+  .layer.res.bad .sig .mono b{color:var(--danger)}
+  .layer.res.ok.lever .sig .mono b{color:var(--pass)}
+
+  .mpath{fill:none;stroke:var(--pass);stroke-width:1.6;stroke-linecap:round;stroke-dasharray:230;stroke-dashoffset:230}
+  .layer.res .mpath{stroke-dashoffset:0;transition:stroke-dashoffset .55s ease}
+  .tick{stroke-width:1.5;stroke:var(--pass);opacity:.85}
+  .bar{fill:var(--indigo);opacity:.5;transform:scaleY(.14);transform-origin:center bottom;transition:transform .5s ease}
+  .layer.res .bar{transform:scaleY(1)}
+  .rep{transition:width .5s ease}
+
+  .side{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+  .stat{display:flex;align-items:center;gap:7px}
+  .stat .w{font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.02em}
+  .layer.res.ok .stat .w{color:var(--pass)} .layer.res.bad .stat .w{color:var(--danger)}
+  .lamp{width:11px;height:11px;border-radius:50%;background:var(--faint);transition:background .3s,box-shadow .3s}
+  .layer.scanning .lamp{background:var(--indigo2);box-shadow:0 0 10px rgba(110,123,255,.6)}
+  .layer.res.ok .lamp{background:var(--pass);box-shadow:0 0 10px rgba(53,224,161,.5)}
+  .layer.res.bad .lamp{background:var(--danger);box-shadow:0 0 10px rgba(255,107,107,.5)}
+  .layer.res .lamp{animation:lampPulse .55s ease}
+  @keyframes lampPulse{0%{transform:scale(.4)}55%{transform:scale(1.5)}100%{transform:scale(1)}}
+  .tag{font-family:var(--mono);font-size:8.5px;letter-spacing:.03em;color:var(--faint);display:flex;align-items:center;gap:4px}
   .tag.lever{color:var(--indigo2)}
-  .verdict{display:flex;align-items:center;gap:12px;margin-top:14px;padding:13px 15px;border:1px solid var(--line);font-family:var(--mono);font-size:12.5px;color:var(--dim);transition:.3s}
-  .verdict .dot{width:9px;height:9px;border-radius:50%;flex:none;transition:.3s}
-  .verdict.pass{background:var(--pass-dim);border-color:rgba(53,224,161,.3)} .verdict.pass .dot{background:var(--pass)}
-  .verdict.fail{background:var(--danger-dim);border-color:rgba(255,107,107,.3)} .verdict.fail .dot{background:var(--danger)}
-  .verdict b.ok{color:var(--pass)} .verdict b.bad{color:var(--danger)}
-  .controls{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:center}
-  .ctl{display:flex;align-items:center;gap:8px}
-  .ctl .lbl{font-family:var(--mono);font-size:11px;color:var(--faint)}
-  button{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:7px 11px;cursor:pointer;transition:.15s}
+  .tag svg{width:9px;height:9px;stroke:currentColor;fill:none;stroke-width:1.6}
+
+  .verdict{display:flex;align-items:center;gap:13px;margin-top:13px;padding:12px 15px;border:1px solid var(--line);transition:.35s}
+  .verdict .tally{font-family:var(--sans);font-weight:800;font-size:21px;line-height:1;white-space:nowrap;color:var(--faint);min-width:52px}
+  .verdict .chip{font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:4px 10px;border:1px solid;flex:none}
+  .verdict .txt{font-family:var(--mono);font-size:11px;color:var(--dim);line-height:1.5}
+  .verdict .txt b{font-weight:600}
+  .verdict.scan .chip{color:var(--dim);border-color:var(--line2)}
+  .verdict.scan .chip .sp{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--indigo2);margin-right:5px;animation:blink 1s infinite}
+  @keyframes blink{0%,100%{opacity:.25}50%{opacity:1}}
+  .verdict.pass{background:var(--pass-dim);border-color:rgba(53,224,161,.3)}
+  .verdict.pass .tally{color:var(--pass)} .verdict.pass .chip{color:var(--pass);border-color:rgba(53,224,161,.5)} .verdict.pass .txt b{color:var(--pass)}
+  .verdict.fail{background:var(--danger-dim);border-color:rgba(255,107,107,.3)}
+  .verdict.fail .tally{color:var(--danger)} .verdict.fail .chip{color:var(--danger);border-color:rgba(255,107,107,.5)} .verdict.fail .txt b{color:var(--danger)}
+
+  .controls{display:flex;align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap}
+  .lev{display:flex;align-items:center;gap:8px}
+  .lev .k{font-family:var(--mono);font-size:10.5px;color:var(--faint)}
+  button{font-family:var(--mono);font-size:11.5px;font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:7px 12px;cursor:pointer;transition:.15s}
   button:hover{border-color:var(--indigo);color:#fff}
   button.on{color:var(--pass);border-color:rgba(53,224,161,.45)}
   button.off{color:var(--danger);border-color:rgba(255,107,107,.45)}
+  button.ghost{color:var(--dim)}
+  .note{font-family:var(--mono);font-size:9.5px;color:var(--faint);margin-left:auto;text-align:right;line-height:1.4}
+  .rule{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:11px;line-height:1.5}
+  .rule b{color:var(--dim);font-weight:500}
+
+  @media(max-width:540px){
+    .layer{grid-template-columns:100px 1fr 96px;gap:9px;padding:8px 10px}
+    .sig svg{width:76px} .sig .mono{font-size:9px}
+    .note{margin-left:0;width:100%;text-align:left}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .scan{display:none}
+    .layer.res .lamp{animation:none}
+    .verdict.scan .chip .sp{animation:none}
+    .mpath,.bar,.sig{transition:none}
+  }
+
+  /* theme-matched thin scrollbars for overflow-x boxes (replaces the default white bar) */
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--line2)}
+  ::-webkit-scrollbar-thumb:hover{background:var(--faint)}
 </style>
 </head>
 <body>
 <div class="widget">
-  <div class="lead">Detection cross-checks the layers. Passing one while failing another still flags you.</div>
-  <div class="layers">
-    <div class="lay"><div class="nm">Network</div><div class="sub">TCP · TLS · HTTP/2</div><div class="chip ok">authentic</div><div class="tag">free with real Chrome</div></div>
-    <div class="lay"><div class="nm">Browser</div><div class="sub">canvas · WebGL · navigator</div><div class="chip ok">authentic</div><div class="tag">free with real Chrome</div></div>
-    <div class="lay" id="layBeh"><div class="nm">Behavior</div><div class="sub">mouse · keyboard · timing</div><div class="chip" id="behChip"></div><div class="tag lever">your lever: humanize</div></div>
-    <div class="lay" id="layIp"><div class="nm">IP reputation</div><div class="sub">egress address</div><div class="chip" id="ipChip"></div><div class="tag lever">your lever: proxy</div></div>
+  <div class="lead">A detector doesn't read one signal. It <b>sweeps every layer and cross-checks them</b>. Network and Browser are authentic for free because Pydoll drives real Chrome. You control only <b>Behavior</b> and <b>IP</b>. One contradiction anywhere trips the alarm, even with three layers perfect.</div>
+
+  <div class="detector" id="detector">
+    <div class="dhead"><span class="t">Detector · cross-layer sweep</span><span class="pill">consistency = AND</span></div>
+
+    <div class="scanArea" id="scanArea">
+      <div class="scan" id="scan"></div>
+
+      <div class="layer" data-i="0">
+        <div class="meta"><div class="nm">Network</div><div class="sub">TCP · TLS · HTTP/2</div></div>
+        <div class="sig">
+          <svg viewBox="0 0 96 34" aria-hidden="true">
+            <g id="netBars"></g>
+          </svg>
+          <div class="mono"><b>JA4 t13d1516h2_&hellip;</b><br><em>matches real Chrome</em></div>
+        </div>
+        <div class="side">
+          <div class="stat"><span class="w" data-w>·</span><span class="lamp"></span></div>
+          <div class="tag"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>authentic · free</div>
+        </div>
+      </div>
+
+      <div class="layer" data-i="1">
+        <div class="meta"><div class="nm">Browser</div><div class="sub">canvas · WebGL · navigator</div></div>
+        <div class="sig">
+          <svg viewBox="0 0 96 34" aria-hidden="true">
+            <defs><linearGradient id="cvs" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#6e7bff"/><stop offset="1" stop-color="#35e0a1"/>
+            </linearGradient></defs>
+            <rect x="2" y="6" width="34" height="22" rx="3" fill="url(#cvs)" opacity=".65"/>
+            <g fill="#8f99ff" opacity=".6">
+              <circle cx="50" cy="11" r="2"/><circle cx="60" cy="11" r="2"/><circle cx="70" cy="11" r="2"/><circle cx="80" cy="11" r="2"/>
+              <circle cx="50" cy="22" r="2"/><circle cx="60" cy="22" r="2"/><circle cx="70" cy="22" r="2"/><circle cx="80" cy="22" r="2"/>
+            </g>
+          </svg>
+          <div class="mono"><b>canvas 3f9a&hellip;</b><br><em>webdriver: false</em></div>
+        </div>
+        <div class="side">
+          <div class="stat"><span class="w" data-w>·</span><span class="lamp"></span></div>
+          <div class="tag"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>authentic · free</div>
+        </div>
+      </div>
+
+      <div class="layer lever" data-i="2">
+        <div class="meta"><div class="nm">Behavior</div><div class="sub">mouse · keyboard · timing</div></div>
+        <div class="sig">
+          <svg viewBox="0 0 96 34" aria-hidden="true">
+            <path id="behPath" class="mpath" d=""/>
+            <g id="behTicks"></g>
+          </svg>
+          <div class="mono" id="behMono"></div>
+        </div>
+        <div class="side">
+          <div class="stat"><span class="w" data-w>·</span><span class="lamp"></span></div>
+          <div class="tag lever">lever · humanize</div>
+        </div>
+      </div>
+
+      <div class="layer lever" data-i="3">
+        <div class="meta"><div class="nm">IP reputation</div><div class="sub">egress address</div></div>
+        <div class="sig">
+          <svg viewBox="0 0 96 34" aria-hidden="true">
+            <rect x="2" y="20" width="92" height="8" rx="4" fill="rgba(244,245,247,.1)"/>
+            <rect id="ipRep" class="rep" x="2" y="20" width="78" height="8" rx="4" fill="var(--pass)"/>
+            <g id="ipHops"></g>
+          </svg>
+          <div class="mono" id="ipMono"></div>
+        </div>
+        <div class="side">
+          <div class="stat"><span class="w" data-w>·</span><span class="lamp"></span></div>
+          <div class="tag lever">lever · proxy</div>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div class="verdict" id="verdict"><span class="dot"></span><span id="vtext"></span></div>
+  <div class="verdict scan" id="verdict">
+    <span class="tally" id="tally">· ·</span>
+    <span class="chip" id="chip"><span class="sp"></span>scanning</span>
+    <span class="txt" id="vtext">cross-checking every layer for consistency&hellip;</span>
+  </div>
 
   <div class="controls">
-    <div class="ctl"><span class="lbl">behavior</span><button id="behBtn">humanize on</button></div>
-    <div class="ctl"><span class="lbl">ip</span><button id="ipBtn">residential</button></div>
+    <div class="lev"><span class="k">Behavior</span><button id="behBtn">humanize=True</button></div>
+    <div class="lev"><span class="k">IP</span><button id="ipBtn">residential</button></div>
+    <button id="replay" class="ghost">Replay sweep</button>
+    <span class="note">Network + Browser stay authentic<br>(real Chrome, not a lever)</span>
   </div>
+  <div class="rule">Consistency is an <b>AND</b>. Every layer must agree. Three authentic layers and one tell still fail, that is the whole game.</div>
 </div>
 
 <script>
 (function(){
-  var layBeh=document.getElementById('layBeh'),layIp=document.getElementById('layIp');
-  var behChip=document.getElementById('behChip'),ipChip=document.getElementById('ipChip');
-  var behBtn=document.getElementById('behBtn'),ipBtn=document.getElementById('ipBtn');
-  var verdict=document.getElementById('verdict'),vtext=document.getElementById('vtext');
-  var human=true,clean=true;
+  var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  function g(id){return document.getElementById(id);}
+  function el(sel,root){return (root||document).querySelector(sel);}
 
-  function render(){
-    behChip.className='chip '+(human?'ok':'bad'); behChip.textContent=human?'human':'robotic';
-    layBeh.classList.toggle('bad',!human);
-    ipChip.className='chip '+(clean?'ok':'bad'); ipChip.textContent=clean?'clean':'flagged';
-    layIp.classList.toggle('bad',!clean);
-    behBtn.textContent=human?'humanize on':'humanize off'; behBtn.className=human?'on':'off';
-    ipBtn.textContent=clean?'residential':'datacenter'; ipBtn.className=clean?'on':'off';
+  var detector=g('detector'), scanArea=g('scanArea'), scan=g('scan');
+  var layers=Array.prototype.slice.call(scanArea.querySelectorAll('.layer'));
+  var verdict=g('verdict'), tally=g('tally'), chip=g('chip'), vtext=g('vtext');
+  var behBtn=g('behBtn'), ipBtn=g('ipBtn');
 
-    if(human&&clean){ verdict.className='verdict pass'; vtext.innerHTML='<b class="ok">Consistent across every layer.</b> Real network and browser fingerprints, human behavior, a clean IP. Nothing contradicts.'; }
-    else if(!human&&!clean){ verdict.className='verdict fail'; vtext.innerHTML='<b class="bad">Flagged on two layers.</b> A perfect fingerprint cannot save robotic input and a datacenter IP.'; }
-    else if(!human){ verdict.className='verdict fail'; vtext.innerHTML='<b class="bad">Flagged.</b> The fingerprints are perfect, but robotic clicks and typing give it away.'; }
-    else { verdict.className='verdict fail'; vtext.innerHTML='<b class="bad">Flagged.</b> Everything looks human, but a datacenter IP reputation fails on its own.'; }
+  var human=true, clean=true;
+  // word[i] = [authentic-label, tell-label] shown at the lamp per layer
+  var WORD=[['authentic',''],['authentic',''],['human','robotic'],['clean','flagged']];
+
+  // ---- build the static Network SETTINGS/cipher bars once ----
+  (function(){
+    var h=[20,11,26,15,30,9,22,17,28,13,24,10,19,27];
+    var out='';
+    for(var i=0;i<h.length;i++){ var x=3+i*6.6; out+='<rect class="bar" x="'+x.toFixed(1)+'" y="'+(31-h[i])+'" width="4" height="'+h[i]+'"/>'; }
+    g('netBars').innerHTML=out;
+  })();
+
+  // ---- Behavior + IP signals depend on the levers; (re)draw them ----
+  function drawBehavior(){
+    var p=g('behPath'), ticks=g('behTicks'), mono=g('behMono');
+    if(human){
+      p.setAttribute('d','M4,22 C24,3 40,24 56,12 S86,7 92,14');
+      p.style.stroke='var(--pass)';
+      var xs=[8,17,29,38,52,63,79,90];
+    }else{
+      p.setAttribute('d','M4,16 L92,16');
+      p.style.stroke='var(--danger)';
+      var xs=[8,20,32,44,56,68,80,92];
+    }
+    var t='';
+    for(var i=0;i<xs.length;i++){ t+='<line class="tick" x1="'+xs[i]+'" y1="27" x2="'+xs[i]+'" y2="33" stroke="'+(human?'var(--pass)':'var(--danger)')+'"/>'; }
+    ticks.innerHTML=t;
+    mono.innerHTML = human
+      ? '<b>bezier path</b><br><em>&Delta;t 92·88·141 ms</em>'
+      : '<b>teleport</b><br><em>&Delta;t 90·90·90 ms</em>';
   }
-  behBtn.addEventListener('click',function(){human=!human;render();});
-  ipBtn.addEventListener('click',function(){clean=!clean;render();});
-  render();
+  function drawIp(){
+    var rep=g('ipRep'), hops=g('ipHops'), mono=g('ipMono');
+    rep.setAttribute('width', clean?'78':'22');
+    rep.setAttribute('fill', clean?'var(--pass)':'var(--danger)');
+    var color=clean?'var(--pass)':'var(--danger)', out='';
+    for(var i=0;i<3;i++){ out+='<circle cx="'+(14+i*20)+'" cy="10" r="2.4" fill="'+color+'" opacity=".7"/>'; }
+    hops.innerHTML=out;
+    mono.innerHTML = clean
+      ? '<b>AS7922</b><br><em>residential</em>'
+      : '<b>AS14061</b><br><em>datacenter</em>';
+  }
+
+  // good[i] = does layer i pass? Network + Browser are always authentic.
+  function goodArr(){ return [true, true, human, clean]; }
+
+  function setLever(){
+    behBtn.textContent = human ? 'humanize=True' : 'humanize=False';
+    behBtn.className = human ? 'on' : 'off';
+    ipBtn.textContent = clean ? 'residential' : 'datacenter';
+    ipBtn.className = clean ? 'on' : 'off';
+    drawBehavior(); drawIp();
+  }
+
+  // ---- sweep engine ----
+  var raf=null, loopT=null, resolved=[];
+  function cancelAll(){ if(raf){cancelAnimationFrame(raf);raf=null;} if(loopT){clearTimeout(loopT);loopT=null;} }
+
+  function resetLayers(){
+    resolved=[false,false,false,false];
+    layers.forEach(function(L){
+      L.classList.remove('res','ok','bad','scanning');
+      el('[data-w]',L).innerHTML='·';
+    });
+    detector.classList.remove('flagged');
+  }
+
+  function resolveLayer(i){
+    if(resolved[i])return; resolved[i]=true;
+    var L=layers[i], good=goodArr()[i];
+    L.classList.remove('scanning');
+    L.classList.add('res', good?'ok':'bad');
+    el('[data-w]',L).textContent = good ? WORD[i][0] : WORD[i][1];
+  }
+
+  function resolveVerdict(){
+    var good=goodArr(), pass=good[0]&&good[1]&&good[2]&&good[3];
+    var count=good.filter(Boolean).length;
+    tally.textContent=count+'/4';
+    detector.classList.toggle('flagged',!pass);
+    verdict.className='verdict '+(pass?'pass':'fail');
+    if(pass){
+      chip.textContent='pass';
+      vtext.innerHTML='<b>All four layers agree.</b> Authentic network and browser fingerprints, human behavior, a clean IP. Nothing contradicts.';
+    }else{
+      chip.textContent='flagged';
+      if(!human&&!clean){
+        vtext.innerHTML='<b>Two contradictions:</b> robotic input and a datacenter IP. A real Chrome fingerprint cannot cover for them.';
+      }else if(!human){
+        vtext.innerHTML='<b>Three layers authentic</b>, but robotic mouse and keystroke timing contradict them. One tell is enough.';
+      }else{
+        vtext.innerHTML='<b>Three layers authentic</b>, but a datacenter IP fails on its own. One tell is enough.';
+      }
+    }
+  }
+
+  function verdictScanning(){
+    verdict.className='verdict scan';
+    tally.textContent='· ·';
+    chip.innerHTML='<span class="sp"></span>scanning';
+    vtext.innerHTML='cross-checking every layer for consistency&hellip;';
+  }
+
+  function finalStatic(){
+    // reduced-motion / instant path: resolve everything, no sweep
+    resetLayers();
+    for(var i=0;i<4;i++) resolveLayer(i);
+    resolveVerdict();
+  }
+
+  var DUR=2200, HOLD=1300, PAD=18;
+  function sweep(){
+    cancelAll(); resetLayers(); verdictScanning();
+    if(reduce){ finalStatic(); return; }
+
+    var H=scanArea.clientHeight;
+    var tops=[], bots=[], cens=[];
+    layers.forEach(function(L){ var t=L.offsetTop, h=L.offsetHeight; tops.push(t); bots.push(t+h); cens.push(t+h/2); });
+
+    scan.classList.add('live');
+    var start=null;
+    function frame(ts){
+      if(start===null) start=ts;
+      var p=(ts-start)/DUR; if(p>1)p=1;
+      var y=p*(H+PAD);
+      scan.style.transform='translateY('+y+'px)';
+      for(var i=0;i<4;i++){
+        if(resolved[i]) continue;
+        var band = y>=tops[i]-4 && y<bots[i]+4;
+        layers[i].classList.toggle('scanning', band);
+        if(y>=cens[i]) resolveLayer(i);
+      }
+      if(p<1){ raf=requestAnimationFrame(frame); }
+      else{
+        for(var j=0;j<4;j++) resolveLayer(j);
+        scan.classList.remove('live');
+        setTimeout(resolveVerdict, 90);
+      }
+    }
+    raf=requestAnimationFrame(frame);
+  }
+
+  function rerun(){ setLever(); sweep(); }
+
+  behBtn.addEventListener('click',function(){ human=!human; rerun(); });
+  ipBtn.addEventListener('click',function(){ clean=!clean; rerun(); });
+  g('replay').addEventListener('click', sweep);
+  window.addEventListener('load',function(){ setLever(); setTimeout(sweep, reduce?0:260); });
 })();
 </script>
 <script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>

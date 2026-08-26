@@ -3639,7 +3639,7 @@
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="k">await</span> <span class="n">field</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s1">'search query'</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span></code></pre></div>
 <p>在下面输入你自己的文本，两种方式都跑一遍。带 <code>humanize=True</code> 时节奏会变化、偶尔打错的字会被修正，所以每次运行都不一样；不带时，每个间隔都是固定的 50 毫秒。</p>
-<iframe src="/docs/resources/visuals/keyboard-humanize.html" aria-label="Interactive humanized typing: type text and watch it typed with human rhythm and corrected typos" style="width: 100%; height: 350px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/keyboard-humanize.html" aria-label="Interactive humanized typing: type text and watch it typed with human rhythm and corrected typos" style="width: 100%; height: 350px; border: 0;" loading="lazy"></iframe>
 
 <p>如果你只需要文本出现、并不关心逐键事件，<code>insert_text</code> 会把整个字符串一次性粘贴进去：</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">await</span> <span class="n">field</span><span class="o">.</span><span class="n">insert_text</span><span class="p">(</span><span class="s1">'search query'</span><span class="p">)</span>   <span class="c1"># 瞬时，无按键事件</span>

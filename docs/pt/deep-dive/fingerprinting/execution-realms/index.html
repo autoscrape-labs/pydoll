@@ -3616,7 +3616,7 @@
 <p align="center"><sub>O CreepJS lê o fingerprint uma segunda vez dentro de um worker. Aqui ele reporta a identidade injetada, não o Mac real.</sub></p>
 
 <p>O mapa interativo abaixo aplica um perfil de Windows num Mac real e lê <code>navigator.platform</code> em cada realm. Alterne entre um hook ingênuo de página de topo e a replicação por realm do Pydoll:</p>
-<iframe src="/docs/resources/visuals/realm-coverage.html" aria-label="Um perfil de Windows aplicado num Mac; navigator.platform lido no documento principal, num iframe same-origin, num OOPIF cross-origin, e em dedicated, shared e service workers. Um hook de página de topo combina apenas com o documento principal; a replicação do Pydoll combina com todos os realms." style="width: 100%; height: 430px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/realm-coverage.html" aria-label="Um perfil de Windows aplicado num Mac; navigator.platform lido no documento principal, num iframe same-origin, num OOPIF cross-origin, e em dedicated, shared e service workers. Um hook de página de topo combina apenas com o documento principal; a replicação do Pydoll combina com todos os realms." style="width: 100%; height: 430px; border: 0;" loading="lazy"></iframe>
 
 <h2 id="dois-overrides-alcancam-de-graca-todo-realm-do-mesmo-processo">Dois overrides alcançam de graça todo realm do mesmo processo</h2>
 <p>Dois dos mecanismos do Pydoll cruzam as fronteiras de realm por conta própria, mas apenas dentro de um único processo:</p>

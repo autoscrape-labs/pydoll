@@ -3858,7 +3858,7 @@
 <p>A selector is the string you hand to <code>tab.query()</code> (and to the <code>selector=</code> in extraction models) to point at an element. Pydoll speaks two selector languages, CSS and XPath, and picks the right engine for you: if the string starts with <code>/</code> or <code>./</code> it runs as XPath, otherwise as a CSS selector. This page teaches enough of both to find anything on a page.</p>
 <p>You only need selectors for <code>query()</code>. The <code>find()</code> method takes plain attributes instead (see <a href="../../guides/element-finding/">Element finding</a>); reach for a selector when you want a relationship <code>find()</code> can't express.</p>
 <p>Try it: type a selector below and the matching elements light up. It runs the same <code>querySelectorAll</code> / XPath the browser does, so what matches here matches in your automation.</p>
-<iframe src="/docs/resources/visuals/selector-playground.html" aria-label="Type a CSS or XPath selector and see which elements it matches" style="width: 100%; height: 500px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/selector-playground.html" aria-label="Type a CSS or XPath selector and see which elements it matches" style="width: 100%; height: 500px; border: 0;" loading="lazy"></iframe>
 
 <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>

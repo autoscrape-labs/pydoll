@@ -3,74 +3,174 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Structured extraction</title>
+<title>Structured extraction: DOM to typed object</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
 <style>
   :root{
-    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;--panel2:#191c20;
     --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
     --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
-    --indigo:#6e7bff;--indigo2:#8f99ff;--pass:#35e0a1;
-    --sans:"Chivo",system-ui,-apple-system,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--indigo-dim:rgba(110,123,255,.13);
+    --pass:#35e0a1;--pass-dim:rgba(53,224,161,.12);
+    --amber:#f5b544;--amber-dim:rgba(245,181,68,.13);
+    --danger:#ff6b6b;--danger-dim:rgba(255,107,107,.12);
+    --kw:#b3a0ff;--fnc:#7fb4ff;
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
   }
-  *{box-sizing:border-box}
-  html,body{margin:0}
+  *{box-sizing:border-box} html,body{margin:0}
   body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
   .widget{border:1px solid var(--line);padding:16px 18px}
-  .cols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-  @media(max-width:660px){.cols{grid-template-columns:1fr}}
-  .pane{border:1px solid var(--line);background:var(--bg2);display:flex;flex-direction:column;min-height:150px}
-  .pane h4{margin:0;padding:9px 12px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint)}
-  .pane .body{padding:12px;flex:1}
-  .quote{display:flex;flex-direction:column;gap:7px}
-  .quote > *{border:1px solid transparent;padding:2px 5px;transition:background .15s,border-color .15s}
-  .quote .text{font-family:var(--sans);font-weight:600;font-size:12.5px;color:var(--ink)}
-  .quote .author{font-family:var(--mono);font-size:11px;color:var(--dim)}
-  .quote .tags{display:flex;gap:5px;flex-wrap:wrap}
-  .quote .tag{font-family:var(--mono);font-size:10px;color:var(--indigo2);border:1px solid var(--line);padding:1px 6px}
-  .hl{background:rgba(110,123,255,.14)!important;border-color:var(--indigo)!important}
-  .model{font-family:var(--mono);font-size:11px;line-height:1.7;white-space:pre-wrap}
-  .model .kw{color:#b3a0ff}.model .fn{color:#7fb4ff}.model .st{color:var(--pass)}.model .ty{color:var(--indigo2)}
-  .fld{display:block;border:1px solid transparent;padding:1px 4px;transition:background .15s,border-color .15s}
-  .fld.hl{background:rgba(110,123,255,.14);border-color:var(--indigo)}
-  .out{margin:0;font-family:var(--mono);font-size:11px;line-height:1.7;white-space:pre-wrap;color:var(--ink)}
-  .out .k{color:var(--dim)}.out .st{color:var(--pass)}.out .cls{color:var(--indigo2)}
-  .out .ln{opacity:0;transition:opacity .3s}.out .ln.show{opacity:1}
-  .controls{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:center}
-  button{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:8px 12px;cursor:pointer;transition:.15s}
-  button:hover:not(:disabled){border-color:var(--indigo);color:#fff}
-  button:disabled{opacity:.5;cursor:default}
-  .caption{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-left:auto;min-height:16px;text-align:right}
-  .caption b{color:var(--pass)}
+  .lead{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:14px;line-height:1.55}
+  .lead b{color:var(--ink);font-weight:500}
+  .lead .g{color:var(--indigo2)}
+
+  .stage{position:relative;overflow:hidden}
+  .cols{display:grid;grid-template-columns:1fr 1.25fr;gap:26px;align-items:start}
+  @media(max-width:600px){.cols{grid-template-columns:1fr;gap:18px}}
+  .pane{border:1px solid var(--line);background:var(--bg2);min-width:0}
+  .pane > h4{margin:0;padding:8px 12px;border-bottom:1px solid var(--line);font-family:var(--mono);
+    font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);display:flex;align-items:center;gap:8px}
+  .pane > h4 .chip{margin-left:auto;font-family:var(--mono);font-size:9px;letter-spacing:.05em;
+    padding:2px 7px;border:1px solid var(--line2);color:var(--faint);text-transform:none}
+  .pane > h4 .chip.ok{color:var(--pass);border-color:rgba(53,224,161,.45);background:var(--pass-dim)}
+  .pane > h4 .chip.err{color:var(--danger);border-color:rgba(255,107,107,.45);background:var(--danger-dim)}
+  .pbody{padding:13px}
+
+  /* --- rendered page card (left) --- */
+  .card{border:1px solid var(--line2);background:var(--panel);padding:13px 14px;display:flex;flex-direction:column;gap:9px}
+  .card .name{font-family:var(--sans);font-weight:800;font-size:15px;letter-spacing:-.01em}
+  .card .price{font-family:var(--sans);font-weight:700;font-size:13px;color:var(--dim)}
+  .card .stars{font-size:13px;color:var(--amber);letter-spacing:1px;display:flex;align-items:center;gap:8px}
+  .card .stars .sc{font-family:var(--mono);font-size:8.5px;color:var(--faint);letter-spacing:0}
+  .card .tagrow{display:flex;gap:6px;flex-wrap:wrap}
+  .card .tag{font-family:var(--mono);font-size:10px;color:var(--indigo2);border:1px solid var(--line);padding:1px 7px}
+  [data-node]{border:1px solid transparent;border-radius:3px;transition:box-shadow .22s,border-color .22s,background .22s,opacity .3s}
+  .card .name[data-node],.card .price[data-node]{align-self:flex-start;padding:1px 4px;margin:-1px -4px}
+  [data-node].lit{border-color:var(--indigo);background:var(--indigo-dim);box-shadow:0 0 0 3px rgba(110,123,255,.10)}
+  [data-node].gone{opacity:.22;filter:grayscale(1)}
+  [data-node].gone .sc{opacity:0}
+  .card .gonemark{position:relative}
+  .card .name.gone::after{content:"";position:absolute;left:2px;right:2px;top:52%;height:1.5px;background:var(--danger);opacity:.8}
+
+  /* --- model becoming the typed object (right) --- */
+  .model{font-family:var(--mono);font-size:11px;line-height:1.5}
+  .mhead{color:var(--dim)}
+  .mhead .kw{color:var(--kw)} .mhead .ty{color:var(--indigo2)}
+  .rows{position:relative;margin:5px 0 2px}
+  .rows::before{content:"";position:absolute;left:0;top:4px;bottom:4px;width:2px;background:var(--line2);
+    border-radius:2px;transition:background .25s,box-shadow .25s}
+  .rows.fire::before{background:var(--indigo);box-shadow:0 0 9px rgba(110,123,255,.6)}
+  .frow{display:flex;justify-content:space-between;align-items:baseline;gap:10px 14px;flex-wrap:wrap;
+    padding:4px 8px 4px 12px;border-left:2px solid transparent;border-radius:0 3px 3px 0;
+    transition:background .22s,border-color .22s;margin-left:2px}
+  .frow.firing{background:var(--indigo-dim)}
+  .frow.ok{border-left-color:var(--pass);background:var(--pass-dim)}
+  .frow.err{border-left-color:var(--danger);background:var(--danger-dim)}
+  .fdef{min-width:0}
+  .fk{color:var(--ink)} .op{color:var(--faint)} .ty{color:var(--indigo2)}
+  .fn{color:var(--fnc)} .ar{color:var(--dim)} .st{color:var(--pass)} .tf{color:var(--amber)}
+  .fslot{font-family:var(--mono);font-size:10.5px;color:var(--faint);opacity:0;transform:translateY(2px);
+    transition:opacity .28s,transform .28s;margin-left:auto;white-space:nowrap}
+  .fslot.show{opacity:1;transform:none}
+  .fslot .ar2{color:var(--faint)}
+  .fslot .sv{color:var(--pass);font-weight:600}
+  .frow.err .fslot .sv{color:var(--danger)}
+  .gtag{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:9px;display:flex;align-items:center;gap:8px;line-height:1.4}
+  .gtag .dotp{width:6px;height:6px;border-radius:50%;background:var(--faint);flex:none;transition:background .25s,box-shadow .25s}
+  .gtag.fire{color:var(--indigo2)} .gtag.fire .dotp{background:var(--indigo);box-shadow:0 0 8px var(--indigo)}
+  .gtag b{color:var(--dim);font-weight:500}
+
+  /* --- flying value tokens + wires overlay --- */
+  svg.wires{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:6;overflow:visible}
+  svg.wires path{fill:none;stroke:var(--indigo);stroke-width:1.2;opacity:0;transition:opacity .25s}
+  .tok{position:absolute;left:0;top:0;z-index:8;pointer-events:none;font-family:var(--mono);font-size:10px;
+    padding:2px 7px;border:1px solid var(--line2);background:var(--panel2);color:var(--ink);white-space:nowrap;
+    border-radius:3px;box-shadow:0 5px 16px rgba(0,0,0,.45);will-change:transform}
+  .tok.typed{color:var(--indigo2);border-color:var(--indigo);box-shadow:0 5px 16px rgba(110,123,255,.28)}
+  .tf-pill{position:absolute;left:0;top:0;z-index:9;pointer-events:none;font-family:var(--mono);font-size:8.5px;
+    color:var(--amber);border:1px solid var(--amber);background:var(--amber-dim);padding:1px 6px;border-radius:3px;
+    transform:translate(-50%,-50%);opacity:0}
+  .tf-pill.go{animation:pop .6s ease-out}
+  @keyframes pop{0%{opacity:0;transform:translate(-50%,-50%) scale(.7)}30%{opacity:1;transform:translate(-50%,-140%) scale(1)}100%{opacity:0;transform:translate(-50%,-200%) scale(1)}}
+
+  .controls{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;align-items:center}
+  button.run{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink);background:var(--panel);
+    border:1px solid var(--line2);padding:8px 13px;cursor:pointer;transition:.15s}
+  button.run:hover:not(:disabled){border-color:var(--indigo);color:#fff}
+  button.run:disabled{opacity:.5;cursor:default}
+  .cbx{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10.5px;color:var(--dim);cursor:pointer;user-select:none}
+  .cbx input{accent-color:var(--danger);cursor:pointer}
+  .caption{font-family:var(--mono);font-size:11px;color:var(--dim);margin-left:auto;text-align:right;min-height:15px;line-height:1.4}
+  .caption b.ok{color:var(--pass)} .caption b.err{color:var(--danger)} .caption b.g{color:var(--indigo2)}
+
+  @media (prefers-reduced-motion:reduce){
+    .tok,svg.wires path,.fslot,[data-node],.frow{transition:none!important}
+    .tf-pill.go{animation:none}
+  }
+
+  /* theme-matched thin scrollbars for overflow-x boxes (replaces the default white bar) */
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--line2)}
+  ::-webkit-scrollbar-thumb:hover{background:var(--faint)}
 </style>
 </head>
 <body>
 <div class="widget">
-  <div class="cols">
-    <div class="pane">
-      <h4>Page</h4>
-      <div class="body"><div class="quote" id="quote">
-        <span class="text" data-src="text">"Stay hungry, stay foolish."</span>
-        <span class="author" data-src="author">Jobs</span>
-        <span class="tags"><a class="tag" data-src="tags" href="#">life</a><a class="tag" data-src="tags" href="#">work</a></span>
-      </div></div>
+  <div class="lead">A model declares the fields you want; <b>tab.extract</b> resolves every selector against the live DOM <span class="g">concurrently</span> (<b>asyncio.gather</b>), reads text or an attribute, runs any <b>transform</b>, then Pydantic validates the result into a typed object. Watch each value get grabbed and dropped into its slot.</div>
+
+  <div class="stage" id="stage">
+    <div class="cols">
+      <div class="pane">
+        <h4>Page &middot; rendered DOM</h4>
+        <div class="pbody">
+          <div class="card" id="card">
+            <span class="name gonemark" data-node="name">Aeron Chair</span>
+            <span class="price" data-node="price">$1,395.00</span>
+            <span class="stars" data-node="rating" data-score="4.8">&#9733;&#9733;&#9733;&#9733;&#9733;<span class="sc">data-score="4.8"</span></span>
+            <span class="tagrow"><span class="tag" data-node="tags">ergonomic</span><span class="tag" data-node="tags">office</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="pane">
+        <h4>Model &rarr; typed object<span class="chip" id="statusChip">not run</span></h4>
+        <div class="pbody">
+          <div class="model">
+            <div class="mhead"><span class="kw">class</span> <span class="ty">Product</span>(ExtractionModel):</div>
+            <div class="rows" id="rows">
+              <div class="frow" data-field="name">
+                <span class="fdef"><span class="fk">name</span><span class="op">:</span> <span class="ty">str</span> = <span class="fn">Field</span>(<span class="ar">selector</span>=<span class="st">'.name'</span>)</span>
+                <span class="fslot"><span class="ar2">&rarr;</span> <span class="sv"></span></span>
+              </div>
+              <div class="frow" data-field="price">
+                <span class="fdef"><span class="fk">price</span><span class="op">:</span> <span class="ty">float</span> = <span class="fn">Field</span>(<span class="ar">selector</span>=<span class="st">'.price'</span>, <span class="ar">transform</span>=<span class="tf">parse_price</span>)</span>
+                <span class="fslot"><span class="ar2">&rarr;</span> <span class="sv"></span></span>
+              </div>
+              <div class="frow" data-field="rating">
+                <span class="fdef"><span class="fk">rating</span><span class="op">:</span> <span class="ty">float</span> = <span class="fn">Field</span>(<span class="ar">selector</span>=<span class="st">'.stars'</span>, <span class="ar">attribute</span>=<span class="st">'data-score'</span>, <span class="ar">transform</span>=<span class="tf">float</span>)</span>
+                <span class="fslot"><span class="ar2">&rarr;</span> <span class="sv"></span></span>
+              </div>
+              <div class="frow" data-field="tags">
+                <span class="fdef"><span class="fk">tags</span><span class="op">:</span> <span class="ty">list</span>[<span class="ty">str</span>] = <span class="fn">Field</span>(<span class="ar">selector</span>=<span class="st">'.tag'</span>)</span>
+                <span class="fslot"><span class="ar2">&rarr;</span> <span class="sv"></span></span>
+              </div>
+            </div>
+            <div class="gtag" id="gtag"><span class="dotp"></span><span><b>asyncio.gather</b> &middot; all four fields resolve at once, not one by one</span></div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="pane">
-      <h4>Model</h4>
-      <div class="body"><div class="model"><span class="kw">class</span> <span class="ty">Quote</span>(ExtractionModel):
-<span class="fld" data-f="text">    text: <span class="ty">str</span> = <span class="fn">Field</span>(selector=<span class="st">'.text'</span>)</span>
-<span class="fld" data-f="author">    author: <span class="ty">str</span> = <span class="fn">Field</span>(selector=<span class="st">'.author'</span>)</span>
-<span class="fld" data-f="tags">    tags: <span class="ty">list</span>[str] = <span class="fn">Field</span>(selector=<span class="st">'.tag'</span>)</span></div></div>
-    </div>
-    <div class="pane">
-      <h4>Result</h4>
-      <div class="body"><pre class="out" id="out"></pre></div>
-    </div>
+
+    <svg class="wires" id="wires" preserveAspectRatio="none"></svg>
   </div>
+
   <div class="controls">
-    <button id="run">Run tab.extract(Quote)</button>
+    <button class="run" id="run">await tab.extract(Product)</button>
+    <label class="cbx"><input type="checkbox" id="breakSel"> remove the <code>.price</code> node</label>
     <span class="caption" id="caption"></span>
   </div>
 </div>
@@ -78,40 +178,141 @@
 <script>
 (function(){
   var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
-  var U=function(ms){return reduce?0:ms;};
-  var quote=document.getElementById('quote'),out=document.getElementById('out'),runBtn=document.getElementById('run'),caption=document.getElementById('caption');
-  var flds=document.querySelectorAll('.fld');
-  var timers=[];
-  var STEPS=[
-    {f:'text',line:'    <span class="k">text</span>=<span class="st">\'Stay hungry, stay foolish.\'</span>,'},
-    {f:'author',line:'    <span class="k">author</span>=<span class="st">\'Jobs\'</span>,'},
-    {f:'tags',line:'    <span class="k">tags</span>=[<span class="st">\'life\'</span>, <span class="st">\'work\'</span>],'}
+  function g(id){return document.getElementById(id);}
+  var stage=g('stage'),wires=g('wires'),rows=g('rows'),gtag=g('gtag'),caption=g('caption'),
+      runBtn=g('run'),breakSel=g('breakSel'),statusChip=g('statusChip'),card=g('card');
+
+  // field model: value shown in the slot, and the transform story (raw -> typed)
+  var FIELDS=[
+    {key:'name',   raw:"'Aeron Chair'",  val:"'Aeron Chair'",           transform:null,          typed:false},
+    {key:'price',  raw:"'$1,395.00'",    val:"1395.0",                  transform:'parse_price', typed:true },
+    {key:'rating', raw:"'4.8'",          val:"4.8",                     transform:'float',       typed:true },
+    {key:'tags',   raw:"['ergonomic',…]",val:"['ergonomic', 'office']", transform:null,          typed:false}
   ];
-  function clearHl(){ quote.querySelectorAll('.hl').forEach(function(n){n.classList.remove('hl');}); flds.forEach(function(f){f.classList.remove('hl');}); }
-  function run(){
-    runBtn.disabled=true;caption.textContent='';clearHl();
-    out.innerHTML='<span class="ln show"><span class="cls">Quote</span>(</span>';
-    var i=0;
-    (function step(){
-      if(i>=STEPS.length){
-        var end=document.createElement('span');end.className='ln';end.textContent=')';out.appendChild(end);
-        requestAnimationFrame(function(){end.classList.add('show');});
-        clearHl();
-        caption.innerHTML='returns a <b>typed, validated</b> Quote';
-        runBtn.disabled=false;return;
-      }
-      var s=STEPS[i++];
-      clearHl();
-      quote.querySelectorAll('[data-src="'+s.f+'"]').forEach(function(n){n.classList.add('hl');});
-      var fld=document.querySelector('.fld[data-f="'+s.f+'"]'); if(fld)fld.classList.add('hl');
-      timers.push(setTimeout(function(){
-        var ln=document.createElement('span');ln.className='ln';ln.innerHTML=s.line;out.appendChild(ln);
-        requestAnimationFrame(function(){ln.classList.add('show');});
-        timers.push(setTimeout(step,U(720)));
-      },U(560)));
-    })();
+  function row(k){return document.querySelector('.frow[data-field="'+k+'"]');}
+  function slot(k){return row(k).querySelector('.fslot');}
+  function sv(k){return row(k).querySelector('.sv');}
+  function nodes(k){return card.querySelectorAll('[data-node="'+k+'"]');}
+
+  var tokens=[],timers=[],loopT=null;
+  function T(fn,ms){var t=setTimeout(fn,ms);timers.push(t);return t;}
+  function clearTimers(){timers.forEach(clearTimeout);timers=[];}
+  function cleanup(){tokens.forEach(function(t){t.remove();});tokens=[];wires.innerHTML='';}
+
+  function centerOf(el){
+    var r=el.getBoundingClientRect(),s=stage.getBoundingClientRect();
+    return {x:r.left-s.left+r.width/2, y:r.top-s.top+r.height/2};
   }
-  runBtn.addEventListener('click',function(){timers.forEach(clearTimeout);timers=[];run();});
+  function ease(t){return t*t*t*(t*(t*6-15)+10);} // minimum-jerk
+
+  function isBroken(k){return k==='price' && breakSel.checked;}
+
+  function reset(){
+    if(loopT){clearTimeout(loopT);loopT=null;}
+    clearTimers();cleanup();
+    rows.classList.remove('fire');gtag.classList.remove('fire');
+    statusChip.className='chip';statusChip.textContent='not run';
+    FIELDS.forEach(function(f){
+      var r=row(f.key);r.classList.remove('firing','ok','err');
+      slot(f.key).classList.remove('show');sv(f.key).textContent='';
+      nodes(f.key).forEach(function(n){n.classList.remove('lit');});
+    });
+    // reflect the "removed node" toggle in the page
+    nodes('price').forEach(function(n){n.classList.toggle('gone',breakSel.checked);});
+  }
+
+  function landOk(f){
+    var r=row(f.key);r.classList.remove('firing');r.classList.add('ok');
+    sv(f.key).textContent=f.val;slot(f.key).classList.add('show');
+  }
+  function landErr(f){
+    var r=row(f.key);r.classList.remove('firing');r.classList.add('err');
+    sv(f.key).textContent='FieldExtractionFailed';slot(f.key).classList.add('show');
+  }
+
+  function makeToken(f,from){
+    var tk=document.createElement('span');tk.className='tok';
+    tk.textContent=f.transform?f.raw:f.val;
+    stage.appendChild(tk);tokens.push(tk);
+    tk.style.transform='translate('+from.x+'px,'+from.y+'px) translate(-50%,-50%)';
+    return tk;
+  }
+  function makeWire(from,to,ctrl){
+    var p=document.createElementNS('http://www.w3.org/2000/svg','path');
+    p.setAttribute('d','M'+from.x+' '+from.y+' Q'+ctrl.x+' '+ctrl.y+' '+to.x+' '+to.y);
+    wires.appendChild(p);
+    requestAnimationFrame(function(){p.style.opacity='.32';});
+    return p;
+  }
+
+  function flyField(f,onDone){
+    // source node (or price header if broken -> still originates near the card)
+    var srcEl=nodes(f.key)[0]||card;
+    var from=centerOf(srcEl),to=centerOf(slot(f.key));
+    var ctrl={x:(from.x+to.x)/2, y:Math.min(from.y,to.y)-26};
+
+    if(isBroken(f.key)){
+      // required field, no matching element -> raises FieldExtractionFailed
+      T(function(){landErr(f);onDone();},reduce?0:760);
+      return;
+    }
+    if(reduce){landOk(f);onDone();return;}
+
+    var wire=makeWire(from,to,ctrl);
+    var tk=makeToken(f,from);
+    var dur=720+Math.random()*60, start=performance.now(), morphed=false;
+    function frame(now){
+      var t=Math.min(1,(now-start)/dur),e=ease(t);
+      var u=1-e;
+      var x=u*u*from.x+2*u*e*ctrl.x+e*e*to.x;
+      var y=u*u*from.y+2*u*e*ctrl.y+e*e*to.y;
+      tk.style.transform='translate('+x+'px,'+y+'px) translate(-50%,-50%)';
+      if(f.transform && !morphed && t>=0.52){
+        morphed=true;tk.textContent=f.val;tk.classList.add('typed');
+        var pill=document.createElement('span');pill.className='tf-pill go';
+        pill.textContent=f.transform+'()';pill.style.left=x+'px';pill.style.top=y+'px';
+        stage.appendChild(pill);tokens.push(pill);
+      }
+      if(t<1){requestAnimationFrame(frame);}
+      else{tk.remove();wire.style.opacity='0';landOk(f);onDone();}
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function finish(){
+    var anyErr=FIELDS.some(function(f){return isBroken(f.key);});
+    rows.classList.remove('fire');gtag.classList.remove('fire');
+    if(anyErr){
+      statusChip.className='chip err';statusChip.textContent='raised';
+      caption.innerHTML='required field missing &rarr; <b class="err">FieldExtractionFailed</b>';
+    }else{
+      statusChip.className='chip ok';statusChip.innerHTML='&#10003; validated';
+      caption.innerHTML='returns a <b class="ok">typed, validated</b> Product';
+    }
+    runBtn.disabled=false;
+    /* run once and hold the typed object (dense read view); toggle / button re-runs */
+  }
+
+  function run(){
+    reset();
+    runBtn.disabled=true;
+    caption.innerHTML='<b class="g">dispatching selectors</b>';
+    rows.classList.add('fire');gtag.classList.add('fire');
+    // fire ALL rows + matching nodes at the same instant (concurrency)
+    FIELDS.forEach(function(f){
+      row(f.key).classList.add('firing');
+      if(!isBroken(f.key)) nodes(f.key).forEach(function(n){n.classList.add('lit');});
+    });
+    var remaining=FIELDS.length;
+    function done(){if(--remaining===0) finish();}
+    // launch every flight together after one shared beat
+    T(function(){FIELDS.forEach(function(f){flyField(f,done);});},reduce?0:280);
+  }
+
+  breakSel.addEventListener('change',function(){reset();caption.textContent='';statusChip.textContent='not run';statusChip.className='chip';T(run,120);});
+  runBtn.addEventListener('click',run);
+  window.addEventListener('resize',function(){/* positions recomputed each run */});
+  window.addEventListener('load',function(){T(run,420);});
 })();
 </script>
 <script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>

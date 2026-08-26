@@ -3616,7 +3616,7 @@
 <h1 id="interceptacao-de-requisicoes">Interceptação de requisições</h1>
 <p>A interceptação permite que você se coloque entre o navegador e a rede. Cada requisição correspondente pausa no seu handler, onde você decide deixá-la passar (como está ou modificada), bloqueá-la ou respondê-la você mesmo com uma resposta simulada. Use-a para descartar imagens em prol da velocidade, injetar cabeçalhos ou forjar uma API enquanto você desenvolve contra ela.</p>
 <p>Esta é a contraparte ativa do <a href="../network-monitoring/">Monitoramento de rede</a>, que apenas observa o tráfego. A interceptação pode alterá-lo.</p>
-<iframe src="/docs/resources/visuals/request-lifecycle.html" aria-label="What happens to an intercepted request under continue, block, or fulfill" style="width: 100%; height: 400px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/request-lifecycle.html" aria-label="What happens to an intercepted request under continue, block, or fulfill" style="width: 100%; height: 400px; border: 0;" loading="lazy"></iframe>
 
 <p>Experimente cada botão: <code>continue_request()</code> deixa a requisição chegar ao servidor, <code>fail_request()</code> a descarta e <code>fulfill_request()</code> responde a partir do seu handler sem nunca contatar o servidor.</p>
 <h2 id="habilite-a-interceptacao">Habilite a interceptação</h2>

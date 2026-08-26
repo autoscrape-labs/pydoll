@@ -3810,30 +3810,8 @@
 <p>在每一个实际场景里，SOCKS5 都是更好的选择。只有当一个 proxy 不支持 SOCKS5 时才用 SOCKS4。</p>
 <h2 id="socks5">SOCKS5 握手</h2>
 <p>一个 SOCKS5 连接遵循 RFC 1928，分三个阶段：方法协商、可选的认证，然后是连接请求。</p>
-<pre class="mermaid"><code>sequenceDiagram
-    participant Client as 客户端
-    participant SOCKS5 as SOCKS5 Proxy
-    participant Server as 目标服务器
+<iframe scrolling="no" src="/docs/resources/visuals/socks5-handshake.html" aria-label="The SOCKS5 handshake in real RFC 1928/1929 bytes: method negotiation, optional username/password auth, then the CONNECT request, decoded field by field" style="width: 100%; height: 860px; border: 0;" loading="lazy"></iframe>
 
-    Note over Client,SOCKS5: 阶段 1：方法协商
-    Client-&gt;&gt;SOCKS5: Hello [VER=5, NMETHODS, METHODS]
-    SOCKS5-&gt;&gt;Client: 选定方法 [VER=5, METHOD]
-
-    Note over Client,SOCKS5: 阶段 2：认证（如果需要）
-    Client-&gt;&gt;SOCKS5: 认证 [VER=1, ULEN, UNAME, PLEN, PASSWD]
-    SOCKS5-&gt;&gt;Client: 认证响应 [VER=1, STATUS]
-
-    Note over Client,SOCKS5: 阶段 3：连接请求
-    Client-&gt;&gt;SOCKS5: 连接 [VER=5, CMD, DST.ADDR, DST.PORT]
-    SOCKS5-&gt;&gt;Server: 建立 TCP 连接
-    Server--&gt;&gt;SOCKS5: 已连接
-    SOCKS5-&gt;&gt;Client: 回复 [VER=5, REP=SUCCESS, BND.ADDR, BND.PORT]
-
-    Note over Client,Server: 数据中继
-    Client-&gt;&gt;SOCKS5: 应用数据
-    SOCKS5-&gt;&gt;Server: 转发
-    Server-&gt;&gt;SOCKS5: 响应
-    SOCKS5-&gt;&gt;Client: 转发</code></pre>
 <h3 id="1">阶段 1：方法协商</h3>
 <p>客户端打开一条到 proxy 的 TCP 连接，并发送协议版本（<code>0x05</code>）以及它所支持的认证方法。</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># 客户端 hello</span>
@@ -3928,31 +3906,8 @@
 <p>这与 HTTP proxy 认证不同。HTTP proxy 用一个 <code>407 Proxy Authentication Required</code> 状态来认证，Chrome 会通过 CDP 的 Fetch domain 把它暴露出来；Pydoll 会用你的凭据自动应答那些 <code>Fetch.authRequired</code> 事件。SOCKS5 认证发生在任何 HTTP 存在之前的一次二进制握手里，所以没有 407，没有 <code>Fetch.authRequired</code>，也没有办法让一个基于 CDP 的工具向其中注入凭据。</p>
 <h3 id="pydoll-socks5forwarder">Pydoll 的 SOCKS5Forwarder</h3>
 <p>标准的修复是一个本地转发器：一个跑在 localhost 上的小型 SOCKS5 服务器，它接受来自 Chrome 的无认证连接，并带着完整的认证把它们转发给远程 proxy。</p>
-<pre class="mermaid"><code>sequenceDiagram
-    participant Chrome as Chrome
-    participant Forwarder as 本地转发器&lt;br/&gt;(127.0.0.1:1081)
-    participant Remote as 远程 SOCKS5 proxy&lt;br/&gt;(proxy:1080)
-    participant Server as 目的地
+<iframe scrolling="no" src="/docs/resources/visuals/socks5-forwarder.html" aria-label="The pydoll SOCKS5Forwarder bridges two handshakes: a no-auth SOCKS5 handshake to Chrome on one side and a full authenticated handshake to the remote proxy on the other, injecting the credentials Chrome cannot send" style="width: 100%; height: 900px; border: 0;" loading="lazy"></iframe>
 
-    Note over Chrome,Forwarder: 无认证
-    Chrome-&gt;&gt;Forwarder: Hello [methods: 0x00]
-    Forwarder-&gt;&gt;Chrome: 选定方法 [0x00]
-    Chrome-&gt;&gt;Forwarder: CONNECT example.com:443
-
-    Note over Forwarder,Remote: 带认证
-    Forwarder-&gt;&gt;Remote: Hello [methods: 0x02]
-    Remote-&gt;&gt;Forwarder: 选定方法 [0x02]
-    Forwarder-&gt;&gt;Remote: 认证 [username, password]
-    Remote-&gt;&gt;Forwarder: 认证 OK
-    Forwarder-&gt;&gt;Remote: CONNECT example.com:443
-    Remote-&gt;&gt;Server: TCP 连接
-    Remote-&gt;&gt;Forwarder: 已连接
-    Forwarder-&gt;&gt;Chrome: 已连接
-
-    Note over Chrome,Server: 双向中继
-    Chrome-&gt;&gt;Forwarder: TLS + 应用数据
-    Forwarder-&gt;&gt;Remote: 转发
-    Remote-&gt;&gt;Server: 转发</code></pre>
 <p>Pydoll 在 <code>pydoll.utils</code> 中提供了 <code>SOCKS5Forwarder</code>。它是一个纯 Python、零依赖的异步实现，会处理与远程 proxy 的完整握手，包括用户名/密码认证，以及 IPv4、IPv6 和域名地址类型。</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 </span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>

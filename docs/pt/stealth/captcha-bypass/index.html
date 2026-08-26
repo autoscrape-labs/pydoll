@@ -3560,7 +3560,7 @@
 
 <h1 id="cloudflare-turnstile">Cloudflare Turnstile</h1>
 <p>O Pydoll consegue clicar num checkbox do Cloudflare Turnstile para você, o mesmo clique que uma pessoa faz no widget. Ele não resolve desafios de imagem ou de quebra-cabeça, e se o clique é aceito ou não depende da reputação do seu IP e do seu fingerprint, não do Pydoll. Encare isto como automatizar o clique, não como derrotar o captcha.</p>
-<iframe src="/docs/resources/visuals/captcha-turnstile.html" aria-label="Pydoll clicando num checkbox do Turnstile, com o resultado dependendo da reputação do IP" style="width: 100%; height: 345px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/captcha-turnstile.html" aria-label="Pydoll clicando num checkbox do Turnstile, com o resultado dependendo da reputação do IP" style="width: 100%; height: 345px; border: 0;" loading="lazy"></iframe>
 
 <h2 id="lide-com-o-turnstile-enquanto-navega">Lide com o Turnstile enquanto navega</h2>
 <p>O context manager espera o widget do Turnstile aparecer durante o bloqueio, clica no seu checkbox e deixa o seu código continuar assim que agiu. Coloque dentro do bloco a navegação que dispara o desafio.</p>
@@ -3625,7 +3625,7 @@
 <li><strong>Headful vs headless.</strong> O headless emite um sinal de display mais fraco que pode reduzir a pontuação de confiança, mas não é uma barreira. Com um fingerprint totalmente coerente (incluindo o iframe cross-origin) e um locale combinado com o IP, o headless passa pelo Turnstile num IP decente. Num IP marginal, prefira headful, ou headful sob um framebuffer virtual (Xvfb) num servidor, para que o sinal de display pare de pesar contra você. O aprofundamento sobre o <a href="../../deep-dive/fingerprinting/cloudflare-challenge/">managed challenge do Cloudflare</a> traz o detalhamento completo.</li>
 </ul>
 <p>Se o checkbox é clicado mas um desafio de quebra-cabeça ou de imagem aparece em seguida, a pontuação de confiança estava baixa demais. O Pydoll não consegue resolver esse desafio; melhore o IP e o fingerprint em vez disso.</p>
-<iframe src="/docs/resources/visuals/turnstile-trust-score.html" aria-label="Reputação do IP, consistência do fingerprint e o modo do navegador alimentam uma pontuação de confiança que resulta em aceito, desafiado ou bloqueado; o clique que o Pydoll automatiza é apenas uma das entradas" style="width: 100%; height: 430px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/turnstile-trust-score.html" aria-label="Reputação do IP, consistência do fingerprint e o modo do navegador alimentam uma pontuação de confiança que resulta em aceito, desafiado ou bloqueado; o clique que o Pydoll automatiza é apenas uma das entradas" style="width: 100%; height: 430px; border: 0;" loading="lazy"></iframe>
 
 <h2 id="o-que-ele-nao-faz">O que ele não faz</h2>
 <ul>

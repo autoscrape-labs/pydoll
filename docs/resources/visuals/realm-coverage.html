@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Which realms report the injected identity</title>
+<title>Which realms an override reaches</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
@@ -12,47 +12,107 @@
     --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;--panel2:#191c20;
     --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
     --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
-    --indigo:#6e7bff;--indigo2:#8f99ff;--pass:#35e0a1;--danger:#ff6b6b;
-    --indigo-dim:rgba(110,123,255,.13);--pass-dim:rgba(53,224,161,.12);--danger-dim:rgba(255,107,107,.12);
-    --sans:"Chivo",system-ui,-apple-system,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--indigo-dim:rgba(110,123,255,.13);
+    --pass:#35e0a1;--pass-dim:rgba(53,224,161,.12);
+    --amber:#f5b544;--amber-dim:rgba(245,181,68,.13);
+    --danger:#ff6b6b;--danger-dim:rgba(255,107,107,.12);
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
   }
-  *{box-sizing:border-box}
-  html,body{margin:0}
+  *{box-sizing:border-box} html,body{margin:0}
   body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
   .widget{border:1px solid var(--line);padding:16px 18px}
-  .lead{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:14px;line-height:1.5}
-  .lead b{color:var(--ink)}
-  .toggle{display:inline-flex;border:1px solid var(--line2);margin-bottom:16px}
-  .toggle button{font-family:var(--mono);font-size:11.5px;color:var(--dim);background:var(--panel);border:0;padding:8px 15px;cursor:pointer;transition:.15s}
-  .toggle button+button{border-left:1px solid var(--line2)}
-  .toggle button.on{background:var(--indigo-dim);color:#fff}
-  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-  @media(max-width:620px){.grid{grid-template-columns:repeat(2,1fr)}}
-  @media(max-width:420px){.grid{grid-template-columns:1fr}}
-  .card{border:1px solid var(--line2);background:var(--bg2);padding:11px 12px;transition:.25s;min-height:104px;display:flex;flex-direction:column}
-  .card .k{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);margin-bottom:8px}
-  .card .val{font-family:var(--sans);font-weight:800;font-size:19px;line-height:1;margin-bottom:auto}
-  .card .via{font-family:var(--mono);font-size:9.5px;color:var(--faint);margin-top:9px;letter-spacing:.02em}
-  .card .tag{font-family:var(--mono);font-size:9.5px;margin-top:4px;letter-spacing:.03em}
-  .card.match{border-color:var(--indigo)} .card.match .val{color:var(--indigo2)} .card.match .tag{color:var(--indigo2)}
-  .card.leak{border-color:rgba(255,107,107,.42)} .card.leak .val{color:var(--danger)} .card.leak .tag{color:var(--danger)}
-  .verdict{display:flex;align-items:center;gap:11px;margin-top:15px;padding:12px 14px;border:1px solid var(--line);transition:.3s}
+  .lead{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:14px;line-height:1.55}
+  .lead b{color:var(--ink)} .lead .win{color:var(--pass)} .lead .mac{color:var(--danger)}
+
+  .bar{display:flex;align-items:center;gap:11px;flex-wrap:wrap;margin-bottom:15px}
+  .seg{display:inline-flex;border:1px solid var(--line2);background:var(--bg2);padding:2px}
+  .seg button{font-family:var(--mono);font-size:11px;color:var(--dim);background:transparent;border:0;padding:7px 13px;cursor:pointer;transition:.15s;white-space:nowrap}
+  .seg button:hover{color:var(--ink)}
+  .seg button.on{background:var(--indigo-dim);color:var(--indigo2);box-shadow:inset 0 0 0 1px rgba(110,123,255,.4)}
+  button.replay{font-family:var(--mono);font-size:11px;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:8px 13px;cursor:pointer;transition:.15s}
+  button.replay:hover{border-color:var(--indigo);color:#fff}
+  .reading{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--faint);text-align:right;line-height:1.4}
+  .reading b{color:var(--dim);font-weight:500}
+
+  .stage{position:relative;display:grid;grid-template-columns:154px 1fr;gap:32px}
+  svg.wires{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;overflow:visible}
+  .wires .wire{fill:none;stroke:var(--indigo);stroke-width:1.4;opacity:.34}
+  .wires .comet{fill:var(--indigo2)}
+
+  .srcCol{position:relative;z-index:2;display:flex;flex-direction:column;justify-content:center;gap:16px}
+  .src{border:1px solid rgba(110,123,255,.42);background:linear-gradient(180deg,var(--indigo-dim),rgba(110,123,255,.04));padding:10px 11px}
+  .src .st{font-family:var(--sans);font-weight:700;font-size:12px;color:var(--indigo2);display:flex;align-items:center;gap:7px}
+  .src .st .g{width:14px;height:14px;flex:none;color:var(--indigo2)}
+  .src .ss{font-family:var(--mono);font-size:9px;color:var(--faint);margin-top:4px;line-height:1.4}
+
+  .realmCol{position:relative;z-index:2;display:flex;flex-direction:column;gap:9px}
+  .cell{position:relative;border:1px solid var(--line2);background:var(--bg2);padding:9px 12px 9px 13px;transition:border-color .3s,background .3s}
+  .cell .top{display:flex;align-items:baseline;gap:8px}
+  .cell .cn{font-family:var(--sans);font-weight:700;font-size:12.5px}
+  .cell .cc{font-family:var(--mono);font-size:9px;color:var(--faint);margin-left:auto;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:56%}
+  .cell .mid{display:flex;align-items:center;gap:8px;margin-top:7px}
+  .cell .ck{font-family:var(--mono);font-size:10px;color:var(--dim)}
+  .cell .arrow{color:var(--faint);font-family:var(--mono);font-size:10px}
+  .cell .pf{font-family:var(--mono);font-size:12.5px;font-weight:600;transition:color .3s}
+  .cell .pip{width:7px;height:7px;border-radius:50%;background:var(--faint);transition:background .3s}
+  .cell .cby{font-family:var(--mono);font-size:9px;color:var(--faint);margin-top:5px;transition:color .3s}
+  .cell .sever{position:absolute;left:-1px;top:0;bottom:0;width:3px;background:transparent;transition:background .3s}
+
+  .cell.leak{border-color:rgba(255,107,107,.30)}
+  .cell.leak .pf{color:var(--danger)} .cell.leak .pip{background:var(--danger)}
+  .cell.leak.stranded .sever{background:repeating-linear-gradient(180deg,var(--danger) 0 4px,transparent 4px 8px)}
+  .cell.leak.stranded .cby{color:var(--danger)}
+  .cell.covered{border-color:rgba(53,224,161,.40);background:linear-gradient(180deg,var(--pass-dim),transparent)}
+  .cell.covered .pf{color:var(--pass)} .cell.covered .pip{background:var(--pass);box-shadow:0 0 0 3px var(--pass-dim)}
+  .cell.covered .sever{background:var(--pass)}
+  .cell.covered .cby{color:var(--pass)}
+  .cell.pending .pf{color:var(--faint)} .cell.pending .pip{background:var(--faint)}
+
+  @keyframes flip{0%{transform:translateY(-2px);opacity:.4}100%{transform:none;opacity:1}}
+  .cell.justflipped{animation:flip .32s ease-out}
+
+  .verdict{display:flex;align-items:center;gap:12px;margin-top:15px;padding:12px 15px;border:1px solid var(--line);transition:.3s}
   .verdict .chip{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:5px 11px;border:1px solid;flex:none}
-  .verdict .txt{font-family:var(--mono);font-size:11.5px;color:var(--dim);line-height:1.55}
-  .verdict.ok{background:var(--pass-dim);border-color:rgba(53,224,161,.3)} .verdict.ok .chip{color:var(--pass);border-color:rgba(53,224,161,.5)} .verdict.ok .txt b{color:var(--pass)}
-  .verdict.bad{background:var(--danger-dim);border-color:rgba(255,107,107,.3)} .verdict.bad .chip{color:var(--danger);border-color:rgba(255,107,107,.5)} .verdict.bad .txt b{color:var(--danger)}
+  .verdict .txt{font-family:var(--mono);font-size:11px;color:var(--dim);line-height:1.55}
+  .verdict.leak{background:var(--danger-dim);border-color:rgba(255,107,107,.3)}
+  .verdict.leak .chip{color:var(--danger);border-color:rgba(255,107,107,.5)} .verdict.leak .txt b{color:var(--danger)}
+  .verdict.ok{background:var(--pass-dim);border-color:rgba(53,224,161,.3)}
+  .verdict.ok .chip{color:var(--pass);border-color:rgba(53,224,161,.5)} .verdict.ok .txt b{color:var(--pass)}
+
+  @media(max-width:470px){
+    .stage{grid-template-columns:1fr;gap:12px}
+    .srcCol{flex-direction:row;flex-wrap:wrap;justify-content:flex-start}
+    .src{flex:1;min-width:140px}
+    .cell{padding-left:15px}
+  }
+  @media(prefers-reduced-motion:reduce){ .cell.justflipped{animation:none} }
+
+  /* theme-matched thin scrollbars for overflow-x boxes (replaces the default white bar) */
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--line2)}
+  ::-webkit-scrollbar-thumb:hover{background:var(--faint)}
 </style>
 </head>
 <body>
 <div class="widget">
-  <div class="lead">A Windows profile is applied on a real Mac. A detector reads <b>navigator.platform</b> inside every realm the page can spawn. Choose how far the override reaches.</div>
+  <div class="lead">A Windows profile applied on a real Mac. <b>navigator.platform</b> should read <span class="win">Win32</span> everywhere, but the real machine is <span class="mac">MacIntel</span>. Each realm has its own <b>navigator</b>. Watch the override spread, and see which realms it never reaches.</div>
 
-  <div class="toggle">
-    <button id="bNaive" class="on">top-page hook</button>
-    <button id="bPydoll">pydoll</button>
+  <div class="bar">
+    <div class="seg">
+      <button id="mHook" class="on">Top-page hook</button>
+      <button id="mPydoll">Pydoll replay</button>
+    </div>
+    <button class="replay" id="replay">Replay spread</button>
+    <span class="reading">reading <b>navigator.platform</b><br>in every realm</span>
   </div>
 
-  <div class="grid" id="grid"></div>
+  <div class="stage" id="stage">
+    <svg class="wires" id="wires" preserveAspectRatio="none"></svg>
+    <div class="srcCol" id="srcCol"></div>
+    <div class="realmCol" id="realmCol"></div>
+  </div>
 
   <div class="verdict" id="verdict">
     <span class="chip" id="chip"></span>
@@ -62,57 +122,176 @@
 
 <script>
 (function(){
+  var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
   function g(id){return document.getElementById(id);}
-  var SPOOF='Win32', REAL='MacIntel', mode='naive';
 
-  // realm: name, how pydoll reaches it, and whether a naive top-page hook reaches it
-  var REALMS = [
-    {name:'Main document',        via:'page script',        naive:true },
-    {name:'Same-origin iframe',   via:'page script',        naive:false},
-    {name:'Cross-origin iframe (OOPIF)', via:'iframe-target attach', naive:false},
-    {name:'Dedicated worker',     via:'tab-scope attach',   naive:false},
-    {name:'Shared worker',        via:'browser-scope attach', naive:false},
-    {name:'Service worker',       via:'browser-scope attach', naive:false},
+  var REALMS=[
+    {id:'main',   cn:'Main document',        cc:'example.com',              src:'tab'},
+    {id:'same',   cn:'Same-origin iframe',   cc:'example.com/inner',        src:'tab'},
+    {id:'dworker',cn:'Dedicated worker',     cc:'new Worker()',             src:'tab'},
+    {id:'oopif',  cn:'Cross-origin iframe',  cc:'challenges.cloudflare.com', src:'tab'},
+    {id:'sworker',cn:'Shared worker',        cc:'new SharedWorker()',       src:'browser'},
+    {id:'svc',    cn:'Service worker',       cc:'sw.js',                    src:'browser'}
   ];
+  var MECH={
+    main:'page script + Emulation',
+    same:'page script + Emulation',
+    dworker:'attach + replay',
+    oopif:'attach + replay',
+    sworker:'attach + replay · context',
+    svc:'attach + replay · context'
+  };
+  var STRAND={
+    same:'separate realm · hook absent',
+    dworker:'worker realm · hook absent',
+    oopif:'separate process · hook absent',
+    sworker:'worker realm · hook absent',
+    svc:'worker realm · hook absent'
+  };
 
-  function render(){
-    var pydoll = mode==='pydoll';
-    g('bNaive').className = pydoll?'':'on';
-    g('bPydoll').className = pydoll?'on':'';
+  // build the realm cells
+  var realmCol=g('realmCol');
+  REALMS.forEach(function(r){
+    var c=document.createElement('div'); c.className='cell pending'; c.id='cell-'+r.id;
+    c.innerHTML='<span class="sever"></span>'+
+      '<div class="top"><span class="cn">'+r.cn+'</span><span class="cc">'+r.cc+'</span></div>'+
+      '<div class="mid"><span class="ck">navigator.platform</span><span class="arrow">→</span>'+
+        '<span class="pf">…</span><span class="pip"></span></div>'+
+      '<div class="cby">reading…</div>';
+    realmCol.appendChild(c);
+  });
+  function cell(id){return g('cell-'+id);}
 
-    var grid = g('grid');
-    grid.innerHTML='';
-    var anyLeak=false;
-    REALMS.forEach(function(r){
-      var reached = pydoll ? true : r.naive;
-      if(!reached) anyLeak=true;
-      var card=document.createElement('div');
-      card.className='card '+(reached?'match':'leak');
-      var via = pydoll ? ('via '+r.via) : (r.naive ? 'via page hook' : 'not reached');
-      var tag = reached ? 'matched' : 'real value leaks';
-      card.innerHTML =
-        '<div class="k">'+r.name+'</div>'+
-        '<div class="val">'+(reached?SPOOF:REAL)+'</div>'+
-        '<div class="via">'+via+'</div>'+
-        '<div class="tag">'+tag+'</div>';
-      grid.appendChild(card);
-    });
-
-    var v=g('verdict');
-    if(pydoll){
-      v.className='verdict ok';
-      g('chip').textContent='consistent';
-      g('txt').innerHTML='Every realm reports <b>Win32</b>. The page script covers same-origin frames; workers and the OOPIF are attached and replayed, each over the right connection.';
+  var GLYPH='<svg class="g" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="14" rx="1.5"/><path d="M8 20h8"/></svg>';
+  function buildSources(mode){
+    var col=g('srcCol');
+    if(mode==='hook'){
+      col.innerHTML='<div class="src" id="srcHook"><div class="st">'+
+        '<svg class="g" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 8l-4 4 4 4M16 8l4 4-4 4"/></svg>'+
+        'top-page hook</div><div class="ss">navigator.platform getter<br>in the main realm only</div></div>';
     }else{
-      v.className='verdict bad';
-      g('chip').textContent='contradiction';
-      g('txt').innerHTML='A hook in the top document only patches its own realm. Every other realm still reports the real <b>MacIntel</b>, and the disagreement is the tell.';
+      col.innerHTML='<div class="src" id="srcTab"><div class="st">'+GLYPH+'Tab connection</div><div class="ss">page-target session<br>main · same-origin · worker · OOPIF</div></div>'+
+        '<div class="src" id="srcBrowser"><div class="st">'+
+        '<svg class="g" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 2.5 15.4 0 18M12 3c-2.5 2.6-2.5 15.4 0 18"/></svg>'+
+        'Browser connection</div><div class="ss">browser-global session<br>shared · service workers</div></div>';
     }
   }
 
-  g('bNaive').addEventListener('click',function(){mode='naive';render();});
-  g('bPydoll').addEventListener('click',function(){mode='pydoll';render();});
-  render();
+  function srcEl(realmId,mode){
+    if(mode==='hook') return g('srcHook');
+    return REALMS.filter(function(r){return r.id===realmId;})[0].src==='browser'?g('srcBrowser'):g('srcTab');
+  }
+
+  function setLeak(id,real){
+    var c=cell(id); c.className='cell leak'; if(!real)c.classList.add('stranded');
+    c.querySelector('.pf').textContent='MacIntel';
+    c.querySelector('.cby').textContent = real ? 'reads the real Mac' : (STRAND[id]||'unreached');
+  }
+  function setCover(id,flip){
+    var c=cell(id); var was=c.classList.contains('covered');
+    c.className='cell covered';
+    c.querySelector('.pf').textContent='Win32';
+    c.querySelector('.cby').textContent = (id==='main'&&curMode==='hook') ? 'getter · main realm' : ('reached · '+MECH[id]);
+    if(flip&&!was&&!reduce){ c.classList.remove('justflipped'); void c.offsetWidth; c.classList.add('justflipped'); }
+  }
+
+  // ---- wire geometry + comets ----
+  var wires=[], rafId=null, t0=0, SPEED=118;
+  function clearWires(){ if(rafId)cancelAnimationFrame(rafId); rafId=null; g('wires').innerHTML=''; wires=[]; }
+  var NS='http://www.w3.org/2000/svg';
+  function isCompact(){ return g('stage').clientWidth < 470; }
+
+  function buildWires(covered,mode){
+    clearWires();
+    var svg=g('wires'), stage=g('stage'), sr=stage.getBoundingClientRect();
+    svg.setAttribute('width',sr.width); svg.setAttribute('height',sr.height);
+    svg.setAttribute('viewBox','0 0 '+sr.width+' '+sr.height);
+    if(isCompact()) return;
+    covered.forEach(function(id){
+      var s=srcEl(id,mode); if(!s) return;
+      var pr=s.getBoundingClientRect(), cr=cell(id).getBoundingClientRect();
+      var x1=pr.right-sr.left, y1=pr.top-sr.top+pr.height/2;
+      var x2=cr.left-sr.left, y2=cr.top-sr.top+cr.height/2;
+      var c=Math.max(26,Math.abs(x2-x1)*0.45);
+      var d='M'+x1+' '+y1+' C '+(x1+c)+' '+y1+' '+(x2-c)+' '+y2+' '+x2+' '+y2;
+      var p=document.createElementNS(NS,'path'); p.setAttribute('class','wire'); p.setAttribute('d',d);
+      svg.appendChild(p);
+      var dot=document.createElementNS(NS,'circle'); dot.setAttribute('class','comet'); dot.setAttribute('r','3'); dot.style.opacity='0';
+      svg.appendChild(dot);
+      wires.push({id:id,path:p,dot:dot,len:p.getTotalLength(),done:false});
+    });
+  }
+
+  function tick(ts){
+    if(!t0)t0=ts; var el=(ts-t0)/1000;
+    for(var i=0;i<wires.length;i++){
+      var w=wires[i], prog=(el - i*0.24)*SPEED/w.len;
+      if(prog<0){ w.dot.style.opacity='0'; continue; }
+      w.dot.style.opacity='1';
+      var lap=prog-Math.floor(prog), pt=w.path.getPointAtLength(lap*w.len);
+      w.dot.setAttribute('cx',pt.x); w.dot.setAttribute('cy',pt.y);
+      if(prog>=1 && !w.done){ w.done=true; setCover(w.id,true); }
+    }
+    rafId=requestAnimationFrame(tick);
+  }
+
+  // ---- orchestration ----
+  var curMode='hook', staggerT=[];
+  function clearStagger(){ staggerT.forEach(clearTimeout); staggerT=[]; }
+
+  function coveredFor(mode){ return mode==='hook'?['main']:REALMS.map(function(r){return r.id;}); }
+
+  function render(mode){
+    curMode=mode; clearStagger();
+    g('mHook').classList.toggle('on',mode==='hook');
+    g('mPydoll').classList.toggle('on',mode==='pydoll');
+    buildSources(mode);
+    var covered=coveredFor(mode);
+    var isCov={}; covered.forEach(function(id){isCov[id]=1;});
+
+    // start state: covered realms show real Mac (will flip); uncovered are stranded red
+    REALMS.forEach(function(r){ setLeak(r.id, !!isCov[r.id]); });
+
+    if(reduce){
+      clearWires();
+      buildWires(covered,mode);
+      covered.forEach(function(id){ setCover(id,false); });
+      setVerdict(mode,covered.length);
+      return;
+    }
+    if(isCompact()){
+      clearWires();
+      covered.forEach(function(id,k){ staggerT.push(setTimeout(function(){ setCover(id,true); }, 300+k*260)); });
+      setVerdict(mode,covered.length);
+      return;
+    }
+    // wired: comets flip cells as they land
+    buildWires(covered,mode);
+    t0=0; if(rafId)cancelAnimationFrame(rafId); rafId=requestAnimationFrame(tick);
+    setVerdict(mode,covered.length);
+  }
+
+  function setVerdict(mode,n){
+    var v=g('verdict'), leaks=REALMS.length-n;
+    if(leaks>0){
+      v.className='verdict leak';
+      g('chip').textContent='leaks in '+leaks+' realms';
+      g('txt').innerHTML='The hook lives in one realm, so <b>'+leaks+'</b> of '+REALMS.length+' still read <b>MacIntel</b>. A detector reads the page, re-reads a worker, and the disagreement is the tell.';
+    }else{
+      v.className='verdict ok';
+      g('chip').textContent='consistent · '+n+' realms';
+      g('txt').innerHTML='Pydoll replays the override into every realm, so all '+n+' report <b>Win32</b>. Page and workers agree, there is nothing to compare against.';
+    }
+  }
+
+  g('mHook').addEventListener('click',function(){ render('hook'); });
+  g('mPydoll').addEventListener('click',function(){ render('pydoll'); });
+  g('replay').addEventListener('click',function(){ render(curMode); });
+
+  var rz=null;
+  window.addEventListener('resize',function(){ if(rz)clearTimeout(rz); rz=setTimeout(function(){ render(curMode); },220); });
+  window.addEventListener('load',function(){ setTimeout(function(){ render('hook'); },260); });
+  render('hook');
 })();
 </script>
 <script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>

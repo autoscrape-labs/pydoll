@@ -3732,16 +3732,8 @@
 <h2 id="_2">网络栈</h2>
 <p>Proxy 工作在不同的层上，而所在的层决定了它的触及范围。即便隔着一个完美无缺的高层 proxy，更底层的特征仍能给你的真实系统留下指纹，所以搞清楚每个协议所处的位置会很有帮助。</p>
 <p>OSI 模型（7 层）是一个教学参考；真实网络运行的是 TCP/IP 模型（4 层）。但 OSI 术语仍是人们描述一个 proxy 工作在哪里时的通用说法，所以值得了解。</p>
-<pre class="mermaid"><code>graph TD
-    L7[第 7 层：应用层 - HTTP, FTP, SMTP, DNS]
-    L6[第 6 层：表示层 - 加密, 压缩]
-    L5[第 5 层：会话层 - SOCKS]
-    L4[第 4 层：传输层 - TCP, UDP]
-    L3[第 3 层：网络层 - IP, ICMP]
-    L2[第 2 层：数据链路层 - Ethernet, WiFi]
-    L1[第 1 层：物理层 - 线缆, 无线电波]
+<iframe scrolling="no" src="/docs/resources/visuals/osi-proxy-layers.html" aria-label="The OSI layer stack: a proxy reaches only the layer it sits at and the layers above; the TCP/IP fingerprint at L4/L3 is stamped by the OS kernel below any proxy and still leaks" style="width: 100%; height: 820px; border: 0;" loading="lazy"></iframe>
 
-    L7 --&gt; L6 --&gt; L5 --&gt; L4 --&gt; L3 --&gt; L2 --&gt; L1</code></pre>
 <p>对自动化重要的那些层：</p>
 <ul>
 <li><strong>第 7 层，应用层。</strong> HTTP、HTTPS、FTP、SMTP、DNS。你的代码真正关心的实际数据。HTTP proxy 位于此处，对请求和响应有完整的可见性。</li>
@@ -3813,14 +3805,8 @@
 <p>所有 proxy 协议（HTTP、HTTPS、SOCKS4、SOCKS5）都用 TCP 作为它们的控制通道，因为认证和命令序列需要有保证的送达。SOCKS5 额外还能代理 UDP，而这是 SOCKS4 和 HTTP proxy 做不到的。</p>
 <h3 id="tcp">TCP 三次握手</h3>
 <p>在任何数据传输之前，TCP 会进行一次三次握手，以同步序列号和连接状态。</p>
-<pre class="mermaid"><code>sequenceDiagram
-    participant Client as 客户端
-    participant Server as 服务器
+<iframe scrolling="no" src="/docs/resources/visuals/tcp-handshake.html" aria-label="The TCP three-way handshake: SYN, SYN-ACK and ACK packets cross between client and server with sequence numbers, and each side's connection state advances to ESTABLISHED" style="width: 100%; height: 720px; border: 0;" loading="lazy"></iframe>
 
-    Client-&gt;&gt;Server: SYN (seq=x)
-    Server-&gt;&gt;Client: SYN-ACK (seq=y, ack=x+1)
-    Client-&gt;&gt;Server: ACK (ack=y+1)
-    Note over Client,Server: 连接已建立</code></pre>
 <p>客户端发送一个 SYN，携带一个随机的初始序列号（Initial Sequence Number）和它的 TCP 选项（窗口大小、MSS、时间戳、SACK）。服务器回复一个 SYN-ACK：它自己的随机 ISN，外加对客户端 ISN 的确认。客户端发送最后一个 ACK，连接便在双向上都打开了。ISN 被随机化（RFC 6528），以防止攻击者靠猜测序列号来注入数据包。</p>
 <h3 id="tcp_1">TCP 指纹</h3>
 <p>握手会暴露操作系统特有的值：初始窗口大小、选项顺序、TTL 和窗口缩放。这些由内核设定，而非浏览器，所以 proxy 无法改变它们。示意性的默认值（会随版本和调优而变化）：</p>
@@ -3867,16 +3853,8 @@
 <p>为了建立一个 P2P 连接，WebRTC 会通过 STUN 服务器经由 UDP 发现你的公网 IP。这些查询会绕过只走 TCP 的 proxy，IP 便落进了连接的 ICE candidate 里，而页面上的 JavaScript 可以读取这些 candidate 并把你的真实 IP 发给服务器。</p>
 <h3 id="icestun-candidate">ICE、STUN，以及会泄露的那些 candidate</h3>
 <p>WebRTC 使用 ICE（RFC 8445）来收集可能的连接路径，称为 candidate，而正是这个收集过程暴露了你的网络。</p>
-<pre class="mermaid"><code>sequenceDiagram
-    participant Browser as 浏览器
-    participant STUN as STUN 服务器
-    participant Peer as 远端对等方
+<iframe scrolling="no" src="/docs/resources/visuals/webrtc-leak.html" aria-label="WebRTC fires a STUN binding request over UDP that bypasses a TCP proxy, so the STUN server returns your real public IP and it appears in the ICE candidates a page can read; leak_protection blocks the non-proxied UDP" style="width: 100%; height: 700px; border: 0;" loading="lazy"></iframe>
 
-    Browser-&gt;&gt;Browser: 收集本地 IP（LAN）
-    Browser-&gt;&gt;STUN: Binding Request (UDP, 绕过 proxy)
-    STUN-&gt;&gt;Browser: 响应中包含真实公网 IP
-    Browser-&gt;&gt;Peer: 发送所有 ICE candidate（本地 + 公网）
-    Note over Browser,Peer: 直连 P2P 完全绕过了 proxy</code></pre>
 <p>会收集三种类型的 candidate：</p>
 <ul>
 <li><strong>Host candidate</strong>：你的本地 LAN IP。Chrome 75+ 会用临时的 mDNS 名称（<code>a1b2c3d4.local</code>）替换它们，除非授予了摄像头/麦克风权限，所以这类泄露已基本被缓解。</li>

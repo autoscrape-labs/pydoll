@@ -49,6 +49,12 @@
   .outcome.a{background:var(--pass-dim);border-color:rgba(53,224,161,.3)} .outcome.a .chip{color:var(--pass);border-color:rgba(53,224,161,.5)} .outcome.a .txt b{color:var(--pass)}
   .outcome.c{background:var(--amber-dim);border-color:rgba(245,181,68,.3)} .outcome.c .chip{color:var(--amber);border-color:rgba(245,181,68,.5)} .outcome.c .txt b{color:var(--amber)}
   .outcome.bl{background:var(--danger-dim);border-color:rgba(255,107,107,.3)} .outcome.bl .chip{color:var(--danger);border-color:rgba(255,107,107,.5)} .outcome.bl .txt b{color:var(--danger)}
+
+  /* theme-matched thin scrollbars for overflow-x boxes (replaces the default white bar) */
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--line2)}
+  ::-webkit-scrollbar-thumb:hover{background:var(--faint)}
 </style>
 </head>
 <body>
