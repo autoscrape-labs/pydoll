@@ -2,7 +2,7 @@
 
 O Pydoll controla o mouse de duas formas: através de um elemento que você encontrou, que é o que você quer na maior parte do tempo, ou em coordenadas brutas da página quando você precisa de posições precisas. Ambas suportam `humanize=True`, que move o cursor por um caminho curvo, com tempo humano, em vez de teleportar para o alvo.
 
-<iframe src="/docs/resources/visuals/mouse-humanize.html" aria-label="Humanized curved cursor path versus an instant robotic jump" style="width: 100%; height: 345px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/mouse-humanize.html" aria-label="Humanized curved cursor path versus an instant robotic jump" style="width: 100%; height: 345px; border: 0;" loading="lazy"></iframe>
 
 ## Clicar em um elemento
 

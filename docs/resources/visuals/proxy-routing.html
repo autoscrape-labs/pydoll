@@ -3,117 +3,413 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Proxy routing</title>
+<title>Proxy routing, the IP the target sees</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
 <style>
   :root{
-    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;--panel2:#191c20;
     --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
     --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
-    --indigo:#6e7bff;--indigo2:#8f99ff;--pass:#35e0a1;--amber:#f5b544;--danger:#ff6b6b;
-    --sans:"Chivo",system-ui,-apple-system,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--indigo-dim:rgba(110,123,255,.13);
+    --pass:#35e0a1;--pass-dim:rgba(53,224,161,.12);
+    --amber:#f5b544;--amber-dim:rgba(245,181,68,.13);
+    --danger:#ff6b6b;--danger-dim:rgba(255,107,107,.12);
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
   }
-  *{box-sizing:border-box}
-  html,body{margin:0}
+  *{box-sizing:border-box} html,body{margin:0}
   body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
   .widget{border:1px solid var(--line);padding:16px 18px}
-  .flow{position:relative;display:grid;grid-template-columns:repeat(3,1fr);align-items:center;height:96px}
-  .conn{position:absolute;top:50%;height:2px;background:var(--line2);transform:translateY(-50%);transition:background .3s}
-  .conn.on{background:var(--indigo)}
-  #c1{left:16.667%;width:33.333%} #c2{left:50%;width:33.333%}
-  .packet{position:absolute;left:0;top:50%;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:var(--indigo);
-    box-shadow:0 0 0 4px rgba(110,123,255,.16),0 0 12px 2px rgba(110,123,255,.55);transform:translate(0,-50%);z-index:2;opacity:0;
-    transition:transform .55s cubic-bezier(.4,0,.2,1),opacity .25s}
-  .node{position:relative;z-index:1;justify-self:center;width:120px;text-align:center;border:1px solid var(--line2);background:var(--bg);padding:12px 10px;transition:.3s}
-  .node .ic{display:grid;place-items:center;height:22px;color:var(--faint)}
+  .lead{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:13px;line-height:1.5}
+  .lead b{color:var(--ink)}
+
+  /* ---- route stage ---- */
+  .stage{position:relative;height:154px;overflow:hidden;border:1px solid var(--line2);background:var(--bg2)}
+  .host{position:absolute;top:50%;transform:translateY(-50%);border:1px dashed var(--line2);border-radius:8px;
+    opacity:0;transition:opacity .3s;pointer-events:none;z-index:0}
+  .host .hl{position:absolute;top:-8px;left:9px;font-family:var(--mono);font-size:8.5px;color:var(--faint);
+    background:var(--bg2);padding:0 5px;letter-spacing:.03em;white-space:nowrap}
+  .wire{position:absolute;top:50%;height:2px;background:var(--line2);transform:translateY(-50%);z-index:0;transition:background .3s}
+  .wire.on{background:var(--indigo)}
+  .node{position:absolute;top:50%;transform:translate(-50%,-50%);width:clamp(74px,20vw,102px);text-align:center;
+    border:1px solid var(--line2);background:var(--panel);padding:9px 6px;z-index:2;transition:border-color .3s,opacity .3s,box-shadow .3s;display:none}
+  .node .ic{display:grid;place-items:center;height:22px;color:var(--faint);transition:color .3s}
   .node .ic svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-  .node .cap{font-family:var(--sans);font-weight:700;font-size:12.5px;margin-top:7px}
-  .node.on{border-color:var(--indigo);color:var(--ink)} .node.on .ic{color:var(--indigo)}
-  .node.off{opacity:.36}
-  .node.dot{border-color:var(--pass)} .node.dot .ic{color:var(--pass)}
-  .seen{margin-top:16px;border:1px solid var(--line);background:var(--bg2);padding:12px 15px;display:flex;align-items:center;gap:12px;font-family:var(--mono);font-size:12.5px}
-  .seen .lbl{color:var(--faint)}
-  .seen .ip{color:var(--ink);font-weight:500}
-  .seen .flag{margin-left:auto;color:var(--dim)}
-  .seen.real .ip{color:var(--amber)} .seen.proxied .ip{color:var(--pass)}
-  .controls{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:center}
-  button{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:8px 12px;cursor:pointer;transition:.15s}
-  button:hover{border-color:var(--indigo);color:#fff}
-  button.active{background:rgba(110,123,255,.14);border-color:var(--indigo);color:#fff}
-  button:disabled{opacity:.5;cursor:default}
-  .region{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;color:var(--faint)}
-  #regionBtn{padding:6px 10px}
-  .caption{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-left:auto;min-height:16px;text-align:right}
-  @media (prefers-reduced-motion:reduce){.packet{transition:opacity .2s}}
+  .node .nm{font-family:var(--sans);font-weight:700;font-size:11px;margin-top:5px;line-height:1.15}
+  .node .sub{font-family:var(--mono);font-size:8.5px;color:var(--faint);margin-top:3px;line-height:1.25;display:flex;align-items:center;justify-content:center;gap:3px}
+  .node .sub svg{width:8px;height:8px;stroke:currentColor;fill:none;stroke-width:2}
+  .node.lit{border-color:var(--indigo);box-shadow:0 0 0 1px rgba(110,123,255,.35)} .node.lit .ic{color:var(--indigo2)}
+  .node.exposed{border-color:var(--danger)} .node.exposed .ic{color:var(--danger)} .node.exposed .sub{color:var(--danger)}
+  .node.masked{border-color:var(--pass)} .node.masked .ic{color:var(--pass)} .node.masked .sub{color:var(--pass)}
+
+  .packet{position:absolute;top:50%;left:0;width:13px;height:13px;margin:0;border-radius:3px;background:var(--indigo);
+    box-shadow:0 0 0 4px rgba(110,123,255,.16),0 0 13px 2px rgba(110,123,255,.55);z-index:4;opacity:0;
+    transform:translate(0,-50%);transition:transform .7s cubic-bezier(.4,0,.2,1),opacity .25s,background .25s,box-shadow .25s}
+  .packet.res{background:var(--pass);box-shadow:0 0 0 4px var(--pass-dim),0 0 13px 2px rgba(53,224,161,.5)}
+  .packet.exp{background:var(--danger);box-shadow:0 0 0 4px var(--danger-dim),0 0 13px 2px rgba(255,107,107,.5)}
+  .pktTag{position:absolute;top:50%;left:0;font-family:var(--mono);font-size:8.5px;color:var(--indigo2);z-index:4;opacity:0;
+    white-space:nowrap;pointer-events:none;transform:translate(0,-50%) translateY(-20px);transition:transform .7s cubic-bezier(.4,0,.2,1),opacity .2s,color .2s}
+  .pktTag.res{color:var(--pass)} .pktTag.exp{color:var(--danger)}
+  .authpop{position:absolute;top:50%;left:0;transform:translate(-50%,-50%) translateY(24px);z-index:5;opacity:0;
+    font-family:var(--mono);font-size:9px;padding:2px 7px;border:1px solid var(--amber);color:var(--amber);
+    background:var(--amber-dim);white-space:nowrap;transition:opacity .2s}
+  .authpop.show{opacity:1}
+
+  /* ---- hero readout + server log ---- */
+  .panel{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:12px;margin-top:14px}
+  @media(max-width:520px){.panel{grid-template-columns:1fr}}
+  .seen{border:1px solid var(--line);background:var(--bg2);padding:11px 13px;display:flex;flex-direction:column;gap:6px}
+  .seen .k{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint)}
+  .seen .ipbig{font-family:var(--sans);font-weight:800;font-size:22px;line-height:1;color:var(--dim);transition:color .3s}
+  .seen .tag{font-family:var(--mono);font-size:10px;color:var(--dim)}
+  .seen.exposed .ipbig{color:var(--danger)} .seen.exposed .tag{color:var(--danger)}
+  .seen.masked .ipbig{color:var(--pass)} .seen.masked .tag{color:var(--pass)}
+  .log{border:1px solid var(--line);background:var(--bg2);padding:9px 12px;overflow:hidden}
+  .log .lt{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);margin-bottom:6px}
+  .log .row{font-family:var(--mono);font-size:10px;color:var(--dim);display:flex;align-items:center;gap:7px;line-height:1.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .3s}
+  .log .row i{width:6px;height:6px;border-radius:50%;flex:none;background:var(--faint)}
+  .log .row.exp i{background:var(--danger)} .log .row.exp b{color:var(--danger)}
+  .log .row.res i{background:var(--pass)} .log .row.res b{color:var(--pass)}
+  .log .row b{font-weight:600;color:var(--ink)}
+  .log .row .mut{color:var(--faint)}
+
+  /* ---- code + controls ---- */
+  .code{margin-top:13px;border:1px solid var(--line);background:var(--panel2);padding:10px 13px;font-family:var(--mono);
+    font-size:11px;color:var(--ink);line-height:1.55;overflow-x:auto}
+  .code .cl{white-space:pre;display:block}
+  .code .cmt{color:var(--faint)}
+  .code .arg{color:var(--indigo2)}
+  .codeNote{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:6px}
+
+  .controls{display:flex;align-items:center;gap:14px;margin-top:14px;flex-wrap:wrap}
+  .seg{display:inline-flex;border:1px solid var(--line2);overflow:hidden}
+  .seg button{font-family:var(--mono);font-size:11px;font-weight:500;color:var(--dim);background:var(--panel);border:0;
+    border-right:1px solid var(--line2);padding:7px 12px;cursor:pointer;transition:.15s}
+  .seg button:last-child{border-right:0}
+  .seg button:hover{color:var(--ink)}
+  .seg button.on{background:rgba(110,123,255,.16);color:#fff}
+  .seg .lbl{font-family:var(--mono);font-size:9px;color:var(--faint);padding:0 9px 0 4px;align-self:center;text-transform:uppercase;letter-spacing:.04em}
+  .region{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10.5px;color:var(--faint)}
+  .region button{font-family:var(--mono);font-size:11px;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:6px 11px;cursor:pointer;transition:.15s}
+  .region button:hover{border-color:var(--indigo);color:#fff}
+  .legend{display:flex;align-items:center;gap:12px;font-family:var(--mono);font-size:9.5px;color:var(--faint);margin-left:auto}
+  .legend i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px;vertical-align:0}
+  .legend i.rq{background:var(--indigo)} .legend i.rs{background:var(--pass)}
+
+  .beat{font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:12px;min-height:16px;line-height:1.5}
+  .beat b{color:var(--ink);font-weight:500}
+  .caveat{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:6px;line-height:1.5}
+
+  @media (prefers-reduced-motion:reduce){
+    .packet,.pktTag{transition:opacity .2s} .authpop{display:none}
+  }
+
+  /* theme-matched thin scrollbars for overflow-x boxes (replaces the default white bar) */
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--line2)}
+  ::-webkit-scrollbar-thumb:hover{background:var(--faint)}
 </style>
 </head>
 <body>
 <div class="widget">
-  <div class="flow" id="flow">
-    <div class="conn" id="c1"></div>
-    <div class="conn" id="c2"></div>
+  <div class="lead">A request leaves <b>pydoll / your Chrome</b> and the target logs whoever it came from. <b>Direct</b>, it logs your real IP. <b>Through a proxy</b>, it logs the proxy's exit IP and you are masked. The route loops in place; flip the controls to change it.</div>
+
+  <div class="stage" id="stage">
+    <div class="host" id="host"><span class="hl">your machine · 127.0.0.1 · no auth</span></div>
+    <div class="wire" id="wire"></div>
+    <div class="node" id="nYou">
+      <div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="1"/><path d="M2 20h20M9 20v-4M15 20v-4"/></svg></div>
+      <div class="nm">pydoll<br>your Chrome</div>
+      <div class="sub" id="youSub">189.6.44.12 · BR</div>
+    </div>
+    <div class="node" id="nFwd">
+      <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 8h13l-3-3M4 8l3 3"/><path d="M20 16H7l3 3M20 16l-3-3"/></svg></div>
+      <div class="nm">local<br>forwarder</div>
+      <div class="sub"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>127.0.0.1:1081</div>
+    </div>
+    <div class="node" id="nProxy">
+      <div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="7" rx="1"/><rect x="3" y="13" width="18" height="7" rx="1"/><line x1="7" y1="7.5" x2="7.01" y2="7.5"/><line x1="7" y1="16.5" x2="7.01" y2="16.5"/></svg></div>
+      <div class="nm" id="proxyNm">HTTP proxy</div>
+      <div class="sub" id="proxySub">74.63.201.8 · US</div>
+    </div>
+    <div class="node" id="nTarget">
+      <div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18"/></svg></div>
+      <div class="nm">target site</div>
+      <div class="sub">httpbin.org/ip</div>
+    </div>
+    <div class="authpop" id="authpop"></div>
+    <div class="pktTag" id="pktTag">GET /ip</div>
     <div class="packet" id="packet"></div>
-    <div class="node" id="nYou"><div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="1"/><path d="M2 20h20M9 20v-4M15 20v-4"/></svg></div><div class="cap">Your browser</div></div>
-    <div class="node" id="nProxy"><div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="7"/><rect x="3" y="13" width="18" height="7"/><line x1="7" y1="7.5" x2="7.01" y2="7.5"/><line x1="7" y1="16.5" x2="7.01" y2="16.5"/></svg></div><div class="cap">Proxy</div></div>
-    <div class="node" id="nTarget"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18"/></svg></div><div class="cap">Target site</div></div>
   </div>
 
-  <div class="seen real" id="seen"><span class="lbl">the target sees</span><span class="ip" id="ip">189.6.44.12</span><span class="flag" id="flag">Brazil (your real IP)</span></div>
+  <div class="panel">
+    <div class="seen" id="seen">
+      <span class="k">the target logs</span>
+      <span class="ipbig" id="ipBig">·</span>
+      <span class="tag" id="ipTag">waiting for the request…</span>
+    </div>
+    <div class="log">
+      <div class="lt">httpbin.org, access log</div>
+      <div id="logRows"></div>
+    </div>
+  </div>
+
+  <div class="code" id="code"></div>
+  <div class="codeNote" id="codeNote"></div>
 
   <div class="controls">
-    <button id="direct">Send direct</button>
-    <button id="viaproxy">Send through proxy</button>
-    <span class="region">proxy region: <button id="regionBtn">United States</button></span>
-    <span class="caption" id="caption"></span>
+    <span class="seg" role="group" aria-label="route">
+      <span class="lbl">route</span>
+      <button id="mDirect">Direct</button>
+      <button id="mProxy">Proxy</button>
+    </span>
+    <span class="seg" role="group" aria-label="proxy type">
+      <span class="lbl">type</span>
+      <button id="tHttp">HTTP</button>
+      <button id="tSocks">SOCKS5</button>
+    </span>
+    <span class="region">exit region: <button id="regionBtn">United States</button></span>
+    <span class="legend"><span><i class="rq"></i>request</span><span><i class="rs"></i>response</span></span>
   </div>
+
+  <div class="beat" id="beat"></div>
+  <div class="caveat">The IP is only one signal. Anti-bot systems weigh its reputation (residential &gt; datacenter) and cross-check its country against your timezone and languages.</div>
 </div>
 
 <script>
 (function(){
   var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
-  var flow=document.getElementById('flow'),packet=document.getElementById('packet');
-  var nYou=document.getElementById('nYou'),nProxy=document.getElementById('nProxy'),nTarget=document.getElementById('nTarget');
-  var c1=document.getElementById('c1'),c2=document.getElementById('c2');
-  var seen=document.getElementById('seen'),ipEl=document.getElementById('ip'),flagEl=document.getElementById('flag'),caption=document.getElementById('caption');
-  var dBtn=document.getElementById('direct'),pBtn=document.getElementById('viaproxy'),regionBtn=document.getElementById('regionBtn');
-  var timers=[],busy=false;
-  var REGIONS=[['United States','74.63.201.8','United States'],['Germany','185.220.14.6','Germany'],['Japan','133.242.9.71','Japan']];
+  var U=function(ms){return reduce?0:ms;};
+  function g(id){return document.getElementById(id);}
+  function wait(ms){return new Promise(function(r){setTimeout(r,ms);});}
+
+  var stage=g('stage'),wire=g('wire'),host=g('host'),packet=g('packet'),pktTag=g('pktTag'),authpop=g('authpop');
+  var seen=g('seen'),ipBig=g('ipBig'),ipTag=g('ipTag'),logRows=g('logRows'),beat=g('beat'),code=g('code'),codeNote=g('codeNote');
+
+  var YOU={ip:'189.6.44.12',cc:'BR',where:'Brazil'};
+  var REGIONS=[
+    {name:'United States',cc:'US',ip:'74.63.201.8',host:'us.proxy'},
+    {name:'Germany',cc:'DE',ip:'185.220.14.6',host:'de.proxy'},
+    {name:'Japan',cc:'JP',ip:'133.242.9.71',host:'jp.proxy'}
+  ];
+  var mode='direct';   // 'direct' | 'proxy'
+  var type='http';     // 'http'   | 'socks5'
   var ri=0;
-  var YOURS=['189.6.44.12','Brazil (your real IP)'];
+  var gen=0;
 
-  function cx(w){var W=flow.clientWidth;return w==='you'?W/6:w==='proxy'?W/2:W*5/6;}
-  var sleep=function(ms){return new Promise(function(r){setTimeout(r,reduce?0:ms);});};
-  function placeAt(w){packet.style.transition='none';packet.style.transform='translate('+cx(w)+'px,-50%)';}
-  function moveTo(w,ms){packet.style.transition='transform '+(reduce?0:ms)+'ms cubic-bezier(.4,0,.2,1),opacity .25s';packet.style.transform='translate('+cx(w)+'px,-50%)';return sleep(ms);}
-  function nodeCls(n,c){n.className='node'+(c?(' '+c):'');}
-  function reset(){timers.forEach(clearTimeout);timers=[];nodeCls(nYou);nodeCls(nProxy);nodeCls(nTarget);c1.className='conn';c2.className='conn';packet.style.opacity='0';caption.textContent='';}
+  function region(){return REGIONS[ri];}
+  function verdictExposed(){return mode==='direct';}
+  function seenIP(){return verdictExposed()?YOU.ip:region().ip;}
+  function seenCC(){return verdictExposed()?YOU.cc:region().cc;}
 
-  async function direct(){
-    if(busy)return;busy=true;dBtn.disabled=true;pBtn.disabled=true;dBtn.classList.add('active');pBtn.classList.remove('active');
-    reset(); nodeCls(nProxy,'off');
-    nodeCls(nYou,'on'); placeAt('you'); packet.style.opacity='1'; c1.classList.add('on'); c2.classList.add('on');
-    await sleep(120); await moveTo('target',900);
-    nodeCls(nTarget,'dot');
-    seen.className='seen real'; ipEl.textContent=YOURS[0]; flagEl.textContent=YOURS[1];
-    caption.innerHTML='no proxy: the site sees your real address';
-    busy=false;dBtn.disabled=false;pBtn.disabled=false;
+  // ---- station model ----
+  var NODES={you:g('nYou'),fwd:g('nFwd'),proxy:g('nProxy'),target:g('nTarget')};
+  var ST=[];
+  function buildStations(){
+    var s=[];
+    if(mode==='direct'){
+      s=[{k:'you',el:NODES.you,f:.13},{k:'target',el:NODES.target,f:.87}];
+    }else if(type==='http'){
+      s=[{k:'you',el:NODES.you,f:.12},{k:'proxy',el:NODES.proxy,f:.5},{k:'target',el:NODES.target,f:.88}];
+    }else{
+      s=[{k:'you',el:NODES.you,f:.10},{k:'fwd',el:NODES.fwd,f:.37},{k:'proxy',el:NODES.proxy,f:.64},{k:'target',el:NODES.target,f:.90}];
+    }
+    return s;
   }
-  async function viaProxy(){
-    if(busy)return;busy=true;dBtn.disabled=true;pBtn.disabled=true;pBtn.classList.add('active');dBtn.classList.remove('active');
-    reset();
-    nodeCls(nYou,'on'); placeAt('you'); packet.style.opacity='1'; c1.classList.add('on');
-    await sleep(120); await moveTo('proxy',560); nodeCls(nProxy,'on');
-    await sleep(220); c2.classList.add('on'); await moveTo('target',560); nodeCls(nTarget,'dot');
-    var r=REGIONS[ri];
-    seen.className='seen proxied'; ipEl.textContent=r[1]; flagEl.textContent=r[2]+' (proxy exit)';
-    caption.innerHTML='--proxy-server: the site sees the proxy, not you';
-    busy=false;dBtn.disabled=false;pBtn.disabled=false;
+
+  function layout(){
+    var W=stage.clientWidth;
+    for(var k in NODES){NODES[k].style.display='none';}
+    ST.forEach(function(st){
+      st.x=st.f*W;
+      st.el.style.left=(st.f*100)+'%';
+      st.el.style.display='block';
+    });
+    // wire spans first -> last active station
+    var a=ST[0], b=ST[ST.length-1];
+    wire.style.left=a.x+'px'; wire.style.width=(b.x-a.x)+'px';
+    // localhost bracket around you(+fwd) in socks5
+    if(mode==='proxy'&&type==='socks5'){
+      var you=ST[0], fwd=ST[1], half=you.el.offsetWidth/2, pad=10;
+      var lft=you.x-half-pad, rgt=fwd.x+fwd.el.offsetWidth/2+pad;
+      host.style.left=lft+'px'; host.style.width=(rgt-lft)+'px';
+      host.style.height=(you.el.offsetHeight+16)+'px';
+      host.style.opacity='1';
+    }else{ host.style.opacity='0'; }
   }
-  dBtn.addEventListener('click',direct);
-  pBtn.addEventListener('click',viaProxy);
-  regionBtn.addEventListener('click',function(){ if(busy)return; ri=(ri+1)%REGIONS.length; regionBtn.textContent=REGIONS[ri][0]; if(pBtn.classList.contains('active')){viaProxy();} });
+
+  function setPacketX(x){
+    packet.style.transform='translate('+x+'px,-50%)';
+    pktTag.style.transform='translate('+x+'px,-50%) translateY(-20px)';
+  }
+  function litSeg(on){wire.className=on?'wire on':'wire';}
+  function nodeState(el,cls){el.className='node'+(cls?(' '+cls):'');el.style.display='block';}
+  function showAuth(x,txt){authpop.textContent=txt;authpop.style.left=x+'px';authpop.classList.add('show');}
+  function hideAuth(){authpop.classList.remove('show');}
+
+  function setBeat(html){beat.innerHTML=html;}
+
+  function stampReadout(){
+    var exp=verdictExposed(), ip=seenIP(), cc=seenCC();
+    seen.className='seen '+(exp?'exposed':'masked');
+    ipBig.textContent=ip;
+    ipTag.textContent=exp?('your real address · '+YOU.where+', exposed'):(region().name+' proxy exit · masked');
+    NODES.target.className='node '+(exp?'exposed':'masked');
+    NODES.you.className='node'+(exp?' exposed':' lit');
+  }
+  function pushLog(){
+    var exp=verdictExposed(), ip=seenIP(), cc=seenCC();
+    var row=document.createElement('div');
+    row.className='row '+(exp?'exp':'res');
+    row.innerHTML='<i></i><span class="mut">GET</span> /ip <span class="mut">200</span> origin=<b>'+ip+'</b> <span class="mut">'+cc+'</span>';
+    logRows.insertBefore(row,logRows.firstChild);
+    while(logRows.children.length>4){logRows.removeChild(logRows.lastChild);}
+    var kids=logRows.children;
+    for(var i=0;i<kids.length;i++){kids[i].style.opacity=String(1-i*0.24);}
+  }
+
+  function renderConfig(){
+    var r=region();
+    if(mode==='direct'){
+      code.innerHTML='<span class="cl cmt"># no --proxy-server set</span>'+
+        '<span class="cl">options = ChromiumOptions()  <span class="cmt"># traffic leaves with your real IP</span></span>';
+      codeNote.textContent='Add a --proxy-server argument to route through a proxy instead.';
+    }else if(type==='http'){
+      code.innerHTML='<span class="cl">options.add_argument(<span class="arg">\'--proxy-server=http://user:pass@'+r.host+':8080\'</span>)</span>';
+      codeNote.textContent='Pydoll strips the credentials from the launch argument and answers the proxy’s 407 challenge with continue_with_auth for you.';
+    }else{
+      code.innerHTML='<span class="cl">forwarder = SOCKS5Forwarder(remote_host=<span class="arg">\''+r.host+'\'</span>, remote_port=1080, username=<span class="arg">\'user\'</span>, password=<span class="arg">\'pass\'</span>, local_port=1081)</span>'+
+        '<span class="cl">options.add_argument(<span class="arg">\'--proxy-server=socks5://127.0.0.1:1081\'</span>)</span>';
+      codeNote.textContent='Chrome can’t do SOCKS5 auth (crbug 40323993): it points at the local no-auth forwarder, which holds the credentials.';
+    }
+    g('proxyNm').textContent=type==='http'?'HTTP proxy':'SOCKS5 proxy';
+    g('proxySub').textContent=r.ip+' · '+r.cc;
+    g('youSub').textContent=YOU.ip+' · '+YOU.cc;
+  }
+
+  function paintControls(){
+    g('mDirect').className=mode==='direct'?'on':'';
+    g('mProxy').className=mode==='proxy'?'on':'';
+    g('tHttp').className=(mode==='proxy'&&type==='http')?'on':'';
+    g('tSocks').className=(mode==='proxy'&&type==='socks5')?'on':'';
+    g('regionBtn').textContent=region().name;
+  }
+
+  function resetVisual(){
+    ST=buildStations();
+    layout();
+    litSeg(false); hideAuth();
+    packet.className='packet'; packet.style.opacity='0';
+    pktTag.className='pktTag'; pktTag.style.opacity='0'; pktTag.textContent='GET /ip';
+    ST.forEach(function(st){nodeState(st.el,st.k==='you'?'':'');});
+    NODES.you.className='node';
+    setPacketX(ST[0].x);
+  }
+
+  // ---- the animated request ----
+  async function runOnce(my){
+    resetVisual();
+    var first=ST[0];
+    packet.style.transition='none'; setPacketX(first.x);
+    void packet.offsetWidth;
+    packet.style.transition='';
+    packet.style.opacity='1'; pktTag.style.opacity='1';
+    NODES.you.className='node lit';
+    setBeat(verdictExposed()
+      ? 'no proxy, the request leaves carrying <b>your real IP</b>'
+      : (type==='http' ? 'connecting to the HTTP proxy…' : 'Chrome connects to <b>127.0.0.1</b> with no auth…'));
+    await wait(U(360)); if(my!==gen)return;
+
+    // forward hops
+    for(var i=0;i<ST.length-1;i++){
+      litSeg(true);
+      packet.style.transition='transform '+U(720)+'ms cubic-bezier(.4,0,.2,1),opacity .25s,background .25s';
+      setPacketX(ST[i+1].x);
+      await wait(U(720)); if(my!==gen)return;
+      var st=ST[i+1];
+      if(st.k!=='target') st.el.className='node lit';
+
+      if(st.k==='fwd'){
+        showAuth(st.x,'🔒 user/pass handshake');
+        setBeat('the forwarder performs the <b>user/pass SOCKS5 handshake</b> with the remote proxy');
+        await wait(U(620)); if(my!==gen)return; hideAuth();
+      }else if(st.k==='proxy'&&type==='http'){
+        showAuth(st.x,'407 → continue_with_auth');
+        setBeat('proxy returns <b>407</b>; Pydoll answers with <b>continue_with_auth</b>, then it forwards');
+        await wait(U(620)); if(my!==gen)return; hideAuth();
+      }else if(st.k==='proxy'){
+        setBeat('remote proxy <b>authenticated</b>, forwarding to the target');
+        await wait(U(360)); if(my!==gen)return;
+      }
+    }
+
+    // arrival: the target logs whoever it saw
+    stampReadout(); pushLog();
+    setBeat(verdictExposed()
+      ? 'httpbin logs <b>your real address</b>, you are exposed'
+      : 'httpbin logs the <b>proxy exit IP</b>, you are masked');
+    await wait(U(720)); if(my!==gen)return;
+
+    // response travels back carrying {"origin": ...}
+    var exp=verdictExposed();
+    packet.className='packet '+(exp?'exp':'res');
+    pktTag.className='pktTag '+(exp?'exp':'res');
+    pktTag.textContent='origin: '+seenIP();
+    setBeat('response <b>{"origin": "'+seenIP()+'"}</b> travels back to your Chrome');
+    for(var j=ST.length-1;j>0;j--){
+      packet.style.transition='transform '+U(560)+'ms cubic-bezier(.4,0,.2,1),opacity .25s,background .25s';
+      setPacketX(ST[j-1].x);
+      await wait(U(560)); if(my!==gen)return;
+      if(j-1>0) ST[j-1].el.className='node lit';
+    }
+    litSeg(false);
+    packet.style.opacity='0'; pktTag.style.opacity='0';
+    await wait(U(500));
+  }
+
+  async function loop(my){
+    while(my===gen){
+      await runOnce(my);
+      if(my!==gen)break;
+      await wait(U(1200));
+    }
+  }
+
+  function renderStatic(){
+    resetVisual();
+    ST.forEach(function(st){st.el.className='node lit';});
+    stampReadout(); pushLog();
+    setBeat(verdictExposed()
+      ? 'Direct route: the target logs <b>your real IP</b>.'
+      : 'Through the '+(type==='http'?'HTTP':'SOCKS5')+' proxy: the target logs the <b>proxy exit IP</b>.');
+    packet.style.opacity='0'; pktTag.style.opacity='0';
+  }
+
+  function render(){
+    gen++;
+    var my=gen;
+    ST=buildStations();
+    layout();
+    renderConfig();
+    paintControls();
+    if(reduce){ renderStatic(); }
+    else { loop(my); }
+  }
+
+  // ---- controls ----
+  g('mDirect').addEventListener('click',function(){ if(mode==='direct')return; mode='direct'; render(); });
+  g('mProxy').addEventListener('click',function(){ if(mode==='proxy')return; mode='proxy'; render(); });
+  g('tHttp').addEventListener('click',function(){ if(mode==='proxy'&&type==='http')return; mode='proxy'; type='http'; render(); });
+  g('tSocks').addEventListener('click',function(){ if(mode==='proxy'&&type==='socks5')return; mode='proxy'; type='socks5'; render(); });
+  g('regionBtn').addEventListener('click',function(){ ri=(ri+1)%REGIONS.length; render(); });
+
+  var rt=null;
+  window.addEventListener('resize',function(){ if(rt)clearTimeout(rt); rt=setTimeout(render,200); });
+  window.addEventListener('load',function(){ setTimeout(render,60); });
+  render();
 })();
 </script>
 <script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>

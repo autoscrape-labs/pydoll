@@ -6,7 +6,7 @@ You only need selectors for `query()`. The `find()` method takes plain attribute
 
 Try it: type a selector below and the matching elements light up. It runs the same `querySelectorAll` / XPath the browser does, so what matches here matches in your automation.
 
-<iframe src="/docs/resources/visuals/selector-playground.html" aria-label="Type a CSS or XPath selector and see which elements it matches" style="width: 100%; height: 500px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/selector-playground.html" aria-label="Type a CSS or XPath selector and see which elements it matches" style="width: 100%; height: 500px; border: 0;" loading="lazy"></iframe>
 
 ```python
 import asyncio

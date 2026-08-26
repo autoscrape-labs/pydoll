@@ -35,7 +35,7 @@ await field.type_text('search query', humanize=True)
 
 在下面输入你自己的文本，两种方式都跑一遍。带 `humanize=True` 时节奏会变化、偶尔打错的字会被修正，所以每次运行都不一样；不带时，每个间隔都是固定的 50 毫秒。
 
-<iframe src="/docs/resources/visuals/keyboard-humanize.html" aria-label="Interactive humanized typing: type text and watch it typed with human rhythm and corrected typos" style="width: 100%; height: 350px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/keyboard-humanize.html" aria-label="Interactive humanized typing: type text and watch it typed with human rhythm and corrected typos" style="width: 100%; height: 350px; border: 0;" loading="lazy"></iframe>
 
 如果你只需要文本出现、并不关心逐键事件，`insert_text` 会把整个字符串一次性粘贴进去：
 

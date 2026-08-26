@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TCP three-way handshake</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+<style>
+  :root{
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;--panel2:#191c20;
+    --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
+    --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--indigo-dim:rgba(110,123,255,.13);
+    --pass:#35e0a1;--pass-dim:rgba(53,224,161,.12);
+    --amber:#f5b544;--amber-dim:rgba(245,181,68,.13);
+    --danger:#ff6b6b;--danger-dim:rgba(255,107,107,.12);
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
+  .widget{border:1px solid var(--line);padding:16px 18px}
+  .lead{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:14px;line-height:1.55}
+  .lead b{color:var(--ink)}
+
+  .stage{position:relative;height:372px;border:1px solid var(--line2);background:var(--bg2);overflow:hidden}
+  svg#wire{position:absolute;left:0;top:0;display:block}
+  .lifeline{stroke:var(--line2);stroke-width:1.4;stroke-dasharray:2 5}
+  .guide{stroke:var(--line2);stroke-width:1.4;fill:none;opacity:.5;transition:stroke .25s,opacity .25s}
+  .guide.done{stroke:var(--indigo);opacity:.5}
+  .guide.active{stroke:var(--indigo2);opacity:1;stroke-width:1.8}
+  .estline{stroke:var(--pass);stroke-width:1.8;opacity:0;transition:opacity .4s}
+  .estline.on{opacity:.8}
+  .ev{fill:var(--faint);opacity:0;transition:opacity .25s,fill .25s}
+  .ev.on{opacity:1;fill:var(--indigo2)}
+
+  .peer{position:absolute;top:7px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;z-index:5}
+  .peer .box{display:flex;align-items:center;gap:8px;border:1px solid var(--line2);background:var(--panel);padding:6px 12px}
+  .peer .box svg{width:15px;height:15px;color:var(--indigo2);flex:none}
+  .peer .nm{font-family:var(--sans);font-weight:700;font-size:12.5px}
+  .badge{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;padding:3px 8px;border:1px solid;white-space:nowrap;text-transform:uppercase;transition:color .3s,border-color .3s,background .3s}
+  .badge.idle{color:var(--faint);border-color:var(--line2);background:var(--bg2)}
+  .badge.wait{color:var(--amber);border-color:rgba(245,181,68,.45);background:var(--amber-dim)}
+  .badge.ok{color:var(--pass);border-color:rgba(53,224,161,.45);background:var(--pass-dim)}
+
+  .pkt{position:absolute;left:0;top:0;display:flex;align-items:center;gap:7px;white-space:nowrap;z-index:6;opacity:0;
+    font-family:var(--mono);font-size:10.5px;padding:5px 10px;border:1px solid var(--indigo);
+    background:var(--panel);color:var(--ink);box-shadow:0 0 0 3px var(--indigo-dim);transition:opacity .3s,box-shadow .3s}
+  .pkt b{color:var(--indigo2);font-weight:700;letter-spacing:.04em}
+  .pkt .n{color:var(--dim)}
+  .pkt.inflight{box-shadow:0 0 15px 2px rgba(110,123,255,.4),0 0 0 3px var(--indigo-dim)}
+
+  .estlbl{position:absolute;transform:translate(-50%,-50%);z-index:6;text-align:center;opacity:0;transition:opacity .4s;pointer-events:none}
+  .estlbl.on{opacity:1}
+  .estlbl .t{font-family:var(--sans);font-weight:800;font-size:12px;color:var(--pass);letter-spacing:.04em}
+  .estlbl .s{font-family:var(--mono);font-size:9.5px;color:var(--dim);margin-top:2px}
+
+  .narr{margin-top:13px;font-family:var(--mono);font-size:11px;color:var(--dim);line-height:1.55;min-height:50px;border-left:2px solid var(--line2);padding-left:11px;transition:border-color .3s}
+  .narr b{color:var(--ink)} .narr code{color:var(--indigo2)}
+
+  .ledger{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}
+  .chip{flex:1;min-width:118px;border:1px solid var(--line);background:var(--bg2);padding:7px 11px;opacity:.38;transition:opacity .35s,border-color .35s}
+  .chip.on{opacity:1;border-color:var(--indigo)}
+  .chip .k{font-family:var(--mono);font-size:9px;color:var(--faint);text-transform:uppercase;letter-spacing:.04em}
+  .chip .v{font-family:var(--mono);font-size:15px;color:var(--indigo2);font-weight:600;margin-top:3px}
+
+  .controls{display:flex;align-items:center;gap:8px;margin-top:15px;flex-wrap:wrap}
+  button.btn{font-family:var(--mono);font-size:12px;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:8px 13px;cursor:pointer;transition:.15s}
+  button.btn:hover:not(:disabled){border-color:var(--indigo);color:#fff}
+  button.btn:disabled{opacity:.35;cursor:default}
+  button.btn.primary{border-color:var(--indigo);color:var(--indigo2)}
+  .step{font-family:var(--mono);font-size:11px;color:var(--dim);margin-left:4px}
+  .step b{color:var(--ink)}
+  .foot{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:13px;line-height:1.55}
+
+  @media(max-width:480px){ .pkt{font-size:9px;padding:4px 7px;gap:5px} .chip{min-width:100%} }
+  @media (prefers-reduced-motion:reduce){
+    .pkt{transition:none} .estline,.badge,.ev,.chip,.guide,.estlbl{transition:none}
+  }
+
+  /* theme-matched thin scrollbars for overflow-x boxes (replaces the default white bar) */
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--line2)}
+  ::-webkit-scrollbar-thumb:hover{background:var(--faint)}
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="lead">Watch TCP open a connection. Three segments cross the wire in order, and each side's state machine advances as they land. Numbers are concrete (client ISN <b>x=1000</b>, server ISN <b>y=3000</b>) so you can see <b>ack=x+1</b> and <b>ack=y+1</b> derived. Press <b>Replay</b>, or walk it with <b>Prev</b> / <b>Next</b>.</div>
+
+  <div class="stage" id="stage">
+    <svg id="wire" aria-hidden="true">
+      <defs>
+        <marker id="ahF" markerWidth="7.5" markerHeight="7.5" refX="5.6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="rgba(244,245,247,.28)"/></marker>
+        <marker id="ahA" markerWidth="7.5" markerHeight="7.5" refX="5.6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#6e7bff"/></marker>
+        <marker id="ahG" markerWidth="7.5" markerHeight="7.5" refX="5.6" refY="3" orient="auto-start-reverse"><path d="M0,0 L6,3 L0,6 Z" fill="#35e0a1"/></marker>
+      </defs>
+      <line id="llC" class="lifeline"/>
+      <line id="llS" class="lifeline"/>
+      <line id="g0" class="guide" marker-end="url(#ahF)"/>
+      <line id="g1" class="guide" marker-end="url(#ahF)"/>
+      <line id="g2" class="guide" marker-end="url(#ahF)"/>
+      <line id="gEst" class="estline" marker-start="url(#ahG)" marker-end="url(#ahG)"/>
+      <circle id="ev0d" class="ev" r="3.6"/><circle id="ev0a" class="ev" r="3.6"/>
+      <circle id="ev1d" class="ev" r="3.6"/><circle id="ev1a" class="ev" r="3.6"/>
+      <circle id="ev2d" class="ev" r="3.6"/><circle id="ev2a" class="ev" r="3.6"/>
+    </svg>
+
+    <div class="peer" id="peerC">
+      <div class="box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M2 20h20M9 16l-1 4M15 16l1 4"/></svg>
+        <span class="nm">Client</span>
+      </div>
+      <span class="badge idle" id="bC">CLOSED</span>
+    </div>
+    <div class="peer" id="peerS">
+      <div class="box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="16" height="7" rx="1.4"/><rect x="4" y="14" width="16" height="7" rx="1.4"/><path d="M7.5 6.5h.01M7.5 17.5h.01"/></svg>
+        <span class="nm">Server</span>
+      </div>
+      <span class="badge idle" id="bS">LISTEN</span>
+    </div>
+
+    <div class="pkt" id="pkt0"><b>SYN</b><span class="n">seq=1000</span></div>
+    <div class="pkt" id="pkt1"><b>SYN-ACK</b><span class="n">seq=3000</span><span class="n">ack=1001</span></div>
+    <div class="pkt" id="pkt2"><b>ACK</b><span class="n">ack=3001</span></div>
+
+    <div class="estlbl" id="estlbl"><div class="t">CONNECTION ESTABLISHED</div><div class="s">open in both directions</div></div>
+  </div>
+
+  <div class="narr" id="narr"></div>
+
+  <div class="ledger">
+    <div class="chip" id="lx"><div class="k">client ISN (x)</div><div class="v">1000</div></div>
+    <div class="chip" id="ly"><div class="k">server ISN (y)</div><div class="v">3000</div></div>
+    <div class="chip" id="la1"><div class="k">ack = x + 1</div><div class="v">1001</div></div>
+    <div class="chip" id="la2"><div class="k">ack = y + 1</div><div class="v">3001</div></div>
+  </div>
+
+  <div class="controls">
+    <button class="btn primary" id="replay">Replay</button>
+    <button class="btn" id="prev">Prev</button>
+    <button class="btn" id="next">Next</button>
+    <span class="step" id="step">step <b>0</b> / 3</span>
+  </div>
+
+  <div class="foot">The OS kernel's TCP stack runs this handshake, not the browser's JavaScript. The seq/ack values are illustrative; real ISNs are randomized (RFC 6528). The SYN also carries the TCP options (MSS, window scale, SACK, timestamps) that form the OS-level TCP fingerprint.</div>
+</div>
+
+<script>
+(function(){
+  var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  function g(id){return document.getElementById(id);}
+  var stage=g('stage'), svg=g('wire');
+  var tokens=[g('pkt0'),g('pkt1'),g('pkt2')];
+  var guides=[g('g0'),g('g1'),g('g2')];
+
+  var LL_TOP=60, LL_BOT=344, BANNER_Y=326, H=372;
+  var LANES=[
+    {from:'C',to:'S', y0:88,  y1:138},
+    {from:'S',to:'C', y0:166, y1:216},
+    {from:'C',to:'S', y0:244, y1:294}
+  ];
+  var FLIGHT=760, GAP=360, HOLD=2000;
+
+  function lerp(a,b,t){ return a+(b-a)*t; }
+  function setLine(el,x1,y1,x2,y2){ el.setAttribute('x1',x1);el.setAttribute('y1',y1);el.setAttribute('x2',x2);el.setAttribute('y2',y2); }
+  function setC(el,x,y){ el.setAttribute('cx',x);el.setAttribute('cy',y); }
+  function tokPos(el,x,y){ el.style.transform='translate(-50%,-50%) translate('+x+'px,'+y+'px)'; }
+
+  var cX=90, sX=400;
+  function layout(){
+    var W=stage.clientWidth;
+    svg.setAttribute('width',W); svg.setAttribute('height',H);
+    var off=Math.max(84, Math.min(W*0.18,150));
+    cX=off; sX=W-off;
+    g('peerC').style.left=cX+'px'; g('peerS').style.left=sX+'px';
+    setLine(g('llC'),cX,LL_TOP,cX,LL_BOT);
+    setLine(g('llS'),sX,LL_TOP,sX,LL_BOT);
+    for(var i=0;i<3;i++){
+      var L=LANES[i];
+      var fx=L.from==='C'?cX:sX, tx=L.to==='C'?cX:sX;
+      L.fx=fx; L.fy=L.y0; L.tx=tx; L.ty=L.y1;
+      L.tsx=lerp(fx,tx,0.04); L.tsy=lerp(L.y0,L.y1,0.04);
+      L.tex=lerp(fx,tx,0.9);  L.tey=lerp(L.y0,L.y1,0.9);
+      setLine(guides[i],fx,L.y0,tx,L.y1);
+      setC(g('ev'+i+'d'),fx,L.y0); setC(g('ev'+i+'a'),tx,L.y1);
+    }
+    setLine(g('gEst'),cX,BANNER_Y,sX,BANNER_Y);
+    g('estlbl').style.left=((cX+sX)/2)+'px'; g('estlbl').style.top=(BANNER_Y-22)+'px';
+    applyStaticState(cur);
+  }
+
+  function badgeCls(s){ return s==='ESTABLISHED'?'ok':(s==='CLOSED'||s==='LISTEN')?'idle':'wait'; }
+  function setBadge(who,s){ var el=g('b'+who); el.textContent=s; el.className='badge '+badgeCls(s); }
+  function badgesForStep(k){
+    setBadge('C', k>=2?'ESTABLISHED':(k>=1?'SYN-SENT':'CLOSED'));
+    setBadge('S', k>=3?'ESTABLISHED':(k>=1?'SYN-RECEIVED':'LISTEN'));
+  }
+  function ledgerForStep(k){
+    g('lx').classList.toggle('on',k>=1);
+    g('ly').classList.toggle('on',k>=2);
+    g('la1').classList.toggle('on',k>=2);
+    g('la2').classList.toggle('on',k>=3);
+  }
+  function setEvent(i,on){ g('ev'+i+'d').classList.toggle('on',on); g('ev'+i+'a').classList.toggle('on',on); }
+  function setMarker(i,id){ guides[i].setAttribute('marker-end','url(#'+id+')'); }
+  function showBanner(on){ g('gEst').classList.toggle('on',on); g('estlbl').classList.toggle('on',on); }
+
+  var NARR=[
+    'Idle. The client is <b>CLOSED</b>, the server is <b>LISTEN</b>. No connection yet.',
+    'Step 1, <b>SYN</b>. The client picks a random ISN <code>x=1000</code> and sends <code>SYN(seq=1000)</code> with its TCP options. Client becomes <b>SYN-SENT</b>; the server receives it and becomes <b>SYN-RECEIVED</b>.',
+    'Step 2, <b>SYN-ACK</b>. The server picks ISN <code>y=3000</code> and replies <code>SYN-ACK(seq=3000, ack=x+1=1001)</code>. The client receives it and becomes <b>ESTABLISHED</b>.',
+    'Step 3, <b>ACK</b>. The client sends <code>ACK(ack=y+1=3001)</code>. The server receives it and becomes <b>ESTABLISHED</b>. The connection is open in both directions.'
+  ];
+  function setNarr(k){ g('narr').innerHTML=NARR[k]; }
+  function refreshStepUI(){ g('step').innerHTML='step <b>'+cur+'</b> / 3'; g('prev').disabled=cur<=0; g('next').disabled=cur>=3; }
+
+  var cur=0, timers=[], looping=false;
+  function stopTimers(){ timers.forEach(clearTimeout); timers=[]; }
+
+  function applyStaticState(k){
+    stopTimers();
+    cur=k;
+    badgesForStep(k); ledgerForStep(k);
+    for(var i=0;i<3;i++){
+      var landed=(i+1)<=k, L=LANES[i], tok=tokens[i];
+      guides[i].className='guide'+(landed?' done':'');
+      setMarker(i, landed?'ahA':'ahF');
+      setEvent(i,landed);
+      tok.classList.remove('inflight');
+      tok.style.transition='none';
+      if(landed){ tokPos(tok,L.tex,L.tey); tok.style.opacity='1'; }
+      else{ tokPos(tok,L.tsx!=null?L.tsx:L.fx,L.tsy!=null?L.tsy:L.fy); tok.style.opacity='0'; }
+    }
+    showBanner(k>=3);
+    setNarr(k); refreshStepUI();
+  }
+
+  function animatePacket(i, done){
+    var idx=i-1, L=LANES[idx], tok=tokens[idx];
+    setNarr(i);
+    if(idx===0) setBadge('C','SYN-SENT');
+    guides[idx].className='guide active'; setMarker(idx,'ahA');
+    g('ev'+idx+'d').classList.add('on');
+    tok.style.transition='none'; tok.style.opacity='1'; tok.classList.add('inflight');
+    tokPos(tok,L.tsx,L.tsy);
+    void tok.offsetWidth;
+    function land(){
+      if(idx===0) setBadge('S','SYN-RECEIVED');
+      if(idx===1) setBadge('C','ESTABLISHED');
+      if(idx===2){ setBadge('S','ESTABLISHED'); showBanner(true); }
+      ledgerForStep(i);
+      g('ev'+idx+'a').classList.add('on');
+      guides[idx].className='guide done';
+      tok.classList.remove('inflight');
+      cur=i; refreshStepUI();
+      if(done) done();
+    }
+    if(reduce){ tokPos(tok,L.tex,L.tey); land(); return; }
+    tok.style.transition='transform '+FLIGHT+'ms cubic-bezier(.45,.05,.35,1)';
+    requestAnimationFrame(function(){ tokPos(tok,L.tex,L.tey); });
+    timers.push(setTimeout(land, FLIGHT+30));
+  }
+
+  function seqRun(i){
+    animatePacket(i, function(){
+      if(i<3){ timers.push(setTimeout(function(){ seqRun(i+1); }, GAP)); }
+      else if(looping){ timers.push(setTimeout(function(){ if(looping) play(); }, HOLD)); }
+    });
+  }
+  function play(){
+    stopTimers();
+    if(reduce){ looping=false; applyStaticState(3); return; }
+    looping=false; applyStaticState(0); seqRun(1);
+  }
+
+  g('replay').addEventListener('click', play);
+  g('next').addEventListener('click', function(){
+    if(cur>=3) return; looping=false; stopTimers();
+    var target=cur+1; applyStaticState(cur); animatePacket(target);
+  });
+  g('prev').addEventListener('click', function(){
+    if(cur<=0) return; looping=false; stopTimers(); applyStaticState(cur-1);
+  });
+
+  window.addEventListener('resize', layout);
+  window.addEventListener('load', function(){
+    layout();
+    if(reduce){ applyStaticState(3); }
+    else{ timers.push(setTimeout(play, 450)); }
+  });
+})();
+</script>
+<script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>
+</body>
+</html>

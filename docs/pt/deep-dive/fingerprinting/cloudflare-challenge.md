@@ -9,6 +9,8 @@ Ela aplica o fingerprinting de [rede](network-fingerprinting.md) e de [navegador
 </p>
 <p align="center"><sub>Chrome headless passando por um managed challenge ao vivo, gravado com o CDP screencast (<code>Page.startScreencast</code>). O interstício está em português porque o locale do perfil combina com o IP de saída brasileiro, a mesma coerência que o challenge verifica.</sub></p>
 
+<iframe scrolling="no" src="/docs/resources/visuals/cloudflare-matrix.html" aria-label="A coherent headful identity passes Cloudflare; flip any single field (IP, host OS, Chrome version, headless) and a different layer catches it, so only coherence of everything passes" style="width: 100%; height: 760px; border: 0;" loading="lazy"></iframe>
+
 ## O teste controlado
 
 Uma máquina, um binário do Chrome 151, um IP residencial. As únicas coisas que mudam entre as execuções são o perfil e a flag de headless; [`apply_fingerprint()`](../../stealth/fingerprint-injection.md) é aplicado antes de navegar.

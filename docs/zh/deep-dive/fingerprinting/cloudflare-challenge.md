@@ -9,6 +9,8 @@ Cloudflare 的托管挑战，也就是那个 "Just a moment…" 过渡页，是�
 </p>
 <p align="center"><sub>Headless Chrome 通过一个实时的托管挑战，使用 CDP 屏幕录制（<code>Page.startScreencast</code>）录制。过渡页之所以是葡萄牙语，是因为 profile 的 locale 与巴西的出口 IP 相匹配，这正是挑战所检查的那种一致性。</sub></p>
 
+<iframe scrolling="no" src="/docs/resources/visuals/cloudflare-matrix.html" aria-label="A coherent headful identity passes Cloudflare; flip any single field (IP, host OS, Chrome version, headless) and a different layer catches it, so only coherence of everything passes" style="width: 100%; height: 760px; border: 0;" loading="lazy"></iframe>
+
 ## 受控测试
 
 一台机器，一个 Chrome 151 二进制文件，一个住宅 IP。各次运行之间唯一变化的就是 profile 和 headless 标志；[`apply_fingerprint()`](../../stealth/fingerprint-injection.md) 在导航之前应用。

@@ -20,17 +20,7 @@ chrome --remote-debugging-port=9222
 
 Pydoll 连接到那个 WebSocket，并在整个会话期间保持连接打开。这个通道是双向的：你的代码向浏览器发送命令，浏览器则在事件发生的瞬间通过同一条连接把它们推回给你。
 
-```mermaid
-sequenceDiagram
-    participant App as 你的代码
-    participant WS as WebSocket
-    participant Browser as Chrome
-
-    App ->> WS: command: Page.navigate
-    WS ->> Browser: 执行它
-    Browser -->> WS: event: Page.loadEventFired
-    WS -->> App: 投递该事件
-```
+<iframe scrolling="no" src="/docs/resources/visuals/cdp-connection.html" aria-label="Pydoll and Chrome exchange framed JSON over one WebSocket: commands are matched to their responses by id and resolved inline, while unsolicited events flow through a separate queue drained to callbacks" style="width: 100%; height: 560px; border: 0;" loading="lazy"></iframe>
 
 对自动化而言，一条持久的 WebSocket 比旧协议所用的请求/响应式 HTTP 端点更合适：浏览器会在事情发生的那一刻通知你，而不用你去轮询才能知道。
 

@@ -4,7 +4,7 @@
 
 这是[网络监控](network-monitoring.md)的主动版本，后者只观察流量，而拦截可以改变它。
 
-<iframe src="/docs/resources/visuals/request-lifecycle.html" aria-label="What happens to an intercepted request under continue, block, or fulfill" style="width: 100%; height: 400px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/request-lifecycle.html" aria-label="What happens to an intercepted request under continue, block, or fulfill" style="width: 100%; height: 400px; border: 0;" loading="lazy"></iframe>
 
 试试每个按钮：`continue_request()` 让请求到达服务器，`fail_request()` 丢弃它，`fulfill_request()` 由你的处理函数应答，完全不联系服务器。
 

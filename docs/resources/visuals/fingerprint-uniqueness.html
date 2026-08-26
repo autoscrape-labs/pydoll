@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Fingerprint uniqueness and consistency</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+<style>
+  :root{
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;--panel2:#191c20;
+    --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
+    --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--indigo-dim:rgba(110,123,255,.13);
+    --pass:#35e0a1;--pass-dim:rgba(53,224,161,.12);
+    --amber:#f5b544;--amber-dim:rgba(245,181,68,.13);
+    --danger:#ff6b6b;--danger-dim:rgba(255,107,107,.12);
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
+  .widget{border:1px solid var(--line);padding:16px 18px}
+  .lead{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:16px;line-height:1.55}
+  .lead b{color:var(--ink)} .lead .u{color:var(--indigo2)} .lead .x{color:var(--danger)}
+
+  .sect{border:1px solid var(--line2);background:var(--bg2);margin-bottom:15px}
+  .sect:last-child{margin-bottom:0}
+  .shead{display:flex;align-items:center;gap:9px;padding:9px 12px;border-bottom:1px solid var(--line);background:var(--panel2);flex-wrap:wrap}
+  .shead .nm{font-family:var(--sans);font-weight:700;font-size:12.5px}
+  .shead .code{font-family:var(--mono);font-size:9px;color:var(--faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .shead .vchip{margin-left:auto;font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;padding:3px 10px;border:1px solid;white-space:nowrap;transition:.3s}
+  .vchip.ok{color:var(--pass);border-color:rgba(53,224,161,.45);background:var(--pass-dim)}
+  .vchip.bad{color:var(--danger);border-color:rgba(255,107,107,.45);background:var(--danger-dim)}
+  .body{padding:13px 13px 14px}
+
+  /* ---- signal tiles ---- */
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+  @media(max-width:640px){.grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:420px){.grid{grid-template-columns:1fr}}
+  .tile{position:relative;border:1px solid var(--line2);background:var(--panel);padding:9px 11px 10px;display:flex;flex-direction:column;gap:6px;
+    cursor:pointer;text-align:left;font:inherit;color:inherit;transition:.18s;overflow:hidden;min-width:0}
+  .tile:hover{border-color:var(--indigo)}
+  .tile:before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--indigo);opacity:0;transition:opacity .25s}
+  .tile.read:before{opacity:1}
+  .tile .api{font-family:var(--mono);font-size:9px;color:var(--dim);display:flex;align-items:center;gap:6px;min-width:0}
+  .tile .api .nmtxt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+  .tile .inc{width:12px;height:12px;border:1.4px solid var(--indigo);flex:none;display:grid;place-items:center}
+  .tile .inc svg{width:8px;height:8px;color:var(--indigo);opacity:1}
+  .tile .val{font-family:var(--sans);font-weight:700;font-size:12px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tile .ent{display:flex;align-items:center;gap:8px;margin-top:auto}
+  .tile .bar{flex:1;height:4px;background:var(--line);position:relative;overflow:hidden}
+  .tile .bar i{position:absolute;left:0;top:0;bottom:0;background:var(--indigo);opacity:.32;transition:opacity .22s}
+  .tile.read .bar i{opacity:.95}
+  .tile .rk{font-family:var(--mono);font-size:9px;color:var(--faint);white-space:nowrap}
+  .tile .rk b{color:var(--dim);font-weight:600;transition:color .2s}
+  .tile.read .rk b{color:var(--indigo2)}
+  .tile.off{opacity:.42}
+  .tile.off:before{opacity:0}
+  .tile.off .inc{border-color:var(--faint)} .tile.off .inc svg{opacity:0}
+  .tile.off .val{color:var(--dim)}
+  .tile.off .bar i{opacity:.12}
+
+  .combine{text-align:center;font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.03em;margin:15px 0 11px}
+  .combine b{color:var(--indigo2);font-weight:500}
+
+  /* ---- uniqueness readout ---- */
+  .uni{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:6px}
+  .uni .big{font-family:var(--sans);font-weight:800;font-size:15px;color:var(--dim);letter-spacing:.02em}
+  .uni .big b{font-size:30px;color:var(--indigo2);line-height:1}
+  .uni .sub{font-family:var(--mono);font-size:10px;color:var(--faint)}
+  .uni .sub b{color:var(--dim);font-weight:600}
+  .meter{position:relative;height:26px;border:1px solid var(--line);display:flex;margin-top:16px}
+  .zone{height:100%} .zone.a{background:var(--pass-dim)} .zone.b{background:var(--amber-dim)} .zone.c{background:var(--indigo-dim)}
+  .mark{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink);transition:left .28s cubic-bezier(.4,0,.2,1)}
+  .mark .bub{position:absolute;top:-21px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:10px;font-weight:600;color:var(--ink);
+    background:var(--panel2);border:1px solid var(--line2);padding:1px 7px;white-space:nowrap}
+  .zlbls{display:flex;font-family:var(--mono);font-size:9px;color:var(--faint);margin-top:6px;text-transform:uppercase;letter-spacing:.04em}
+  .zlbls span{text-align:center}
+  .unicap{font-family:var(--mono);font-size:10px;color:var(--faint);line-height:1.5;margin-top:13px}
+  .unicap b{color:var(--dim);font-weight:500}
+
+  .ctrls{display:flex;align-items:center;gap:12px;margin-top:13px;flex-wrap:wrap}
+  button.run{font-family:var(--mono);font-size:11.5px;font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:7px 13px;cursor:pointer;transition:.15s}
+  button.run:hover{border-color:var(--indigo);color:#fff}
+  .hint{font-family:var(--mono);font-size:10px;color:var(--faint);margin-left:auto;text-align:right}
+  .hint b{color:var(--dim);font-weight:500}
+
+  /* ---- consistency pairs ---- */
+  .pair{display:grid;grid-template-columns:1fr auto 1fr;align-items:stretch;border:1px solid var(--line2);background:var(--panel);margin-top:11px;transition:.3s}
+  .pair:first-child{margin-top:0}
+  .pair.bad{border-color:rgba(255,107,107,.4);background:var(--danger-dim)}
+  .pbox{padding:10px 12px;display:flex;flex-direction:column;gap:4px;min-width:0}
+  .pbox .plabel{font-family:var(--mono);font-size:8.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.06em}
+  .pbox .api{font-family:var(--mono);font-size:9px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pbox .pv{font-family:var(--sans);font-weight:700;font-size:13px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pbox .pr{font-family:var(--mono);font-size:9px;color:var(--faint)}
+  .pbox.spoof .pv{color:var(--danger)}
+  .pnode{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 12px;border-left:1px solid var(--line);border-right:1px solid var(--line);position:relative}
+  .pnode .op{font-family:var(--mono);font-weight:700;font-size:16px;line-height:1;color:var(--pass);transition:.25s}
+  .pnode .ol{font-family:var(--mono);font-size:7.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em;margin-top:3px}
+  .pair.bad .pnode .op{color:var(--danger)}
+  .pnode .ring{position:absolute;width:24px;height:24px;border:1.5px solid var(--pass);border-radius:50%;opacity:0;top:50%;left:50%;transform:translate(-50%,-50%)}
+  .pnode.pulse .ring{animation:pring 2.4s ease-out infinite}
+  @keyframes pring{0%{opacity:.55;transform:translate(-50%,-50%) scale(.55)}70%{opacity:0;transform:translate(-50%,-50%) scale(1.5)}100%{opacity:0}}
+  .ptog{grid-column:1 / -1;border-top:1px solid var(--line);display:flex;align-items:center;gap:10px;padding:8px 12px}
+  .ptog button{font-family:var(--mono);font-size:10.5px;color:var(--dim);background:var(--bg2);border:1px solid var(--line2);padding:5px 10px;cursor:pointer;transition:.15s}
+  .ptog button:hover{border-color:var(--indigo);color:#fff}
+  .ptog .note{font-family:var(--mono);font-size:9.5px;color:var(--faint);margin-left:auto;text-align:right}
+
+  .verdict{display:flex;align-items:flex-start;gap:12px;margin-top:13px;padding:13px 14px;border:1px solid var(--line);transition:.3s}
+  .verdict .chip{font-family:var(--mono);font-size:11.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:5px 11px;border:1px solid;flex:none;white-space:nowrap}
+  .verdict .txt{font-family:var(--mono);font-size:11px;color:var(--dim);line-height:1.55}
+  .verdict .txt b{color:var(--ink);font-weight:600}
+  .verdict.ok{background:var(--pass-dim);border-color:rgba(53,224,161,.3)}
+  .verdict.ok .chip{color:var(--pass);border-color:rgba(53,224,161,.5)} .verdict.ok .txt b{color:var(--pass)}
+  .verdict.bad{background:var(--danger-dim);border-color:rgba(255,107,107,.3)}
+  .verdict.bad .chip{color:var(--danger);border-color:rgba(255,107,107,.5)} .verdict.bad .txt b.hl{color:var(--danger)}
+
+  @media (prefers-reduced-motion:reduce){
+    .mark{transition:none}
+    .pnode.pulse .ring{animation:none}
+    .tile:before,.tile .bar i,.tile .rk b{transition:none}
+  }
+
+  /* theme-matched thin scrollbars for overflow-x boxes (replaces the default white bar) */
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--line2)}
+  ::-webkit-scrollbar-thumb:hover{background:var(--faint)}
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="lead">Every property below is <b>common</b> on its own. But read enough of them together and the combination points to <span class="u">one</span> browser in billions, that is how a site re-identifies you across visits. And if any two of them <span class="x">contradict</span>, you are flagged no matter how ordinary each value looks, that is how a bot gets blocked.</div>
+
+  <!-- ============ PANEL 1: UNIQUENESS ============ -->
+  <div class="sect">
+    <div class="shead">
+      <span class="nm">How unique are you?</span>
+      <span class="code">navigator · screen · canvas · WebGL · AudioContext · Intl</span>
+    </div>
+    <div class="body">
+      <div class="grid" id="grid"></div>
+
+      <div class="combine">&#9660;&nbsp; each signal adds a little <b>entropy</b>; stacked, they pick you out &nbsp;&#9660;</div>
+
+      <div class="uni">
+        <span class="big">1 in <b id="bignum">1</b></span>
+        <span class="sub"><b id="bitsv">0.0</b> bits of entropy &middot; <b id="onct">11</b> of 11 signals read</span>
+      </div>
+      <div class="meter" id="meter">
+        <div class="zone a" style="width:32%"></div>
+        <div class="zone b" style="width:35%"></div>
+        <div class="zone c" style="width:33%"></div>
+        <div class="mark" id="mark" style="left:0%"><span class="bub" id="bub">0.0 bits</span></div>
+      </div>
+      <div class="zlbls"><span style="width:32%">blends into the crowd</span><span style="width:35%">a narrowing crowd</span><span style="width:33%">near-unique</span></div>
+
+      <div class="unicap">Individually weak, together near-unique. A real user is unique too, so uniqueness alone does not mean "bot", it means <b>trackable</b>. Drop signals to see the crowd close back around you.</div>
+
+      <div class="ctrls">
+        <button class="run" id="replay">Replay read</button>
+        <button class="run" id="toggleAll">Drop the strong ones</button>
+        <span class="hint">click any signal to <b>include / exclude</b> it</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ PANEL 2: CONSISTENCY ============ -->
+  <div class="sect">
+    <div class="shead">
+      <span class="nm">One contradiction flags you</span>
+      <span class="code">cross-signal consistency check</span>
+      <span class="vchip ok" id="vchip">consistent</span>
+    </div>
+    <div class="body">
+      <div class="pair" id="pairP">
+        <div class="pbox">
+          <div class="plabel">declares</div>
+          <div class="api">navigator.userAgent</div>
+          <div class="pv">Windows NT 10.0</div>
+          <div class="pr">the UA string says Windows</div>
+        </div>
+        <div class="pnode pulse" id="nodeP"><span class="ring"></span><span class="op" id="opP">=</span><span class="ol">os</span></div>
+        <div class="pbox" id="boxP">
+          <div class="plabel">reports</div>
+          <div class="api">navigator.platform</div>
+          <div class="pv" id="pvP">Win32</div>
+          <div class="pr" id="prP">Win32 &middot; common (1 in 3)</div>
+        </div>
+        <div class="ptog">
+          <button id="togP">spoof platform &rarr; Linux</button>
+          <span class="note">each value is common on its own</span>
+        </div>
+      </div>
+
+      <div class="pair" id="pairL">
+        <div class="pbox">
+          <div class="plabel">declares</div>
+          <div class="api">Intl&hellip;resolvedOptions().timeZone</div>
+          <div class="pv">America/New_York</div>
+          <div class="pr">a US Eastern timezone</div>
+        </div>
+        <div class="pnode pulse" id="nodeL"><span class="ring"></span><span class="op" id="opL">=</span><span class="ol">locale</span></div>
+        <div class="pbox" id="boxL">
+          <div class="plabel">reports</div>
+          <div class="api">navigator.language</div>
+          <div class="pv" id="pvL">en-US</div>
+          <div class="pr" id="prL">en-US &middot; common (1 in 4)</div>
+        </div>
+        <div class="ptog">
+          <button id="togL">spoof language &rarr; zh-CN</button>
+          <span class="note">paired with a US IP and US timezone</span>
+        </div>
+      </div>
+
+      <div class="verdict ok" id="verdict">
+        <span class="chip" id="vchip2">consistent</span>
+        <span class="txt" id="vtxt"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
+  function g(id){return document.getElementById(id);}
+
+  // ---- the JS-visible signals, with plausible per-signal entropy (bits) ----
+  // bits chosen so ALL-ON sums to ~33.5 bits ~= 1 in 12 billion (essentially unique).
+  // naive bit-summing over-counts because signals correlate; the point is the shape,
+  // not a precise 1-in-N. Individual values stay common (low bits each).
+  var MAXBITS = 34, MAXPERSIG = 5.5;
+  var SIG = [
+    {id:'ua',   api:'navigator.userAgent',        val:'Chrome 128 · Win10',  bits:5.5, on:true},
+    {id:'cv',   api:'canvas.toDataURL()',          val:'hash 8f2a…',          bits:5.0, on:true},
+    {id:'gl',   api:'WEBGL_debug_renderer_info',   val:'ANGLE · NVIDIA RTX',  bits:4.5, on:true},
+    {id:'ft',   api:'document.fonts (enumerate)',  val:'142 fonts',                bits:4.0, on:true},
+    {id:'au',   api:'AudioContext',                val:'124.0434 hash',            bits:3.2, on:true},
+    {id:'sc',   api:'screen · devicePixelRatio', val:'1920×1080 @1',     bits:3.0, on:true},
+    {id:'tz',   api:'Intl…timeZone',          val:'America/New_York',         bits:2.6, on:true},
+    {id:'lg',   api:'navigator.languages',         val:'en-US, en',                bits:2.0, on:true},
+    {id:'hc',   api:'navigator.hardwareConcurrency', val:'8 cores',                bits:1.6, on:true},
+    {id:'dm',   api:'navigator.deviceMemory',      val:'8 GB',                     bits:1.4, on:true},
+    {id:'pf',   api:'navigator.platform',          val:'Win32',                    bits:0.7, on:true}
+  ];
+  var STRONG = {ua:1,cv:1,gl:1,ft:1}; // the "strong ones" the button drops
+
+  function pow2(b){ return Math.pow(2,b); }
+  function trimNum(x){ var r=Math.round(x*10)/10; return (r%1===0)?String(r|0):r.toFixed(1); }
+  function human(n){
+    if(n>=1e9) return trimNum(n/1e9)+' billion';
+    if(n>=1e6) return trimNum(n/1e6)+' million';
+    if(n>=1e3) return trimNum(n/1e3)+' thousand';
+    return String(Math.round(n));
+  }
+  function oneIn(bits){ // per-signal rarity, rounded
+    var k=Math.round(pow2(bits));
+    return k<2?'2':String(k);
+  }
+
+  // ---- build tiles ----
+  var grid=g('grid');
+  SIG.forEach(function(s){
+    var b=document.createElement('button');
+    b.className='tile'; b.type='button'; b.id='t_'+s.id;
+    b.setAttribute('aria-pressed','true');
+    b.innerHTML =
+      '<div class="api"><span class="inc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span><span class="nmtxt">'+s.api+'</span></div>'+
+      '<div class="val">'+s.val+'</div>'+
+      '<div class="ent"><span class="bar"><i style="width:'+(s.bits/MAXPERSIG*100).toFixed(0)+'%"></i></span>'+
+      '<span class="rk">1 in <b>'+oneIn(s.bits)+'</b> · '+s.bits.toFixed(1)+' bits</span></div>';
+    b.addEventListener('click',function(){ toggleSig(s); });
+    grid.appendChild(b);
+  });
+  function tileEl(s){ return g('t_'+s.id); }
+
+  // ---- uniqueness readout ----
+  function enabledCount(){ var n=0; SIG.forEach(function(s){ if(s.on)n++; }); return n; }
+  function setBits(b){
+    g('bignum').textContent = human(pow2(b));
+    g('bitsv').textContent = trimNum(b);
+    var pct = Math.max(0, Math.min(100, b/MAXBITS*100));
+    g('mark').style.left = pct+'%';
+    g('bub').textContent = trimNum(b)+' bits';
+  }
+  function refreshTileStates(){
+    SIG.forEach(function(s){
+      var el=tileEl(s);
+      el.classList.toggle('off', !s.on);
+      el.setAttribute('aria-pressed', s.on?'true':'false');
+    });
+    g('onct').textContent = enabledCount();
+  }
+
+  // ---- the "read sweep": entropy accumulates signal by signal, then loops in place ----
+  var timers=[], loopTimer=null;
+  function clearTimers(){ timers.forEach(clearTimeout); timers=[]; if(loopTimer){clearTimeout(loopTimer); loopTimer=null;} }
+  function sweep(){
+    clearTimers();
+    SIG.forEach(function(s){ tileEl(s).classList.remove('read'); });
+    var order = SIG.filter(function(s){ return s.on; });
+    var cum=0;
+    setBits(0);
+    if(reduce){
+      order.forEach(function(s){ cum+=s.bits; tileEl(s).classList.add('read'); });
+      setBits(cum);
+      return;
+    }
+    var i=0;
+    function step(){
+      if(i>=order.length){ return; }
+      var s=order[i]; cum+=s.bits;
+      tileEl(s).classList.add('read');
+      setBits(cum);
+      i++;
+      timers.push(setTimeout(step, 210));
+    }
+    timers.push(setTimeout(step, 300));
+  }
+
+  function toggleSig(s){ s.on=!s.on; refreshTileStates(); sweep(); }
+
+  g('replay').addEventListener('click', sweep);
+  var dropped=false;
+  g('toggleAll').addEventListener('click', function(){
+    dropped=!dropped;
+    SIG.forEach(function(s){ if(STRONG[s.id]) s.on=!dropped; });
+    this.textContent = dropped ? 'Restore all signals' : 'Drop the strong ones';
+    refreshTileStates(); sweep();
+  });
+
+  // ================= consistency =================
+  var C={ pf:true, lg:true }; // true = consistent value
+  var PLAT={ ok:{v:'Win32',    r:'Win32 · common (1 in 3)'},        bad:{v:'Linux x86_64', r:'Linux x86_64 · common (1 in 6)'} };
+  var LANG={ ok:{v:'en-US',    r:'en-US · common (1 in 4)'},        bad:{v:'zh-CN',        r:'zh-CN · common (1 in 9)'} };
+
+  function renderConsistency(){
+    // platform pair
+    var pOk=C.pf, pd=pOk?PLAT.ok:PLAT.bad;
+    g('pvP').textContent=pd.v; g('prP').innerHTML=pd.r;
+    g('boxP').classList.toggle('spoof',!pOk);
+    g('pairP').classList.toggle('bad',!pOk);
+    g('opP').textContent=pOk?'=':'≠';
+    g('nodeP').classList.toggle('pulse', pOk && !reduce);
+    g('togP').innerHTML = pOk ? 'spoof platform &rarr; Linux' : 'restore platform &rarr; Win32';
+
+    // language pair
+    var lOk=C.lg, ld=lOk?LANG.ok:LANG.bad;
+    g('pvL').textContent=ld.v; g('prL').innerHTML=ld.r;
+    g('boxL').classList.toggle('spoof',!lOk);
+    g('pairL').classList.toggle('bad',!lOk);
+    g('opL').textContent=lOk?'=':'≠';
+    g('nodeL').classList.toggle('pulse', lOk && !reduce);
+    g('togL').innerHTML = lOk ? 'spoof language &rarr; zh-CN' : 'restore language &rarr; en-US';
+
+    // verdict
+    var consistent = C.pf && C.lg;
+    var v=g('verdict'), chip=g('vchip2'), chipTop=g('vchip'), txt=g('vtxt');
+    v.className='verdict '+(consistent?'ok':'bad');
+    chipTop.className='vchip '+(consistent?'ok':'bad');
+    chip.textContent = consistent?'consistent':'flagged';
+    chipTop.textContent = consistent?'consistent':'flagged';
+    if(consistent){
+      txt.innerHTML='Every value here is <b>individually common</b>, and the pairs agree. An ordinary Windows browser. Nothing contradicts, nothing to flag.';
+    }else{
+      var reasons=[];
+      if(!C.pf) reasons.push('a <b class="hl">Windows</b> User-Agent with a <b class="hl">Linux</b> platform cannot happen on a real device');
+      if(!C.lg) reasons.push('a US timezone (<b class="hl">America/New_York</b>) with a <b class="hl">zh-CN</b>-only language and a US IP contradicts the locale');
+      txt.innerHTML = reasons.join(', and ')+'. Each value is common on its own; the <b>contradiction</b> is the tell, no matter how ordinary either half looks.';
+    }
+  }
+  g('togP').addEventListener('click',function(){ C.pf=!C.pf; renderConsistency(); });
+  g('togL').addEventListener('click',function(){ C.lg=!C.lg; renderConsistency(); });
+
+  // ---- init ----
+  refreshTileStates();
+  renderConsistency();
+  window.addEventListener('load', function(){ setTimeout(sweep, 300); });
+  sweep();
+})();
+</script>
+<script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>
+</body>
+</html>

@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>First automation, read along</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+<style>
+  :root{
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;--panel2:#191c20;
+    --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
+    --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--indigo-dim:rgba(110,123,255,.13);
+    --pass:#35e0a1;--pass-dim:rgba(53,224,161,.12);
+    --amber:#f5b544;--amber-dim:rgba(245,181,68,.13);
+    --danger:#ff6b6b;--danger-dim:rgba(255,107,107,.12);
+    --str:#cba36f;
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
+  .widget{border:1px solid var(--line);padding:16px 18px}
+  .lead{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:14px;line-height:1.55;max-width:70ch}
+  .lead b{color:var(--ink)}
+
+  .grid{display:grid;grid-template-columns:minmax(0,1.04fr) minmax(0,.96fr);gap:14px;align-items:start}
+  @media(max-width:640px){.grid{grid-template-columns:1fr}}
+
+  /* ---------- code panel ---------- */
+  .code{border:1px solid var(--line2);background:var(--bg2);overflow:hidden}
+  .cbar{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--panel2)}
+  .cbar .fn{font-family:var(--mono);font-size:10.5px;color:var(--dim)}
+  .cbar .lang{margin-left:auto;font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}
+  .lines{counter-reset:l;padding:8px 0;overflow-x:auto}
+  .cl{position:relative;display:block;font-family:var(--mono);font-size:11.5px;line-height:1.62;white-space:pre;color:var(--ink);
+      padding:0 14px 0 42px;border-left:2px solid transparent;transition:background .25s,border-color .25s,opacity .25s}
+  .cl::before{counter-increment:l;content:counter(l);position:absolute;left:0;top:0;width:32px;text-align:right;
+      color:var(--faint);opacity:.5;font-size:9.5px;padding-right:0}
+  .cl.done{border-left-color:rgba(53,224,161,.5)}
+  .cl.done::before{color:var(--pass);opacity:.55}
+  .cl.active{background:var(--indigo-dim);border-left-color:var(--indigo)}
+  .cl.active::before{color:var(--indigo2);opacity:1}
+  .cl .k{color:var(--indigo2)} .cl .s{color:var(--str)} .cl .n{color:var(--amber)}
+  .cl .t{color:var(--ink);font-weight:600} .cl .a{color:var(--dim)}
+  .cl.blank{min-height:1.62em}
+
+  /* ---------- browser column ---------- */
+  .bcol{display:flex;flex-direction:column;gap:11px;min-width:0}
+  .win{border:1px solid var(--line2);border-radius:9px;overflow:hidden;background:var(--panel)}
+  .chrome{display:flex;align-items:center;gap:9px;height:30px;padding:0 11px;background:var(--panel2);border-bottom:1px solid var(--line)}
+  .lights{display:flex;gap:6px}.lights i{width:9px;height:9px;border-radius:50%;display:block;transition:background .3s}
+  .lights i.r{background:#ff5f57}.lights i.y{background:#febc2e}.lights i.g{background:#28c840}
+  .chrome .tag{font-family:var(--mono);font-size:10.5px;color:var(--dim)}
+  .toolbar{display:flex;align-items:center;padding:6px 11px;border-bottom:1px solid var(--line);background:var(--panel2)}
+  .url{flex:1;min-width:0;display:flex;align-items:center;gap:7px;background:var(--bg2);border:1px solid var(--line);padding:4px 10px;
+       font-family:var(--mono);font-size:10.5px;color:var(--dim);white-space:nowrap;overflow:hidden}
+  .url svg{width:10px;height:10px;color:var(--pass);flex:none}
+  .url .ut{overflow:hidden;text-overflow:ellipsis}
+  .win.preboot .lights i{background:var(--faint)}
+  .win.preboot .tag{color:var(--faint)}
+
+  .page{position:relative;min-height:298px;display:flex;align-items:center;justify-content:center;padding:16px;overflow:hidden;background:var(--panel)}
+  .stage{width:100%;display:flex;align-items:center;justify-content:center}
+
+  .preboot-note{font-family:var(--mono);font-size:11px;color:var(--faint);text-align:center;line-height:1.6;
+      border:1px dashed var(--line2);padding:20px 22px;border-radius:8px}
+  .preboot-note b{color:var(--dim);font-weight:500}
+  .blank-note{font-family:var(--mono);font-size:11px;color:var(--faint)}
+
+  .loading{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:11.5px;color:var(--dim)}
+  .spin{display:inline-block;width:14px;height:14px;border:2px solid var(--line2);border-top-color:var(--indigo);border-radius:50%;animation:spin .7s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes popin{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+
+  /* login form */
+  .site{width:100%;max-width:340px}
+  .brand{font-family:var(--sans);font-weight:800;font-size:15px;color:var(--ink);text-align:center;margin-bottom:12px;letter-spacing:.01em}
+  .card{border:1px solid var(--line2);background:var(--bg2);padding:15px 15px 16px}
+  .ctitle{font-family:var(--sans);font-weight:700;font-size:12.5px;color:var(--dim);margin-bottom:11px}
+  .fld{display:block;position:relative;margin-bottom:11px}
+  .fl{display:block;font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);margin-bottom:4px}
+  .inp{display:flex;align-items:center;min-height:29px;background:var(--panel);border:1px solid var(--line2);padding:5px 9px;
+       font-family:var(--mono);font-size:12px;color:var(--ink);transition:border-color .25s,box-shadow .25s}
+  .inp .val{white-space:pre}
+  .inp .caret{width:1.5px;height:14px;background:var(--indigo2);opacity:0;margin-left:1px}
+  .inp.typing .caret{opacity:1;animation:blink .9s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+  .fld.located .inp{border-color:var(--indigo);box-shadow:0 0 0 3px var(--indigo-dim)}
+  .tagpop{position:absolute;right:0;top:-2px;font-family:var(--mono);font-size:8.5px;color:var(--indigo2);
+      background:var(--indigo-dim);border:1px solid rgba(110,123,255,.4);padding:1px 6px;white-space:nowrap;
+      opacity:0;animation:popin .3s ease-out forwards}
+  .signin{position:relative;width:100%;margin-top:2px;font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink);
+      background:var(--panel2);border:1px solid var(--line2);padding:8px 12px;cursor:default;transition:border-color .25s,box-shadow .25s,transform .08s}
+  .signin.located{border-color:var(--indigo);box-shadow:0 0 0 3px var(--indigo-dim)}
+  .signin.press{transform:translateY(1px);background:var(--indigo-dim)}
+  .btnwrap{position:relative}
+  .submitting{position:absolute;inset:0;background:rgba(15,17,19,.82);display:flex;align-items:center;justify-content:center;
+      gap:9px;font-family:var(--mono);font-size:11.5px;color:var(--dim)}
+
+  /* logged-in page */
+  .topbar{display:flex;align-items:center;gap:10px;padding-bottom:9px;margin-bottom:11px;border-bottom:1px solid var(--line)}
+  .brand.sm{font-size:12.5px;margin:0;text-align:left}
+  .logout{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:var(--dim);padding:2px 7px;border:1px solid transparent;transition:.25s}
+  .logout.hot{color:var(--pass);border-color:rgba(53,224,161,.45);background:var(--pass-dim)}
+  .chip{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.05em;padding:2px 8px;
+      border:1px solid;white-space:nowrap;opacity:0;animation:popin .35s ease-out forwards}
+  .chip.ok{color:var(--pass);border-color:rgba(53,224,161,.45);background:var(--pass-dim)}
+  .quotes{display:flex;flex-direction:column;gap:9px}
+  .quote{border:1px solid var(--line);background:var(--bg2);padding:9px 11px}
+  .quote .text{display:block;font-family:var(--sans);font-size:11px;color:var(--ink);line-height:1.45;
+      display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .quote .by{display:block;font-family:var(--mono);font-size:9.5px;color:var(--faint);margin-top:4px}
+  .quote .by .author{color:var(--dim)}
+  .quote .tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+  .quote .tag{font-family:var(--mono);font-size:8.5px;color:var(--faint);border:1px solid var(--line2);padding:1px 6px}
+  .site.reading .quote .text{animation:sweep 1s ease-out}
+  .site.reading .quote .author{animation:sweep 1s ease-out .12s}
+  .site.reading .quote .tag{animation:sweep 1s ease-out .22s}
+  .site.reading .quote:nth-child(2) .text{animation-delay:.18s}
+  .site.reading .quote:nth-child(2) .author{animation-delay:.3s}
+  .site.reading .quote:nth-child(2) .tag{animation-delay:.4s}
+  @keyframes sweep{0%{background:transparent}30%{background:var(--indigo-dim);box-shadow:0 0 0 2px var(--indigo-dim)}100%{background:transparent;box-shadow:none}}
+  .veil{position:absolute;inset:0;background:rgba(12,13,15,.74);display:flex;align-items:center;justify-content:center}
+  .veil span{font-family:var(--mono);font-size:11px;color:var(--pass);border:1px solid rgba(53,224,161,.4);
+      background:var(--pass-dim);padding:8px 13px;text-align:center}
+
+  /* cursor + ripple */
+  .cursor{position:absolute;left:0;top:0;width:15px;height:15px;pointer-events:none;z-index:6;opacity:0}
+  .cursor svg{width:15px;height:15px;fill:var(--ink);stroke:#000;stroke-width:.6}
+  .ripple{position:absolute;width:11px;height:11px;border:2px solid var(--pass);border-radius:50%;opacity:0;transform:translate(-50%,-50%);pointer-events:none;z-index:5}
+  .ripple.go{animation:rip .5s ease-out}
+  @keyframes rip{0%{opacity:.9;transform:translate(-50%,-50%) scale(.4)}100%{opacity:0;transform:translate(-50%,-50%) scale(3.2)}}
+
+  /* result + terminal cards */
+  .card2{border:1px solid var(--line2);background:var(--bg2)}
+  .c2head{display:flex;align-items:center;gap:8px;padding:7px 11px;border-bottom:1px solid var(--line);background:var(--panel2)}
+  .c2head .lbl{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint)}
+  .rtype{font-family:var(--mono);font-size:10px;color:var(--indigo2)}
+  .rn{margin-left:auto;font-family:var(--mono);font-size:9.5px;color:var(--dim)}
+  .rbody{padding:9px 11px;font-family:var(--mono);font-size:10px;color:var(--dim);line-height:1.5;overflow-x:auto}
+  .rnil{color:var(--faint)}
+  .robj{white-space:nowrap;opacity:0;animation:popin .4s ease-out forwards}
+  .robj+.robj{margin-top:4px;animation-delay:.12s}
+  .robj .rt{color:var(--indigo2);font-weight:600}.robj .rs{color:var(--str)}.robj .rp{color:var(--faint)}
+  .tdots{display:flex;gap:5px}.tdots i{width:8px;height:8px;border-radius:50%;display:block}
+  .tdots i.r{background:#ff5f57}.tdots i.y{background:#febc2e}.tdots i.g{background:#28c840}
+  .tt{font-family:var(--mono);font-size:9.5px;color:var(--faint)}
+  .tbody{padding:9px 11px;font-family:var(--mono);font-size:10.5px;color:var(--pass);line-height:1.6;min-height:20px;overflow-x:auto}
+  .tprompt{color:var(--faint)}
+  .tline{white-space:nowrap;opacity:0;animation:popin .35s ease-out forwards}
+  .tline:nth-child(2){animation-delay:.35s}
+  .tline .au{color:var(--ink)}
+
+  /* status + controls */
+  .status{font-family:var(--mono);font-size:11px;color:var(--dim);line-height:1.5;margin-top:14px;min-height:32px;
+      padding:9px 12px;border:1px solid var(--line);background:var(--bg2);display:flex;align-items:center;gap:9px}
+  .status .sd{width:6px;height:6px;border-radius:50%;background:var(--indigo);flex:none;box-shadow:0 0 0 4px var(--indigo-dim)}
+  .controls{display:flex;align-items:center;gap:8px;margin-top:11px;flex-wrap:wrap}
+  button.ctl{font-family:var(--mono);font-size:11.5px;font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--line2);
+      padding:7px 12px;cursor:pointer;transition:.15s;min-width:74px}
+  button.ctl:hover{border-color:var(--indigo);color:#fff}
+  button.ctl.ghost{min-width:0;color:var(--dim)}
+  button.ctl.play{border-color:rgba(110,123,255,.4);color:#fff}
+  .counter{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--dim)}
+  .counter b{color:var(--indigo2)}
+
+  @media (prefers-reduced-motion:reduce){
+    .spin{animation:none}.cursor{display:none}.ripple{display:none}
+    .inp.typing .caret{animation:none;opacity:0}
+    .tagpop,.chip,.robj,.tline{animation:none;opacity:1}
+    .site.reading .quote .text,.site.reading .quote .author,.site.reading .quote .tag{animation:none}
+    .cl{transition:none}
+  }
+
+  /* theme-matched thin scrollbars for overflow-x boxes (replaces the default white bar) */
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--line2)}
+  ::-webkit-scrollbar-thumb:hover{background:var(--faint)}
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="lead">Read along as the first script runs. Each line on the <b>left</b> drives the browser on the <b>right</b>: launch, navigate, find, type, click, then extract typed data. Press <b>play</b>, or step through it yourself.</div>
+
+  <div class="grid">
+    <!-- CODE -->
+    <div class="code">
+      <div class="cbar"><span class="fn">first_automation.py</span><span class="lang">python</span></div>
+      <div class="lines" id="lines">
+<div class="cl"><span class="k">import</span> asyncio</div>
+<div class="cl"><span class="k">from</span> pydoll.browser.chromium <span class="k">import</span> Chrome</div>
+<div class="cl"><span class="k">from</span> pydoll.extractor <span class="k">import</span> ExtractionModel, Field</div>
+<div class="cl blank"> </div>
+<div class="cl" data-step="1"><span class="k">class</span> <span class="t">Quote</span>(ExtractionModel):</div>
+<div class="cl" data-step="1">    text: <span class="t">str</span> = Field(selector=<span class="s">'.text'</span>)</div>
+<div class="cl" data-step="1">    author: <span class="t">str</span> = Field(selector=<span class="s">'.author'</span>)</div>
+<div class="cl" data-step="1">    tags: <span class="t">list</span>[<span class="t">str</span>] = Field(selector=<span class="s">'.tag'</span>)</div>
+<div class="cl blank"> </div>
+<div class="cl"><span class="k">async def</span> main():</div>
+<div class="cl" data-step="2">    <span class="k">async with</span> Chrome() <span class="k">as</span> browser:</div>
+<div class="cl" data-step="2">        tab = <span class="k">await</span> browser.start()</div>
+<div class="cl blank"> </div>
+<div class="cl" data-step="3">        <span class="k">await</span> tab.go_to(<span class="s">'https://quotes.toscrape.com/login'</span>)</div>
+<div class="cl blank"> </div>
+<div class="cl" data-step="4">        username = <span class="k">await</span> tab.find(<span class="a">id</span>=<span class="s">'username'</span>)</div>
+<div class="cl" data-step="5">        <span class="k">await</span> username.type_text(<span class="s">'john'</span>, <span class="a">humanize</span>=<span class="n">True</span>)</div>
+<div class="cl blank"> </div>
+<div class="cl" data-step="6">        password = <span class="k">await</span> tab.find(<span class="a">id</span>=<span class="s">'password'</span>)</div>
+<div class="cl" data-step="7">        <span class="k">await</span> password.type_text(<span class="s">'SecretPass123'</span>, <span class="a">humanize</span>=<span class="n">True</span>)</div>
+<div class="cl blank"> </div>
+<div class="cl" data-step="8">        submit = <span class="k">await</span> tab.find(<span class="a">tag_name</span>=<span class="s">'input'</span>, <span class="a">type</span>=<span class="s">'submit'</span>)</div>
+<div class="cl" data-step="9">        <span class="k">await</span> submit.click()</div>
+<div class="cl blank"> </div>
+<div class="cl" data-step="10">        logout_link = <span class="k">await</span> tab.find(<span class="a">text</span>=<span class="s">'Logout'</span>, <span class="a">timeout</span>=<span class="n">5</span>, <span class="a">raise_exc</span>=<span class="n">False</span>)</div>
+<div class="cl" data-step="10">        <span class="k">if not</span> logout_link:</div>
+<div class="cl" data-step="10">            print(<span class="s">'Login failed.'</span>)</div>
+<div class="cl" data-step="10">            <span class="k">return</span></div>
+<div class="cl blank"> </div>
+<div class="cl" data-step="11">        quotes = <span class="k">await</span> tab.extract_all(<span class="t">Quote</span>, <span class="a">scope</span>=<span class="s">'.quote'</span>, <span class="a">timeout</span>=<span class="n">5</span>)</div>
+<div class="cl" data-step="12">        <span class="k">for</span> quote <span class="k">in</span> quotes:</div>
+<div class="cl" data-step="12">            print(<span class="s">f'{quote.author}: {quote.text}'</span>)</div>
+<div class="cl blank"> </div>
+<div class="cl" data-step="13">asyncio.run(main())</div>
+      </div>
+    </div>
+
+    <!-- BROWSER -->
+    <div class="bcol">
+      <div class="win" id="win">
+        <div class="chrome"><span class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></span><span class="tag" id="tag">new tab</span></div>
+        <div class="toolbar"><span class="url"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span class="ut" id="ut"></span></span></div>
+        <div class="page" id="page">
+          <div class="stage" id="stage"></div>
+          <div class="ripple" id="ripple"></div>
+          <div class="cursor" id="cursor"><svg viewBox="0 0 24 24"><path d="M4 2l0 17 4.6-4.4 2.7 6 2.1-.9-2.7-6 6-0.2z"/></svg></div>
+        </div>
+      </div>
+
+      <div class="card2">
+        <div class="c2head"><span class="lbl">returned value</span><span class="rtype">list[Quote]</span><span class="rn" id="rn"></span></div>
+        <div class="rbody" id="rbody"><span class="rnil">·</span></div>
+      </div>
+
+      <div class="card2">
+        <div class="c2head"><span class="tdots"><i class="r"></i><i class="y"></i><i class="g"></i></span><span class="tt">python first_automation.py</span></div>
+        <div class="tbody" id="tbody"><span class="tprompt">$ _</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="status"><span class="sd"></span><span id="status"></span></div>
+  <div class="controls">
+    <button class="ctl play" id="play">❚❚ pause</button>
+    <button class="ctl" id="prev">◀ back</button>
+    <button class="ctl" id="next">next ▶</button>
+    <button class="ctl ghost" id="restart">↻ restart</button>
+    <span class="counter" id="counter">1 / 13</span>
+  </div>
+</div>
+
+<script>
+(function(){
+  var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  var U=function(ms){return reduce?0:ms;};
+  function g(id){return document.getElementById(id);}
+
+  var win=g('win'),tag=g('tag'),ut=g('ut'),page=g('page'),stage=g('stage'),
+      cursor=g('cursor'),ripple=g('ripple'),status=g('status'),counter=g('counter'),
+      rbody=g('rbody'),rn=g('rn'),tbody=g('tbody'),playBtn=g('play');
+  var lineEls=Array.prototype.slice.call(document.querySelectorAll('#lines .cl[data-step]'));
+
+  var DATA=[
+    {text:'The world as we have created it is a process of our thinking. It cannot be changed without changing our thinking.',
+     author:'Albert Einstein', tags:['change','deep-thoughts','thinking']},
+    {text:'It is our choices, Harry, that show what we truly are, far more than our abilities.',
+     author:'J.K. Rowling', tags:['abilities','choices']}
+  ];
+
+  var steps=[
+    {cap:'Declare the shape of a quote. This is only a class definition, nothing opens yet.',            dwell:1700},
+    {cap:'Chrome() launches your real installed browser. browser.start() hands back the first tab.',      dwell:1500},
+    {cap:'tab.go_to() drives the tab to the URL and waits for the page to finish loading.',               dwell:1900},
+    {cap:"tab.find(id='username') waits for the field to exist, then returns it. No sleeps.",             dwell:1500},
+    {cap:'type_text(humanize=True) clicks the field first, then types with human rhythm.',                dwell:2300},
+    {cap:'Another find() locates the password field exactly the same way.',                               dwell:1400},
+    {cap:'type_text() again. The password is entered character by character.',                            dwell:2400},
+    {cap:'find() by tag_name + attribute locates the submit button.',                                     dwell:1400},
+    {cap:'click() moves the mouse and presses. The form submits and the page reloads.',                   dwell:2000},
+    {cap:"find(text='Logout', raise_exc=False) confirms the login. It returns None instead of raising.",  dwell:1900},
+    {cap:'extract_all() reads every .quote and returns a list of validated Quote objects.',               dwell:2600},
+    {cap:'Loop the objects. quote.author and quote.text are real, typed fields.',                         dwell:2400},
+    {cap:'The async with block exits, so Chrome closes automatically. Done.',                             dwell:2300}
+  ];
+  var N=steps.length, STEP=1, playing=false, playT=null, timers=[];
+
+  function clearTimers(){timers.forEach(clearTimeout);timers=[];}
+  function trunc(s,n){return s.length>n?s.slice(0,n-1)+'…':s;}
+  function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+  function mask(n){var s='';while(n-->0)s+='•';return s;}
+
+  /* ---------- code highlight ---------- */
+  function highlight(){
+    lineEls.forEach(function(el){
+      var s=+el.getAttribute('data-step');
+      el.classList.toggle('active', s===STEP);
+      el.classList.toggle('done', s<STEP);
+    });
+  }
+
+  /* ---------- browser chrome helpers ---------- */
+  function setUrl(t){ut.textContent=t;}
+  function setTag(t){tag.textContent=t;}
+
+  /* ---------- stage builders ---------- */
+  function prebootHTML(){
+    return '<div class="preboot-note">The browser has not started yet.<br><b>Chrome() runs on the next line.</b></div>';
+  }
+  function blankHTML(){ return '<div class="blank-note">about:blank</div>'; }
+  function loadingHTML(){ return '<div class="loading"><span class="spin"></span>Loading quotes.toscrape.com/login…</div>'; }
+
+  function loginState(n){
+    var s={user:'',pass:'',located:null,submitting:false};
+    if(n>=5)s.user='john';
+    if(n>=7)s.pass=mask(13);
+    if(n===4||n===5)s.located='user';
+    else if(n===6||n===7)s.located='pass';
+    else if(n===8)s.located='submit';
+    else if(n===9){s.located='submit';s.submitting=true;}
+    return s;
+  }
+  function field(id,label,val,located,poptext){
+    return '<label class="fld'+(located?' located':'')+'" id="fld_'+id+'">'
+      +'<span class="fl">'+label+'</span>'
+      +'<span class="inp" id="inp_'+id+'"><span class="val" id="val_'+id+'">'+val+'</span><i class="caret"></i></span>'
+      +(located?'<span class="tagpop">'+poptext+'</span>':'')+'</label>';
+  }
+  function loginHTML(s){
+    var sub='<div class="btnwrap"><button class="signin'+(s.located==='submit'?' located':'')+'" id="btnSubmit">Sign in</button>'
+      +(s.located==='submit'&&!s.submitting?'<span class="tagpop" style="top:auto;bottom:-2px">input[type=submit]</span>':'')
+      +(s.submitting?'<div class="submitting"><span class="spin"></span>Signing in…</div>':'')+'</div>';
+    return '<div class="site">'
+      +'<div class="brand">Quotes to Scrape</div>'
+      +'<div class="card"><div class="ctitle">Login</div>'
+      +field('user','Username',s.user,s.located==='user',"id=&quot;username&quot;")
+      +field('pass','Password',s.pass,s.located==='pass',"id=&quot;password&quot;")
+      +sub+'</div></div>';
+  }
+  function quoteCard(q){
+    var tags=q.tags.map(function(t){return '<span class="tag">'+t+'</span>';}).join('');
+    return '<div class="quote">'
+      +'<span class="text">“'+esc(q.text)+'”</span>'
+      +'<span class="by">by <span class="author">'+esc(q.author)+'</span></span>'
+      +'<span class="tags">'+tags+'</span></div>';
+  }
+  function loggedHTML(n){
+    var chip=n>=10?'<span class="chip ok">Logged in.</span>':'';
+    var reading=n>=11?' reading':'';
+    var veil=n>=13?'<div class="veil"><span>✓ async with exited. Chrome closed automatically.</span></div>':'';
+    return '<div class="site c'+reading+'">'
+      +'<div class="topbar"><span class="brand sm">Quotes to Scrape</span>'
+      +'<span class="logout'+(n>=10?' hot':'')+'" id="logout">Logout</span>'+chip+'</div>'
+      +'<div class="quotes">'+quoteCard(DATA[0])+quoteCard(DATA[1])+'</div>'+veil+'</div>';
+  }
+
+  function buildScreen(n){
+    win.classList.toggle('preboot', n<=1);
+    if(n<=1){ setTag('·'); setUrl(''); stage.className='stage'; stage.innerHTML=prebootHTML(); return; }
+    if(n===2){ setTag('your Chrome'); setUrl('about:blank'); stage.className='stage'; stage.innerHTML=blankHTML(); return; }
+    if(n>=3&&n<=9){ setTag('quotes.toscrape.com'); setUrl('https://quotes.toscrape.com/login'); stage.className='stage'; stage.innerHTML=loginHTML(loginState(n)); return; }
+    setTag('quotes.toscrape.com'); setUrl('https://quotes.toscrape.com'); stage.className='stage'; stage.innerHTML=loggedHTML(n);
+  }
+
+  /* ---------- result + terminal ---------- */
+  function setResult(n){
+    if(n<11){ rbody.innerHTML='<span class="rnil">·</span>'; rn.textContent=''; return; }
+    rn.textContent=DATA.length+' items';
+    rbody.innerHTML=DATA.map(function(q){
+      return '<div class="robj"><span class="rt">Quote</span><span class="rp">(</span>author=<span class="rs">\''+esc(q.author)+'\'</span>, '
+        +'text=<span class="rs">\''+esc(trunc(q.text,26))+'\'</span>, '
+        +'tags=<span class="rp">[</span><span class="rs">\''+q.tags[0]+'\'</span>, …<span class="rp">]</span><span class="rp">)</span></div>';
+    }).join('');
+  }
+  function setTerminal(n){
+    if(n<12){ tbody.innerHTML='<span class="tprompt">$ _</span>'; return; }
+    tbody.innerHTML=DATA.map(function(q){
+      return '<div class="tline"><span class="au">'+esc(q.author)+'</span>: '+esc(trunc(q.text,52))+'</div>';
+    }).join('');
+  }
+
+  /* ---------- cursor + ripple ---------- */
+  function centerOf(el){
+    var pr=page.getBoundingClientRect(), br=el.getBoundingClientRect();
+    return {x:br.left-pr.left+Math.min(br.width/2,44), y:br.top-pr.top+br.height/2};
+  }
+  function cursorTo(el,cb){
+    var c=centerOf(el);
+    if(cursor.style.opacity!=='1'){
+      cursor.style.transition='none';
+      cursor.style.transform='translate('+(page.clientWidth*0.16)+'px,'+(page.clientHeight*0.82)+'px)';
+      cursor.style.opacity='1'; void cursor.offsetWidth;
+    }
+    cursor.style.transition='transform '+U(760)+'ms cubic-bezier(.4,0,.2,1)';
+    requestAnimationFrame(function(){ cursor.style.transform='translate('+(c.x-3)+'px,'+(c.y-2)+'px)'; });
+    if(cb) timers.push(setTimeout(function(){cb(c);}, U(780)));
+  }
+  function fireRipple(c){ ripple.style.left=c.x+'px'; ripple.style.top=c.y+'px'; ripple.classList.remove('go'); void ripple.offsetWidth; ripple.classList.add('go'); }
+
+  function typeInto(id,text,doMask,cb){
+    var inp=g('inp_'+id), val=g('val_'+id);
+    if(!val){if(cb)cb();return;}
+    val.textContent=''; inp.classList.add('typing');
+    var i=0;
+    (function tick(){
+      if(i>=text.length){ inp.classList.remove('typing'); if(cb)cb(); return; }
+      val.textContent += doMask?'•':text.charAt(i); i++;
+      timers.push(setTimeout(tick, 58+Math.random()*72));
+    })();
+  }
+  function typeUrl(text,cb){
+    var i=0; setUrl('');
+    (function tick(){
+      if(i>=text.length){ if(cb)cb(); return; }
+      setUrl(text.slice(0,++i));
+      timers.push(setTimeout(tick, 22));
+    })();
+  }
+
+  /* ---------- per-step forward animation ---------- */
+  function playAnim(n){
+    if(n===3){
+      setTag('quotes.toscrape.com'); stage.innerHTML=loadingHTML();
+      typeUrl('https://quotes.toscrape.com/login', function(){
+        timers.push(setTimeout(function(){ stage.innerHTML=loginHTML(loginState(3)); }, 360));
+      });
+    } else if(n===5){
+      var vu=g('val_user'); if(vu)vu.textContent='';
+      cursorTo(g('inp_user'), function(){ typeInto('user','john',false); });
+    } else if(n===7){
+      var vp=g('val_pass'); if(vp)vp.textContent='';
+      cursorTo(g('inp_pass'), function(){ typeInto('pass','SecretPass123',true); });
+    } else if(n===9){
+      stage.innerHTML=loginHTML(loginState(8));
+      cursorTo(g('btnSubmit'), function(c){
+        fireRipple(c); var b=g('btnSubmit'); if(b)b.classList.add('press');
+        timers.push(setTimeout(function(){ stage.innerHTML=loginHTML(loginState(9)); }, U(520)));
+      });
+    }
+  }
+
+  /* ---------- render ---------- */
+  function render(animate){
+    clearTimers();
+    cursor.style.opacity='0'; cursor.style.transition='none'; ripple.classList.remove('go');
+    highlight();
+    status.textContent=steps[STEP-1].cap;
+    counter.innerHTML='<b>'+STEP+'</b> / '+N;
+    buildScreen(STEP); setResult(STEP); setTerminal(STEP);
+    if(animate && !reduce) playAnim(STEP);
+  }
+
+  /* ---------- player ---------- */
+  function updatePlay(){ playBtn.textContent = playing ? '❚❚ pause' : '▶ play'; playBtn.classList.toggle('play', playing); }
+  function schedule(){
+    clearTimeout(playT); if(!playing) return;
+    playT=setTimeout(function(){
+      var nx=STEP+1, an=true;
+      if(nx>N){ nx=1; an=false; }
+      STEP=nx; render(an); schedule();
+    }, steps[STEP-1].dwell);
+  }
+  function pause(){ playing=false; updatePlay(); clearTimeout(playT); }
+
+  playBtn.addEventListener('click', function(){ playing=!playing; updatePlay(); if(playing) schedule(); else clearTimeout(playT); });
+  g('next').addEventListener('click', function(){ pause(); var nx=STEP+1; if(nx>N)nx=1; STEP=nx; render(true); });
+  g('prev').addEventListener('click', function(){ pause(); var nx=STEP-1; if(nx<1)nx=N; STEP=nx; render(false); });
+  g('restart').addEventListener('click', function(){ STEP=1; render(false); playing=true; updatePlay(); schedule(); });
+
+  window.addEventListener('resize', function(){ if(STEP>=3&&STEP<=9 && cursor.style.opacity==='1'){ /* keep static on resize */ } });
+
+  // init
+  if(reduce){ STEP=12; playing=false; updatePlay(); render(false); }
+  else{ STEP=1; render(false); playing=true; updatePlay(); timers.push(setTimeout(schedule,500)); }
+})();
+</script>
+<script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>
+</body>
+</html>

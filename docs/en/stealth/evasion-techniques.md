@@ -2,7 +2,7 @@
 
 Detection systems correlate signals across layers: the network fingerprint (TCP/TLS/HTTP2), the browser fingerprint (canvas, WebGL, navigator), and behavior (mouse, keyboard, timing). Passing one layer while failing another still flags you. A residential IP with a mismatched TCP fingerprint, or a perfect browser fingerprint with robotic clicks, gets caught by anything that cross-checks. This page covers what Pydoll gives you for free and the levers you control to keep the layers consistent.
 
-<iframe src="/docs/resources/visuals/evasion-layers.html" aria-label="How the network, browser, behavior, and IP layers must all stay consistent to pass" style="width: 100%; height: 320px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/evasion-layers.html" aria-label="How the network, browser, behavior, and IP layers must all stay consistent to pass" style="width: 100%; height: 320px; border: 0;" loading="lazy"></iframe>
 
 ## What you get for free
 

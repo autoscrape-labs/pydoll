@@ -450,3 +450,55 @@
   text-decoration: none !important;
 }
 
+
+/* ============================================================
+   Thin, theme-matched scrollbars
+   Replaces the browser's default chunky/white scrollbar (most
+   visible on wide code blocks that scroll horizontally). Uses
+   Material palette vars so it adapts to light and dark schemes.
+   ============================================================ */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--md-default-fg-color--lighter);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--md-default-fg-color--light);
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Code blocks: match Material's selector specificity and force a classic,
+   square, themed scrollbar (overrides the rounded native/overlay bar). */
+.md-typeset pre > code::-webkit-scrollbar,
+.md-typeset .highlight::-webkit-scrollbar,
+.md-typeset .highlighttable::-webkit-scrollbar,
+.md-typeset__scrollwrap::-webkit-scrollbar,
+.md-typeset table:not([class])::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.md-typeset pre > code::-webkit-scrollbar-thumb,
+.md-typeset .highlight::-webkit-scrollbar-thumb,
+.md-typeset .highlighttable::-webkit-scrollbar-thumb,
+.md-typeset__scrollwrap::-webkit-scrollbar-thumb,
+.md-typeset table:not([class])::-webkit-scrollbar-thumb {
+  background: var(--md-default-fg-color--lighter);
+  border-radius: 0;
+}
+.md-typeset pre > code::-webkit-scrollbar-thumb:hover,
+.md-typeset .highlight::-webkit-scrollbar-thumb:hover,
+.md-typeset__scrollwrap::-webkit-scrollbar-thumb:hover {
+  background: var(--md-default-fg-color--light);
+}
+.md-typeset pre > code::-webkit-scrollbar-track,
+.md-typeset .highlight::-webkit-scrollbar-track,
+.md-typeset__scrollwrap::-webkit-scrollbar-track {
+  background: transparent;
+}

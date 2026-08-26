@@ -3,118 +3,358 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Humanized mouse movement</title>
+<title>Humanized vs robotic mouse path</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
 <style>
   :root{
-    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;--panel2:#191c20;
     --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
     --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
-    --indigo:#6e7bff;--indigo2:#8f99ff;--pass:#35e0a1;--danger:#ff6b6b;
-    --sans:"Chivo",system-ui,-apple-system,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--indigo-dim:rgba(110,123,255,.13);
+    --pass:#35e0a1;--pass-dim:rgba(53,224,161,.12);
+    --amber:#f5b544;--danger:#ff6b6b;--danger-dim:rgba(255,107,107,.12);
+    --dot:rgba(0,150,255,.72);--press:rgba(255,50,50,.92);
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
   }
-  *{box-sizing:border-box}
-  html,body{margin:0}
+  *{box-sizing:border-box} html,body{margin:0}
   body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
   .widget{border:1px solid var(--line);padding:16px 18px}
-  .top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:12px}
-  .mode{font-family:var(--mono);font-size:12px;color:var(--dim)}
-  .badge{font-family:var(--mono);font-size:11px;color:var(--faint)}
-  .badge b{color:var(--ink);font-weight:500}
-  .stage{width:100%;height:170px;border:1px solid var(--line);background:var(--bg2);display:block}
-  .pathH{fill:none;stroke:var(--pass);stroke-width:1.5;opacity:.25;transition:opacity .3s;stroke-dasharray:none}
-  .pathB{fill:none;stroke:var(--danger);stroke-width:1.5;opacity:.25;stroke-dasharray:4 5;transition:opacity .3s}
-  .on-h .pathH{opacity:.9} .on-b .pathB{opacity:.9}
-  .start{fill:var(--faint)}
-  .target{fill:none;stroke:var(--line2);stroke-width:1.5}
-  .target-lbl{fill:var(--dim);font-family:"Chivo",sans-serif;font-weight:700;font-size:12px}
-  .hit .target{stroke:var(--pass)} .hit .target-lbl{fill:var(--ink)}
-  .cur{opacity:0}
-  .cur path{fill:var(--ink);stroke:#000;stroke-width:.6}
-  .ripple{fill:none;stroke:var(--pass);stroke-width:2;opacity:0}
+  .lead{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:14px;line-height:1.5}
+  .lead b{color:var(--ink)}
+  .stages{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+  @media(max-width:560px){.stages{grid-template-columns:1fr}}
+  .stage{border:1px solid var(--line2);background:var(--bg2);overflow:hidden}
+  .shead{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--line);background:var(--panel2)}
+  .shead .nm{font-family:var(--sans);font-weight:700;font-size:12.5px}
+  .shead .code{font-family:var(--mono);font-size:9.5px;color:var(--faint)}
+  .chip{margin-left:auto;font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;padding:3px 9px;border:1px solid;white-space:nowrap}
+  .chip.bad{color:var(--danger);border-color:rgba(255,107,107,.4);background:var(--danger-dim)}
+  .chip.ok{color:var(--pass);border-color:rgba(53,224,161,.4);background:var(--pass-dim)}
+  .field{position:relative;height:158px;overflow:hidden}
+  .field svg.route{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none}
+  .dot{position:absolute;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:2}
+  .target{position:absolute;display:flex;align-items:center;gap:7px;border:1px solid var(--line2);background:var(--panel);
+    padding:7px 11px;font-family:var(--mono);font-size:11px;color:var(--dim);transition:.2s;transform:translate(-50%,-50%);z-index:3}
+  .target .tbox{width:14px;height:14px;border:1.5px solid var(--faint);display:grid;place-items:center}
+  .target .tbox svg{position:static;width:9px;height:9px;opacity:0;color:var(--pass);transition:opacity .2s}
+  .target.hit{border-color:var(--pass);color:var(--ink)} .target.hit .tbox{border-color:var(--pass)} .target.hit .tbox svg{opacity:1}
+  .home{position:absolute;width:8px;height:8px;border-radius:50%;background:var(--faint);transform:translate(-50%,-50%);box-shadow:0 0 0 4px rgba(91,101,112,.14);z-index:2}
+  .cph{position:absolute;width:8px;height:8px;border:1.4px solid var(--indigo);border-radius:50%;background:var(--bg2);transform:translate(-50%,-50%);pointer-events:none;z-index:3}
+  .cplbl{position:absolute;font-family:var(--mono);font-size:8.5px;color:var(--indigo2);transform:translate(6px,-15px);pointer-events:none;z-index:3;opacity:.9;white-space:nowrap}
+  .cursor{position:absolute;left:0;top:0;width:15px;height:15px;pointer-events:none;z-index:5;opacity:0}
+  .cursor svg{width:15px;height:15px;fill:var(--ink);stroke:#000;stroke-width:.6}
+  .ripple{position:absolute;width:12px;height:12px;border:2px solid var(--press);border-radius:50%;opacity:0;transform:translate(-50%,-50%);pointer-events:none;z-index:4}
   .ripple.go{animation:rip .5s ease-out}
-  @keyframes rip{0%{opacity:.9;r:4}100%{opacity:0;r:26}}
-  .controls{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:center}
-  button{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:8px 12px;cursor:pointer;transition:.15s}
-  button:hover{border-color:var(--indigo);color:#fff}
-  button.active{background:rgba(110,123,255,.14);border-color:var(--indigo);color:#fff}
-  button:disabled{opacity:.5;cursor:default}
-  .caption{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-left:auto;min-height:16px}
-  .caption b.h{color:var(--pass)} .caption b.b{color:var(--danger)}
-  @media (prefers-reduced-motion:reduce){.cur{transition:none}}
+  @keyframes rip{0%{opacity:.9;transform:translate(-50%,-50%) scale(.3)}100%{opacity:0;transform:translate(-50%,-50%) scale(3)}}
+  .readout{display:flex;gap:12px;padding:9px 12px;border-top:1px solid var(--line);align-items:center}
+  .stat{display:flex;flex-direction:column;gap:2px}
+  .stat .n{font-family:var(--sans);font-weight:800;font-size:16px;line-height:1}
+  .stat .n.bad{color:var(--danger)} .stat .n.ok{color:var(--indigo2)}
+  .stat .k{font-family:var(--mono);font-size:8.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--faint)}
+  .rtag{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--dim);text-align:right;line-height:1.4;min-height:28px}
+  .rtag b.ok{color:var(--pass)} .rtag b.amber{color:var(--amber)}
+  .params{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px;padding:11px 13px;border:1px solid var(--line);background:var(--bg2)}
+  .pctl{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:10.5px;color:var(--faint);flex:1;min-width:180px}
+  .pctl .pl{white-space:nowrap;color:var(--dim)}
+  .pctl b{color:var(--indigo2);font-weight:600;min-width:38px;text-align:right}
+  .pctl code{color:var(--faint);font-size:9px}
+  input[type=range]{-webkit-appearance:none;appearance:none;flex:1;height:3px;background:var(--line2);border-radius:2px;outline:none;cursor:pointer;min-width:60px}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:13px;height:13px;border-radius:50%;background:var(--indigo);border:2px solid var(--panel);cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:11px;height:11px;border-radius:50%;background:var(--indigo);border:2px solid var(--panel);cursor:pointer}
+  .controls{display:flex;align-items:center;gap:12px;margin-top:14px;flex-wrap:wrap}
+  button.run{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:8px 14px;cursor:pointer;transition:.15s}
+  button.run:hover{border-color:var(--indigo);color:#fff}
+  .cpx{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10.5px;color:var(--dim);cursor:pointer;user-select:none}
+  .cpx input{accent-color:var(--indigo);cursor:pointer}
+  .legend{display:flex;align-items:center;gap:13px;font-family:var(--mono);font-size:10px;color:var(--faint)}
+  .legend i{display:inline-block;width:8px;height:8px;border-radius:50%;vertical-align:0;margin-right:5px}
+  .legend i.mv{background:var(--dot)} .legend i.pr{background:var(--press)}
+  .cap{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-left:auto;text-align:right}
+  .cap b{color:var(--dim);font-weight:500}
+
+  /* theme-matched thin scrollbars for overflow-x boxes (replaces the default white bar) */
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--line2)}
+  ::-webkit-scrollbar-thumb:hover{background:var(--faint)}
 </style>
 </head>
 <body>
 <div class="widget">
-  <div class="top">
-    <div class="mode" id="mode">Detection watches how the cursor moves, not just where it clicks.</div>
-    <div class="badge">clicks landed: <b id="count">0</b></div>
+  <div class="lead">This is the overlay <b>tab.mouse</b> draws with <b>debug=True</b>, one blue dot per dispatched move, a red dot on press. A detector reads the same trail. The path loops in place; hit <b>New curve</b> to re-run the real algorithm and get a fresh, always-different one.</div>
+
+  <div class="stages">
+    <div class="stage">
+      <div class="shead"><span class="nm">Direct</span><span class="code">humanize=False</span><span class="chip bad" id="cR">robotic</span></div>
+      <div class="field" id="fR">
+        <svg class="route" viewBox="0 0 300 158" preserveAspectRatio="none"><line id="pathR" stroke="var(--danger)" stroke-width="1.4" opacity=".55" stroke-dasharray="4 4"/></svg>
+        <span class="home" id="homeR"></span>
+        <span class="target" id="tgtR"><span class="tbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>submit</span>
+        <span class="ripple" id="ripR"></span>
+        <span class="cursor" id="curR"><svg viewBox="0 0 24 24"><path d="M4 2l0 17 4.6-4.4 2.7 6 2.1-.9-2.7-6 6-0.2z"/></svg></span>
+      </div>
+      <div class="readout">
+        <div class="stat"><span class="n bad" id="nR">1</span><span class="k">move events</span></div>
+        <span class="rtag" id="tagR"><b class="bad" style="color:var(--danger)">straight teleport</b><br>constant velocity</span>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="shead"><span class="nm">Humanized</span><span class="code">humanize=True</span><span class="chip ok" id="cH">human</span></div>
+      <div class="field" id="fH">
+        <svg class="route" viewBox="0 0 300 158" preserveAspectRatio="none">
+          <line id="hl1" stroke="var(--line2)" stroke-width="1" stroke-dasharray="3 3" opacity=".7"/>
+          <line id="hl2" stroke="var(--line2)" stroke-width="1" stroke-dasharray="3 3" opacity=".7"/>
+          <path id="pathH" fill="none" stroke="var(--indigo2)" stroke-width="1.3" opacity=".5"/>
+        </svg>
+        <span class="cph" id="cp1"></span><span class="cplbl" id="cp1l">cp1</span>
+        <span class="cph" id="cp2"></span><span class="cplbl" id="cp2l">cp2</span>
+        <span class="home" id="homeH"></span>
+        <span class="target" id="tgtH"><span class="tbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>submit</span>
+        <span class="ripple" id="ripH"></span>
+        <span class="cursor" id="curH"><svg viewBox="0 0 24 24"><path d="M4 2l0 17 4.6-4.4 2.7 6 2.1-.9-2.7-6 6-0.2z"/></svg></span>
+      </div>
+      <div class="readout">
+        <div class="stat"><span class="n ok" id="nH">0</span><span class="k">move events</span></div>
+        <span class="rtag" id="tagH"><b class="ok">Bézier + min-jerk</b><br>tremor, eased velocity</span>
+      </div>
+    </div>
   </div>
 
-  <svg class="stage" id="stage" viewBox="0 0 460 170" preserveAspectRatio="xMidYMid meet">
-    <path id="pathH" class="pathH" d="M40 128 C 150 24, 300 150, 388 66" />
-    <path id="pathB" class="pathB" d="M40 128 L 388 66" />
-    <circle class="start" cx="40" cy="128" r="4" />
-    <g id="tgt">
-      <rect class="target" x="352" y="46" width="76" height="40" />
-      <text class="target-lbl" x="390" y="71" text-anchor="middle">Submit</text>
-    </g>
-    <circle class="ripple" id="ripple" cx="390" cy="66" r="4" />
-    <g class="cur" id="curH"><path d="M0 0 L0 17 L4.6 12.6 L7.3 18.6 L9.4 17.7 L6.7 11.7 L12 11.5 Z" />
-      <animateMotion id="mmH" begin="indefinite" dur="1.35s" fill="freeze"><mpath href="#pathH"/></animateMotion></g>
-    <g class="cur" id="curB"><path d="M0 0 L0 17 L4.6 12.6 L7.3 18.6 L9.4 17.7 L6.7 11.7 L12 11.5 Z" />
-      <animateMotion id="mmB" begin="indefinite" dur="0.13s" fill="freeze"><mpath href="#pathB"/></animateMotion></g>
-  </svg>
+  <div class="params">
+    <div class="pctl"><span class="pl">curvature</span><input type="range" id="sCurv" min="5" max="60" value="30"><b id="vCurv">0.30</b></div>
+    <div class="pctl"><span class="pl">tremor</span><input type="range" id="sTrem" min="0" max="30" value="10"><b id="vTrem">1.0</b></div>
+    <div class="pctl"><span class="pl">overshoot</span><input type="range" id="sOver" min="0" max="100" value="70"><b id="vOver">70%</b></div>
+  </div>
 
   <div class="controls">
-    <button id="human">Click (humanize=True)</button>
-    <button id="bot">Click (instant)</button>
-    <span class="caption" id="caption"></span>
+    <button class="run" id="run">New curve</button>
+    <button class="run" id="rand">Randomize params</button>
+    <label class="cpx"><input type="checkbox" id="showCP"> control points</label>
+    <span class="legend"><span><i class="mv"></i>move</span><span><i class="pr"></i>press</span></span>
+    <span class="cap" id="cap">live edit of <b>MouseTimingConfig</b></span>
   </div>
 </div>
 
 <script>
 (function(){
   var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
-  var stage=document.getElementById('stage'),tgt=document.getElementById('tgt'),ripple=document.getElementById('ripple');
-  var curH=document.getElementById('curH'),curB=document.getElementById('curB'),mmH=document.getElementById('mmH'),mmB=document.getElementById('mmB');
-  var mode=document.getElementById('mode'),caption=document.getElementById('caption'),count=document.getElementById('count');
-  var hBtn=document.getElementById('human'),bBtn=document.getElementById('bot');
-  var n=0,busy=false,timers=[];
+  function g(id){return document.getElementById(id);}
+  var run=g('run');
 
-  function land(kind){
-    tgt.classList.add('hit');
-    ripple.classList.remove('go'); void ripple.getBBox(); ripple.classList.add('go');
-    n+=1; count.textContent=n;
-    caption.innerHTML = kind==='h'
-      ? '<b class="h">humanize=True</b>: a curved path with human timing before the click.'
-      : '<b class="b">instant</b>: a straight teleport to the exact center, a behavioral tell.';
-    timers.push(setTimeout(function(){tgt.classList.remove('hit');busy=false;hBtn.disabled=false;bBtn.disabled=false;},650));
-  }
-  function reset(){ timers.forEach(clearTimeout);timers=[]; curH.setAttribute('opacity','0');curB.setAttribute('opacity','0'); stage.classList.remove('on-h','on-b'); ripple.classList.remove('go'); }
+  // viewBox coordinate space (matches the route SVG viewBox)
+  var VW=300, VH=158;
+  var HOME={x:36,y:126}, TGT={x:250,y:40};
 
-  function runHuman(){
-    if(busy)return;busy=true;hBtn.disabled=true;bBtn.disabled=true;reset();
-    hBtn.classList.add('active');bBtn.classList.remove('active');
-    mode.textContent='humanized: the cursor curves toward the target with a human rhythm';
-    stage.classList.add('on-h'); curH.setAttribute('opacity','1');
-    if(reduce){ land('h'); return; }
-    try{ mmH.beginElement(); }catch(e){}
-    timers.push(setTimeout(function(){land('h');},1350));
+  // ---- faithful port of pydoll/interactions/utils.py + mouse.py ----
+  var CFG={ fitts_a:0.070, fitts_b:0.150, frame_interval:0.012, frame_interval_variance:0.004,
+    curvature_min:0.10, curvature_max:0.30, curvature_asymmetry:0.6, short_distance_threshold:50.0,
+    tremor_amplitude:1.0, overshoot_probability:0.70, overshoot_distance_min:0.03,
+    overshoot_distance_max:0.12, overshoot_speed_threshold:200.0, micro_pause_probability:0.03,
+    micro_pause_min:0.015, micro_pause_max:0.04, min_duration:0.08, max_duration:2.5,
+    pre_click_pause_min:0.05, pre_click_pause_max:0.20 };
+
+  function rand(a,b){ return a+Math.random()*(b-a); }
+  function gauss(m,s){ var u=1-Math.random(), v=Math.random(); return m+s*Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+  function hypot(a,b){ return Math.sqrt(a*a+b*b); }
+  function log2(x){ return Math.log(x)/Math.LN2; }
+
+  function minimumJerk(t){ var t3=t*t*t; return 10*t3 - 15*t3*t + 6*t3*t*t; }
+  function bezier2d(t,p0,p1,p2,p3){
+    var u=1-t,u2=u*u,u3=u2*u,t2=t*t,t3=t2*t;
+    return [ u3*p0[0]+3*u2*t*p1[0]+3*u*t2*p2[0]+t3*p3[0],
+             u3*p0[1]+3*u2*t*p1[1]+3*u*t2*p2[1]+t3*p3[1] ];
   }
-  function runBot(){
-    if(busy)return;busy=true;hBtn.disabled=true;bBtn.disabled=true;reset();
-    bBtn.classList.add('active');hBtn.classList.remove('active');
-    mode.textContent='robotic: the cursor jumps straight to the exact center, instantly';
-    stage.classList.add('on-b'); curB.setAttribute('opacity','1');
-    if(reduce){ land('b'); return; }
-    try{ mmB.beginElement(); }catch(e){}
-    timers.push(setTimeout(function(){land('b');},150));
+  function fittsDuration(d,w){ if(d<=0)return CFG.fitts_a; return CFG.fitts_a+CFG.fitts_b*log2(d/w+1); }
+  function randomControlPoints(start,end){
+    var dx=end[0]-start[0], dy=end[1]-start[1], dist=hypot(dx,dy);
+    if(dist<1) return [start,end];
+    var perp=[-dy/dist, dx/dist];
+    var scale=Math.min(1, dist/CFG.short_distance_threshold);
+    var off=[ rand(CFG.curvature_min,CFG.curvature_max)*dist*scale, rand(CFG.curvature_min,CFG.curvature_max)*dist*scale ];
+    var sign=Math.random()<0.5?-1:1;
+    var t1=rand(0.2,CFG.curvature_asymmetry), t2=rand(CFG.curvature_asymmetry,0.8);
+    var cp1=[ start[0]+dx*t1+perp[0]*off[0]*sign, start[1]+dy*t1+perp[1]*off[0]*sign ];
+    var counter=rand(0.3,1.0);
+    var cp2=[ start[0]+dx*t2+perp[0]*off[1]*sign*counter, start[1]+dy*t2+perp[1]*off[1]*sign*counter ];
+    return [cp1,cp2];
   }
-  hBtn.addEventListener('click',runHuman);
-  bBtn.addEventListener('click',runBot);
+  // mirror of _perform_movement_loop: returns dispatched {x,y,dt} frames
+  function movementLoop(start,end,duration,cp1,cp2){
+    var frames=[], t=0, prev=[start[0],start[1],0];
+    while(true){
+      if(t>=duration) break;
+      var mj=minimumJerk(t/duration);
+      var b=bezier2d(mj,start,cp1,cp2,end);
+      var x=b[0], y=b[1];
+      var dt=t-prev[2], sigma;
+      if(dt>0){ var vel=hypot(x-prev[0],y-prev[1])/dt; sigma=CFG.tremor_amplitude*Math.max(0.2,1-vel/500); }
+      else sigma=CFG.tremor_amplitude;
+      x+=gauss(0,sigma); y+=gauss(0,sigma);
+      var fd=Math.max(0.001, CFG.frame_interval+rand(-CFG.frame_interval_variance,CFG.frame_interval_variance));
+      var extra=0;
+      if(Math.random()<CFG.micro_pause_probability){ extra=rand(CFG.micro_pause_min,CFG.micro_pause_max); }
+      frames.push({x:x,y:y,dt:fd+extra});
+      prev=[x,y,t];
+      t+=fd+extra;
+    }
+    return frames;
+  }
+  // mirror of _move_humanized: build the whole dispatched sequence + expose primary cps
+  function buildHumanPlan(start,target){
+    var dist=hypot(target[0]-start[0],target[1]-start[1]);
+    var duration=Math.max(CFG.min_duration, Math.min(fittsDuration(dist,20), CFG.max_duration));
+    var overshoot = dist>CFG.overshoot_speed_threshold && Math.random()<CFG.overshoot_probability;
+    var frames, primary;
+    if(overshoot){
+      var frac=rand(CFG.overshoot_distance_min,CFG.overshoot_distance_max);
+      var over=[ target[0]+(target[0]-start[0])*frac, target[1]+(target[1]-start[1])*frac ];
+      var a=randomControlPoints(start,over); primary=a;
+      var f1=movementLoop(start,over,duration*0.85,a[0],a[1]);
+      var b=randomControlPoints(over,target);
+      var f2=movementLoop(over,target,duration*0.15,b[0],b[1]);
+      frames=f1.concat(f2);
+    }else{
+      var c=randomControlPoints(start,target); primary=c;
+      frames=movementLoop(start,target,duration,c[0],c[1]);
+    }
+    frames.push({x:target[0],y:target[1],dt:0}); // final _dispatch_move(target)
+    return {frames:frames, cp1:primary[0], cp2:primary[1], overshoot:overshoot, duration:duration};
+  }
+
+  // ---- rendering ----
+  function toPx(field,p){ return {x:p[0]/VW*field.clientWidth, y:p[1]/VH*field.clientHeight}; }
+  function place(k){
+    var f=g('f'+k), h=toPx(f,[HOME.x,HOME.y]), t=toPx(f,[TGT.x,TGT.y]);
+    g('home'+k).style.left=h.x+'px'; g('home'+k).style.top=h.y+'px';
+    g('tgt'+k).style.left=t.x+'px'; g('tgt'+k).style.top=t.y+'px';
+  }
+  function clearDots(f){ Array.prototype.forEach.call(f.querySelectorAll('.dot'),function(d){d.remove();}); }
+  function dot(f,p,r,color){
+    var px=toPx(f,[p.x!=null?p.x:p[0], p.y!=null?p.y:p[1]]);
+    var d=document.createElement('span'); d.className='dot';
+    d.style.left=px.x+'px'; d.style.top=px.y+'px'; d.style.width=(r*2)+'px'; d.style.height=(r*2)+'px'; d.style.background=color;
+    f.appendChild(d); return d;
+  }
+  function moveCursor(k,p){ var f=g('f'+k), px=toPx(f,[p.x!=null?p.x:p[0],p.y!=null?p.y:p[1]]); g('cur'+k).style.transform='translate('+(px.x-2)+'px,'+(px.y-1)+'px)'; }
+  function press(k,p){
+    var f=g('f'+k), rip=g('rip'+k), px=toPx(f,[p.x!=null?p.x:p[0],p.y!=null?p.y:p[1]]);
+    dot(f,p,4.5,'var(--press)');
+    g('tgt'+k).classList.add('hit');
+    rip.style.left=px.x+'px'; rip.style.top=px.y+'px'; rip.classList.remove('go'); void rip.offsetWidth; rip.classList.add('go');
+  }
+
+  var timers=[], SPEED=1.5;
+  function clearTimers(){ timers.forEach(clearTimeout); timers=[]; }
+
+  function resetField(k){
+    var f=g('f'+k); clearDots(f); g('tgt'+k).classList.remove('hit'); g('rip'+k).classList.remove('go');
+    place(k); g('cur'+k).style.opacity='0'; g('cur'+k).style.transition='none';
+    var home=toPx(f,[HOME.x,HOME.y]); g('cur'+k).style.transform='translate('+(home.x-2)+'px,'+(home.y-1)+'px)';
+    if(k==='H'){ ['cp1','cp1l','cp2','cp2l'].forEach(function(id){ g(id).style.opacity='0'; }); }
+  }
+
+  function runRobot(){
+    resetField('R');
+    var cur=g('curR'); cur.style.opacity='1';
+    // single straight dashed route + one blue move dot at target + red press
+    var d=g('pathR'); d.setAttribute('x1',HOME.x);d.setAttribute('y1',HOME.y);d.setAttribute('x2',TGT.x);d.setAttribute('y2',TGT.y);
+    var f=g('fR');
+    if(reduce){ moveCursor('R',[TGT.x,TGT.y]); dot(f,[TGT.x,TGT.y],2.4,'var(--dot)'); press('R',[TGT.x,TGT.y]); g('nR').textContent='1'; return; }
+    cur.style.transition='transform 150ms linear';
+    requestAnimationFrame(function(){ moveCursor('R',[TGT.x,TGT.y]); });
+    timers.push(setTimeout(function(){ dot(f,[TGT.x,TGT.y],2.4,'var(--dot)'); press('R',[TGT.x,TGT.y]); }, 180));
+    g('nR').textContent='1';
+  }
+
+  function drawHumanStatic(plan){
+    var fH=g('fH');
+    var c1=toPx(fH,plan.cp1), c2=toPx(fH,plan.cp2);
+    g('cp1').style.left=c1.x+'px'; g('cp1').style.top=c1.y+'px'; g('cp1l').style.left=c1.x+'px'; g('cp1l').style.top=c1.y+'px';
+    g('cp2').style.left=c2.x+'px'; g('cp2').style.top=c2.y+'px'; g('cp2l').style.left=c2.x+'px'; g('cp2l').style.top=c2.y+'px';
+    g('hl1').setAttribute('x1',HOME.x);g('hl1').setAttribute('y1',HOME.y);g('hl1').setAttribute('x2',plan.cp1[0]);g('hl1').setAttribute('y2',plan.cp1[1]);
+    g('hl2').setAttribute('x1',TGT.x);g('hl2').setAttribute('y1',TGT.y);g('hl2').setAttribute('x2',plan.cp2[0]);g('hl2').setAttribute('y2',plan.cp2[1]);
+    var dd='M'+HOME.x+' '+HOME.y; plan.frames.forEach(function(fr){ dd+='L'+fr.x.toFixed(1)+' '+fr.y.toFixed(1); });
+    g('pathH').setAttribute('d',dd);
+    g('tagH').innerHTML = plan.overshoot ? '<b class="amber">overshoot + correction</b><br>Bézier · min-jerk · tremor' : '<b class="ok">Bézier + min-jerk</b><br>tremor, eased velocity';
+    updateCPVis();
+  }
+  function updateCPVis(){
+    var showCP=g('showCP').checked;
+    g('hl1').style.opacity=showCP?'.7':'0'; g('hl2').style.opacity=showCP?'.7':'0';
+    ['cp1','cp1l','cp2','cp2l'].forEach(function(id){ g(id).style.transition='opacity .3s'; g(id).style.opacity=showCP?'.9':'0'; });
+  }
+
+  function runHuman(plan){
+    resetField('H');
+    drawHumanStatic(plan);
+    var f=g('fH'), cur=g('curH');
+    if(reduce){
+      cur.style.opacity='1'; moveCursor('H',[TGT.x,TGT.y]);
+      plan.frames.forEach(function(fr){ dot(f,fr,1.7,'var(--dot)'); });
+      press('H',[TGT.x,TGT.y]); g('nH').textContent=plan.frames.length; return;
+    }
+    cur.style.opacity='1'; cur.style.transition='none';
+    var i=0, acc=0;
+    g('nH').textContent='0';
+    function step(){
+      if(i>=plan.frames.length){
+        var pre=rand(CFG.pre_click_pause_min,CFG.pre_click_pause_max)*1000*SPEED;
+        timers.push(setTimeout(function(){ press('H',[TGT.x,TGT.y]); }, pre));
+        return;
+      }
+      var fr=plan.frames[i];
+      moveCursor('H',fr);
+      if(i<plan.frames.length-1) dot(f,fr,1.7,'var(--dot)');
+      g('nH').textContent=(i+1);
+      var delay=Math.max(6, fr.dt*1000*SPEED);
+      i++;
+      timers.push(setTimeout(step, delay));
+    }
+    step();
+  }
+
+  function applyParams(){
+    var cv=+g('sCurv').value, tr=+g('sTrem').value, ov=+g('sOver').value;
+    CFG.curvature_max=cv/100; CFG.curvature_min=(cv/100)*0.33;
+    CFG.tremor_amplitude=tr/10;
+    CFG.overshoot_probability=ov/100;
+    g('vCurv').textContent=(cv/100).toFixed(2);
+    g('vTrem').textContent=(tr/10).toFixed(1);
+    g('vOver').textContent=ov+'%';
+  }
+
+  // The curve is generated ONCE and cached. The loop re-traces that SAME curve every
+  // cycle, so it stays alive without ever morphing on its own. A new random curve is
+  // produced only when the user asks: New curve, Randomize, or moving a slider.
+  var curPlan=null, loopT=null;
+  function cycle(){
+    clearTimers();
+    runRobot(); runHuman(curPlan);
+    loopT=setTimeout(cycle, reduce?4600:3400);
+  }
+  function newCurve(){
+    applyParams();
+    curPlan=buildHumanPlan([HOME.x,HOME.y],[TGT.x,TGT.y]);
+    if(loopT)clearTimeout(loopT); clearTimers();
+    cycle();
+  }
+
+  var editT=null;
+  function liveEdit(){ applyParams(); if(editT)clearTimeout(editT); editT=setTimeout(newCurve, 250); }
+
+  ['sCurv','sTrem','sOver'].forEach(function(id){ g(id).addEventListener('input', liveEdit); });
+  g('showCP').addEventListener('change', updateCPVis);
+  run.addEventListener('click', newCurve);
+  g('rand').addEventListener('click',function(){
+    g('sCurv').value=Math.round(rand(5,60)); g('sTrem').value=Math.round(rand(0,30)); g('sOver').value=Math.round(rand(0,100));
+    newCurve();
+  });
+  window.addEventListener('resize',function(){ place('R'); place('H'); if(curPlan)drawHumanStatic(curPlan); });
+  window.addEventListener('load',function(){ place('R'); place('H'); setTimeout(newCurve,400); });
 })();
 </script>
 <script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>

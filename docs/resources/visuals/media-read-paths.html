@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Where an override lands</title>
+<title>Where a media override lands</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
@@ -12,73 +12,134 @@
     --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;--panel2:#191c20;
     --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
     --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
-    --indigo:#6e7bff;--indigo2:#8f99ff;--pass:#35e0a1;--danger:#ff6b6b;
-    --indigo-dim:rgba(110,123,255,.13);--pass-dim:rgba(53,224,161,.12);--danger-dim:rgba(255,107,107,.12);
-    --sans:"Chivo",system-ui,-apple-system,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--indigo-dim:rgba(110,123,255,.13);
+    --pass:#35e0a1;--pass-dim:rgba(53,224,161,.12);
+    --amber:#f5b544;--amber-dim:rgba(245,181,68,.13);
+    --danger:#ff6b6b;--danger-dim:rgba(255,107,107,.12);
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
   }
   *{box-sizing:border-box}
   html,body{margin:0}
   body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
   .widget{border:1px solid var(--line);padding:16px 18px}
-  .lead{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:14px;line-height:1.5}
-  .toggle{display:inline-flex;border:1px solid var(--line2);margin-bottom:16px}
+  .lead{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:13px;line-height:1.5}
+  .lead b{color:var(--ink)}
+
+  .toggle{display:inline-flex;border:1px solid var(--line2);margin-bottom:6px}
   .toggle button{font-family:var(--mono);font-size:11.5px;color:var(--dim);background:var(--panel);border:0;padding:8px 15px;cursor:pointer;transition:.15s}
   .toggle button+button{border-left:1px solid var(--line2)}
-  .toggle button.on{background:var(--indigo-dim);color:#fff}
-  .flow{display:flex;flex-direction:column;align-items:center;gap:0}
-  .box{border:1px solid var(--line2);background:var(--bg2);padding:11px 14px;width:100%;max-width:420px;transition:.25s;text-align:center}
-  .box .k{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);margin-bottom:5px}
-  .box .m{font-family:var(--mono);font-size:11.5px;color:var(--ink);word-break:break-word}
-  .box.hit{border-color:var(--indigo);background:var(--indigo-dim)}
-  .box.hit .k{color:var(--indigo2)}
-  .arrow{font-family:var(--mono);font-size:15px;color:var(--faint);line-height:1;margin:7px 0}
-  .arrow.live{color:var(--indigo2)}
-  .paths{display:grid;grid-template-columns:1fr 1fr;gap:11px;width:100%;max-width:420px}
-  @media(max-width:460px){.paths{grid-template-columns:1fr}}
-  .path{border:1px solid var(--line2);background:var(--bg2);padding:11px 12px;transition:.25s}
-  .path .k{font-family:var(--mono);font-size:9.5px;color:var(--faint);margin-bottom:6px}
-  .path .val{font-family:var(--sans);font-weight:800;font-size:18px}
-  .path .tag{font-family:var(--mono);font-size:9.5px;margin-top:5px;letter-spacing:.04em}
-  .path.spoof{border-color:rgba(110,123,255,.4)} .path.spoof .val{color:var(--indigo2)} .path.spoof .tag{color:var(--indigo2)}
-  .path.real{border-color:rgba(53,224,161,.35)} .path.real .val{color:var(--pass)} .path.real .tag{color:var(--pass)}
-  .verdict{display:flex;align-items:center;gap:11px;margin-top:15px;padding:12px 14px;border:1px solid var(--line);transition:.3s}
-  .verdict .chip{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:5px 11px;border:1px solid;flex:none}
+  .toggle button.on{color:#fff}
+  .toggle button.cdp.on{background:var(--indigo-dim);color:var(--indigo2)}
+  .toggle button.js.on{background:var(--danger-dim);color:#ff9a9a}
+
+  .stage{position:relative;min-height:184px;margin:4px 0 6px}
+  svg.wire{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+  .wire .seg{fill:none;stroke-width:1.4;transition:stroke .3s,opacity .3s}
+  .wire .seg.dim{stroke:var(--line2);opacity:.5}
+  .wire .seg.ind{stroke:var(--indigo);opacity:.65}
+  .wire .seg.ok{stroke:var(--pass);opacity:.6}
+  .wire .seg.bad{stroke:var(--danger);opacity:.7;stroke-dasharray:5 4}
+
+  /* The source gets its own clear band at the very top. The fork dot sits below it,
+     and every traveling token is spawned at the fork, never inside the source. */
+  .node{position:absolute;transform:translate(-50%,-50%);z-index:3;pointer-events:none}
+  .source{border:1px solid var(--line2);background:var(--panel);padding:8px 13px;text-align:center;min-width:158px;transition:.3s;border-radius:2px}
+  .source.ind{border-color:rgba(110,123,255,.45);background:var(--indigo-dim);box-shadow:0 0 0 3px rgba(110,123,255,.08)}
+  .source .k{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint)}
+  .source .v{font-family:var(--sans);font-weight:800;font-size:17px;line-height:1.15;margin:1px 0}
+  .source .api{font-family:var(--mono);font-size:9px;margin-top:2px;color:var(--faint);transition:.3s}
+  .source.ind .api{color:var(--indigo2)}
+  .source .v.ind{color:var(--indigo2)} .source .v.ok{color:var(--pass)}
+  .pulse{animation:pulse .5s ease-out}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(110,123,255,.35)}100%{box-shadow:0 0 0 12px rgba(110,123,255,0)}}
+
+  .fork{position:absolute;width:7px;height:7px;border-radius:50%;background:var(--faint);transform:translate(-50%,-50%);z-index:3;pointer-events:none;transition:background .3s}
+  .fork.ind{background:var(--indigo)} .fork.ok{background:var(--pass)}
+
+  .icept{position:absolute;transform:translate(-50%,-50%);z-index:4;pointer-events:none;opacity:0;transition:opacity .3s}
+  .icept.show{opacity:1}
+  .icept .mk{width:26px;height:26px;border:1.4px solid var(--danger);background:var(--bg2);border-radius:3px;display:grid;place-items:center;color:var(--danger);transition:.15s}
+  .icept.flash .mk{background:var(--danger-dim);box-shadow:0 0 0 5px rgba(255,107,107,.14)}
+  .icept .mk svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.7}
+  .icept .lbl{position:absolute;left:33px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:8.5px;color:#ff9a9a;text-align:left;white-space:nowrap;line-height:1.25}
+
+  .tok{position:absolute;top:0;left:0;font-family:var(--mono);font-size:10px;font-weight:600;padding:2px 7px;border:1px solid;border-radius:2px;white-space:nowrap;z-index:5;pointer-events:none;will-change:transform}
+  .tok.ind{color:var(--indigo2);border-color:rgba(110,123,255,.5);background:var(--indigo-dim)}
+  .tok.ok{color:var(--pass);border-color:rgba(53,224,161,.45);background:var(--pass-dim)}
+  .tok.bad{color:var(--danger);border-color:rgba(255,107,107,.55);background:var(--danger-dim)}
+
+  .lands{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+  .land{border:1px solid var(--line2);background:var(--bg2);padding:10px 12px;transition:.3s;border-radius:2px;min-width:0}
+  .land .k{font-family:var(--mono);font-size:9.5px;color:var(--dim);word-break:break-word;line-height:1.35;min-height:26px}
+  .land .k b{color:var(--ink);font-weight:600}
+  .land .r{display:flex;align-items:baseline;gap:8px;margin-top:6px}
+  .land .r .val{font-family:var(--sans);font-weight:800;font-size:20px;line-height:1}
+  .land .r .tag{font-family:var(--mono);font-size:9.5px;letter-spacing:.02em}
+  .land.ok{border-color:rgba(53,224,161,.4)} .land.ok .val{color:var(--pass)} .land.ok .tag{color:var(--pass)}
+  .land.ind{border-color:rgba(110,123,255,.42)} .land.ind .val{color:var(--indigo2)} .land.ind .tag{color:var(--indigo2)}
+  .land.bad{border-color:rgba(255,107,107,.5)} .land.bad .val{color:var(--danger)} .land.bad .tag{color:#ff9a9a}
+  .land.glow{box-shadow:0 0 0 3px rgba(244,245,247,.05)}
+
+  .verdict{display:flex;align-items:center;gap:11px;margin-top:13px;padding:12px 14px;border:1px solid var(--line);transition:.3s;border-radius:2px}
+  .verdict .chip{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:5px 11px;border:1px solid;flex:none;border-radius:2px}
   .verdict .txt{font-family:var(--mono);font-size:11.5px;color:var(--dim);line-height:1.55}
   .verdict.ok{background:var(--pass-dim);border-color:rgba(53,224,161,.3)} .verdict.ok .chip{color:var(--pass);border-color:rgba(53,224,161,.5)} .verdict.ok .txt b{color:var(--pass)}
-  .verdict.bad{background:var(--danger-dim);border-color:rgba(255,107,107,.3)} .verdict.bad .chip{color:var(--danger);border-color:rgba(255,107,107,.5)} .verdict.bad .txt b{color:var(--danger)}
+  .verdict.bad{background:var(--danger-dim);border-color:rgba(255,107,107,.3)} .verdict.bad .chip{color:var(--danger);border-color:rgba(255,107,107,.5)} .verdict.bad .txt b{color:#ff9a9a}
+
+  .cap{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:10px;line-height:1.5}
+  .cap b{color:var(--dim);font-weight:500}
+
+  @media (prefers-reduced-motion:reduce){
+    .pulse,.source,.wire .seg,.land,.verdict,.icept,.fork,.tok{animation:none;transition:none}
+  }
+
+  /* theme-matched thin scrollbars for overflow-x boxes (replaces the default white bar) */
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--line2)}
+  ::-webkit-scrollbar-thumb:hover{background:var(--faint)}
 </style>
 </head>
 <body>
 <div class="widget">
-  <div class="lead">A profile claims <b>color-gamut: srgb</b> on a real <b>p3</b> display. Choose how the override is applied and follow where it lands.</div>
+  <div class="lead">One question, asked two ways. A profile claims <b>color-gamut: srgb</b> on a real <b>p3</b> display. The value leaves the engine's <b>MediaValues</b> and forks down two read paths. Toggle the override and watch them converge or split.</div>
 
-  <div class="toggle">
-    <button id="bCdp" class="on">native (CDP)</button>
-    <button id="bJs">JavaScript</button>
+  <div class="toggle" role="group" aria-label="override type">
+    <button class="cdp on" id="bCdp">native (CDP)</button>
+    <button class="js" id="bJs">JavaScript</button>
   </div>
 
-  <div class="flow">
-    <div class="box" id="src">
-      <div class="k">override</div>
-      <div class="m" id="srcM"></div>
-    </div>
-    <div class="arrow" id="a1">&#8595;</div>
-    <div class="box" id="mv">
+  <div class="stage" id="stage">
+    <svg class="wire" id="wire" preserveAspectRatio="none">
+      <polyline class="seg" id="segStub" points=""/>
+      <polyline class="seg" id="segRight" points=""/>
+      <polyline class="seg" id="segLeftUp" points=""/>
+      <polyline class="seg" id="segLeftLo" points=""/>
+    </svg>
+
+    <div class="node source" id="src">
       <div class="k">MediaValues &middot; engine (C++)</div>
-      <div class="m" id="mvM"></div>
+      <div class="v" id="srcV">p3</div>
+      <div class="api" id="srcApi">Emulation.setEmulatedMedia</div>
     </div>
-    <div class="arrow" id="a2">&#8595;&nbsp;&nbsp;&#8595;</div>
-    <div class="paths">
-      <div class="path" id="pMm">
-        <div class="k">matchMedia('(color-gamut: p3)')</div>
-        <div class="val" id="mmVal"></div>
-        <div class="tag" id="mmTag"></div>
-      </div>
-      <div class="path" id="pCss">
-        <div class="k">@media (color-gamut: p3)</div>
-        <div class="val" id="cssVal"></div>
-        <div class="tag" id="cssTag"></div>
-      </div>
+
+    <span class="fork" id="fork"></span>
+
+    <div class="icept" id="icept">
+      <div class="mk"><svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.5" y2="15.5"/><line x1="20" y1="20" x2="8.5" y2="8.5"/></svg></div>
+      <div class="lbl">matchMedia<br>wrapper</div>
+    </div>
+  </div>
+
+  <div class="lands">
+    <div class="land" id="lLeft">
+      <div class="k"><b>window.matchMedia</b>('(color-gamut: p3)')</div>
+      <div class="r"><span class="val" id="lLeftV">-</span><span class="tag" id="lLeftT"></span></div>
+    </div>
+    <div class="land" id="lRight">
+      <div class="k">the <b>@media</b> (color-gamut: p3) cascade</div>
+      <div class="r"><span class="val" id="lRightV">-</span><span class="tag" id="lRightT"></span></div>
     </div>
   </div>
 
@@ -86,52 +147,156 @@
     <span class="chip" id="chip"></span>
     <span class="txt" id="txt"></span>
   </div>
+
+  <div class="cap" id="cap"></div>
 </div>
 
 <script>
 (function(){
+  var reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
   function g(id){return document.getElementById(id);}
-  var SPOOF='srgb', REAL='p3', mode='cdp';
 
-  function render(){
-    var cdp = mode==='cdp';
-    g('bCdp').className = cdp?'on':'';
-    g('bJs').className = cdp?'':'on';
+  var stage=g('stage'), src=g('src'), fork=g('fork'), icept=g('icept');
+  var segStub=g('segStub'), segRight=g('segRight'), segLeftUp=g('segLeftUp'), segLeftLo=g('segLeftLo');
 
-    g('srcM').textContent = cdp ? 'Emulation.setEmulatedMedia' : 'window.matchMedia = function(){ ... }';
-
-    // MediaValues holds the claimed gamut only when the engine is overridden (CDP).
-    g('mvM').textContent = cdp ? (SPOOF+'  (edited)') : (REAL+'  (untouched)');
-    g('mv').className = cdp ? 'box hit' : 'box';
-
-    // (color-gamut: p3) is false in both modes: CDP reads the srgb MediaValues, JS is faked by the wrapper.
-    g('mmVal').textContent = 'false';
-    g('pMm').className = 'path spoof';
-    g('mmTag').textContent = 'spoofed srgb';
-
-    // CSS reads MediaValues: srgb -> false under CDP, the real p3 -> true under JS.
-    g('cssVal').textContent = cdp ? 'false' : 'true';
-    g('pCss').className = cdp ? 'path spoof' : 'path real';
-    g('cssTag').textContent = cdp ? 'spoofed srgb' : 'real p3, untouched';
-
-    g('a1').className = 'arrow live';
-    g('a2').className = cdp ? 'arrow live' : 'arrow';
-
-    var v=g('verdict');
-    if(cdp){
-      v.className='verdict ok';
-      g('chip').textContent='consistent';
-      g('txt').innerHTML='The override edits <b>MediaValues</b> to srgb, so both paths report <b>(color-gamut: p3) = false</b>. They agree.';
-    }else{
-      v.className='verdict bad';
-      g('chip').textContent='contradiction';
-      g('txt').innerHTML='The wrapper only changes matchMedia, so it reports <b>false</b> while the CSS cascade reads the real p3 and reports <b>true</b>. The two disagree.';
+  // Faithful color-gamut(:p3) case from the docs: real display is p3, the profile claims srgb.
+  // Each mode fixes what the source holds, what each path carries, whether the matchMedia path is
+  // intercepted, and the verdict. Values never change mid-mode, so the loop re-traces the SAME story.
+  var MODES={
+    cdp:{
+      srcVal:'srgb', srcCls:'ind', srcApi:'&larr; Emulation.setEmulatedMedia edits it',
+      start:'srgb', startCls:'ind', intercept:false, forkCls:'ind',
+      left:{v:'false', tag:'reads srgb', cls:'ind'}, right:{v:'false', tag:'reads srgb', cls:'ind'},
+      wire:{stub:'ind', right:'ind', up:'ind', lo:'ind'},
+      verdict:'ok', chip:'consistent',
+      txt:'The override edits <b>MediaValues</b> to srgb at the source, so the same value flows down both paths. matchMedia and the @media cascade both answer <b>(color-gamut: p3) = false</b>. They agree.',
+      cap:'A native override lands in the engine, below JavaScript. There is no wrapper to inspect and no second path to contradict it.'
+    },
+    js:{
+      srcVal:'p3', srcCls:'', srcApi:'JavaScript cannot reach here',
+      start:'p3', startCls:'ok', intercept:true, flip:'srgb', forkCls:'ok',
+      left:{v:'false', tag:'faked srgb', cls:'bad'}, right:{v:'true', tag:'real p3', cls:'ok'},
+      wire:{stub:'ok', right:'ok', up:'ok', lo:'bad'},
+      verdict:'bad', chip:'contradiction',
+      txt:'The wrapper replaces <b>window.matchMedia</b> only. The @media cascade never calls it, so it reads the untouched p3 <b>MediaValues</b> and answers <b>true</b>, while matchMedia answers <b>false</b>. The two disagree.',
+      cap:'A JavaScript override owns one path. The other keeps reading the real engine value, and the gap is the tell a detector reads.'
     }
+  };
+
+  var mode='cdp', geom=null, EMIT=1300, DUR=2300;
+
+  // Layout: the source keeps a clear band at the top. The fork sits a measured gap BELOW the
+  // source's real bottom edge, and both descending paths (and every token) start at the fork.
+  function layout(){
+    var W=stage.clientWidth;
+    var cx=W/2, sy=30;
+    src.style.left=cx+'px'; src.style.top=sy+'px';
+    var sh=src.offsetHeight||58;
+    var srcBottom=sy+sh/2;
+    var fy=srcBottom+20;              // fork, clearly below the source box
+    var yTop=fy+34;                   // where each diagonal meets its vertical rail
+    var yEnd=yTop+58;                 // rail bottom
+    var lx=W*0.25, rx=W*0.75, iy=yTop+20;
+    var H=yEnd+8;
+    stage.style.height=H+'px';
+
+    geom={W:W,cx:cx,sy:sy,srcBottom:srcBottom,fy:fy,yTop:yTop,yEnd:yEnd,lx:lx,rx:rx,iy:iy};
+    function metrics(px){ var a=Math.hypot(px-cx, yTop-fy), b=yEnd-yTop; return {a:a,b:b,tot:a+b}; }
+    geom.mL=metrics(lx); geom.mR=metrics(rx);
+    geom.iceptT=(geom.mL.a + (iy-yTop))/geom.mL.tot;
+
+    fork.style.left=cx+'px'; fork.style.top=fy+'px';
+    icept.style.left=lx+'px'; icept.style.top=iy+'px';
+    segStub.setAttribute('points', cx+','+(srcBottom+3)+' '+cx+','+fy);
+    segRight.setAttribute('points', cx+','+fy+' '+rx+','+yTop+' '+rx+','+yEnd);
+    segLeftUp.setAttribute('points', cx+','+fy+' '+lx+','+yTop+' '+lx+','+iy);
+    segLeftLo.setAttribute('points', lx+','+iy+' '+lx+','+yEnd);
   }
 
-  g('bCdp').addEventListener('click',function(){mode='cdp';render();});
-  g('bJs').addEventListener('click',function(){mode='js';render();});
-  render();
+  // Token position along a lane. At t=0 it is exactly the fork (cx,fy), and y only ever increases
+  // from there (fork -> yTop -> yEnd), so a token can never rise back over the source.
+  function posAt(lane,t){
+    var m=lane==='L'?geom.mL:geom.mR, x2=lane==='L'?geom.lx:geom.rx;
+    var d=t*m.tot;
+    if(d<=m.a){ var f=m.a?d/m.a:1; return {x:geom.cx+(x2-geom.cx)*f, y:geom.fy+(geom.yTop-geom.fy)*f}; }
+    return {x:x2, y:geom.yTop+(d-m.a)};
+  }
+
+  var toks=[], raf=null, lastEmit=0;
+  function clearToks(){ toks.forEach(function(t){ if(t.el.parentNode) t.el.parentNode.removeChild(t.el); }); toks=[]; }
+
+  function makeTok(lane,cfg){
+    var el=document.createElement('span');
+    el.className='tok '+cfg.startCls;
+    el.textContent=cfg.start;
+    stage.appendChild(el);
+    return {el:el,lane:lane,t0:performance.now(),flipped:false};
+  }
+  function spawnPair(){
+    var cfg=MODES[mode];
+    src.classList.remove('pulse'); void src.offsetWidth; src.classList.add('pulse');
+    toks.push(makeTok('L',cfg)); toks.push(makeTok('R',cfg));
+  }
+  function deliver(tok){
+    var land=tok.lane==='L'?g('lLeft'):g('lRight');
+    land.classList.add('glow');
+    setTimeout(function(){ land.classList.remove('glow'); }, 260);
+  }
+  function flip(tok){
+    var cfg=MODES[mode];
+    tok.flipped=true; tok.el.textContent=cfg.flip; tok.el.className='tok bad';
+    icept.classList.remove('flash'); void icept.offsetWidth; icept.classList.add('flash');
+    setTimeout(function(){ icept.classList.remove('flash'); }, 260);
+  }
+  function frame(now){
+    if(now-lastEmit>=EMIT){ lastEmit=now; spawnPair(); }
+    for(var i=toks.length-1;i>=0;i--){
+      var tk=toks[i], t=(now-tk.t0)/DUR;
+      if(t>=1){ deliver(tk); if(tk.el.parentNode) tk.el.parentNode.removeChild(tk.el); toks.splice(i,1); continue; }
+      if(tk.lane==='L' && MODES[mode].intercept && !tk.flipped && t>=geom.iceptT){ flip(tk); }
+      var p=posAt(tk.lane,t);
+      tk.el.style.transform='translate(-50%,-50%) translate('+p.x.toFixed(1)+'px,'+p.y.toFixed(1)+'px)';
+    }
+    raf=requestAnimationFrame(frame);
+  }
+  function startLoop(){ if(reduce)return; if(raf)return; lastEmit=performance.now()-EMIT; raf=requestAnimationFrame(frame); }
+
+  function applyMode(){
+    var cfg=MODES[mode];
+    g('bCdp').className='cdp'+(mode==='cdp'?' on':'');
+    g('bJs').className='js'+(mode==='js'?' on':'');
+
+    g('srcV').textContent=cfg.srcVal; g('srcV').className='v '+cfg.srcCls;
+    g('srcApi').innerHTML=cfg.srcApi;
+    src.className='node source'+(cfg.srcCls==='ind'?' ind':'');
+    layout();
+    fork.className='fork '+cfg.forkCls;
+
+    icept.className='icept'+(cfg.intercept?' show':'');
+
+    segStub.setAttribute('class','seg '+cfg.wire.stub);
+    segRight.setAttribute('class','seg '+cfg.wire.right);
+    segLeftUp.setAttribute('class','seg '+cfg.wire.up);
+    segLeftLo.setAttribute('class','seg '+cfg.wire.lo);
+
+    g('lLeftV').textContent=cfg.left.v; g('lLeftT').textContent=cfg.left.tag; g('lLeft').className='land '+cfg.left.cls;
+    g('lRightV').textContent=cfg.right.v; g('lRightT').textContent=cfg.right.tag; g('lRight').className='land '+cfg.right.cls;
+
+    g('verdict').className='verdict '+cfg.verdict;
+    g('chip').textContent=cfg.chip;
+    g('txt').innerHTML=cfg.txt;
+    g('cap').innerHTML=cfg.cap;
+
+    clearToks();
+    if(!reduce) startLoop();
+  }
+
+  g('bCdp').addEventListener('click',function(){ mode='cdp'; applyMode(); });
+  g('bJs').addEventListener('click',function(){ mode='js'; applyMode(); });
+  window.addEventListener('resize',function(){ layout(); });
+  window.addEventListener('load',function(){ layout(); });
+
+  layout(); applyMode();
 })();
 </script>
 <script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>

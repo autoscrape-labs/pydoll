@@ -36,7 +36,7 @@ asyncio.run(main())
 
 Enable the domain **before** navigating; requests made before it is enabled are not captured.
 
-<iframe src="/docs/resources/visuals/request-waterfall.html" aria-label="A request waterfall showing each request's start and duration as the page loads" style="width: 100%; height: 375px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/request-waterfall.html" aria-label="A request waterfall showing each request's start and duration as the page loads" style="width: 100%; height: 375px; border: 0;" loading="lazy"></iframe>
 
 Press Load: each request appears as a bar placed by when it starts and how wide by how long it takes, which is what the network events report as they fire.
 

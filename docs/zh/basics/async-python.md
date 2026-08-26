@@ -90,7 +90,7 @@ asyncio.run(main())
 
 这一次大约只需 **2 秒**。两段等待重叠了。水烧开的同时面包也在烤。
 
-<iframe src="/docs/resources/visuals/async-flow.html" aria-label="Sequential vs concurrent async, animated" style="width: 100%; height: 285px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/async-flow.html" aria-label="Sequential vs concurrent async, animated" style="width: 100%; height: 285px; border: 0;" loading="lazy"></iframe>
 
 分别运行这两种模式，盯着计时器看：顺序执行在 4.0s 结束，并发执行在 2.0s 结束，因为两段等待重叠了。
 

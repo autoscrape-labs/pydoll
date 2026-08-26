@@ -2,7 +2,7 @@
 
 让浏览器的流量经过 proxy，可以更换你的出口 IP、把请求分散到多个地址，或从另一个地区访问某个站点。你用一个启动参数就能设置 proxy，而 Pydoll 会替你处理 proxy 认证。
 
-<iframe src="/docs/resources/visuals/proxy-routing.html" aria-label="A request routed direct versus through a proxy, changing the IP the target sees" style="width: 100%; height: 300px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/proxy-routing.html" aria-label="A request routed direct versus through a proxy, changing the IP the target sees" style="width: 100%; height: 300px; border: 0;" loading="lazy"></iframe>
 
 ## 设置 proxy
 

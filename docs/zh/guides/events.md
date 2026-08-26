@@ -31,7 +31,7 @@ asyncio.run(main())
 
 `on(event_name, callback)` 返回一个整数 id，你之后可以用它来移除该 callback。callback 可以是同步或异步的，它接收一个参数：事件本身。
 
-<iframe src="/docs/resources/visuals/events-flow.html" aria-label="Events firing on a page and your callbacks running" style="width: 100%; height: 395px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/events-flow.html" aria-label="Events firing on a page and your callbacks running" style="width: 100%; height: 395px; border: 0;" loading="lazy"></iframe>
 
 按下 Navigate：事件在页面上按顺序触发，你注册的 callback 会随着各自的事件触发而运行。
 

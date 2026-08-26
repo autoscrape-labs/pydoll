@@ -2,7 +2,7 @@
 
 Os sistemas de detecção correlacionam sinais entre camadas: o fingerprint de rede (TCP/TLS/HTTP2), o fingerprint do navegador (canvas, WebGL, navigator) e o comportamento (mouse, teclado, tempo). Passar em uma camada e falhar em outra ainda te sinaliza. Um IP residencial com um fingerprint TCP incompatível, ou um fingerprint de navegador perfeito com cliques robóticos, é pego por qualquer coisa que faça verificação cruzada. Esta página cobre o que o Pydoll te dá de graça e as alavancas que você controla para manter as camadas consistentes.
 
-<iframe src="/docs/resources/visuals/evasion-layers.html" aria-label="Como as camadas de rede, navegador, comportamento e IP têm todas que permanecer consistentes para passar" style="width: 100%; height: 320px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/evasion-layers.html" aria-label="Como as camadas de rede, navegador, comportamento e IP têm todas que permanecer consistentes para passar" style="width: 100%; height: 320px; border: 0;" loading="lazy"></iframe>
 
 ## O que você ganha de graça
 

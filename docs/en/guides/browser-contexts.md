@@ -57,7 +57,7 @@ graph LR
     C2 --> T3[Tab C]
 ```
 
-<iframe src="/docs/resources/visuals/contexts-isolation.html" aria-label="Two browser contexts, each with its own cookie jar, showing that a cookie set in one does not appear in the other" style="width: 100%; height: 325px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/contexts-isolation.html" aria-label="Two browser contexts, each with its own cookie jar, showing that a cookie set in one does not appear in the other" style="width: 100%; height: 325px; border: 0;" loading="lazy"></iframe>
 
 Log in on each context: the cookie lands only in that context's jar. Nothing crosses over, which is what makes contexts good for running separate sessions in one browser.
 

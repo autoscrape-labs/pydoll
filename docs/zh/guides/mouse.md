@@ -2,7 +2,7 @@
 
 Pydoll 用两种方式驱动鼠标：通过你找到的元素，这是大多数情况下你需要的方式；或者在需要精确位置时，直接使用页面坐标。两者都支持 `humanize=True`，它让光标沿着一条带弧度、有人类节奏的路径移动，而不是瞬移到目标。
 
-<iframe src="/docs/resources/visuals/mouse-humanize.html" aria-label="Humanized curved cursor path versus an instant robotic jump" style="width: 100%; height: 345px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/mouse-humanize.html" aria-label="Humanized curved cursor path versus an instant robotic jump" style="width: 100%; height: 345px; border: 0;" loading="lazy"></iframe>
 
 ## 点击一个元素
 

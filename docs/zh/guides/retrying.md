@@ -79,7 +79,7 @@ async def fetch(tab, url):
     return await tab.find(id='content', timeout=10)
 ```
 
-<iframe src="/docs/resources/visuals/retry-backoff.html" aria-label="Fixed delay vs exponential backoff retry timeline" style="width: 100%; height: 290px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/retry-backoff.html" aria-label="Fixed delay vs exponential backoff retry timeline" style="width: 100%; height: 290px; border: 0;" loading="lazy"></iframe>
 
 运行每一种模式：固定延迟在每次尝试之间保持相同的间隔，而指数退避会把间隔翻倍（2 秒、4 秒、8 秒），让重试之间的间隔越拉越开。
 

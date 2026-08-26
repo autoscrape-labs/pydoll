@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>What a proxy can and cannot hide, by layer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+<style>
+  :root{
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;--panel2:#191c20;
+    --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
+    --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--indigo-dim:rgba(110,123,255,.13);
+    --pass:#35e0a1;--pass-dim:rgba(53,224,161,.12);
+    --amber:#f5b544;--amber-dim:rgba(245,181,68,.13);
+    --danger:#ff6b6b;--danger-dim:rgba(255,107,107,.12);
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
+  .widget{border:1px solid var(--line);padding:16px 18px}
+  .lead{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:14px;line-height:1.55}
+  .lead b{color:var(--ink)}
+  .lead b.i{color:var(--indigo2)} .lead b.r{color:var(--danger)}
+
+  .stage{border:1px solid var(--line2);background:var(--bg2);padding:11px 12px 13px}
+  .dhead{display:flex;align-items:baseline;gap:8px;margin:0 2px 10px}
+  .dhead .t{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--faint)}
+  .dhead .dir{margin-left:auto;font-family:var(--mono);font-size:9px;color:var(--faint)}
+  .dhead .dir b{color:var(--indigo2);font-weight:600}
+
+  /* ---- the OSI stack ---- */
+  .stack{position:relative;padding-left:30px}
+  .rail{position:absolute;left:14px;top:2px;bottom:2px;width:2px;background:var(--line);border-radius:2px;overflow:hidden}
+  .railfill{position:absolute;left:0;top:0;width:100%;height:0;
+    background:linear-gradient(var(--indigo2),var(--indigo));box-shadow:0 0 8px rgba(110,123,255,.5)}
+  .token{position:absolute;left:6px;top:0;width:18px;height:15px;z-index:6;opacity:0;
+    transform:translateY(-20px);will-change:transform}
+  .token .box{width:18px;height:15px;border-radius:3px;border:1.4px solid var(--indigo2);
+    background:linear-gradient(#20232b,#16181d);box-shadow:0 0 11px 1px rgba(110,123,255,.6);position:relative}
+  .token .box::before{content:"";position:absolute;left:2.5px;right:2.5px;top:4.5px;height:1.4px;background:var(--indigo2);opacity:.7;box-shadow:0 3.5px 0 rgba(143,153,255,.55)}
+
+  .layer{position:relative;display:grid;grid-template-columns:34px 1fr auto;gap:11px;align-items:center;
+    border:1px solid var(--line);border-left:3px solid var(--line2);background:var(--panel);
+    padding:7px 11px;transition:border-color .3s,background .3s,box-shadow .3s}
+  .layer + .layer{margin-top:6px}
+  .lnum{font-family:var(--mono);font-weight:600;font-size:12px;color:var(--faint);letter-spacing:.02em}
+  .lmid{min-width:0}
+  .lname{font-family:var(--sans);font-weight:700;font-size:12.5px;line-height:1.05}
+  .lproto{font-family:var(--mono);font-size:8.5px;color:var(--faint);margin-top:2px;letter-spacing:.02em}
+  .lnote{font-family:var(--mono);font-size:9.5px;color:var(--dim);margin-top:4px;line-height:1.35}
+  .lchip{display:flex;justify-content:flex-end}
+  .chip{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.05em;
+    padding:3px 8px;border:1px solid var(--line2);color:var(--faint);white-space:nowrap}
+
+  /* zone tints */
+  .layer.z-reach{border-left-color:var(--indigo);background:linear-gradient(90deg,var(--indigo-dim),transparent 62%)}
+  .layer.z-reach .lname{color:#fff} .layer.z-reach .lnum{color:var(--indigo2)}
+  .layer.z-reach .chip{color:var(--indigo2);border-color:rgba(110,123,255,.5);background:var(--indigo-dim)}
+  .layer.z-reach .lnote{color:var(--indigo2)}
+
+  .layer.z-relay{border-left-color:rgba(110,123,255,.55)}
+  .layer.z-relay .lnum{color:var(--indigo2)}
+  .layer.z-relay .chip{color:var(--indigo2);border-color:rgba(110,123,255,.34);border-style:dashed}
+
+  .layer.z-opaque{border-left-color:var(--amber)}
+  .layer.z-opaque .chip{color:var(--amber);border-color:rgba(245,181,68,.45);background:var(--amber-dim)}
+  .layer.z-opaque .lnote{color:var(--amber)}
+
+  .layer.z-idle{opacity:.5;border-left-color:var(--line)}
+  .layer.z-idle .lnote{color:var(--faint)}
+
+  .layer.z-leak{border-left-color:var(--danger);background:linear-gradient(90deg,var(--danger-dim),transparent 62%)}
+  .layer.z-leak .lname{color:#fff} .layer.z-leak .lnum{color:var(--danger)}
+  .layer.z-leak .chip{color:var(--danger);border-color:rgba(255,107,107,.5);background:var(--danger-dim)}
+  .layer.z-leak .lnote{color:#ff9a9a}
+
+  .layer.z-local{opacity:.62}
+  .layer.z-local .lnote{color:var(--faint)}
+
+  .layer.cross{animation:cross .6s ease}
+  @keyframes cross{0%{box-shadow:0 0 0 1px rgba(143,153,255,.55) inset}45%{box-shadow:0 0 0 1px rgba(143,153,255,.55) inset,0 0 14px rgba(110,123,255,.28)}100%{box-shadow:none}}
+  .layer.z-leak.cross{animation:crossR .6s ease}
+  @keyframes crossR{0%{box-shadow:0 0 0 1px rgba(255,107,107,.6) inset}45%{box-shadow:0 0 0 1px rgba(255,107,107,.6) inset,0 0 14px rgba(255,107,107,.3)}100%{box-shadow:none}}
+
+  /* proxy interception bar */
+  .proxybar{position:absolute;left:-3px;right:0;height:10px;z-index:5;pointer-events:none;
+    transition:top .5s cubic-bezier(.4,0,.2,1)}
+  .proxybar .line{position:absolute;left:0;right:118px;top:50%;height:0;border-top:1.6px dashed var(--indigo2);opacity:.85}
+  .proxybar .ptab{position:absolute;right:0;top:50%;transform:translateY(-50%);
+    font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.03em;color:var(--indigo2);
+    background:var(--panel2);border:1px solid rgba(110,123,255,.5);padding:3px 8px;white-space:nowrap;display:flex;align-items:center;gap:5px}
+  .proxybar .ptab svg{width:10px;height:10px;stroke:var(--indigo2);fill:none;stroke-width:1.7}
+  .proxybar.flash .ptab{animation:ptab .55s ease}
+  @keyframes ptab{0%{box-shadow:0 0 0 0 rgba(110,123,255,.5)}55%{box-shadow:0 0 0 5px rgba(110,123,255,0),0 0 14px rgba(110,123,255,.6)}100%{box-shadow:none}}
+
+  /* ---- on-the-wire strip ---- */
+  .wirewrap{margin-top:13px}
+  .wirehead{display:flex;align-items:baseline;gap:8px;font-family:var(--mono);font-size:9.5px;
+    text-transform:uppercase;letter-spacing:.08em;color:var(--faint);margin:0 1px 8px}
+  .wirehead .whr{margin-left:auto;text-transform:none;letter-spacing:0;color:var(--dim);font-size:9.5px}
+  .wirehead .whr b{color:#ff9a9a;font-weight:600}
+  .wirescroll{overflow-x:auto;padding-bottom:2px}
+  .wire{display:flex;gap:4px;min-width:440px}
+  .wseg{flex:1 1 0;border:1px solid var(--line2);background:var(--panel);padding:7px 9px;min-width:0;
+    opacity:0;transform:translateY(7px) scale(.96)}
+  .wseg.show{opacity:1;transform:none;transition:opacity .34s ease,transform .34s ease}
+  .wseg .sk{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:5px}
+  .wseg .sk .dot{width:6px;height:6px;border-radius:50%;background:var(--faint);flex:none}
+  .wseg .sv{font-family:var(--mono);font-size:8.5px;color:var(--dim);margin-top:3px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .wseg.r-reach{border-color:rgba(110,123,255,.5);background:var(--indigo-dim)}
+  .wseg.r-reach .sk .dot{background:var(--indigo2)} .wseg.r-reach .sk{color:var(--indigo2)}
+  .wseg.r-soft{border-color:rgba(110,123,255,.32);border-style:dashed}
+  .wseg.r-soft .sk .dot{background:var(--indigo2)}
+  .wseg.r-opaque{border-color:rgba(245,181,68,.45);background:var(--amber-dim)}
+  .wseg.r-opaque .sk .dot{background:var(--amber)} .wseg.r-opaque .sk{color:var(--amber)}
+  .wseg.r-leak{border-color:rgba(255,107,107,.5);background:var(--danger-dim)}
+  .wseg.r-leak .sk .dot{background:var(--danger)} .wseg.r-leak .sk{color:#ffb0b0}
+  .wseg.r-leak .sv{color:#ff9a9a}
+  .wseg.r-local{opacity:.6}
+  .wseg .lk{margin-left:auto;font-family:var(--mono);font-size:7.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint)}
+  .wseg.r-leak .lk{color:var(--danger)}
+
+  .wlegend{display:flex;flex-wrap:wrap;gap:13px;margin-top:9px;font-family:var(--mono);font-size:9px;color:var(--faint)}
+  .wlegend span{display:flex;align-items:center;gap:5px}
+  .wlegend i{width:9px;height:9px;border-radius:2px;display:inline-block}
+  .wlegend i.re{background:var(--indigo)} .wlegend i.op{background:var(--amber)}
+  .wlegend i.le{background:var(--danger)} .wlegend i.lo{background:var(--faint)}
+
+  /* ---- controls ---- */
+  .controls{display:flex;align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap}
+  .seg{display:inline-flex;border:1px solid var(--line2)}
+  .modebtn{font-family:var(--mono);font-size:11px;font-weight:500;color:var(--dim);background:var(--panel);
+    border:0;border-right:1px solid var(--line2);padding:8px 13px;cursor:pointer;transition:.15s}
+  .modebtn:last-child{border-right:0}
+  .modebtn:hover{color:var(--ink)}
+  .modebtn.on{color:var(--indigo2);background:var(--indigo-dim);box-shadow:0 0 0 1px rgba(110,123,255,.35) inset}
+  button.ghost{font-family:var(--mono);font-size:11px;font-weight:500;color:var(--dim);background:var(--panel);
+    border:1px solid var(--line2);padding:8px 13px;cursor:pointer;transition:.15s}
+  button.ghost:hover{border-color:var(--indigo);color:#fff}
+  .reachtag{margin-left:auto;font-family:var(--mono);font-size:9.5px;color:var(--faint);text-align:right;line-height:1.45}
+  .reachtag b{color:var(--indigo2);font-weight:600} .reachtag b.r{color:var(--danger)}
+
+  .rule{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:12px;line-height:1.55}
+  .rule b{color:var(--dim);font-weight:500} .rule b.r{color:#ff9a9a}
+
+  @media(max-width:560px){
+    .layer{grid-template-columns:30px 1fr auto;gap:8px;padding:7px 9px}
+    .lnote{font-size:9px}
+    .proxybar .line{right:104px}
+    .reachtag{margin-left:0;width:100%;text-align:left}
+    .dhead .dir{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .token{display:none}
+    .layer.cross{animation:none}
+    .proxybar{transition:none}.proxybar.flash .ptab{animation:none}
+    .wseg.show{transition:none}
+    .railfill{display:none}
+  }
+
+  /* theme-matched thin scrollbars for overflow-x boxes (replaces the default white bar) */
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--line2)}
+  ::-webkit-scrollbar-thumb:hover{background:var(--faint)}
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="lead">A proxy reaches only the layer it sits at, and the layers above it. An <b class="i">HTTP proxy at L7</b> reads and rewrites your requests. A <b class="i">SOCKS proxy at L5</b> relays them untouched and swaps your route. Neither can touch what the <b>OS kernel</b> stamps below it: the <b class="r">TCP/IP fingerprint at L4 and L3</b> rides the wire to the proxy, real and unchangeable. Toggle the proxy, the reach moves, the red leak stays.</div>
+
+  <div class="stage">
+    <div class="dhead">
+      <span class="t">OSI stack · a packet descends, each layer wraps it</span>
+      <span class="dir">encapsulation <b>&darr;</b></span>
+    </div>
+    <div class="stack" id="stack">
+      <div class="rail"><div class="railfill" id="railfill"></div></div>
+      <div class="token" id="token"><div class="box"></div></div>
+      <div class="proxybar" id="proxybar">
+        <span class="line"></span>
+        <span class="ptab" id="ptab"><svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="10" rx="1.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><span id="ptabtxt">HTTP proxy</span></span>
+      </div>
+      <!-- layer rows injected here -->
+    </div>
+  </div>
+
+  <div class="wirewrap">
+    <div class="wirehead">
+      on the wire · you &rarr; proxy
+      <span class="whr">your real <b>TCP + IP</b> is already here, before the proxy</span>
+    </div>
+    <div class="wirescroll">
+      <div class="wire" id="wire"><!-- segments injected --></div>
+    </div>
+    <div class="wlegend">
+      <span><i class="re"></i>proxy's reach</span>
+      <span><i class="op"></i>opaque to proxy</span>
+      <span><i class="le"></i>OS kernel, leaks</span>
+      <span><i class="lo"></i>local only</span>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="seg" role="group" aria-label="Proxy layer">
+      <button class="modebtn on" id="bHttp" aria-pressed="true">HTTP proxy · L7</button>
+      <button class="modebtn" id="bSocks" aria-pressed="false">SOCKS proxy · L5</button>
+    </div>
+    <button class="ghost" id="replay">Replay descent</button>
+    <span class="reachtag" id="reachtag"></span>
+  </div>
+  <div class="rule">Which layer a proxy sits at decides what it can hide. <b>No proxy hides the kernel's TCP/IP fingerprint below it</b>, the OS stamps it and the packet carries it to the proxy regardless. <b class="r">Only VPN-level routing or OS stack tuning changes it.</b></div>
+</div>
+
+<script>
+(function(){
+  var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  function g(id){return document.getElementById(id);}
+
+  var LY=[
+    {n:7,name:'Application',proto:'HTTP · HTTPS · DNS'},
+    {n:6,name:'Presentation',proto:'TLS · compression'},
+    {n:5,name:'Session',proto:'SOCKS'},
+    {n:4,name:'Transport',proto:'TCP · UDP'},
+    {n:3,name:'Network',proto:'IP · ICMP'},
+    {n:2,name:'Data Link',proto:'Ethernet · Wi-Fi'},
+    {n:1,name:'Physical',proto:'cables · radio'}
+  ];
+
+  var ST={
+    http:{
+      7:{z:'reach', chip:'rewrites', note:'reads and rewrites URLs, headers, cookies, bodies'},
+      6:{z:'opaque',chip:'opaque',   note:'HTTPS is encrypted, the proxy must terminate TLS to read it'},
+      5:{z:'idle',  chip:'unused',   note:'where a SOCKS proxy would sit'},
+      4:{z:'leak',  chip:'leaks',    note:'TCP fingerprint (window, options order, TTL), set by the kernel'},
+      3:{z:'leak',  chip:'leaks',    note:'IP header reveals your OS and topology, set by the kernel'},
+      2:{z:'local', chip:'local',    note:'MAC address, visible only on your local segment'},
+      1:{z:'local', chip:'local',    note:'cables and radio waves'}
+    },
+    socks:{
+      7:{z:'relay', chip:'relayed',  note:'forwarded untouched (protocol-agnostic)'},
+      6:{z:'relay', chip:'relayed',  note:'stays end to end encrypted through the proxy'},
+      5:{z:'reach', chip:'relays',   note:'SOCKS relay, swaps IP:port (SOCKS5 also carries UDP)'},
+      4:{z:'leak',  chip:'leaks',    note:'TCP fingerprint (window, options order, TTL), set by the kernel'},
+      3:{z:'leak',  chip:'leaks',    note:'IP header reveals your OS and topology, set by the kernel'},
+      2:{z:'local', chip:'local',    note:'MAC address, visible only on your local segment'},
+      1:{z:'local', chip:'local',    note:'cables and radio waves'}
+    }
+  };
+
+  // on-the-wire segments (outer -> inner, left -> right); layer = which OSI layer adds it
+  var SEG=[
+    {key:'frame',layer:2,label:'Frame'},
+    {key:'ip',   layer:3,label:'IP hdr'},
+    {key:'tcp',  layer:4,label:'TCP hdr'},
+    {key:'tls',  layer:6,label:'TLS'},
+    {key:'http', layer:7,label:'HTTP payload'}
+  ];
+  function segRole(mode,key){
+    if(key==='tcp'||key==='ip') return 'leak';
+    if(key==='frame') return 'local';
+    if(key==='tls') return mode==='http'?'opaque':'soft';
+    return mode==='http'?'reach':'soft'; // http payload
+  }
+  function segVal(mode,key){
+    if(key==='tcp')  return 'win 65535, opts MSS·SACK·WS, real OS';
+    if(key==='ip')   return 'src = your real IP, fields = your OS';
+    if(key==='frame')return 'ETH · MAC (local only)';
+    if(key==='tls')  return mode==='http'?'opaque to the proxy':'encrypted, relayed';
+    return mode==='http'?'the proxy can rewrite this':'relayed untouched';
+  }
+  function segLk(key){ return (key==='tcp'||key==='ip')?'leaks':''; }
+
+  // ---- build rows ----
+  var stack=g('stack');
+  LY.forEach(function(L){
+    var d=document.createElement('div');
+    d.className='layer'; d.setAttribute('data-n',L.n);
+    d.innerHTML='<div class="lnum">L'+L.n+'</div>'+
+      '<div class="lmid"><div class="lname">'+L.name+'</div><div class="lproto">'+L.proto+'</div><div class="lnote"></div></div>'+
+      '<div class="lchip"><span class="chip"></span></div>';
+    stack.appendChild(d);
+  });
+  var rows={}; Array.prototype.forEach.call(stack.querySelectorAll('.layer'),function(r){ rows[r.getAttribute('data-n')]=r; });
+
+  // ---- build wire ----
+  var wire=g('wire'), segEls={};
+  SEG.forEach(function(s){
+    var d=document.createElement('div');
+    d.className='wseg'; d.setAttribute('data-layer',s.layer);
+    d.innerHTML='<div class="sk"><span class="dot"></span>'+s.label+'<span class="lk"></span></div><div class="sv"></div>';
+    wire.appendChild(d); segEls[s.layer]=d; d._key=s.key;
+  });
+
+  var token=g('token'), railfill=g('railfill'), proxybar=g('proxybar'), ptabtxt=g('ptabtxt'), reachtag=g('reachtag');
+  var bHttp=g('bHttp'), bSocks=g('bSocks');
+
+  var mode='http';
+
+  function applyMode(){
+    var tbl=ST[mode], proxyN=(mode==='http')?7:5;
+    LY.forEach(function(L){
+      var st=tbl[L.n], r=rows[L.n];
+      r.className='layer z-'+st.z;
+      r.querySelector('.lnote').textContent=st.note;
+      r.querySelector('.chip').textContent=st.chip;
+    });
+    // proxy bar to the interception row
+    var pr=rows[proxyN];
+    proxybar.style.top=(pr.offsetTop-2)+'px';
+    proxybar.style.height=(pr.offsetHeight+4)+'px';
+    ptabtxt.textContent=(mode==='http')?'HTTP proxy · L7':'SOCKS proxy · L5';
+    // wire segments
+    SEG.forEach(function(s){
+      var el=segEls[s.layer];
+      el.className='wseg r-'+segRole(mode,s.key)+(el.classList.contains('show')?' show':'');
+      el.querySelector('.sv').textContent=segVal(mode,s.key);
+      el.querySelector('.lk').textContent=segLk(s.key);
+    });
+    reachtag.innerHTML=(mode==='http')
+      ? 'reach <b>L7</b> (rewrite) · leaks <b class="r">L4, L3</b>'
+      : 'reach <b>L7 to L5</b> (relay) · leaks <b class="r">L4, L3</b>';
+    bHttp.classList.toggle('on',mode==='http'); bHttp.setAttribute('aria-pressed',mode==='http');
+    bSocks.classList.toggle('on',mode==='socks'); bSocks.setAttribute('aria-pressed',mode==='socks');
+  }
+
+  function revealAllSegs(on){
+    SEG.forEach(function(s){ segEls[s.layer].classList.toggle('show',on); });
+  }
+  function pulseRow(n){
+    var r=rows[n]; if(!r)return; r.classList.remove('cross'); void r.offsetWidth; r.classList.add('cross');
+    setTimeout(function(){ r.classList.remove('cross'); },620);
+  }
+
+  // ---- descent engine ----
+  var rafId=null, loopT=null;
+  function cancelAll(){ if(rafId){cancelAnimationFrame(rafId);rafId=null;} if(loopT){clearTimeout(loopT);loopT=null;} }
+
+  function centers(){
+    return LY.map(function(L){ var r=rows[L.n]; return {n:L.n,cy:r.offsetTop+r.offsetHeight/2}; });
+  }
+
+  function startDescent(){
+    cancelAll(); applyMode();
+    if(reduce){
+      revealAllSegs(true);
+      LY.forEach(function(L){ /* static composed state, no motion */ });
+      return;
+    }
+    revealAllSegs(false);
+    var proxyN=(mode==='http')?7:5;
+    var C=centers(), H=stack.clientHeight;
+    var startY=-20, endY=H+8, DUR=2600, HOLD=1050;
+    var passed={};
+    token.style.opacity='1';
+    var t0=null;
+    function frame(ts){
+      if(t0===null)t0=ts;
+      var p=(ts-t0)/DUR; if(p>1)p=1;
+      var y=startY+(endY-startY)*p;
+      token.style.transform='translateY('+y+'px)';
+      var fill=Math.max(0,Math.min(H,y+7)); railfill.style.height=fill+'px';
+      C.forEach(function(c){
+        if(!passed[c.n] && y>=c.cy){
+          passed[c.n]=true;
+          pulseRow(c.n);
+          if(segEls[c.n]) segEls[c.n].classList.add('show');
+          if(c.n===proxyN){ proxybar.classList.remove('flash'); void proxybar.offsetWidth; proxybar.classList.add('flash'); }
+        }
+      });
+      if(p<1){ rafId=requestAnimationFrame(frame); }
+      else{
+        revealAllSegs(true);
+        token.style.opacity='0';
+        /* run once and hold the fully descended, encapsulated state (dense read view) */
+      }
+    }
+    rafId=requestAnimationFrame(frame);
+  }
+
+  function setMode(m){ if(m===mode && rafId)return; mode=m; startDescent(); }
+  bHttp.addEventListener('click',function(){ setMode('http'); });
+  bSocks.addEventListener('click',function(){ setMode('socks'); });
+  g('replay').addEventListener('click', startDescent);
+  window.addEventListener('resize',function(){ applyMode(); });
+  window.addEventListener('load',function(){ applyMode(); setTimeout(startDescent, reduce?0:320); });
+})();
+</script>
+<script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>
+</body>
+</html>

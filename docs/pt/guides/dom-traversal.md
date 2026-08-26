@@ -2,7 +2,7 @@
 
 Depois de ter um elemento, você muitas vezes precisa dos que estão ao redor dele: seus filhos, seus irmãos, elementos dentro de um shadow root, ou conteúdo dentro de um iframe. Este guia cobre a movimentação pela árvore do DOM a partir de um ponto de partida conhecido. Para localizar esse elemento inicial, veja [Encontrar elementos](element-finding.md).
 
-<iframe src="/docs/resources/visuals/dom-traversal-tree.html" aria-label="Move a focus through a DOM tree with parent, child, and sibling methods" style="width: 100%; height: 480px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/dom-traversal-tree.html" aria-label="Move a focus through a DOM tree with parent, child, and sibling methods" style="width: 100%; height: 480px; border: 0;" loading="lazy"></iframe>
 
 ## Obter elementos filhos
 

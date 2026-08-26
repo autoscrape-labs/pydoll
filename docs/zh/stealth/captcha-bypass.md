@@ -2,7 +2,7 @@
 
 Pydoll 可以帮你点击 Cloudflare Turnstile 的复选框，就和真人在这个控件上的点击一样。它不会解决图片或拼图类挑战，而且这次点击是否被接受，取决于你的 IP 信誉和 fingerprint，而不取决于 Pydoll。请把它当作是自动化这次点击，而不是攻破 captcha。
 
-<iframe src="/docs/resources/visuals/captcha-turnstile.html" aria-label="Pydoll 点击 Turnstile 复选框，结果取决于 IP 信誉" style="width: 100%; height: 345px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/captcha-turnstile.html" aria-label="Pydoll 点击 Turnstile 复选框，结果取决于 IP 信誉" style="width: 100%; height: 345px; border: 0;" loading="lazy"></iframe>
 
 ## 在导航时处理 Turnstile
 
@@ -82,7 +82,7 @@ async with tab.expect_and_bypass_cloudflare_captcha(time_to_wait_captcha=15):
 
 如果复选框被点击了，但接着出现拼图或图片挑战，说明信任分太低了。Pydoll 无法解决那种挑战；应该改善 IP 和 fingerprint。
 
-<iframe src="/docs/resources/visuals/turnstile-trust-score.html" aria-label="IP 信誉、fingerprint 一致性和浏览器模式共同构成一个信任分，最终得出接受、挑战或封锁的结果；Pydoll 自动完成的点击只是其中一个输入" style="width: 100%; height: 430px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/turnstile-trust-score.html" aria-label="IP 信誉、fingerprint 一致性和浏览器模式共同构成一个信任分，最终得出接受、挑战或封锁的结果；Pydoll 自动完成的点击只是其中一个输入" style="width: 100%; height: 430px; border: 0;" loading="lazy"></iframe>
 
 ## 它不做什么
 

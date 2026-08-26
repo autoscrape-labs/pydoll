@@ -33,32 +33,7 @@ SOCKS4 出自 NEC，诞生于 1990 年代初，没有正式的 RFC。SOCKS5 于 
 
 一个 SOCKS5 连接遵循 RFC 1928，分三个阶段：方法协商、可选的认证，然后是连接请求。
 
-```mermaid
-sequenceDiagram
-    participant Client as 客户端
-    participant SOCKS5 as SOCKS5 Proxy
-    participant Server as 目标服务器
-
-    Note over Client,SOCKS5: 阶段 1：方法协商
-    Client->>SOCKS5: Hello [VER=5, NMETHODS, METHODS]
-    SOCKS5->>Client: 选定方法 [VER=5, METHOD]
-
-    Note over Client,SOCKS5: 阶段 2：认证（如果需要）
-    Client->>SOCKS5: 认证 [VER=1, ULEN, UNAME, PLEN, PASSWD]
-    SOCKS5->>Client: 认证响应 [VER=1, STATUS]
-
-    Note over Client,SOCKS5: 阶段 3：连接请求
-    Client->>SOCKS5: 连接 [VER=5, CMD, DST.ADDR, DST.PORT]
-    SOCKS5->>Server: 建立 TCP 连接
-    Server-->>SOCKS5: 已连接
-    SOCKS5->>Client: 回复 [VER=5, REP=SUCCESS, BND.ADDR, BND.PORT]
-
-    Note over Client,Server: 数据中继
-    Client->>SOCKS5: 应用数据
-    SOCKS5->>Server: 转发
-    Server->>SOCKS5: 响应
-    SOCKS5->>Client: 转发
-```
+<iframe scrolling="no" src="/docs/resources/visuals/socks5-handshake.html" aria-label="The SOCKS5 handshake in real RFC 1928/1929 bytes: method negotiation, optional username/password auth, then the CONNECT request, decoded field by field" style="width: 100%; height: 860px; border: 0;" loading="lazy"></iframe>
 
 ### 阶段 1：方法协商
 
@@ -194,33 +169,7 @@ Chrome 不支持 SOCKS5 的用户名/密码认证，这是一个长期存在的�
 
 标准的修复是一个本地转发器：一个跑在 localhost 上的小型 SOCKS5 服务器，它接受来自 Chrome 的无认证连接，并带着完整的认证把它们转发给远程 proxy。
 
-```mermaid
-sequenceDiagram
-    participant Chrome as Chrome
-    participant Forwarder as 本地转发器<br/>(127.0.0.1:1081)
-    participant Remote as 远程 SOCKS5 proxy<br/>(proxy:1080)
-    participant Server as 目的地
-
-    Note over Chrome,Forwarder: 无认证
-    Chrome->>Forwarder: Hello [methods: 0x00]
-    Forwarder->>Chrome: 选定方法 [0x00]
-    Chrome->>Forwarder: CONNECT example.com:443
-
-    Note over Forwarder,Remote: 带认证
-    Forwarder->>Remote: Hello [methods: 0x02]
-    Remote->>Forwarder: 选定方法 [0x02]
-    Forwarder->>Remote: 认证 [username, password]
-    Remote->>Forwarder: 认证 OK
-    Forwarder->>Remote: CONNECT example.com:443
-    Remote->>Server: TCP 连接
-    Remote->>Forwarder: 已连接
-    Forwarder->>Chrome: 已连接
-
-    Note over Chrome,Server: 双向中继
-    Chrome->>Forwarder: TLS + 应用数据
-    Forwarder->>Remote: 转发
-    Remote->>Server: 转发
-```
+<iframe scrolling="no" src="/docs/resources/visuals/socks5-forwarder.html" aria-label="The pydoll SOCKS5Forwarder bridges two handshakes: a no-auth SOCKS5 handshake to Chrome on one side and a full authenticated handshake to the remote proxy on the other, injecting the credentials Chrome cannot send" style="width: 100%; height: 900px; border: 0;" loading="lazy"></iframe>
 
 Pydoll 在 `pydoll.utils` 中提供了 `SOCKS5Forwarder`。它是一个纯 Python、零依赖的异步实现，会处理与远程 proxy 的完整握手，包括用户名/密码认证，以及 IPv4、IPv6 和域名地址类型。
 

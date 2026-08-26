@@ -4,6 +4,8 @@ Network fingerprinting 通过分析 TCP/IP 栈、TLS 握手和 HTTP/2 连接的�
 
 这是 [Stealth](../../stealth/index.md) 指南背后的理论。它与 [Browser fingerprinting](browser-fingerprinting.md)（JavaScript 可见的信号）和 [Behavioral fingerprinting](behavioral-fingerprinting.md)（你如何移动和打字）相配套。关于这些协议本身如何工作，请参见 [Network fundamentals](../network/network-fundamentals.md)。
 
+<iframe scrolling="no" src="/docs/resources/visuals/network-fingerprinting.html" aria-label="Below the JavaScript layer, the TLS ClientHello and HTTP/2 SETTINGS form a JA3 and JA4 fingerprint the page cannot spoof; a real Chrome matches its User-Agent while a Python client contradicts it" style="width: 100%; height: 900px; border: 0;" loading="lazy"></iframe>
+
 ## TCP/IP fingerprinting
 
 每个操作系统对 TCP/IP 栈的实现都不同。发起 TCP 连接的 SYN 包携带了足够的信息，能以高置信度识别操作系统：初始 TTL、TCP 窗口大小、最大段大小（Maximum Segment Size），以及 TCP 选项的顺序和选择。这些值没有一个是由浏览器控制的。它们来自内核。

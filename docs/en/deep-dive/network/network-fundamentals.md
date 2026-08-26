@@ -10,18 +10,7 @@ Proxies operate at different layers, and the layer determines their reach. Lower
 
 The OSI model (7 layers) is a teaching reference; real networks run the TCP/IP model (4 layers). OSI terminology is still how people describe where a proxy operates, so it is worth knowing.
 
-```mermaid
-graph TD
-    L7[Layer 7: Application - HTTP, FTP, SMTP, DNS]
-    L6[Layer 6: Presentation - Encryption, Compression]
-    L5[Layer 5: Session - SOCKS]
-    L4[Layer 4: Transport - TCP, UDP]
-    L3[Layer 3: Network - IP, ICMP]
-    L2[Layer 2: Data Link - Ethernet, WiFi]
-    L1[Layer 1: Physical - Cables, Radio Waves]
-
-    L7 --> L6 --> L5 --> L4 --> L3 --> L2 --> L1
-```
+<iframe scrolling="no" src="/docs/resources/visuals/osi-proxy-layers.html" aria-label="The OSI layer stack: a proxy reaches only the layer it sits at and the layers above; the TCP/IP fingerprint at L4/L3 is stamped by the OS kernel below any proxy and still leaks" style="width: 100%; height: 820px; border: 0;" loading="lazy"></iframe>
 
 The layers that matter for automation:
 
@@ -68,16 +57,7 @@ All proxy protocols (HTTP, HTTPS, SOCKS4, SOCKS5) use TCP for their control chan
 
 Before any data moves, TCP performs a three-way handshake to synchronize sequence numbers and connection state.
 
-```mermaid
-sequenceDiagram
-    participant Client
-    participant Server
-
-    Client->>Server: SYN (seq=x)
-    Server->>Client: SYN-ACK (seq=y, ack=x+1)
-    Client->>Server: ACK (ack=y+1)
-    Note over Client,Server: Connection established
-```
+<iframe scrolling="no" src="/docs/resources/visuals/tcp-handshake.html" aria-label="The TCP three-way handshake: SYN, SYN-ACK and ACK packets cross between client and server with sequence numbers, and each side's connection state advances to ESTABLISHED" style="width: 100%; height: 720px; border: 0;" loading="lazy"></iframe>
 
 The client sends a SYN with a random Initial Sequence Number and its TCP options (window size, MSS, timestamps, SACK). The server replies with a SYN-ACK: its own random ISN plus an acknowledgment of the client's. The client sends a final ACK, and the connection is open in both directions. The ISN is randomized (RFC 6528) to prevent an attacker from injecting packets by guessing sequence numbers.
 
@@ -119,18 +99,7 @@ To set up a P2P connection, WebRTC discovers your public IP through STUN servers
 
 WebRTC uses ICE (RFC 8445) to gather possible connection paths, called candidates, and this gathering is what exposes your network.
 
-```mermaid
-sequenceDiagram
-    participant Browser
-    participant STUN as STUN Server
-    participant Peer as Remote Peer
-
-    Browser->>Browser: Gather local IPs (LAN)
-    Browser->>STUN: Binding Request (UDP, bypasses proxy)
-    STUN->>Browser: Response with real public IP
-    Browser->>Peer: Send all ICE candidates (local + public)
-    Note over Browser,Peer: Direct P2P bypasses the proxy entirely
-```
+<iframe scrolling="no" src="/docs/resources/visuals/webrtc-leak.html" aria-label="WebRTC fires a STUN binding request over UDP that bypasses a TCP proxy, so the STUN server returns your real public IP and it appears in the ICE candidates a page can read; leak_protection blocks the non-proxied UDP" style="width: 100%; height: 700px; border: 0;" loading="lazy"></iframe>
 
 Three candidate types are gathered:
 

@@ -36,7 +36,7 @@ asyncio.run(main())
 
 Habilite o domínio **antes** de navegar; requisições feitas antes de ele estar habilitado não são capturadas.
 
-<iframe src="/docs/resources/visuals/request-waterfall.html" aria-label="A request waterfall showing each request's start and duration as the page loads" style="width: 100%; height: 375px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/request-waterfall.html" aria-label="A request waterfall showing each request's start and duration as the page loads" style="width: 100%; height: 375px; border: 0;" loading="lazy"></iframe>
 
 Pressione Load: cada requisição aparece como uma barra posicionada por quando começa e com largura conforme quanto tempo leva, que é o que os eventos de rede reportam à medida que disparam.
 

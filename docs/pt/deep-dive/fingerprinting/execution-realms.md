@@ -17,7 +17,7 @@ Os sistemas de detecção usam isso diretamente. Eles leem o fingerprint na pág
 
 O mapa interativo abaixo aplica um perfil de Windows num Mac real e lê `navigator.platform` em cada realm. Alterne entre um hook ingênuo de página de topo e a replicação por realm do Pydoll:
 
-<iframe src="/docs/resources/visuals/realm-coverage.html" aria-label="Um perfil de Windows aplicado num Mac; navigator.platform lido no documento principal, num iframe same-origin, num OOPIF cross-origin, e em dedicated, shared e service workers. Um hook de página de topo combina apenas com o documento principal; a replicação do Pydoll combina com todos os realms." style="width: 100%; height: 430px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/realm-coverage.html" aria-label="Um perfil de Windows aplicado num Mac; navigator.platform lido no documento principal, num iframe same-origin, num OOPIF cross-origin, e em dedicated, shared e service workers. Um hook de página de topo combina apenas com o documento principal; a replicação do Pydoll combina com todos os realms." style="width: 100%; height: 430px; border: 0;" loading="lazy"></iframe>
 
 ## Dois overrides alcançam de graça todo realm do mesmo processo
 

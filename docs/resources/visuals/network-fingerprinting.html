@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The layer JavaScript can't touch · TLS / JA3 / JA4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+<style>
+  :root{
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;--panel2:#191c20;
+    --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
+    --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--indigo-dim:rgba(110,123,255,.13);
+    --pass:#35e0a1;--pass-dim:rgba(53,224,161,.12);
+    --amber:#f5b544;--amber-dim:rgba(245,181,68,.13);
+    --danger:#ff6b6b;--danger-dim:rgba(255,107,107,.12);
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
+  .widget{border:1px solid var(--line);padding:16px 18px}
+  .lead{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:14px;line-height:1.55}
+  .lead b{color:var(--ink)}
+
+  /* segmented control + reconnect */
+  .bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+  .seg{display:inline-flex;border:1px solid var(--line2);background:var(--bg2)}
+  .seg button{font-family:var(--mono);font-size:11.5px;color:var(--dim);background:transparent;border:0;border-right:1px solid var(--line);padding:8px 13px;cursor:pointer;transition:.15s;white-space:nowrap}
+  .seg button:last-child{border-right:0}
+  .seg button:hover{color:var(--ink)}
+  .seg button.on{color:var(--ink);background:var(--indigo-dim);box-shadow:inset 0 -2px 0 var(--indigo)}
+  .seg button.on.bad{background:var(--danger-dim);box-shadow:inset 0 -2px 0 var(--danger)}
+  button.rerun{font-family:var(--mono);font-size:11.5px;font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:8px 12px;cursor:pointer;transition:.15s}
+  button.rerun:hover{border-color:var(--indigo);color:#fff}
+  .note{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-left:auto;text-align:right;min-height:14px;transition:color .3s}
+  .note b.ok{color:var(--pass)} .note b.amber{color:var(--amber)}
+
+  /* handshake stage */
+  .stage{display:flex;align-items:stretch;gap:0;border:1px solid var(--line2);background:var(--bg2);padding:13px 14px}
+  @media(max-width:560px){.stage{flex-direction:column;gap:11px}}
+  .clabel{font-family:var(--mono);font-size:8.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--faint);margin-bottom:6px}
+  .client{width:210px;flex:none;min-width:0}
+  @media(max-width:560px){.client{width:auto}}
+  .layer{border:1px solid var(--line2);background:var(--panel);padding:8px 10px;display:flex;flex-direction:column;gap:2px;min-width:0}
+  .layer .ltag{font-family:var(--mono);font-size:9px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .layer .ltag b{color:var(--dim);font-weight:600}
+  .layer .lval{font-family:var(--mono);font-size:10.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .layer.js{position:relative}
+  .layer.js .lval{color:var(--pass)}
+  .layer.js.spoofed{border-color:rgba(245,181,68,.4)}
+  .layer.js.spoofed .lval{color:var(--amber)}
+  .spoof{position:absolute;top:6px;right:7px;font-family:var(--mono);font-size:8px;text-transform:uppercase;letter-spacing:.05em;color:var(--amber);border:1px solid rgba(245,181,68,.45);background:var(--amber-dim);padding:1px 5px;display:none}
+  .layer.js.spoofed .spoof{display:block}
+  .reach{font-family:var(--mono);font-size:8.5px;color:var(--faint);text-align:center;padding:5px 0;line-height:1.4}
+  .reach .up{color:var(--amber)} .reach .dn{color:var(--indigo2)}
+  .layer.tls{border-color:rgba(110,123,255,.35);background:linear-gradient(180deg,var(--indigo-dim),var(--panel))}
+  .layer.tls .lval{color:var(--indigo2)}
+
+  .wire{position:relative;flex:1;min-width:120px;margin:0 4px;display:flex;align-items:center}
+  @media(max-width:560px){.wire{min-height:44px;margin:2px 0}}
+  .wire::before{content:"";position:absolute;left:0;right:0;top:50%;height:0;border-top:1.5px dashed var(--line2)}
+  .pkt{position:absolute;left:0;top:50%;transform:translate(0,-50%);font-family:var(--mono);font-size:9.5px;color:var(--indigo2);background:var(--bg);border:1px solid rgba(110,123,255,.5);padding:3px 8px;white-space:nowrap;opacity:0;box-shadow:0 0 0 3px var(--indigo-dim);z-index:2}
+
+  .server{width:150px;flex:none;min-width:0}
+  @media(max-width:560px){.server{width:auto}}
+  .sbody{border:1px solid var(--line2);background:var(--panel);padding:8px 10px;display:flex;align-items:center;gap:9px;min-height:60px;transition:border-color .3s,box-shadow .3s}
+  .sbody.scan{border-color:rgba(110,123,255,.5);box-shadow:0 0 0 2px var(--indigo-dim)}
+  .sbody .stxt{font-family:var(--mono);font-size:9.5px;color:var(--dim);line-height:1.5}
+  .verdictdot{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line2);display:grid;place-items:center;flex:none;transition:.3s}
+  .verdictdot svg{width:12px;height:12px;opacity:0;transition:opacity .3s}
+  .verdictdot.ok{border-color:var(--pass);background:var(--pass-dim)} .verdictdot.ok svg.ck{opacity:1;color:var(--pass)}
+  .verdictdot.bad{border-color:var(--danger);background:var(--danger-dim)} .verdictdot.bad svg.cr{opacity:1;color:var(--danger)}
+
+  /* ClientHello unfold */
+  .hello{border:1px solid var(--line2);border-top:0;background:var(--bg2)}
+  .hhead{font-family:var(--mono);font-size:9.5px;color:var(--faint);padding:8px 14px;border-bottom:1px solid var(--line);background:var(--panel2);display:flex;align-items:center;gap:8px}
+  .hhead .lk{width:10px;height:10px;color:var(--indigo2);flex:none}
+  .hhead b{color:var(--dim)}
+  .hrow{display:flex;align-items:center;gap:10px;padding:7px 14px;border-bottom:1px solid var(--line);opacity:0;transform:translateY(4px);transition:opacity .25s,transform .25s}
+  .hrow:last-child{border-bottom:0}
+  .hrow.show{opacity:1;transform:none}
+  .hk{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);width:98px;flex:none}
+  @media(max-width:560px){.hk{width:78px}}
+  .hv{font-family:var(--mono);font-size:11px;color:var(--ink);min-width:0}
+  .hv.chips{display:flex;gap:4px;overflow-x:auto;white-space:nowrap;padding-bottom:2px;-ms-overflow-style:none;scrollbar-width:thin}
+  .hv.chips::-webkit-scrollbar{height:4px}
+  .hv.chips::-webkit-scrollbar-thumb{background:var(--line2)}
+  .b{font-family:var(--mono);font-size:10px;color:var(--dim);border:1px solid var(--line);background:var(--panel);padding:2px 6px;flex:none;transition:.3s}
+  .b.grease{color:var(--faint);border-style:dashed}
+  .b.grease.filtered{color:var(--faint);opacity:.5;text-decoration:line-through;border-color:rgba(255,107,107,.35)}
+  .hnote{font-family:var(--mono);font-size:9px;color:var(--faint);margin-left:6px}
+  .rnd{font-family:var(--mono);font-size:8.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--indigo2);border:1px solid rgba(110,123,255,.4);background:var(--indigo-dim);padding:1px 6px;margin-left:auto;flex:none;opacity:0;transition:opacity .3s}
+  .rnd.show{opacity:1}
+  .rnd.stable{color:var(--faint);border-color:var(--line2);background:var(--panel)}
+
+  /* fingerprints */
+  .fps{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:14px}
+  @media(max-width:560px){.fps{grid-template-columns:1fr}}
+  .fp{border:1px solid var(--line2);background:var(--bg2);padding:11px 13px;min-width:0;opacity:0;transform:translateY(4px);transition:opacity .3s,transform .3s}
+  .fp.show{opacity:1;transform:none}
+  .fp.wide{grid-column:1 / -1}
+  .fpk{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);display:flex;align-items:center;gap:8px;margin-bottom:7px}
+  .fpk .tg{text-transform:none;letter-spacing:0;font-size:9px;color:var(--faint);border:1px solid var(--line);padding:1px 5px}
+  .fpk .tg.rnd{color:var(--indigo2);border-color:rgba(110,123,255,.4)}
+  .fpstr{font-family:var(--mono);font-size:9.5px;color:var(--dim);word-break:break-all;line-height:1.5;margin-bottom:6px}
+  .fpstr .sep{color:var(--faint)}
+  .fphash{font-family:var(--mono);font-size:12.5px;font-weight:600;color:var(--indigo2);word-break:break-all;letter-spacing:.02em}
+  .fp.bad .fphash{color:var(--amber)}
+  .fpdec{font-family:var(--mono);font-size:9px;color:var(--faint);margin-top:5px}
+  .fph2{font-family:var(--mono);font-size:10.5px;color:var(--ink);word-break:break-word;line-height:1.5}
+  .fp.bad .fph2{color:var(--danger)}
+  .fph2 .k{color:var(--faint)}
+
+  /* verdict */
+  .verdict{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px;padding:13px 15px;border:1px solid var(--line);transition:.3s}
+  .vids{display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-family:var(--mono);font-size:11px}
+  .vid{color:var(--dim)}
+  .vid b{color:var(--ink);font-weight:600}
+  .vid.claim b{color:var(--amber)} .verdict.ok .vid.claim b{color:var(--pass)}
+  .vid.obs b{color:var(--danger)} .verdict.ok .vid.obs b{color:var(--pass)}
+  .vs{color:var(--faint)}
+  .vchip{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:4px 11px;border:1px solid;flex:none}
+  .vtxt{font-family:var(--mono);font-size:11px;color:var(--dim);line-height:1.55;flex:1;min-width:200px}
+  .vtxt b{color:var(--ink);font-weight:600}
+  .verdict.ok{background:var(--pass-dim);border-color:rgba(53,224,161,.3)} .verdict.ok .vchip{color:var(--pass);border-color:rgba(53,224,161,.5)} .verdict.ok .vtxt b{color:var(--pass)}
+  .verdict.bad{background:var(--danger-dim);border-color:rgba(255,107,107,.3)} .verdict.bad .vchip{color:var(--danger);border-color:rgba(255,107,107,.5)} .verdict.bad .vtxt b{color:var(--danger)}
+  .cap{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:11px;line-height:1.5}
+
+  @media (prefers-reduced-motion:reduce){
+    .pkt,.hrow,.fp,.rnd{transition:none}
+    .sbody{transition:none}
+  }
+
+  /* theme-matched thin scrollbars for overflow-x boxes (replaces the default white bar) */
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--line2)}
+  ::-webkit-scrollbar-thumb:hover{background:var(--faint)}
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="lead">Above the TLS line is <b>JavaScript's</b> to rewrite. Below it, the <b>ClientHello</b> your OS TLS library puts on the wire, JavaScript never touches. It hashes into <b>JA3 / JA4</b> and the <b>HTTP/2 SETTINGS</b> fingerprint. Pick a client and watch what the wire says versus what the User-Agent claims.</div>
+
+  <div class="bar">
+    <div class="seg" id="seg">
+      <button data-k="chrome" class="on">Chrome · pydoll</button>
+      <button data-k="requests">requests + spoofed UA</button>
+      <button data-k="curl">curl + spoofed UA</button>
+    </div>
+    <button class="rerun" id="reconnect">Reconnect</button>
+    <span class="note" id="topNote"></span>
+  </div>
+
+  <div class="stage">
+    <div class="client">
+      <div class="clabel">client</div>
+      <div class="layer js" id="jsLayer">
+        <span class="spoof">spoofed</span>
+        <span class="ltag">page JS · <b>navigator.userAgent</b></span>
+        <span class="lval" id="uaVal"></span>
+      </div>
+      <div class="reach"><span class="up">▲ JS rewrites this</span> &nbsp;·&nbsp; <span class="dn">JS cannot reach ▼</span></div>
+      <div class="layer tls">
+        <span class="ltag">TLS stack · <b id="libName"></b></span>
+        <span class="lval">emits the ClientHello</span>
+      </div>
+    </div>
+
+    <div class="wire" id="wire">
+      <div class="pkt" id="pkt">ClientHello ▶</div>
+    </div>
+
+    <div class="server">
+      <div class="clabel">detector</div>
+      <div class="sbody" id="sbody">
+        <span class="verdictdot" id="vdot">
+          <svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+          <svg class="cr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </span>
+        <span class="stxt">reads the wire<br>hashes the bytes<br>cross-checks the UA</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="hello">
+    <div class="hhead"><svg class="lk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>ClientHello · assembled by the <b>TLS library</b>, sent before encryption, not written by JavaScript</div>
+    <div class="hrow" id="row0"><span class="hk">version</span><span class="hv" id="rVer"></span></div>
+    <div class="hrow" id="row1"><span class="hk">cipher suites</span><span class="hv chips" id="rCiph"></span></div>
+    <div class="hrow" id="row2"><span class="hk">extensions</span><span class="hv chips" id="rExt"></span><span class="rnd" id="extRnd"></span></div>
+    <div class="hrow" id="row3"><span class="hk">named groups</span><span class="hv" id="rGrp"></span></div>
+    <div class="hrow" id="row4"><span class="hk">ALPN</span><span class="hv" id="rAlpn"></span></div>
+  </div>
+
+  <div class="fps">
+    <div class="fp" id="fpJa3">
+      <div class="fpk">JA3 · MD5 of ClientHello fields <span class="tg" id="ja3tg"></span></div>
+      <div class="fpstr" id="ja3str"></div>
+      <div class="fphash" id="ja3hash"></div>
+    </div>
+    <div class="fp" id="fpJa4">
+      <div class="fpk">JA4 · sorted, survives randomization</div>
+      <div class="fphash" id="ja4hash"></div>
+      <div class="fpdec" id="ja4dec"></div>
+    </div>
+    <div class="fp wide" id="fpH2">
+      <div class="fpk">HTTP/2 SETTINGS · a separate fingerprint (Akamai)</div>
+      <div class="fph2" id="h2line"></div>
+    </div>
+  </div>
+
+  <div class="verdict" id="verdict">
+    <div class="vids">
+      <span class="vid claim">UA claims <b id="vClaim">Chrome</b></span>
+      <span class="vs">vs</span>
+      <span class="vid obs">wire says <b id="vObs">Chrome</b></span>
+    </div>
+    <span class="vchip" id="vChip"></span>
+    <span class="vtxt" id="vTxt"></span>
+  </div>
+
+  <div class="cap">Cipher and extension IDs are illustrative; the structure they show (GREASE, extension order, ALPN, HTTP/2) is real. The Chrome JA3/JA4 strings are the worked example from the docs.</div>
+</div>
+
+<script>
+(function(){
+  var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  function g(id){return document.getElementById(id);}
+
+  var DATA={
+    chrome:{
+      lib:'BoringSSL', spoofed:false,
+      ua:'…Chrome/131.0.0.0 Safari/537.36',
+      claim:'Chrome', observed:'Chrome',
+      version:'771', vNote:'0x0303, the TLS 1.2 byte JA3 keeps even though Chrome speaks 1.3',
+      ciphers:['GREASE','4865','4866','4867','49195','49199','49196','49200','52393','52392'],
+      ja3ciph:'4865-4866-4867-49195-49199-49196-49200-52393-52392',
+      exts:['GREASE','0','23','65281','10','11','35','16','5','13','18','51','45','43','27','17513','GREASE'],
+      ja3ext:'0-23-65281-10-11-35-16-5-13-18-51-45-43-27-17513',
+      randomizes:true,
+      groups:'29-23-24  ·  x25519 · secp256r1 · secp384r1',
+      pf:'0',
+      alpn:'h2  ·  HTTP/2 negotiated',
+      ja3:'cd08e31494b9531f560d64c695473da9',
+      ja4:'t13d1516h2_8daaf6152771_b1ff8c8e2f3a',
+      ja4dec:'TCP · TLS 1.3 · SNI · 15 ciphers · 16 ext · ALPN h2',
+      h2:'<span class="k">SETTINGS</span> 1:65536  3:1000  4:6291456  6:262144 &nbsp; <span class="k">WINDOW_UPDATE</span> 15663105 &nbsp; <span class="k">headers</span> m,a,s,p',
+      h2bad:false,
+      verdict:'ok',
+      vtxt:'Real Chrome under CDP. <b>BoringSSL</b> emits an authentic Chrome ClientHello, so JA3, JA4 and the h2 SETTINGS all say Chrome, matching the UA. pydoll spoofs nothing here. It <b>is</b> Chrome.'
+    },
+    requests:{
+      lib:'OpenSSL 3.x (Python ssl)', spoofed:true,
+      ua:'…Chrome/131.0.0.0 Safari/537.36',
+      claim:'Chrome', observed:'Python',
+      version:'771', vNote:'same legacy byte, but every list below differs from Chrome',
+      ciphers:['4866','4867','4865','49196','49200','159','52393','52392','52394','49195','49199','158','…'],
+      ja3ciph:'4866-4867-4865-49196-49200-159-52393-52392-52394-49195-49199-158-…',
+      exts:['0','11','10','35','22','23','13','43','45','51','16'],
+      ja3ext:'0-11-10-35-22-23-13-43-45-51-16',
+      randomizes:false,
+      groups:'29-23-30-25-24  ·  x25519 · secp256r1 · x448 · secp521r1 · secp384r1',
+      pf:'0',
+      alpn:'http/1.1  ·  no h2 offered',
+      ja3:'a0e9f5d64349fb13191bc781f81f42e1',
+      ja4:'t13d2011h1_a1b2c3d4e5f6_0f1e2d3c4b5a',
+      ja4dec:'TCP · TLS 1.3 · SNI · 20 ciphers · 11 ext · ALPN http/1.1',
+      h2:'<span class="k">no SETTINGS frame</span>. The connection negotiated HTTP/1.1. A real Chrome always offers h2.',
+      h2bad:true,
+      verdict:'bad',
+      vtxt:'The UA header was rewritten to Chrome, but the handshake is Python\'s: <b>no GREASE</b>, its own cipher and extension order, and <b>HTTP/1.1</b>. JA3 maps to OpenSSL, not Chrome. The claim and the wire disagree.'
+    },
+    curl:{
+      lib:'OpenSSL 3.x (curl)', spoofed:true,
+      ua:'…Chrome/131.0.0.0 Safari/537.36',
+      claim:'Chrome', observed:'curl',
+      version:'771', vNote:'same legacy byte; the fingerprint lives in everything after it',
+      ciphers:['4865','4867','4866','49196','49195','52393','49200','49199','52392','49171','…'],
+      ja3ciph:'4865-4867-4866-49196-49195-52393-49200-49199-52392-49171-…',
+      exts:['0','11','10','13','16','23','5','51','43','45','35'],
+      ja3ext:'0-11-10-13-16-23-5-51-43-45-35',
+      randomizes:false,
+      groups:'29-23-30-25-24  ·  x25519 · secp256r1 · x448 · secp521r1 · secp384r1',
+      pf:'0',
+      alpn:'http/1.1  ·  no h2 offered',
+      ja3:'456523fdd756a172b3f76c99f7c9b204',
+      ja4:'t13d1811h1_c4d5e6f70819_1a2b3c4d5e6f',
+      ja4dec:'TCP · TLS 1.3 · SNI · 18 ciphers · 11 ext · ALPN http/1.1',
+      h2:'<span class="k">no SETTINGS frame</span>. The connection negotiated HTTP/1.1 (default without --http2).',
+      h2bad:true,
+      verdict:'bad',
+      vtxt:'Same story: the UA says Chrome, the ClientHello is curl\'s. Different bytes, <b>HTTP/1.1</b>, <b>no GREASE</b>. No amount of page JavaScript can change what the TLS library already sent.'
+    }
+  };
+
+  var cur='chrome', token=0, timers=[], loopT=null;
+  var rows=['row0','row1','row2','row3','row4'];
+
+  function clearTimers(){ timers.forEach(clearTimeout); timers=[]; if(loopT){clearTimeout(loopT);loopT=null;} }
+  function T(ms,fn){ var tk=token; var id=setTimeout(function(){ if(tk===token) fn(); }, ms); timers.push(id); }
+  function shuffle(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i];a[i]=a[j];a[j]=t; } return a; }
+  function randHash(){ var s='',h='0123456789abcdef'; for(var i=0;i<32;i++) s+=h[Math.floor(Math.random()*16)]; return s; }
+
+  function chip(v){
+    var s=document.createElement('span'); s.className='b'+(v==='GREASE'?' grease':'');
+    s.textContent=(v==='GREASE'?'0a0a':v); if(v==='GREASE') s.title='GREASE (RFC 8701), filtered before hashing';
+    return s;
+  }
+  function fillChips(el,arr){ el.innerHTML=''; arr.forEach(function(v){ el.appendChild(chip(v)); }); }
+
+  // build the static content for the current stack (hidden, ready to reveal)
+  function build(){
+    var d=DATA[cur];
+    // client stack
+    g('jsLayer').className='layer js'+(d.spoofed?' spoofed':'');
+    g('uaVal').textContent=d.ua;
+    g('libName').textContent=d.lib;
+    // segmented control state
+    Array.prototype.forEach.call(g('seg').children,function(b){
+      var on=b.getAttribute('data-k')===cur;
+      b.className=(on?'on':'')+(on&&d.verdict==='bad'?' bad':'');
+    });
+    g('reconnect').textContent=d.randomizes?'Reconnect (re-randomize)':'Reconnect';
+    // hello rows
+    g('rVer').innerHTML=d.version+' <span class="hnote">'+d.vNote+'</span>';
+    fillChips(g('rCiph'), d.ciphers);
+    fillChips(g('rExt'), d.exts);
+    g('rGrp').textContent=d.groups;
+    g('rAlpn').textContent=d.alpn;
+    // ext randomization badge
+    var er=g('extRnd');
+    if(d.randomizes){ er.className='rnd'; er.textContent='order randomized'; }
+    else { er.className='rnd stable'; er.textContent='fixed order'; }
+    // fingerprints
+    g('ja3tg').className='tg'+(d.randomizes?' rnd':'');
+    g('ja3tg').textContent=d.randomizes?'changes per connection':'stable';
+    g('ja3str').innerHTML=d.version+'<span class="sep">,</span>'+d.ja3ciph+'<span class="sep">,</span>'+d.ja3ext+'<span class="sep">,</span>'+d.groups.split('  ')[0]+'<span class="sep">,</span>'+d.pf;
+    g('ja3hash').textContent=d.ja3;
+    g('fpJa3').className='fp'+(d.verdict==='bad'?' bad':'');
+    g('ja4hash').textContent=d.ja4;
+    g('ja4dec').textContent=d.ja4dec;
+    g('h2line').innerHTML=d.h2;
+    g('fpH2').className='fp wide'+(d.h2bad?' bad':'');
+    // verdict
+    g('vClaim').textContent=d.claim;
+    g('vObs').textContent=d.observed;
+  }
+
+  function hideAll(){
+    rows.forEach(function(id){ g(id).classList.remove('show'); });
+    ['fpJa3','fpJa4','fpH2'].forEach(function(id){ g(id).classList.remove('show'); });
+    g('extRnd').classList.remove('show');
+    g('pkt').style.transition='none'; g('pkt').style.opacity='0'; g('pkt').style.transform='translate(0,-50%)';
+    g('sbody').classList.remove('scan');
+    g('vdot').className='verdictdot';
+    g('verdict').className='verdict';
+    g('vChip').textContent=''; g('vTxt').innerHTML='';
+    // un-strike grease
+    Array.prototype.forEach.call(document.querySelectorAll('.b.grease'),function(b){ b.classList.remove('filtered'); });
+  }
+
+  function finalState(){
+    var d=DATA[cur];
+    rows.forEach(function(id){ g(id).classList.add('show'); });
+    g('extRnd').classList.add('show');
+    Array.prototype.forEach.call(document.querySelectorAll('.b.grease'),function(b){ b.classList.add('filtered'); });
+    ['fpJa3','fpJa4','fpH2'].forEach(function(id){ g(id).classList.add('show'); });
+    g('pkt').style.opacity='0';
+    resolveVerdict();
+  }
+
+  function resolveVerdict(){
+    var d=DATA[cur];
+    g('verdict').className='verdict '+d.verdict;
+    g('vdot').className='verdictdot '+(d.verdict==='ok'?'ok':'bad');
+    g('vChip').textContent=d.verdict==='ok'?'consistent':'mismatch';
+    g('vTxt').innerHTML=d.vtxt;
+    g('sbody').classList.remove('scan');
+  }
+
+  function scramble(el, finalVal, dur){
+    if(reduce){ el.textContent=finalVal; return; }
+    var myToken=token, start=Date.now();
+    (function tick(){
+      if(myToken!==token) return;
+      if(Date.now()-start>=dur){ el.textContent=finalVal; return; }
+      el.textContent=randHash();
+      timers.push(setTimeout(tick,45));
+    })();
+  }
+
+  function play(){
+    token++; clearTimers(); build(); hideAll();
+    var d=DATA[cur];
+
+    if(reduce){ finalState(); return; }
+
+    // 1. packet travels the wire
+    var wire=g('wire'), pkt=g('pkt');
+    var travel=Math.max(40, wire.clientWidth - pkt.offsetWidth - 4);
+    T(60,function(){
+      pkt.style.opacity='1';
+      requestAnimationFrame(function(){
+        pkt.style.transition='transform 720ms cubic-bezier(.4,0,.2,1)';
+        pkt.style.transform='translate('+travel+'px,-50%)';
+      });
+    });
+
+    // 2. server receives -> unfold fields one by one
+    T(820,function(){ g('sbody').classList.add('scan'); pkt.style.opacity='0'; });
+    var base=880;
+    rows.forEach(function(id,i){ T(base+i*135,function(){ g(id).classList.add('show'); }); });
+    // grease filtered (cipher row) + ext randomization badge (ext row)
+    T(base+1*135+260,function(){ Array.prototype.forEach.call(g('rCiph').querySelectorAll('.grease'),function(b){b.classList.add('filtered');}); });
+    T(base+2*135+120,function(){ g('extRnd').classList.add('show'); Array.prototype.forEach.call(g('rExt').querySelectorAll('.grease'),function(b){b.classList.add('filtered');}); });
+
+    // 3. hashes settle
+    var h=base+rows.length*135+220;
+    T(h,function(){ g('fpJa3').classList.add('show'); scramble(g('ja3hash'), d.ja3, 460); });
+    T(h+240,function(){ g('fpJa4').classList.add('show'); scramble(g('ja4hash'), d.ja4, 380); });
+    T(h+480,function(){ g('fpH2').classList.add('show'); });
+
+    // 4. verdict, then hold the composed state (dense read view: no auto-loop).
+    // Replays only on user action (Reconnect / stack toggle).
+    T(h+820,function(){ resolveVerdict(); });
+  }
+
+  function select(k){
+    if(k===cur){ return; }
+    cur=k; setTopNote('');
+    play();
+  }
+  function setTopNote(html){ g('topNote').innerHTML=html; }
+
+  function reconnect(){
+    var d=DATA[cur];
+    if(d.randomizes){
+      // Chrome 110+ shuffles extension order -> new JA3, JA4 unchanged
+      var inner=d.exts.slice(1,-1);
+      d.exts=['GREASE'].concat(shuffle(inner)).concat(['GREASE']);
+      d.ja3ext=shuffle(d.ja3ext.split('-')).join('-');
+      d.ja3=randHash();
+      setTopNote('extension order randomized → <b class="amber">new JA3</b>, JA4 unchanged');
+    } else {
+      setTopNote('no randomization → <b class="amber">identical JA3</b> every connection (this is how JA3 still pins libraries)');
+    }
+    play();
+  }
+
+  Array.prototype.forEach.call(g('seg').children,function(b){
+    b.addEventListener('click',function(){ select(b.getAttribute('data-k')); });
+  });
+  g('reconnect').addEventListener('click',reconnect);
+  window.addEventListener('resize',function(){ /* travel recomputed on next play */ });
+
+  window.addEventListener('load',function(){ setTimeout(play,300); });
+})();
+</script>
+<script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>
+</body>
+</html>

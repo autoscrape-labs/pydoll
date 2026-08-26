@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SOCKS5 handshake</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+<style>
+  :root{
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;--panel2:#191c20;
+    --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
+    --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--indigo-dim:rgba(110,123,255,.13);
+    --pass:#35e0a1;--pass-dim:rgba(53,224,161,.12);
+    --amber:#f5b544;--amber-dim:rgba(245,181,68,.13);
+    --danger:#ff6b6b;--danger-dim:rgba(255,107,107,.12);
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
+  .widget{border:1px solid var(--line);padding:16px 18px}
+  .lead{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:14px;line-height:1.55}
+  .lead b{color:var(--ink)}
+
+  .stage{position:relative;border:1px solid var(--line2);background:var(--bg2);overflow:hidden;transition:height .35s cubic-bezier(.4,0,.2,1)}
+  svg#wire{position:absolute;left:0;top:0;display:block}
+  .lifeline{stroke:var(--line2);stroke-width:1.4;stroke-dasharray:2 5}
+  .lifeline.tgt{opacity:.45;transition:opacity .3s,stroke .3s}
+  .lifeline.tgt.on{opacity:.9;stroke:var(--pass)}
+  .guide{stroke:var(--line2);stroke-width:1.4;fill:none;opacity:.45;transition:stroke .25s,opacity .25s}
+  .guide.done{opacity:.5}
+  .guide.active{stroke:var(--indigo2);opacity:1;stroke-width:1.8}
+  .guide.gi.done{stroke:var(--indigo)} .guide.ga.done{stroke:var(--amber)} .guide.gg.done{stroke:var(--pass)}
+  .ev{opacity:0;transition:opacity .25s,fill .25s}
+  .ev.on{opacity:1}
+  .dialline{stroke:var(--pass);stroke-width:1.4;stroke-dasharray:3 4;opacity:0;transition:opacity .3s}
+  .dialline.on{opacity:.7}
+  .dialdot{position:absolute;left:0;top:0;width:7px;height:7px;border-radius:50%;background:var(--pass);
+    box-shadow:0 0 8px 1px rgba(53,224,161,.6);z-index:6;opacity:0;transform:translate(-50%,-50%);pointer-events:none}
+
+  .peer{position:absolute;top:8px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;z-index:5}
+  .peer.faded{opacity:.4;transition:opacity .3s}
+  .peer.faded.on{opacity:1}
+  .peer .box{display:flex;align-items:center;gap:8px;border:1px solid var(--line2);background:var(--panel);padding:6px 12px}
+  .peer .box svg{width:15px;height:15px;color:var(--indigo2);flex:none}
+  .peer.tgtpeer .box svg{color:var(--faint)} .peer.tgtpeer.on .box svg{color:var(--pass)}
+  .peer .nm{font-family:var(--sans);font-weight:700;font-size:12.5px;white-space:nowrap}
+  .peer .adr{font-family:var(--mono);font-size:9px;color:var(--faint);margin-top:-2px}
+  .badge{font-family:var(--mono);font-size:9px;letter-spacing:.04em;padding:3px 8px;border:1px solid;white-space:nowrap;text-transform:uppercase;transition:color .3s,border-color .3s,background .3s}
+  .badge.idle{color:var(--faint);border-color:var(--line2);background:var(--bg2)}
+  .badge.wait{color:var(--amber);border-color:rgba(245,181,68,.45);background:var(--amber-dim)}
+  .badge.ok{color:var(--pass);border-color:rgba(53,224,161,.45);background:var(--pass-dim)}
+
+  .pdiv{position:absolute;left:0;width:100%;z-index:2;pointer-events:none;display:flex;align-items:center;justify-content:center;opacity:.85}
+  .pdiv .ln{position:absolute;left:6%;right:6%;top:50%;border-top:1px dashed var(--line2);opacity:.55}
+  .pdiv .pill{position:relative;font-family:var(--mono);font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--faint);background:var(--bg2);padding:2px 10px;border:1px solid var(--line2);white-space:nowrap;transition:.3s}
+  .pdiv.active .pill{color:var(--ink);border-color:var(--indigo)}
+  .pdiv.p2.active .pill{border-color:var(--amber);color:var(--amber)}
+
+  .pkt{position:absolute;left:0;top:0;display:flex;align-items:center;gap:7px;white-space:nowrap;z-index:6;opacity:0;
+    font-family:var(--mono);font-size:10.5px;padding:5px 10px;border:1px solid var(--indigo);
+    background:var(--panel);color:var(--ink);box-shadow:0 0 0 3px var(--indigo-dim);transition:opacity .3s,box-shadow .3s}
+  .pkt b{color:var(--indigo2);font-weight:700;letter-spacing:.03em}
+  .pkt .n{color:var(--dim)}
+  .pkt.amber{border-color:var(--amber);box-shadow:0 0 0 3px var(--amber-dim)} .pkt.amber b{color:var(--amber)}
+  .pkt.pass{border-color:var(--pass);box-shadow:0 0 0 3px var(--pass-dim)} .pkt.pass b{color:var(--pass)}
+  .pkt.inflight{box-shadow:0 0 15px 2px rgba(110,123,255,.4),0 0 0 3px var(--indigo-dim)}
+  .pkt.amber.inflight{box-shadow:0 0 15px 2px rgba(245,181,68,.4),0 0 0 3px var(--amber-dim)}
+  .pkt.pass.inflight{box-shadow:0 0 15px 2px rgba(53,224,161,.4),0 0 0 3px var(--pass-dim)}
+
+  .relay{position:absolute;left:0;transform:translateY(-50%);z-index:5;text-align:center;opacity:0;transition:opacity .4s;pointer-events:none}
+  .relay.on{opacity:1}
+  .relay .rl{position:absolute;left:0;top:50%;height:2px;background:linear-gradient(90deg,var(--indigo),var(--pass));opacity:.5}
+  .relay .rt{position:relative;font-family:var(--sans);font-weight:800;font-size:11.5px;color:var(--pass);letter-spacing:.03em;background:var(--bg2);padding:0 10px;display:inline-block}
+  .relay .rd{position:absolute;top:50%;width:6px;height:6px;border-radius:50%;background:var(--indigo2);transform:translate(-50%,-50%);box-shadow:0 0 8px 1px rgba(110,123,255,.6)}
+  .relay .rd.b{background:var(--pass);box-shadow:0 0 8px 1px rgba(53,224,161,.6)}
+  @keyframes relayFwd{0%{left:0;opacity:0}10%{opacity:1}90%{opacity:1}100%{left:100%;opacity:0}}
+  @keyframes relayBwd{0%{left:100%;opacity:0}10%{opacity:1}90%{opacity:1}100%{left:0;opacity:0}}
+  .relay.on .rd.a{animation:relayFwd 1.9s linear infinite}
+  .relay.on .rd.b{animation:relayBwd 1.9s linear .95s infinite}
+
+  .decoder{margin-top:13px;border:1px solid var(--line);background:var(--panel2);padding:10px 12px}
+  .decoder .dh{font-family:var(--mono);font-size:9px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:9px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .decoder .dh .dir{color:var(--ink)} .decoder .dh .cnt{margin-left:auto;color:var(--faint)}
+  .decoder .dh .tag{color:var(--indigo2);font-weight:600}
+  .decoder .dh .tag.amber{color:var(--amber)} .decoder .dh .tag.pass{color:var(--pass)}
+  .bytes{display:flex;gap:6px;overflow-x:auto;padding-bottom:3px;min-height:44px}
+  .bcell{flex:0 0 auto;border:1px solid var(--line2);background:var(--bg2);padding:5px 8px;text-align:center;min-width:32px;animation:cellIn .3s both}
+  @keyframes cellIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .bcell .bh{font-family:var(--mono);font-size:12px;color:var(--indigo2);font-weight:600;white-space:nowrap;letter-spacing:.02em}
+  .bcell .bl{font-family:var(--mono);font-size:8px;color:var(--faint);margin-top:4px;white-space:nowrap;text-transform:uppercase;letter-spacing:.02em}
+  .bcell.ok{background:var(--pass-dim);border-color:rgba(53,224,161,.4)} .bcell.ok .bh{color:var(--pass)}
+  .bcell.amber{background:var(--amber-dim);border-color:rgba(245,181,68,.4)} .bcell.amber .bh{color:var(--amber)}
+  .bcell.ascii .bh{color:var(--ink)}
+  .decoder .empty{font-family:var(--mono);font-size:10.5px;color:var(--faint);padding:12px 2px}
+
+  .narr{margin-top:13px;font-family:var(--mono);font-size:11px;color:var(--dim);line-height:1.55;min-height:52px;border-left:2px solid var(--line2);padding-left:11px;transition:border-color .3s}
+  .narr b{color:var(--ink)} .narr code{color:var(--indigo2)}
+
+  .controls{display:flex;align-items:center;gap:10px;margin-top:15px;flex-wrap:wrap}
+  .seg{display:inline-flex;border:1px solid var(--line2);overflow:hidden}
+  .seg .lbl{font-family:var(--mono);font-size:9px;color:var(--faint);padding:0 8px;align-self:center;text-transform:uppercase;letter-spacing:.04em}
+  .seg button{font-family:var(--mono);font-size:11px;color:var(--dim);background:var(--panel);border:0;border-left:1px solid var(--line2);padding:7px 11px;cursor:pointer;transition:.15s}
+  .seg button:hover{color:var(--ink)}
+  .seg button.on{background:rgba(110,123,255,.16);color:#fff}
+  button.btn{font-family:var(--mono);font-size:12px;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:8px 13px;cursor:pointer;transition:.15s}
+  button.btn:hover:not(:disabled){border-color:var(--indigo);color:#fff}
+  button.btn:disabled{opacity:.35;cursor:default}
+  button.btn.primary{border-color:var(--indigo);color:var(--indigo2)}
+  .step{font-family:var(--mono);font-size:11px;color:var(--dim);margin-left:auto}
+  .step b{color:var(--ink)}
+  .foot{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:13px;line-height:1.55}
+  .foot a{color:var(--dim);text-decoration:none;border-bottom:1px solid var(--line2)}
+
+  @media(max-width:520px){
+    .pkt{font-size:9px;padding:4px 7px;gap:5px}
+    .step{margin-left:0;width:100%}
+    .peer .adr{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .pkt{transition:none} .guide,.ev,.badge,.pdiv .pill,.lifeline,.relay,.bcell,.dialline{transition:none;animation:none}
+    .relay.on .rd{animation:none;display:none}
+  }
+
+  /* theme-matched thin scrollbars for overflow-x boxes (replaces the default white bar) */
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--line2)}
+  ::-webkit-scrollbar-thumb:hover{background:var(--faint)}
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="lead">The SOCKS5 handshake in real bytes (RFC 1928). Three phases cross the wire in order: <b>method negotiation</b>, an <b>optional username/password auth</b>, then the <b>connection request</b> that names the target. Each message is decoded field by field below. Toggle the auth mode, press <b>Replay</b>, or walk it with <b>Prev</b> / <b>Next</b>.</div>
+
+  <div class="stage" id="stage">
+    <svg id="wire" aria-hidden="true">
+      <defs>
+        <marker id="ahF" markerWidth="8" markerHeight="8" refX="5.6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="rgba(244,245,247,.30)"/></marker>
+        <marker id="ahI" markerWidth="8" markerHeight="8" refX="5.6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#6e7bff"/></marker>
+        <marker id="ahA" markerWidth="8" markerHeight="8" refX="5.6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f5b544"/></marker>
+        <marker id="ahG" markerWidth="8" markerHeight="8" refX="5.6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#35e0a1"/></marker>
+      </defs>
+      <line id="llC" class="lifeline"/>
+      <line id="llP" class="lifeline"/>
+      <line id="llT" class="lifeline tgt"/>
+      <g id="lanes"></g>
+      <line id="dialLine" class="dialline"/>
+    </svg>
+
+    <div class="peer" id="peerC">
+      <div class="box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M2 20h20M9 16l-1 4M15 16l1 4"/></svg>
+        <span class="nm">Client</span>
+      </div>
+      <span class="adr">pydoll / Chrome</span>
+      <span class="badge idle" id="bC">ready</span>
+    </div>
+    <div class="peer" id="peerP">
+      <div class="box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="16" height="7" rx="1.4"/><rect x="4" y="14" width="16" height="7" rx="1.4"/><path d="M7.5 6.5h.01M7.5 17.5h.01"/></svg>
+        <span class="nm">SOCKS5 proxy</span>
+      </div>
+      <span class="adr">proxy:1080</span>
+      <span class="badge idle" id="bP">listening</span>
+    </div>
+    <div class="peer tgtpeer faded" id="peerT">
+      <div class="box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18"/></svg>
+        <span class="nm">target</span>
+      </div>
+      <span class="adr">example.com:443</span>
+      <span class="badge idle" id="bT">waiting</span>
+    </div>
+
+    <div id="dividers"></div>
+    <div id="packets"></div>
+    <div class="dialdot" id="dialDot"></div>
+
+    <div class="relay" id="relay"><span class="rl" id="relayLine"></span><span class="rt">DATA RELAY · encrypted tunnel, both ways</span><span class="rd a"></span><span class="rd b"></span></div>
+  </div>
+
+  <div class="decoder" id="decoder">
+    <div class="dh" id="decHead"><span class="dir">on the wire</span></div>
+    <div class="bytes" id="decBytes"></div>
+  </div>
+
+  <div class="narr" id="narr"></div>
+
+  <div class="controls">
+    <span class="seg" role="group" aria-label="authentication method">
+      <span class="lbl">auth</span>
+      <button id="aNone">none</button>
+      <button id="aUp">username / password</button>
+    </span>
+    <button class="btn primary" id="replay">Replay</button>
+    <button class="btn" id="prev">Prev</button>
+    <button class="btn" id="next">Next</button>
+    <span class="step" id="step">step <b>0</b> / 0</span>
+  </div>
+
+  <div class="foot">Binary and efficient, but unreadable without a hex dump, which is what the decoder shows. Method codes: <code>00</code> no-auth, <code>01</code> GSSAPI, <code>02</code> username/password, <code>FF</code> none acceptable. With ATYP=domain the proxy resolves DNS on its side. Credentials travel in plaintext (RFC 1929); wrap SOCKS in TLS/SSH for sensitive use. Refs: RFC 1928, RFC 1929.</div>
+</div>
+
+<script>
+(function(){
+  var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  function g(id){return document.getElementById(id);}
+  function el(tag,cls,html){var e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e;}
+  var SVGNS='http://www.w3.org/2000/svg';
+  function svgLine(cls){var l=document.createElementNS(SVGNS,'line');l.setAttribute('class',cls);return l;}
+  function svgCirc(cls){var c=document.createElementNS(SVGNS,'circle');c.setAttribute('class',cls);c.setAttribute('r','3.4');return c;}
+
+  var stage=g('stage'), svg=g('wire'), lanes=g('lanes'), packets=g('packets'), dividers=g('dividers');
+
+  // ---- message model (real RFC 1928 / RFC 1929 bytes) ----
+  var CONNECT={from:'C',to:'P',phase:3,cls:'i',tag:'Connect',sum:'→ example.com:443',dial:true,
+    narr:'Phase 3. The client sends the request: <code>CMD=1</code> (CONNECT), <code>ATYP=3</code> (domain), then <code>example.com</code> and port <code>443</code>. With a domain the proxy resolves DNS on its side.',
+    bytes:[{h:'05',l:'VER · 5'},{h:'01',l:'CMD · CONNECT'},{h:'00',l:'RSV'},{h:'03',l:'ATYP · domain'},
+           {h:'0B',l:'LEN · 11'},{h:'example.com',l:'DST.ADDR',k:'ascii'},{h:'01 BB',l:'DST.PORT · 443'}]};
+  var REPLY={from:'P',to:'C',phase:3,cls:'g',tag:'Reply',sum:'05 00 · success',
+    narr:'The proxy dials <b>example.com:443</b>, then replies <code>REP=0</code> (success) with the bound address. From here it relays raw bytes both ways, blind to the encrypted TLS stream inside.',
+    bytes:[{h:'05',l:'VER · 5'},{h:'00',l:'REP · success',k:'ok'},{h:'00',l:'RSV'},{h:'01',l:'ATYP · IPv4'},
+           {h:'00 00 00 00',l:'BND.ADDR'},{h:'00 00',l:'BND.PORT'}]};
+
+  function buildFlow(auth){
+    var m=[];
+    if(auth==='up'){
+      m.push({from:'C',to:'P',phase:1,cls:'i',tag:'Hello',sum:'05 02 00 02',
+        narr:'Phase 1. The client opens TCP to the proxy and offers its methods: <code>VER=5</code>, <code>NMETHODS=2</code>, then <code>00</code> (no-auth) and <code>02</code> (username/password).',
+        bytes:[{h:'05',l:'VER · 5'},{h:'02',l:'NMETHODS'},{h:'00',l:'no-auth'},{h:'02',l:'user/pass'}],
+        pb:{t:'negotiating',c:'wait'}});
+      m.push({from:'P',to:'C',phase:1,cls:'i',tag:'Method',sum:'05 02',
+        narr:'The proxy answers <code>05 02</code>: it selected <b>username/password</b> (RFC 1929). Had nothing been acceptable it would reply <code>FF</code> and close the connection.',
+        bytes:[{h:'05',l:'VER · 5'},{h:'02',l:'METHOD · user/pass',k:'amber'}],
+        cb:{t:'auth required',c:'wait'}});
+      m.push({from:'C',to:'P',phase:2,cls:'a',tag:'Auth',sum:'01 · user / pass',
+        narr:'Phase 2. The sub-negotiation has its own version byte <code>VER=1</code>. The client sends <code>ULEN</code>+username and <code>PLEN</code>+password, in <b>plaintext</b> (RFC 1929).',
+        bytes:[{h:'01',l:'VER · 1'},{h:'04',l:'ULEN'},{h:'75 73 65 72',l:'UNAME · "user"',k:'amber'},{h:'04',l:'PLEN'},{h:'70 61 73 73',l:'PASSWD · "pass"',k:'amber'}],
+        pb:{t:'verifying',c:'wait'}});
+      m.push({from:'P',to:'C',phase:2,cls:'g',tag:'Auth OK',sum:'01 00',
+        narr:'The proxy replies <code>01 00</code>: <code>STATUS=0</code>, credentials accepted. A non-zero status would end the connection here.',
+        bytes:[{h:'01',l:'VER · 1'},{h:'00',l:'STATUS · success',k:'ok'}],
+        cb:{t:'authenticated',c:'ok'}});
+    } else {
+      m.push({from:'C',to:'P',phase:1,cls:'i',tag:'Hello',sum:'05 01 00',
+        narr:'Phase 1. The client offers a single method: <code>VER=5</code>, <code>NMETHODS=1</code>, <code>00</code> (no authentication). This is exactly what Chrome sends.',
+        bytes:[{h:'05',l:'VER · 5'},{h:'01',l:'NMETHODS'},{h:'00',l:'no-auth'}],
+        pb:{t:'negotiating',c:'wait'}});
+      m.push({from:'P',to:'C',phase:1,cls:'g',tag:'Method',sum:'05 00',
+        narr:'The proxy answers <code>05 00</code>: <b>no-auth</b> selected. Phase 2 is skipped entirely and the client can send its request straight away.',
+        bytes:[{h:'05',l:'VER · 5'},{h:'00',l:'METHOD · no-auth',k:'ok'}],
+        cb:{t:'no-auth ok',c:'ok'}});
+    }
+    var c=Object.assign({},CONNECT); c.pb={t:'dialing target',c:'wait'};
+    var r=Object.assign({},REPLY);  r.cb={t:'relaying',c:'ok'}; r.pb={t:'relaying',c:'ok'};
+    m.push(c); m.push(r);
+    return m;
+  }
+
+  var PHASE_LABEL={1:'Phase 1 · method negotiation',2:'Phase 2 · authentication',3:'Phase 3 · connection request'};
+
+  // ---- geometry ----
+  var TOP=116, PITCH=56, SPAN=40, DIVPAD=20, LL_TOP=86, BOT_PAD=54, H=460;
+  var cX=90, pX=300, tX=460;
+  var MSGS=[], SNAPS=[], pktEls=[], guideEls=[], evEls=[], phaseOfFirst={}, connectIdx=-1;
+
+  function markerFor(cls,state){
+    if(state==='active') return cls==='a'?'ahA':(cls==='g'?'ahG':'ahI');
+    if(state==='done') return cls==='a'?'ahA':(cls==='g'?'ahG':'ahI');
+    return 'ahF';
+  }
+
+  function buildFlowDOM(auth){
+    MSGS=buildFlow(auth);
+    // snapshots of both badges per step 0..N
+    SNAPS=[];
+    var cur={c:{t:'ready',c:'idle'},p:{t:'listening',c:'idle'}};
+    SNAPS.push({c:Object.assign({},cur.c),p:Object.assign({},cur.p)});
+    MSGS.forEach(function(m){
+      if(m.cb)cur.c=m.cb; if(m.pb)cur.p=m.pb;
+      SNAPS.push({c:Object.assign({},cur.c),p:Object.assign({},cur.p)});
+    });
+    // phase first-index map
+    phaseOfFirst={}; connectIdx=-1;
+    MSGS.forEach(function(m,i){ if(phaseOfFirst[m.phase]===undefined)phaseOfFirst[m.phase]=i; if(m.dial)connectIdx=i; });
+
+    // clear + rebuild svg lanes, packet chips, dividers
+    lanes.innerHTML=''; packets.innerHTML=''; dividers.innerHTML='';
+    guideEls=[]; pktEls=[]; evEls=[];
+    MSGS.forEach(function(m,i){
+      var gl=svgLine('guide g'+m.cls); gl.setAttribute('marker-end','url(#ahF)'); lanes.appendChild(gl); guideEls.push(gl);
+      var evd=svgCirc('ev'); evd.style.fill='var(--faint)'; lanes.appendChild(evd); evEls.push(evd);
+      var p=el('div','pkt'+(m.cls==='a'?' amber':(m.cls==='g'?' pass':'')),'<b>'+m.tag+'</b><span class="n">'+m.sum+'</span>');
+      packets.appendChild(p); pktEls.push(p);
+    });
+    // dividers per phase present
+    Object.keys(phaseOfFirst).forEach(function(ph){
+      var d=el('div','pdiv p'+ph,'<span class="ln"></span><span class="pill">'+PHASE_LABEL[ph]+'</span>');
+      d.dataset.phase=ph; dividers.appendChild(d);
+    });
+  }
+
+  function layout(){
+    var W=stage.clientWidth;
+    var off=Math.max(78,Math.min(W*0.12,116));
+    cX=off; pX=W*0.60; tX=W-off;
+    var N=MSGS.length;
+    H=TOP + N*PITCH + BOT_PAD;
+    stage.style.height=H+'px';
+    svg.setAttribute('width',W); svg.setAttribute('height',H);
+
+    g('peerC').style.left=cX+'px'; g('peerP').style.left=pX+'px'; g('peerT').style.left=tX+'px';
+    setLine(g('llC'),cX,LL_TOP,cX,H-16);
+    setLine(g('llP'),pX,LL_TOP,pX,H-16);
+    setLine(g('llT'),tX,LL_TOP,tX,H-16);
+
+    MSGS.forEach(function(m,i){
+      var y0=TOP+i*PITCH, y1=y0+SPAN;
+      var fx=m.from==='C'?cX:pX, tx=m.to==='C'?cX:pX;
+      m._fx=fx;m._fy=y0;m._tx=tx;m._ty=y1;
+      m._sx=lerp(fx,tx,0.05);m._sy=lerp(y0,y1,0.05);
+      m._ex=lerp(fx,tx,0.90);m._ey=lerp(y0,y1,0.90);
+      setLine(guideEls[i],fx,y0,tx,y1);
+      setC(evEls[i],m._ex,m._ey);
+    });
+    // dividers
+    Array.prototype.forEach.call(dividers.children,function(d){
+      var ph=+d.dataset.phase, idx=phaseOfFirst[ph];
+      d.style.top=(TOP+idx*PITCH-DIVPAD)+'px';
+    });
+    // dial line: proxy -> target at connect y
+    if(connectIdx>=0){
+      var cy=TOP+connectIdx*PITCH+SPAN;
+      setLine(g('dialLine'),pX,cy,tX,cy);
+      g('peerT').style.top='8px';
+    }
+    // relay banner spans client..target near bottom
+    var relay=g('relay'), ry=H-30;
+    relay.style.left=cX+'px'; relay.style.width=(tX-cX)+'px'; relay.style.top=ry+'px';
+    g('relayLine').style.width='100%';
+    applyStaticState(cur);
+  }
+
+  function lerp(a,b,t){return a+(b-a)*t;}
+  function setLine(e,x1,y1,x2,y2){e.setAttribute('x1',x1);e.setAttribute('y1',y1);e.setAttribute('x2',x2);e.setAttribute('y2',y2);}
+  function setC(e,x,y){e.setAttribute('cx',x);e.setAttribute('cy',y);}
+  function tokPos(e,x,y){e.style.transform='translate(-50%,-50%) translate('+x+'px,'+y+'px)';}
+
+  // ---- state application ----
+  function setBadge(who,st){var e=g('b'+who);e.textContent=st.t;e.className='badge '+st.c;}
+  function applyBadges(k){var s=SNAPS[k];setBadge('C',s.c);setBadge('P',s.p);
+    var relayed=k>=MSGS.length;
+    g('bT').textContent = k>connectIdx?(relayed?'relaying':'connected'):'waiting';
+    g('bT').className='badge '+(k>connectIdx?'ok':'idle');
+  }
+  function setDivider(k){
+    var activePhase = k>=1 && k<=MSGS.length ? MSGS[k-1].phase : (k===0?0:3);
+    Array.prototype.forEach.call(dividers.children,function(d){
+      d.classList.toggle('active', +d.dataset.phase===activePhase);
+    });
+  }
+  function setTarget(on){
+    g('peerT').classList.toggle('on',on);
+    g('llT').classList.toggle('on',on);
+    g('dialLine').classList.toggle('on',on);
+  }
+  function renderDecoder(m,dir,dirClsTag){
+    var head=g('decHead'), bytes=g('decBytes');
+    if(!m){ head.innerHTML='<span class="dir">on the wire</span><span class="cnt">idle</span>';
+      bytes.innerHTML='<div class="empty">TCP is open to the proxy. Press <b style="color:var(--dim)">Next</b> to send the first message.</div>'; return; }
+    var tcls = m.cls==='a'?'amber':(m.cls==='g'?'pass':'');
+    head.innerHTML='<span class="dir">'+dir+'</span> <span class="tag '+tcls+'">'+m.tag+'</span><span class="cnt">'+m.bytes.length+' fields</span>';
+    bytes.innerHTML='';
+    m.bytes.forEach(function(b){
+      var c=el('div','bcell'+(b.k?' '+b.k:''),'<div class="bh">'+b.h+'</div><div class="bl">'+b.l+'</div>');
+      bytes.appendChild(c);
+    });
+  }
+  function dirLabel(m){return m.from==='C'?'Client → Proxy':'Proxy → Client';}
+
+  var cur=0, timers=[], looping=false;
+  function stopTimers(){timers.forEach(clearTimeout);timers=[];}
+
+  function applyStaticState(k){
+    stopTimers();
+    if(k<0)k=0; if(k>MSGS.length)k=MSGS.length;
+    cur=k;
+    applyBadges(k); setDivider(k);
+    for(var i=0;i<MSGS.length;i++){
+      var landed=(i+1)<=k, m=MSGS[i], p=pktEls[i], gl=guideEls[i];
+      gl.className='guide g'+m.cls+(landed?' done':'');
+      gl.setAttribute('marker-end','url(#'+markerFor(m.cls,landed?'done':'idle')+')');
+      evEls[i].classList.toggle('on',landed);
+      p.classList.remove('inflight'); p.style.transition='none';
+      if(landed){tokPos(p,m._ex,m._ey);p.style.opacity='1';}
+      else{tokPos(p,m._sx,m._sy);p.style.opacity='0';}
+    }
+    setTarget(k>connectIdx && connectIdx>=0);
+    g('dialDot').style.opacity='0';
+    g('relay').classList.toggle('on',k>=MSGS.length);
+    // decoder = last landed message
+    if(k>=1) renderDecoder(MSGS[k-1],dirLabel(MSGS[k-1]));
+    else renderDecoder(null);
+    g('narr').innerHTML = k>=1?MSGS[k-1].narr :
+      'TCP is already open to the proxy. Pick an auth mode, then press <b>Replay</b> or step with <b>Prev</b> / <b>Next</b>. Every message is shown as its real RFC 1928 bytes.';
+    refreshStepUI();
+  }
+  function refreshStepUI(){
+    g('step').innerHTML='step <b>'+cur+'</b> / '+MSGS.length;
+    g('prev').disabled=cur<=0; g('next').disabled=cur>=MSGS.length;
+  }
+
+  var FLIGHT=700, GAP=360, DIAL=560, HOLD=2300;
+  function animate(i, done){
+    var idx=i-1, m=MSGS[idx], p=pktEls[idx], gl=guideEls[idx];
+    g('narr').innerHTML=m.narr; setDivider(i);
+    renderDecoder(m,dirLabel(m));
+    gl.className='guide g'+m.cls+' active'; gl.setAttribute('marker-end','url(#'+markerFor(m.cls,'active')+')');
+    p.style.transition='none'; p.style.opacity='1'; p.classList.add('inflight'); tokPos(p,m._sx,m._sy);
+    void p.offsetWidth;
+    function land(){
+      applyBadges(i);
+      evEls[idx].classList.add('on');
+      gl.className='guide g'+m.cls+' done'; gl.setAttribute('marker-end','url(#'+markerFor(m.cls,'done')+')');
+      p.classList.remove('inflight');
+      cur=i; refreshStepUI();
+      if(i>=MSGS.length){ g('relay').classList.add('on'); }
+      if(m.dial){ dialTarget(function(){ if(done)done(); }); }
+      else if(done) done();
+    }
+    if(reduce){ tokPos(p,m._ex,m._ey); land(); return; }
+    p.style.transition='transform '+FLIGHT+'ms cubic-bezier(.45,.05,.35,1)';
+    requestAnimationFrame(function(){ tokPos(p,m._ex,m._ey); });
+    timers.push(setTimeout(land,FLIGHT+30));
+  }
+
+  function dialTarget(cb){
+    setTarget(true);
+    if(reduce){ g('bT').textContent='connected'; g('bT').className='badge ok'; if(cb)cb(); return; }
+    var dd=g('dialDot'), cy=TOP+connectIdx*PITCH+SPAN;
+    dd.style.transition='none'; tokPos(dd,pX,cy); dd.style.opacity='1';
+    void dd.offsetWidth;
+    dd.style.transition='transform '+DIAL+'ms cubic-bezier(.4,0,.2,1),opacity .3s';
+    requestAnimationFrame(function(){ tokPos(dd,tX,cy); });
+    timers.push(setTimeout(function(){
+      g('bT').textContent='connected'; g('bT').className='badge ok';
+      dd.style.opacity='0';
+      if(cb)cb();
+    },DIAL+40));
+  }
+
+  function seqRun(i){
+    animate(i,function(){
+      if(i<MSGS.length){ timers.push(setTimeout(function(){seqRun(i+1);}, MSGS[i-1].dial?GAP+200:GAP)); }
+      else if(looping){ timers.push(setTimeout(function(){ if(looping)play(); },HOLD)); }
+    });
+  }
+  function play(){
+    stopTimers();
+    if(reduce){ looping=false; applyStaticState(MSGS.length); return; }
+    looping=false; applyStaticState(0); timers.push(setTimeout(function(){seqRun(1);},300));
+  }
+
+  // ---- controls ----
+  var auth='up';
+  function paintAuth(){ g('aNone').className=auth==='none'?'on':''; g('aUp').className=auth==='up'?'on':''; }
+  function rebuild(restart){
+    buildFlowDOM(auth); paintAuth(); layout();
+    if(restart){ if(reduce)applyStaticState(MSGS.length); else play(); }
+    else applyStaticState(Math.min(cur,MSGS.length));
+  }
+  g('aNone').addEventListener('click',function(){ if(auth==='none')return; auth='none'; rebuild(true); });
+  g('aUp').addEventListener('click',function(){ if(auth==='up')return; auth='up'; rebuild(true); });
+  g('replay').addEventListener('click',play);
+  g('next').addEventListener('click',function(){ if(cur>=MSGS.length)return; looping=false; stopTimers(); applyStaticState(cur); animate(cur+1); });
+  g('prev').addEventListener('click',function(){ if(cur<=0)return; looping=false; stopTimers(); applyStaticState(cur-1); });
+
+  var rt=null;
+  window.addEventListener('resize',function(){ if(rt)clearTimeout(rt); rt=setTimeout(layout,180); });
+  window.addEventListener('load',function(){
+    buildFlowDOM(auth); paintAuth(); layout();
+    if(reduce) applyStaticState(MSGS.length);
+    else timers.push(setTimeout(play,450));
+  });
+})();
+</script>
+<script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>
+</body>
+</html>

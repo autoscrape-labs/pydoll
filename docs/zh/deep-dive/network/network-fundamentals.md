@@ -10,18 +10,7 @@ Proxy 工作在不同的层上，而所在的层决定了它的触及范围。�
 
 OSI 模型（7 层）是一个教学参考；真实网络运行的是 TCP/IP 模型（4 层）。但 OSI 术语仍是人们描述一个 proxy 工作在哪里时的通用说法，所以值得了解。
 
-```mermaid
-graph TD
-    L7[第 7 层：应用层 - HTTP, FTP, SMTP, DNS]
-    L6[第 6 层：表示层 - 加密, 压缩]
-    L5[第 5 层：会话层 - SOCKS]
-    L4[第 4 层：传输层 - TCP, UDP]
-    L3[第 3 层：网络层 - IP, ICMP]
-    L2[第 2 层：数据链路层 - Ethernet, WiFi]
-    L1[第 1 层：物理层 - 线缆, 无线电波]
-
-    L7 --> L6 --> L5 --> L4 --> L3 --> L2 --> L1
-```
+<iframe scrolling="no" src="/docs/resources/visuals/osi-proxy-layers.html" aria-label="The OSI layer stack: a proxy reaches only the layer it sits at and the layers above; the TCP/IP fingerprint at L4/L3 is stamped by the OS kernel below any proxy and still leaks" style="width: 100%; height: 820px; border: 0;" loading="lazy"></iframe>
 
 对自动化重要的那些层：
 
@@ -68,16 +57,7 @@ TCP 是面向连接的，就像打电话：你建立一个连接，交换数据�
 
 在任何数据传输之前，TCP 会进行一次三次握手，以同步序列号和连接状态。
 
-```mermaid
-sequenceDiagram
-    participant Client as 客户端
-    participant Server as 服务器
-
-    Client->>Server: SYN (seq=x)
-    Server->>Client: SYN-ACK (seq=y, ack=x+1)
-    Client->>Server: ACK (ack=y+1)
-    Note over Client,Server: 连接已建立
-```
+<iframe scrolling="no" src="/docs/resources/visuals/tcp-handshake.html" aria-label="The TCP three-way handshake: SYN, SYN-ACK and ACK packets cross between client and server with sequence numbers, and each side's connection state advances to ESTABLISHED" style="width: 100%; height: 720px; border: 0;" loading="lazy"></iframe>
 
 客户端发送一个 SYN，携带一个随机的初始序列号（Initial Sequence Number）和它的 TCP 选项（窗口大小、MSS、时间戳、SACK）。服务器回复一个 SYN-ACK：它自己的随机 ISN，外加对客户端 ISN 的确认。客户端发送最后一个 ACK，连接便在双向上都打开了。ISN 被随机化（RFC 6528），以防止攻击者靠猜测序列号来注入数据包。
 
@@ -119,18 +99,7 @@ WebRTC 让浏览器之间可以直接进行点对点的音频、视频和数据�
 
 WebRTC 使用 ICE（RFC 8445）来收集可能的连接路径，称为 candidate，而正是这个收集过程暴露了你的网络。
 
-```mermaid
-sequenceDiagram
-    participant Browser as 浏览器
-    participant STUN as STUN 服务器
-    participant Peer as 远端对等方
-
-    Browser->>Browser: 收集本地 IP（LAN）
-    Browser->>STUN: Binding Request (UDP, 绕过 proxy)
-    STUN->>Browser: 响应中包含真实公网 IP
-    Browser->>Peer: 发送所有 ICE candidate（本地 + 公网）
-    Note over Browser,Peer: 直连 P2P 完全绕过了 proxy
-```
+<iframe scrolling="no" src="/docs/resources/visuals/webrtc-leak.html" aria-label="WebRTC fires a STUN binding request over UDP that bypasses a TCP proxy, so the STUN server returns your real public IP and it appears in the ICE candidates a page can read; leak_protection blocks the non-proxied UDP" style="width: 100%; height: 700px; border: 0;" loading="lazy"></iframe>
 
 会收集三种类型的 candidate：
 

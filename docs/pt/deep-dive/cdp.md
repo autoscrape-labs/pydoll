@@ -20,17 +20,7 @@ chrome --remote-debugging-port=9222
 
 O Pydoll conecta a esse WebSocket e mantém a conexão aberta durante toda a sessão. O canal é bidirecional: seu código envia comandos ao navegador, e o navegador empurra eventos de volta conforme eles acontecem, pela mesma conexão.
 
-```mermaid
-sequenceDiagram
-    participant App as Seu código
-    participant WS as WebSocket
-    participant Browser as Chrome
-
-    App ->> WS: comando: Page.navigate
-    WS ->> Browser: executa
-    Browser -->> WS: evento: Page.loadEventFired
-    WS -->> App: entrega o evento
-```
+<iframe scrolling="no" src="/docs/resources/visuals/cdp-connection.html" aria-label="Pydoll and Chrome exchange framed JSON over one WebSocket: commands are matched to their responses by id and resolved inline, while unsolicited events flow through a separate queue drained to callbacks" style="width: 100%; height: 560px; border: 0;" loading="lazy"></iframe>
 
 Um WebSocket persistente serve à automação melhor do que os endpoints HTTP de requisição/resposta que protocolos mais antigos usavam: o navegador te notifica no instante em que algo acontece, em vez de você ficar consultando para descobrir.
 

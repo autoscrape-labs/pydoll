@@ -4,7 +4,7 @@ Localizar elementos é a base de toda automação. O Pydoll oferece duas formas 
 
 Edite os atributos abaixo e veja o `find()` localizar o elemento ao vivo. O Pydoll transforma os atributos que você passa em um seletor para você, e o elemento correspondente se destaca.
 
-<iframe src="/docs/resources/visuals/element-find-playground.html" aria-label="Edit find() attributes and see which element it locates" style="width: 100%; height: 365px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/element-find-playground.html" aria-label="Edit find() attributes and see which element it locates" style="width: 100%; height: 365px; border: 0;" loading="lazy"></iframe>
 
 ## Encontrar por atributos
 

@@ -17,7 +17,7 @@
 
 下面这张交互式地图在一台真实的 Mac 上应用一个 Windows profile，并在每一个 realm 中读取 `navigator.platform`。在一个幼稚的顶层页面 hook 和 Pydoll 的逐 realm 重放之间切换：
 
-<iframe src="/docs/resources/visuals/realm-coverage.html" aria-label="一个 Windows profile 应用在一台 Mac 上；在主文档、一个同源 iframe、一个跨源 OOPIF，以及 dedicated、shared 和 service worker 中读取 navigator.platform。一个顶层页面 hook 只匹配主文档；Pydoll 的重放匹配每一个 realm。" style="width: 100%; height: 430px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/realm-coverage.html" aria-label="一个 Windows profile 应用在一台 Mac 上；在主文档、一个同源 iframe、一个跨源 OOPIF，以及 dedicated、shared 和 service worker 中读取 navigator.platform。一个顶层页面 hook 只匹配主文档；Pydoll 的重放匹配每一个 realm。" style="width: 100%; height: 430px; border: 0;" loading="lazy"></iframe>
 
 ## 两种覆盖能免费触及每一个同进程 realm
 

@@ -67,6 +67,8 @@ Cada `quote` é um objeto Pydantic de verdade: `quote.tags` é uma `list[str]`, 
 
 ## O script completo {#the-full-script}
 
+<iframe scrolling="no" src="/docs/resources/visuals/first-automation.html" aria-label="A read-along walkthrough of the first automation script: each line highlights as it runs while a browser window launches, navigates, finds elements, types, clicks, and extracts typed data" style="width: 100%; height: 860px; border: 0;" loading="lazy"></iframe>
+
 Crie `first_automation.py`:
 
 ```python

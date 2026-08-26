@@ -2,7 +2,7 @@
 
 Pydoll's extraction engine lets you define **what** you want from a page using typed models, and handles the **how** automatically. Instead of manually querying elements one by one, you declare a model with selectors and call `tab.extract()`. The result is a fully typed, validated Python object built on [Pydantic](https://docs.pydantic.dev/).
 
-<iframe src="/docs/resources/visuals/extraction-flow.html" aria-label="A page and a model producing a typed, validated object through tab.extract" style="width: 100%; height: 360px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/extraction-flow.html" aria-label="A page and a model producing a typed, validated object through tab.extract" style="width: 100%; height: 360px; border: 0;" loading="lazy"></iframe>
 
 ## Why use a model
 

@@ -6,7 +6,7 @@ selector 是你交给 `tab.query()`（以及提取模型中 `selector=`）的字
 
 试试看：在下面输入一个 selector，匹配到的元素就会高亮。它运行的正是浏览器使用的那套 `querySelectorAll` / XPath，所以在这里匹配到什么，在你的自动化里就匹配到什么。
 
-<iframe src="/docs/resources/visuals/selector-playground.html" aria-label="Type a CSS or XPath selector and see which elements it matches" style="width: 100%; height: 500px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/selector-playground.html" aria-label="Type a CSS or XPath selector and see which elements it matches" style="width: 100%; height: 500px; border: 0;" loading="lazy"></iframe>
 
 ```python
 import asyncio

@@ -17,7 +17,7 @@ Detection systems use this directly. They read the fingerprint in the page, spaw
 
 The interactive map below applies a Windows profile on a real Mac and reads `navigator.platform` in each realm. Toggle between a naive top-page hook and Pydoll's per-realm replay:
 
-<iframe src="/docs/resources/visuals/realm-coverage.html" aria-label="A Windows profile applied on a Mac; navigator.platform read in the main document, a same-origin iframe, a cross-origin OOPIF, and dedicated, shared and service workers. A top-page hook matches only the main document; Pydoll's replay matches every realm." style="width: 100%; height: 430px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/realm-coverage.html" aria-label="A Windows profile applied on a Mac; navigator.platform read in the main document, a same-origin iframe, a cross-origin OOPIF, and dedicated, shared and service workers. A top-page hook matches only the main document; Pydoll's replay matches every realm." style="width: 100%; height: 430px; border: 0;" loading="lazy"></iframe>
 
 ## Two overrides reach every same-process realm for free
 

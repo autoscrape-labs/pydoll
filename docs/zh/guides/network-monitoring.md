@@ -36,7 +36,7 @@ asyncio.run(main())
 
 要在导航**之前**启用该域；在启用之前发起的请求不会被捕获。
 
-<iframe src="/docs/resources/visuals/request-waterfall.html" aria-label="A request waterfall showing each request's start and duration as the page loads" style="width: 100%; height: 375px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/request-waterfall.html" aria-label="A request waterfall showing each request's start and duration as the page loads" style="width: 100%; height: 375px; border: 0;" loading="lazy"></iframe>
 
 按下 Load：每个请求都显示为一根条形，其位置由它何时开始决定、宽度由它耗时多久决定，这正是网络事件在触发时所报告的内容。
 

@@ -2,6 +2,8 @@
 
 Browser fingerprinting identifies clients by the properties they expose through JavaScript APIs, HTTP headers, and the rendering engine. Where [network fingerprinting](network-fingerprinting.md) examines protocol-level signals from the OS kernel and TLS library, browser fingerprinting targets the application layer: the specific browser, its version, its configuration, and the hardware it runs on. Any website can read these signals through standard web APIs, and the combination of enough of them creates a fingerprint that is often unique across millions of visitors.
 
+<iframe scrolling="no" src="/docs/resources/visuals/fingerprint-uniqueness.html" aria-label="Dozens of individually common browser signals combine into one near-unique fingerprint, and a single contradiction between two of them (User-Agent vs platform, timezone vs language) flags you" style="width: 100%; height: 920px; border: 0;" loading="lazy"></iframe>
+
 ## JavaScript navigator properties
 
 The `navigator` object is the richest single source of browser fingerprinting data. It exposes dozens of properties that reveal the browser, its capabilities, and the system it runs on. Detection systems collect these properties, cross-reference them against each other and against HTTP headers, and flag inconsistencies.

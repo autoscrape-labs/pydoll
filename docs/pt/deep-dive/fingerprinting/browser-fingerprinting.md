@@ -2,6 +2,8 @@
 
 O browser fingerprinting identifica clientes pelas propriedades que eles expõem através de APIs JavaScript, cabeçalhos HTTP e do motor de renderização. Enquanto o [network fingerprinting](network-fingerprinting.md) examina sinais de nível de protocolo vindos do kernel do sistema operacional e da biblioteca TLS, o browser fingerprinting mira a camada de aplicação: o navegador específico, sua versão, sua configuração e o hardware em que ele roda. Qualquer site pode ler esses sinais através de APIs web padrão, e a combinação de um número suficiente deles cria um fingerprint que, com frequência, é único entre milhões de visitantes.
 
+<iframe scrolling="no" src="/docs/resources/visuals/fingerprint-uniqueness.html" aria-label="Dozens of individually common browser signals combine into one near-unique fingerprint, and a single contradiction between two of them (User-Agent vs platform, timezone vs language) flags you" style="width: 100%; height: 920px; border: 0;" loading="lazy"></iframe>
+
 ## Propriedades do navigator em JavaScript
 
 O objeto `navigator` é a fonte única mais rica de dados de browser fingerprinting. Ele expõe dezenas de propriedades que revelam o navegador, suas capacidades e o sistema em que ele roda. Os sistemas de detecção coletam essas propriedades, cruzam umas com as outras e com os cabeçalhos HTTP, e marcam as inconsistências.

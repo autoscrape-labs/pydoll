@@ -3,90 +3,344 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>DOM traversal</title>
+<title>Move a focus through the DOM tree</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
 <style>
   :root{
-    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;--panel2:#191c20;
     --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
     --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
-    --indigo:#6e7bff;--indigo2:#8f99ff;--pass:#35e0a1;
-    --sans:"Chivo",system-ui,-apple-system,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--indigo-dim:rgba(110,123,255,.13);
+    --pass:#35e0a1;--pass-dim:rgba(53,224,161,.12);
+    --amber:#f5b544;--amber-dim:rgba(245,181,68,.13);
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
   }
-  *{box-sizing:border-box}
-  html,body{margin:0}
+  *{box-sizing:border-box} html,body{margin:0}
   body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
   .widget{border:1px solid var(--line);padding:16px 18px}
-  .tree{border:1px solid var(--line);background:var(--bg2);padding:8px 6px}
-  .node{padding:5px 9px;margin:1px 0;font-family:var(--mono);font-size:12px;color:var(--dim);border:1px solid transparent;transition:background .18s,border-color .18s,color .18s;white-space:nowrap}
-  .node .tag{color:var(--indigo2)} .node .cls{color:var(--faint)}
-  .node.cur{color:var(--ink);border-color:var(--indigo);background:rgba(110,123,255,.14)}
-  .node.cur .tag{color:var(--indigo)}
-  .node.sib{border-color:rgba(53,224,161,.45)}
-  .node.sib .tag{color:var(--pass)}
-  .controls{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:center}
-  button{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:8px 12px;cursor:pointer;transition:.15s}
-  button:hover:not(:disabled){border-color:var(--indigo);color:#fff}
-  button:disabled{opacity:.4;cursor:default}
-  .caption{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-left:auto;min-height:16px;text-align:right}
-  .caption b{color:var(--indigo2)}
+  .lead{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:13px;line-height:1.5}
+  .lead b{color:var(--ink)}
+
+  .stage{position:relative;height:288px;border:1px solid var(--line);background:
+    radial-gradient(120% 90% at 50% -10%,rgba(110,123,255,.05),transparent 60%),var(--bg2);overflow:hidden}
+  .edges{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
+  .edges line{stroke:var(--line2);stroke-width:1.4;vector-effect:non-scaling-stroke;transition:stroke .35s,opacity .35s}
+  .edges line.on{stroke:var(--indigo)} .edges line.on-sib{stroke:var(--pass)}
+
+  .node{position:absolute;transform:translate(-50%,-50%);display:flex;align-items:baseline;
+    padding:5px 9px;border:1px solid var(--line2);background:var(--panel);border-radius:5px;
+    font-family:var(--mono);font-size:11px;white-space:nowrap;z-index:3;
+    transition:border-color .2s,background .2s,box-shadow .3s,color .2s}
+  .node .tag{color:var(--indigo2);font-weight:600} .node .sub{color:var(--faint)}
+  .node .idx{position:absolute;top:-8px;right:-8px;min-width:15px;height:15px;padding:0 3px;border-radius:8px;
+    background:var(--pass);color:#07130d;font-size:9px;font-weight:700;line-height:1;
+    align-items:center;justify-content:center;display:none;box-shadow:0 0 0 2px var(--bg2)}
+  .node.fam{border-color:rgba(53,224,161,.5);background:var(--pass-dim)}
+  .node.fam .tag{color:var(--pass)} .node.fam .sub{color:var(--dim)}
+  .node.fam .idx.show{display:flex}
+  .node.picked{box-shadow:0 0 0 2px rgba(110,123,255,.45)}
+  .node.picked .idx{background:var(--indigo);color:#080b1a}
+  .node.ppulse{border-color:rgba(53,224,161,.5)}
+  .node.cur{border-color:var(--indigo);background:var(--indigo-dim);color:var(--ink);
+    z-index:4;animation:breathe 2.6s ease-in-out infinite}
+  .node.cur .tag{color:var(--indigo2)} .node.cur .sub{color:var(--dim)}
+  @keyframes breathe{0%,100%{box-shadow:0 0 0 3px rgba(110,123,255,.12),0 0 12px rgba(110,123,255,.16)}
+    50%{box-shadow:0 0 0 3px rgba(110,123,255,.2),0 0 22px rgba(110,123,255,.34)}}
+  .node.refuse{border-color:var(--amber);background:var(--amber-dim);animation:shake .42s}
+  .node.refuse .tag{color:var(--amber)}
+  @keyframes shake{0%,100%{transform:translate(-50%,-50%)}
+    20%{transform:translate(calc(-50% - 4px),-50%)}40%{transform:translate(calc(-50% + 4px),-50%)}
+    60%{transform:translate(calc(-50% - 3px),-50%)}80%{transform:translate(calc(-50% + 3px),-50%)}}
+
+  .token{position:absolute;width:13px;height:13px;border-radius:50%;background:var(--indigo);
+    transform:translate(-50%,-50%);opacity:0;z-index:6;pointer-events:none;
+    box-shadow:0 0 11px 2px rgba(110,123,255,.7)}
+  .token.on{opacity:1}
+  .pulse{position:absolute;width:22px;height:22px;border:2px solid var(--indigo);border-radius:50%;
+    transform:translate(-50%,-50%);opacity:0;z-index:5;pointer-events:none}
+  .pulse.go{animation:rip .58s ease-out}
+  @keyframes rip{0%{opacity:.9;transform:translate(-50%,-50%) scale(.35)}100%{opacity:0;transform:translate(-50%,-50%) scale(2.6)}}
+
+  .depths{position:absolute;left:8px;top:0;height:100%;z-index:2;pointer-events:none;
+    font-family:var(--mono);font-size:8.5px;color:var(--faint);letter-spacing:.06em}
+  .depths span{position:absolute;transform:translateY(-50%);opacity:.6}
+
+  .console{margin-top:12px;border:1px solid var(--line);background:var(--bg2);padding:9px 12px;
+    overflow-x:auto;min-height:52px}
+  .console .call{font-family:var(--mono);font-size:11.5px;color:var(--ink);white-space:nowrap}
+  .console .call .rc{color:var(--indigo2)} .console .call b{color:var(--ink);font-weight:600}
+  .console .call .kw{color:var(--faint)}
+  .console .res{font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:5px;white-space:nowrap}
+  .console .res .kw{color:var(--faint)} .console .res .set{color:var(--pass)} .console .res .one{color:var(--indigo2)}
+  .console.bad .res{color:var(--amber)}
+
+  .pad{display:flex;gap:7px;margin-top:13px;flex-wrap:wrap}
+  button{font-family:var(--mono);font-size:11px;font-weight:500;color:var(--ink);background:var(--panel);
+    border:1px solid var(--line2);padding:7px 11px;cursor:pointer;transition:.15s;border-radius:4px}
+  button:hover{border-color:var(--indigo);color:#fff}
+  button.na{opacity:.4}
+  button.na:hover{border-color:var(--amber);color:var(--amber)}
+  button.ghost{margin-left:auto;color:var(--dim)}
+
+  .foot{display:flex;align-items:center;gap:14px;margin-top:12px;flex-wrap:wrap}
+  .legend{display:flex;align-items:center;gap:14px;font-family:var(--mono);font-size:10px;color:var(--faint)}
+  .legend i{display:inline-block;width:9px;height:9px;border-radius:50%;vertical-align:0;margin-right:5px}
+  .legend i.foc{background:var(--indigo)} .legend i.set{background:var(--pass)}
+  .cap{font-family:var(--mono);font-size:10.5px;color:var(--dim);margin-left:auto;text-align:right;min-height:14px}
+  .cap b{color:var(--indigo2)}
+
+  @media (prefers-reduced-motion:reduce){
+    .node.cur{animation:none} .node.refuse{animation:none}
+    .token,.pulse{transition:none} .pulse.go{animation:none}
+  }
+
+  /* theme-matched thin scrollbars for overflow-x boxes (replaces the default white bar) */
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--line2)}
+  ::-webkit-scrollbar-thumb:hover{background:var(--faint)}
 </style>
 </head>
 <body>
 <div class="widget">
-  <div class="tree" id="tree"></div>
-  <div class="controls">
-    <button id="parent">get_parent_element()</button>
-    <button id="child">get_children_elements()</button>
-    <button id="prev">◂ sibling</button>
-    <button id="next">sibling ▸</button>
-    <span class="caption" id="caption">Start on a <b>li.item</b>. Move through the tree.</span>
+  <div class="lead">The DOM is a <b>tree</b>. From one element you step to its relatives. Each button is a real
+    <b>pydoll</b> call: watch the focus travel the edge, the returned set light up green, and the code it runs appear below.</div>
+
+  <div class="stage" id="stage">
+    <div class="depths" id="depths"></div>
+    <svg class="edges" id="edges" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
+    <span class="token" id="token"></span>
+    <span class="pulse" id="pulse"></span>
+  </div>
+
+  <div class="console" id="console">
+    <div class="call" id="cCall"></div>
+    <div class="res" id="cRes"></div>
+  </div>
+
+  <div class="pad">
+    <button data-k="parent"    title="parent element (raises ElementNotFound at the root)">get_parent_element()</button>
+    <button data-k="firstChild" title="get_children_elements() then index [0]">get_children_elements()[0]</button>
+    <button data-k="lastChild"  title="get_children_elements() then index [-1]">get_children_elements()[-1]</button>
+    <button data-k="prevSib"    title="get_siblings_elements(), step to the previous one">&#9666; get_siblings_elements()</button>
+    <button data-k="nextSib"    title="get_siblings_elements(), step to the next one">get_siblings_elements() &#9656;</button>
+    <button class="ghost" id="replay" title="Replay the auto tour">&#8635; tour</button>
+  </div>
+
+  <div class="foot">
+    <span class="legend"><span><i class="foc"></i>focus &middot; current element</span><span><i class="set"></i>returned set</span></span>
+    <span class="cap" id="cap"></span>
   </div>
 </div>
 
 <script>
 (function(){
+  var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  function g(id){return document.getElementById(id);}
+
+  // A small, real page DOM laid out as a tidy tree. x,y in a 0..100 stage space.
+  // Array order == document order, so children/siblings come back in DOM order.
   var NODES=[
-    {id:0,tag:'div',cls:'#app',depth:0,parent:null,children:[1,3]},
-    {id:1,tag:'header',cls:'.bar',depth:1,parent:0,children:[2]},
-    {id:2,tag:'h1',cls:'.logo',depth:2,parent:1,children:[]},
-    {id:3,tag:'ul',cls:'.list',depth:1,parent:0,children:[4,6,8]},
-    {id:4,tag:'li',cls:'.item.first',depth:2,parent:3,children:[5]},
-    {id:5,tag:'span',cls:'.title',depth:3,parent:4,children:[]},
-    {id:6,tag:'li',cls:'.item',depth:2,parent:3,children:[7]},
-    {id:7,tag:'span',cls:'.title',depth:3,parent:6,children:[]},
-    {id:8,tag:'li',cls:'.item.last',depth:2,parent:3,children:[9,10]},
-    {id:9,tag:'span',cls:'.title',depth:3,parent:8,children:[]},
-    {id:10,tag:'a',cls:'.link',depth:3,parent:8,children:[]}
+    {tag:'div',   sub:'#app',  x:41, y:15, parent:null},
+    {tag:'header',sub:'.bar',  x:20, y:40, parent:0},
+    {tag:'h1',    sub:'.logo', x:20, y:66, parent:1},
+    {tag:'ul',    sub:'.list', x:62, y:40, parent:0},
+    {tag:'li',    sub:'.item', x:44, y:66, parent:3},
+    {tag:'a',     sub:'.link', x:44, y:90, parent:4},
+    {tag:'li',    sub:'.item', x:62, y:66, parent:3},
+    {tag:'span',  sub:'.text', x:62, y:90, parent:6},
+    {tag:'li',    sub:'.item', x:80, y:66, parent:3},
+    {tag:'span',  sub:'.text', x:80, y:90, parent:8}
   ];
-  var tree=document.getElementById('tree'),caption=document.getElementById('caption');
-  var pB=document.getElementById('parent'),cB=document.getElementById('child'),prevB=document.getElementById('prev'),nextB=document.getElementById('next');
-  var cur=6, sibT=null;
-  function label(n){return '<span class="tag">'+n.tag+'</span><span class="cls">'+n.cls+'</span>';}
-  NODES.forEach(function(n){
-    var d=document.createElement('div');d.className='node';d.style.paddingLeft=(9+n.depth*20)+'px';d.dataset.id=n.id;d.innerHTML=label(n);
-    tree.appendChild(d);n.el=d;
-  });
-  function siblingsOf(n){ return n.parent===null?[]:NODES[n.parent].children; }
-  function render(msg){
-    if(sibT){clearTimeout(sibT);sibT=null;}
-    NODES.forEach(function(n){n.el.classList.remove('cur','sib');});
-    NODES[cur].el.classList.add('cur');
-    var n=NODES[cur];
-    pB.disabled = n.parent===null;
-    cB.disabled = n.children.length===0;
-    var sibs=siblingsOf(n), idx=sibs.indexOf(cur);
-    prevB.disabled = idx<=0; nextB.disabled = idx<0||idx>=sibs.length-1;
-    if(msg)caption.innerHTML=msg;
+  NODES.forEach(function(n,i){n.id=i;});
+
+  var stage=g('stage'),edges=g('edges'),token=g('token'),pulse=g('pulse');
+  var cCall=g('cCall'),cRes=g('cRes'),cons=g('console'),cap=g('cap');
+  var startId=6, curId=startId, animating=false, raf=null;
+  var DUR=620;
+
+  function childrenOf(id){ return NODES.filter(function(n){return n.parent===id;}).map(function(n){return n.id;}); }
+  function orderedSibs(id){ var p=NODES[id].parent; return p===null?[id]:childrenOf(p); }
+  function siblingsExcl(id){ return orderedSibs(id).filter(function(x){return x!==id;}); }
+  function repr(id){ return NODES[id].tag+NODES[id].sub; }
+
+  // ---- build tree ----
+  function buildEdges(){
+    NODES.forEach(function(c){
+      if(c.parent===null) return;
+      var p=NODES[c.parent];
+      var ln=document.createElementNS('http://www.w3.org/2000/svg','line');
+      ln.setAttribute('x1',p.x);ln.setAttribute('y1',p.y);ln.setAttribute('x2',c.x);ln.setAttribute('y2',c.y);
+      ln.setAttribute('id','e'+c.parent+'_'+c.id);
+      edges.appendChild(ln);
+    });
   }
-  function nodeName(id){return NODES[id].tag+NODES[id].cls;}
-  pB.addEventListener('click',function(){var p=NODES[cur].parent;cur=p;render('<b>get_parent_element()</b> → '+nodeName(cur));});
-  cB.addEventListener('click',function(){var c=NODES[cur].children[0];cur=c;render('<b>get_children_elements()</b> → first child '+nodeName(cur));});
-  prevB.addEventListener('click',function(){var s=siblingsOf(NODES[cur]);cur=s[s.indexOf(cur)-1];render('<b>get_siblings_elements()</b> → '+nodeName(cur));});
-  nextB.addEventListener('click',function(){var s=siblingsOf(NODES[cur]);cur=s[s.indexOf(cur)+1];render('<b>get_siblings_elements()</b> → '+nodeName(cur));});
-  render();
+  function buildNodes(){
+    NODES.forEach(function(n){
+      var d=document.createElement('div');
+      d.className='node';d.style.left=n.x+'%';d.style.top=n.y+'%';
+      d.innerHTML='<span class="tag">'+n.tag+'</span><span class="sub">'+n.sub+'</span><span class="idx"></span>';
+      stage.appendChild(d);n.el=d;
+    });
+  }
+  function buildDepths(){
+    var rows=[['0',15],['1',40],['2',66],['3',90]],dp=g('depths');
+    rows.forEach(function(r){ var s=document.createElement('span'); s.textContent='depth '+r[0]; s.style.top=r[1]+'%'; dp.appendChild(s); });
+  }
+
+  function edge(id){ return document.getElementById(id); }
+  function nodePx(n){ var r=stage.getBoundingClientRect(); return {x:n.x/100*r.width, y:n.y/100*r.height}; }
+
+  function clearPrev(){
+    NODES.forEach(function(n){
+      n.el.classList.remove('fam','picked','ppulse');
+      var b=n.el.querySelector('.idx'); b.classList.remove('show');
+    });
+    Array.prototype.forEach.call(edges.querySelectorAll('line'),function(l){ l.classList.remove('on','on-sib'); });
+  }
+  function setCur(id){
+    NODES.forEach(function(n){ n.el.classList.toggle('cur', n.id===id); });
+    curId=id;
+  }
+
+  // ---- console ----
+  function rc(t){return '<span class="rc">'+t+'</span>';}
+  function kw(t){return '<span class="kw">'+t+'</span>';}
+  function setl(ids){return '<span class="set">['+ids.map(repr).join(', ')+']</span>';}
+  function one(id){return '<span class="one">'+repr(id)+'</span>';}
+  function setConsole(call,res,bad){ cCall.innerHTML=call; cRes.innerHTML=res; cons.classList.toggle('bad',!!bad); }
+
+  // ---- resolve a move to a plan (or an invalid refusal) ----
+  function resolve(kind){
+    var n=NODES[curId], tag=n.tag;
+    if(kind==='parent'){
+      if(n.parent===null) return {invalid:true,
+        call:kw('await')+' '+rc(tag)+'.<b>get_parent_element()</b>',
+        res:kw('# ✕')+' ElementNotFound · '+repr(curId)+' is the document root'};
+      return {dest:n.parent, edge:['e'+n.parent+'_'+curId],
+        call:'parent = '+kw('await')+' '+rc(tag)+'.<b>get_parent_element()</b>',
+        res:kw('# →')+' '+one(n.parent)};
+    }
+    if(kind==='firstChild'||kind==='lastChild'){
+      var ch=childrenOf(curId);
+      if(!ch.length) return {invalid:true,
+        call:'kids = '+kw('await')+' '+rc(tag)+'.<b>get_children_elements()</b>',
+        res:kw('# →')+' <span class="set">[]</span> · '+repr(curId)+' is a leaf'};
+      var k=kind==='firstChild'?0:ch.length-1, dest=ch[k], key=kind==='firstChild'?'0':'-1';
+      return {dest:dest, family:ch, indexed:true, edge:['e'+curId+'_'+dest],
+        call:'kids = '+kw('await')+' '+rc(tag)+'.<b>get_children_elements()</b>',
+        res:kw('# →')+' '+setl(ch)+' · kids['+key+'] = '+one(dest)};
+    }
+    // prevSib / nextSib
+    var ord=orderedSibs(curId), i=ord.indexOf(curId), j=kind==='prevSib'?i-1:i+1;
+    if(j<0||j>=ord.length) return {invalid:true,
+      call:'sibs = '+kw('await')+' '+rc(tag)+'.<b>get_siblings_elements()</b>',
+      res:kw('# ✕')+' no '+(kind==='prevSib'?'previous':'next')+' sibling · '+repr(curId)+' is the '+(kind==='prevSib'?'first':'last')+' child'};
+    var dest=ord[j], p=n.parent, sibs=siblingsExcl(curId);
+    return {dest:dest, family:sibs, sib:true, parentPulse:p, edge:['e'+p+'_'+curId,'e'+p+'_'+dest],
+      call:'sibs = '+kw('await')+' '+rc(tag)+'.<b>get_siblings_elements()</b>',
+      res:kw('# →')+' '+setl(sibs)+' · '+(kind==='prevSib'?'previous':'next')+' = '+one(dest)};
+  }
+
+  // ---- affordance (dim moves that would refuse, but keep them clickable) ----
+  function na(k,off){ var b=document.querySelector('button[data-k="'+k+'"]'); if(b)b.classList.toggle('na',off); }
+  function updateAffordance(){
+    na('parent', NODES[curId].parent===null);
+    var leaf=childrenOf(curId).length===0; na('firstChild',leaf); na('lastChild',leaf);
+    var ord=orderedSibs(curId), i=ord.indexOf(curId);
+    na('prevSib', i<=0); na('nextSib', i>=ord.length-1);
+  }
+
+  // ---- animation ----
+  function easeInOut(t){ return t<0.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2; }
+  function tween(from,to,dur,arc,done){
+    var t0=performance.now();
+    function frame(now){
+      var t=Math.min(1,(now-t0)/dur), e=easeInOut(t), px,py;
+      if(arc){ var cx=(from.x+to.x)/2, cy=(from.y+to.y)/2+arc, u=1-e;
+        px=u*u*from.x+2*u*e*cx+e*e*to.x; py=u*u*from.y+2*u*e*cy+e*e*to.y;
+      }else{ px=from.x+(to.x-from.x)*e; py=from.y+(to.y-from.y)*e; }
+      token.style.left=px+'px'; token.style.top=py+'px';
+      if(t<1) raf=requestAnimationFrame(frame); else done();
+    }
+    raf=requestAnimationFrame(frame);
+  }
+  function landPulse(to){ pulse.style.left=to.x+'px';pulse.style.top=to.y+'px';pulse.classList.remove('go');void pulse.offsetWidth;pulse.classList.add('go'); }
+
+  function refuse(plan){
+    clearPrev();
+    setConsole(plan.call, plan.res, true);
+    var el=NODES[curId].el; el.classList.remove('refuse'); void el.offsetWidth; el.classList.add('refuse');
+    setTimeout(function(){ el.classList.remove('refuse'); }, 460);
+  }
+
+  function animate(plan, done){
+    animating=true; clearPrev();
+    setConsole(plan.call, plan.res, false);
+    if(plan.family){
+      plan.family.forEach(function(id,k){ var el=NODES[id].el; el.classList.add('fam');
+        if(plan.indexed){ var b=el.querySelector('.idx'); b.textContent=k; b.classList.add('show'); } });
+      NODES[plan.dest].el.classList.add('picked');
+    }
+    plan.edge.forEach(function(eid){ var e=edge(eid); if(e)e.classList.add(plan.sib?'on-sib':'on'); });
+    if(plan.parentPulse!=null) NODES[plan.parentPulse].el.classList.add('ppulse');
+
+    var from=nodePx(NODES[curId]), to=nodePx(NODES[plan.dest]);
+    function finish(){ setCur(plan.dest); updateAffordance(); landPulse(to); animating=false;
+      if(!reduce) setTimeout(clearPrev, 520); if(done)done(); }
+    if(reduce){ finish(); return; }
+    token.style.left=from.x+'px'; token.style.top=from.y+'px'; token.classList.add('on');
+    var arc=plan.sib ? -Math.min(52, Math.abs(to.x-from.x)*0.5) : 0;
+    tween(from,to,DUR,arc,function(){ token.classList.remove('on'); finish(); });
+  }
+
+  function doMove(kind, opts){
+    opts=opts||{};
+    if(animating) return;
+    if(!opts.tour){ stopTour(); cap.innerHTML='You have the focus. Dimmed buttons have no such relative. Try one.'; }
+    var plan=resolve(kind);
+    if(plan.invalid){ refuse(plan); if(opts.done) setTimeout(opts.done, reduce?0:600); return; }
+    animate(plan, opts.done);
+  }
+
+  // ---- auto tour: one fixed loop that returns to the start node ----
+  var TOUR=['parent','firstChild','nextSib','firstChild','parent'], tIdx=0, tActive=false, tTimer=null;
+  function stopTour(){ tActive=false; if(tTimer){clearTimeout(tTimer);tTimer=null;} }
+  function tourStep(){
+    if(!tActive) return;
+    doMove(TOUR[tIdx], {tour:true, done:function(){
+      tIdx++;
+      if(tIdx>=TOUR.length){ tIdx=0; tTimer=setTimeout(function(){ if(tActive)tourStep(); }, 2200); }
+      else tTimer=setTimeout(function(){ if(tActive)tourStep(); }, 1350);
+    }});
+  }
+  function startTour(){
+    if(reduce) return;
+    stopTour(); clearPrev(); setCur(startId); updateAffordance();
+    setConsole('el = '+kw('await')+' tab.<b>find</b>(class_name=<span class="one">\'item\'</span>)',
+               kw('# →')+' focus on '+one(startId)+', auto-touring', false);
+    cap.innerHTML='Auto-touring the tree. Click any call to <b>take over</b>.';
+    tActive=true; tIdx=0; tTimer=setTimeout(tourStep, 1300);
+  }
+
+  // ---- wire up ----
+  buildEdges(); buildNodes(); buildDepths();
+  setCur(startId); updateAffordance();
+  Array.prototype.forEach.call(document.querySelectorAll('button[data-k]'),function(b){
+    b.addEventListener('click',function(){ doMove(b.getAttribute('data-k')); });
+  });
+  g('replay').addEventListener('click',function(){ if(animating)return; startTour(); });
+
+  if(reduce){
+    setConsole('el = '+kw('await')+' tab.<b>find</b>(class_name=<span class="one">\'item\'</span>)',
+               kw('# →')+' focus on '+one(startId)+', step to a relative', false);
+    cap.innerHTML='Reduced motion: moves jump to the destination.';
+  }else{
+    window.addEventListener('load',function(){ setTimeout(startTour, 350); });
+  }
 })();
 </script>
 <script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>

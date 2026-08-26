@@ -2,7 +2,7 @@
 
 拿到一个元素后，你常常还需要它周围的元素：它的子元素、兄弟元素、shadow 根内部的元素，或者 iframe 里的内容。本指南讲的是从一个已知起点在 DOM 树中移动。至于如何先定位到那个起始元素，参见[查找元素](element-finding.md)。
 
-<iframe src="/docs/resources/visuals/dom-traversal-tree.html" aria-label="Move a focus through a DOM tree with parent, child, and sibling methods" style="width: 100%; height: 480px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/dom-traversal-tree.html" aria-label="Move a focus through a DOM tree with parent, child, and sibling methods" style="width: 100%; height: 480px; border: 0;" loading="lazy"></iframe>
 
 ## 获取子元素
 

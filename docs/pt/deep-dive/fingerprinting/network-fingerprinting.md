@@ -4,6 +4,8 @@ O network fingerprinting identifica clientes analisando características da pilh
 
 Esta é a teoria por trás dos guias de [Stealth](../../stealth/index.md). Ela se combina com o [Browser fingerprinting](browser-fingerprinting.md) (os sinais visíveis ao JavaScript) e o [Behavioral fingerprinting](behavioral-fingerprinting.md) (como você se move e digita). Para saber como os próprios protocolos funcionam, veja [Network fundamentals](../network/network-fundamentals.md).
 
+<iframe scrolling="no" src="/docs/resources/visuals/network-fingerprinting.html" aria-label="Below the JavaScript layer, the TLS ClientHello and HTTP/2 SETTINGS form a JA3 and JA4 fingerprint the page cannot spoof; a real Chrome matches its User-Agent while a Python client contradicts it" style="width: 100%; height: 900px; border: 0;" loading="lazy"></iframe>
+
 ## TCP/IP fingerprinting
 
 Todo sistema operacional implementa a pilha TCP/IP de forma diferente. O pacote SYN que inicia uma conexão TCP carrega informação suficiente para identificar o SO com alta confiança: o TTL inicial, o tamanho da janela TCP, o Maximum Segment Size e a ordem e seleção das opções TCP. Nenhum desses valores é controlado pelo navegador. Eles vêm do kernel.

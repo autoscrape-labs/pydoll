@@ -2,7 +2,7 @@
 
 Pydoll 的提取引擎让你用类型化模型来定义你想从页面得到**什么**，而自动处理**怎么做**。你不必再逐个手动查询元素，只需声明一个带有选择器的模型，然后调用 `tab.extract()`。结果是一个完全类型化、经过校验的 Python 对象，基于 [Pydantic](https://docs.pydantic.dev/) 构建。
 
-<iframe src="/docs/resources/visuals/extraction-flow.html" aria-label="A page and a model producing a typed, validated object through tab.extract" style="width: 100%; height: 360px; border: 0;" loading="lazy"></iframe>
+<iframe scrolling="no" src="/docs/resources/visuals/extraction-flow.html" aria-label="A page and a model producing a typed, validated object through tab.extract" style="width: 100%; height: 360px; border: 0;" loading="lazy"></iframe>
 
 ## 为什么要用模型
 

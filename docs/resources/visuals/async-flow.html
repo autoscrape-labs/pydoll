@@ -3,107 +3,265 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Sequential vs concurrent async</title>
+<title>gather finishes with the slowest page</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
 <style>
   :root{
-    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;--panel2:#191c20;
     --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
     --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
-    --indigo:#6e7bff;--indigo2:#8f99ff;--pass:#35e0a1;--amber:#f5b544;
-    --sans:"Chivo",system-ui,-apple-system,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--indigo-dim:rgba(110,123,255,.13);
+    --pass:#35e0a1;--pass-dim:rgba(53,224,161,.12);
+    --amber:#f5b544;--amber-dim:rgba(245,181,68,.13);--danger:#ff6b6b;
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
   }
-  *{box-sizing:border-box}
-  html,body{margin:0}
+  *{box-sizing:border-box} html,body{margin:0}
   body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
   .widget{border:1px solid var(--line);padding:16px 18px}
-  .top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:16px}
-  .mode{font-family:var(--mono);font-size:12px;color:var(--dim)}
-  .timer{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:600;font-size:24px;color:var(--ink)}
-  .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-  @media(max-width:520px){.tiles{grid-template-columns:1fr}}
-  .tile{border:1px solid var(--line2);background:var(--bg2);padding:16px 14px;display:flex;flex-direction:column;align-items:center;gap:10px;transition:border-color .3s}
-  .tile.loading{border-color:var(--indigo)}
-  .tile.done{border-color:var(--pass)}
-  .ring{width:34px;height:34px;border-radius:50%;border:2px solid var(--line2);position:relative;display:grid;place-items:center}
-  .tile.loading .ring{border-top-color:var(--indigo);animation:spin .7s linear infinite}
-  .tile.done .ring{border-color:var(--pass);animation:none}
-  .ring .chk{width:16px;height:16px;color:var(--pass);opacity:0;transition:opacity .2s}
-  .ring .chk svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
-  .tile.done .ring .chk{opacity:1}
-  .tile .nm{font-family:var(--mono);font-size:11.5px;color:var(--ink)}
-  .tile .st{font-family:var(--mono);font-size:10.5px;color:var(--faint)}
-  .tile.loading .st{color:var(--indigo2)} .tile.done .st{color:var(--pass)}
-  .controls{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;align-items:center}
-  button{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:8px 12px;cursor:pointer;transition:.15s}
-  button:hover{border-color:var(--indigo);color:#fff}
-  button.active{background:rgba(110,123,255,.14);border-color:var(--indigo);color:#fff}
-  button:disabled{opacity:.5;cursor:default}
-  .caption{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-left:auto;min-height:16px}
-  .caption b{color:var(--pass);font-weight:500}
-  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
-  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:4px}
+  .mode{font-family:var(--mono);font-size:11.5px;color:var(--dim);line-height:1.5;flex:1}
+  .mode b{color:var(--ink);font-weight:600}
+  .speed{font-family:var(--mono);font-size:11px;color:var(--pass);border:1px solid rgba(53,224,161,.4);background:var(--pass-dim);padding:4px 9px;white-space:nowrap}
+
+  .plot{position:relative;margin:16px 0 2px;overflow:hidden}
+  .playhead{position:absolute;top:2px;bottom:22px;width:1px;background:var(--indigo);opacity:.42;z-index:0;pointer-events:none;left:3%}
+  .playhead::after{content:"";position:absolute;bottom:-3px;left:-3px;width:7px;height:7px;border-radius:50%;background:var(--indigo);box-shadow:0 0 8px rgba(110,123,255,.7)}
+
+  .groups{position:relative;z-index:1}
+  .grp{margin-bottom:12px}
+  .ghead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:7px}
+  .gname{font-family:var(--sans);font-weight:700;font-size:12.5px}
+  .gname em{font-family:var(--mono);font-style:normal;font-weight:400;font-size:10px;color:var(--faint);margin-left:8px}
+  .gtot{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:600;font-size:14px;color:var(--indigo2);white-space:nowrap}
+
+  .barsWrap{position:relative}
+  .trow{position:relative;height:19px}
+  .bar{position:absolute;top:2px;height:15px;border:1px solid var(--line2);background:var(--panel2);overflow:hidden;transition:border-color .3s}
+  .bar .bfill{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--indigo);opacity:.42}
+  .bar .blbl{position:absolute;inset:0;display:flex;align-items:center;padding-left:7px;
+    font-family:var(--mono);font-size:9.5px;color:var(--dim);white-space:nowrap;z-index:1}
+  .bar .btag{position:absolute;right:6px;top:0;bottom:0;display:flex;align-items:center;
+    font-family:var(--mono);font-size:9px;color:var(--amber);z-index:2;white-space:nowrap}
+  .bar.on{border-color:var(--indigo)} .bar.on .blbl{color:var(--ink)}
+  .bar.done{border-color:var(--pass)} .bar.done .bfill{background:var(--pass);opacity:.34} .bar.done .blbl{color:var(--pass)}
+  .bar.slow{border-color:var(--amber);background:var(--amber-dim)}
+
+  .finish{position:absolute;top:-1px;bottom:-1px;border-left:1px dashed var(--amber);opacity:.7;z-index:2;pointer-events:none}
+  .finlbl{position:absolute;top:50%;transform:translateY(-50%);padding-left:6px;z-index:3;pointer-events:none;
+    font-family:var(--mono);font-size:8.5px;color:var(--amber);white-space:nowrap}
+
+  .axis{position:relative;height:22px;border-top:1px solid var(--line);z-index:1}
+  .tick{position:absolute;top:0}
+  .tick i{position:absolute;top:0;left:0;width:1px;height:5px;background:var(--line2)}
+  .tick span{position:absolute;top:7px;left:0;transform:translateX(-50%);font-family:var(--mono);font-size:9px;color:var(--faint);white-space:nowrap}
+
+  .controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:15px}
+  .seg{display:inline-flex;border:1px solid var(--line2)}
+  .seg button{font-family:var(--mono);font-size:11px;color:var(--dim);background:var(--panel);border:0;border-right:1px solid var(--line2);padding:7px 11px;cursor:pointer;transition:.15s}
+  .seg button:last-child{border-right:0}
+  .seg button:hover{color:#fff}
+  .seg button.on{background:rgba(110,123,255,.16);color:#fff}
+  .sld{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10.5px;color:var(--dim)}
+  .sld b{color:var(--indigo2);font-weight:600;min-width:26px;text-align:right}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:88px;height:3px;background:var(--line2);border-radius:2px;outline:none;cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:13px;height:13px;border-radius:50%;background:var(--indigo);border:2px solid var(--panel);cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:11px;height:11px;border-radius:50%;background:var(--indigo);border:2px solid var(--panel);cursor:pointer}
+  .replay{font-family:var(--mono);font-size:11.5px;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:7px 13px;cursor:pointer;transition:.15s;margin-left:auto}
+  .replay:hover{border-color:var(--indigo);color:#fff}
+  .codeline{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:11px;padding-top:10px;border-top:1px solid var(--line);white-space:nowrap;overflow-x:auto}
+  .codeline b{color:var(--indigo2);font-weight:600}
+
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+  /* theme-matched thin scrollbars for overflow-x boxes (replaces the default white bar) */
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--line2)}
+  ::-webkit-scrollbar-thumb:hover{background:var(--faint)}
 </style>
 </head>
 <body>
 <div class="widget">
-  <div class="top">
-    <div class="mode" id="mode">Fetch three pages. Each waits about 1.3s on the network.</div>
-    <div class="timer" id="timer">0.0s</div>
+  <div class="head">
+    <div class="mode" id="mode"></div>
+    <div class="speed" id="speed"></div>
   </div>
 
-  <div class="tiles" id="tiles">
-    <div class="tile"><div class="ring"><span class="chk"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></div><div class="nm">GET /page-1</div><div class="st">idle</div></div>
-    <div class="tile"><div class="ring"><span class="chk"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></div><div class="nm">GET /page-2</div><div class="st">idle</div></div>
-    <div class="tile"><div class="ring"><span class="chk"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span></div><div class="nm">GET /page-3</div><div class="st">idle</div></div>
+  <div class="plot">
+    <div class="playhead" id="playhead"></div>
+    <div class="groups" id="groups"></div>
+    <div class="axis" id="axis"></div>
   </div>
 
   <div class="controls">
-    <button id="seq">Run sequential</button>
-    <button id="con">Run concurrent (gather)</button>
-    <span class="caption" id="caption"></span>
+    <div class="seg" role="group" aria-label="which mode to show">
+      <button data-view="seq">Sequential</button>
+      <button data-view="con">Concurrent</button>
+      <button data-view="both" class="on">Both</button>
+    </div>
+    <label class="sld">pages<input type="range" id="sN" min="2" max="5" value="3" aria-label="number of pages"><b id="vN">3</b></label>
+    <label class="sld">slowest<input type="range" id="sD" min="10" max="25" step="5" value="15" aria-label="slowest page wait in seconds"><b id="vD">1.5s</b></label>
+    <button class="replay" id="replay">Replay</button>
   </div>
+  <div class="codeline" id="code"></div>
 </div>
 
 <script>
 (function(){
   var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
-  var DUR=reduce?0:1300;
-  var tiles=[].slice.call(document.querySelectorAll('.tile'));
-  var timer=document.getElementById('timer'),mode=document.getElementById('mode'),caption=document.getElementById('caption');
-  var seqBtn=document.getElementById('seq'),conBtn=document.getElementById('con');
-  var raf=null,timeouts=[];
+  function g(id){return document.getElementById(id);}
+  function el(c){var d=document.createElement('div'); if(c)d.className=c; return d;}
+  function clamp(v,a,b){return v<a?a:v>b?b:v;}
+  function trim(x){return Math.abs(x-Math.round(x))<1e-9?String(Math.round(x)):x.toFixed(1);}
+  function fmt(x){return x.toFixed(1)+'s';}
 
-  function set(tile,state){ tile.className='tile'+(state?(' '+state):''); tile.querySelector('.st').textContent = state==='loading'?'loading':state==='done'?'done':'idle'; }
-  function reset(){ if(raf)cancelAnimationFrame(raf); timeouts.forEach(clearTimeout);timeouts=[]; tiles.forEach(function(t){set(t,'');}); timer.textContent='0.0s'; caption.innerHTML=''; }
-  function runTimer(total,done){
-    var start=performance.now();
-    function tick(now){var el=Math.min((now-start)/1000,total/1000);timer.textContent=el.toFixed(1)+'s';if(now-start<total)raf=requestAnimationFrame(tick);else{timer.textContent=(total/1000).toFixed(1)+'s';done&&done();}}
-    if(total===0){timer.textContent='0.0s';done&&done();return;}
-    raf=requestAnimationFrame(tick);
+  var PADL=3, SPAN=94;
+  function X(t){return PADL + t/S.axisMax*SPAN;}
+
+  var N=3, D=1.5, view='both', S=null;
+  var FRACTIONS=[0.55, 1.00, 0.75, 0.90, 0.40];
+  var GROUPS=[
+    {key:'seq', name:'sequential', sub:'await each page in turn'},
+    {key:'con', name:'concurrent', sub:'gather(*tasks), all from t=0'}
+  ];
+
+  function model(N,D){
+    var fr=FRACTIONS.slice(0,N);
+    var durs=fr.map(function(f){return f*D;});
+    var maxF=Math.max.apply(null,fr), sumF=0;
+    for(var i=0;i<N;i++){ sumF+=fr[i]; }
+    var slow=fr.indexOf(maxF);
+    var seqStart=[], acc=0;
+    for(var j=0;j<N;j++){ seqStart.push(acc); acc+=durs[j]; }
+    var seqTotal=D*sumF, conTotal=D*maxF;
+    return {fr:fr, durs:durs, seqStart:seqStart, slow:slow, seqTotal:seqTotal, conTotal:conTotal, axisMax:seqTotal};
   }
-  function busy(on){seqBtn.disabled=on;conBtn.disabled=on;}
-  function active(w){seqBtn.classList.toggle('active',w==='seq');conBtn.classList.toggle('active',w==='con');}
+  function niceStep(max){
+    var raw=max/6, p=Math.pow(10,Math.floor(Math.log(raw)/Math.LN10));
+    var c=[1,2,2.5,5,10];
+    for(var i=0;i<c.length;i++){ if(c[i]*p>=raw) return c[i]*p; }
+    return 10*p;
+  }
 
-  function runSequential(){
-    reset();busy(true);active('seq');
-    mode.textContent='sequential: await each page before starting the next';
-    runTimer(DUR*3,function(){caption.innerHTML='total <b>3.9s</b>';busy(false);});
-    tiles.forEach(function(t,i){
-      timeouts.push(setTimeout(function(){set(t,'loading');},i*DUR));
-      timeouts.push(setTimeout(function(){set(t,'done');},(i+1)*DUR));
+  var grpEls={};
+  function build(){
+    S=model(N,D);
+    var wrap=g('groups'), axisRow=g('axis');
+    wrap.innerHTML=''; axisRow.innerHTML=''; grpEls={};
+    var visible = view==='both' ? ['seq','con'] : [view];
+
+    GROUPS.forEach(function(G){
+      if(visible.indexOf(G.key)<0) return;
+      var total=S[G.key+'Total'];
+      var grp=el('grp');
+      var head=el('ghead');
+      head.innerHTML='<span class="gname">'+G.name+' <em>'+G.sub+'</em></span><span class="gtot">0.0s</span>';
+      grp.appendChild(head);
+
+      var barsWrap=el('barsWrap');
+      var bars=[];
+      for(var i=0;i<N;i++){
+        var dur=S.durs[i];
+        var startT = G.key==='seq' ? S.seqStart[i] : 0;
+        var isSlow = i===S.slow;
+        var trow=el('trow');
+        var bar=el('bar'+(isSlow?' slow':''));
+        bar.style.left=X(startT)+'%';
+        bar.style.width=(dur/S.axisMax*SPAN)+'%';
+        var bf=el('bfill'); var lb=el('blbl'); lb.textContent='page '+(i+1);
+        bar.appendChild(bf); bar.appendChild(lb);
+        if(isSlow && G.key==='con'){ var tg=el('btag'); tg.textContent='slowest'; bar.appendChild(tg); }
+        trow.appendChild(bar); barsWrap.appendChild(trow);
+        bars.push({bar:bar, fill:bf, start:startT, dur:dur});
+      }
+
+      if(G.key==='con'){
+        var fin=el('finish'); fin.style.left=X(S.conTotal)+'%'; barsWrap.appendChild(fin);
+        var lab=el('finlbl'); lab.textContent='gather returns · '+fmt(S.conTotal); lab.style.left=X(S.conTotal)+'%';
+        barsWrap.appendChild(lab);
+      }
+
+      grp.appendChild(barsWrap);
+      wrap.appendChild(grp);
+      grpEls[G.key]={bars:bars, total:total, readout:head.querySelector('.gtot')};
+    });
+
+    var step=niceStep(S.axisMax);
+    for(var v=0; v<=S.axisMax+1e-6; v+=step){
+      var tk=el('tick'); tk.style.left=X(v)+'%';
+      tk.innerHTML='<i></i><span>'+trim(v)+'s</span>';
+      axisRow.appendChild(tk);
+    }
+    updateText();
+    start();
+  }
+
+  function render(elapsed){
+    g('playhead').style.left=X(elapsed)+'%';
+    ['seq','con'].forEach(function(k){
+      var Grp=grpEls[k]; if(!Grp) return;
+      Grp.readout.textContent=fmt(Math.min(elapsed, Grp.total));
+      Grp.bars.forEach(function(b){
+        var frac=clamp((elapsed-b.start)/b.dur,0,1);
+        b.fill.style.width=(frac*100)+'%';
+        b.bar.classList.toggle('on', frac>0 && frac<1);
+        b.bar.classList.toggle('done', frac>=1);
+      });
     });
   }
-  function runConcurrent(){
-    reset();busy(true);active('con');
-    mode.textContent='concurrent: asyncio.gather starts all three, waits overlap';
-    runTimer(DUR,function(){caption.innerHTML='total <b>1.3s</b>';busy(false);});
-    tiles.forEach(function(t){ set(t,'loading'); timeouts.push(setTimeout(function(){set(t,'done');},DUR)); });
+
+  function sweepMs(){ return clamp(N*820, 2800, 5200); }
+
+  var raf=null, replayT=null;
+  function start(){
+    if(raf)cancelAnimationFrame(raf);
+    if(replayT)clearTimeout(replayT);
+    Object.keys(grpEls).forEach(function(k){
+      var Grp=grpEls[k]; Grp.readout.textContent='0.0s';
+      Grp.bars.forEach(function(b){ b.fill.style.width='0'; b.bar.classList.remove('on','done'); });
+    });
+    var ph=g('playhead'); ph.style.left=X(0)+'%';
+    if(reduce){ ph.style.opacity='0'; render(S.axisMax); return; }
+    ph.style.opacity='0.42';
+    var dur=sweepMs(), t0=performance.now();
+    (function frame(now){
+      var p=(now-t0)/dur, elapsed=Math.min(p,1)*S.axisMax;
+      render(elapsed);
+      if(p<1) raf=requestAnimationFrame(frame);
+      else { render(S.axisMax); replayT=setTimeout(start, 1200); }
+    })(t0);
   }
-  seqBtn.addEventListener('click',runSequential);
-  conBtn.addEventListener('click',runConcurrent);
+
+  function updateText(){
+    var faster=S.seqTotal/S.conTotal, slowPage=S.slow+1;
+    if(view==='seq')
+      g('mode').innerHTML='<b>Sequential.</b> Each <b>await</b> blocks the next, so every wait stacks up, the '+N+' pages add to <b>'+fmt(S.seqTotal)+'</b>. The quick pages still wait their turn.';
+    else if(view==='con')
+      g('mode').innerHTML='<b>Concurrent.</b> <b>gather</b> starts all '+N+' at t=0 and their waits overlap, so the batch is done the moment the <b>slowest page (page '+slowPage+', '+fmt(S.conTotal)+')</b> returns. The rest finish earlier and idle.';
+    else
+      g('mode').innerHTML='Same '+N+' pages, each a <b>different</b> wait. <b>Sequential</b> lays them end to end (<b>'+fmt(S.seqTotal)+'</b>); <b>gather</b> overlaps them from t=0 and finishes with the slowest (<b>'+fmt(S.conTotal)+'</b>).';
+    g('speed').textContent=trim(faster)+'× faster';
+    g('code').innerHTML = view==='seq'
+      ? 'for url in urls: <b>await</b> fetch(url)'
+      : 'titles = await asyncio.<b>gather</b>(*(fetch(u) for u in urls))';
+    g('vN').textContent=N; g('vD').textContent=trim(D)+'s';
+  }
+
+  g('sN').addEventListener('input',function(){ N=+this.value; build(); });
+  g('sD').addEventListener('input',function(){ D=(+this.value)/10; build(); });
+  Array.prototype.forEach.call(document.querySelectorAll('.seg button'),function(b){
+    b.addEventListener('click',function(){
+      view=b.getAttribute('data-view');
+      document.querySelectorAll('.seg button').forEach(function(x){ x.classList.toggle('on', x===b); });
+      build();
+    });
+  });
+  g('replay').addEventListener('click', start);
+  build();
 })();
 </script>
 <script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>
