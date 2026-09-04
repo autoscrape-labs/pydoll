@@ -222,6 +222,10 @@
   background: #4668ea;
 }
 
+.md-typeset .sponsor-banner--ipcook {
+  background: linear-gradient(135deg, #081923, #010513);
+}
+
 .md-typeset .sponsor-banner img {
   width: 100%;
   height: 100%;
