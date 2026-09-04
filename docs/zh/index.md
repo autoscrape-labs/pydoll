@@ -107,6 +107,16 @@ asyncio.run(main())
       <span class="sponsor-desc">面向 AI 应用的 Web Search API。提供 Markdown 和 JSON，适配任意集成。</span>
     </span>
   </a>
+  <a class="sponsor-card" href="https://www.ipcook.com/?ref=16NLS&utm_source=github&utm_medium=referral&utm_campaign=pydoll" target="_blank" rel="noopener nofollow sponsored">
+    <span class="sponsor-banner sponsor-banner--ipcook"><img src="/docs/resources/images/ipcook-banner.png" alt="IPCook" /></span>
+    <span class="sponsor-body">
+      <span class="sponsor-name">IPCook</span>
+      <span class="sponsor-desc">面向隐身浏览器自动化的住宅代理：覆盖 185+ 地区的 5500 万+ IP，99.99% 可用率，平均响应低于 0.5 秒。</span>
+      <span class="sponsor-chips">
+        <span class="sponsor-chip"><code>WELCOME20</code> 20% 折扣</span>
+      </span>
+    </span>
+  </a>
   <a class="sponsor-card" href="https://substack.thewebscraping.club/p/pydoll-webdriver-scraping?utm_source=github&utm_medium=repo&utm_campaign=pydoll" target="_blank" rel="noopener nofollow sponsored">
     <span class="sponsor-banner"><img src="/docs/resources/images/banner-the-webscraping-club.png" alt="The Web Scraping Club" /></span>
     <span class="sponsor-body">

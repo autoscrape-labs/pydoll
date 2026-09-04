@@ -55,6 +55,15 @@ You have probably watched a scraper work on your machine, then hit a wall of cap
   </tr>
   <tr>
     <td width="300" align="center" valign="middle">
+      <a href="https://www.ipcook.com/?ref=16NLS&utm_source=github&utm_medium=referral&utm_campaign=pydoll"><img src="public/images/ipcook-banner.png" width="280" alt="IPCook" /></a>
+    </td>
+    <td valign="middle">
+      <b><a href="https://www.ipcook.com/?ref=16NLS&utm_source=github&utm_medium=referral&utm_campaign=pydoll">IPCook</a></b><br />
+      <sub>Residential proxies for stealth browser automation: 55M+ IPs in 185+ locations, rotating &amp; sticky sessions, city-level targeting, HTTP &amp; SOCKS5, 99.99% uptime, sub-0.5s responses, pay-as-you-go traffic that never expires. Use <code>WELCOME20</code> for 20% off.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="300" align="center" valign="middle">
       <a href="https://substack.thewebscraping.club/p/pydoll-webdriver-scraping?utm_source=github&utm_medium=repo&utm_campaign=pydoll"><img src="public/images/banner-the-webscraping-club.png" width="280" alt="The Web Scraping Club" /></a>
     </td>
     <td valign="middle">

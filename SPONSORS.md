@@ -12,6 +12,14 @@ Pydoll is supported by these amazing sponsors. Their contributions help keep the
 
 ---
 
+<a href="https://www.ipcook.com/?ref=16NLS&utm_source=github&utm_medium=referral&utm_campaign=pydoll">
+<img width="100%" alt="IPCook" src="public/images/ipcook-banner.png" />
+</a>
+
+**[IPCook](https://www.ipcook.com/?ref=16NLS&utm_source=github&utm_medium=referral&utm_campaign=pydoll)** provides residential proxies for stealth browser automation with Pydoll. Access 55M+ residential IPs across 185+ locations, with flexible rotating and sticky sessions, city-level geo-targeting, and HTTP & SOCKS5 support. Get 99.99% uptime and average response times under 0.5s for stable, location-consistent browser sessions at scale. Pay as you go with traffic that never expires. Use code **WELCOME20** for 20% OFF.
+
+---
+
 <a href="https://substack.thewebscraping.club/p/pydoll-webdriver-scraping?utm_source=github&utm_medium=repo&utm_campaign=pydoll">
 <img alt="The Web Scraping Club" src="public/images/banner-the-webscraping-club.png" />
 </a>
