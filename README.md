@@ -58,7 +58,7 @@ You have probably watched a scraper work on your machine, then hit a wall of cap
       <a href="https://www.ipcook.com/?ref=16NLS&utm_source=github&utm_medium=referral&utm_campaign=pydoll"><img src="public/images/ipcook-banner.png" width="280" alt="IPCook" /></a>
     </td>
     <td valign="middle">
-      <b><a href="https://www.ipcook.com/?ref=16NLS&utm_source=github&utm_medium=referral&utm_campaign=pydoll">IPCook</a></b><br />
+      <b><a href="https://www.ipcook.com/?ref=16NLS&utm_source=github&utm_medium=referral&utm_campaign=pydoll">IPcook</a></b><br />
       <sub>Residential proxies for stealth browser automation: 55M+ IPs in 185+ locations, rotating &amp; sticky sessions, city-level targeting, HTTP &amp; SOCKS5, 99.99% uptime, sub-0.5s responses, pay-as-you-go traffic that never expires. Use <code>WELCOME20</code> for 20% off.</sub>
     </td>
   </tr>
