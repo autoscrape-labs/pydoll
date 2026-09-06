@@ -286,6 +286,23 @@ async def test_get_children_returns_empty_when_script_yields_no_object(fake_conn
 
 
 @pytest.mark.asyncio
+async def test_get_children_returns_empty_when_get_properties_cdp_errors(
+    fake_conn_with_cdp_error,
+):
+    """Regression test for #449: WebElement._get_family_elements has the same
+    unguarded Runtime.getProperties access as _find_elements — a CDP error
+    (object released mid-search) must yield an empty list, not a KeyError.
+    """
+    conn = fake_conn_with_cdp_error('Runtime.getProperties')
+    conn.set_response('Runtime.callFunctionOn', {'result': {'objectId': 'array-1'}})
+    element = WebElement(
+        object_id='el-1', connection_handler=conn, attributes_list=['tag_name', 'div']
+    )
+
+    assert await element.get_children_elements() == []
+
+
+@pytest.mark.asyncio
 async def test_click_falls_back_to_js_bounds_when_box_model_missing(fake_conn, make_element):
     element = make_element(attributes=['tag_name', 'button'])
     fake_conn.set_response(

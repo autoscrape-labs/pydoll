@@ -560,8 +560,14 @@ class FindElementsMixin:
         query_response: GetPropertiesResponse = await self._execute_command(
             RuntimeCommands.get_properties(object_id=object_id)
         )
+        properties = query_response.get('result', {}).get('result', [])
+        if not properties:
+            if raise_exc:
+                raise ElementNotFound()
+            return []
+
         response: list[str] = []
-        for query in query_response['result']['result']:
+        for query in properties:
             if not (query['name'].isdigit() and 'objectId' in query['value']):
                 continue
             response.append(query['value']['objectId'])
