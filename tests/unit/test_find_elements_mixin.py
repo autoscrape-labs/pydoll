@@ -10,6 +10,8 @@ from __future__ import annotations
 
 import pytest
 
+from pydoll.browser.chromium import Chrome
+from pydoll.browser.tab import Tab
 from pydoll.exceptions import ElementNotFound, WaitElementTimeout
 
 
@@ -76,3 +78,29 @@ async def test_query_css_returns_none_when_not_found(fake_tab):
 async def test_query_xpath_raises_when_not_found_and_raise_exc(fake_tab):
     with pytest.raises(ElementNotFound):
         await fake_tab.query('//div[@id="missing"]')
+
+
+@pytest.mark.asyncio
+async def test_find_all_returns_empty_when_get_properties_cdp_errors(fake_conn_with_cdp_error):
+    """Regression test for #449: a CDP error on Runtime.getProperties (object
+    released mid-search, e.g. by a racing navigation) must be treated like any
+    other "no elements" outcome, not leak a KeyError past raise_exc=False.
+    """
+    conn = fake_conn_with_cdp_error('Runtime.getProperties')
+    conn.set_response('Runtime.evaluate', {'result': {'objectId': 'array-1'}})
+    tab = Tab(browser=Chrome(), target_id='fake-tab', connection_handler=conn)
+
+    assert await tab.find(tag_name='div', find_all=True, raise_exc=False) == []
+
+
+@pytest.mark.asyncio
+async def test_find_all_raises_element_not_found_when_get_properties_cdp_errors(
+    fake_conn_with_cdp_error,
+):
+    """Regression test for #449, raise_exc=True side of the same contract."""
+    conn = fake_conn_with_cdp_error('Runtime.getProperties')
+    conn.set_response('Runtime.evaluate', {'result': {'objectId': 'array-1'}})
+    tab = Tab(browser=Chrome(), target_id='fake-tab', connection_handler=conn)
+
+    with pytest.raises(ElementNotFound):
+        await tab.find(tag_name='div', find_all=True)

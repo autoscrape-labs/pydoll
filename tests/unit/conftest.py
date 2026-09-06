@@ -98,10 +98,40 @@ class FakeConnection:
         self._callbacks.clear()
 
 
+class ConnectionWithCDPError(FakeConnection):
+    """FakeConnection variant where one configured method answers with a raw
+    CDP protocol-error response (no ``result`` key), mirroring what
+    ConnectionHandler.execute_command returns as-is when CDP rejects a
+    command — e.g. ``Runtime.getProperties`` on an object whose execution
+    context was torn down by a navigation racing the call.
+    """
+
+    def __init__(self, error_method: str) -> None:
+        super().__init__()
+        self.error_method = error_method
+
+    async def execute_command(self, command: dict, timeout: int = 60) -> dict:
+        self._command_id += 1
+        command['id'] = self._command_id
+        self.commands.append(command)
+        if command.get('method') == self.error_method:
+            return {
+                'id': self._command_id,
+                'error': {'code': -32000, 'message': 'Could not find object with given id'},
+            }
+        return {'id': self._command_id, 'result': self._results.get(command.get('method'), {})}
+
+
 @pytest.fixture
 def fake_conn() -> FakeConnection:
     """A fresh in-memory FakeConnection per test."""
     return FakeConnection()
+
+
+@pytest.fixture
+def fake_conn_with_cdp_error():
+    """Factory for a FakeConnection where one method returns a CDP error envelope."""
+    return ConnectionWithCDPError
 
 
 @pytest.fixture

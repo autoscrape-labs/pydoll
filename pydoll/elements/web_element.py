@@ -1011,9 +1011,10 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         properties_response: GetPropertiesResponse = await self._execute_command(
             get_properties_command
         )
+        properties = properties_response.get('result', {}).get('result', [])
 
         family_elements: list[WebElement] = []
-        for prop in properties_response['result']['result']:
+        for prop in properties:
             if not (prop['name'].isdigit() and 'objectId' in prop['value']):
                 continue
             child_object_id = prop['value']['objectId']
