@@ -88,12 +88,12 @@ class Browser(ABC):  # noqa: PLR0904
     def __init__(
         self,
         options_manager: BrowserOptionsManager,
-        connection_host: Optional[str] = None,
         connection_port: Optional[int] = None,
         proxy_manager: Optional[ProxyManager] = None,
         browser_process_manager: Optional[BrowserProcessManager] = None,
         temp_directory_manager: Optional[TempDirectoryManager] = None,
         connection_handler: Optional[ConnectionHandler] = None,
+        connection_host: Optional[str] = None,
         use_secure: bool = False,
     ):
         """
@@ -102,13 +102,13 @@ class Browser(ABC):  # noqa: PLR0904
         Args:
             options_manager: Manages browser options initialization and defaults.
                 Must implement initialize_options() and add_default_arguments().
-            connection_host: CDP WebSocket host that will listen to requests.
             connection_port: CDP WebSocket port. Random port (9223-9322) if None.
             proxy_manager: Proxy manager; built from options when omitted.
             browser_process_manager: Process manager; default when omitted.
             temp_directory_manager: Temp directory manager; default when omitted.
             connection_handler: Browser-level connection handler; built from the
-                connection port when omitted (mainly for testing).
+                connection details when omitted (mainly for testing).
+            connection_host: CDP WebSocket host that will listen to requests.
             use_secure: Use secure WebSocket (wss://).
 
         Note:

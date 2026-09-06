@@ -151,12 +151,12 @@ class Tab(FindElementsMixin):
     def __init__(
         self,
         browser: Browser,
-        connection_host: Optional[str] = None,
         connection_port: Optional[int] = None,
         target_id: Optional[str] = None,
         browser_context_id: Optional[str] = None,
         ws_address: Optional[str] = None,
         connection_handler: Optional[ConnectionHandler] = None,
+        connection_host: Optional[str] = None,
         use_secure: bool = False,
     ):
         """
@@ -164,13 +164,13 @@ class Tab(FindElementsMixin):
 
         Args:
             browser: Browser instance that created this tab.
-            connection_host: CDP WebSocket host.
             connection_port: CDP WebSocket port.
             target_id: CDP target identifier for this tab.
             browser_context_id: Optional browser context ID.
             ws_address: Optional WebSocket address for this tab.
             connection_handler: Pre-built connection handler; created from
                 connection details when omitted (mainly for testing).
+            connection_host: CDP WebSocket host.
             use_secure: Use secure WebSocket (wss://).
         """
         if not any([connection_port, target_id, ws_address]):

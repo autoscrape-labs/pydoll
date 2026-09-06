@@ -91,6 +91,14 @@ async def test_browser_start_and_stop_orchestrate_process_and_connection(fake_co
     assert fake_process.terminated is True
 
 
+def test_chrome_positional_port_still_supported():
+    """Legacy call Chrome(options, port) keeps working after the host refactor."""
+    browser = Chrome(ChromiumOptions(), 9222)
+    assert browser._connection_port == 9222
+    assert browser._connection_host == 'localhost'
+    assert browser._connection_handler._connection_port == 9222
+
+
 def test_browser_default_use_secure_is_false():
     browser = Chrome()
     assert browser._use_secure is False

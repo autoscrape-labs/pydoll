@@ -4,6 +4,7 @@ from aioresponses import aioresponses
 import tempfile
 import os
 import sys
+import warnings
 from unittest.mock import patch
 
 from pydoll import exceptions
@@ -153,6 +154,61 @@ class TestUtils:
             result = await get_browser_ws_address(WSAddressResolverParams(host='localhost', port=port, use_secure=False))
             assert result == expected_url
 
+    @pytest.mark.asyncio
+    async def test_int_port_legacy_compat(self):
+        """
+        Backwards compatibility: a bare int port still resolves against
+        localhost over http, as before the WSAddressResolverParams change.
+        """
+        port = 9222
+        expected_url = 'ws://localhost:9222/devtools/browser/abc123'
+
+        with aioresponses() as mocked:
+            mocked.get(
+                f'http://localhost:{port}/json/version',
+                payload={'webSocketDebuggerUrl': expected_url},
+            )
+            result = await get_browser_ws_address(port)
+            assert result == expected_url
+
+    @pytest.mark.asyncio
+    async def test_params_call_no_deprecation_warning(self):
+        """
+        The structured WSAddressResolverParams form must not warn.
+        """
+        port = 9222
+        expected_url = 'ws://localhost:9222/devtools/browser/abc123'
+
+        with warnings.catch_warnings():
+            warnings.simplefilter('error', DeprecationWarning)
+            with aioresponses() as mocked:
+                mocked.get(
+                    f'http://localhost:{port}/json/version',
+                    payload={'webSocketDebuggerUrl': expected_url},
+                )
+                result = await get_browser_ws_address(
+                    WSAddressResolverParams(host='localhost', port=port, use_secure=False)
+                )
+                assert result == expected_url
+
+    @pytest.mark.asyncio
+    async def test_invalid_json_body_raises_invalid_response(self):
+        """
+        A 200 response with a non-JSON body must surface as InvalidResponse
+        (per the docstring), not leak a raw json.JSONDecodeError.
+        """
+        port = 9222
+
+        with pytest.raises(exceptions.InvalidResponse):
+            with aioresponses() as mocked:
+                mocked.get(
+                    f'http://localhost:{port}/json/version',
+                    body='this is not json',
+                    content_type='application/json',
+                )
+                await get_browser_ws_address(
+                    WSAddressResolverParams(host='localhost', port=port, use_secure=False)
+                )
     def test_validate_browser_paths_success(self):
         """
         Test validate_browser_paths with valid executable path.

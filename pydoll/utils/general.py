@@ -1,15 +1,23 @@
+from __future__ import annotations
+
+import asyncio
 import base64
+import json
 import logging
 import os
 import re
 from html import unescape
 from html.parser import HTMLParser
 from pathlib import Path
+from typing import TYPE_CHECKING, overload
 
 import aiohttp
+from typing_extensions import deprecated
 
-from pydoll.connection.types import WSAddressResolverParams
 from pydoll.exceptions import InvalidBrowserPath, InvalidResponse, NetworkError
+
+if TYPE_CHECKING:
+    from pydoll.connection.types import WSAddressResolverParams
 
 logger = logging.getLogger(__name__)
 
@@ -116,12 +124,29 @@ def decode_base64_to_bytes(image: str) -> bytes:
     return base64.b64decode(image.encode('utf-8'))
 
 
+@overload
 async def get_browser_ws_address(params: WSAddressResolverParams) -> str:
+    """Resolve the browser WebSocket address from structured parameters."""
+
+
+@deprecated(
+    'Pass a WSAddressResolverParams instead of a raw int port; '
+    'the int form is kept for backward compatibility.'
+)
+@overload
+async def get_browser_ws_address(params: int) -> str:
+    """Resolve the browser WebSocket address from a port on localhost."""
+
+
+async def get_browser_ws_address(
+    params: WSAddressResolverParams | int,
+) -> str:
     """
     Fetches the WebSocket address for the browser instance.
 
     Args:
-        params: :class:`WSAddressResolverParams`
+        params: :class:`WSAddressResolverParams`, or an int port number for
+            backward compatibility (resolves against localhost over http).
 
     Returns:
         str: The WebSocket address for the browser.
@@ -131,24 +156,28 @@ async def get_browser_ws_address(params: WSAddressResolverParams) -> str:
             or missing data.
         InvalidResponse: If the response is not valid JSON.
     """
+    if isinstance(params, int):
+        params = {'host': 'localhost', 'port': params, 'use_secure': False}
     scheme = 'https' if params['use_secure'] else 'http'
-    host = params['host']
-    if host and ':' in host:
+    host = params['host'] or 'localhost'
+    if ':' in host:
         host = f'[{host}]'
     port = params['port']
-    if port is None:
-        port = 443 if params['use_secure'] else 80
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(
-                f'{scheme}://{host}:{port}/json/version'
+                f'{scheme}://{host}:{port}/json/version',
+                timeout=aiohttp.ClientTimeout(total=10),
             ) as response:
                 response.raise_for_status()
                 data = await response.json()
                 return data['webSocketDebuggerUrl']
 
-    except aiohttp.ClientError as e:
-        raise NetworkError(f'Failed to get browser ws address: {e}')
+    except (aiohttp.ClientError, asyncio.TimeoutError) as e:
+        raise NetworkError(f'Failed to get browser ws address: {e}') from e
+
+    except json.JSONDecodeError as e:
+        raise InvalidResponse(f'Failed to get browser ws address: {e}') from e
 
     except KeyError as e:
         raise InvalidResponse(f'Failed to get browser ws address: {e}')

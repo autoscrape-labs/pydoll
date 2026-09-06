@@ -16,6 +16,7 @@ from pydoll.connection.types import WSAddressResolverParams
 from pydoll.exceptions import (
     CommandExecutionTimeout,
     InvalidWebSocketAddress,
+    MissingTargetOrWebSocket,
     WebSocketConnectionClosed,
 )
 from pydoll.protocol.base import CDPEvent, Response
@@ -41,7 +42,6 @@ class ConnectionHandler:
 
     def __init__(
         self,
-        connection_host: Optional[str] = None,
         connection_port: Optional[int] = None,
         page_id: Optional[str] = None,
         ws_address_resolver: Callable[
@@ -49,19 +49,21 @@ class ConnectionHandler:
         ] = get_browser_ws_address,
         ws_connector: type[Connect] = websockets.connect,
         ws_address: Optional[str] = None,
+        connection_host: Optional[str] = None,
         use_secure: bool = False,
     ):
         """
         Initialize connection handler.
 
         Args:
-            connection_host: Browser's debugging server host.
             connection_port: Browser's debugging server port.
             page_id: Target page ID. If None, connects to browser-level endpoint.
-            ws_address_resolver: Function to resolve WebSocket URL from port.
+            ws_address_resolver: Function to resolve WebSocket URL from
+                :class:`WSAddressResolverParams`.
             ws_connector: WebSocket connection factory (mainly for testing).
             ws_address: WebSocket address.
                 It has priority over (connection_host, connection_port) and page_id.
+            connection_host: Browser's debugging server host.
             use_secure: Use secure websocket connection for (connection_host, connection_port).
         """
         self._connection_host = connection_host if connection_host else 'localhost'
@@ -289,6 +291,9 @@ class ConnectionHandler:
         if self._ws_address:
             logger.debug('Using provided WebSocket address')
             return self._ws_address
+        if self._connection_port is None:
+            logger.error('Cannot resolve WebSocket address without a connection port')
+            raise MissingTargetOrWebSocket()
         scheme = self._get_ws_scheme()
         if not self._page_id:
             resolved = await self._ws_address_resolver(

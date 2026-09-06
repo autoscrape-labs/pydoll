@@ -9,8 +9,60 @@ from __future__ import annotations
 import pytest
 
 from pydoll.connection import ConnectionHandler
-from pydoll.exceptions import InvalidWebSocketAddress
+from pydoll.exceptions import InvalidWebSocketAddress, MissingTargetOrWebSocket
+class TestPositionalArgs:
+    """Positional parameters map to the original ConnectionHandler(port[, page_id]).
 
+    New params (connection_host, use_secure) are appended at the end so old
+    positional callers keep working unchanged.
+    """
+
+    def test_positional_port_only(self):
+        handler = ConnectionHandler(9223)
+        assert handler._connection_port == 9223
+        assert handler._connection_host == 'localhost'
+
+    def test_positional_port_and_page_id(self):
+        handler = ConnectionHandler(9223, 'page-1')
+        assert handler._connection_port == 9223
+        assert handler._page_id == 'page-1'
+
+    def test_appended_host_use_secure(self):
+        handler = ConnectionHandler(
+            connection_port=9223,
+            connection_host='192.168.1.50',
+            use_secure=True,
+        )
+        assert handler._connection_host == '192.168.1.50'
+        assert handler._connection_port == 9223
+        assert handler._use_secure is True
+
+
+
+
+
+class TestResolveGuard:
+    """A handler needs a port, page_id, or ws_address before it can resolve."""
+
+    @pytest.mark.asyncio
+    async def test_no_port_raises_when_resolving(self):
+        handler = ConnectionHandler()
+        with pytest.raises(MissingTargetOrWebSocket):
+            await handler._resolve_ws_address()
+
+    @pytest.mark.asyncio
+    async def test_ws_address_short_circuits_port_check(self):
+        handler = ConnectionHandler(ws_address='ws://host:9223')
+        assert await handler._resolve_ws_address() == 'ws://host:9223'
+
+    @pytest.mark.asyncio
+    async def test_port_present_resolves_trough_resolver(self):
+        async def fake_resolver(params):
+            return f'ws://{params["host"]}:{params["port"]}/devtools/browser/x'
+
+        handler = ConnectionHandler(connection_port=9223)
+        handler._ws_address_resolver = fake_resolver
+        assert await handler._resolve_ws_address() == 'ws://localhost:9223/devtools/browser/x'
 
 class TestUseWsAddress:
     """Tests for ConnectionHandler._use_ws_address."""

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional, TypedDict
+from typing import TypedDict
 
 from typing_extensions import Required
 
@@ -12,11 +12,14 @@ class WSAddressResolverParams(TypedDict, total=False):
 
     Attributes:
         host: The hostname of the browser's debugging server.
+            ConnectionHandler falls back to ``localhost``.
         port: The port of the browser's debugging server.
+            ConnectionHandler refuses to resolve
+            a connection without a known port.
         use_secure: Whether to use HTTPS/WSS (``True``) or HTTP/WS (``False``)
             when resolving the WebSocket address.
     """
 
-    host: Required[Optional[str]]
-    port: Required[Optional[int]]
+    host: Required[str]
+    port: Required[int]
     use_secure: Required[bool]

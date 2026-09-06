@@ -21,8 +21,8 @@ class Edge(Browser):
     def __init__(
         self,
         options: Optional[Options] = None,
-        connection_host: Optional[str] = None,
         connection_port: Optional[int] = None,
+        connection_host: Optional[str] = None,
         use_secure: bool = False,
     ):
         """
@@ -30,8 +30,8 @@ class Edge(Browser):
 
         Args:
             options: Edge configuration options (default if None).
-            connection_host: CDP WebSocket host.
             connection_port: CDP WebSocket port (random if None).
+            connection_host: CDP WebSocket host.
             use_secure: Use secure WebSocket (wss://).
         """
         options_manager = ChromiumOptionsManager(options)
