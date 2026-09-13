@@ -80,10 +80,10 @@ class TempDirectoryManager:
         Note:
             Handles Chromium-specific locked files like CrashpadMetrics.
         """
-        matches = ['CrashpadMetrics-active.pma']
-        match_substrings = ['Safe Browsing', 'Safe Browsing Cookies']
+        matches: list[str] = ['CrashpadMetrics-active.pma']
+        match_substrings: list[str] = ['Safe Browsing', 'Safe Browsing Cookies']
         # Extra patterns commonly locked on Windows; compare case-insensitively
-        windows_locked_substrings = [
+        windows_locked_substrings: list[str] = [
             '\\cache\\',
             '/cache/',
             'no_vary_search',
