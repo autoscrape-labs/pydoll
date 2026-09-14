@@ -198,7 +198,6 @@ class TestSections:
         assert 'featureSet.has(String(value))' in js
 
     def test_webgpu_is_deferred_in_workers(self):
-        """The WebGPU interfaces do not exist at the paused-on-start point of a worker."""
         config = {
             'webgpu': {'vendor': 'nvidia', 'limits': {'maxBufferSize': 2147483648}},
             'webgl': {'vendor': 'Google Inc. (NVIDIA)', 'renderer': 'ANGLE (NVIDIA)'},

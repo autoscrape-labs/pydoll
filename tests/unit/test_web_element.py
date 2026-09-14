@@ -116,7 +116,6 @@ async def test_click_dispatches_press_and_release_at_center(fake_conn, make_elem
 
 @pytest.mark.asyncio
 async def test_click_press_reads_like_a_real_mouse_button(fake_conn, make_element):
-    """A held mouse button reports buttons 1 and pressure 0.5; a release reports neither."""
     element = make_element(attributes=['tag_name', 'button'])
     fake_conn.set_response('Runtime.callFunctionOn', {'result': {'value': True}})
     fake_conn.set_response(

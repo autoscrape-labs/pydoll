@@ -103,8 +103,6 @@ async def test_transpose_typo_without_alpha_neighbor_still_yields_text(field, fo
 
 
 class RecordingField(FakeTextField):
-    """Records key events in order so hold times can be read between them."""
-
     def __init__(self):
         super().__init__()
         self.trace: list[tuple[str, object]] = []
@@ -122,7 +120,6 @@ def recording_field():
 
 @pytest.mark.asyncio
 async def test_default_typing_holds_each_key_before_releasing(recording_field, monkeypatch):
-    """Keydown and keyup must not arrive back to back: humans hold a key for tens of ms."""
     sleeps: list[float] = []
 
     async def fake_sleep(delay):

@@ -433,7 +433,6 @@ class TestNativeFirst:
         assert params == {'enabled': True, 'maxTouchPoints': 10}
 
     async def test_touch_emulation_reasserted_when_main_frame_navigates(self, fp_tab, fake_conn):
-        """The first navigation from about:blank resets maxTouchPoints; re-send on navigation."""
         await fp_tab.apply_fingerprint({'hardware': {'max_touch_points': 10}})
         assert len(fake_conn.commands_for('Emulation.setTouchEmulationEnabled')) == 1
 
@@ -494,7 +493,6 @@ class TestNativeFirst:
         assert {entry['type'] for entry in nested[0]['params']['filter']} == {'worker'}
 
     async def test_worker_webgpu_evaluated_after_resume(self, fp_tab, fake_conn):
-        """WebGPU interfaces appear after the pause point, so its script runs post-resume."""
         await fp_tab.apply_fingerprint({'user_agent': UA, 'webgpu': {'vendor': 'nvidia'}})
         event = {
             'params': {

@@ -261,7 +261,6 @@ class InputCommands:
         twist: Optional[int],
         pointer_type: Optional[PointerType],
     ) -> None:
-        """Fill the pointer-physics fields (pressure, tilt, twist, type) that are set."""
         if force is not None:
             params['force'] = force
         if tangential_pressure is not None:

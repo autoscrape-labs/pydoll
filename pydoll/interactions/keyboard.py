@@ -38,11 +38,7 @@ class TypoResult:
 class TimingConfig:
     """Configuration for realistic typing timing.
 
-    ``key_hold_*`` bound the time a key stays down (keydown to keyup, the
-    hold time of keystroke-dynamics datasets; the CMU benchmark of Killourhy
-    and Maxion, DSN 2009, records holds around 0.15 s for its sample subject).
-    Without it a keydown/keyup pair arrives within a couple of milliseconds,
-    which no human typing produces.
+    ``key_hold_*`` bound the time a key stays down (keydown to keyup).
     """
 
     key_hold_min: float = 0.06
@@ -254,15 +250,10 @@ class Keyboard:
             char_index += 1
 
     def _key_hold(self) -> float:
-        """Draw a realistic hold time (keydown to keyup) for one keystroke."""
         return random.uniform(self._timing.key_hold_min, self._timing.key_hold_max)
 
     async def _type_char(self, char: str, hold: Optional[float] = None):
-        """Type a single character, re-focusing the element before each keystroke.
-
-        The key stays down for ``hold`` seconds (a realistic draw when omitted)
-        before the keyup is sent.
-        """
+        """Type a single character, re-focusing the element before each keystroke."""
         await self._ensure_focus()
         key, code, keycode = CHAR_TO_KEY_INFO.get(char, (char, '', 0))
         command_down = InputCommands.dispatch_key_event(

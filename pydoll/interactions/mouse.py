@@ -436,12 +436,7 @@ class Mouse:
         )
 
     async def _dispatch_move(self, x: float, y: float) -> None:
-        """Dispatch a mouseMoved event and update internal position.
-
-        While a button is held (a drag), the move carries that button, the
-        ``buttons`` bitmask and the pressed pointer force, as a real mouse
-        move does; a hover carries none of them.
-        """
+        """Dispatch a mouseMoved event and update internal position."""
         pressed = self._pressed_button
         command = InputCommands.dispatch_mouse_event(
             type=MouseEventType.MOUSE_MOVED,
@@ -463,12 +458,7 @@ class Mouse:
         button: MouseButton,
         click_count: int = 1,
     ) -> None:
-        """Dispatch mousePressed or mouseReleased at current position.
-
-        A press carries the ``buttons`` bitmask and the pressed pointer force
-        (pressure 0.5, what Blink reports for a real mouse with a button
-        down); a release carries neither, and pressure reads 0 again.
-        """
+        """Dispatch mousePressed or mouseReleased at current position."""
         pressed = event_type == MouseEventType.MOUSE_PRESSED
         command = InputCommands.dispatch_mouse_event(
             type=event_type,

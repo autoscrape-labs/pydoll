@@ -170,7 +170,6 @@ async def test_debug_overlay_recreated_on_every_draw_so_it_survives_navigation(f
 
 @pytest.mark.asyncio
 async def test_press_carries_buttons_and_pressure(fake_tab):
-    """Blink reports pressure 0.5 for a mouse with a button down; CDP defaults to 0."""
     mouse = Mouse(fake_tab, timing=FAST)
     await mouse.click(60, 40)
 

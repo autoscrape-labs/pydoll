@@ -385,9 +385,7 @@ def build_fingerprint_worker_deferred_js(config: FingerprintConfig) -> str:
     Blink installs its conditional features: the ``[SecureContext]`` WebGPU
     interfaces (``GPU``, ``GPUAdapterInfo``, ``GPUSupportedLimits``) do not
     exist yet, so a WebGPU override evaluated at that point is a no-op, and a
-    timer scheduled there never fires. ``FingerprintApplier`` evaluates this
-    script on the worker session right after resuming it, when the interfaces
-    are in place and before any ``requestAdapter()`` promise can resolve.
+    timer scheduled there never fires.
 
     Args:
         config: Fingerprint configuration.
@@ -739,11 +737,7 @@ def _build_webgpu_js(webgpu: WebGPUProfile) -> str:
     """Override what the real WebGPU adapter reports.
 
     ``requestAdapter()`` still resolves the real adapter (so ``requestDevice``
-    and rendering work). The adapter's ``info``, ``limits`` and ``features``
-    getters register the real objects as fakes on first read, whichever way
-    the adapter was obtained, and the prototype getters of those objects then
-    answer the profile's values for them and the native value for anything
-    else, with the native brand check intact. ``features`` is a setlike, so ``has``, ``size``,
+    and rendering work). ``features`` is a setlike, so ``has``, ``size``,
     the iterators and ``forEach`` are patched together to describe one set.
     """
     info: dict[str, object] = {'vendor': webgpu['vendor']}

@@ -303,12 +303,7 @@ class FingerprintApplier:
         initial ``about:blank`` the new document reads the profile's
         ``maxTouchPoints`` while parsing and 0 a hundred milliseconds later,
         with ``ontouchstart`` and ``(pointer: coarse)`` still emulated; later
-        navigations and reloads keep the value. Re-sending the command when
-        the main frame navigates makes every read from then on answer the
-        profile's value in headless and headful. What remains is a window of a
-        few milliseconds at document start: in headful, with a profile whose
-        page script is large, an inline script at the very top of that first
-        document read 0 in two of three runs before the re-sent command landed.
+        navigations and reloads keep the value.
         """
         tab = self._tab
 
@@ -747,10 +742,7 @@ class FingerprintApplier:
 
         The paused-on-start evaluation happens before Blink installs the
         worker's conditional features, so the WebGPU interfaces do not exist
-        there. Sent after ``runIfWaitingForDebugger``, this evaluation runs on
-        the worker's own task runner once the global scope is complete, ahead
-        of any ``requestAdapter()`` promise resolution, so the prototype
-        overrides are in place before the first adapter read.
+        there.
         """
         command = RuntimeCommands.evaluate(expression=deferred_js)
         command['sessionId'] = session_id

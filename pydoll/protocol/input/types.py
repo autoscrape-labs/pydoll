@@ -31,7 +31,6 @@ MOUSE_BUTTON_MASK: dict[MouseButton, int] = {
     MouseButton.BACK: 8,
     MouseButton.FORWARD: 16,
 }
-"""``buttons`` bitmask of ``Input.dispatchMouseEvent`` (the ``MouseEvent.buttons`` encoding)."""
 
 
 class DragEventType(str, Enum):
