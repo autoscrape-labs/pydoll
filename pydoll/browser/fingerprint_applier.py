@@ -32,6 +32,7 @@ from pydoll.protocol.emulation.types import (
 from pydoll.protocol.fetch.events import FetchEvent
 from pydoll.protocol.fetch.types import HeaderEntry, RequestStage
 from pydoll.protocol.network.types import ResourceType
+from pydoll.protocol.page.events import PageEvent
 from pydoll.protocol.target.events import TargetEvent
 from pydoll.protocol.target.types import FilterEntry
 from pydoll.utils import UserAgentParser
@@ -227,6 +228,7 @@ class FingerprintApplier:
         touch_command = self._touch_emulation_command(fingerprint)
         if touch_command is not None:
             await tab._execute_command(touch_command)
+            await tab.on(PageEvent.FRAME_NAVIGATED, self._touch_reassert_handler(touch_command))
         if 'permissions' in fingerprint:
             await self._apply_permissions(fingerprint['permissions'])
         if 'locale' in fingerprint:
@@ -291,6 +293,32 @@ class FingerprintApplier:
             metadata['model'] = client_hints['model']
         if 'form_factors' in client_hints:
             metadata['formFactors'] = client_hints['form_factors']
+
+    def _touch_reassert_handler(
+        self, touch_command: 'Command'
+    ) -> Callable[[dict], Awaitable[None]]:
+        """Build a ``Page.frameNavigated`` handler that re-sends the touch emulation.
+
+        Measured on Chrome 152: after the first navigation away from the
+        initial ``about:blank`` the new document reads the profile's
+        ``maxTouchPoints`` while parsing and 0 a hundred milliseconds later,
+        with ``ontouchstart`` and ``(pointer: coarse)`` still emulated; later
+        navigations and reloads keep the value. Re-sending the command when
+        the main frame navigates makes every read from then on answer the
+        profile's value in headless and headful. What remains is a window of a
+        few milliseconds at document start: in headful, with a profile whose
+        page script is large, an inline script at the very top of that first
+        document read 0 in two of three runs before the re-sent command landed.
+        """
+        tab = self._tab
+
+        async def on_frame_navigated(event: dict) -> None:
+            if event['params']['frame'].get('parentId'):
+                return
+            with suppress(CommandExecutionTimeout, WebSocketConnectionClosed):
+                await tab._execute_command(touch_command)
+
+        return on_frame_navigated
 
     @staticmethod
     def _touch_emulation_command(fingerprint: FingerprintConfig) -> Optional['Command']:

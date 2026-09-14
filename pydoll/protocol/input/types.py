@@ -24,6 +24,16 @@ class MouseButton(str, Enum):
     FORWARD = 'forward'
 
 
+MOUSE_BUTTON_MASK: dict[MouseButton, int] = {
+    MouseButton.LEFT: 1,
+    MouseButton.RIGHT: 2,
+    MouseButton.MIDDLE: 4,
+    MouseButton.BACK: 8,
+    MouseButton.FORWARD: 16,
+}
+"""``buttons`` bitmask of ``Input.dispatchMouseEvent`` (the ``MouseEvent.buttons`` encoding)."""
+
+
 class DragEventType(str, Enum):
     """Drag event types."""
 
