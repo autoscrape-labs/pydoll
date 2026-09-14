@@ -208,9 +208,9 @@ CHROME_ANDROID_UA = (
 
 class TestChromeAndroid:
     def test_platform(self):
-        """64-bit Android Chrome reports ``Linux aarch64`` (32-bit builds ``Linux armv8l``)."""
+        """``Linux armv81`` is the frozen Android value of the User-Agent reduction."""
         result = UserAgentParser.parse(CHROME_ANDROID_UA)
-        assert result.platform == 'Linux aarch64'
+        assert result.platform == 'Linux armv81'
 
     def test_reduced_ua_does_not_echo_frozen_android_10(self):
         """``Android 10; K`` is the reduced-UA freeze; a current Android version is reported."""

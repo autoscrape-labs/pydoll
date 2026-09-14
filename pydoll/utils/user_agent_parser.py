@@ -31,7 +31,7 @@ _PLATFORM_MAP = {
     'windows': 'Win32',
     'macintosh': 'MacIntel',
     'linux': 'Linux x86_64',
-    'android': 'Linux aarch64',
+    'android': 'Linux armv81',
     'iphone': 'iPhone',
     'ipad': 'iPad',
     'cros': 'Linux x86_64',

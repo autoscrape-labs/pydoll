@@ -392,13 +392,13 @@ class TestNativeFirst:
         await fp_tab.apply_fingerprint(
             {
                 'user_agent': UA,
-                'client_hints': {'platform_version': '19.0.0', 'form_factors': ['Desktop']},
+                'client_hints': {'platform_version': '13.0.0', 'form_factors': ['Desktop']},
             }
         )
         metadata = fake_conn.last_command('Emulation.setUserAgentOverride')['params'][
             'userAgentMetadata'
         ]
-        assert metadata['platformVersion'] == '19.0.0'
+        assert metadata['platformVersion'] == '13.0.0'
         assert metadata['formFactors'] == ['Desktop']
 
     async def test_worker_session_auto_attaches_nested_workers(self, fp_tab, fake_conn):

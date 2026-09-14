@@ -144,18 +144,18 @@ How the identity reaches each realm: [Workers and cross-origin iframes](../deep-
 
 ### Service worker and nested worker scripts
 
-Two requests are made by the browser process before any worker target exists: the fetch of a service worker's script and the fetch of a worker spawned from inside another worker. No per-session override can reach them, so on their own they leave with the real User-Agent and `Accept-Language` while every other request carries the profile's, and a site that registers a service worker sees both identities on its server. Pydoll closes this from the browser connection: it pauses those requests with the `Fetch` domain (Chrome types them `Other`, so the page's own traffic is not touched) and rewrites the two headers from the fingerprint registered for the request's browser context. Measured on the local test server, both scripts then arrive with the profile's identity, with no launch flag involved.
+Two requests are made by the browser process before any worker target exists: the fetch of a service worker's script and the fetch of a worker spawned from inside another worker. No per-session override can reach them, so on their own they leave with the real User-Agent and `Accept-Language` while every other request carries the profile's, and a site that registers a service worker sees both identities on its server. Pydoll closes this from the browser connection: it pauses only the requests Chrome types `Other` (those two script fetches, favicons and the like; documents, scripts, images and fetches of the page are never paused) with the `Fetch` domain and rewrites the two headers from the fingerprint registered for the request's browser context. Measured on the local test server, both scripts then arrive with the profile's identity, with no launch flag involved.
 
 If you also set `--user-agent`, keep it equal to the profile's reduced User-Agent (`Chrome/MAJOR.0.0.0`); a different value logs a warning.
 
 ### Pin the Client Hints the User-Agent cannot carry
 
-Since the User-Agent reduction, the string is frozen (`Mac OS X 10_15_7`, `Android 10; K`, `Chrome/152.0.0.0`) while real Chrome keeps reporting the true OS version, the device model, and the form factor in `Sec-CH-UA-Platform-Version`, `Sec-CH-UA-Model`, and `navigator.userAgentData.getHighEntropyValues()`. The parser fills plausible defaults per OS. Set `client_hints` to pin the exact values of the device you are impersonating: a Windows 11 24H2 host reports `'19.0.0'`, a Galaxy S24 Ultra reports `'SM-S928B'`.
+Since the User-Agent reduction, the string is frozen (`Mac OS X 10_15_7`, `Android 10; K`, `Chrome/152.0.0.0`) while real Chrome keeps reporting the true OS version, the device model, and the form factor in `Sec-CH-UA-Platform-Version`, `Sec-CH-UA-Model`, and `navigator.userAgentData.getHighEntropyValues()`. The parser fills plausible defaults per OS. Set `client_hints` to pin the exact values read from the device you are impersonating: Windows 11 hosts report `'13.0.0'` and up depending on the build, a Galaxy S24 Ultra reports `'SM-S928B'`. Read them on a real machine with `navigator.userAgentData.getHighEntropyValues(['platformVersion', 'model'])` rather than guessing.
 
 ```python
 fingerprint = FingerprintConfig(
     user_agent=UA_WINDOWS,
-    client_hints=ClientHintsFingerprint(platform_version='19.0.0'),
+    client_hints=ClientHintsFingerprint(platform_version='15.0.0'),
 )
 ```
 

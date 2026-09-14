@@ -318,7 +318,7 @@ FINGERPRINTS: dict[str, FingerprintConfig] = {
         user_agent=UA_ANDROID,
         client_hints=ClientHintsFingerprint(platform_version='15.0.0', model='SM-S928B'),
         navigator=NavigatorFingerprint(
-            platform='Linux aarch64',
+            platform='Linux armv81',
             vendor='Google Inc.',
             app_version=APP_ANDROID,
             pdf_viewer_enabled=False,
@@ -371,7 +371,7 @@ FINGERPRINTS: dict[str, FingerprintConfig] = {
     # Windows desktop — US identity (pair with a US egress IP / proxy).
     'windows11_rtx3060_nyc': FingerprintConfig(
         user_agent=UA_WINDOWS,
-        client_hints=ClientHintsFingerprint(platform_version='19.0.0'),
+        client_hints=ClientHintsFingerprint(platform_version='15.0.0'),
         navigator=NavigatorFingerprint(
             platform='Win32',
             vendor='Google Inc.',

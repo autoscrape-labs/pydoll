@@ -23,7 +23,7 @@ The interactive map below applies a Windows profile on a real Mac and reads `nav
 
 Two of Pydoll's mechanisms cross realm boundaries on their own, but only within a single process:
 
-- **CDP `Emulation` overrides** (`setUserAgentOverride`, which also carries `navigator.platform` and `languages`, `setHardwareConcurrencyOverride`, `setTimezoneOverride`, `setLocaleOverride`, `setDeviceMetricsOverride`, `setTouchEmulationEnabled`, `setEmulatedMedia`) are applied by the browser at the target level, below JavaScript. They cover the main document and every frame in the same process. `Browser.setPermission` goes further and covers the whole browser context.
+- **CDP `Emulation` overrides** (`setUserAgentOverride`, which in the page realm also carries `navigator.platform` and `languages`, `setHardwareConcurrencyOverride`, `setTimezoneOverride`, `setLocaleOverride`, `setDeviceMetricsOverride`, `setTouchEmulationEnabled`, `setEmulatedMedia`) are applied by the browser at the target level, below JavaScript. They cover the main document and every frame in the same process. `Browser.setPermission` goes further and covers the whole browser context.
 - **`Page.addScriptToEvaluateOnNewDocument`** runs a script in every frame of the page target before that frame's own scripts run. It covers the main realm and every same-origin (in-process) iframe.
 
 Together these cover the main document and same-origin iframes with no extra work. A same-origin child iframe reads the injected `platform`, `hardwareConcurrency`, and User-Agent, not the host machine's.

@@ -441,13 +441,14 @@ class ClientHintsFingerprint(TypedDict):
     froze it at ``Mac OS X 10_15_7`` / ``Android 10; K``), while real Chrome
     keeps reporting the true one in ``Sec-CH-UA-Platform-Version`` and
     ``navigator.userAgentData.getHighEntropyValues()``. The parser fills a
-    plausible default per OS; set these to pin the exact values of the device
-    you are impersonating (a Windows 11 24H2 host reports ``'19.0.0'``, an
-    Android phone reports its model such as ``'SM-S928B'``).
+    plausible default per OS; set these to pin the exact values read from the
+    device you are impersonating (Windows 11 hosts report ``'13.0.0'`` and up,
+    the exact value depending on the build; an Android phone reports its model
+    such as ``'SM-S928B'``).
 
     Example::
 
-        ClientHintsFingerprint(platform_version='19.0.0')
+        ClientHintsFingerprint(platform_version='15.0.0')
     """
 
     platform_version: NotRequired[str]  # Sec-CH-UA-Platform-Version

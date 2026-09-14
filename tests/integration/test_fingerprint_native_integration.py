@@ -33,7 +33,7 @@ UA = (
 
 FINGERPRINT = {
     'user_agent': UA,
-    'client_hints': {'platform_version': '19.0.0'},
+    'client_hints': {'platform_version': '15.0.0'},
     'timezone': 'America/New_York',
     'locale': {'languages': ['en-US', 'en']},
     'hardware': {'hardware_concurrency': 12, 'device_memory': 8, 'max_touch_points': 0},
@@ -162,7 +162,7 @@ class TestNativeIdentity:
         page, _ = applied_page
         expected = UserAgentParser.parse(UA).user_agent_metadata['brands']
         assert page['brands'] == expected
-        assert page['platformVersion'] == '19.0.0'
+        assert page['platformVersion'] == '15.0.0'
         assert page['formFactors'] == ['Desktop']
 
 
