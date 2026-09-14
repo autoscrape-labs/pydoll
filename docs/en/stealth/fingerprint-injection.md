@@ -19,6 +19,7 @@ One honest limit up front: this is identity substitution, not anonymity. It does
 - [How to make a profile pass](#making-a-profile-pass)
 - [What is native and what is JavaScript](#native-first)
 - [How to use your own profiles](#bring-your-own-profiles)
+- [What a container can and cannot claim](#containers)
 
 ## Quick start {#quick-start}
 
@@ -187,6 +188,31 @@ A few smaller rules round it out: apply the fingerprint before the first navigat
 Headless Chrome has one hardcoded virtual screen (800x600, no work area) and a window with no chrome. A profile's `screen` section reshapes both natively: `Emulation.updateScreen` sets the virtual screen's size, work area (`availTop`, `availHeight`), color depth, and integer pixel ratio for every frame in the browser, cross-origin iframes included, and `Browser.setWindowBounds` sizes the window to `outer_width` x `outer_height`, so `outerWidth`, `innerWidth`, and every `screen.*` value come from Chrome itself with no JavaScript getter behind them. A fractional `device_pixel_ratio` (Windows display scaling) is the one value the virtual screen cannot hold; it is applied to the page through `setDeviceMetricsOverride` and rounded for cross-origin iframes.
 
 In headful mode the real screen is real, so `screen.width`, `screen.height`, and the pixel ratio are overridden through `setDeviceMetricsOverride`, the window is resized to `outer_*`, and only the work-area extras (`availHeight`, `availTop`, `colorDepth`) keep a JavaScript getter.
+
+### Containers and servers without a GPU {#containers}
+
+A profile changes what the browser *reports*; it cannot change what the machine *computes*. Every GPU signal exists in both forms, and the split decides what a container can and cannot claim:
+
+| Layer | Examples | The profile | A Mac with a GPU | A container with no GPU |
+|---|---|---|---|---|
+| Reported | renderer string, WebGL limits and extensions, WebGPU `adapter.info`, limits and features | overrides all of it | says the profile's GPU | says the profile's GPU |
+| Computed | pixels a shader draws (render hash), compute results, how long they took, `failIfMajorPerformanceCaveat` | cannot reach it | real hardware output, from another vendor | software output, or no WebGL / WebGPU at all |
+
+On a host with a GPU of another vendor, the reported half is coherent and the computed half is real hardware that only a detector holding per-card reference hashes can tell apart (Fingerprint Pro and Castle describe such cross-checks; the passive reads of reCAPTCHA and hCaptcha, traced in [Auditing a fingerprint](../deep-dive/fingerprinting/auditing.md), never touched WebGL or WebGPU).
+
+A container is different, because the computed half is not merely foreign, it is recognisable on its own. Without a GPU, current Chrome either creates no WebGL context at all (SwiftShader is off unless `--enable-unsafe-swiftshader` is passed) or renders through SwiftShader: `getContext('webgl', {failIfMajorPerformanceCaveat: true})` returns `null`, the render hash is the same on every GPU-less Chrome in the world, and `navigator.gpu.requestAdapter()` resolves `null`, so the `webgpu` section has no adapter to attach its values to. A profile that names a discrete card on such a host is a contradiction that needs no reference data.
+
+What works on a GPU-less host, in order of value:
+
+1. **A clean residential egress IP.** A datacenter address is read before any script runs; nothing below compensates for it.
+2. **A profile that tells a software story.** Windows on virtual desktops (VDI, Citrix, cloud VMs) really does render through the Microsoft Basic Render Driver: `ANGLE (Microsoft, Microsoft Basic Render Driver Direct3D11 vs_5_0 ps_5_0, D3D11)`, a caveat on context creation, and no WebGPU adapter. Every one of those matches what the container actually does. Software renderers score as suspicious on their own, but they describe millions of real enterprise sessions; a discrete card on a software host describes none. The values for such a profile have to be captured on a real Windows VM, the same rule as every other profile.
+3. **Make the APIs exist.** `--enable-unsafe-swiftshader` gives the page a WebGL context to read (a desktop with no WebGL at all is rarer than one with a software renderer), and `--enable-unsafe-webgpu --use-webgpu-adapter=swiftshader` exposes a fallback adapter (`isFallbackAdapter` true) for the `webgpu` section to attach to. This satisfies detectors that read parameters; it does not change the rendered output. Do not combine it with a hardware GPU claim.
+4. **Fonts.** A container ships almost none, so the width-based probe finds neither the claimed OS's fonts nor another OS's markers. Install the claimed OS's font set and list exactly that in `available_fonts`; a colour emoji font of that OS too.
+5. **Media devices and voices.** A server has none. `--use-fake-device-for-media-stream` makes Chrome itself expose a microphone, camera and speaker; the `speech` section fills the empty voice list.
+6. **The kernel.** A Linux SYN under a Windows User-Agent is read at the edge (see [Network fingerprinting](../deep-dive/fingerprinting/network-fingerprinting.md)); a proxy exit on the claimed OS is the only clean fix, and whether a given target weighs it is an open measurement.
+7. **A real GPU.** A GPU instance (any cloud T4/L4 class) is the only thing that makes the render hash, the WebGPU adapter and the timing genuine; with a GPU of the same vendor the profile names, the reported and computed halves finally agree.
+
+**Xvfb** changes one layer only. Under Xvfb, Chrome is headful: there is a presented surface (the presentation term Cloudflare's challenge weighs on a marginal IP, see [Cloudflare's managed challenge](../deep-dive/fingerprinting/cloudflare-challenge.md)), `screen` is the virtual display you configure, the window has real chrome and Linux scrollbars, and input can come from the OS (`xdotool`) instead of the DevTools protocol. It does not add a GPU: Xvfb is a framebuffer in memory, rendering stays SwiftShader or llvmpipe, and the kernel, the fonts and the IP are the same. Use it to remove the headless class of signals, not the GPU class.
 
 ## Native first, JavaScript last {#native-first}
 
