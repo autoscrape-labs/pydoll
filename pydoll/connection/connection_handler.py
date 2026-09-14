@@ -4,6 +4,7 @@ import asyncio
 import json
 import logging
 from contextlib import suppress
+from enum import Enum
 from typing import TYPE_CHECKING, cast
 
 import websockets
@@ -13,6 +14,8 @@ from websockets.protocol import State
 from pydoll.connection.managers import CommandsManager, EventsManager
 from pydoll.exceptions import (
     CommandExecutionTimeout,
+    CommandFailed,
+    InvalidResponse,
     WebSocketConnectionClosed,
 )
 from pydoll.protocol.base import CDPEvent, Response
@@ -104,6 +107,8 @@ class ConnectionHandler:
             Parsed response object matching command's expected type.
 
         Raises:
+            CommandFailed: If the browser answers with a CDP error instead of a result.
+            InvalidResponse: If the response carries neither a result nor an error.
             CommandExecutionTimeout: If browser doesn't respond within timeout.
             WebSocketConnectionClosed: If connection closes during execution.
         """
@@ -122,7 +127,9 @@ class ConnectionHandler:
             response: str = await asyncio.wait_for(future, timeout)
             elapsed = asyncio.get_running_loop().time() - start
             logger.debug(f'Command completed: id={command.get("id")} in {elapsed:.3f}s')
-            return json.loads(response)
+            response_data = json.loads(response)
+            self._raise_if_failed(command, response_data)
+            return response_data
         except asyncio.TimeoutError:
             self._command_manager.remove_pending_command(command['id'])
             logger.error(
@@ -135,6 +142,27 @@ class ConnectionHandler:
             await self._handle_connection_loss()
             logger.warning(f'WebSocket connection closed during command: id={command.get("id")}')
             raise WebSocketConnectionClosed()
+
+    @staticmethod
+    def _raise_if_failed(command: Command, response: Response) -> None:
+        """Raise when the browser answered with an error instead of a result.
+
+        The CDP dispatcher always emits exactly one of ``result`` or ``error`` for
+        a command id, so a message with neither is treated as a broken peer.
+        """
+        raw_method = command.get('method', '')
+        method = raw_method.value if isinstance(raw_method, Enum) else raw_method
+        if 'error' in response:
+            error = response['error']
+            logger.debug(f'Command rejected: method={method}, error={error}')
+            raise CommandFailed(
+                method=method,
+                code=error.get('code', 0),
+                message=error.get('message', ''),
+                data=error.get('data', ''),
+            )
+        if 'result' not in response:
+            raise InvalidResponse(f'Response for {method} has neither result nor error')
 
     async def register_callback(
         self,

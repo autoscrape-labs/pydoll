@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Iterable, Optional
 
 from pydoll.commands import DomCommands, PageCommands, RuntimeCommands, TargetCommands
 from pydoll.connection import ConnectionHandler
-from pydoll.exceptions import InvalidIFrame
+from pydoll.exceptions import CommandFailed, InvalidIFrame
 from pydoll.protocol.dom.methods import DescribeNodeResponse, GetFrameOwnerResponse
 from pydoll.protocol.dom.types import Node
 from pydoll.protocol.page.methods import CreateIsolatedWorldResponse, GetFrameTreeResponse
@@ -120,8 +120,9 @@ class IFrameContextResolver:
         command = DomCommands.describe_node(object_id=self._element._object_id)
         if session_id:
             command['sessionId'] = session_id
-        response: DescribeNodeResponse = await handler.execute_command(command)
-        if 'error' in response:
+        try:
+            response: DescribeNodeResponse = await handler.execute_command(command)
+        except CommandFailed:
             return {}
         return response.get('result', {}).get('node', {})
 
@@ -217,8 +218,22 @@ class IFrameContextResolver:
         command = DomCommands.get_frame_owner(frame_id=frame_id)
         if session_id:
             command['sessionId'] = session_id
-        response: GetFrameOwnerResponse = await handler.execute_command(command)
+        try:
+            response: GetFrameOwnerResponse = await handler.execute_command(command)
+        except CommandFailed:
+            return None
         return response.get('result', {}).get('backendNodeId')
+
+    @staticmethod
+    async def _attach_session(handler: ConnectionHandler, target_id: str) -> Optional[str]:
+        """Attach to a target with a flattened session; None when the target is gone."""
+        try:
+            attach_response: AttachToTargetResponse = await handler.execute_command(
+                TargetCommands.attach_to_target(target_id=target_id, flatten=True)
+            )
+        except CommandFailed:
+            return None
+        return attach_response.get('result', {}).get('sessionId')
 
     async def _resolve_oopif_if_needed(
         self,
@@ -325,10 +340,9 @@ class IFrameContextResolver:
 
         is_single_child = len(direct_children) == 1
         for child_target in direct_children:
-            attach_response: AttachToTargetResponse = await browser_handler.execute_command(
-                TargetCommands.attach_to_target(target_id=child_target['targetId'], flatten=True)
+            attached_session_id = await self._attach_session(
+                browser_handler, child_target['targetId']
             )
-            attached_session_id = attach_response.get('result', {}).get('sessionId')
             if not attached_session_id:
                 continue
 
@@ -359,12 +373,9 @@ class IFrameContextResolver:
         for target_info in target_infos:
             if target_info.get('type') not in {'iframe', 'page'}:
                 continue
-            attach_response = await browser_handler.execute_command(
-                TargetCommands.attach_to_target(
-                    target_id=target_info.get('targetId', ''), flatten=True
-                )
+            attached_session_id = await self._attach_session(
+                browser_handler, target_info.get('targetId', '')
             )
-            attached_session_id = attach_response.get('result', {}).get('sessionId')
             if not attached_session_id:
                 continue
 
@@ -431,7 +442,12 @@ class IFrameContextResolver:
         )
         if session_id:
             create_command['sessionId'] = session_id
-        create_response: CreateIsolatedWorldResponse = await handler.execute_command(create_command)
+        try:
+            create_response: CreateIsolatedWorldResponse = await handler.execute_command(
+                create_command
+            )
+        except CommandFailed as exc:
+            raise InvalidIFrame(f'Unable to create isolated world for iframe: {exc}') from exc
         execution_context_id = create_response.get('result', {}).get('executionContextId')
         if not execution_context_id:
             raise InvalidIFrame('Unable to create isolated world for iframe')
@@ -451,7 +467,10 @@ class IFrameContextResolver:
             evaluate_command['sessionId'] = context.session_id
 
         handler = context.session_handler or self._element._connection_handler
-        evaluate_response: EvaluateResponse = await handler.execute_command(evaluate_command)
+        try:
+            evaluate_response: EvaluateResponse = await handler.execute_command(evaluate_command)
+        except CommandFailed as exc:
+            raise InvalidIFrame(f'Unable to obtain document reference for iframe: {exc}') from exc
 
         result_object = evaluate_response.get('result', {}).get('result', {})
         document_object_id = result_object.get('objectId')

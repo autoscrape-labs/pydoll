@@ -24,6 +24,7 @@ from pydoll.elements.mixins import FindElementsMixin
 from pydoll.elements.shadow_root import ShadowRoot
 from pydoll.exceptions import (
     CommandExecutionTimeout,
+    CommandFailed,
     ElementNotAFileInput,
     ElementNotFound,
     ElementNotInteractable,
@@ -320,9 +321,12 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
 
     async def _get_shadow_root(self) -> ShadowRoot:
         """Get the shadow root attached to this element (single attempt)."""
-        response: DescribeNodeResponse = await self._execute_command(
-            DomCommands.describe_node(object_id=self._object_id, depth=1, pierce=True)
-        )
+        try:
+            response: DescribeNodeResponse = await self._execute_command(
+                DomCommands.describe_node(object_id=self._object_id, depth=1, pierce=True)
+            )
+        except CommandFailed as exc:
+            raise ShadowRootNotFound() from exc
         node_info = response.get('result', {}).get('node', {})
         shadow_roots = node_info.get('shadowRoots', [])
         if not shadow_roots:
@@ -483,7 +487,10 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         """Scroll element into visible viewport."""
         command = DomCommands.scroll_into_view_if_needed(object_id=self._object_id)
         logger.info(f'Scrolling element into view: object_id={self._object_id}')
-        await self._execute_command(command)
+        try:
+            await self._execute_command(command)
+        except CommandFailed as exc:
+            raise ElementNotVisible(f'Element cannot be scrolled into view: {exc}') from exc
 
     async def wait_until(
         self,
@@ -835,22 +842,25 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
 
     async def is_visible(self):
         """Check if element is visible using comprehensive JavaScript visibility test."""
-        result = await self.execute_script(Scripts.ELEMENT_VISIBLE, return_by_value=True)
-        if 'error' in result:
+        try:
+            result = await self.execute_script(Scripts.ELEMENT_VISIBLE, return_by_value=True)
+        except CommandFailed:
             return False
         return bool(result.get('result', {}).get('result', {}).get('value', False))
 
     async def is_on_top(self):
         """Check if element is topmost at its center point (not covered by overlays)."""
-        result = await self.execute_script(Scripts.ELEMENT_ON_TOP, return_by_value=True)
-        if 'error' in result:
+        try:
+            result = await self.execute_script(Scripts.ELEMENT_ON_TOP, return_by_value=True)
+        except CommandFailed:
             return False
         return bool(result.get('result', {}).get('result', {}).get('value', False))
 
     async def is_interactable(self):
         """Check if element is interactable based on visibility and position."""
-        result = await self.execute_script(Scripts.ELEMENT_INTERACTIVE, return_by_value=True)
-        if 'error' in result:
+        try:
+            result = await self.execute_script(Scripts.ELEMENT_INTERACTIVE, return_by_value=True)
+        except CommandFailed:
             return False
         return bool(result.get('result', {}).get('result', {}).get('value', False))
 
@@ -1008,12 +1018,16 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         array_object_id = result['result']['result']['objectId']
 
         get_properties_command = RuntimeCommands.get_properties(object_id=array_object_id)
-        properties_response: GetPropertiesResponse = await self._execute_command(
-            get_properties_command
-        )
+        try:
+            properties_response: GetPropertiesResponse = await self._execute_command(
+                get_properties_command
+            )
+        except CommandFailed as exc:
+            logger.debug(f'Family element list became unresolvable before it was read: {exc}')
+            return []
 
         family_elements: list[WebElement] = []
-        for prop in properties_response['result']['result']:
+        for prop in properties_response.get('result', {}).get('result', []):
             if not (prop['name'].isdigit() and 'objectId' in prop['value']):
                 continue
             child_object_id = prop['value']['objectId']

@@ -29,6 +29,8 @@ class FakeCDPServer:
         self._connections: set[ServerConnection] = set()
         self._received: list[dict] = []
         self._results: dict[str, dict] = {}
+        self._errors: dict[str, dict] = {}
+        self._bare_methods: set[str] = set()
         self._hung_methods: set[str] = set()
         self._total_connections = 0
 
@@ -72,6 +74,14 @@ class FakeCDPServer:
         """Cumulative number of client connections accepted over the server's life."""
         return self._total_connections
 
+    def set_error(self, method: str, code: int, message: str) -> None:
+        """Answer a command method with a CDP error frame instead of a result."""
+        self._errors[method] = {'code': code, 'message': message}
+
+    def omit_result(self, method: str) -> None:
+        """Answer a command method with a bare ``{id}`` frame (a broken peer)."""
+        self._bare_methods.add(method)
+
     def set_result(self, method: str, result: dict) -> None:
         """Configure the result payload returned for a command method."""
         self._results[method] = result
@@ -111,9 +121,16 @@ class FakeCDPServer:
     async def _respond(self, connection: ServerConnection, raw: str) -> None:
         message = json.loads(raw)
         self._received.append(message)
-        if message.get('method') in self._hung_methods:
+        method = message.get('method')
+        if method in self._hung_methods:
             return
-        result = self._results.get(message.get('method'), {})
+        if method in self._bare_methods:
+            await connection.send(json.dumps({'id': message['id']}))
+            return
+        if method in self._errors:
+            await connection.send(json.dumps({'id': message['id'], 'error': self._errors[method]}))
+            return
+        result = self._results.get(method, {})
         await connection.send(json.dumps({'id': message['id'], 'result': result}))
 
 
