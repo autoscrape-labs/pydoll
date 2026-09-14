@@ -38,7 +38,7 @@ from pydoll.exceptions import (
 )
 from pydoll.interactions.iframe import IFrameContext, IFrameContextResolver
 from pydoll.interactions.keyboard import Keyboard
-from pydoll.protocol.dom.types import ShadowRootType
+from pydoll.protocol.dom.types import Rect, ShadowRootType
 from pydoll.protocol.input.types import (
     KeyEventType,
     KeyModifier,
@@ -86,6 +86,8 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         _routing_session_handler: Optional[ConnectionHandler]
         _routing_session_id: Optional[str]
         _routing_parent_frame_id: Optional[str]
+
+    _SCROLL_INTO_VIEW_MARGIN = 24
 
     def __init__(
         self,
@@ -484,13 +486,37 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         return None
 
     async def scroll_into_view(self):
-        """Scroll element into visible viewport."""
-        command = DomCommands.scroll_into_view_if_needed(object_id=self._object_id)
+        """Scroll element into the viewport, keeping a margin from every edge.
+
+        ``DOM.scrollIntoViewIfNeeded`` aligns a partially visible element with the
+        closest viewport edge. That leaves it under the overlay scrollbar the scroll
+        itself reveals on macOS, so the mouse events that follow land on the
+        scrollbar instead of the element. Asking for the element's box plus a
+        margin keeps it clear of the edges. When the box cannot be read the plain
+        behaviour is kept.
+        """
         logger.info(f'Scrolling element into view: object_id={self._object_id}')
+        command = DomCommands.scroll_into_view_if_needed(
+            object_id=self._object_id, rect=await self._scroll_rect_with_margin()
+        )
         try:
             await self._execute_command(command)
         except CommandFailed as exc:
             raise ElementNotVisible(f'Element cannot be scrolled into view: {exc}') from exc
+
+    async def _scroll_rect_with_margin(self) -> Optional[Rect]:
+        """Element box padded by the scroll margin, relative to its border box."""
+        try:
+            bounds = await self.get_bounds_using_js()
+        except (CommandFailed, KeyError, TypeError, ValueError):
+            return None
+        margin = self._SCROLL_INTO_VIEW_MARGIN
+        return {
+            'x': -margin,
+            'y': -margin,
+            'width': bounds['width'] + 2 * margin,
+            'height': bounds['height'] + 2 * margin,
+        }
 
     async def wait_until(
         self,
