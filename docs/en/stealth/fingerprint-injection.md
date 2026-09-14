@@ -8,6 +8,9 @@ The payoff is concrete. With a matched profile, headless Chrome goes from an ins
 
 One honest limit up front: this is identity substitution, not anonymity. It does not change your egress IP or the network-layer fingerprint, and an inconsistent profile is more detectable than an untouched browser. Making the profile *match* your machine and IP is the whole job, and [the rules below](#making-a-profile-pass) are that checklist.
 
+!!! warning "None of this is a guarantee"
+    Everything on this page, and in the deep dives it links to, describes what a detector *can* read: the checks the literature and the reverse-engineered agents document. Which of them a particular site runs, and how much each weighs, is that site's secret. A minimal profile (User-Agent, locale, timezone matched to the host and the IP) clears many targets on its own, and a small residual inconsistency may never be read at all. Start simple, test against the actual site, and add fields only when a measurement says a specific signal is what blocks you. Chasing total consistency for its own sake is effort a target may never reward.
+
 **You will learn**
 
 - [How to apply a fingerprint](#quick-start)
@@ -139,26 +142,11 @@ await tab.apply_fingerprint(FINGERPRINTS['macos_m3_new_york'], cross_origin_ifra
 
 How the identity reaches each realm: [Workers and cross-origin iframes](../deep-dive/fingerprinting/execution-realms.md).
 
-### Cover the service worker script fetch
+### Service worker and nested worker scripts
 
-A service worker's script is fetched by the browser process before the worker exists, so no per-session override can reach that one request. With a profile applied, the page, its workers, and every fetch carry the profile's User-Agent, while the request for the service worker script carries the real one and the real `Accept-Language`. Any site that registers a service worker sees both identities on its server, no JavaScript needed.
+Two requests are made by the browser process before any worker target exists: the fetch of a service worker's script and the fetch of a worker spawned from inside another worker. No per-session override can reach them, so on their own they leave with the real User-Agent and `Accept-Language` while every other request carries the profile's, and a site that registers a service worker sees both identities on its server. Pydoll closes this from the browser connection: it pauses those requests with the `Fetch` domain (Chrome types them `Other`, so the page's own traffic is not touched) and rewrites the two headers from the fingerprint registered for the request's browser context. Measured on the local test server, both scripts then arrive with the profile's identity, with no launch flag involved.
 
-The browser-wide values are set at launch, so pass them as flags equal to the profile: the reduced User-Agent (`Chrome/MAJOR.0.0.0`, which is what the header carries) and the profile's languages. Measured on the local test server, the service worker script request then carries the profile's identity.
-
-```python
-options = ChromiumOptions()
-options.add_argument(
-    '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
-    'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36'
-)
-options.add_argument('--accept-lang=en-US,en')
-
-async with Chrome(options=options) as browser:
-    tab = await browser.start()
-    await tab.apply_fingerprint(FINGERPRINTS['windows11_rtx3060_nyc'])
-```
-
-The profile still owns the identity; the flags only make the browser-process requests agree with it. A `--user-agent` that differs from the profile's is a misconfiguration and logs a warning.
+If you also set `--user-agent`, keep it equal to the profile's reduced User-Agent (`Chrome/MAJOR.0.0.0`); a different value logs a warning.
 
 ### Pin the Client Hints the User-Agent cannot carry
 

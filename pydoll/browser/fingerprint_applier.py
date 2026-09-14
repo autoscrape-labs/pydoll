@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Awaitable, Callable, Optional
 from pydoll.commands import (
     BrowserCommands,
     EmulationCommands,
+    FetchCommands,
     PageCommands,
     RuntimeCommands,
     TargetCommands,
@@ -28,6 +29,9 @@ from pydoll.protocol.emulation.types import (
     ScreenOrientation,
     ScreenOrientationType,
 )
+from pydoll.protocol.fetch.events import FetchEvent
+from pydoll.protocol.fetch.types import HeaderEntry, RequestStage
+from pydoll.protocol.network.types import ResourceType
 from pydoll.protocol.target.events import TargetEvent
 from pydoll.protocol.target.types import FilterEntry
 from pydoll.utils import UserAgentParser
@@ -453,6 +457,8 @@ class FingerprintApplier:
 
         scope_context_id = await self._resolve_browser_context_id()
         browser_conn = tab._browser._connection_handler
+        if not tab._browser._context_worker_callbacks:
+            await self._setup_script_fetch_override()
         browser_handler = self._build_worker_handler(
             browser_conn,
             {'service_worker', 'shared_worker'},
@@ -473,6 +479,92 @@ class FingerprintApplier:
                 filter=[FilterEntry(type='service_worker'), FilterEntry(type='shared_worker')],
             )
         )
+
+    async def _setup_script_fetch_override(self) -> None:
+        """Rewrite the identity headers of scripts the browser process fetches.
+
+        A service worker's script, and the script of a worker spawned by another
+        worker, are fetched by the browser process before the worker target
+        exists, so no per-session override reaches those two requests: they
+        leave with the real User-Agent and Accept-Language while every other
+        request carries the profile's. Chrome types them ``Other``, and the
+        ``Fetch`` domain on the browser connection pauses them, so the headers are
+        rewritten there from the fingerprint registered for the request's
+        context. Enabled once per browser; the handler resolves the profile per
+        request, so contexts with different identities stay separate.
+        """
+        browser = self._tab._browser
+        connection = browser._connection_handler
+
+        async def on_request_paused(event: dict) -> None:
+            params = event['params']
+            request_id = params['requestId']
+            headers: Optional[list[HeaderEntry]] = None
+            with suppress(KeyError):
+                fingerprint = self._fingerprint_for_frame(params.get('frameId', ''))
+                if fingerprint is not None and 'user_agent' in fingerprint:
+                    headers = self._identity_headers(fingerprint, params['request']['headers'])
+            with suppress(CommandExecutionTimeout, WebSocketConnectionClosed):
+                await connection.execute_command(
+                    FetchCommands.continue_request(request_id, headers=headers),
+                    timeout=self._WORKER_COMMAND_TIMEOUT,
+                )
+
+        await browser.on(FetchEvent.REQUEST_PAUSED, on_request_paused)
+        await connection.execute_command(
+            FetchCommands.enable(
+                handle_auth_requests=False,
+                resource_type=ResourceType.OTHER,
+                request_stage=RequestStage.REQUEST,
+            )
+        )
+
+    def _fingerprint_for_frame(self, frame_id: str) -> Optional[FingerprintConfig]:
+        """Resolve the fingerprint of the context a paused request belongs to.
+
+        The top frame id of a page equals its target id, so the request's frame
+        maps to a tab and the tab to its context. When the frame is unknown and
+        the browser holds a single fingerprint, that one applies; with several
+        identities and an unresolvable frame, nothing is rewritten.
+        """
+        browser = self._tab._browser
+        registry = browser._context_fingerprints
+        for tab in browser._tabs_opened.values():
+            if tab._target_id == frame_id and tab._browser_context_id in registry:
+                return registry[tab._browser_context_id]
+        if len(registry) == 1:
+            return next(iter(registry.values()))
+        return None
+
+    @staticmethod
+    def _identity_headers(
+        fingerprint: FingerprintConfig, headers: dict[str, str]
+    ) -> list[HeaderEntry]:
+        """Replace User-Agent / Accept-Language in a request's headers with the profile's."""
+        parsed = UserAgentParser.parse(fingerprint['user_agent'])
+        rewritten: list[HeaderEntry] = [
+            HeaderEntry(name=name, value=value)
+            for name, value in headers.items()
+            if name.lower() not in {'user-agent', 'accept-language'}
+        ]
+        rewritten.append(HeaderEntry(name='User-Agent', value=parsed.reduced_user_agent))
+        languages = fingerprint.get('locale', {}).get('languages', [])
+        if languages:
+            rewritten.append(
+                HeaderEntry(
+                    name='Accept-Language',
+                    value=FingerprintApplier._accept_language_header(languages),
+                )
+            )
+        return rewritten
+
+    @staticmethod
+    def _accept_language_header(languages: list[str]) -> str:
+        """Format languages the way Chrome writes ``Accept-Language`` (``en-US,en;q=0.9``)."""
+        parts = [languages[0]]
+        for index, language in enumerate(languages[1:], start=1):
+            parts.append(f'{language};q={max(1.0 - 0.1 * index, 0.1):.1f}')
+        return ','.join(parts)
 
     async def _resolve_browser_context_id(self) -> object:
         """Resolve this tab's concrete browser context id for scoping workers.

@@ -92,6 +92,9 @@ The signals you can change cleanly are the ones a native override reaches, or th
 
 The hard floor, canvas and audio and GPU, you make coherent only by running on real, matched hardware. Everything in between is a trade that can backfire, so spend the effort on consistency, not on faking more.
 
+!!! note "All of this is a model, not a verdict"
+    Every check on this page comes from public research, vendor write-ups, and reverse-engineered agents. It describes what a detector *can* read, not what any given site *does* read. Each anti-bot system has its own set of checks and its own weights, a small inconsistency may never be looked at, and a plain profile with three fields often passes where a fully-tuned one was not needed. Treat coherence as a budget to spend where a target proves it matters, and measure each site on its own: run the profile against it, change one thing, run again.
+
 ## What is still open
 
 Past the hard floor, the remaining gaps are environment, not overrides, and each has a known fix outside the browser:

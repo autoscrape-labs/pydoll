@@ -509,3 +509,61 @@ class TestScreenNativePaths:
         assert 'outer_width' not in headful['screen']
         assert headful['screen']['avail_height'] == 1040
         assert fingerprint['screen']['outer_width'] == 1920
+
+
+class TestScriptFetchOverride:
+    """Browser-process script fetches (service worker, nested worker) get the profile headers."""
+
+    EVENT = {
+        'params': {
+            'requestId': 'req-1',
+            'frameId': 'fp-tab',
+            'resourceType': 'Other',
+            'request': {
+                'url': 'http://127.0.0.1/sw.js',
+                'headers': {'User-Agent': 'real', 'Accept-Language': 'pt-BR', 'Accept': '*/*'},
+            },
+        }
+    }
+
+    async def test_enables_fetch_for_other_resources_once(self, fp_tab, fake_conn):
+        await fp_tab.apply_fingerprint({'user_agent': UA, 'locale': {'languages': ['en-US', 'en']}})
+        enables = fake_conn.commands_for('Fetch.enable')
+        assert len(enables) == 1
+        pattern = enables[0]['params']['patterns'][0]
+        assert pattern['resourceType'] == 'Other'
+        assert pattern['requestStage'] == 'Request'
+        assert fake_conn.callbacks_for('Fetch.requestPaused')
+
+    async def test_paused_script_fetch_gets_profile_headers(self, fp_tab, fake_conn):
+        await fp_tab.apply_fingerprint({'user_agent': UA, 'locale': {'languages': ['en-US', 'en']}})
+        for callback in fake_conn.callbacks_for('Fetch.requestPaused'):
+            await callback(self.EVENT)
+        await asyncio.sleep(0.05)
+
+        params = fake_conn.last_command('Fetch.continueRequest')['params']
+        headers = {h['name']: h['value'] for h in params['headers']}
+        assert params['requestId'] == 'req-1'
+        assert headers['User-Agent'] == UA
+        assert headers['Accept-Language'] == 'en-US,en;q=0.9'
+        assert headers['Accept'] == '*/*'
+
+    async def test_request_continues_untouched_without_a_matching_profile(self, fake_conn):
+        chrome = Chrome()
+        chrome._connection_handler = fake_conn
+        first = Tab(browser=chrome, target_id='t1', connection_handler=fake_conn, browser_context_id='c1')
+        second = Tab(browser=chrome, target_id='t2', connection_handler=fake_conn, browser_context_id='c2')
+        await first.apply_fingerprint({'user_agent': UA})
+        await second.apply_fingerprint({'user_agent': UA.replace('151', '150')})
+        event = {'params': dict(self.EVENT['params'], frameId='unknown-frame')}
+        for callback in fake_conn.callbacks_for('Fetch.requestPaused'):
+            await callback(event)
+        await asyncio.sleep(0.05)
+
+        params = fake_conn.last_command('Fetch.continueRequest')['params']
+        assert 'headers' not in params
+
+    def test_accept_language_header_matches_chrome_shape(self):
+        assert FingerprintApplier._accept_language_header(['pt-BR', 'pt', 'en-US', 'en']) == (
+            'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7'
+        )

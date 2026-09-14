@@ -72,6 +72,13 @@
         };
       }
 
+      window.__serviceWorker = null;
+      navigator.serviceWorker
+        .register('sw.js')
+        .then(() => navigator.serviceWorker.ready)
+        .then(() => { window.__serviceWorker = 'ready'; })
+        .catch((error) => { window.__serviceWorker = 'error: ' + error.message; });
+
       readPage();
       document.getElementById('status').textContent = 'ready';
     </script>

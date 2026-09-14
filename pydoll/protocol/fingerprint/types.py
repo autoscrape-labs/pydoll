@@ -217,9 +217,10 @@ class HardwareFingerprint(TypedDict):
     Controls ``navigator`` properties that reveal hardware capabilities.
     Values must be plausible for the claimed platform.
 
-    ``device_memory`` only accepts values from the set:
-    {0.25, 0.5, 1, 2, 4, 8} — these are the only values the browser
-    API can return (values are bucketed for fingerprinting resistance).
+    ``device_memory`` only accepts values from the set
+    {0.25, 0.5, 1, 2, 4, 8, 16}: these are the only values the browser
+    API returns (bucketed for fingerprinting resistance; current Chrome
+    reports 16 on machines with 16 GB or more).
 
     ``max_touch_points`` is 0 for desktop browsers and typically 5 or 10
     for mobile. Setting a non-zero value on a desktop User-Agent is an

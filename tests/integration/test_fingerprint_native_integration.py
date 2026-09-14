@@ -45,9 +45,24 @@ FINGERPRINT = {
 }
 
 
+REQUEST_LOG: list[tuple[str, str, str]] = []
+
+
 class _SilentHandler(http.server.SimpleHTTPRequestHandler):
+    """Serves the pages and records (path, User-Agent, Accept-Language) per request."""
+
     def log_message(self, *args):
         pass
+
+    def do_GET(self):
+        REQUEST_LOG.append(
+            (
+                self.path,
+                self.headers.get('User-Agent', ''),
+                self.headers.get('Accept-Language', ''),
+            )
+        )
+        super().do_GET()
 
 
 def _wait_for_server(host: str, port: int, timeout: float = 5.0) -> None:
@@ -121,6 +136,7 @@ def applied_page(native_server):
             await tab.go_to(url)
             page = await _wait_for_global(tab, 'window.__page')
             workers = await _wait_for_global(tab, 'window.__workers')
+            await _wait_for_global(tab, 'window.__serviceWorker')
             return page, workers
 
     return asyncio.run(_run())
@@ -213,3 +229,25 @@ class TestWorkerRealms:
         assert nested['deviceMemory'] == 8
         assert nested['languages'] == ['en-US', 'en']
         assert nested['formFactors'] == ['Desktop']
+
+
+class TestBrowserProcessFetches:
+    """Scripts fetched by the browser process carry the profile identity too."""
+
+    @staticmethod
+    def _request(path: str) -> tuple[str, str, str]:
+        for entry in REQUEST_LOG:
+            if entry[0].split('?')[0] == path:
+                return entry
+        raise AssertionError(f'{path} was never requested; log: {REQUEST_LOG}')
+
+    def test_service_worker_script_fetch_carries_the_profile(self, applied_page):
+        _, user_agent, accept_language = self._request('/sw.js')
+        assert 'Windows NT 10.0' in user_agent
+        assert 'HeadlessChrome' not in user_agent
+        assert accept_language == 'en-US,en;q=0.9'
+
+    def test_nested_worker_script_fetch_carries_the_profile(self, applied_page):
+        _, user_agent, accept_language = self._request('/nested_worker.js')
+        assert 'Windows NT 10.0' in user_agent
+        assert accept_language == 'en-US,en;q=0.9'

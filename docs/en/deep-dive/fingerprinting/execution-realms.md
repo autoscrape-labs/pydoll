@@ -54,7 +54,7 @@ The CDP override does not carry everything into a worker. Measured on Chrome 152
 A worker can spawn workers of its own. A nested worker is a child of the *worker* target, not of the page, so an auto-attach set on the page never sees it, and it would run with the real identity. Pydoll sets auto-attach on every attached worker session too, so nested workers attach paused on the same connection and go through the same replay.
 
 !!! note "The service worker script is fetched before the worker exists"
-    The request for a service worker's script is made by the browser process, ahead of any target Pydoll could attach to, so it carries the browser-wide User-Agent and `Accept-Language`, not the profile's. Pass `--user-agent` (reduced form) and `--accept-lang` equal to the profile at launch so that request agrees with the rest; see [Cover the service worker script fetch](../../stealth/fingerprint-injection.md#cover-the-service-worker-script-fetch).
+    The request for a service worker's script (and for a nested worker's script) is made by the browser process, ahead of any target Pydoll could attach to, so a per-session override never sees it. Pydoll rewrites its User-Agent and `Accept-Language` from the browser connection with the `Fetch` domain instead; see [Service worker and nested worker scripts](../../stealth/fingerprint-injection.md#service-worker-and-nested-worker-scripts).
 
 ## Tab scope and browser scope
 
