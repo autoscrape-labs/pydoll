@@ -423,6 +423,50 @@ class TestNativeFirst:
         assert {entry['type'] for entry in nested[0]['params']['filter']} == {'worker'}
 
 
+    async def test_worker_webgpu_evaluated_after_resume(self, fp_tab, fake_conn):
+        """WebGPU interfaces appear after the pause point, so its script runs post-resume."""
+        await fp_tab.apply_fingerprint({'user_agent': UA, 'webgpu': {'vendor': 'nvidia'}})
+        event = {
+            'params': {
+                'sessionId': 'worker-1',
+                'targetInfo': {'type': 'worker', 'url': ''},
+                'waitingForDebugger': True,
+            }
+        }
+        for callback in fake_conn.callbacks_for('Target.attachedToTarget'):
+            await callback(event)
+        await asyncio.sleep(0.05)
+
+        session = [c for c in fake_conn.commands if c.get('sessionId') == 'worker-1']
+        methods = [c['method'] for c in session]
+        evaluations = [
+            c['params']['expression'] for c in session if c['method'] == 'Runtime.evaluate'
+        ]
+        assert len(evaluations) == 2
+        assert 'GPUAdapterInfo' not in evaluations[0]
+        assert 'GPUAdapterInfo' in evaluations[1]
+        resume = methods.index('Runtime.runIfWaitingForDebugger')
+        assert methods.index('Runtime.evaluate') < resume
+        assert len(methods) - 1 - methods[::-1].index('Runtime.evaluate') > resume
+
+    async def test_worker_without_webgpu_evaluates_once(self, fp_tab, fake_conn):
+        await fp_tab.apply_fingerprint({'user_agent': UA, 'hardware': {'device_memory': 8}})
+        event = {
+            'params': {
+                'sessionId': 'worker-1',
+                'targetInfo': {'type': 'worker', 'url': ''},
+                'waitingForDebugger': True,
+            }
+        }
+        for callback in fake_conn.callbacks_for('Target.attachedToTarget'):
+            await callback(event)
+        await asyncio.sleep(0.05)
+
+        methods = [c['method'] for c in fake_conn.commands if c.get('sessionId') == 'worker-1']
+        assert methods.count('Runtime.evaluate') == 1
+        assert methods[-1] == 'Runtime.runIfWaitingForDebugger'
+
+
 class TestScreenNativePaths:
     SCREEN = {
         'width': 1920,
