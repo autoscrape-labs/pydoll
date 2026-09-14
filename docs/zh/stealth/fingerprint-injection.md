@@ -191,28 +191,7 @@ headless Chrome 只有一块写死的虚拟屏幕（800x600，没有工作区）
 
 ### 没有 GPU 的容器和服务器 {#containers}
 
-profile 改变的是浏览器*报告*什么；它改变不了机器*计算*什么。每一个 GPU 信号都同时以这两种形式存在，而这道分界决定了一个容器能声称什么、不能声称什么：
-
-| 层 | 例子 | profile | 一台带 GPU 的 Mac | 一个没有 GPU 的容器 |
-|---|---|---|---|---|
-| 被报告的 | renderer 字符串、WebGL 的 limits 和扩展、WebGPU 的 `adapter.info`、limits 和 features | 全部覆盖 | 说是 profile 的 GPU | 说是 profile 的 GPU |
-| 被计算的 | shader 画出的像素（渲染哈希）、compute 结果、它们花了多久、`failIfMajorPerformanceCaveat` | 触及不到 | 真实硬件的输出，来自另一个 vendor | 软件输出，或者根本没有 WebGL / WebGPU |
-
-在一台 GPU 属于另一个 vendor 的 host 上，被报告的那一半是一致的，被计算的那一半是真实硬件，只有手握逐显卡参考哈希的检测器才能分辨出来（Fingerprint Pro 和 Castle 描述过这类交叉核对；[审计一个 fingerprint](../deep-dive/fingerprinting/auditing.md) 里追踪到的 reCAPTCHA 和 hCaptcha 的被动读取，从未碰过 WebGL 或 WebGPU）。
-
-容器则不同，因为被计算的那一半不只是异质的，它本身就能被认出来。没有 GPU 时，当前的 Chrome 要么根本不创建 WebGL 上下文（除非传入 `--enable-unsafe-swiftshader`，否则 SwiftShader 是关闭的），要么通过 SwiftShader 渲染：`getContext('webgl', {failIfMajorPerformanceCaveat: true})` 返回 `null`，渲染哈希在全世界每一个没有 GPU 的 Chrome 上都一样，`navigator.gpu.requestAdapter()` 解析为 `null`，于是 `webgpu` 部分没有 adapter 可以附着它的值。在这样的 host 上声称一块独立显卡的 profile，是一个不需要任何参考数据就能看穿的矛盾。
-
-在没有 GPU 的 host 上有效的做法，按价值排序：
-
-1. **一个干净的住宅出口 IP。** 机房地址在任何脚本运行之前就会被读到；下面的任何一条都补偿不了它。
-2. **一个讲软件故事的 profile。** 虚拟桌面上的 Windows（VDI、Citrix、云 VM）确实是通过 Microsoft Basic Render Driver 渲染的：`ANGLE (Microsoft, Microsoft Basic Render Driver Direct3D11 vs_5_0 ps_5_0, D3D11)`、上下文创建时的一个 caveat，以及没有 WebGPU adapter。这每一项都与容器实际所做的相符。软件渲染器本身就会被打为可疑，但它们描述的是数百万个真实的企业会话；而在软件 host 上声称一块独立显卡，什么真实会话都描述不了。这样一个 profile 的值必须在一台真实的 Windows VM 上捕获，和其他每一个 profile 的规则一样。
-3. **让这些 API 存在。** `--enable-unsafe-swiftshader` 给页面一个可读的 WebGL 上下文（一台完全没有 WebGL 的桌面机比一台用软件渲染器的更少见），`--enable-unsafe-webgpu --use-webgpu-adapter=swiftshader` 暴露一个回退 adapter（`isFallbackAdapter` 为 true）供 `webgpu` 部分附着。这满足那些读取参数的检测器；它不改变渲染输出。不要把它和硬件 GPU 的声称组合在一起。
-4. **字体。** 容器几乎不带任何字体，所以基于宽度的探测既找不到所声称 OS 的字体，也找不到另一个 OS 的标记。安装所声称 OS 的字体集，并在 `available_fonts` 里恰好列出这些；那个 OS 的彩色 emoji 字体也要装。
-5. **媒体设备和 voices。** 服务器一个都没有。`--use-fake-device-for-media-stream` 让 Chrome 自己暴露一个麦克风、一个摄像头和一个扬声器；`speech` 部分填上空的 voice 列表。
-6. **内核。** 一个 Windows User-Agent 下的 Linux SYN 会在边缘被读到（见 [Network fingerprinting](../deep-dive/fingerprinting/network-fingerprinting.md)）；一个运行着所声称 OS 的 proxy 出口是唯一干净的解法，而某个目标是否权衡它，是一个悬而未决的测量。
-7. **一块真实的 GPU。** 一台 GPU 实例（任何云上的 T4/L4 一类）是唯一能让渲染哈希、WebGPU adapter 和计时都变得真实的东西；配上一块与 profile 所声称的同一 vendor 的 GPU，被报告和被计算的两半终于一致。
-
-**Xvfb** 只改变一层。在 Xvfb 下，Chrome 是 headful 的：存在一个被呈现的表面（Cloudflare 的挑战在 IP 不理想时会权衡的呈现项，见 [Cloudflare 的托管挑战](../deep-dive/fingerprinting/cloudflare-challenge.md)），`screen` 是你配置的虚拟显示器，窗口有真实的边框和 Linux 滚动条，输入可以来自 OS（`xdotool`）而不是 DevTools protocol。它不会添加 GPU：Xvfb 是内存里的一块 framebuffer，渲染仍然是 SwiftShader 或 llvmpipe，而内核、字体和 IP 都一样。用它来去掉 headless 那一类信号，而不是 GPU 那一类。
+profile 改变的是浏览器报告什么，而不是 host 计算什么。在一个没有 GPU 的容器上，独立显卡的声称会被一行检查戳穿（无 caveat 上下文被拒绝，渲染哈希是 SwiftShader 的，不加标志时 WebGPU adapter 为 `null`），所以改讲一个软件渲染的故事，用 `--enable-unsafe-swiftshader` 和 `--use-fake-device-for-media-stream` 让 API 存在，装上所声称 OS 的字体，并坐在一个住宅出口后面。Xvfb 去掉的是显示器信号，不是 GPU 信号。为什么如此，以及这些对某个目标而言按什么顺序重要：[GPU、容器与 profile 触及不到的东西](../deep-dive/fingerprinting/gpu-and-containers.md)。
 
 ## 原生优先，JavaScript 垫底 {#native-first}
 

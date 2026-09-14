@@ -21,6 +21,7 @@ Fingerprinting 是网站在没有 cookie 或 IP 地址的情况下识别浏览�
 
 - [Network fingerprinting](network-fingerprinting.md)：在渲染之前，于传输层和会话层进行识别。TCP/IP（TTL、窗口大小、选项顺序）、TLS（JA3/JA4、cipher suites、ALPN）以及 HTTP/2（SETTINGS、优先级）。这是最难改变的一层，因为它来自操作系统和真实的二进制程序。
 - [Browser fingerprinting](browser-fingerprinting.md)：通过 JavaScript API 和渲染进行识别。来自真实 GPU 的 canvas 与 WebGL 痕迹、音频、字体枚举以及 `navigator` 属性。大多数检测事件都落在这一层。
+- [GPU、容器与 profile 触及不到的东西](gpu-and-containers.md)：profile 报告什么与机器计算什么之间的差别，以及一个容器或一台 Mac 能声称什么。
 - [Behavioral fingerprinting](behavioral-fingerprinting.md)：从你如何交互来识别。鼠标轨迹与速度、按键节奏以及滚动动态，有时会由在大型行为数据集上训练的模型来打分。即使其他层次都干净，它也能抓住自动化。
 
 ## 相关内容

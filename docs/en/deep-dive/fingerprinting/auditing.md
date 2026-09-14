@@ -53,6 +53,20 @@ That worker pass is the one a naive override fails. CreepJS reads the identity i
 
 [SannySoft](https://bot.sannysoft.com/) and [BrowserScan](https://www.browserscan.net/bot-detection) are quicker checks for the headless and automation flags. Use them as a fast pass, not the final word.
 
+## What passive collectors read {#what-passive-collectors-read}
+
+The strongest argument about which signal matters is a list of what a target actually read. An access tracer injected before a site's own scripts (a wrapper around every fingerprinting getter and method, in the page, its frames and its workers, recording each read with the script that made it) gives that list. Two runs on 2026-09-14, Chrome 152, no profile applied, with the tracer's own reads removed:
+
+| Target | Read | Not read |
+|---|---|---|
+| Google search (reCAPTCHA Enterprise, page + widget frames + its worker) | `navigator.userAgent` dozens of times per realm, `userAgentData`, `hardwareConcurrency`, `deviceMemory`, `getBattery`, `storage.estimate`, `innerWidth` / `innerHeight`, `userActivation`; `Function.prototype.toString` on `get isTrusted`, `pageX` / `screenX`, `pressure`, `pointerType`, `getCoalescedEvents` | WebGL, WebGPU, canvas, audio, fonts, `screen.*` |
+| gov.br login (hCaptcha, page + cross-origin widget frame) | every property of `Navigator.prototype` once, `screen.*`, viewport, `plugins`, `matchMedia`, `Object.getOwnPropertyNames`; `toString` on DOM methods | WebGL, WebGPU, canvas, audio, fonts |
+
+Two things follow. Neither passive collector read the GPU, fonts or rendering at all in this flow; both leaned on identity, Client Hints, hardware counts and function integrity, and Google above all on input events. And the tracer is itself an override: the same Google search hit a captcha with the tracer injected and passed without it, so a traced session tells you what is read, never whether you pass.
+
+!!! note "Two targets, two lists"
+    These are two sites on one day. A different target, or the same one after the first click, reads a different list. The point of tracing is to stop guessing which layer to spend on, for the target in front of you.
+
 ## Compare the read paths yourself
 
 The strongest audit does not need a third-party site. For any signal, read it two ways and check they agree, because a disagreement is usually a leak your own overrides created:

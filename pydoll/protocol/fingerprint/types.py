@@ -168,6 +168,7 @@ class WebGPUProfile(TypedDict):
     architecture: NotRequired[str]  # adapter.info.architecture, e.g. 'ampere', 'metal-3'
     device: NotRequired[str]  # adapter.info.device (Chrome reports '' by default)
     description: NotRequired[str]  # adapter.info.description (Chrome reports '' by default)
+    is_fallback_adapter: NotRequired[bool]  # adapter.info.isFallbackAdapter (False on hardware)
     limits: NotRequired[dict[str, int]]  # adapter.limits, by limit name
     features: NotRequired[list[str]]  # adapter.features, the complete set
 

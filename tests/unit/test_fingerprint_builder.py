@@ -191,6 +191,10 @@ class TestSections:
         worker = build_fingerprint_worker_js(config)
         assert '_FAKES.set(adapter.limits, limits)' in worker
 
+    def test_webgpu_fallback_flag_is_part_of_info(self):
+        js = build_fingerprint_js({'webgpu': {'vendor': 'nvidia', 'is_fallback_adapter': False}})
+        assert '"isFallbackAdapter": false' in js
+
     def test_webgpu_without_limits_or_features_keeps_them_real(self):
         js = build_fingerprint_js({'webgpu': {'vendor': 'intel'}})
         assert 'const limits = null;' in js

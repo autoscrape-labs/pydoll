@@ -106,4 +106,5 @@ Past the hard floor, the remaining gaps are environment, not overrides, and each
 
 - [Fingerprint injection](../../stealth/fingerprint-injection.md): the practical guide to applying a coherent profile.
 - [Browser fingerprinting](browser-fingerprinting.md): the detection surface these overrides touch.
+- [GPU, containers and what a profile cannot reach](gpu-and-containers.md): the reported/computed split applied to hardware, containers and Xvfb.
 - [Auditing a fingerprint](auditing.md): measure which of your signals leak, and see what a real commercial detector reads.

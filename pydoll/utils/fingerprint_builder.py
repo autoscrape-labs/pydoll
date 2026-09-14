@@ -730,10 +730,12 @@ def _build_webgpu_js(webgpu: WebGPUProfile) -> str:
     native brand check intact. ``features`` is a setlike, so ``has``, ``size``,
     the iterators and ``forEach`` are patched together to describe one set.
     """
-    info = {'vendor': webgpu['vendor']}
+    info: dict[str, object] = {'vendor': webgpu['vendor']}
     for key in ('architecture', 'device', 'description'):
         if key in webgpu:
             info[key] = webgpu[key]
+    if 'is_fallback_adapter' in webgpu:
+        info['isFallbackAdapter'] = webgpu['is_fallback_adapter']
     limits = webgpu.get('limits')
     features = webgpu.get('features')
     return _WEBGPU_JS_TEMPLATE % (

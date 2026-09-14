@@ -67,6 +67,7 @@ nav:
           - Browser fingerprinting: deep-dive/fingerprinting/browser-fingerprinting.md
           - Behavioral fingerprinting: deep-dive/fingerprinting/behavioral-fingerprinting.md
           - The limits of spoofing: deep-dive/fingerprinting/spoofing-limits.md
+          - GPU, containers and what a profile cannot reach: deep-dive/fingerprinting/gpu-and-containers.md
           - Auditing a fingerprint: deep-dive/fingerprinting/auditing.md
           - Workers and cross-origin iframes: deep-dive/fingerprinting/execution-realms.md
           - Cloudflare's managed challenge: deep-dive/fingerprinting/cloudflare-challenge.md
@@ -193,6 +194,7 @@ plugins:
             Auditing a fingerprint: 审计一个 fingerprint
             Workers and cross-origin iframes: Worker 与跨域 iframe
             Cloudflare's managed challenge: Cloudflare 的托管挑战
+            GPU, containers and what a profile cannot reach: GPU、容器与 profile 触及不到的东西
             API Reference: API 参考
             Browser: 浏览器
             Options: 选项
@@ -260,6 +262,7 @@ plugins:
             Browser fingerprinting: Fingerprinting de navegador
             Behavioral fingerprinting: Fingerprinting comportamental
             The limits of spoofing: Os limites do spoofing
+            GPU, containers and what a profile cannot reach: GPU, containers e o que um perfil não alcança
             Auditing a fingerprint: Auditando um fingerprint
             Workers and cross-origin iframes: Workers e iframes cross-origin
             Cloudflare's managed challenge: O managed challenge do Cloudflare

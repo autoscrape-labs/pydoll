@@ -106,4 +106,5 @@ limits 集合和 features 列表是 GPU、驱动和后端的物理签名，而 C
 
 - [Fingerprint 注入](../../stealth/fingerprint-injection.md)：应用一个连贯 profile 的实用指南。
 - [Browser fingerprinting](browser-fingerprinting.md)：这些覆盖所触及的检测面。
+- [GPU、容器与 profile 触及不到的东西](gpu-and-containers.md)：把被报告/被计算的分界应用到硬件、容器和 Xvfb 上。
 - [审计一个 fingerprint](auditing.md)：测量你的哪些信号会泄露，并看看一个真实的商业检测器读到了什么。

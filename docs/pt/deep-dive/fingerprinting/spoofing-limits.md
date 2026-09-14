@@ -106,4 +106,5 @@ Passado o piso intransponível, as lacunas restantes são de ambiente, não de o
 
 - [Injeção de fingerprint](../../stealth/fingerprint-injection.md): o guia prático para aplicar um perfil coerente.
 - [Fingerprinting de navegador](browser-fingerprinting.md): a superfície de detecção que esses overrides tocam.
+- [GPU, containers e o que um perfil não alcança](gpu-and-containers.md): a divisão reportado/computado aplicada a hardware, containers e Xvfb.
 - [Auditando um fingerprint](auditing.md): meça quais dos seus sinais vazam, e veja o que um detector comercial real lê.

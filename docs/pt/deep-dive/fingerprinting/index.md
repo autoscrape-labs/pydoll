@@ -21,6 +21,7 @@ As camadas são checadas umas contra as outras. Um User-Agent de Chrome sobre um
 
 - [Network fingerprinting](network-fingerprinting.md): identificação nas camadas de transporte e de sessão, antes da renderização. TCP/IP (TTL, tamanho de janela, ordem das opções), TLS (JA3/JA4, cipher suites, ALPN) e HTTP/2 (SETTINGS, prioridades). A camada mais difícil de mudar, porque vem do sistema operacional e do binário real.
 - [Browser fingerprinting](browser-fingerprinting.md): identificação através de APIs JavaScript e da renderização. Artefatos de canvas e WebGL da GPU real, áudio, enumeração de fontes e propriedades do `navigator`. É aqui que a maioria dos eventos de detecção acontece.
+- [GPU, containers e o que um perfil não alcança](gpu-and-containers.md): o que um perfil reporta versus o que a máquina computa, e o que um container ou um Mac pode alegar.
 - [Behavioral fingerprinting](behavioral-fingerprinting.md): identificação a partir de como você interage. Trajetória e velocidade do mouse, ritmo das teclas e dinâmica de rolagem, às vezes pontuados por modelos treinados em grandes conjuntos de dados comportamentais. Pode pegar automação mesmo quando as outras camadas estão limpas.
 
 ## Relacionado

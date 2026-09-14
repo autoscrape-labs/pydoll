@@ -191,28 +191,7 @@ Em modo headful a tela real é real, então `screen.width`, `screen.height` e o 
 
 ### Containers e servidores sem GPU {#containers}
 
-Um perfil muda o que o navegador *reporta*; ele não consegue mudar o que a máquina *computa*. Todo sinal de GPU existe nas duas formas, e essa divisão decide o que um container pode e não pode alegar:
-
-| Camada | Exemplos | O perfil | Um Mac com GPU | Um container sem GPU |
-|---|---|---|---|---|
-| Reportada | string do renderer, limites e extensões do WebGL, `adapter.info`, limites e features do WebGPU | sobrescreve tudo | diz a GPU do perfil | diz a GPU do perfil |
-| Computada | pixels que um shader desenha (hash de renderização), resultados de compute, quanto tempo levaram, `failIfMajorPerformanceCaveat` | não alcança | saída de hardware real, de outro vendor | saída por software, ou nenhum WebGL / WebGPU |
-
-Num host com GPU de outro vendor, a metade reportada é coerente e a metade computada é hardware real que só um detector com hashes de referência por placa consegue distinguir (o Fingerprint Pro e a Castle descrevem cruzamentos desse tipo; as leituras passivas do reCAPTCHA e do hCaptcha, rastreadas em [Auditar um fingerprint](../deep-dive/fingerprinting/auditing.md), nunca tocaram WebGL nem WebGPU).
-
-Um container é diferente, porque a metade computada não é apenas estranha, ela é reconhecível por si só. Sem GPU, o Chrome atual ou não cria contexto WebGL nenhum (o SwiftShader fica desligado a menos que `--enable-unsafe-swiftshader` seja passado) ou renderiza pelo SwiftShader: `getContext('webgl', {failIfMajorPerformanceCaveat: true})` retorna `null`, o hash de renderização é o mesmo em todo Chrome sem GPU do mundo, e `navigator.gpu.requestAdapter()` resolve para `null`, então a seção `webgpu` não tem adapter onde ancorar os valores. Um perfil que nomeia uma placa dedicada num host desses é uma contradição que não precisa de nenhum dado de referência.
-
-O que funciona num host sem GPU, em ordem de valor:
-
-1. **Um IP residencial limpo de saída.** Um endereço de datacenter é lido antes de qualquer script rodar; nada abaixo compensa isso.
-2. **Um perfil que conta uma história de software.** O Windows em desktops virtuais (VDI, Citrix, VMs em nuvem) renderiza de fato pelo Microsoft Basic Render Driver: `ANGLE (Microsoft, Microsoft Basic Render Driver Direct3D11 vs_5_0 ps_5_0, D3D11)`, um caveat na criação do contexto e nenhum adapter WebGPU. Cada um desses combina com o que o container realmente faz. Renderizadores por software pontuam como suspeitos por si só, mas descrevem milhões de sessões corporativas reais; uma placa dedicada num host por software não descreve nenhuma. Os valores de um perfil assim têm que ser capturados numa VM Windows real, a mesma regra de todo outro perfil.
-3. **Faça as APIs existirem.** `--enable-unsafe-swiftshader` dá à página um contexto WebGL para ler (um desktop sem WebGL nenhum é mais raro do que um com renderizador por software), e `--enable-unsafe-webgpu --use-webgpu-adapter=swiftshader` expõe um adapter de fallback (`isFallbackAdapter` true) para a seção `webgpu` se ancorar. Isso satisfaz detectores que leem parâmetros; não muda a saída renderizada. Não combine com uma alegação de GPU de hardware.
-4. **Fontes.** Um container vem quase sem nenhuma, então a sonda baseada em largura não encontra nem as fontes do OS alegado nem os marcadores de outro OS. Instale o conjunto de fontes do OS alegado e liste exatamente isso em `available_fonts`; uma fonte de emoji colorido daquele OS também.
-5. **Dispositivos de mídia e vozes.** Um servidor não tem nenhum. `--use-fake-device-for-media-stream` faz o próprio Chrome expor um microfone, uma câmera e um alto-falante; a seção `speech` preenche a lista vazia de vozes.
-6. **O kernel.** Um SYN de Linux sob um User-Agent de Windows é lido na borda (veja [Network fingerprinting](../deep-dive/fingerprinting/network-fingerprinting.md)); uma saída de proxy no OS alegado é a única solução limpa, e se um alvo específico pondera isso é uma medição em aberto.
-7. **Uma GPU real.** Uma instância com GPU (qualquer classe T4/L4 em nuvem) é a única coisa que torna genuínos o hash de renderização, o adapter WebGPU e o timing; com uma GPU do mesmo vendor que o perfil nomeia, as metades reportada e computada finalmente concordam.
-
-O **Xvfb** muda uma camada apenas. Sob Xvfb, o Chrome é headful: existe uma superfície apresentada (o termo de apresentação que o desafio do Cloudflare pondera num IP marginal, veja [O desafio gerenciado do Cloudflare](../deep-dive/fingerprinting/cloudflare-challenge.md)), `screen` é o display virtual que você configura, a janela tem chrome real e barras de rolagem do Linux, e a entrada pode vir do OS (`xdotool`) em vez do DevTools protocol. Ele não adiciona uma GPU: o Xvfb é um framebuffer em memória, a renderização continua SwiftShader ou llvmpipe, e o kernel, as fontes e o IP são os mesmos. Use-o para remover a classe de sinais do headless, não a classe da GPU.
+Um perfil muda o que o navegador reporta, não o que o host computa. Num container sem GPU, uma alegação de placa dedicada é contradita por uma checagem de uma linha (o contexto sem caveat é recusado, o hash de renderização é o do SwiftShader, o adapter WebGPU é `null` sem flags), então conte uma história de renderização por software em vez disso, faça as APIs existirem com `--enable-unsafe-swiftshader` e `--use-fake-device-for-media-stream`, instale as fontes do OS alegado e fique atrás de uma saída residencial. O Xvfb remove os sinais de display, não os de GPU. Por quê, e em que ordem isso importa para um alvo específico: [GPU, containers e o que um perfil não alcança](../deep-dive/fingerprinting/gpu-and-containers.md).
 
 ## Nativo primeiro, JavaScript por último {#native-first}
 
