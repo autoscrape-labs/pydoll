@@ -200,6 +200,14 @@ class TestSections:
         js = build_fingerprint_js({'webrtc_ip_policy': 'relay'})
         assert "_wrapCtor(window, 'RTCPeerConnection'" in js
         assert 'window.webkitRTCPeerConnection = Patched' in js
+        assert 'new Proxy(' not in js
+        assert "Please use the 'new' operator" in js
+
+    def test_fakes_refuse_structured_clone(self):
+        js = build_fingerprint_js({'media_devices': {'audio_inputs': 1}})
+        assert "_guardClone(self, 'structuredClone'" in js
+        assert "_guardClone(MessagePort.prototype, 'postMessage'" in js
+        assert "'DataCloneError'" in js
 
     def test_fonts_reject_other_os_markers(self):
         js = build_fingerprint_js({'fonts': {'available_fonts': ['Segoe UI', 'Arial']}})

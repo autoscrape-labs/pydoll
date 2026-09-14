@@ -41,6 +41,12 @@ Detectability notes:
     - Values must stay physically possible: an ``OfflineAudioContext`` reports
       the sample rate it was created with, a claimed WebGL extension the GPU
       lacks is never faked as an empty object.
+    - Platform objects cannot be structured-cloned, so ``structuredClone`` and
+      ``postMessage`` refuse the fake objects with the native
+      ``DataCloneError`` (nested anywhere a clone would reach, within a bound).
+    - Wrapped constructors are plain functions sharing the native prototype
+      chain, never Proxies: a Proxy fails the ``Object.setPrototypeOf(fn, fn)``
+      cyclic check and prints anonymous under another realm's ``toString``.
 
     Residual limitation: a JavaScript accessor is a JavaScript frame, so an
     error thrown while it runs (the ``Illegal invocation`` above) carries one
@@ -98,17 +104,10 @@ const _ORIG = Function.prototype.toString;
 // Function.prototype.toString (e.g. CreepJS's same-origin phantom iframe) still
 // resolves our functions to a native string. No window/Symbol slot to scan.
 const _FAKED = new Set();
-// Proxies of native constructors print the anonymous native form; they are
-// recognised by identity (same realm only, where their name is expected).
-const _PROXIED = new WeakSet();
 const _mark = (fn) => { try { _FAKED.add(_ORIG.call(fn)); } catch (e) {} return fn; };
 const _nativeStr = (fn) => 'function ' + fn.name + '() { [native code] }';
 const _hook = Object.getOwnPropertyDescriptor({
-  toString() {
-    if (_PROXIED.has(this)) return _nativeStr(this);
-    const s = _ORIG.call(this);
-    return _FAKED.has(s) ? _nativeStr(this) : s;
-  }
+  toString() { const s = _ORIG.call(this); return _FAKED.has(s) ? _nativeStr(this) : s; }
 }, 'toString').value;
 _mark(_hook);
 try {
@@ -170,30 +169,98 @@ const _defF = (proto, prop) => {
     _install(proto, prop, Object.getOwnPropertyDescriptor(_h, prop).get);
   } catch (e) {}
 };
-// Constructor wrapper as a Proxy: ``typeof``, ``name``, ``length``,
-// ``prototype`` and ``Object.getPrototypeOf`` all read through to the native
-// constructor, a call without ``new`` throws the native TypeError, and
-// ``Function.prototype.toString`` of a callable proxy is already the native
-// form. ``onConstruct(args)`` may return replacement arguments; ``onCreated``
-// sees each new instance.
+// Constructor wrapper as a plain function (not a Proxy: a Proxy forwards
+// ``setPrototypeOf`` to its target, so ``Object.setPrototypeOf(fn, fn)`` fails
+// to raise the native "Cyclic __proto__" TypeError, and a pristine realm's
+// ``toString`` prints it anonymous). The wrapper shares the native's
+// prototype chain, ``prototype`` object, ``length`` and statics, throws the
+// native message when called without ``new``, and is marked so the toString
+// hook of every realm prints it native. ``onConstruct(args)`` may return
+// replacement arguments; ``onCreated`` sees each new instance.
 const _wrapCtor = (owner, name, onConstruct, onCreated) => {
   try {
     const Orig = owner[name];
     if (typeof Orig !== 'function') return;
-    const Patched = new Proxy(Orig, {
-      construct(target, args, newTarget) {
-        const finalArgs = onConstruct ? onConstruct(args) : args;
-        const proto = newTarget === Patched ? target : newTarget;
-        const instance = Reflect.construct(target, finalArgs, proto);
-        if (onCreated) onCreated(instance, finalArgs);
-        return instance;
-      },
-    });
-    _PROXIED.add(Patched);
+    const Patched = { [name]: function () {
+      if (!new.target) {
+        throw new TypeError("Failed to construct '" + name + "': Please use the 'new' operator, "
+          + 'this DOM object constructor cannot be called as a function.');
+      }
+      const args = Array.prototype.slice.call(arguments);
+      const finalArgs = onConstruct ? onConstruct(args) : args;
+      const proto = new.target === Patched ? Orig : new.target;
+      const instance = Reflect.construct(Orig, finalArgs, proto);
+      if (onCreated) onCreated(instance, finalArgs);
+      return instance;
+    } }[name];
+    Object.setPrototypeOf(Patched, Object.getPrototypeOf(Orig));
+    Object.defineProperty(Patched, 'prototype', {value: Orig.prototype, writable: false});
+    Object.defineProperty(Patched, 'length', {value: Orig.length, configurable: true});
+    for (const key of Reflect.ownKeys(Orig)) {
+      if (['length', 'name', 'prototype', 'arguments', 'caller'].includes(key)) continue;
+      try { Object.defineProperty(Patched, key, Object.getOwnPropertyDescriptor(Orig, key)); }
+      catch (e) {}
+    }
+    try {
+      Object.defineProperty(Orig.prototype, 'constructor',
+        {value: Patched, writable: true, configurable: true});
+    } catch (e) {}
+    _mark(Patched);
     owner[name] = Patched;
     return Patched;
   } catch (e) { return undefined; }
 };
+// Platform objects cannot be structured-cloned; the fakes must refuse it too.
+const _cloneError = (owner, method, value) => {
+  const ctor = Object.getPrototypeOf(value).constructor.name;
+  return new DOMException("Failed to execute '" + method + "' on '" + owner + "': "
+    + ctor + ' object could not be cloned.', 'DataCloneError');
+};
+// Finds a fake anywhere a structured clone would reach: own enumerable
+// properties of plain objects and arrays, Map / Set entries. Bounded so an
+// adversarial graph cannot stall the page; a fake past the bound is missed.
+const _findFake = (value, seen, budget) => {
+  if (value === null || typeof value !== 'object' || seen.has(value)) return null;
+  if (_FAKES.has(value)) return value;
+  seen.add(value);
+  if (seen.size > budget) return null;
+  const proto = Object.getPrototypeOf(value);
+  let children = [];
+  if (Array.isArray(value) || proto === Object.prototype || proto === null) {
+    children = Object.keys(value).map((k) => value[k]);
+  } else if (value instanceof Map) {
+    children = [...value.keys(), ...value.values()];
+  } else if (value instanceof Set) {
+    children = [...value];
+  }
+  for (const child of children) {
+    const found = _findFake(child, seen, budget);
+    if (found !== null) return found;
+  }
+  return null;
+};
+const _guardClone = (target, method, owner) => {
+  try {
+    const orig = target[method];
+    if (typeof orig !== 'function') return;
+    _patchM(target, method, function (value) {
+      const fake = _findFake(value, new Set(), 5000);
+      if (fake !== null) throw _cloneError(owner, method, fake);
+      return orig.apply(this, arguments);
+    });
+  } catch (e) {}
+};
+const _globalName = typeof window !== 'undefined' ? 'Window' : 'WorkerGlobalScope';
+_guardClone(self, 'structuredClone', _globalName);
+if (typeof MessagePort !== 'undefined') {
+  _guardClone(MessagePort.prototype, 'postMessage', 'MessagePort');
+}
+if (typeof Worker !== 'undefined') _guardClone(Worker.prototype, 'postMessage', 'Worker');
+if (typeof BroadcastChannel !== 'undefined') {
+  _guardClone(BroadcastChannel.prototype, 'postMessage', 'BroadcastChannel');
+}
+if (typeof window !== 'undefined') _guardClone(window, 'postMessage', 'Window');
+else _guardClone(self, 'postMessage', 'DedicatedWorkerGlobalScope');
 const NP = Object.getPrototypeOf(navigator);
 """
 
@@ -598,11 +665,22 @@ if (typeof GPU !== 'undefined' && navigator.gpu && typeof GPUAdapterInfo !== 'un
       return _FAKES.has(this) ? featureSet.has(String(value)) : real;
     });
     _defGf(FP, 'size', (self, real) => (_FAKES.has(self) ? featureSet.size : real));
+    const sameAsReal = (set) => {
+      if (set.size !== featureSet.size) return false;
+      for (const value of set) if (!featureSet.has(value)) return false;
+      return true;
+    };
     for (const method of ['keys', 'values', 'entries']) {
       const orig = FP[method];
       _patchM(FP, method, function () {
         const real = orig.call(this);
-        return _FAKES.has(this) ? new Set(featureSet)[method]() : real;
+        if (!_FAKES.has(this) || sameAsReal(new Set(orig.call(this)))) return real;
+        const it = new Set(featureSet)[method]();
+        try {
+          Object.defineProperty(it, Symbol.toStringTag,
+            {value: 'GPUSupportedFeatures Iterator', configurable: true});
+        } catch (e) {}
+        return it;
       });
     }
     const origForEach = FP.forEach;
@@ -720,8 +798,8 @@ def _build_audio_js(audio: AudioFingerprint) -> str:
 
     An ``OfflineAudioContext``, or an ``AudioContext`` constructed with an
     explicit ``sampleRate``, must report the rate it was constructed with, so
-    those keep the native value (the constructor is wrapped in a Proxy to
-    remember explicit rates); only realtime contexts created without a rate,
+    those keep the native value (the constructor is wrapped to remember
+    explicit rates); only realtime contexts created without a rate,
     the ones that describe the audio device, take the profile's values. The
     rendered audio hash is not touched by any of this.
     """
@@ -947,10 +1025,10 @@ def _build_webrtc_js(policy: str) -> str:
     """Patch RTCPeerConnection (and its ``webkit`` alias) to force iceTransportPolicy.
 
     Chrome exposes the same constructor as ``RTCPeerConnection`` and
-    ``webkitRTCPeerConnection``; both are replaced by one Proxy of the native
-    constructor so the alias cannot bypass the policy, the identity stays
-    equal, ``name`` / ``length`` / ``prototype`` read through to the native, and
-    a call without ``new`` throws the native error. The native launch flag
+    ``webkitRTCPeerConnection``; both are replaced by one wrapper that shares
+    the native prototype chain, ``prototype`` object, ``length`` and statics,
+    so the alias cannot bypass the policy, the identity stays equal, and a
+    call without ``new`` throws the native error. The native launch flag
     ``--force-webrtc-ip-handling-policy`` (``ChromiumOptions.webrtc_leak_protection``)
     needs no patch at all and is the preferred route.
     """
