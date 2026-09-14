@@ -108,6 +108,12 @@ class TestSections:
         assert 'deviceMemory' in js
         assert 'hardwareConcurrency' not in js
 
+    def test_max_touch_points_not_injected_via_js(self):
+        """max_touch_points is applied natively via setTouchEmulationEnabled."""
+        js = build_fingerprint_js({'hardware': {'device_memory': 8, 'max_touch_points': 5}})
+        assert 'deviceMemory' in js
+        assert 'maxTouchPoints' not in js
+
     def test_navigator_cdp_props_skipped_when_user_agent_present(self):
         config = {
             'user_agent': 'Mozilla/5.0 ... Chrome/151.0.0.0 Safari/537.36',
