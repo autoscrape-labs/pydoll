@@ -15,6 +15,8 @@ import pytest
 from _waits import wait_for_element_text, wait_for_js_value
 
 from pydoll.browser.chromium import Chrome
+from pydoll.browser.tab import Tab
+from pydoll.utils import get_browser_ws_address
 
 PAGES_DIR = Path(__file__).parent / 'pages' / 'oopif'
 
@@ -354,3 +356,81 @@ class TestIframeInsideShadowRootInsideOopif:
                     return
 
             pytest.fail('Shadow root inside OOPIF not found')
+
+
+class TestRemoteConnectionIframeResolution:
+    """Iframe resolution when the browser was attached via ``Chrome.connect``.
+
+    A remotely attached tab knows only its WebSocket address (no debugging
+    port). Every place that opens a fresh browser-level handler to resolve an
+    OOPIF must carry that address over, otherwise it resolves ``localhost:None``.
+    """
+
+    @staticmethod
+    async def _connect_remote(launcher: Chrome) -> tuple[Chrome, Tab]:
+        """Attach a second Chrome instance to ``launcher`` by WebSocket address only."""
+        ws = await get_browser_ws_address(launcher._connection_port)
+        remote = Chrome()
+        tab = await remote.connect(ws)
+        assert tab._connection_port is None
+        return remote, tab
+
+    @pytest.mark.asyncio
+    async def test_find_element_in_cross_origin_iframe_over_remote_ws(
+        self, ci_chrome_options, cross_origin_servers
+    ):
+        port_a, port_b = cross_origin_servers
+        url = _cross_site_main_url(port_a, port_b)
+
+        ci_chrome_options.add_argument('--site-per-process')
+        async with Chrome(options=ci_chrome_options) as launcher:
+            await launcher.start()
+            _, tab = await self._connect_remote(launcher)
+            await tab.go_to(url)
+
+            iframe = await tab.find(id='cross-origin-iframe', timeout=10)
+            heading = await iframe.find(id='oopif-heading', timeout=10)
+            assert await heading.text == 'Cross-Origin Content'
+
+            nested = await iframe.find(id='nested-iframe', timeout=10)
+            nested_heading = await nested.find(id='nested-heading', timeout=10)
+            assert await nested_heading.text == 'Nested Iframe Content'
+
+    @pytest.mark.asyncio
+    async def test_find_shadow_roots_inside_oopif_over_remote_ws(
+        self, ci_chrome_options, cross_origin_servers
+    ):
+        port_a, port_b = cross_origin_servers
+        url = f'http://127.0.0.1:{port_a}/oopif_main.html?port={port_b}'
+
+        ci_chrome_options.add_argument('--site-per-process')
+        async with Chrome(options=ci_chrome_options) as launcher:
+            await launcher.start()
+            _, tab = await self._connect_remote(launcher)
+            await tab.go_to(url)
+
+            shadow_roots = await tab.find_shadow_roots(True, timeout=10)
+            for sr in shadow_roots:
+                if 'Shadow content inside OOPIF' in await sr.inner_html:
+                    return
+
+            pytest.fail('Shadow root inside OOPIF not found over remote ws connection')
+
+    @pytest.mark.asyncio
+    async def test_get_frame_over_remote_ws(self, ci_chrome_options, cross_origin_servers):
+        port_a, port_b = cross_origin_servers
+        url = _cross_site_main_url(port_a, port_b)
+
+        ci_chrome_options.add_argument('--site-per-process')
+        async with Chrome(options=ci_chrome_options) as launcher:
+            await launcher.start()
+            _, tab = await self._connect_remote(launcher)
+            await tab.go_to(url)
+
+            iframe = await tab.find(id='cross-origin-iframe', timeout=10)
+            await wait_for_js_value(tab, 'document.readyState', 'complete')
+            with pytest.warns(DeprecationWarning):
+                frame_tab = await tab.get_frame(iframe)
+
+            assert frame_tab._ws_address is not None
+            assert 'Cross-Origin Content' in await frame_tab.page_source

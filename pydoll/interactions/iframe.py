@@ -280,8 +280,10 @@ class IFrameContextResolver:
         using the routing handler/session that has DOM visibility into the
         parent context.
         """
+        element_handler = self._element._connection_handler
         browser_handler = ConnectionHandler(
-            connection_port=self._element._connection_handler._connection_port
+            connection_port=element_handler._connection_port,
+            ws_address=element_handler._ws_address,
         )
         try:
             return await self._try_resolve_oopif(
