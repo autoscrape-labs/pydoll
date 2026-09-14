@@ -11,6 +11,7 @@ from pydoll.protocol.emulation.methods import (
     SetHardwareConcurrencyOverrideParams,
     SetLocaleOverrideParams,
     SetTimezoneOverrideParams,
+    SetTouchEmulationEnabledParams,
     SetUserAgentOverrideParams,
     UpdateScreenParams,
 )
@@ -24,6 +25,7 @@ if TYPE_CHECKING:
         SetHardwareConcurrencyOverrideCommand,
         SetLocaleOverrideCommand,
         SetTimezoneOverrideCommand,
+        SetTouchEmulationEnabledCommand,
         SetUserAgentOverrideCommand,
         UpdateScreenCommand,
     )
@@ -240,6 +242,29 @@ class EmulationCommands:
         """
         params = SetHardwareConcurrencyOverrideParams(hardwareConcurrency=hardware_concurrency)
         return Command(method=EmulationMethod.SET_HARDWARE_CONCURRENCY_OVERRIDE, params=params)
+
+    @staticmethod
+    def set_touch_emulation_enabled(
+        enabled: bool,
+        max_touch_points: Optional[int] = None,
+    ) -> SetTouchEmulationEnabledCommand:
+        """Enable or disable touch event emulation.
+
+        Applied natively: with it enabled the page exposes ``ontouchstart`` and
+        ``matchMedia('(pointer: coarse)')`` matches, the way a real touch device
+        reports, so a mobile identity stays coherent beyond ``navigator``.
+
+        Args:
+            enabled: Whether touch emulation is enabled.
+            max_touch_points: Maximum touch points supported (defaults to one).
+
+        Returns:
+            SetTouchEmulationEnabledCommand: CDP command toggling touch emulation.
+        """
+        params = SetTouchEmulationEnabledParams(enabled=enabled)
+        if max_touch_points is not None:
+            params['maxTouchPoints'] = max_touch_points
+        return Command(method=EmulationMethod.SET_TOUCH_EMULATION_ENABLED, params=params)
 
     @staticmethod
     def set_emulated_media(

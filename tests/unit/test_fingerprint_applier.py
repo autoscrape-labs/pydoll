@@ -290,7 +290,7 @@ class TestCrossOriginIframes:
     FP = {
         'user_agent': UA,
         'timezone': 'America/New_York',
-        'hardware': {'hardware_concurrency': 8},
+        'hardware': {'hardware_concurrency': 8, 'device_memory': 8},
         'screen': {'width': 1920, 'height': 1080},
         'media_features': {'color_gamut': 'srgb'},
     }
@@ -347,3 +347,260 @@ class TestCrossOriginIframes:
         assert 'Emulation.setUserAgentOverride' not in methods
         # A paused iframe is still resumed so it never hangs.
         assert 'Runtime.runIfWaitingForDebugger' in methods
+
+
+class TestNativeFirst:
+    """Signals with a CDP path are applied natively; the JS script never carries them."""
+
+    async def test_permissions_applied_via_browser_set_permission(self, fake_conn):
+        chrome = Chrome()
+        chrome._connection_handler = fake_conn
+        tab = Tab(
+            browser=chrome,
+            target_id='perm-tab',
+            connection_handler=fake_conn,
+            browser_context_id='ctx-perm',
+        )
+
+        await tab.apply_fingerprint(
+            {'permissions': {'overrides': {'notifications': 'denied', 'geolocation': 'prompt'}}}
+        )
+
+        commands = fake_conn.commands_for('Browser.setPermission')
+        states = {c['params']['permission']['name']: c['params']['setting'] for c in commands}
+        assert states == {'notifications': 'denied', 'geolocation': 'prompt'}
+        assert all(c['params']['browserContextId'] == 'ctx-perm' for c in commands)
+        assert not fake_conn.commands_for('Page.addScriptToEvaluateOnNewDocument')
+
+    async def test_touch_emulation_enabled_for_touch_profiles(self, fp_tab, fake_conn):
+        await fp_tab.apply_fingerprint({'hardware': {'max_touch_points': 10}})
+        params = fake_conn.last_command('Emulation.setTouchEmulationEnabled')['params']
+        assert params == {'enabled': True, 'maxTouchPoints': 10}
+
+    async def test_touch_emulation_untouched_for_desktop_profiles(self, fp_tab, fake_conn):
+        await fp_tab.apply_fingerprint({'hardware': {'max_touch_points': 0}})
+        assert not fake_conn.commands_for('Emulation.setTouchEmulationEnabled')
+
+    async def test_languages_reach_page_only_through_accept_language(self, fp_tab, fake_conn):
+        await fp_tab.apply_fingerprint({'user_agent': UA, 'locale': {'languages': ['pt-BR', 'pt']}})
+        ua_params = fake_conn.last_command('Emulation.setUserAgentOverride')['params']
+        assert ua_params['acceptLanguage'] == 'pt-BR,pt'
+        assert fake_conn.last_command('Emulation.setLocaleOverride')['params']['locale'] == 'pt_BR'
+        assert not fake_conn.commands_for('Page.addScriptToEvaluateOnNewDocument')
+
+    async def test_client_hints_override_parsed_metadata(self, fp_tab, fake_conn):
+        await fp_tab.apply_fingerprint(
+            {
+                'user_agent': UA,
+                'client_hints': {'platform_version': '13.0.0', 'form_factors': ['Desktop']},
+            }
+        )
+        metadata = fake_conn.last_command('Emulation.setUserAgentOverride')['params'][
+            'userAgentMetadata'
+        ]
+        assert metadata['platformVersion'] == '13.0.0'
+        assert metadata['formFactors'] == ['Desktop']
+
+    async def test_worker_session_auto_attaches_nested_workers(self, fp_tab, fake_conn):
+        await fp_tab.apply_fingerprint({'user_agent': UA})
+        event = {
+            'params': {
+                'sessionId': 'worker-1',
+                'targetInfo': {'type': 'worker', 'url': ''},
+                'waitingForDebugger': True,
+            }
+        }
+        for callback in fake_conn.callbacks_for('Target.attachedToTarget'):
+            await callback(event)
+        await asyncio.sleep(0.05)
+
+        nested = [
+            c for c in fake_conn.commands_for('Target.setAutoAttach')
+            if c.get('sessionId') == 'worker-1'
+        ]
+        assert nested
+        assert nested[0]['params']['waitForDebuggerOnStart'] is True
+        assert {entry['type'] for entry in nested[0]['params']['filter']} == {'worker'}
+
+
+class TestScreenNativePaths:
+    SCREEN = {
+        'width': 1920,
+        'height': 1080,
+        'avail_height': 1040,
+        'outer_width': 1920,
+        'outer_height': 1040,
+        'inner_width': 1903,
+        'inner_height': 969,
+        'device_pixel_ratio': 1.0,
+    }
+
+    async def test_headless_screen_is_fully_native(self, fp_tab, fake_conn):
+        fp_tab._browser.options.headless = True
+        fake_conn.set_response(
+            'Emulation.getScreenInfos', {'screenInfos': [{'id': '1', 'isPrimary': True}]}
+        )
+        fake_conn.set_response('Browser.getWindowForTarget', {'windowId': 7, 'bounds': {}})
+
+        await fp_tab.apply_fingerprint({'screen': dict(self.SCREEN)})
+
+        assert not fake_conn.commands_for('Emulation.setDeviceMetricsOverride')
+        assert fake_conn.commands_for('Emulation.updateScreen')
+        bounds = fake_conn.last_command('Browser.setWindowBounds')['params']
+        assert bounds['windowId'] == 7
+        assert bounds['bounds']['width'] == 1920
+        assert bounds['bounds']['height'] == 1040
+        assert not fake_conn.commands_for('Page.addScriptToEvaluateOnNewDocument')
+
+    async def test_headful_keeps_screen_override_and_js_extras(self, fp_tab, fake_conn):
+        fp_tab._browser.options.headless = False
+        fake_conn.set_response('Browser.getWindowForTarget', {'windowId': 7, 'bounds': {}})
+
+        await fp_tab.apply_fingerprint({'screen': dict(self.SCREEN)})
+
+        metrics = fake_conn.last_command('Emulation.setDeviceMetricsOverride')['params']
+        assert metrics['screenWidth'] == 1920
+        assert fake_conn.commands_for('Browser.setWindowBounds')
+        script = fake_conn.last_command('Page.addScriptToEvaluateOnNewDocument')['params']
+        assert 'availHeight' in script['source']
+        assert 'outerWidth' not in script['source']
+
+    async def test_headless_fractional_dpr_overrides_dpr_without_screen_size(
+        self, fp_tab, fake_conn
+    ):
+        fp_tab._browser.options.headless = True
+        fake_conn.set_response(
+            'Emulation.getScreenInfos', {'screenInfos': [{'id': '1', 'isPrimary': True}]}
+        )
+        screen = dict(self.SCREEN, device_pixel_ratio=1.25)
+
+        await fp_tab.apply_fingerprint({'screen': screen})
+
+        metrics = fake_conn.last_command('Emulation.setDeviceMetricsOverride')['params']
+        assert metrics['deviceScaleFactor'] == 1.25
+        assert metrics['width'] == 0
+        assert 'screenWidth' not in metrics
+
+    async def test_headless_mobile_keeps_viewport_override(self, fp_tab, fake_conn):
+        fp_tab._browser.options.headless = True
+        fake_conn.set_response(
+            'Emulation.getScreenInfos', {'screenInfos': [{'id': '1', 'isPrimary': True}]}
+        )
+        screen = {'width': 384, 'height': 832, 'inner_width': 384, 'inner_height': 728,
+                  'device_pixel_ratio': 3.75}
+
+        await fp_tab.apply_fingerprint({'mobile': True, 'screen': screen})
+
+        metrics = fake_conn.last_command('Emulation.setDeviceMetricsOverride')['params']
+        assert metrics['mobile'] is True
+        assert metrics['width'] == 384
+        assert 'screenWidth' not in metrics
+
+    async def test_no_window_bounds_without_outer_size(self, fp_tab, fake_conn):
+        await fp_tab.apply_fingerprint({'screen': {'width': 1920, 'height': 1080}})
+        assert not fake_conn.commands_for('Browser.getWindowForTarget')
+
+    def test_page_js_config_strips_native_screen(self):
+        fingerprint = {'screen': dict(self.SCREEN), 'hardware': {'device_memory': 8}}
+        headless = FingerprintApplier._page_js_config(fingerprint, headless=True)
+        headful = FingerprintApplier._page_js_config(fingerprint, headless=False)
+        assert 'screen' not in headless
+        assert headless['hardware'] == {'device_memory': 8}
+        assert 'outer_width' not in headful['screen']
+        assert headful['screen']['avail_height'] == 1040
+        assert fingerprint['screen']['outer_width'] == 1920
+
+
+class TestScriptFetchOverride:
+    """Browser-process script fetches (service worker, nested worker) get the profile headers."""
+
+    EVENT = {
+        'params': {
+            'requestId': 'req-1',
+            'frameId': 'fp-tab',
+            'resourceType': 'Other',
+            'request': {
+                'url': 'http://127.0.0.1/sw.js',
+                'headers': {'User-Agent': 'real', 'Accept-Language': 'pt-BR', 'Accept': '*/*'},
+            },
+        }
+    }
+
+    async def test_enables_fetch_for_other_resources_once(self, fp_tab, fake_conn):
+        await fp_tab.apply_fingerprint({'user_agent': UA, 'locale': {'languages': ['en-US', 'en']}})
+        enables = fake_conn.commands_for('Fetch.enable')
+        assert len(enables) == 1
+        pattern = enables[0]['params']['patterns'][0]
+        assert pattern['resourceType'] == 'Other'
+        assert pattern['requestStage'] == 'Request'
+        assert fake_conn.callbacks_for('Fetch.requestPaused')
+
+    async def test_paused_script_fetch_gets_profile_headers(self, fp_tab, fake_conn):
+        await fp_tab.apply_fingerprint({'user_agent': UA, 'locale': {'languages': ['en-US', 'en']}})
+        for callback in fake_conn.callbacks_for('Fetch.requestPaused'):
+            await callback(self.EVENT)
+        await asyncio.sleep(0.05)
+
+        params = fake_conn.last_command('Fetch.continueRequest')['params']
+        headers = {h['name']: h['value'] for h in params['headers']}
+        assert params['requestId'] == 'req-1'
+        assert headers['User-Agent'] == UA
+        assert headers['Accept-Language'] == 'en-US,en;q=0.9'
+        assert headers['Accept'] == '*/*'
+
+    @staticmethod
+    def _two_contexts(fake_conn):
+        chrome = Chrome()
+        chrome._connection_handler = fake_conn
+        first = Tab(browser=chrome, target_id='t1', connection_handler=fake_conn, browser_context_id='c1')
+        second = Tab(browser=chrome, target_id='t2', connection_handler=fake_conn, browser_context_id='c2')
+        return chrome, first, second
+
+    async def test_worker_target_id_resolves_its_context_fingerprint(self, fake_conn):
+        """The frameId of a service worker script fetch is the worker target's id,
+        so the context comes from Target.getTargetInfo, not from a tab lookup."""
+        chrome, first, second = self._two_contexts(fake_conn)
+        await first.apply_fingerprint({'user_agent': UA, 'locale': {'languages': ['en-US', 'en']}})
+        await second.apply_fingerprint(
+            {'user_agent': UA.replace('151', '150'), 'locale': {'languages': ['pt-BR', 'pt']}}
+        )
+        fake_conn.set_response(
+            'Target.getTargetInfo',
+            {'targetInfo': {'targetId': 'sw-1', 'type': 'service_worker', 'browserContextId': 'c2'}},
+        )
+        event = {'params': dict(self.EVENT['params'], frameId='sw-1')}
+        for callback in fake_conn.callbacks_for('Fetch.requestPaused'):
+            await callback(event)
+        await asyncio.sleep(0.05)
+
+        assert fake_conn.last_command('Target.getTargetInfo')['params']['targetId'] == 'sw-1'
+        params = fake_conn.last_command('Fetch.continueRequest')['params']
+        headers = {h['name']: h['value'] for h in params['headers']}
+        assert '150' in headers['User-Agent']
+        assert headers['Accept-Language'] == 'pt-BR,pt;q=0.9'
+
+    async def test_request_continues_untouched_without_a_matching_profile(self, fake_conn):
+        chrome, first, second = self._two_contexts(fake_conn)
+        await first.apply_fingerprint({'user_agent': UA})
+        await second.apply_fingerprint({'user_agent': UA.replace('151', '150')})
+        fake_conn.set_response('Target.getTargetInfo', {'targetInfo': {'targetId': 'x', 'type': 'worker'}})
+        event = {'params': dict(self.EVENT['params'], frameId='unknown-frame')}
+        for callback in fake_conn.callbacks_for('Fetch.requestPaused'):
+            await callback(event)
+        await asyncio.sleep(0.05)
+
+        params = fake_conn.last_command('Fetch.continueRequest')['params']
+        assert 'headers' not in params
+
+    async def test_fetch_override_registered_once_per_browser(self, fake_conn):
+        chrome, first, second = self._two_contexts(fake_conn)
+        await first.apply_fingerprint({'user_agent': UA})
+        await chrome.delete_browser_context('c1')
+        await second.apply_fingerprint({'user_agent': UA})
+        assert len(fake_conn.commands_for('Fetch.enable')) == 1
+        assert len(fake_conn.callbacks_for('Fetch.requestPaused')) == 1
+
+    def test_accept_language_header_matches_chrome_shape(self):
+        assert FingerprintApplier._accept_language_header(['pt-BR', 'pt', 'en-US', 'en']) == (
+            'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7'
+        )

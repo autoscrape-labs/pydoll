@@ -7,30 +7,52 @@ non-empty block inside a single bootstrap IIFE that installs a global
 redefines reports ``[native code]`` under introspection. The result is injected
 via ``Page.addScriptToEvaluateOnNewDocument``.
 
+Native first:
+    Every signal Chrome can override through the DevTools Protocol is applied
+    there by ``FingerprintApplier`` and never touched here: User-Agent,
+    ``navigator.platform`` / ``appVersion`` / ``vendor`` / ``language`` /
+    ``languages`` (``Emulation.setUserAgentOverride`` sets all of them), screen
+    metrics, ``devicePixelRatio``, ``hardwareConcurrency``, timezone,
+    geolocation, locale, CSS media features, permissions
+    (``Browser.setPermission``) and touch. A native override has no JavaScript
+    function behind it, so nothing shows up in a stack trace and every read
+    path agrees. Only signals CDP cannot set (``deviceMemory``,
+    ``maxTouchPoints``, WebGL, media devices, speech voices, audio device
+    capabilities, network connection, fonts, WebRTC policy, and the screen
+    extras in headful mode) are handled with hardened JavaScript here.
+
 Detectability notes:
-    Fingerprinting suites (CreepJS, FingerprintJS) inspect overrides two ways
-    that this module defends against:
+    Fingerprinting suites (CreepJS, FingerprintJS, the Castle and LinkedIn
+    checks) inspect overrides these ways, all of which this module defends
+    against:
 
     - ``Object.getOwnPropertyDescriptor(proto, prop).get.toString()`` must
       return ``[native code]``. Every getter is registered with the shared
       toString hook so it does.
     - Spoofed properties must live on the correct prototype (e.g. ``screen``
       dimensions on ``Screen.prototype``), not as own-properties of the
-      instance. Every getter targets the native prototype.
+      instance. Every getter targets the native prototype, and fake platform
+      objects (media devices, voices) are created from the real prototype with
+      no own properties: their values come from prototype getters keyed by a
+      WeakMap.
+    - A native accessor or method invoked on a foreign receiver throws
+      ``Illegal invocation``. Every override delegates to the original native
+      first, so the brand check, and its error, is the real one.
+    - Values must stay physically possible: an ``OfflineAudioContext`` reports
+      the sample rate it was created with, a claimed WebGL extension the GPU
+      lacks is never faked as an empty object.
+    - Platform objects cannot be structured-cloned, so ``structuredClone`` and
+      ``postMessage`` refuse the fake objects with the native
+      ``DataCloneError`` (nested anywhere a clone would reach, within a bound).
+    - Wrapped constructors are plain functions sharing the native prototype
+      chain, never Proxies: a Proxy fails the ``Object.setPrototypeOf(fn, fn)``
+      cyclic check and prints anonymous under another realm's ``toString``.
 
-    Signals the browser can override natively via CDP (User-Agent / platform /
-    vendor / appVersion, screen dimensions, devicePixelRatio,
-    hardwareConcurrency, timezone, geolocation, locale) are NOT touched here.
-    They are applied by ``Tab.apply_fingerprint`` through the Emulation domain,
-    which keeps the reported getters genuinely native. Only signals CDP cannot
-    set (deviceMemory, maxTouchPoints, languages, WebGL, plugins, media
-    devices, speech, audio, network connection, fonts, permissions, WebRTC
-    policy) are handled with hardened JavaScript here.
-
-    Residual limitation: a JavaScript accessor still returns a value when its
-    getter is invoked against an unrelated receiver, whereas a native accessor
-    throws ``Illegal invocation``. The CDP-first strategy avoids JS getters for
-    the highest-entropy signals precisely to minimise this residual surface.
+    Residual limitation: a JavaScript accessor is a JavaScript frame, so an
+    error thrown while it runs (the ``Illegal invocation`` above) carries one
+    extra ``at get <prop>`` line in ``Error.stack`` that a native accessor does
+    not. That is inherent to any JS override; the native-first strategy keeps
+    the set of such getters as small as Chrome allows.
 """
 
 from __future__ import annotations
@@ -45,13 +67,12 @@ if TYPE_CHECKING:
         FingerprintConfig,
         FontFingerprint,
         HardwareFingerprint,
-        LocaleFingerprint,
         MediaDevicesFingerprint,
         NetworkConnectionFingerprint,
-        PermissionsFingerprint,
         ScreenFingerprint,
         SpeechFingerprint,
         WebGLProfile,
+        WebGPUProfile,
     )
 
 # Navigator properties that CDP setUserAgentOverride already sets natively when
@@ -64,16 +85,16 @@ _WEBGL_INT32_PARAMS = frozenset({'max_viewport_dims'})
 
 # Shared bootstrap injected once before every section. Replaces
 # Function.prototype.toString with a plain (non-Proxy) function backed by a
-# WeakMap registry, so every redefined getter/method reports [native code]
-# without exposing a Proxy exotic object (fingerprinting suites specifically
-# flag a proxied toString). It then exposes the closure-scoped helpers _defG
-# (define a native-looking accessor) and _patchM (replace a method with a
-# native-looking one). Nothing leaks to any global scope: the helpers live only
-# in the IIFE closure the sections run inside.
+# registry of faked source strings, so every redefined getter/method reports
+# [native code] without exposing a Proxy exotic object. It then exposes the
+# closure-scoped helpers: _defG (native-looking accessor returning a constant),
+# _defGf (accessor computing its value with access to the native one), _patchM
+# (replace a method with a native-looking one), _fake / _defF (platform objects
+# built from a real prototype whose values live in a WeakMap read by prototype
+# getters). Nothing leaks to any global scope.
 #
 # ``NP`` resolves navigator's prototype in both the page (Navigator.prototype)
-# and worker (WorkerNavigator.prototype) realms, so the same navigator getters
-# apply consistently in either scope.
+# and worker (WorkerNavigator.prototype) realms.
 _BOOTSTRAP = r"""
 const _ORIG = Function.prototype.toString;
 // Cross-realm native-toString hook WITHOUT shared state. Page + workers + nested
@@ -93,19 +114,34 @@ try {
   Object.defineProperty(Function.prototype, 'toString',
     {value: _hook, configurable: true, writable: true});
 } catch (e) {}
+// Computed-name getter in an object literal: its ``.name`` is ``get <prop>``
+// (so _nativeStr rebuilds the exact native string) and it has no own
+// ``prototype``. Every getter is a single JavaScript frame that first invokes
+// the original native getter on the receiver, reproducing its brand check:
+// reading the property on the prototype or on a foreign object throws exactly
+// like the native accessor instead of silently returning the value.
+const _install = (target, prop, _g) => {
+  _mark(_g);
+  Object.defineProperty(target, prop, {get: _g, configurable: true, enumerable: true});
+};
+const _nativeGetter = (target, prop) => {
+  const _od = Object.getOwnPropertyDescriptor(target, prop);
+  return _od && _od.get;
+};
 const _defG = (target, prop, value) => {
   try {
-    const _od = Object.getOwnPropertyDescriptor(target, prop);
-    const _og = _od && _od.get;
-    // Computed-name getter in an object literal: its ``.name`` is ``get <prop>``
-    // (so _nativeStr rebuilds the exact native string) and it has no own
-    // ``prototype``. Delegating to the original native getter reproduces its
-    // receiver brand check, so reading the property on the prototype throws
-    // like a native accessor instead of silently returning the value.
+    const _og = _nativeGetter(target, prop);
     const _h = { get [prop]() { if (_og) _og.call(this); return value; } };
-    const _g = Object.getOwnPropertyDescriptor(_h, prop).get;
-    _mark(_g);
-    Object.defineProperty(target, prop, {get: _g, configurable: true, enumerable: true});
+    _install(target, prop, Object.getOwnPropertyDescriptor(_h, prop).get);
+  } catch (e) {}
+};
+// ``compute(receiver, realValue)`` runs after the native getter returned, so
+// it can keep the real value for instances that must stay truthful.
+const _defGf = (target, prop, compute) => {
+  try {
+    const _og = _nativeGetter(target, prop);
+    const _h = { get [prop]() { return compute(this, _og ? _og.call(this) : undefined); } };
+    _install(target, prop, Object.getOwnPropertyDescriptor(_h, prop).get);
   } catch (e) {}
 };
 const _patchM = (obj, prop, fn) => {
@@ -117,18 +153,114 @@ const _patchM = (obj, prop, fn) => {
     Object.defineProperty(obj, prop, {value: wrapper, configurable: true, writable: true});
   } catch (e) {}
 };
-const _gp = (o, p, v) => {
+// Fake platform objects: created from the REAL prototype with no own
+// properties; their values live in a WeakMap that prototype getters consult
+// before falling back to the native getter (which keeps the native brand check
+// for every real instance and every foreign receiver).
+const _FAKES = new WeakMap();
+const _fake = (proto, props) => { const o = Object.create(proto); _FAKES.set(o, props); return o; };
+const _defF = (proto, prop) => {
   try {
-    // Same computed-name + _mark path as _defG so the getter's ``toString``
-    // resolves to native and its ``.name`` is ``get <p>`` with no own prototype.
-    // Unlike _defG this defines on the given (instance) object and has no
-    // original native getter to delegate to (these are freshly created props).
-    const _h = { get [p]() { return v; } };
-    const _g = Object.getOwnPropertyDescriptor(_h, p).get;
-    _mark(_g);
-    Object.defineProperty(o, p, {get: _g, enumerable: true, configurable: true});
+    const _og = _nativeGetter(proto, prop);
+    const _h = { get [prop]() {
+      const f = _FAKES.get(this);
+      return f !== undefined && prop in f ? f[prop] : (_og ? _og.call(this) : undefined);
+    } };
+    _install(proto, prop, Object.getOwnPropertyDescriptor(_h, prop).get);
   } catch (e) {}
 };
+// Constructor wrapper as a plain function (not a Proxy: a Proxy forwards
+// ``setPrototypeOf`` to its target, so ``Object.setPrototypeOf(fn, fn)`` fails
+// to raise the native "Cyclic __proto__" TypeError, and a pristine realm's
+// ``toString`` prints it anonymous). The wrapper shares the native's
+// prototype chain, ``prototype`` object, ``length`` and statics, throws the
+// native message when called without ``new``, and is marked so the toString
+// hook of every realm prints it native. ``onConstruct(args)`` may return
+// replacement arguments; ``onCreated`` sees each new instance.
+const _wrapCtor = (owner, name, onConstruct, onCreated) => {
+  try {
+    const Orig = owner[name];
+    if (typeof Orig !== 'function') return;
+    const Patched = { [name]: function () {
+      if (!new.target) {
+        throw new TypeError("Failed to construct '" + name + "': Please use the 'new' operator, "
+          + 'this DOM object constructor cannot be called as a function.');
+      }
+      const args = Array.prototype.slice.call(arguments);
+      const finalArgs = onConstruct ? onConstruct(args) : args;
+      const proto = new.target === Patched ? Orig : new.target;
+      const instance = Reflect.construct(Orig, finalArgs, proto);
+      if (onCreated) onCreated(instance, finalArgs);
+      return instance;
+    } }[name];
+    Object.setPrototypeOf(Patched, Object.getPrototypeOf(Orig));
+    Object.defineProperty(Patched, 'prototype', {value: Orig.prototype, writable: false});
+    Object.defineProperty(Patched, 'length', {value: Orig.length, configurable: true});
+    for (const key of Reflect.ownKeys(Orig)) {
+      if (['length', 'name', 'prototype', 'arguments', 'caller'].includes(key)) continue;
+      try { Object.defineProperty(Patched, key, Object.getOwnPropertyDescriptor(Orig, key)); }
+      catch (e) {}
+    }
+    try {
+      Object.defineProperty(Orig.prototype, 'constructor',
+        {value: Patched, writable: true, configurable: true});
+    } catch (e) {}
+    _mark(Patched);
+    owner[name] = Patched;
+    return Patched;
+  } catch (e) { return undefined; }
+};
+// Platform objects cannot be structured-cloned; the fakes must refuse it too.
+const _cloneError = (owner, method, value) => {
+  const ctor = Object.getPrototypeOf(value).constructor.name;
+  return new DOMException("Failed to execute '" + method + "' on '" + owner + "': "
+    + ctor + ' object could not be cloned.', 'DataCloneError');
+};
+// Finds a fake anywhere a structured clone would reach: own enumerable
+// properties of plain objects and arrays, Map / Set entries. Bounded so an
+// adversarial graph cannot stall the page; a fake past the bound is missed.
+const _findFake = (value, seen, budget) => {
+  if (value === null || typeof value !== 'object' || seen.has(value)) return null;
+  if (_FAKES.has(value)) return value;
+  seen.add(value);
+  if (seen.size > budget) return null;
+  const proto = Object.getPrototypeOf(value);
+  let children = [];
+  if (Array.isArray(value) || proto === Object.prototype || proto === null) {
+    children = Object.keys(value).map((k) => value[k]);
+  } else if (value instanceof Map) {
+    children = [...value.keys(), ...value.values()];
+  } else if (value instanceof Set) {
+    children = [...value];
+  }
+  for (const child of children) {
+    const found = _findFake(child, seen, budget);
+    if (found !== null) return found;
+  }
+  return null;
+};
+const _guardClone = (target, method, owner) => {
+  try {
+    const orig = target[method];
+    if (typeof orig !== 'function') return;
+    _patchM(target, method, function (value) {
+      const fake = _findFake(value, new Set(), 5000);
+      if (fake !== null) throw _cloneError(owner, method, fake);
+      return orig.apply(this, arguments);
+    });
+  } catch (e) {}
+};
+const _globalName = typeof window !== 'undefined' ? 'Window' : 'WorkerGlobalScope';
+_guardClone(self, 'structuredClone', _globalName);
+if (typeof MessagePort !== 'undefined') {
+  _guardClone(MessagePort.prototype, 'postMessage', 'MessagePort');
+}
+if (typeof Worker !== 'undefined') _guardClone(Worker.prototype, 'postMessage', 'Worker');
+if (typeof BroadcastChannel !== 'undefined') {
+  _guardClone(BroadcastChannel.prototype, 'postMessage', 'BroadcastChannel');
+}
+if (typeof window !== 'undefined') _guardClone(window, 'postMessage', 'Window');
+else _guardClone(self, 'postMessage', 'DedicatedWorkerGlobalScope');
 const NP = Object.getPrototypeOf(navigator);
 """
 
@@ -148,13 +280,15 @@ def _wrap(parts: list[str]) -> str:
 
 
 def _build_identity_js(user_agent: str, platform: str) -> str:
-    """Build ``navigator.userAgent``/``appVersion``/``platform`` getters.
+    """Build ``navigator.userAgent``/``appVersion``/``platform`` getters for workers.
 
-    Injected in every realm (page + workers + detached iframes) because CDP's
-    ``setUserAgentOverride`` is lost in a detached ("dead") iframe realm and does
-    not reach ``WorkerNavigator``, so those realms would otherwise leak the real
-    values. Each is guarded by existence so a scope lacking a property (e.g. a
-    worker without it) is left untouched.
+    Injected in worker realms only. ``Emulation.setUserAgentOverride`` on a
+    worker session updates ``WorkerNavigator.userAgent`` for dedicated workers
+    but not for shared / service workers, and never updates
+    ``WorkerNavigator.platform`` for any worker type, so those would leak the
+    real values. In the page realm the override is fully native and no getter
+    is injected. Each is guarded by existence so a scope lacking a property is
+    left untouched.
     """
     lines: list[str] = []
     if user_agent:
@@ -171,22 +305,19 @@ def _build_identity_js(user_agent: str, platform: str) -> str:
     return '\n'.join(lines)
 
 
-def build_fingerprint_js(
-    config: FingerprintConfig, user_agent: str = '', platform: str = ''
-) -> str:
+def build_fingerprint_js(config: FingerprintConfig) -> str:
     """Build the complete page fingerprint injection script.
 
     Returns a single JS string that installs the shared native-toString hook
     and overrides every configured fingerprint surface CDP cannot handle.
-    Empty string if nothing to inject.
+    Empty string if nothing to inject. Identity (User-Agent, platform,
+    languages), permissions and screen metrics in headless mode are applied
+    natively by ``FingerprintApplier`` and are never part of this script.
 
     Args:
         config: Fingerprint configuration.
-        user_agent: Reduced User-Agent string to expose as ``navigator.userAgent``
-            in every realm (including detached iframes). Empty string skips it.
-        platform: ``navigator.platform`` value to expose in every realm.
     """
-    parts: list[str] = [_build_identity_js(user_agent, platform)]
+    parts: list[str] = []
 
     if 'navigator' in config:
         nav: dict[str, object] = dict(config['navigator'])
@@ -211,20 +342,12 @@ def build_fingerprint_worker_js(
     Web Workers expose ``WorkerNavigator`` (not the page ``Navigator``) and have
     no ``screen``/``window``/``document``, so only the surfaces that exist in a
     worker are injected: ``navigator.userAgent``, ``navigator.appVersion``,
-    ``navigator.platform``, ``navigator.deviceMemory``, ``navigator.languages`` /
-    ``navigator.language``, ``navigator.connection`` and WebGL (via
-    ``OffscreenCanvas``).
-
-    ``userAgent`` / ``appVersion`` / ``platform`` are injected here (guarded by
-    existence) because ``Emulation.setUserAgentOverride`` does not reliably update
-    those ``WorkerNavigator`` properties on out-of-page worker targets (e.g.
-    service workers), only the outgoing request headers. ``hardwareConcurrency``
-    is reapplied to the worker session natively via CDP by
-    ``Tab.apply_fingerprint``. ``vendor`` is never injected: ``WorkerNavigator``
-    does not expose it, so adding it would itself be an anomaly.
-
-    All getters route through the shared native-``toString`` hook, so they report
-    ``[native code]`` under introspection.
+    ``navigator.platform``, ``navigator.deviceMemory``, ``navigator.connection``,
+    WebGL (via ``OffscreenCanvas``) and fonts. ``languages`` and
+    ``hardwareConcurrency`` are applied natively to the worker session by
+    ``FingerprintApplier`` (``acceptLanguage`` reaches every worker type).
+    ``vendor`` is never injected: ``WorkerNavigator`` does not expose it, so
+    adding it would itself be an anomaly.
 
     Args:
         config: Fingerprint configuration.
@@ -243,12 +366,12 @@ def build_fingerprint_worker_js(
         nav_lines.append(f"if ('deviceMemory' in navigator) _defG(NP, 'deviceMemory', {val});")
 
     parts: list[str] = ['\n'.join(p for p in nav_lines if p)]
-    if 'locale' in config:
-        parts.append(_build_locale_js(config['locale']))
     if 'network_connection' in config:
         parts.append(_build_network_connection_js(config['network_connection']))
     if 'webgl' in config:
         parts.append(_build_webgl_js(config['webgl']))
+    if 'webgpu' in config:
+        parts.append(_build_webgpu_js(config['webgpu']))
     if 'fonts' in config:
         parts.append(_build_fonts_js(config['fonts']))
     return _wrap(parts)
@@ -274,9 +397,11 @@ def _build_navigator_js(nav: dict[str, object]) -> str:
 def _build_hardware_js(hw: HardwareFingerprint) -> str:
     """Override navigator hardware getters CDP does not cover.
 
-    ``hardware_concurrency`` is intentionally omitted: ``Tab.apply_fingerprint``
+    ``hardware_concurrency`` is intentionally omitted: ``FingerprintApplier``
     sets it via ``Emulation.setHardwareConcurrencyOverride`` so the getter stays
-    genuinely native.
+    genuinely native. ``max_touch_points`` keeps a JS getter for the value
+    (``Emulation.setTouchEmulationEnabled`` enables touch events and coarse
+    pointer media natively but does not move ``navigator.maxTouchPoints``).
     """
     items: dict[str, object] = dict(hw)
     lines: list[str] = []
@@ -291,19 +416,22 @@ def _build_hardware_js(hw: HardwareFingerprint) -> str:
 
 
 def _build_screen_js(scr: ScreenFingerprint) -> str:
-    """Override screen/display getters CDP does not cover.
+    """Override screen/display getters CDP does not cover in headful mode.
 
     ``width``, ``height``, ``device_pixel_ratio``, ``inner_*`` and orientation
     are omitted: they are applied natively via
-    ``Emulation.setDeviceMetricsOverride`` in ``Tab.apply_fingerprint``.
+    ``Emulation.setDeviceMetricsOverride``. In headless mode this whole section
+    is skipped by ``FingerprintApplier``: ``Emulation.updateScreen`` reshapes the
+    virtual screen (size, work area, color depth, dpr) and
+    ``Browser.setWindowBounds`` sizes the window, so every value below is native
+    there.
 
-    ``avail_width``/``avail_height`` ARE injected here (on ``Screen.prototype``):
-    CDP forces ``availWidth``/``availHeight`` equal to the screen size, which is a
-    headless tell (no taskbar/dock gap). ``avail_top``/``avail_left`` are injected
-    too: ``availTop == 0`` on the main page is a headless tell, and it must match
-    the ``availTop`` that ``Emulation.updateScreen`` gives cross-origin iframes.
-    ``color_depth``/``pixel_depth`` are on ``Screen.prototype`` and ``outer_*`` are
-    own-properties on ``window``, both matching the native location.
+    In headful mode ``avail_width``/``avail_height`` ARE injected here (on
+    ``Screen.prototype``): CDP forces ``availWidth``/``availHeight`` equal to the
+    screen size, which is a headless tell (no taskbar/dock gap).
+    ``avail_top``/``avail_left``, ``color_depth``/``pixel_depth`` follow on
+    ``Screen.prototype`` and ``outer_*`` are own accessors on ``window``, both
+    matching the native location.
     """
     items: dict[str, object] = dict(scr)
     lines: list[str] = []
@@ -337,41 +465,52 @@ const paramOverrides = %s;
 const ext1 = %s;
 const ext2 = %s;
 const precisionOverrides = %s;
+const HIDDEN_EXT = 'WEBGL_debug_shaders';
 
 function patchContext(proto, extOverrides) {
   const origGetParameter = proto.getParameter;
   _patchM(proto, 'getParameter', function getParameter(pname) {
+    const real = origGetParameter.call(this, pname);
     if (pname === VENDOR) return spoofVendor;
     if (pname === RENDERER) return spoofRenderer;
-    if (paramOverrides[pname] !== undefined) return paramOverrides[pname];
-    return origGetParameter.call(this, pname);
+    const override = paramOverrides[pname];
+    if (override === undefined) return real;
+    return ArrayBuffer.isView(override) ? override.slice() : override;
   });
 
-  if (Object.keys(precisionOverrides).length > 0) {
+  const hasPrecision = typeof WebGLShaderPrecisionFormat !== 'undefined';
+  if (hasPrecision && Object.keys(precisionOverrides).length > 0) {
     const origGetShaderPrecisionFormat = proto.getShaderPrecisionFormat;
     _patchM(proto, 'getShaderPrecisionFormat',
       function getShaderPrecisionFormat(shaderType, precisionType) {
-        const key = shaderType + ':' + precisionType;
-        if (precisionOverrides[key]) {
-          const p = precisionOverrides[key];
-          return {rangeMin: p[0], rangeMax: p[1], precision: p[2]};
-        }
-        return origGetShaderPrecisionFormat.call(this, shaderType, precisionType);
+        const real = origGetShaderPrecisionFormat.call(this, shaderType, precisionType);
+        const p = precisionOverrides[shaderType + ':' + precisionType];
+        if (!p || real === null) return real;
+        return _fake(WebGLShaderPrecisionFormat.prototype,
+          {rangeMin: p[0], rangeMax: p[1], precision: p[2]});
       });
   }
 
-  if (extOverrides !== null) {
-    const origGetExtension = proto.getExtension;
-    _patchM(proto, 'getExtension', function getExtension(name) {
-      if (!extOverrides.includes(name)) return null;
-      return origGetExtension.call(this, name) || {};
-    });
-    _patchM(proto, 'getSupportedExtensions', function getSupportedExtensions() {
-      return extOverrides.slice();
-    });
-  }
+  const origGetExtension = proto.getExtension;
+  const origGetSupportedExtensions = proto.getSupportedExtensions;
+  const allowed = (name) => name !== HIDDEN_EXT
+    && (extOverrides === null || extOverrides.includes(name));
+  _patchM(proto, 'getExtension', function getExtension(name) {
+    const real = origGetExtension.call(this, name);
+    return allowed(name) ? real : null;
+  });
+  _patchM(proto, 'getSupportedExtensions', function getSupportedExtensions() {
+    const real = origGetSupportedExtensions.call(this);
+    return real === null ? real : real.filter(allowed);
+  });
 }
 
+if (typeof WebGLShaderPrecisionFormat !== 'undefined'
+    && Object.keys(precisionOverrides).length > 0) {
+  for (const prop of ['rangeMin', 'rangeMax', 'precision']) {
+    _defF(WebGLShaderPrecisionFormat.prototype, prop);
+  }
+}
 if (typeof WebGLRenderingContext !== 'undefined') {
   patchContext(WebGLRenderingContext.prototype, ext1);
 }
@@ -379,7 +518,7 @@ if (typeof WebGL2RenderingContext !== 'undefined') {
   patchContext(WebGL2RenderingContext.prototype, ext2);
 }"""
 
-# Maps python key -> WebGL parameter constant
+# Maps python key -> WebGL parameter constant (WebGL1 and WebGL2 limits).
 _WEBGL_PARAM_MAP: dict[str, int] = {
     'max_texture_size': 0x0D33,
     'max_renderbuffer_size': 0x84E8,
@@ -392,6 +531,21 @@ _WEBGL_PARAM_MAP: dict[str, int] = {
     'max_combined_texture_image_units': 0x8B4D,
     'aliased_line_width_range': 0x846E,
     'aliased_point_size_range': 0x846D,
+    'max_cube_map_texture_size': 0x851C,
+    'max_varying_vectors': 0x8DFC,
+    'max_3d_texture_size': 0x8073,
+    'max_array_texture_layers': 0x88FF,
+    'max_color_attachments': 0x8CDF,
+    'max_draw_buffers': 0x8824,
+    'max_samples': 0x8D57,
+    'max_uniform_block_size': 0x8A30,
+    'max_uniform_buffer_bindings': 0x8A2F,
+    'max_vertex_uniform_blocks': 0x8A2B,
+    'max_fragment_uniform_blocks': 0x8A2D,
+    'max_combined_uniform_blocks': 0x8A2E,
+    'max_vertex_output_components': 0x9122,
+    'max_fragment_input_components': 0x9125,
+    'max_element_index': 0x8D6B,
 }
 
 # Maps shader type names to WebGL constants
@@ -458,6 +612,16 @@ def _build_webgl_precision_js(webgl: WebGLProfile) -> str:
 
 
 def _build_webgl_js(webgl: WebGLProfile) -> str:
+    """Build the WebGL override block.
+
+    Every patched method calls the native one first, so the receiver brand
+    check and the real value come from Chrome. Extension lists are an
+    allow-list intersected with what the GPU really exposes: a claimed
+    extension the GPU lacks is dropped rather than faked (a fake ``{}`` has
+    none of the extension's constants and is an instant tell), and
+    ``WEBGL_debug_shaders`` is always hidden because its translated shader
+    source names the real backend.
+    """
     param_js = _build_webgl_param_js(webgl)
 
     if 'supported_extensions' in webgl:
@@ -482,84 +646,219 @@ def _build_webgl_js(webgl: WebGLProfile) -> str:
     )
 
 
+_WEBGPU_JS_TEMPLATE = """\
+if (typeof GPU !== 'undefined' && navigator.gpu && typeof GPUAdapterInfo !== 'undefined'
+    && typeof GPUSupportedLimits !== 'undefined') {
+  const info = %s;
+  const limits = %s;
+  const features = %s;
+  for (const prop of Object.keys(info)) _defF(GPUAdapterInfo.prototype, prop);
+  if (limits !== null) {
+    for (const prop of Object.keys(limits)) _defF(GPUSupportedLimits.prototype, prop);
+  }
+  const featureSet = features === null ? null : new Set(features);
+  if (featureSet !== null && typeof GPUSupportedFeatures !== 'undefined') {
+    const FP = GPUSupportedFeatures.prototype;
+    const origHas = FP.has;
+    _patchM(FP, 'has', function has(value) {
+      const real = origHas.call(this, value);
+      return _FAKES.has(this) ? featureSet.has(String(value)) : real;
+    });
+    _defGf(FP, 'size', (self, real) => (_FAKES.has(self) ? featureSet.size : real));
+    const sameAsReal = (set) => {
+      if (set.size !== featureSet.size) return false;
+      for (const value of set) if (!featureSet.has(value)) return false;
+      return true;
+    };
+    for (const method of ['keys', 'values', 'entries']) {
+      const orig = FP[method];
+      _patchM(FP, method, function () {
+        const real = orig.call(this);
+        if (!_FAKES.has(this) || sameAsReal(new Set(orig.call(this)))) return real;
+        const it = new Set(featureSet)[method]();
+        try {
+          Object.defineProperty(it, Symbol.toStringTag,
+            {value: 'GPUSupportedFeatures Iterator', configurable: true});
+        } catch (e) {}
+        return it;
+      });
+    }
+    const origForEach = FP.forEach;
+    _patchM(FP, 'forEach', function forEach(callback, thisArg) {
+      if (!_FAKES.has(this)) return origForEach.apply(this, arguments);
+      origForEach.call(this, () => {});
+      const self = this;
+      new Set(featureSet).forEach((value, key) => callback.call(thisArg, value, key, self));
+    });
+    try {
+      Object.defineProperty(FP, Symbol.iterator,
+        {value: FP.values, writable: true, configurable: true});
+    } catch (e) {}
+  }
+  const register = (adapter) => {
+    if (!adapter) return adapter;
+    try {
+      _FAKES.set(adapter.info, info);
+      if (limits !== null) _FAKES.set(adapter.limits, limits);
+      if (featureSet !== null) _FAKES.set(adapter.features, {});
+    } catch (e) {}
+    return adapter;
+  };
+  const origRequestAdapter = GPU.prototype.requestAdapter;
+  _patchM(GPU.prototype, 'requestAdapter', function requestAdapter() {
+    return origRequestAdapter.apply(this, arguments).then(register);
+  });
+  if (typeof GPUAdapter !== 'undefined' && GPUAdapter.prototype.requestDevice) {
+    const origRequestDevice = GPUAdapter.prototype.requestDevice;
+    _patchM(GPUAdapter.prototype, 'requestDevice', function requestDevice() {
+      return origRequestDevice.apply(this, arguments).then((device) => {
+        try { _FAKES.set(device.adapterInfo, info); } catch (e) {}
+        return device;
+      });
+    });
+  }
+}"""
+
+
+def _build_webgpu_js(webgpu: WebGPUProfile) -> str:
+    """Override what the real WebGPU adapter reports.
+
+    ``requestAdapter()`` still resolves the real adapter (so ``requestDevice``
+    and rendering work), and its ``info``, ``limits`` and ``features`` objects
+    are registered as fakes: prototype getters then answer the profile's
+    values for those objects and the native value for anything else, with the
+    native brand check intact. ``features`` is a setlike, so ``has``, ``size``,
+    the iterators and ``forEach`` are patched together to describe one set.
+    """
+    info: dict[str, object] = {'vendor': webgpu['vendor']}
+    for key in ('architecture', 'device', 'description'):
+        if key in webgpu:
+            info[key] = webgpu[key]
+    if 'is_fallback_adapter' in webgpu:
+        info['isFallbackAdapter'] = webgpu['is_fallback_adapter']
+    limits = webgpu.get('limits')
+    features = webgpu.get('features')
+    return _WEBGPU_JS_TEMPLATE % (
+        json.dumps(info),
+        json.dumps(limits) if limits else 'null',
+        json.dumps(features) if features is not None else 'null',
+    )
+
+
 def _build_media_devices_js(md: MediaDevicesFingerprint) -> str:
+    """Override ``enumerateDevices`` with fake devices built on the real prototypes.
+
+    Inputs are ``InputDeviceInfo`` instances and outputs ``MediaDeviceInfo``,
+    listed in Chrome's order (audio inputs, video inputs, audio outputs), with
+    no own properties: the values come from prototype getters that consult the
+    fake registry and otherwise defer to the native getter. Each call returns
+    fresh objects, as the native method does, and ``getCapabilities()`` on a
+    fake input answers ``{}`` like a device without permission.
+    ``enumerateDevices`` awaits the native call first so the receiver check and
+    the async timing are the real ones.
+    """
     audio_in = md.get('audio_inputs', 0)
     audio_out = md.get('audio_outputs', 0)
     video_in = md.get('video_inputs', 0)
     return f"""\
-const hasMDI = typeof MediaDeviceInfo !== 'undefined';
-
-function makeDev(kind) {{
-  const d = hasMDI ? Object.create(MediaDeviceInfo.prototype) : {{}};
-  _gp(d, 'deviceId', '');
-  _gp(d, 'kind', kind);
-  _gp(d, 'label', '');
-  _gp(d, 'groupId', '');
-  if (hasMDI) {{
-    _patchM(d, 'toJSON', function toJSON() {{
-      return {{deviceId: '', kind: kind, label: '', groupId: ''}};
+if (typeof MediaDeviceInfo !== 'undefined' && typeof MediaDevices !== 'undefined'
+    && MediaDevices.prototype.enumerateDevices) {{
+  const inputProto = typeof InputDeviceInfo !== 'undefined'
+    ? InputDeviceInfo.prototype : MediaDeviceInfo.prototype;
+  const makeDev = (kind) => _fake(kind === 'audiooutput' ? MediaDeviceInfo.prototype : inputProto,
+    {{deviceId: '', kind: kind, label: '', groupId: ''}});
+  for (const prop of ['deviceId', 'kind', 'label', 'groupId']) {{
+    _defF(MediaDeviceInfo.prototype, prop);
+  }}
+  const origToJSON = MediaDeviceInfo.prototype.toJSON;
+  _patchM(MediaDeviceInfo.prototype, 'toJSON', function toJSON() {{
+    const f = _FAKES.get(this);
+    return f !== undefined ? Object.assign({{}}, f) : origToJSON.call(this);
+  }});
+  const makeDevices = () => {{
+    const devices = [];
+    for (let i = 0; i < {audio_in}; i++) devices.push(makeDev('audioinput'));
+    for (let i = 0; i < {video_in}; i++) devices.push(makeDev('videoinput'));
+    for (let i = 0; i < {audio_out}; i++) devices.push(makeDev('audiooutput'));
+    return devices;
+  }};
+  if (typeof InputDeviceInfo !== 'undefined' && InputDeviceInfo.prototype.getCapabilities) {{
+    const origCapabilities = InputDeviceInfo.prototype.getCapabilities;
+    _patchM(InputDeviceInfo.prototype, 'getCapabilities', function getCapabilities() {{
+      return _FAKES.has(this) ? {{}} : origCapabilities.call(this);
     }});
   }}
-  return d;
-}}
-
-const devices = [];
-for (let i = 0; i < {audio_in}; i++) devices.push(makeDev('audioinput'));
-for (let i = 0; i < {audio_out}; i++) devices.push(makeDev('audiooutput'));
-for (let i = 0; i < {video_in}; i++) devices.push(makeDev('videoinput'));
-
-if (typeof MediaDevices !== 'undefined' && MediaDevices.prototype.enumerateDevices) {{
+  const origEnumerate = MediaDevices.prototype.enumerateDevices;
   _patchM(MediaDevices.prototype, 'enumerateDevices', function enumerateDevices() {{
-    return Promise.resolve(devices.slice());
+    return origEnumerate.call(this).then(() => makeDevices());
   }});
 }}"""
 
 
 def _build_audio_js(audio: AudioFingerprint) -> str:
-    lines: list[str] = []
+    """Override realtime ``AudioContext`` device capabilities.
+
+    An ``OfflineAudioContext``, or an ``AudioContext`` constructed with an
+    explicit ``sampleRate``, must report the rate it was constructed with, so
+    those keep the native value (the constructor is wrapped to remember
+    explicit rates); only realtime contexts created without a rate,
+    the ones that describe the audio device, take the profile's values. The
+    rendered audio hash is not touched by any of this.
+    """
+    lines: list[str] = [
+        'const _truthful = new WeakSet();',
+        "const _isOffline = (ctx) => typeof OfflineAudioContext !== 'undefined'"
+        ' && ctx instanceof OfflineAudioContext;',
+        "if (typeof AudioContext !== 'undefined') {",
+        "  const _ctor = _wrapCtor(self, 'AudioContext', null, (ctx, args) => {",
+        '    if (args[0] && args[0].sampleRate !== undefined) _truthful.add(ctx);',
+        '  });',
+        "  if (_ctor && 'webkitAudioContext' in self) self.webkitAudioContext = _ctor;",
+        '}',
+    ]
     if 'sample_rate' in audio:
         val = json.dumps(audio['sample_rate'])
-        lines.append(f'_defG(BaseAudioContext.prototype, "sampleRate", {val});')
+        lines.append(
+            "_defGf(BaseAudioContext.prototype, 'sampleRate', (self, real) =>\n"
+            f'  (_isOffline(self) || _truthful.has(self)) ? real : {val});'
+        )
     if 'max_channel_count' in audio:
         val = json.dumps(audio['max_channel_count'])
-        lines.append(f'_defG(AudioDestinationNode.prototype, "maxChannelCount", {val});')
+        lines.append(
+            "_defGf(AudioDestinationNode.prototype, 'maxChannelCount', (self, real) =>\n"
+            f'  _isOffline(self.context) ? real : {val});'
+        )
     return '\n'.join(lines)
 
 
 def _build_speech_js(speech: SpeechFingerprint) -> str:
+    """Override ``speechSynthesis.getVoices()`` with voices on the real prototype.
+
+    Each voice is a ``SpeechSynthesisVoice`` with no own properties; ``getVoices``
+    invokes the native method first so a foreign receiver throws the native
+    ``Illegal invocation``. The list is returned synchronously on the first
+    call, which is how Chrome on Windows behaves (its voices load with the
+    process).
+    """
     voices_data = json.dumps(speech['voices'])
     return f"""\
-const hasSV = typeof SpeechSynthesisVoice !== 'undefined';
-const voicesData = {voices_data};
-
-const fakeVoices = voicesData.map((v, idx) => {{
-  const voice = hasSV ? Object.create(SpeechSynthesisVoice.prototype) : {{}};
-  _gp(voice, 'name', v.name);
-  _gp(voice, 'lang', v.lang);
-  _gp(voice, 'localService', v.local_service !== undefined ? v.local_service : true);
-  _gp(voice, 'voiceURI', v.name);
-  _gp(voice, 'default', idx === 0);
-  return voice;
-}});
-
-if (typeof SpeechSynthesis !== 'undefined' && SpeechSynthesis.prototype.getVoices) {{
+if (typeof SpeechSynthesisVoice !== 'undefined' && typeof SpeechSynthesis !== 'undefined'
+    && SpeechSynthesis.prototype.getVoices) {{
+  const voicesData = {voices_data};
+  for (const prop of ['name', 'lang', 'localService', 'voiceURI', 'default']) {{
+    _defF(SpeechSynthesisVoice.prototype, prop);
+  }}
+  const fakeVoices = voicesData.map((v, idx) => _fake(SpeechSynthesisVoice.prototype, {{
+    name: v.name, lang: v.lang,
+    localService: v.local_service !== undefined ? v.local_service : true,
+    voiceURI: v.name, default: idx === 0,
+  }}));
+  const origGetVoices = SpeechSynthesis.prototype.getVoices;
   _patchM(SpeechSynthesis.prototype, 'getVoices', function getVoices() {{
+    origGetVoices.call(this);
     return fakeVoices.slice();
   }});
 }}"""
-
-
-def _build_locale_js(locale: LocaleFingerprint) -> str:
-    languages = locale['languages']
-    if not languages:
-        return ''
-    first = json.dumps(languages[0])
-    all_langs = json.dumps(languages)
-    return (
-        f'const _langs = Object.freeze({all_langs});\n'
-        f'_defG(NP, "language", {first});\n'
-        '_defG(NP, "languages", _langs);'
-    )
 
 
 def _build_network_connection_js(nc: NetworkConnectionFingerprint) -> str:
@@ -582,24 +881,94 @@ def _build_network_connection_js(nc: NetworkConnectionFingerprint) -> str:
     return f"if (typeof NetworkInformation !== 'undefined') {{\n{body}\n}}"
 
 
+# Fonts that ship with exactly one OS family. A profile that does not claim one
+# of these must report it absent, otherwise the font set mixes two operating
+# systems (CreepJS ``isFontOSBad``, FP-Scanner ``are_font_consistent_os``).
 _OS_MARKER_FONTS = frozenset({
-    'Cambria Math',
-    'Nirmala UI',
-    'Leelawadee UI',
-    'HoloLens MDL2 Assets',
+    'Segoe UI',
+    'Segoe UI Emoji',
+    'Segoe UI Symbol',
+    'Segoe UI Historic',
+    'Segoe Print',
+    'Segoe Script',
     'Segoe Fluent Icons',
+    'Segoe MDL2 Assets',
+    'HoloLens MDL2 Assets',
+    'Calibri',
+    'Cambria',
+    'Cambria Math',
+    'Candara',
+    'Consolas',
+    'Constantia',
+    'Corbel',
+    'Ebrima',
+    'Franklin Gothic Medium',
+    'Gabriola',
+    'Gadugi',
+    'Leelawadee UI',
+    'Lucida Console',
+    'Lucida Sans Unicode',
+    'Malgun Gothic',
+    'Marlett',
+    'Microsoft Sans Serif',
+    'MS Gothic',
+    'MS UI Gothic',
+    'Nirmala UI',
+    'Sylfaen',
+    'Yu Gothic',
     'Helvetica Neue',
+    'Lucida Grande',
+    'Menlo',
+    'Monaco',
+    'Geneva',
+    'Apple Color Emoji',
+    'Apple Symbols',
+    'AppleGothic',
+    'Avenir',
+    'Avenir Next',
+    'Chalkboard',
+    'Cochin',
+    'Futura',
+    'Gill Sans',
+    'Herculanum',
+    'Hoefler Text',
     'Luminari',
+    'Marker Felt',
+    'Optima',
+    'PingFang SC',
+    'PingFang HK',
     'PingFang HK Light',
-    'InaiMathi Bold',
+    'Skia',
+    'SF Pro',
+    'SF Pro Text',
+    'SF Pro Display',
     'Galvji',
+    'InaiMathi',
+    'InaiMathi Bold',
+    'Zapfino',
+    'DejaVu Sans',
+    'DejaVu Serif',
+    'DejaVu Sans Mono',
+    'Liberation Sans',
+    'Liberation Serif',
+    'Liberation Mono',
+    'Ubuntu',
+    'Ubuntu Mono',
+    'Cantarell',
+    'Noto Color Emoji',
+    'Droid Sans',
+    'Droid Sans Mono',
+    'FreeSans',
+    'FreeSerif',
+    'Nimbus Sans',
+    'URW Gothic',
+    'Bitstream Vera Sans',
     'Chakra Petch',
     'Arimo',
-    'MONO',
-    'Ubuntu',
-    'Noto Color Emoji',
+    'Cousine',
+    'Tinos',
     'Dancing Script',
-    'Droid Sans Mono',
+    'MONO',
 })
 
 
@@ -608,46 +977,43 @@ if (typeof FontFace !== 'undefined' && FontFace.prototype.load) {
   const allow = new Set(%s);
   const reject = new Set(%s);
   const norm = (s) => String(s).trim().replace(/^["']|["']$/g, '').toLowerCase();
-  const famOf = (font) => {
-    const m = /["']([^"']+)["']\\s*$/.exec(String(font)) || /(\\S+)\\s*$/.exec(String(font));
-    return m ? norm(m[1]) : '';
-  };
   const _realLoad = FontFace.prototype.load;
   _patchM(FontFace.prototype, 'load', function load() {
     const fam = norm(this.family);
-    if (allow.has(fam)) return Promise.resolve(this);
+    const face = this;
+    const real = _realLoad.apply(this, arguments);
+    if (allow.has(fam)) return real.catch(() => face);
     if (reject.has(fam)) {
-      return Promise.reject(new DOMException('A network error occurred.', 'NetworkError'));
+      return real.then(() => {
+        throw new DOMException('A network error occurred.', 'NetworkError');
+      });
     }
-    return _realLoad.apply(this, arguments);
+    return real;
   });
-  if (typeof FontFaceSet !== 'undefined' && FontFaceSet.prototype.check) {
-    const _realCheck = FontFaceSet.prototype.check;
-    _patchM(FontFaceSet.prototype, 'check', function check(font, text) {
-      const fam = famOf(font);
-      if (allow.has(fam)) return true;
-      if (reject.has(fam)) return false;
-      return _realCheck.apply(this, arguments);
-    });
-  }
 }"""
 
 
 def _build_fonts_js(fonts: FontFingerprint) -> str:
-    """Override FontFace.load()/FontFaceSet.check() to present a coherent font set.
+    """Override ``FontFace.load()`` to present a coherent local font set.
 
-    CreepJS detects fonts via BOTH ``FontFaceSet.check`` and
-    ``new FontFace(f, 'local("f")').load()`` and unions the results. Overriding
-    only ``check`` leaves ``load`` genuinely loading the host's real (e.g. macOS)
-    fonts, so the union mixes the spoofed set with the real OS set, a cross-OS
-    lie (``isFontOSBad``). Both are overridden here with the same allow/reject
-    sets: allowed fonts resolve / return true, cross-OS marker fonts the profile
-    does not claim reject / return false, and everything else (real ``url()`` web
-    fonts, the random-name liar probe) falls through to native behaviour.
+    ``new FontFace(f, 'local("f")').load()`` is the JavaScript presence probe
+    (CreepJS unions it with the width-based measurement): it resolves when the
+    local font exists and rejects with a ``NetworkError`` otherwise. Allowed
+    fonts resolve even when the host lacks them, cross-OS marker fonts the
+    profile does not claim reject the way an absent font does, and everything
+    else (real ``url()`` web fonts, the random-name liar probe) keeps native
+    behaviour.
 
-    Works in workers too (``FontFace``/``FontFaceSet`` exist there, ``document``
-    does not). The emoji glyph-metric layer CreepJS also reads is native
-    rasterisation of the host emoji font and is not spoofable from JavaScript.
+    ``FontFaceSet.check()`` is deliberately left native: it answers whether a
+    font needs loading, so real Chrome returns ``true`` for any family name,
+    and forcing ``false`` there would be a lie against the native API itself,
+    not only against the layout engine.
+
+    Width-based detection (the FingerprintJS technique: a span's ``offsetWidth``
+    in the probed family against a fallback) reads the layout engine and is
+    not reachable from here. The only way to pass it is to install the claimed
+    fonts on the host and keep ``available_fonts`` equal to what is installed.
+    Works in workers too (``FontFace`` exists there).
     """
     available = fonts.get('available_fonts', [])
     if not available:
@@ -657,57 +1023,29 @@ def _build_fonts_js(fonts: FontFingerprint) -> str:
     return _FONTS_JS_TEMPLATE % (json.dumps(allow), json.dumps(reject))
 
 
-def _build_permissions_js(perms: PermissionsFingerprint) -> str:
-    """Override navigator.permissions.query() for specified permissions."""
-    overrides = perms.get('overrides', {})
-    if not overrides:
-        return ''
-    overrides_json = json.dumps(overrides)
-    return (
-        'if (typeof Permissions !== "undefined" && Permissions.prototype.query) {\n'
-        f'  const overrides = {overrides_json};\n'
-        '  const origQuery = Permissions.prototype.query;\n'
-        '  _patchM(Permissions.prototype, "query", function query(desc) {\n'
-        '    const name = desc && desc.name;\n'
-        '    if (name && overrides[name] !== undefined) {\n'
-        '      return Promise.resolve({\n'
-        '        state: overrides[name],\n'
-        '        status: overrides[name],\n'
-        '        onchange: null,\n'
-        '        addEventListener: function() {},\n'
-        '        removeEventListener: function() {},\n'
-        '        dispatchEvent: function() { return true; },\n'
-        '      });\n'
-        '    }\n'
-        '    return origQuery.call(this, desc);\n'
-        '  });\n'
-        '}'
-    )
-
-
 def _build_webrtc_js(policy: str) -> str:
-    """Patch RTCPeerConnection to force iceTransportPolicy."""
+    """Patch RTCPeerConnection (and its ``webkit`` alias) to force iceTransportPolicy.
+
+    Chrome exposes the same constructor as ``RTCPeerConnection`` and
+    ``webkitRTCPeerConnection``; both are replaced by one wrapper that shares
+    the native prototype chain, ``prototype`` object, ``length`` and statics,
+    so the alias cannot bypass the policy, the identity stays equal, and a
+    call without ``new`` throws the native error. The native launch flag
+    ``--force-webrtc-ip-handling-policy`` (``ChromiumOptions.webrtc_leak_protection``)
+    needs no patch at all and is the preferred route.
+    """
     if policy == 'default':
         return ''
     return (
         "if (typeof RTCPeerConnection !== 'undefined') {\n"
-        '  const Orig = RTCPeerConnection;\n'
-        '  const Patched = function RTCPeerConnection(config, constraints) {\n'
-        '    config = Object.assign({}, config || {});\n'
+        "  const Patched = _wrapCtor(window, 'RTCPeerConnection', (args) => {\n"
+        '    const config = Object.assign({}, args[0] || {});\n'
         f'    config.iceTransportPolicy = {json.dumps(policy)};\n'
-        '    return new Orig(config, constraints);\n'
-        '  };\n'
-        '  Patched.prototype = Orig.prototype;\n'
-        '  Patched.prototype.constructor = Patched;\n'
-        '  Object.getOwnPropertyNames(Orig).forEach(function(p) {\n'
-        "    if (p !== 'prototype' && p !== 'length' && p !== 'name') {\n"
-        '      try { Patched[p] = Orig[p]; } catch (e) {}\n'
-        '    }\n'
-        '  });\n'
-        "  Object.defineProperty(Patched, 'name',\n"
-        "    {value: 'RTCPeerConnection', configurable: true});\n"
-        '  _mark(Patched);\n'
-        '  window.RTCPeerConnection = Patched;\n'
+        '    return [config].concat(Array.prototype.slice.call(args, 1));\n'
+        '  }, null);\n'
+        "  if (Patched && 'webkitRTCPeerConnection' in window) {\n"
+        '    window.webkitRTCPeerConnection = Patched;\n'
+        '  }\n'
         '}'
     )
 
@@ -716,12 +1054,11 @@ _SECTION_BUILDERS: dict[str, Callable[..., str]] = {
     'hardware': _build_hardware_js,
     'screen': _build_screen_js,
     'webgl': _build_webgl_js,
+    'webgpu': _build_webgpu_js,
     'media_devices': _build_media_devices_js,
     'audio': _build_audio_js,
     'speech': _build_speech_js,
-    'locale': _build_locale_js,
     'network_connection': _build_network_connection_js,
     'fonts': _build_fonts_js,
-    'permissions': _build_permissions_js,
     'webrtc_ip_policy': _build_webrtc_js,
 }

@@ -19,7 +19,7 @@ O resto desta página são as camadas que você de fato controla.
 
 O indício de automação mais comum é um User-Agent que discorda de si mesmo: o header HTTP `User-Agent` dizendo uma coisa enquanto `navigator.userAgent`, `navigator.platform` e os Client Hints (`Sec-CH-UA`, `Sec-CH-UA-Platform`) dizem outra. Definir `--user-agent=` como uma flag simples do Chrome muda apenas o header HTTP e deixa o JavaScript e os Client Hints intocados, o que é uma incompatibilidade que um detector lê imediatamente.
 
-O Pydoll corrige isso para você. Quando ele vê um argumento `--user-agent=`, ele aplica `Emulation.setUserAgentOverride` com o `platform` correspondente e os metadados completos de Client Hints, e injeta `navigator.vendor` / `navigator.appVersion`, de modo que todas as camadas concordem, inclusive em novas abas.
+O Pydoll corrige isso para você. Quando ele vê um argumento `--user-agent=`, ele aplica `Emulation.setUserAgentOverride` com o `platform` correspondente e os metadados completos de Client Hints (brand greased e ordem das brands calculadas do jeito que o Chromium calcula para aquele major), e expõe a forma reduzida `Chrome/MAJOR.0.0.0` que o Chrome real reporta, de modo que todas as camadas concordem, inclusive em novas abas e workers. Nada é injetado na página: `navigator.userAgent`, `platform`, `vendor` e `appVersion` vêm todos do próprio override.
 
 ```python
 import asyncio

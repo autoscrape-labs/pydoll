@@ -2,7 +2,7 @@
 
 Você não consegue melhorar o que não consegue medir. Uma vez que um perfil é aplicado, a questão é quais sinais agora são lidos como um dispositivo real e quais ainda vazam, e nenhuma quantidade de leitura do código responde isso tão bem quanto apontar um detector para o navegador. Esta página cobre como medir isso, de um bot score gratuito até ler exatamente o que um detector comercial coleta.
 
-Ela se apoia em [Os limites do spoofing](spoofing-limits.md): aquela página explica o que pode e o que não pode ser forjado, esta mostra como verificar o que a sua configuração de fato fez.
+Ela é o lado de medição de [Injeção de fingerprint](../../stealth/fingerprint-injection.md): aquela página aplica um perfil, esta mostra como verificar o que ele de fato fez.
 
 ## Leia o bot score
 
@@ -71,7 +71,7 @@ result = await tab.execute_script('''
 ''', return_by_value=True)
 ```
 
-Se o `matchMedia` e o caminho CSS discordam, um override está mentindo em apenas um caminho, o modo de falha que [Os limites do spoofing](spoofing-limits.md) percorre. O mesmo teste se aplica entre realms (página versus worker) e entre APIs (a string do WebGL versus o adapter do WebGPU). Um perfil coerente passa em todos eles; uma contradição é um sinal que você introduziu.
+Se o `matchMedia` e o caminho CSS discordam, um override está mentindo em apenas um caminho. O mesmo teste se aplica entre realms (página versus worker) e entre APIs (a string do WebGL versus o adapter do WebGPU). Um perfil coerente passa em todos eles; uma contradição é um sinal que você introduziu.
 
 ## Leia o que um detector real coleta
 
@@ -96,6 +96,5 @@ Então a auditoria mais profunda é uma captura. Use a [interceptação de requi
 
 ## Relacionado
 
-- [Os limites do spoofing](spoofing-limits.md): o que um spoof consegue e não consegue mover.
 - [Injeção de fingerprint](../../stealth/fingerprint-injection.md): aplicando um perfil coerente.
 - [Contextos de navegador](../../guides/browser-contexts.md): uma identidade por contexto, a alavanca real para um novo visitante.

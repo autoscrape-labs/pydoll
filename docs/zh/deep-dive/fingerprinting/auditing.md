@@ -2,7 +2,7 @@
 
 你无法改进你无法测量的东西。一旦应用了一个 profile，问题就变成：现在哪些信号会被读作一个真实设备，哪些仍然在泄露，而无论你怎么读代码，都不如把一个检测器对准浏览器来得管用。本页讲的就是如何测量这一点，从一个免费的 bot score，到精确读取一个商业检测器所收集的内容。
 
-它建立在 [伪造的极限](spoofing-limits.md) 之上：那一页解释了什么能被伪造、什么不能，这一页展示如何检查你的配置实际做到了什么。
+它是 [Fingerprint 注入](../../stealth/fingerprint-injection.md) 的测量面：那一页应用一个 profile，这一页展示如何检查它实际做到了什么。
 
 ## 读取 bot score
 
@@ -71,7 +71,7 @@ result = await tab.execute_script('''
 ''', return_by_value=True)
 ```
 
-如果 `matchMedia` 和 CSS 路径不一致，那就是有一个覆盖只在一条路径上撒谎，也就是 [伪造的极限](spoofing-limits.md) 所讲解的那种失败模式。同样的测试也适用于跨 realm（页面对比 worker）以及跨 API（WebGL 字符串对比 WebGPU adapter）。一个连贯的 profile 会通过所有这些测试；而一个矛盾就是一个由你引入的信号。
+如果 `matchMedia` 和 CSS 路径不一致，那就是有一个覆盖只在一条路径上撒谎。同样的测试也适用于跨 realm（页面对比 worker）以及跨 API（WebGL 字符串对比 WebGPU adapter）。一个连贯的 profile 会通过所有这些测试；而一个矛盾就是一个由你引入的信号。
 
 ## 读取一个真实检测器所收集的内容
 
@@ -96,6 +96,5 @@ result = await tab.execute_script('''
 
 ## 相关
 
-- [伪造的极限](spoofing-limits.md)：一次伪造能改动什么、不能改动什么。
 - [Fingerprint 注入](../../stealth/fingerprint-injection.md)：应用一个连贯的 profile。
 - [浏览器上下文](../../guides/browser-contexts.md)：每个 context 一个身份，也就是获得一个全新访客的真正杠杆。

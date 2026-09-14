@@ -55,7 +55,7 @@ A propriedade `navigator.platform` retorna uma string como `Win32`, `MacIntel` o
 
 ### Propriedades de hardware
 
-`navigator.hardwareConcurrency` retorna o número de núcleos lógicos de CPU. Um valor de 1 ou 2 sugere uma VM ou container mínimo, e não a máquina de um usuário real. `navigator.deviceMemory` reporta a RAM aproximada em gigabytes (0.25, 0.5, 1, 2, 4, 8). Essa propriedade só está disponível em navegadores Chromium; Firefox e Safari retornam `undefined`. Ambos os valores devem ser consistentes com o dispositivo alegado: um User-Agent que alega um desktop moderno mas reporta 1 núcleo e 0.5 GB de RAM é suspeito.
+`navigator.hardwareConcurrency` retorna o número de núcleos lógicos de CPU. Um valor de 1 ou 2 sugere uma VM ou container mínimo, e não a máquina de um usuário real. `navigator.deviceMemory` reporta a RAM aproximada em gigabytes (0.25, 0.5, 1, 2, 4, 8, e 16 nas builds atuais do Chrome desktop). Essa propriedade só está disponível em navegadores Chromium; Firefox e Safari retornam `undefined`. Ambos os valores devem ser consistentes com o dispositivo alegado: um User-Agent que alega um desktop moderno mas reporta 1 núcleo e 0.5 GB de RAM é suspeito.
 
 ### Propriedade WebDriver
 
@@ -254,7 +254,7 @@ O cabeçalho `Accept-Language` deve ser consistente com `navigator.language`, `n
 
 Como o Pydoll dirige um navegador Chromium real através do CDP, todos os fingerprints de nível de navegador são autênticos por padrão. Os fingerprints de canvas, WebGL e AudioContext vêm de hardware de GPU e áudio de verdade. As propriedades do navigator, os plugins e as dimensões de tela refletem o estado real do navegador. Os cabeçalhos HTTP, incluindo sua ordem, são gerados pela pilha de rede do Chrome.
 
-O principal risco em automação é a inconsistência entre camadas. Definir um User-Agent customizado sem sincronizar as propriedades relacionadas cria divergências trivialmente detectáveis. O Pydoll cuida disso automaticamente: quando ele detecta `--user-agent=` nos argumentos do navegador, usa `Emulation.setUserAgentOverride` para sincronizar a string do User-Agent, a plataforma e os metadados completos de Client Hints em todas as camadas. Ele também injeta sobrescritas de `navigator.vendor` e `navigator.appVersion` via `Page.addScriptToEvaluateOnNewDocument` para garantir consistência em abas recém-abertas.
+O principal risco em automação é a inconsistência entre camadas. Definir um User-Agent customizado sem sincronizar as propriedades relacionadas cria divergências trivialmente detectáveis. O Pydoll cuida disso automaticamente: quando ele detecta `--user-agent=` nos argumentos do navegador, usa `Emulation.setUserAgentOverride` para sincronizar a string do User-Agent, `navigator.platform`, `vendor`, `appVersion` e os metadados completos de Client Hints em todas as camadas, em toda aba, sem nada injetado na página. Os workers, cujo `WorkerNavigator` o override só alcança em parte, recebem o mesmo script de identidade reforçado que `apply_fingerprint()` usa.
 
 Os cabeçalhos de idioma vêm da flag `--lang` e de `set_accept_languages()`, e `webrtc_leak_protection` impede que o WebRTC exponha o IP real por trás de um proxy. O fuso horário e a geolocalização precisam casar com a localização do IP do proxy e permanecer consistentes com todo o resto; [`tab.apply_fingerprint()`](../../stealth/fingerprint-injection.md) os aplica junto com a localidade, o User-Agent e os Client Hints, a partir de um único perfil coerente.
 

@@ -2,7 +2,7 @@
 
 You cannot improve what you cannot measure. Once a profile is applied, the question is which signals now read as a real device and which still leak, and no amount of reading the code answers it as well as pointing a detector at the browser. This page covers how to measure that, from a free bot score to reading exactly what a commercial detector collects.
 
-It builds on [The limits of spoofing](spoofing-limits.md): that page explains what can and cannot be faked, this one shows how to check what your setup actually did.
+It is the measuring side of [Fingerprint injection](../../stealth/fingerprint-injection.md): that page applies a profile, this one shows how to check what it actually did.
 
 ## Read the bot score
 
@@ -71,7 +71,7 @@ result = await tab.execute_script('''
 ''', return_by_value=True)
 ```
 
-If `matchMedia` and the CSS path disagree, an override is lying on one path only, the failure mode [The limits of spoofing](spoofing-limits.md) walks through. The same test applies across realms (page versus worker) and across APIs (the WebGL string versus the WebGPU adapter). A coherent profile passes all of them; a contradiction is a signal you introduced.
+If `matchMedia` and the CSS path disagree, an override is lying on one path only. The same test applies across realms (page versus worker) and across APIs (the WebGL string versus the WebGPU adapter). A coherent profile passes all of them; a contradiction is a signal you introduced.
 
 ## Read what a real detector collects
 
@@ -96,6 +96,5 @@ So the deepest audit is a capture. Use [request interception](../../guides/reque
 
 ## Related
 
-- [The limits of spoofing](spoofing-limits.md): what a spoof can and cannot move.
 - [Fingerprint injection](../../stealth/fingerprint-injection.md): applying a coherent profile.
 - [Browser contexts](../../guides/browser-contexts.md): one identity per context, the real lever for a fresh visitor.

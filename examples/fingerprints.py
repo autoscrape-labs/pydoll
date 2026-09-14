@@ -11,7 +11,7 @@ Two rules keep a profile undetectable:
    drive. The network-layer fingerprint (TLS JA3/JA4, HTTP/2 SETTINGS) comes from
    the actual browser and is NOT spoofable, so a UA claiming a different major
    than the binary is itself an inconsistency. Bump ``CHROME_*`` when you upgrade
-   Chrome (these target Chrome 145).
+   Chrome (these target Chrome 152).
 
 2. The locale/timezone/geolocation must match the geography of your egress IP (or
    proxy). The ``Accept-Language`` header (built from ``locale``) is sent on every
@@ -28,6 +28,7 @@ reduced automatically for ``navigator.userAgent``.
 
 from pydoll.protocol.fingerprint.types import (
     AudioFingerprint,
+    ClientHintsFingerprint,
     FingerprintConfig,
     FontFingerprint,
     GeolocationFingerprint,
@@ -42,10 +43,11 @@ from pydoll.protocol.fingerprint.types import (
     SpeechFingerprint,
     SpeechVoice,
     WebGLProfile,
+    WebGPUProfile,
 )
 
 CHROME_MOBILE = '145.0.7632.45'
-CHROME_DESKTOP = '151.0.7827.201'
+CHROME_DESKTOP = '152.0.7977.83'
 
 UA_ANDROID = (
     'Mozilla/5.0 (Linux; Android 10; K) '
@@ -169,6 +171,27 @@ MOBILE_WEBGL2_EXTENSIONS = [
     'WEBGL_multi_draw',
 ]
 
+# ANGLE on Direct3D 11 has no reduced precision: every float precision reports
+# the full 32-bit range and every int precision the full 32-bit int range.
+SHADER_PRECISION_D3D11 = {
+    'vertex': {
+        'highFloat': [127, 127, 23],
+        'mediumFloat': [127, 127, 23],
+        'lowFloat': [127, 127, 23],
+        'highInt': [31, 30, 0],
+        'mediumInt': [31, 30, 0],
+        'lowInt': [31, 30, 0],
+    },
+    'fragment': {
+        'highFloat': [127, 127, 23],
+        'mediumFloat': [127, 127, 23],
+        'lowFloat': [127, 127, 23],
+        'highInt': [31, 30, 0],
+        'mediumInt': [31, 30, 0],
+        'lowInt': [31, 30, 0],
+    },
+}
+
 SHADER_PRECISION_DEFAULT = {
     'vertex': {
         'highFloat': [127, 127, 23],
@@ -187,6 +210,220 @@ SHADER_PRECISION_DEFAULT = {
         'lowInt': [15, 14, 0],
     },
 }
+
+# Captured from Chrome 152 on an Apple M4 (macOS, Metal backend). Chrome blanks
+# ``device`` and ``description``; the limits and the feature set are the whole
+# adapter as ``requestAdapter()`` reports it.
+WEBGPU_APPLE_M_SERIES = WebGPUProfile(
+    vendor='apple',
+    architecture='metal-3',
+    device='',
+    description='',
+    limits={
+        'maxTextureDimension1D': 16384,
+        'maxTextureDimension2D': 16384,
+        'maxTextureDimension3D': 2048,
+        'maxTextureArrayLayers': 2048,
+        'maxBindGroups': 4,
+        'maxBindGroupsPlusVertexBuffers': 24,
+        'maxBindingsPerBindGroup': 1000,
+        'maxDynamicUniformBuffersPerPipelineLayout': 10,
+        'maxDynamicStorageBuffersPerPipelineLayout': 8,
+        'maxSampledTexturesPerShaderStage': 48,
+        'maxSamplersPerShaderStage': 16,
+        'maxStorageBuffersPerShaderStage': 10,
+        'maxStorageTexturesPerShaderStage': 8,
+        'maxUniformBuffersPerShaderStage': 12,
+        'maxUniformBufferBindingSize': 65536,
+        'maxStorageBufferBindingSize': 4294967292,
+        'minUniformBufferOffsetAlignment': 256,
+        'minStorageBufferOffsetAlignment': 256,
+        'maxVertexBuffers': 8,
+        'maxBufferSize': 4294967292,
+        'maxVertexAttributes': 30,
+        'maxVertexBufferArrayStride': 2048,
+        'maxInterStageShaderVariables': 28,
+        'maxColorAttachments': 8,
+        'maxColorAttachmentBytesPerSample': 128,
+        'maxComputeWorkgroupStorageSize': 32768,
+        'maxComputeInvocationsPerWorkgroup': 1024,
+        'maxComputeWorkgroupSizeX': 1024,
+        'maxComputeWorkgroupSizeY': 1024,
+        'maxComputeWorkgroupSizeZ': 64,
+        'maxComputeWorkgroupsPerDimension': 65535,
+        'maxImmediateSize': 64,
+        'maxStorageBuffersInFragmentStage': 10,
+        'maxStorageTexturesInFragmentStage': 8,
+        'maxStorageBuffersInVertexStage': 10,
+        'maxStorageTexturesInVertexStage': 8,
+    },
+    features=[
+        'depth32float-stencil8',
+        'rg11b10ufloat-renderable',
+        'bgra8unorm-storage',
+        'texture-formats-tier1',
+        'texture-compression-bc',
+        'dual-source-blending',
+        'core-features-and-limits',
+        'float32-filterable',
+        'indirect-first-instance',
+        'texture-compression-astc-sliced-3d',
+        'float32-blendable',
+        'subgroup-size-control',
+        'texture-compression-astc',
+        'texture-compression-etc2',
+        'depth-clip-control',
+        'texture-compression-bc-sliced-3d',
+        'clip-distances',
+        'texture-formats-tier2',
+        'shader-f16',
+        'timestamp-query',
+        'primitive-index',
+        'texture-component-swizzle',
+        'subgroups',
+    ],
+)
+
+# NVIDIA GeForce RTX 3060 on Windows, Chrome D3D12 backend. ``vendor`` and
+# ``architecture`` come from a real Chrome 150 capture of an RTX 3060; the
+# limits are the webgpu.report aggregate for NVIDIA + Windows + Chrome (42
+# adapters, every limit identical across them) and match Dawn's D3D12 tier
+# tables; the features are the ones at 100% in that aggregate (Ampere has
+# shader-f16), plus subgroup-size-control which Dawn enables on any current
+# NVIDIA driver.
+WEBGPU_NVIDIA_AMPERE_D3D12 = WebGPUProfile(
+    vendor='nvidia',
+    architecture='ampere',
+    device='',
+    description='',
+    limits={
+        'maxTextureDimension1D': 16384,
+        'maxTextureDimension2D': 16384,
+        'maxTextureDimension3D': 2048,
+        'maxTextureArrayLayers': 2048,
+        'maxBindGroups': 4,
+        'maxBindGroupsPlusVertexBuffers': 24,
+        'maxBindingsPerBindGroup': 1000,
+        'maxDynamicUniformBuffersPerPipelineLayout': 10,
+        'maxDynamicStorageBuffersPerPipelineLayout': 8,
+        'maxSampledTexturesPerShaderStage': 48,
+        'maxSamplersPerShaderStage': 16,
+        'maxStorageBuffersPerShaderStage': 16,
+        'maxStorageTexturesPerShaderStage': 8,
+        'maxUniformBuffersPerShaderStage': 12,
+        'maxUniformBufferBindingSize': 65536,
+        'maxStorageBufferBindingSize': 2147483644,
+        'minUniformBufferOffsetAlignment': 256,
+        'minStorageBufferOffsetAlignment': 256,
+        'maxVertexBuffers': 8,
+        'maxBufferSize': 2147483648,
+        'maxVertexAttributes': 30,
+        'maxVertexBufferArrayStride': 2048,
+        'maxInterStageShaderVariables': 28,
+        'maxColorAttachments': 8,
+        'maxColorAttachmentBytesPerSample': 128,
+        'maxComputeWorkgroupStorageSize': 32768,
+        'maxComputeInvocationsPerWorkgroup': 1024,
+        'maxComputeWorkgroupSizeX': 1024,
+        'maxComputeWorkgroupSizeY': 1024,
+        'maxComputeWorkgroupSizeZ': 64,
+        'maxComputeWorkgroupsPerDimension': 65535,
+    },
+    features=[
+        'core-features-and-limits',
+        'depth-clip-control',
+        'depth32float-stencil8',
+        'texture-compression-bc',
+        'texture-compression-bc-sliced-3d',
+        'timestamp-query',
+        'indirect-first-instance',
+        'shader-f16',
+        'rg11b10ufloat-renderable',
+        'bgra8unorm-storage',
+        'float32-filterable',
+        'float32-blendable',
+        'clip-distances',
+        'dual-source-blending',
+        'subgroups',
+        'texture-component-swizzle',
+        'texture-formats-tier1',
+        'texture-formats-tier2',
+        'primitive-index',
+        'subgroup-size-control',
+    ],
+)
+
+# Qualcomm Adreno 750 (Galaxy S24 Ultra) on Android, Chrome Vulkan backend.
+# ``vendor`` / ``architecture`` come from a real Chrome 150 capture of an
+# Adreno 740 (same ``adreno-7xx`` bucket in Dawn's gpu_info); the limits are
+# derived from the Galaxy S24 Ultra Vulkan capability reports through Dawn's
+# Vulkan mapping and Chrome's limit tiers, and agree with the webgpu.report
+# Qualcomm + Android aggregate on every discriminating value (128 MiB storage
+# binding, 16 inter-stage variables, 2 GiB maxBufferSize).
+WEBGPU_ADRENO_750_VULKAN = WebGPUProfile(
+    vendor='qualcomm',
+    architecture='adreno-7xx',
+    device='',
+    description='',
+    limits={
+        'maxTextureDimension1D': 16384,
+        'maxTextureDimension2D': 16384,
+        'maxTextureDimension3D': 2048,
+        'maxTextureArrayLayers': 2048,
+        'maxBindGroups': 4,
+        'maxBindGroupsPlusVertexBuffers': 24,
+        'maxBindingsPerBindGroup': 1000,
+        'maxDynamicUniformBuffersPerPipelineLayout': 10,
+        'maxDynamicStorageBuffersPerPipelineLayout': 8,
+        'maxSampledTexturesPerShaderStage': 48,
+        'maxSamplersPerShaderStage': 16,
+        'maxStorageBuffersPerShaderStage': 16,
+        'maxStorageTexturesPerShaderStage': 8,
+        'maxUniformBuffersPerShaderStage': 12,
+        'maxUniformBufferBindingSize': 65536,
+        'maxStorageBufferBindingSize': 134217728,
+        'minUniformBufferOffsetAlignment': 256,
+        'minStorageBufferOffsetAlignment': 256,
+        'maxVertexBuffers': 8,
+        'maxBufferSize': 2147483648,
+        'maxVertexAttributes': 30,
+        'maxVertexBufferArrayStride': 2048,
+        'maxInterStageShaderVariables': 16,
+        'maxColorAttachments': 8,
+        'maxColorAttachmentBytesPerSample': 128,
+        'maxComputeWorkgroupStorageSize': 32768,
+        'maxComputeInvocationsPerWorkgroup': 1024,
+        'maxComputeWorkgroupSizeX': 1024,
+        'maxComputeWorkgroupSizeY': 1024,
+        'maxComputeWorkgroupSizeZ': 64,
+        'maxComputeWorkgroupsPerDimension': 65535,
+    },
+    features=[
+        'core-features-and-limits',
+        'depth-clip-control',
+        'depth32float-stencil8',
+        'texture-compression-bc',
+        'texture-compression-bc-sliced-3d',
+        'texture-compression-etc2',
+        'texture-compression-astc',
+        'texture-compression-astc-sliced-3d',
+        'timestamp-query',
+        'indirect-first-instance',
+        'shader-f16',
+        'rg11b10ufloat-renderable',
+        'bgra8unorm-storage',
+        'float32-filterable',
+        'float32-blendable',
+        'clip-distances',
+        'dual-source-blending',
+        'subgroups',
+        'texture-component-swizzle',
+        'texture-formats-tier1',
+        'texture-formats-tier2',
+        'primitive-index',
+        'subgroup-size-control',
+    ],
+)
 
 SPEECH_WINDOWS = SpeechFingerprint(
     voices=[
@@ -315,6 +552,7 @@ FINGERPRINTS: dict[str, FingerprintConfig] = {
     # Android (mobile) — Brazilian identity (pair with a Brazilian egress IP).
     'android_s24_ultra_sao_paulo': FingerprintConfig(
         user_agent=UA_ANDROID,
+        client_hints=ClientHintsFingerprint(platform_version='15.0.0', model='SM-S928B'),
         navigator=NavigatorFingerprint(
             platform='Linux armv81',
             vendor='Google Inc.',
@@ -339,6 +577,7 @@ FINGERPRINTS: dict[str, FingerprintConfig] = {
             webgl2_extensions=MOBILE_WEBGL2_EXTENSIONS,
             shader_precision_formats=SHADER_PRECISION_DEFAULT,
         ),
+        webgpu=WEBGPU_ADRENO_750_VULKAN,
         screen=ScreenFingerprint(
             width=384,
             height=832,
@@ -369,6 +608,7 @@ FINGERPRINTS: dict[str, FingerprintConfig] = {
     # Windows desktop — US identity (pair with a US egress IP / proxy).
     'windows11_rtx3060_nyc': FingerprintConfig(
         user_agent=UA_WINDOWS,
+        client_hints=ClientHintsFingerprint(platform_version='15.0.0'),
         navigator=NavigatorFingerprint(
             platform='Win32',
             vendor='Google Inc.',
@@ -377,22 +617,34 @@ FINGERPRINTS: dict[str, FingerprintConfig] = {
         ),
         webgl=WebGLProfile(
             vendor='Google Inc. (NVIDIA)',
-            renderer='ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 Direct3D11 vs_5_0 ps_5_0, D3D11)',
-            max_texture_size=32768,
-            max_renderbuffer_size=32768,
-            max_viewport_dims=[32768, 32768],
+            renderer=(
+                'ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) '
+                'Direct3D11 vs_5_0 ps_5_0, D3D11)'
+            ),
+            max_texture_size=16384,
+            max_renderbuffer_size=16384,
+            max_viewport_dims=[32767, 32767],
+            max_cube_map_texture_size=16384,
+            max_3d_texture_size=2048,
+            max_array_texture_layers=2048,
             max_vertex_attribs=16,
             max_vertex_uniform_vectors=4096,
             max_fragment_uniform_vectors=1024,
-            max_texture_image_units=32,
-            max_vertex_texture_image_units=32,
-            max_combined_texture_image_units=192,
+            max_varying_vectors=30,
+            max_texture_image_units=16,
+            max_vertex_texture_image_units=16,
+            max_combined_texture_image_units=32,
+            max_color_attachments=8,
+            max_draw_buffers=8,
+            max_samples=8,
+            max_uniform_block_size=65536,
             aliased_line_width_range=[1, 1],
             aliased_point_size_range=[1, 1024],
             supported_extensions=DESKTOP_EXTENSIONS,
             webgl2_extensions=DESKTOP_WEBGL2_EXTENSIONS,
-            shader_precision_formats=SHADER_PRECISION_DEFAULT,
+            shader_precision_formats=SHADER_PRECISION_D3D11,
         ),
+        webgpu=WEBGPU_NVIDIA_AMPERE_D3D12,
         screen=ScreenFingerprint(
             width=1920,
             height=1080,
@@ -425,6 +677,7 @@ FINGERPRINTS: dict[str, FingerprintConfig] = {
     # macOS desktop — US identity (pair with a US egress IP / proxy).
     'macos_m3_new_york': FingerprintConfig(
         user_agent=UA_MAC,
+        client_hints=ClientHintsFingerprint(platform_version='15.6.1'),
         navigator=NavigatorFingerprint(
             platform='MacIntel',
             vendor='Google Inc.',
@@ -447,6 +700,7 @@ FINGERPRINTS: dict[str, FingerprintConfig] = {
             aliased_point_size_range=[1, 511],
             shader_precision_formats=SHADER_PRECISION_DEFAULT,
         ),
+        webgpu=WEBGPU_APPLE_M_SERIES,
         screen=ScreenFingerprint(
             width=1440,
             height=900,

@@ -23,6 +23,7 @@ class EmulationMethod(str, Enum):
     SET_LOCALE_OVERRIDE = 'Emulation.setLocaleOverride'
     SET_HARDWARE_CONCURRENCY_OVERRIDE = 'Emulation.setHardwareConcurrencyOverride'
     SET_EMULATED_MEDIA = 'Emulation.setEmulatedMedia'
+    SET_TOUCH_EMULATION_ENABLED = 'Emulation.setTouchEmulationEnabled'
     GET_SCREEN_INFOS = 'Emulation.getScreenInfos'
     UPDATE_SCREEN = 'Emulation.updateScreen'
 
@@ -121,6 +122,19 @@ class SetHardwareConcurrencyOverrideParams(TypedDict):
 SetHardwareConcurrencyOverrideCommand = Command[
     SetHardwareConcurrencyOverrideParams, Response[EmptyResponse]
 ]
+
+
+class SetTouchEmulationEnabledParams(TypedDict):
+    """Parameters for enabling touch event emulation.
+
+    See https://chromedevtools.github.io/devtools-protocol/tot/Emulation/#method-setTouchEmulationEnabled
+    """
+
+    enabled: bool
+    maxTouchPoints: NotRequired[int]
+
+
+SetTouchEmulationEnabledCommand = Command[SetTouchEmulationEnabledParams, Response[EmptyResponse]]
 
 
 class SetEmulatedMediaParams(TypedDict, total=False):

@@ -55,7 +55,7 @@ const fingerprint = {
 
 ### 硬件属性
 
-`navigator.hardwareConcurrency` 返回逻辑 CPU 核心数。值为 1 或 2 暗示是一台极简的虚拟机或容器，而不是真实用户的机器。`navigator.deviceMemory` 报告以 GB 为单位的近似 RAM（0.25、0.5、1、2、4、8）。这个属性只在 Chromium 浏览器中可用；Firefox 和 Safari 返回 `undefined`。这两个值都应与所声称的设备一致：一个声称是现代桌面机的 User-Agent，却报告 1 个核心和 0.5 GB 的 RAM，是可疑的。
+`navigator.hardwareConcurrency` 返回逻辑 CPU 核心数。值为 1 或 2 暗示是一台极简的虚拟机或容器，而不是真实用户的机器。`navigator.deviceMemory` 报告以 GB 为单位的近似 RAM（0.25、0.5、1、2、4、8，以及当前 Chrome 桌面版 build 上的 16）。这个属性只在 Chromium 浏览器中可用；Firefox 和 Safari 返回 `undefined`。这两个值都应与所声称的设备一致：一个声称是现代桌面机的 User-Agent，却报告 1 个核心和 0.5 GB 的 RAM，是可疑的。
 
 ### WebDriver 属性
 
@@ -254,7 +254,7 @@ Battery Status API（`navigator.getBattery()`）暴露了设备的电池电量�
 
 因为 Pydoll 通过 CDP 驱动的是一个真实的 Chromium 浏览器，所有浏览器级别的 fingerprint 默认都是真实的。canvas、WebGL 和 AudioContext fingerprint 来自实际的 GPU 和音频硬件。navigator 属性、插件和屏幕尺寸反映的是真实的浏览器状态。HTTP 头（包括它们的顺序）由 Chrome 的网络栈生成。
 
-自动化中的主要风险是各层次之间的不一致。设置自定义 User-Agent 而不同步相关属性，会造成极易检测的不匹配。Pydoll 会自动处理这一点：当它检测到浏览器参数中的 `--user-agent=` 时，会使用 `Emulation.setUserAgentOverride` 在所有层次之间同步 User-Agent 字符串、platform 以及完整的 Client Hints 元数据。它还通过 `Page.addScriptToEvaluateOnNewDocument` 注入 `navigator.vendor` 和 `navigator.appVersion` 的覆盖，以确保在新打开的标签页中保持一致。
+自动化中的主要风险是各层次之间的不一致。设置自定义 User-Agent 而不同步相关属性，会造成极易检测的不匹配。Pydoll 会自动处理这一点：当它检测到浏览器参数中的 `--user-agent=` 时，会使用 `Emulation.setUserAgentOverride` 在所有层次、每一个标签页中同步 User-Agent 字符串、`navigator.platform`、`vendor`、`appVersion` 以及完整的 Client Hints 元数据，不向页面注入任何东西。workers 的 `WorkerNavigator` 只被这个覆盖部分触及，它们会收到 `apply_fingerprint()` 所用的同一份加固身份脚本。
 
 语言头来自 `--lang` 标志和 `set_accept_languages()`，而 `webrtc_leak_protection` 阻止 WebRTC 暴露 proxy 背后的真实 IP。时区和地理位置需要与 proxy IP 的位置匹配，并与其他一切保持一致；[`tab.apply_fingerprint()`](../../stealth/fingerprint-injection.md) 会把它们与来自同一个一致 profile 的区域设置、User-Agent 和 Client Hints 一起应用。
 
