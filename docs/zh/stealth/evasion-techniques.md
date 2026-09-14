@@ -19,7 +19,7 @@
 
 最常见的自动化破绽是一个自相矛盾的 User-Agent：HTTP `User-Agent` 首部说的是一回事，而 `navigator.userAgent`、`navigator.platform` 和 Client Hints（`Sec-CH-UA`、`Sec-CH-UA-Platform`）说的又是另一回事。把 `--user-agent=` 作为普通的 Chrome 标志来设置，只会改变 HTTP 首部，而不会改动 JavaScript 和 Client Hints，这种不匹配会被检测器立刻读出来。
 
-Pydoll 会帮你修正这一点。当它检测到 `--user-agent=` 参数时，会用匹配的 `platform` 和完整的 Client Hints 元数据来应用 `Emulation.setUserAgentOverride`，并注入 `navigator.vendor` / `navigator.appVersion`，使每一层都保持一致，新标签页也不例外。
+Pydoll 会帮你修正这一点。当它检测到 `--user-agent=` 参数时，会用匹配的 `platform` 和完整的 Client Hints 元数据（greased brand 和 brand 顺序按 Chromium 对那个主版本的算法算出）来应用 `Emulation.setUserAgentOverride`，并暴露真实 Chrome 所报告的精简形式 `Chrome/MAJOR.0.0.0`，使每一层都保持一致，新标签页和 workers 也不例外。没有任何东西被注入页面：`navigator.userAgent`、`platform`、`vendor` 和 `appVersion` 全都来自 override 本身。
 
 ```python
 import asyncio

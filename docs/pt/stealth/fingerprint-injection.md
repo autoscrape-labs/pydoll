@@ -2,11 +2,14 @@
 
 ## Introdução
 
-`tab.apply_fingerprint()` dá ao navegador uma nova identidade. Ele sobrescreve os sinais que os scripts de fingerprinting leem, User-Agent e Client Hints, `navigator`, WebGL, métricas de tela, fontes, áudio, fuso horário e locale, na página, nos seus workers e nos seus cross-origin iframes, antes da primeira navegação. Você não monta um fingerprint na mão nem faz patch de `navigator`; você passa um perfil e o Pydoll o aplica de forma coerente.
+`tab.apply_fingerprint()` dá ao navegador uma nova identidade. Ele sobrescreve os sinais que os scripts de fingerprinting leem, User-Agent e Client Hints, `navigator`, WebGL e WebGPU, métricas de tela, fontes, áudio, permissões, fuso horário e locale, na página, nos seus workers (incluindo os aninhados) e nos seus cross-origin iframes, antes da primeira navegação. Você não monta um fingerprint na mão nem faz patch de `navigator`; você passa um perfil e o Pydoll o aplica de forma coerente, pelos comandos de override do próprio navegador onde existe um e por JavaScript reforçado só onde não existe nenhum.
 
 O ganho é concreto. Com um perfil compatível, o Chrome headless deixa de ser sinalizado como bot na hora e passa a ler como um desktop comum, o suficiente para [passar o desafio gerenciado do Cloudflare em modo headless](#clear-cloudflares-challenge-headless).
 
 Um limite honesto de saída: isto é substituição de identidade, não anonimato. Não muda o seu IP de saída nem o fingerprint da camada de rede, e um perfil inconsistente é mais detectável do que um navegador sem modificações. Fazer o perfil *combinar* com a sua máquina e o seu IP é o trabalho todo, e [as regras abaixo](#making-a-profile-pass) são esse checklist.
+
+!!! warning "Nada disto é garantia"
+    Tudo nesta página, e nos deep dives para os quais ela aponta, descreve o que um detector *pode* ler: as checagens que a literatura e os agentes de engenharia reversa documentam. Quais delas um site específico roda, e quanto cada uma pesa, é segredo daquele site. Um perfil mínimo (User-Agent, locale e fuso horário combinando com o host e o IP) passa em muitos alvos sozinho, e uma pequena inconsistência residual pode nunca ser lida. Comece simples, teste contra o site real e adicione campos só quando uma medição disser que um sinal específico é o que te bloqueia. Perseguir consistência total por si só é esforço que um alvo pode nunca recompensar.
 
 **Você vai aprender**
 
@@ -14,6 +17,7 @@ Um limite honesto de saída: isto é substituição de identidade, não anonimat
 - [Como ele passa o Cloudflare headless](#clear-cloudflares-challenge-headless)
 - [Como provar que está funcionando](#prove-it-with-a-bot-score)
 - [Como fazer um perfil passar](#making-a-profile-pass)
+- [O que é nativo e o que é JavaScript](#native-first)
 - [Como usar seus próprios perfis](#bring-your-own-profiles)
 
 ## Quick start {#quick-start}
@@ -115,7 +119,7 @@ print(version['product'])  # ex.: 'Chrome/151.0.7922.137'
 
 Detalhamento completo: [The Chrome version must match the binary](../deep-dive/fingerprinting/cloudflare-challenge.md#the-chrome-version-must-match-the-binary).
 
-### Combine locale e fuso horário com o IP de saída
+### Combine locale e fuso horário com o IP de saída {#match-locale-and-timezone-to-your-egress-ip}
 
 `Accept-Language`, `navigator.languages` e o fuso horário são cruzados com o país do IP. Um perfil US atrás de um IP brasileiro fez uma busca simples no Google retornar um captcha; ajustar para um locale brasileiro, combinando com o IP, removeu o bloqueio sem nenhuma outra mudança.
 
@@ -138,7 +142,30 @@ await tab.apply_fingerprint(FINGERPRINTS['macos_m3_new_york'], cross_origin_ifra
 
 Como a identidade chega a cada realm: [Workers and cross-origin iframes](../deep-dive/fingerprinting/execution-realms.md).
 
-### Um fingerprint por browser context
+### Scripts de service worker e de worker aninhado {#service-worker-and-nested-worker-scripts}
+
+Duas requisições são feitas pelo processo do navegador antes de existir qualquer target de worker: o fetch do script de um service worker e o fetch de um worker criado de dentro de outro worker. Nenhum override por sessão as alcança, então, sozinhas, elas saem com o User-Agent e o `Accept-Language` reais enquanto toda outra requisição carrega os do perfil, e um site que registra um service worker vê as duas identidades no servidor dele. O Pydoll fecha isso a partir da conexão do navegador: ele pausa apenas as requisições que o Chrome tipa como `Other` (esses dois fetches de script, favicons e afins; documentos, scripts, imagens e fetches da página nunca são pausados) com o domínio `Fetch` e reescreve os dois headers a partir do fingerprint registrado para o browser context da requisição. Medido no servidor de teste local, os dois scripts passam a chegar com a identidade do perfil, sem nenhuma flag de lançamento envolvida.
+
+Se você também definir `--user-agent`, mantenha-o igual ao User-Agent reduzido do perfil (`Chrome/MAJOR.0.0.0`); um valor diferente registra um warning no log.
+
+### Fixe os Client Hints que o User-Agent não consegue carregar
+
+Desde a redução do User-Agent, a string é congelada (`Mac OS X 10_15_7`, `Android 10; K`, `Chrome/152.0.0.0`) enquanto o Chrome real continua reportando a versão verdadeira do OS, o modelo do dispositivo e o form factor em `Sec-CH-UA-Platform-Version`, `Sec-CH-UA-Model` e `navigator.userAgentData.getHighEntropyValues()`. O parser preenche padrões plausíveis por OS. Defina `client_hints` para fixar os valores exatos lidos do dispositivo que você está imitando: hosts Windows 11 reportam `'13.0.0'` para cima dependendo da build, um Galaxy S24 Ultra reporta `'SM-S928B'`. Leia-os numa máquina real com `navigator.userAgentData.getHighEntropyValues(['platformVersion', 'model'])` em vez de adivinhar.
+
+```python
+fingerprint = FingerprintConfig(
+    user_agent=UA_WINDOWS,
+    client_hints=ClientHintsFingerprint(platform_version='15.0.0'),
+)
+```
+
+A brand greased (`"Not?A_Brand";v="24"`) e a ordem das três brands também não são texto livre. O Chromium calcula as duas a partir da versão major, então um detector consegue recalcular o `Sec-CH-UA` exato que um Chrome real daquele major envia. O Pydoll roda o mesmo algoritmo; você nunca escreve brands na mão.
+
+### Combine as fontes que você alega com as fontes que você instala
+
+A seção `fonts` cobre a sonda de presença via `FontFace.load()` (`document.fonts.check()` fica nativo: o Chrome real responde `true` para qualquer família, então forçar `false` ali é por si só uma denúncia). A sonda de fontes mais antiga não lê nenhuma das duas: ela mede a largura de um span de texto na família alegada contra um fallback, e o motor de layout responde com as fontes realmente instaladas. Num Mac, um perfil Windows mede Segoe UI e Calibri como ausentes e Menlo e Helvetica Neue como presentes, diga o perfil o que disser. Para passar nessa sonda, as fontes alegadas têm que estar instaladas no host, e `available_fonts` tem que listar o que está instalado, nada mais.
+
+### Um fingerprint por browser context {#one-fingerprint-per-browser-context}
 
 Service e shared workers são compartilhados dentro de um browser context, então um context guarda uma identidade. Aplicar um segundo fingerprint no mesmo context levanta `FingerprintContextConflict`. Rode identidades diferentes em contexts separados.
 
@@ -153,7 +180,23 @@ await tab_br.apply_fingerprint(FINGERPRINTS['android_s24_ultra_sao_paulo'])
 
 Veja [Browser contexts](../guides/browser-contexts.md).
 
-Algumas regras menores completam: aplique o fingerprint antes da primeira navegação; não combine a opção `--user-agent` com `apply_fingerprint()` (o perfil é dono do User-Agent); combine o vendor/renderer do WebGL e o color-gamut com a GPU e o display do host; use um IP residencial limpo. Sobre por que alguns sinais podem ser sobrescritos e outros não dá para forjar, veja [The limits of spoofing](../deep-dive/fingerprinting/spoofing-limits.md).
+Algumas regras menores completam: aplique o fingerprint antes da primeira navegação; se você definir a opção `--user-agent`, mantenha-a igual à do perfil (o perfil é dono do User-Agent); combine o vendor/renderer do WebGL, o adapter do WebGPU e o color-gamut com a GPU e o display do host, capturando os limites e as features do WebGPU de um dispositivo real daquela classe; use um IP residencial limpo. Sobre por que alguns sinais podem ser sobrescritos e outros não dá para forjar, veja [The limits of spoofing](../deep-dive/fingerprinting/spoofing-limits.md).
+
+### Modo headless {#headless-mode}
+
+O Chrome headless tem uma única tela virtual fixa (800x600, sem área de trabalho) e uma janela sem chrome. A seção `screen` de um perfil remodela as duas de forma nativa: `Emulation.updateScreen` define o tamanho da tela virtual, a área de trabalho (`availTop`, `availHeight`), a profundidade de cor e o pixel ratio inteiro para todo frame do navegador, cross-origin iframes incluídos, e `Browser.setWindowBounds` dimensiona a janela para `outer_width` x `outer_height`, então `outerWidth`, `innerWidth` e todo valor de `screen.*` vêm do próprio Chrome, sem nenhum getter JavaScript por trás. Um `device_pixel_ratio` fracionário (escala de display do Windows) é o único valor que a tela virtual não comporta; ele é aplicado à página via `setDeviceMetricsOverride` e arredondado para os cross-origin iframes.
+
+Em modo headful a tela real é real, então `screen.width`, `screen.height` e o pixel ratio são sobrescritos via `setDeviceMetricsOverride`, a janela é redimensionada para `outer_*`, e só os extras da área de trabalho (`availHeight`, `availTop`, `colorDepth`) mantêm um getter JavaScript.
+
+## Nativo primeiro, JavaScript por último {#native-first}
+
+Todo sinal que o Chrome consegue sobrescrever pelo próprio protocolo é aplicado ali, e o JavaScript do perfil nunca o toca: o User-Agent, `navigator.platform` / `appVersion` / `vendor`, `navigator.language` e `languages` (todos definidos por `Emulation.setUserAgentOverride`), os Client Hints, `hardwareConcurrency`, fuso horário, geolocalização, locale, as media features CSS, eventos de toque, permissões (`Browser.setPermission`, então `navigator.permissions.query()` retorna um `PermissionStatus` genuíno e `Notification.permission` concorda com ele) e, em headless, a tela inteira.
+
+Um override nativo não tem função nenhuma por trás. Isso importa para a única checagem que um getter JavaScript não consegue passar: chame o getter sobre um objeto estranho e leia a stack. Um accessor nativo lança `Illegal invocation` sem nenhum frame próprio; um accessor JavaScript lança o mesmo erro com uma linha extra `at get userAgent`. Fornecedores de detecção descrevem exatamente essa sonda. Mover a identidade para overrides nativos remove esse frame para todos os sinais acima.
+
+O que fica em JavaScript é o conjunto para o qual o Chrome não oferece comando: `deviceMemory`, `maxTouchPoints`, WebGL, WebGPU, dispositivos de mídia, vozes de síntese de fala, as capacidades do dispositivo de áudio, `navigator.connection`, fontes, a política de WebRTC e os extras da área de trabalho em headful. Cada um é escrito na forma nativa. Getters e métodos reportam `[native code]` sob `toString`, vivem no prototype real, chamam primeiro o nativo original para que um receiver estranho lance o erro real, e nunca criam propriedades próprias: um microfone falso é um `InputDeviceInfo`, uma voz falsa é uma `SpeechSynthesisVoice`, ambos com `Object.getOwnPropertyNames()` vazio. Os valores continuam fisicamente possíveis: um `OfflineAudioContext` reporta a taxa de amostragem com que foi construído, uma extensão WebGL que a GPU não tem é removida da lista em vez de forjada como um objeto vazio, e `WEBGL_debug_shaders` é escondida porque a fonte traduzida do shader nomeia o backend real.
+
+Um resíduo é inerente: esses getters JavaScript continuam sendo funções, então o frame extra de stack existe para eles. Não dá para removê-lo a partir do JavaScript; a estratégia acima mantém esse conjunto tão pequeno quanto o Chrome permite. Leia um sinal de duas formas para ver onde você está: [Auditar um fingerprint](../deep-dive/fingerprinting/auditing.md).
 
 ## Trazer seus próprios perfis {#bring-your-own-profiles}
 

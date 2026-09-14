@@ -23,7 +23,7 @@
 
 Pydoll 的两种机制会自行跨越 realm 边界，但仅限于单个进程之内：
 
-- **CDP `Emulation` 覆盖**（`setUserAgentOverride`、`setHardwareConcurrencyOverride`、`setTimezoneOverride`、`setLocaleOverride`、`setDeviceMetricsOverride`、`setEmulatedMedia`）由浏览器在 target 层面、也就是 JavaScript 之下应用。它们覆盖主文档以及同一进程中的每一个 frame。
+- **CDP `Emulation` 覆盖**（`setUserAgentOverride`，它在页面 realm 中还会带上 `navigator.platform` 和 `languages`，`setHardwareConcurrencyOverride`、`setTimezoneOverride`、`setLocaleOverride`、`setDeviceMetricsOverride`、`setTouchEmulationEnabled`、`setEmulatedMedia`）由浏览器在 target 层面、也就是 JavaScript 之下应用。它们覆盖主文档以及同一进程中的每一个 frame。`Browser.setPermission` 走得更远，覆盖整个浏览器 context。
 - **`Page.addScriptToEvaluateOnNewDocument`** 会在页面 target 的每一个 frame 中，先于该 frame 自己的脚本运行一段脚本。它覆盖主 realm 以及每一个同源（同进程）iframe。
 
 这两者合起来，无需任何额外工作就覆盖了主文档和同源 iframe。一个同源的子 iframe 读取的是注入的 `platform`、`hardwareConcurrency` 和 User-Agent，而不是宿主机器的。
@@ -47,7 +47,14 @@ Pydoll 的两种机制会自行跨越 realm 边界，但仅限于单个进程之
 
 每一种都暴露一个 `WorkerNavigator`，带有它自己的 `userAgent`、`platform`、`hardwareConcurrency`、`deviceMemory` 和 `languages`。一个检测器会启动一个 worker，重新读取这些值，并把它们与页面做比较。如果 worker 报告的是真实的机器，这次会话就会被标记。
 
-Pydoll 通过在一个 worker 运行之前附加到它来触及它。它启用 `Target.setAutoAttach` 并配合 `waitForDebuggerOnStart`，所以每一个 worker 在创建时都会以**暂停**状态附加。在附加时，Pydoll 会重放 User-Agent 和 `hardwareConcurrency` 这两个 CDP 覆盖，并在那个会话上执行 worker fingerprint 脚本，然后恢复这个 worker。它一启动就已经穿戴好了身份，所以它的第一次读取就已经是注入的那个。
+Pydoll 通过在一个 worker 运行之前附加到它来触及它。它启用 `Target.setAutoAttach` 并配合 `waitForDebuggerOnStart`，所以每一个 worker 在创建时都会以**暂停**状态附加。在附加时，Pydoll 会重放 User-Agent、`languages` 和 `hardwareConcurrency` 这几个 CDP 覆盖，并在那个会话上执行 worker fingerprint 脚本，然后恢复这个 worker。它一启动就已经穿戴好了身份，所以它的第一次读取就已经是注入的那个。
+
+CDP 覆盖并不会把所有东西都带进 worker。在 Chrome 152 上实测：`acceptLanguage` 以原生方式抵达每一种 worker，`userAgent` 抵达 dedicated worker 但抵达不了 shared 和 service worker，而 `platform` 抵达不了任何一个 `WorkerNavigator`。worker 脚本恰好用加固过的 getter 填补这些缺口；页面 realm 一个都不需要。
+
+一个 worker 可以派生出它自己的 worker。嵌套 worker 是 *worker* target 的子级，而不是页面的，所以设置在页面上的 auto-attach 永远看不到它，它会带着真实身份运行。Pydoll 也会在每一个已附加的 worker 会话上设置 auto-attach，所以嵌套 worker 会在同一条连接上以暂停状态附加，并走同一套重放。
+
+!!! note "service worker 的脚本在 worker 存在之前就被抓取了"
+    service worker 脚本（以及嵌套 worker 脚本）的请求是由浏览器进程发出的，早于任何 Pydoll 能够附加到的 target，所以按会话的覆盖永远看不到它。Pydoll 转而用 `Fetch` 域从浏览器连接上重写它的 User-Agent 和 `Accept-Language`；参见 [Service worker 与嵌套 worker 的脚本](../../stealth/fingerprint-injection.md#service-worker-and-nested-worker-scripts)。
 
 ## 标签页作用域与浏览器作用域
 
@@ -77,7 +84,7 @@ flowchart TB
     BC -->|attach + replay, scoped to the context| SH
 ```
 
-因为 service worker 和 shared worker 会被一个 context 中的每一个标签页所共享，所以一个浏览器 context 只持有单一身份。对一个已经拥有 fingerprint 的 context 再应用另一个不同的 fingerprint，会抛出 `FingerprintContextConflict`（参见 [跨 context 使用多个 fingerprint](../../stealth/fingerprint-injection.md#multiple-fingerprints-across-contexts)）。
+因为 service worker 和 shared worker 会被一个 context 中的每一个标签页所共享，所以一个浏览器 context 只持有单一身份。对一个已经拥有 fingerprint 的 context 再应用另一个不同的 fingerprint，会抛出 `FingerprintContextConflict`（参见 [每个 browser context 一个 fingerprint](../../stealth/fingerprint-injection.md#one-fingerprint-per-browser-context)）。
 
 ## 跨源 iframe 运行在另一个进程中
 
@@ -104,6 +111,7 @@ Pydoll 用它对付 worker 时所用的同一套附加并重放（attach-and-rep
 | 主文档 | 否 | 页面脚本 + Emulation | 标签页 |
 | 同源 iframe | 否 | 页面脚本 + Emulation | 标签页 |
 | Dedicated worker | 是 | 附加 + 重放 | 标签页 |
+| 嵌套 worker（worker 中的 worker） | 是 | 附加 + 重放，从父 worker 的会话发起 | 标签页 |
 | 跨源 iframe（OOPIF） | 是 | 附加 + 重放 | 标签页 |
 | Shared worker | 是 | 附加 + 重放 | 浏览器 context |
 | Service worker | 是 | 附加 + 重放 | 浏览器 context |

@@ -10,7 +10,7 @@ Um sinal do navegador costuma ter mais de um caminho de leitura. `matchMedia('(c
 
 É isso que separa um bom override de um detectável:
 
-- Um **override nativo** muda o valor no motor. O Pydoll aplica esses através do domínio `Emulation` do CDP, para o User-Agent, o fuso horário, a tela, o locale, o `hardwareConcurrency` e as media features CSS. Todo caminho de leitura então retorna o novo valor, e eles concordam. Não há nenhum wrapper JavaScript para inspecionar.
+- Um **override nativo** muda o valor no motor. O Pydoll aplica esses através dos domínios `Emulation` e `Browser` do CDP, para o User-Agent e `navigator.platform` / `appVersion` / `vendor` / `languages`, os Client Hints, o fuso horário, a geolocalização, a tela, o locale, o `hardwareConcurrency`, o toque, as permissões e as media features CSS. Todo caminho de leitura então retorna o novo valor, e eles concordam. Não há nenhum wrapper JavaScript para inspecionar, nem nenhum frame JavaScript num stack trace.
 - Um **override em JavaScript** envolve uma API, um getter de `navigator` ou o `matchMedia`. Ele muda esse único caminho. Qualquer outro caminho que leia o mesmo sinal ainda retorna o valor real.
 
 Uma media feature vive no `MediaValues` do motor, e ambos os caminhos de leitura resolvem contra ele. Alterne o tipo de override abaixo para ver quais caminhos cada um alcança:
@@ -28,7 +28,9 @@ A demonstração abaixo roda no seu próprio display. Ambos os cartões leem o s
 O Pydoll expõe seis dos sete. A exceção é o `prefers-reduced-data`: ele está na allowlist mas foi lançado desativado no Chrome, então o `matchMedia` não reporta correspondência para valor nenhum, e defini-lo alegaria algo que um Chrome real nunca retorna. A única alavanca que sobra para as features não listadas é o JavaScript, que só consegue mentir em um caminho, então o Pydoll deixa o `dynamic-range` real e pede que você combine o `color-gamut` com ele.
 
 !!! note "Quando um override em JavaScript é seguro"
-    O Pydoll usa sim overrides em JS, para `deviceMemory`, strings do WebGL, plugins e mais. Eles são seguros porque o CDP não consegue alcançar esses sinais **e** nenhum segundo caminho de leitura os contradiz, e cada um é reforçado para sobreviver à inspeção de `toString`, de prototype e de worker (veja [Detectando overrides em JavaScript](../../stealth/fingerprint-injection.md#detecting-javascript-overrides)). A regra: um override em JS é seguro apenas quando é a única fonte da verdade para aquele sinal.
+    O Pydoll usa sim overrides em JS, para `deviceMemory`, `maxTouchPoints`, WebGL, dispositivos de mídia, vozes, fontes e os extras da área de trabalho em headful. Eles são usados apenas onde o CDP não consegue alcançar o sinal **e** nenhum segundo caminho de leitura os contradiz, e cada um é escrito na forma nativa: `[native code]` sob `toString`, o prototype real, nenhuma propriedade própria, o nativo original chamado primeiro para que um receiver estranho lance o `Illegal invocation` real, e valores que continuam fisicamente possíveis (veja [Nativo primeiro, JavaScript por último](../../stealth/fingerprint-injection.md#native-first)). A regra: um override em JS é seguro apenas quando é a única fonte da verdade para aquele sinal.
+
+    Uma denúncia sobrevive mesmo a isso: um getter JavaScript é uma função, então um erro lançado enquanto ele roda carrega um frame extra de stack que um accessor nativo não tem. É por isso que o Pydoll move tudo o que consegue para overrides nativos e mantém o conjunto em JavaScript tão pequeno quanto o Chrome permite.
 
 ## O piso intransponível: sinais que nenhum override consegue forjar {#the-hard-floor-signals-no-override-can-fake}
 
@@ -51,7 +53,7 @@ O que esses sinais expõem é *qual máquina*, não *que é um bot*. Para um scr
 
 Um fingerprint é lido entre camadas e correlacionado. Sobrescrever uma camada enquanto outra ainda reporta a verdade é uma contradição, e uma contradição pontua pior do que um navegador sem modificações.
 
-Tome uma GPU. O Pydoll sobrescreve a string do renderer do WebGL, então um perfil pode nomear uma placa NVIDIA, mas não toca no WebGPU. Aplicando o perfil de Windows neste host (Apple M3, Chrome 151) e lendo ambas as APIs, medido:
+Tome uma GPU. Um perfil de WebGL nomeia uma placa, mas a mesma GPU é descrita uma segunda vez pelo WebGPU: `navigator.gpu.requestAdapter()` expõe `adapter.info` (`vendor`, `architecture`), cerca de trinta `adapter.limits` e um conjunto de features. Aplicando um perfil de Windows com NVIDIA neste host (Apple M4, Chrome 152) com apenas a seção de WebGL definida, medido:
 
 | Sinal | Lê | Vem de |
 |--------|-------|------------|
@@ -61,21 +63,19 @@ Tome uma GPU. O Pydoll sobrescreve a string do renderer do WebGL, então um perf
 | `maxComputeWorkgroupStorageSize` do WebGPU | `32768` | a GPU real |
 | Hash de canvas, este perfil vs o perfil de macOS | idêntico | a GPU real |
 
-O WebGL diz NVIDIA; o WebGPU, seus limites e o canvas dizem todos Apple. O override moveu uma string e deixou todo o resto dos sinais renderizados e reportados descrevendo a GPU real, então um perfil de Windows em hardware Apple contradiz a si mesmo. Uma GPU forjada pela metade é mais detectável do que a real.
+O WebGL diz NVIDIA; o WebGPU e o canvas dizem Apple. Os fornecedores de detecção cruzam exatamente esse par. A seção `webgpu` do perfil fecha a metade reportada: o adapter real é mantido, então `requestDevice()` e a renderização continuam funcionando, e os objetos `info`, `limits` e `features` dele respondem com os valores do perfil através de getters nos prototypes reais de `GPUAdapterInfo` / `GPUSupportedLimits` / `GPUSupportedFeatures`, sem propriedades próprias e com os brand checks nativos intactos.
 
-### Por que o Pydoll deixa o WebGPU em paz
+### O que um perfil de WebGPU tem que ser
 
-Você poderia tentar fechar essa lacuna forjando o WebGPU para combinar, a string do vendor e depois os cerca de trinta limites do adapter. O Pydoll construiu exatamente isso e reverteu. Cada limite tem que ser um valor fisicamente real para a placa que você alega, a mesma restrição que faz de um parâmetro errado do WebGL uma denúncia; os conjuntos reais de limites por GPU não são publicados, então você estaria adivinhando; a lista muda a cada versão do Chrome; e nem mesmo um conjunto perfeito consegue mover o hash de timing da GPU, que é renderizado, não reportado.
+O conjunto de limites e a lista de features são uma assinatura física de GPU, driver e backend, e o Chrome não os publica por placa. Um conjunto adivinhado é mais fácil de sinalizar do que a verdade, então os valores têm que ser uma captura de um dispositivo real da classe alegada, lida com `requestAdapter()` naquela máquina (o perfil de exemplo de macOS é uma captura de um Apple M4). O que nenhuma seção consegue mover é o que a GPU computa: uma carga de WebGPU renderizada ou cronometrada continua descrevendo o host. Num host sem adapter nenhum não há onde ancorar os valores, e o perfil não pode alegar uma GPU.
 
-Então a decisão honesta de engenharia foi não forjar essa camada de jeito nenhum. Perseguir uma coerência que você não consegue manter troca um ganho pequeno e frágil por um grande custo de manutenção e um jeito novo de ser pego. O Pydoll sobrescreve a string do renderer do WebGL e deixa o WebGPU e a saída renderizada reais, o que significa que o perfil tem que nomear a família de GPU que está de fato presente.
-
-É por isso que o [checklist de Injeção de fingerprint](../../stealth/fingerprint-injection.md#checklist) insiste que o sistema operacional e a GPU do perfil combinem com o host. Você pode mover uma string, mas a saída renderizada permanece real, então a string tem que descrever o hardware que está de fato ali.
+É por isso que o [checklist de Injeção de fingerprint](../../stealth/fingerprint-injection.md#making-a-profile-pass) insiste que a família de GPU do perfil combine com o host. Você pode mover todo valor reportado, mas a saída renderizada permanece real, então os valores têm que descrever hardware da classe que está de fato ali.
 
 ### O sistema operacional é o que você não consegue mover
 
 O sinal mais claro que você só consegue combinar, nunca forjar, é o sistema operacional. Defina o User-Agent, o `navigator.platform` e os Client Hints e o navegador diz Windows de imediato, mas o sistema operacional vaza através de camadas que nenhum override alcança, e através de mais de uma ao mesmo tempo.
 
-A decisiva é a stack TCP/IP do kernel. O pacote SYN de toda conexão carrega o TTL inicial (64 no macOS e no Linux, 128 no Windows), o tamanho e a escala da janela TCP e a ordem das opções, tudo definido pelo kernel do host antes de qualquer JavaScript rodar. Um User-Agent de Windows chegando por uma conexão com TTL 64 é uma contradição lida na camada de transporte, e nenhum override de CDP ou JavaScript a toca. O [Fingerprinting de rede](network-fingerprinting.md) cobre essa stack em profundidade; é por isso que um perfil de Windows num Mac falha no managed challenge do Cloudflare.
+A mais distante do alcance é a stack TCP/IP do kernel. O pacote SYN de toda conexão carrega o TTL inicial (64 no macOS e no Linux, 128 no Windows), o tamanho e a escala da janela TCP e a ordem das opções, tudo definido pelo kernel do host antes de qualquer JavaScript rodar. Um User-Agent de Windows chegando por uma conexão com TTL 64 é uma contradição lida no servidor, a partir dos próprios pacotes, e nenhum override de CDP ou JavaScript a toca. O [Fingerprinting de rede](network-fingerprinting.md) cobre essa stack em profundidade. Se é esse o sinal que o Cloudflare pondera quando um perfil de Windows num Mac falha no managed challenge ainda não foi isolado: aquela execução mudou fontes, canvas, WebGPU e a stack do kernel de uma vez. O experimento que os separa é um perfil de Windows num Mac através de um proxy hospedado em Windows (remove apenas a contradição de TCP).
 
 A renderização carrega o sistema operacional também, então o canvas faz parte da resposta. O canvas e as fontes desenham através da renderização de texto do SO, CoreText no macOS, DirectWrite no Windows, então um canvas renderizado num Mac sob um perfil de Windows já descreve o sistema operacional errado. Esse vazamento de canvas é real mas não forjável, e na execução medida do Cloudflare ele não foi o sinal decisivo, a stack do kernel foi. O mesmo canvas resultou no hash `d65506c6...` tanto sob o perfil de Windows quanto sob o de macOS neste Mac, enquanto o `navigator.platform` lia `Win32` e `MacIntel`. Hashes idênticos só mostram que o perfil não alterou o canvas, não que o canvas concorda com a alegação de Windows; ele é o do Mac real, um sinal renderizado vindo do [piso intransponível](#the-hard-floor-signals-no-override-can-fake). A stack TCP/IP do kernel por baixo vaza o sistema operacional uma segunda vez, e é igualmente intocável. Como um challenge real pondera esses sinais, camada por camada, está no [estudo de caso do Cloudflare](cloudflare-challenge.md).
 
@@ -86,9 +86,21 @@ Um proxy de encaminhamento é a única alavanca. Ele reorigina a conexão TCP a 
 
 ## O que você consegue de fato mover
 
-Os sinais que você consegue mudar de forma limpa são os que um override nativo alcança, ou que um override em JavaScript consegue possuir sem um segundo caminho o contradizer: identidade (User-Agent, platform, Client Hints), fuso horário, locale, tela, `hardwareConcurrency`, `deviceMemory` e as media features CSS. Torne esses coerentes uns com os outros e com o seu IP e sistema operacional.
+Os sinais que você consegue mudar de forma limpa são os que um override nativo alcança, ou que um override em JavaScript consegue possuir sem um segundo caminho o contradizer: identidade (User-Agent, platform, Client Hints), fuso horário, locale, tela, `hardwareConcurrency`, `deviceMemory`, permissões e as media features CSS. Torne esses coerentes uns com os outros e com o seu IP e sistema operacional.
 
 O piso intransponível, canvas e áudio e GPU, você só torna coerente rodando em hardware real e compatível. Tudo no meio é uma troca que pode sair pela culatra, então gaste o esforço em consistência, não em forjar mais.
+
+!!! note "Tudo isto é um modelo, não um veredito"
+    Toda checagem nesta página vem de pesquisa pública, de write-ups de fornecedores e de agentes de engenharia reversa. Ela descreve o que um detector *pode* ler, não o que um site específico *lê* de fato. Cada sistema anti-bot tem o próprio conjunto de checagens e os próprios pesos, uma pequena inconsistência pode nunca ser olhada, e um perfil simples com três campos muitas vezes passa onde um totalmente ajustado nem era necessário. Trate a coerência como um orçamento a gastar onde um alvo prova que importa, e meça cada site por conta própria: rode o perfil contra ele, mude uma coisa, rode de novo.
+
+## O que ainda está em aberto
+
+Passado o piso intransponível, as lacunas restantes são de ambiente, não de overrides, e cada uma tem uma solução conhecida fora do navegador:
+
+- **Fontes.** A sonda de fontes baseada em largura lê as fontes instaladas no host. Alegar Windows a partir do Linux significa instalar o conjunto de fontes do Windows e listar exatamente isso em `available_fonts`. A rasterização de texto ainda difere (FreeType e DirectWrite não desenham os mesmos pixels a partir da mesma fonte), então um canvas que desenha texto continua descrevendo o host.
+- **GPU.** Parâmetros, extensões e precisão do WebGL e o adapter do WebGPU podem todos ser definidos a partir de uma captura real, mas a saída renderizada e cronometrada continua sendo a do host. Um host com uma GPU do mesmo vendor do perfil é o único jeito de fazê-los concordar; um host sem GPU não pode alegar uma.
+- **O kernel.** Uma saída de proxy rodando o sistema operacional alegado, ou um reescritor de pacotes no host, é a única alavanca para o SYN. Quais detectores o ponderam é a medição em aberto acima.
+- **O resíduo em JavaScript.** Os getters para os quais o Chrome não oferece comando mantêm o frame extra de stack. Menos deles é a única direção.
 
 ## Relacionado
 

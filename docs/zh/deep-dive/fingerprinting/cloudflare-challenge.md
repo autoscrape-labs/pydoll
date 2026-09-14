@@ -116,7 +116,7 @@ Pydoll 用作用于浏览器全局虚拟屏幕的 `Emulation.updateScreen` 来�
 ## 真正有效的做法 {#what-actually-works}
 
 - **匹配主机和二进制文件。** 操作系统等于主机的操作系统，Chrome 主版本等于二进制文件的主版本。
-- **让 locale、时区和地理位置与出口 IP 相匹配。** 挑战会把 `Accept-Language` 和时区与 IP 所在的国家做交叉核对（参见 [Locale/IP 不匹配](../../stealth/fingerprint-injection.md#case-study-a-locale-mismatch-triggering-googles-captcha)）。在一个真实的部署中，这往往是拦截与通过之间唯一的那个杠杆。
+- **让 locale、时区和地理位置与出口 IP 相匹配。** 挑战会把 `Accept-Language` 和时区与 IP 所在的国家做交叉核对（参见 [Locale/IP 不匹配](../../stealth/fingerprint-injection.md#match-locale-and-timezone-to-your-egress-ip)）。在一个真实的部署中，这往往是拦截与通过之间唯一的那个杠杆。
 - **覆盖跨源 iframe。** 挑战会在它自己的 `challenges.cloudflare.com` frame 内部读取 fingerprint；`apply_fingerprint(..., cross_origin_iframes=True)`（默认值）也会在那里重放身份。如果把它留在真实的机器上，iframe 会与页面矛盾，挑战就会拦截；一旦覆盖，它就是那个让 headless 客户端得以通过的项。
 - **点击 Turnstile。** 托管挑战现在会提供一个交互式 Turnstile，所以那个复选框必须被点击。使用 [`expect_and_bypass_cloudflare_captcha()`](../../stealth/captcha-bypass.md)；等待自动通过只会让你继续被拦截。
 - **在一个临界的 IP 上回退到真实的显示器。** 当 IP 不够干净、无法让一个一致的 headless 客户端通过时，就以 headful 运行，或者在服务器上于 Xvfb 之下以 headful 运行，好让那个呈现项不再对你不利。

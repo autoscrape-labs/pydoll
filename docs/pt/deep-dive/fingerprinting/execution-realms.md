@@ -23,7 +23,7 @@ O mapa interativo abaixo aplica um perfil de Windows num Mac real e lê `navigat
 
 Dois dos mecanismos do Pydoll cruzam as fronteiras de realm por conta própria, mas apenas dentro de um único processo:
 
-- **Overrides de CDP `Emulation`** (`setUserAgentOverride`, `setHardwareConcurrencyOverride`, `setTimezoneOverride`, `setLocaleOverride`, `setDeviceMetricsOverride`, `setEmulatedMedia`) são aplicados pelo navegador no nível do target, abaixo do JavaScript. Eles cobrem o documento principal e todo frame no mesmo processo.
+- **Overrides de CDP `Emulation`** (`setUserAgentOverride`, que no realm da página também carrega `navigator.platform` e `languages`, `setHardwareConcurrencyOverride`, `setTimezoneOverride`, `setLocaleOverride`, `setDeviceMetricsOverride`, `setTouchEmulationEnabled`, `setEmulatedMedia`) são aplicados pelo navegador no nível do target, abaixo do JavaScript. Eles cobrem o documento principal e todo frame no mesmo processo. `Browser.setPermission` vai além e cobre o contexto de navegador inteiro.
 - **`Page.addScriptToEvaluateOnNewDocument`** roda um script em todo frame do target da página antes que os próprios scripts daquele frame rodem. Ele cobre o realm principal e todo iframe same-origin (dentro do processo).
 
 Juntos, eles cobrem o documento principal e os iframes same-origin sem nenhum trabalho extra. Um iframe filho same-origin lê o `platform`, o `hardwareConcurrency` e o User-Agent injetados, não os da máquina host.
@@ -47,7 +47,14 @@ Um Web Worker é um script em segundo plano sem DOM e com o próprio global, `se
 
 Cada um expõe um `WorkerNavigator` com o próprio `userAgent`, `platform`, `hardwareConcurrency`, `deviceMemory` e `languages`. Um detector sobe um worker, relê esses valores, e os compara com a página. Se o worker reporta a máquina real, a sessão é sinalizada.
 
-O Pydoll alcança um worker anexando-se a ele antes que ele rode. Ele habilita `Target.setAutoAttach` com `waitForDebuggerOnStart`, então todo worker anexa **pausado** na criação. Ao anexar, o Pydoll replica os overrides de CDP de User-Agent e `hardwareConcurrency` e avalia o script de fingerprint do worker naquela sessão, e depois retoma o worker. Ele começa já vestindo a identidade, então a sua primeira leitura já é a injetada.
+O Pydoll alcança um worker anexando-se a ele antes que ele rode. Ele habilita `Target.setAutoAttach` com `waitForDebuggerOnStart`, então todo worker anexa **pausado** na criação. Ao anexar, o Pydoll replica os overrides de CDP de User-Agent, `languages` e `hardwareConcurrency` e avalia o script de fingerprint do worker naquela sessão, e depois retoma o worker. Ele começa já vestindo a identidade, então a sua primeira leitura já é a injetada.
+
+O override de CDP não carrega tudo para dentro de um worker. Medido no Chrome 152: `acceptLanguage` alcança todo tipo de worker nativamente, `userAgent` alcança dedicated workers mas não shared nem service workers, e `platform` não alcança nenhum `WorkerNavigator`. O script do worker preenche exatamente essas lacunas com getters reforçados; o realm da página não precisa de nenhum deles.
+
+Um worker pode criar workers próprios. Um worker aninhado é filho do target do *worker*, não da página, então um auto-attach configurado na página nunca o vê, e ele rodaria com a identidade real. O Pydoll configura auto-attach em toda sessão de worker anexada também, então os workers aninhados anexam pausados na mesma conexão e passam pela mesma replicação.
+
+!!! note "O script do service worker é buscado antes de o worker existir"
+    A requisição do script de um service worker (e do script de um worker aninhado) é feita pelo processo do navegador, antes de qualquer target ao qual o Pydoll possa se anexar, então um override por sessão nunca a vê. Em vez disso, o Pydoll reescreve o User-Agent e o `Accept-Language` dela a partir da conexão do navegador com o domínio `Fetch`; veja [Scripts de service worker e de worker aninhado](../../stealth/fingerprint-injection.md#service-worker-and-nested-worker-scripts).
 
 ## Escopo de aba e escopo de navegador
 
@@ -77,7 +84,7 @@ flowchart TB
     BC -->|attach + replay, scoped to the context| SH
 ```
 
-Como os service e shared workers são compartilhados por toda aba em um contexto, um contexto de navegador guarda uma única identidade. Aplicar um segundo fingerprint, diferente, a um contexto que já tem um levanta `FingerprintContextConflict` (veja [Múltiplos fingerprints entre contextos](../../stealth/fingerprint-injection.md#multiple-fingerprints-across-contexts)).
+Como os service e shared workers são compartilhados por toda aba em um contexto, um contexto de navegador guarda uma única identidade. Aplicar um segundo fingerprint, diferente, a um contexto que já tem um levanta `FingerprintContextConflict` (veja [Um fingerprint por browser context](../../stealth/fingerprint-injection.md#one-fingerprint-per-browser-context)).
 
 ## Iframes cross-origin rodam em outro processo
 
@@ -104,6 +111,7 @@ O `waitForDebuggerOnStart` pausa todo target anexado antes da primeira linha del
 | Documento principal | não | script da página + Emulation | aba |
 | Iframe same-origin | não | script da página + Emulation | aba |
 | Dedicated worker | sim | anexar + replicar | aba |
+| Worker aninhado (worker dentro de worker) | sim | anexar + replicar, a partir da sessão do worker pai | aba |
 | Iframe cross-origin (OOPIF) | sim | anexar + replicar | aba |
 | Shared worker | sim | anexar + replicar | contexto de navegador |
 | Service worker | sim | anexar + replicar | contexto de navegador |
