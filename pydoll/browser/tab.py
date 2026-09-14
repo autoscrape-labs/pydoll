@@ -590,11 +590,7 @@ class Tab(FindElementsMixin):
             logger.debug(f'Iframe tab already tracked: {target_id}')
             return self._browser._tabs_opened[target_id]
 
-        tab = Tab(
-            self._browser,
-            target_id=target_id,
-            connection_port=self._connection_port,
-        )
+        tab = Tab(self._browser, **self._browser._get_tab_kwargs(target_id))
         self._browser._tabs_opened[target_id] = tab
         logger.debug(f'Iframe tab created and registered: {target_id}')
         return tab
@@ -707,7 +703,10 @@ class Tab(FindElementsMixin):
 
     async def _collect_oopif_shadow_roots(self) -> list[ShadowRoot]:
         """Discover shadow roots inside cross-origin iframes (OOPIFs)."""
-        browser_handler = ConnectionHandler(connection_port=self._connection_port)
+        browser_handler = ConnectionHandler(
+            connection_port=self._connection_port,
+            ws_address=self._ws_address,
+        )
         try:
             targets_response: GetTargetsResponse = await browser_handler.execute_command(
                 TargetCommands.get_targets()
