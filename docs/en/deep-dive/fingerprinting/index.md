@@ -21,7 +21,6 @@ The layers are cross-checked. A Chrome User-Agent riding a Firefox TLS fingerpri
 
 - [Network fingerprinting](network-fingerprinting.md): identification at the transport and session layers, before rendering. TCP/IP (TTL, window size, option order), TLS (JA3/JA4, cipher suites, ALPN), and HTTP/2 (SETTINGS, priorities). The hardest layer to change, because it comes from the OS and the real binary.
 - [Browser fingerprinting](browser-fingerprinting.md): identification through JavaScript APIs and rendering. Canvas and WebGL artifacts from the real GPU, audio, font enumeration, and `navigator` properties. This is where most detection events land.
-- [GPU, containers and what a profile cannot reach](gpu-and-containers.md): what a profile reports versus what the machine computes, and what a container or a Mac can claim.
 - [Behavioral fingerprinting](behavioral-fingerprinting.md): identification from how you interact. Mouse trajectory and velocity, keystroke rhythm, and scroll dynamics, sometimes scored by models trained on large behavioral datasets. It can catch automation even when the other layers are clean.
 
 ## Related

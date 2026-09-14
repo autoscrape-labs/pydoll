@@ -2,7 +2,7 @@
 
 你无法改进你无法测量的东西。一旦应用了一个 profile，问题就变成：现在哪些信号会被读作一个真实设备，哪些仍然在泄露，而无论你怎么读代码，都不如把一个检测器对准浏览器来得管用。本页讲的就是如何测量这一点，从一个免费的 bot score，到精确读取一个商业检测器所收集的内容。
 
-它建立在 [伪造的极限](spoofing-limits.md) 之上：那一页解释了什么能被伪造、什么不能，这一页展示如何检查你的配置实际做到了什么。
+它是 [Fingerprint 注入](../../stealth/fingerprint-injection.md) 的测量面：那一页应用一个 profile，这一页展示如何检查它实际做到了什么。
 
 ## 读取 bot score
 
@@ -53,20 +53,6 @@ asyncio.run(scan('macos_m3_new_york'))
 
 [SannySoft](https://bot.sannysoft.com/) 和 [BrowserScan](https://www.browserscan.net/bot-detection) 是针对 headless 和自动化标志的更快捷的检查。把它们当作一次快速过筛，而不是最终定论。
 
-## 被动收集器读了什么 {#what-passive-collectors-read}
-
-关于哪个信号重要，最有力的论据是一份目标实际读取了什么的清单。一个在站点自己的脚本之前注入的访问追踪器（包裹住页面、它的各个 frame 和它的各个 worker 里的每一个 fingerprinting getter 和方法，记录每一次读取以及发起它的脚本）就能给出这份清单。2026-09-14 的两次运行，Chrome 152，未应用 profile，已剔除追踪器自身的读取：
-
-| 目标 | 读了 | 没读 |
-|---|---|---|
-| Google 搜索（reCAPTCHA Enterprise，页面 + widget frame + 它的 worker） | 每个 realm 里读了几十次 `navigator.userAgent`，`userAgentData`、`hardwareConcurrency`、`deviceMemory`、`getBattery`、`storage.estimate`、`innerWidth` / `innerHeight`、`userActivation`；对 `get isTrusted`、`pageX` / `screenX`、`pressure`、`pointerType`、`getCoalescedEvents` 调用 `Function.prototype.toString` | WebGL、WebGPU、canvas、音频、字体、`screen.*` |
-| gov.br 登录（hCaptcha，页面 + cross-origin widget frame） | `Navigator.prototype` 的每一个属性各一次，`screen.*`、视口、`plugins`、`matchMedia`、`Object.getOwnPropertyNames`；对 DOM 方法调用 `toString` | WebGL、WebGPU、canvas、音频、字体 |
-
-由此有两点。在这个流程里，两个被动收集器都完全没有读 GPU、字体或渲染；两者都依赖身份、Client Hints、硬件数量和函数完整性，Google 则尤其依赖输入事件。而追踪器本身就是一个覆盖：同一次 Google 搜索在注入追踪器时撞上了 captcha，不注入时则通过了，所以一次被追踪的会话告诉你什么被读了，永远不会告诉你能不能通过。
-
-!!! note "两个目标，两份清单"
-    这是某一天的两个站点。换一个目标，或者同一个目标在第一次点击之后，读的就是另一份清单。追踪的意义在于，对着眼前这个目标，不再猜要把功夫花在哪一层。
-
 ## 自己比较各条读取路径
 
 最强的审计并不需要第三方网站。对于任何信号，用两种方式读取它并检查它们是否一致，因为一个不一致通常就是你自己的覆盖所制造出来的一处泄露：
@@ -85,7 +71,7 @@ result = await tab.execute_script('''
 ''', return_by_value=True)
 ```
 
-如果 `matchMedia` 和 CSS 路径不一致，那就是有一个覆盖只在一条路径上撒谎，也就是 [伪造的极限](spoofing-limits.md) 所讲解的那种失败模式。同样的测试也适用于跨 realm（页面对比 worker）以及跨 API（WebGL 字符串对比 WebGPU adapter）。一个连贯的 profile 会通过所有这些测试；而一个矛盾就是一个由你引入的信号。
+如果 `matchMedia` 和 CSS 路径不一致，那就是有一个覆盖只在一条路径上撒谎。同样的测试也适用于跨 realm（页面对比 worker）以及跨 API（WebGL 字符串对比 WebGPU adapter）。一个连贯的 profile 会通过所有这些测试；而一个矛盾就是一个由你引入的信号。
 
 ## 读取一个真实检测器所收集的内容
 
@@ -110,6 +96,5 @@ result = await tab.execute_script('''
 
 ## 相关
 
-- [伪造的极限](spoofing-limits.md)：一次伪造能改动什么、不能改动什么。
 - [Fingerprint 注入](../../stealth/fingerprint-injection.md)：应用一个连贯的 profile。
 - [浏览器上下文](../../guides/browser-contexts.md)：每个 context 一个身份，也就是获得一个全新访客的真正杠杆。

@@ -165,3 +165,9 @@ cython_debug/
 
 # Dev test file
 dev_test_file.py
+
+# Internal tooling and private studies
+tools/
+private-studies/
+FINGERPRINT_AUDIT_*
+FINGERPRINT_TRACES_*
