@@ -284,6 +284,147 @@ WEBGPU_APPLE_M_SERIES = WebGPUProfile(
     ],
 )
 
+# NVIDIA GeForce RTX 3060 on Windows, Chrome D3D12 backend. ``vendor`` and
+# ``architecture`` come from a real Chrome 150 capture of an RTX 3060; the
+# limits are the webgpu.report aggregate for NVIDIA + Windows + Chrome (42
+# adapters, every limit identical across them) and match Dawn's D3D12 tier
+# tables; the features are the ones at 100% in that aggregate (Ampere has
+# shader-f16), plus subgroup-size-control which Dawn enables on any current
+# NVIDIA driver.
+WEBGPU_NVIDIA_AMPERE_D3D12 = WebGPUProfile(
+    vendor='nvidia',
+    architecture='ampere',
+    device='',
+    description='',
+    limits={
+        'maxTextureDimension1D': 16384,
+        'maxTextureDimension2D': 16384,
+        'maxTextureDimension3D': 2048,
+        'maxTextureArrayLayers': 2048,
+        'maxBindGroups': 4,
+        'maxBindGroupsPlusVertexBuffers': 24,
+        'maxBindingsPerBindGroup': 1000,
+        'maxDynamicUniformBuffersPerPipelineLayout': 10,
+        'maxDynamicStorageBuffersPerPipelineLayout': 8,
+        'maxSampledTexturesPerShaderStage': 48,
+        'maxSamplersPerShaderStage': 16,
+        'maxStorageBuffersPerShaderStage': 16,
+        'maxStorageTexturesPerShaderStage': 8,
+        'maxUniformBuffersPerShaderStage': 12,
+        'maxUniformBufferBindingSize': 65536,
+        'maxStorageBufferBindingSize': 2147483644,
+        'minUniformBufferOffsetAlignment': 256,
+        'minStorageBufferOffsetAlignment': 256,
+        'maxVertexBuffers': 8,
+        'maxBufferSize': 2147483648,
+        'maxVertexAttributes': 30,
+        'maxVertexBufferArrayStride': 2048,
+        'maxInterStageShaderVariables': 28,
+        'maxColorAttachments': 8,
+        'maxColorAttachmentBytesPerSample': 128,
+        'maxComputeWorkgroupStorageSize': 32768,
+        'maxComputeInvocationsPerWorkgroup': 1024,
+        'maxComputeWorkgroupSizeX': 1024,
+        'maxComputeWorkgroupSizeY': 1024,
+        'maxComputeWorkgroupSizeZ': 64,
+        'maxComputeWorkgroupsPerDimension': 65535,
+    },
+    features=[
+        'core-features-and-limits',
+        'depth-clip-control',
+        'depth32float-stencil8',
+        'texture-compression-bc',
+        'texture-compression-bc-sliced-3d',
+        'timestamp-query',
+        'indirect-first-instance',
+        'shader-f16',
+        'rg11b10ufloat-renderable',
+        'bgra8unorm-storage',
+        'float32-filterable',
+        'float32-blendable',
+        'clip-distances',
+        'dual-source-blending',
+        'subgroups',
+        'texture-component-swizzle',
+        'texture-formats-tier1',
+        'texture-formats-tier2',
+        'primitive-index',
+        'subgroup-size-control',
+    ],
+)
+
+# Qualcomm Adreno 750 (Galaxy S24 Ultra) on Android, Chrome Vulkan backend.
+# ``vendor`` / ``architecture`` come from a real Chrome 150 capture of an
+# Adreno 740 (same ``adreno-7xx`` bucket in Dawn's gpu_info); the limits are
+# derived from the Galaxy S24 Ultra Vulkan capability reports through Dawn's
+# Vulkan mapping and Chrome's limit tiers, and agree with the webgpu.report
+# Qualcomm + Android aggregate on every discriminating value (128 MiB storage
+# binding, 16 inter-stage variables, 2 GiB maxBufferSize).
+WEBGPU_ADRENO_750_VULKAN = WebGPUProfile(
+    vendor='qualcomm',
+    architecture='adreno-7xx',
+    device='',
+    description='',
+    limits={
+        'maxTextureDimension1D': 16384,
+        'maxTextureDimension2D': 16384,
+        'maxTextureDimension3D': 2048,
+        'maxTextureArrayLayers': 2048,
+        'maxBindGroups': 4,
+        'maxBindGroupsPlusVertexBuffers': 24,
+        'maxBindingsPerBindGroup': 1000,
+        'maxDynamicUniformBuffersPerPipelineLayout': 10,
+        'maxDynamicStorageBuffersPerPipelineLayout': 8,
+        'maxSampledTexturesPerShaderStage': 48,
+        'maxSamplersPerShaderStage': 16,
+        'maxStorageBuffersPerShaderStage': 16,
+        'maxStorageTexturesPerShaderStage': 8,
+        'maxUniformBuffersPerShaderStage': 12,
+        'maxUniformBufferBindingSize': 65536,
+        'maxStorageBufferBindingSize': 134217728,
+        'minUniformBufferOffsetAlignment': 256,
+        'minStorageBufferOffsetAlignment': 256,
+        'maxVertexBuffers': 8,
+        'maxBufferSize': 2147483648,
+        'maxVertexAttributes': 30,
+        'maxVertexBufferArrayStride': 2048,
+        'maxInterStageShaderVariables': 16,
+        'maxColorAttachments': 8,
+        'maxColorAttachmentBytesPerSample': 128,
+        'maxComputeWorkgroupStorageSize': 32768,
+        'maxComputeInvocationsPerWorkgroup': 1024,
+        'maxComputeWorkgroupSizeX': 1024,
+        'maxComputeWorkgroupSizeY': 1024,
+        'maxComputeWorkgroupSizeZ': 64,
+        'maxComputeWorkgroupsPerDimension': 65535,
+    },
+    features=[
+        'core-features-and-limits',
+        'depth-clip-control',
+        'depth32float-stencil8',
+        'texture-compression-bc',
+        'texture-compression-bc-sliced-3d',
+        'texture-compression-etc2',
+        'texture-compression-astc',
+        'texture-compression-astc-sliced-3d',
+        'timestamp-query',
+        'indirect-first-instance',
+        'shader-f16',
+        'rg11b10ufloat-renderable',
+        'bgra8unorm-storage',
+        'float32-filterable',
+        'float32-blendable',
+        'clip-distances',
+        'dual-source-blending',
+        'subgroups',
+        'texture-component-swizzle',
+        'texture-formats-tier1',
+        'texture-formats-tier2',
+        'primitive-index',
+        'subgroup-size-control',
+    ],
+)
+
 SPEECH_WINDOWS = SpeechFingerprint(
     voices=[
         SpeechVoice(
@@ -436,6 +577,7 @@ FINGERPRINTS: dict[str, FingerprintConfig] = {
             webgl2_extensions=MOBILE_WEBGL2_EXTENSIONS,
             shader_precision_formats=SHADER_PRECISION_DEFAULT,
         ),
+        webgpu=WEBGPU_ADRENO_750_VULKAN,
         screen=ScreenFingerprint(
             width=384,
             height=832,
@@ -502,6 +644,7 @@ FINGERPRINTS: dict[str, FingerprintConfig] = {
             webgl2_extensions=DESKTOP_WEBGL2_EXTENSIONS,
             shader_precision_formats=SHADER_PRECISION_D3D11,
         ),
+        webgpu=WEBGPU_NVIDIA_AMPERE_D3D12,
         screen=ScreenFingerprint(
             width=1920,
             height=1080,
