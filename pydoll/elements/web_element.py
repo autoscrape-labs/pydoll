@@ -708,6 +708,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
                 TypeError,
                 AttributeError,
                 CommandExecutionTimeout,
+                CommandFailed,
                 WebSocketConnectionClosed,
             ):
                 self._attributes['value'] = text

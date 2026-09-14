@@ -31,6 +31,7 @@ from pydoll.commands import (
 from pydoll.connection import ConnectionHandler
 from pydoll.exceptions import (
     BrowserNotRunning,
+    CommandFailed,
     FailedToStartBrowser,
     InvalidConnectionPort,
     InvalidWebSocketAddress,
@@ -887,6 +888,10 @@ class Browser(ABC):  # noqa: PLR0904
                         inject = RuntimeCommands.evaluate(expression=parsed.navigator_override_js)
                         inject['sessionId'] = session_id
                         await connection_handler.execute_command(inject)
+            except CommandFailed as exc:
+                logger.warning(
+                    'Worker session %s rejected the User-Agent override: %s', session_id, exc
+                )
             except Exception:
                 logger.exception(
                     'Failed to apply User-Agent override to worker session %s', session_id

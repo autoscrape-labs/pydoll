@@ -175,6 +175,8 @@ class IFrameContextResolver:
     ) -> tuple[Optional[str], Optional[str]]:
         """Find frame by matching owner backend_node_id."""
         frame_tree = await self._get_frame_tree_for(handler, session_id)
+        if not frame_tree:
+            return None, None
         for frame_node in self._walk_frames(frame_tree):
             candidate_frame_id = frame_node.get('id', '')
             if not candidate_frame_id:
@@ -190,12 +192,16 @@ class IFrameContextResolver:
     async def _get_frame_tree_for(
         handler: ConnectionHandler,
         session_id: Optional[str],
-    ) -> FrameTree:
-        """Get Page frame tree for the given connection/target."""
+    ) -> Optional[FrameTree]:
+        """Get Page frame tree for the given connection/target, None if it is gone."""
         command = PageCommands.get_frame_tree()
         if session_id:
             command['sessionId'] = session_id
-        response: GetFrameTreeResponse = await handler.execute_command(command)
+        try:
+            response: GetFrameTreeResponse = await handler.execute_command(command)
+        except CommandFailed as exc:
+            logger.debug(f'Frame tree unavailable for session {session_id}: {exc}')
+            return None
         return response['result']['frameTree']
 
     @staticmethod
@@ -224,16 +230,23 @@ class IFrameContextResolver:
             return None
         return response.get('result', {}).get('backendNodeId')
 
-    @staticmethod
-    async def _attach_session(handler: ConnectionHandler, target_id: str) -> Optional[str]:
-        """Attach to a target with a flattened session; None when the target is gone."""
+    async def _attach_and_read_tree(
+        self, handler: ConnectionHandler, target_id: str
+    ) -> tuple[Optional[str], Optional[FrameTree]]:
+        """Attach to a target and read its frame tree; (None, None) when the target is gone."""
         try:
             attach_response: AttachToTargetResponse = await handler.execute_command(
                 TargetCommands.attach_to_target(target_id=target_id, flatten=True)
             )
         except CommandFailed:
-            return None
-        return attach_response.get('result', {}).get('sessionId')
+            return None, None
+        session_id = attach_response.get('result', {}).get('sessionId')
+        if not session_id:
+            return None, None
+        frame_tree = await self._get_frame_tree_for(handler, session_id)
+        if not frame_tree:
+            return None, None
+        return session_id, frame_tree
 
     async def _resolve_oopif_if_needed(
         self,
@@ -340,14 +353,12 @@ class IFrameContextResolver:
 
         is_single_child = len(direct_children) == 1
         for child_target in direct_children:
-            attached_session_id = await self._attach_session(
+            attached_session_id, frame_tree = await self._attach_and_read_tree(
                 browser_handler, child_target['targetId']
             )
-            if not attached_session_id:
+            if not attached_session_id or frame_tree is None:
                 continue
-
-            frame_tree = await self._get_frame_tree_for(browser_handler, attached_session_id)
-            root_frame = (frame_tree or {}).get('frame', {})
+            root_frame = frame_tree['frame']
             root_frame_id = root_frame.get('id', '')
 
             if is_single_child and root_frame_id and backend_node_id is None:
@@ -373,14 +384,12 @@ class IFrameContextResolver:
         for target_info in target_infos:
             if target_info.get('type') not in {'iframe', 'page'}:
                 continue
-            attached_session_id = await self._attach_session(
+            attached_session_id, frame_tree = await self._attach_and_read_tree(
                 browser_handler, target_info.get('targetId', '')
             )
-            if not attached_session_id:
+            if not attached_session_id or frame_tree is None:
                 continue
-
-            frame_tree = await self._get_frame_tree_for(browser_handler, attached_session_id)
-            root_frame = (frame_tree or {}).get('frame', {})
+            root_frame = frame_tree['frame']
             root_frame_id = root_frame.get('id', '')
 
             # Direct match: the <iframe> element's frameId (content_frame_id)
