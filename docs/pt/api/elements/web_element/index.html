@@ -5392,7 +5392,13 @@ parent as this element and match the tag filter criteria.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Scroll element into visible viewport.</p>
+        <p>Scroll element into the viewport, keeping a margin from every edge.</p>
+<p><code>DOM.scrollIntoViewIfNeeded</code> aligns a partially visible element with the
+closest viewport edge. That leaves it under the overlay scrollbar the scroll
+itself reveals on macOS, so the mouse events that follow land on the
+scrollbar instead of the element. Asking for the element's box plus a
+margin keeps it clear of the edges. When the box cannot be read the plain
+behaviour is kept.</p>
 
 
     </div>
