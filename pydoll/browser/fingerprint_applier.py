@@ -348,6 +348,20 @@ class FingerprintApplier:
                     window_id, Bounds(width=width, height=height, windowState=WindowState.NORMAL)
                 )
             )
+            after: GetWindowForTargetResponse = await tab._execute_command(
+                BrowserCommands.get_window_for_target(tab._target_id)
+            )
+            bounds = after['result']['bounds']
+            if bounds.get('width', width) < width or bounds.get('height', height) < height:
+                logger.warning(
+                    'The profile window (%sx%s) does not fit this display; the window was '
+                    'clamped to %sx%s, so outer and inner sizes will contradict each other. '
+                    'Use a profile whose screen matches the host.',
+                    width,
+                    height,
+                    bounds.get('width'),
+                    bounds.get('height'),
+                )
 
     def _warn_on_user_agent_option_conflict(self, fingerprint_user_agent: str) -> None:
         """Warn when a ``--user-agent`` option contradicts the fingerprint UA.
@@ -457,7 +471,7 @@ class FingerprintApplier:
 
         scope_context_id = await self._resolve_browser_context_id()
         browser_conn = tab._browser._connection_handler
-        if not tab._browser._context_worker_callbacks:
+        if tab._browser._fingerprint_fetch_callback is None:
             await self._setup_script_fetch_override()
         browser_handler = self._build_worker_handler(
             browser_conn,
@@ -500,8 +514,8 @@ class FingerprintApplier:
             params = event['params']
             request_id = params['requestId']
             headers: Optional[list[HeaderEntry]] = None
-            with suppress(KeyError):
-                fingerprint = self._fingerprint_for_frame(params.get('frameId', ''))
+            with suppress(KeyError, CommandExecutionTimeout, WebSocketConnectionClosed):
+                fingerprint = await self._fingerprint_for_frame(params.get('frameId', ''))
                 if fingerprint is not None and 'user_agent' in fingerprint:
                     headers = self._identity_headers(fingerprint, params['request']['headers'])
             with suppress(CommandExecutionTimeout, WebSocketConnectionClosed):
@@ -510,7 +524,9 @@ class FingerprintApplier:
                     timeout=self._WORKER_COMMAND_TIMEOUT,
                 )
 
-        await browser.on(FetchEvent.REQUEST_PAUSED, on_request_paused)
+        browser._fingerprint_fetch_callback = await browser.on(
+            FetchEvent.REQUEST_PAUSED, on_request_paused
+        )
         await connection.execute_command(
             FetchCommands.enable(
                 handle_auth_requests=False,
@@ -519,21 +535,29 @@ class FingerprintApplier:
             )
         )
 
-    def _fingerprint_for_frame(self, frame_id: str) -> Optional[FingerprintConfig]:
+    async def _fingerprint_for_frame(self, frame_id: str) -> Optional[FingerprintConfig]:
         """Resolve the fingerprint of the context a paused request belongs to.
 
-        The top frame id of a page equals its target id, so the request's frame
-        maps to a tab and the tab to its context. When the frame is unknown and
-        the browser holds a single fingerprint, that one applies; with several
-        identities and an unresolvable frame, nothing is rewritten.
+        For a worker or service worker script fetch the ``frameId`` Chrome
+        reports is the *worker target's* id, not a frame, so the id is resolved
+        through ``Target.getTargetInfo``, whose ``browserContextId`` picks the
+        context's fingerprint. A page's top frame id equals its target id, so
+        the same lookup covers frames. When the id cannot be resolved and the
+        browser holds a single fingerprint, that one applies; with several
+        identities and an unresolvable id, nothing is rewritten.
         """
         browser = self._tab._browser
         registry = browser._context_fingerprints
-        for tab in browser._tabs_opened.values():
-            if tab._target_id == frame_id and tab._browser_context_id in registry:
-                return registry[tab._browser_context_id]
         if len(registry) == 1:
             return next(iter(registry.values()))
+        if not frame_id:
+            return None
+        response: GetTargetInfoResponse = await browser._connection_handler.execute_command(
+            TargetCommands.get_target_info(frame_id), timeout=self._WORKER_COMMAND_TIMEOUT
+        )
+        with suppress(KeyError, TypeError):
+            context_id = response['result']['targetInfo']['browserContextId']
+            return registry.get(context_id)
         return None
 
     @staticmethod

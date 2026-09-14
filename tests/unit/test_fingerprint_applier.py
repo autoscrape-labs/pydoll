@@ -548,13 +548,42 @@ class TestScriptFetchOverride:
         assert headers['Accept-Language'] == 'en-US,en;q=0.9'
         assert headers['Accept'] == '*/*'
 
-    async def test_request_continues_untouched_without_a_matching_profile(self, fake_conn):
+    @staticmethod
+    def _two_contexts(fake_conn):
         chrome = Chrome()
         chrome._connection_handler = fake_conn
         first = Tab(browser=chrome, target_id='t1', connection_handler=fake_conn, browser_context_id='c1')
         second = Tab(browser=chrome, target_id='t2', connection_handler=fake_conn, browser_context_id='c2')
+        return chrome, first, second
+
+    async def test_worker_target_id_resolves_its_context_fingerprint(self, fake_conn):
+        """The frameId of a service worker script fetch is the worker target's id,
+        so the context comes from Target.getTargetInfo, not from a tab lookup."""
+        chrome, first, second = self._two_contexts(fake_conn)
+        await first.apply_fingerprint({'user_agent': UA, 'locale': {'languages': ['en-US', 'en']}})
+        await second.apply_fingerprint(
+            {'user_agent': UA.replace('151', '150'), 'locale': {'languages': ['pt-BR', 'pt']}}
+        )
+        fake_conn.set_response(
+            'Target.getTargetInfo',
+            {'targetInfo': {'targetId': 'sw-1', 'type': 'service_worker', 'browserContextId': 'c2'}},
+        )
+        event = {'params': dict(self.EVENT['params'], frameId='sw-1')}
+        for callback in fake_conn.callbacks_for('Fetch.requestPaused'):
+            await callback(event)
+        await asyncio.sleep(0.05)
+
+        assert fake_conn.last_command('Target.getTargetInfo')['params']['targetId'] == 'sw-1'
+        params = fake_conn.last_command('Fetch.continueRequest')['params']
+        headers = {h['name']: h['value'] for h in params['headers']}
+        assert '150' in headers['User-Agent']
+        assert headers['Accept-Language'] == 'pt-BR,pt;q=0.9'
+
+    async def test_request_continues_untouched_without_a_matching_profile(self, fake_conn):
+        chrome, first, second = self._two_contexts(fake_conn)
         await first.apply_fingerprint({'user_agent': UA})
         await second.apply_fingerprint({'user_agent': UA.replace('151', '150')})
+        fake_conn.set_response('Target.getTargetInfo', {'targetInfo': {'targetId': 'x', 'type': 'worker'}})
         event = {'params': dict(self.EVENT['params'], frameId='unknown-frame')}
         for callback in fake_conn.callbacks_for('Fetch.requestPaused'):
             await callback(event)
@@ -562,6 +591,14 @@ class TestScriptFetchOverride:
 
         params = fake_conn.last_command('Fetch.continueRequest')['params']
         assert 'headers' not in params
+
+    async def test_fetch_override_registered_once_per_browser(self, fake_conn):
+        chrome, first, second = self._two_contexts(fake_conn)
+        await first.apply_fingerprint({'user_agent': UA})
+        await chrome.delete_browser_context('c1')
+        await second.apply_fingerprint({'user_agent': UA})
+        assert len(fake_conn.commands_for('Fetch.enable')) == 1
+        assert len(fake_conn.callbacks_for('Fetch.requestPaused')) == 1
 
     def test_accept_language_header_matches_chrome_shape(self):
         assert FingerprintApplier._accept_language_header(['pt-BR', 'pt', 'en-US', 'en']) == (

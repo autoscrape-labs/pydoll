@@ -38,15 +38,14 @@ class TestNativeToStringHook:
         js = build_fingerprint_js({'media_devices': {'audio_inputs': 1}})
         assert 'get [prop]()' in js
         assert 'get: () => v' not in js
-        block = js[js.index('const _defGf') : js.index('const _defG ')]
+        block = js[js.index('const _install') : js.index('const _nativeGetter')]
         assert '_mark(_g)' in block
 
     def test_getters_invoke_native_getter_for_brand_check(self):
         """Every constant getter calls the original native getter first, so a
         foreign receiver throws the real Illegal invocation."""
         js = build_fingerprint_js({'hardware': {'device_memory': 8}})
-        assert '_og.call(self)' in js
-        assert 'native();\n  return value;' in js
+        assert 'if (_og) _og.call(this); return value;' in js
 
 
 class TestFakePlatformObjects:
@@ -64,8 +63,13 @@ class TestFakePlatformObjects:
         assert "kind === 'audiooutput' ? MediaDeviceInfo.prototype : inputProto" in js
 
     def test_enumerate_devices_awaits_native_call(self):
-        js = build_fingerprint_js({'media_devices': {'audio_inputs': 1}})
-        assert 'origEnumerate.call(this).then(() => devices.slice())' in js
+        js = build_fingerprint_js({'media_devices': {'audio_inputs': 1, 'video_inputs': 1}})
+        assert 'origEnumerate.call(this).then(() => makeDevices())' in js
+        inputs = js.index("makeDev('audioinput')")
+        video = js.index("makeDev('videoinput')")
+        outputs = js.index("makeDev('audiooutput')")
+        assert inputs < video < outputs
+        assert "_FAKES.has(this) ? {}" in js
 
     def test_voices_on_real_prototype_with_native_receiver_check(self):
         voices = [{'name': 'Samantha', 'lang': 'en-US', 'local_service': True}]
@@ -130,8 +134,26 @@ class TestSections:
 
     def test_audio_keeps_offline_contexts_native(self):
         js = build_fingerprint_js({'audio': {'sample_rate': 48000, 'max_channel_count': 2}})
-        assert 'self instanceof OfflineAudioContext) ? real : 48000' in js
-        assert 'self.context instanceof OfflineAudioContext) ? real : 2' in js
+        assert '(_isOffline(self) || _truthful.has(self)) ? real : 48000' in js
+        assert '_isOffline(self.context) ? real : 2' in js
+        assert "_wrapCtor(self, 'AudioContext'" in js
+
+    def test_precision_overrides_are_real_prototype_objects(self):
+        config = {
+            'webgl': {
+                'vendor': 'v',
+                'renderer': 'r',
+                'shader_precision_formats': {'vertex': {'highFloat': [127, 127, 23]}},
+            }
+        }
+        js = build_fingerprint_js(config)
+        assert '_fake(WebGLShaderPrecisionFormat.prototype' in js
+        assert "_defF(WebGLShaderPrecisionFormat.prototype, prop)" in js
+
+    def test_fonts_check_keeps_native_arity(self):
+        js = build_fingerprint_js({'fonts': {'available_fonts': ['Arial']}})
+        assert 'function check(font) {' in js
+        assert 'return real.catch(() => face)' in js
 
     def test_webgl_never_fakes_extension_objects(self):
         config = {
@@ -151,6 +173,7 @@ class TestSections:
 
     def test_webrtc_patches_webkit_alias_too(self):
         js = build_fingerprint_js({'webrtc_ip_policy': 'relay'})
+        assert "_wrapCtor(window, 'RTCPeerConnection'" in js
         assert 'window.webkitRTCPeerConnection = Patched' in js
 
     def test_fonts_reject_other_os_markers(self):

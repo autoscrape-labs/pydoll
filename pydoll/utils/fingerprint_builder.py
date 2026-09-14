@@ -97,10 +97,17 @@ const _ORIG = Function.prototype.toString;
 // Function.prototype.toString (e.g. CreepJS's same-origin phantom iframe) still
 // resolves our functions to a native string. No window/Symbol slot to scan.
 const _FAKED = new Set();
+// Proxies of native constructors print the anonymous native form; they are
+// recognised by identity (same realm only, where their name is expected).
+const _PROXIED = new WeakSet();
 const _mark = (fn) => { try { _FAKED.add(_ORIG.call(fn)); } catch (e) {} return fn; };
 const _nativeStr = (fn) => 'function ' + fn.name + '() { [native code] }';
 const _hook = Object.getOwnPropertyDescriptor({
-  toString() { const s = _ORIG.call(this); return _FAKED.has(s) ? _nativeStr(this) : s; }
+  toString() {
+    if (_PROXIED.has(this)) return _nativeStr(this);
+    const s = _ORIG.call(this);
+    return _FAKED.has(s) ? _nativeStr(this) : s;
+  }
 }, 'toString').value;
 _mark(_hook);
 try {
@@ -109,27 +116,34 @@ try {
 } catch (e) {}
 // Computed-name getter in an object literal: its ``.name`` is ``get <prop>``
 // (so _nativeStr rebuilds the exact native string) and it has no own
-// ``prototype``. ``compute(receiver, native)`` receives a thunk that invokes the
-// original native getter on the receiver, reproducing its brand check: reading
-// the property on the prototype or on a foreign object throws exactly like the
-// native accessor instead of silently returning the value.
-const _defGf = (target, prop, compute) => {
+// ``prototype``. Every getter is a single JavaScript frame that first invokes
+// the original native getter on the receiver, reproducing its brand check:
+// reading the property on the prototype or on a foreign object throws exactly
+// like the native accessor instead of silently returning the value.
+const _install = (target, prop, _g) => {
+  _mark(_g);
+  Object.defineProperty(target, prop, {get: _g, configurable: true, enumerable: true});
+};
+const _nativeGetter = (target, prop) => {
+  const _od = Object.getOwnPropertyDescriptor(target, prop);
+  return _od && _od.get;
+};
+const _defG = (target, prop, value) => {
   try {
-    const _od = Object.getOwnPropertyDescriptor(target, prop);
-    const _og = _od && _od.get;
-    const _h = { get [prop]() {
-      const self = this;
-      return compute(self, () => _og ? _og.call(self) : undefined);
-    } };
-    const _g = Object.getOwnPropertyDescriptor(_h, prop).get;
-    _mark(_g);
-    Object.defineProperty(target, prop, {get: _g, configurable: true, enumerable: true});
+    const _og = _nativeGetter(target, prop);
+    const _h = { get [prop]() { if (_og) _og.call(this); return value; } };
+    _install(target, prop, Object.getOwnPropertyDescriptor(_h, prop).get);
   } catch (e) {}
 };
-const _defG = (target, prop, value) => _defGf(target, prop, (self, native) => {
-  native();
-  return value;
-});
+// ``compute(receiver, realValue)`` runs after the native getter returned, so
+// it can keep the real value for instances that must stay truthful.
+const _defGf = (target, prop, compute) => {
+  try {
+    const _og = _nativeGetter(target, prop);
+    const _h = { get [prop]() { return compute(this, _og ? _og.call(this) : undefined); } };
+    _install(target, prop, Object.getOwnPropertyDescriptor(_h, prop).get);
+  } catch (e) {}
+};
 const _patchM = (obj, prop, fn) => {
   try {
     const wrapper = { [prop](...args) { return fn.apply(this, args); } }[prop];
@@ -145,10 +159,40 @@ const _patchM = (obj, prop, fn) => {
 // for every real instance and every foreign receiver).
 const _FAKES = new WeakMap();
 const _fake = (proto, props) => { const o = Object.create(proto); _FAKES.set(o, props); return o; };
-const _defF = (proto, prop) => _defGf(proto, prop, (self, native) => {
-  const f = _FAKES.get(self);
-  return f !== undefined && prop in f ? f[prop] : native();
-});
+const _defF = (proto, prop) => {
+  try {
+    const _og = _nativeGetter(proto, prop);
+    const _h = { get [prop]() {
+      const f = _FAKES.get(this);
+      return f !== undefined && prop in f ? f[prop] : (_og ? _og.call(this) : undefined);
+    } };
+    _install(proto, prop, Object.getOwnPropertyDescriptor(_h, prop).get);
+  } catch (e) {}
+};
+// Constructor wrapper as a Proxy: ``typeof``, ``name``, ``length``,
+// ``prototype`` and ``Object.getPrototypeOf`` all read through to the native
+// constructor, a call without ``new`` throws the native TypeError, and
+// ``Function.prototype.toString`` of a callable proxy is already the native
+// form. ``onConstruct(args)`` may return replacement arguments; ``onCreated``
+// sees each new instance.
+const _wrapCtor = (owner, name, onConstruct, onCreated) => {
+  try {
+    const Orig = owner[name];
+    if (typeof Orig !== 'function') return;
+    const Patched = new Proxy(Orig, {
+      construct(target, args, newTarget) {
+        const finalArgs = onConstruct ? onConstruct(args) : args;
+        const proto = newTarget === Patched ? target : newTarget;
+        const instance = Reflect.construct(target, finalArgs, proto);
+        if (onCreated) onCreated(instance, finalArgs);
+        return instance;
+      },
+    });
+    _PROXIED.add(Patched);
+    owner[name] = Patched;
+    return Patched;
+  } catch (e) { return undefined; }
+};
 const NP = Object.getPrototypeOf(navigator);
 """
 
@@ -364,14 +408,16 @@ function patchContext(proto, extOverrides) {
     return ArrayBuffer.isView(override) ? override.slice() : override;
   });
 
-  if (Object.keys(precisionOverrides).length > 0) {
+  const hasPrecision = typeof WebGLShaderPrecisionFormat !== 'undefined';
+  if (hasPrecision && Object.keys(precisionOverrides).length > 0) {
     const origGetShaderPrecisionFormat = proto.getShaderPrecisionFormat;
     _patchM(proto, 'getShaderPrecisionFormat',
       function getShaderPrecisionFormat(shaderType, precisionType) {
         const real = origGetShaderPrecisionFormat.call(this, shaderType, precisionType);
         const p = precisionOverrides[shaderType + ':' + precisionType];
-        if (!p) return real;
-        return {rangeMin: p[0], rangeMax: p[1], precision: p[2]};
+        if (!p || real === null) return real;
+        return _fake(WebGLShaderPrecisionFormat.prototype,
+          {rangeMin: p[0], rangeMax: p[1], precision: p[2]});
       });
   }
 
@@ -389,6 +435,12 @@ function patchContext(proto, extOverrides) {
   });
 }
 
+if (typeof WebGLShaderPrecisionFormat !== 'undefined'
+    && Object.keys(precisionOverrides).length > 0) {
+  for (const prop of ['rangeMin', 'rangeMax', 'precision']) {
+    _defF(WebGLShaderPrecisionFormat.prototype, prop);
+  }
+}
 if (typeof WebGLRenderingContext !== 'undefined') {
   patchContext(WebGLRenderingContext.prototype, ext1);
 }
@@ -528,10 +580,13 @@ def _build_media_devices_js(md: MediaDevicesFingerprint) -> str:
     """Override ``enumerateDevices`` with fake devices built on the real prototypes.
 
     Inputs are ``InputDeviceInfo`` instances and outputs ``MediaDeviceInfo``,
-    exactly as Chrome reports them, with no own properties: the values come
-    from prototype getters that consult the fake registry and otherwise defer
-    to the native getter. ``enumerateDevices`` awaits the native call first so
-    the receiver check and the async timing are the real ones.
+    listed in Chrome's order (audio inputs, video inputs, audio outputs), with
+    no own properties: the values come from prototype getters that consult the
+    fake registry and otherwise defer to the native getter. Each call returns
+    fresh objects, as the native method does, and ``getCapabilities()`` on a
+    fake input answers ``{}`` like a device without permission.
+    ``enumerateDevices`` awaits the native call first so the receiver check and
+    the async timing are the real ones.
     """
     audio_in = md.get('audio_inputs', 0)
     audio_out = md.get('audio_outputs', 0)
@@ -551,13 +606,22 @@ if (typeof MediaDeviceInfo !== 'undefined' && typeof MediaDevices !== 'undefined
     const f = _FAKES.get(this);
     return f !== undefined ? Object.assign({{}}, f) : origToJSON.call(this);
   }});
-  const devices = [];
-  for (let i = 0; i < {audio_in}; i++) devices.push(makeDev('audioinput'));
-  for (let i = 0; i < {audio_out}; i++) devices.push(makeDev('audiooutput'));
-  for (let i = 0; i < {video_in}; i++) devices.push(makeDev('videoinput'));
+  const makeDevices = () => {{
+    const devices = [];
+    for (let i = 0; i < {audio_in}; i++) devices.push(makeDev('audioinput'));
+    for (let i = 0; i < {video_in}; i++) devices.push(makeDev('videoinput'));
+    for (let i = 0; i < {audio_out}; i++) devices.push(makeDev('audiooutput'));
+    return devices;
+  }};
+  if (typeof InputDeviceInfo !== 'undefined' && InputDeviceInfo.prototype.getCapabilities) {{
+    const origCapabilities = InputDeviceInfo.prototype.getCapabilities;
+    _patchM(InputDeviceInfo.prototype, 'getCapabilities', function getCapabilities() {{
+      return _FAKES.has(this) ? {{}} : origCapabilities.call(this);
+    }});
+  }}
   const origEnumerate = MediaDevices.prototype.enumerateDevices;
   _patchM(MediaDevices.prototype, 'enumerateDevices', function enumerateDevices() {{
-    return origEnumerate.call(this).then(() => devices.slice());
+    return origEnumerate.call(this).then(() => makeDevices());
   }});
 }}"""
 
@@ -565,29 +629,35 @@ if (typeof MediaDeviceInfo !== 'undefined' && typeof MediaDevices !== 'undefined
 def _build_audio_js(audio: AudioFingerprint) -> str:
     """Override realtime ``AudioContext`` device capabilities.
 
-    An ``OfflineAudioContext`` must report the sample rate and channel count it
-    was constructed with, so those keep the native value; only realtime
-    contexts (the ones that describe the audio device) take the profile's
-    values. The rendered audio hash is not touched by any of this.
+    An ``OfflineAudioContext``, or an ``AudioContext`` constructed with an
+    explicit ``sampleRate``, must report the rate it was constructed with, so
+    those keep the native value (the constructor is wrapped in a Proxy to
+    remember explicit rates); only realtime contexts created without a rate,
+    the ones that describe the audio device, take the profile's values. The
+    rendered audio hash is not touched by any of this.
     """
-    lines: list[str] = []
+    lines: list[str] = [
+        'const _truthful = new WeakSet();',
+        "const _isOffline = (ctx) => typeof OfflineAudioContext !== 'undefined'"
+        ' && ctx instanceof OfflineAudioContext;',
+        "if (typeof AudioContext !== 'undefined') {",
+        "  const _ctor = _wrapCtor(self, 'AudioContext', null, (ctx, args) => {",
+        '    if (args[0] && args[0].sampleRate !== undefined) _truthful.add(ctx);',
+        '  });',
+        "  if (_ctor && 'webkitAudioContext' in self) self.webkitAudioContext = _ctor;",
+        '}',
+    ]
     if 'sample_rate' in audio:
         val = json.dumps(audio['sample_rate'])
         lines.append(
-            "_defGf(BaseAudioContext.prototype, 'sampleRate', (self, native) => {\n"
-            '  const real = native();\n'
-            "  return (typeof OfflineAudioContext !== 'undefined'"
-            f' && self instanceof OfflineAudioContext) ? real : {val};\n'
-            '});'
+            "_defGf(BaseAudioContext.prototype, 'sampleRate', (self, real) =>\n"
+            f'  (_isOffline(self) || _truthful.has(self)) ? real : {val});'
         )
     if 'max_channel_count' in audio:
         val = json.dumps(audio['max_channel_count'])
         lines.append(
-            "_defGf(AudioDestinationNode.prototype, 'maxChannelCount', (self, native) => {\n"
-            '  const real = native();\n'
-            "  return (typeof OfflineAudioContext !== 'undefined'"
-            f' && self.context instanceof OfflineAudioContext) ? real : {val};\n'
-            '});'
+            "_defGf(AudioDestinationNode.prototype, 'maxChannelCount', (self, real) =>\n"
+            f'  _isOffline(self.context) ? real : {val});'
         )
     return '\n'.join(lines)
 
@@ -745,15 +815,19 @@ if (typeof FontFace !== 'undefined' && FontFace.prototype.load) {
   const _realLoad = FontFace.prototype.load;
   _patchM(FontFace.prototype, 'load', function load() {
     const fam = norm(this.family);
-    if (allow.has(fam)) return Promise.resolve(this);
+    const face = this;
+    const real = _realLoad.apply(this, arguments);
+    if (allow.has(fam)) return real.catch(() => face);
     if (reject.has(fam)) {
-      return Promise.reject(new DOMException('A network error occurred.', 'NetworkError'));
+      return real.then(() => {
+        throw new DOMException('A network error occurred.', 'NetworkError');
+      });
     }
-    return _realLoad.apply(this, arguments);
+    return real;
   });
   if (typeof FontFaceSet !== 'undefined' && FontFaceSet.prototype.check) {
     const _realCheck = FontFaceSet.prototype.check;
-    _patchM(FontFaceSet.prototype, 'check', function check(font, text) {
+    _patchM(FontFaceSet.prototype, 'check', function check(font) {
       const real = _realCheck.apply(this, arguments);
       const fam = famOf(font);
       if (allow.has(fam)) return true;
@@ -792,34 +866,25 @@ def _build_webrtc_js(policy: str) -> str:
     """Patch RTCPeerConnection (and its ``webkit`` alias) to force iceTransportPolicy.
 
     Chrome exposes the same constructor as ``RTCPeerConnection`` and
-    ``webkitRTCPeerConnection``; both are replaced so the alias cannot bypass
-    the policy and ``window.RTCPeerConnection === window.webkitRTCPeerConnection``
-    stays true. The native launch flag ``--force-webrtc-ip-handling-policy``
-    (``ChromiumOptions.webrtc_leak_protection``) needs no patch at all and is
-    the preferred route.
+    ``webkitRTCPeerConnection``; both are replaced by one Proxy of the native
+    constructor so the alias cannot bypass the policy, the identity stays
+    equal, ``name`` / ``length`` / ``prototype`` read through to the native, and
+    a call without ``new`` throws the native error. The native launch flag
+    ``--force-webrtc-ip-handling-policy`` (``ChromiumOptions.webrtc_leak_protection``)
+    needs no patch at all and is the preferred route.
     """
     if policy == 'default':
         return ''
     return (
         "if (typeof RTCPeerConnection !== 'undefined') {\n"
-        '  const Orig = RTCPeerConnection;\n'
-        '  const Patched = function RTCPeerConnection(config, constraints) {\n'
-        '    config = Object.assign({}, config || {});\n'
+        "  const Patched = _wrapCtor(window, 'RTCPeerConnection', (args) => {\n"
+        '    const config = Object.assign({}, args[0] || {});\n'
         f'    config.iceTransportPolicy = {json.dumps(policy)};\n'
-        '    return new Orig(config, constraints);\n'
-        '  };\n'
-        '  Patched.prototype = Orig.prototype;\n'
-        '  Patched.prototype.constructor = Patched;\n'
-        '  Object.getOwnPropertyNames(Orig).forEach(function(p) {\n'
-        "    if (p !== 'prototype' && p !== 'length' && p !== 'name') {\n"
-        '      try { Patched[p] = Orig[p]; } catch (e) {}\n'
-        '    }\n'
-        '  });\n'
-        "  Object.defineProperty(Patched, 'name',\n"
-        "    {value: 'RTCPeerConnection', configurable: true});\n"
-        '  _mark(Patched);\n'
-        '  window.RTCPeerConnection = Patched;\n'
-        "  if ('webkitRTCPeerConnection' in window) window.webkitRTCPeerConnection = Patched;\n"
+        '    return [config].concat(Array.prototype.slice.call(args, 1));\n'
+        '  }, null);\n'
+        "  if (Patched && 'webkitRTCPeerConnection' in window) {\n"
+        '    window.webkitRTCPeerConnection = Patched;\n'
+        '  }\n'
         '}'
     )
 

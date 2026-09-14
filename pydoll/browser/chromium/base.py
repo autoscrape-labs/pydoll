@@ -123,6 +123,7 @@ class Browser(ABC):  # noqa: PLR0904
         self._context_proxy_auth: dict[str, tuple[str, str]] = {}
         self._context_fingerprints: dict[Optional[str], 'FingerprintConfig'] = {}
         self._context_worker_callbacks: dict[Optional[str], int] = {}
+        self._fingerprint_fetch_callback: Optional[int] = None
         logger.debug(
             f'Browser initialized: port={self._connection_port}, '
             f'headless={getattr(self.options, "headless", None)}'

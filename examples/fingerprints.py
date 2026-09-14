@@ -170,6 +170,27 @@ MOBILE_WEBGL2_EXTENSIONS = [
     'WEBGL_multi_draw',
 ]
 
+# ANGLE on Direct3D 11 has no reduced precision: every float precision reports
+# the full 32-bit range and every int precision the full 32-bit int range.
+SHADER_PRECISION_D3D11 = {
+    'vertex': {
+        'highFloat': [127, 127, 23],
+        'mediumFloat': [127, 127, 23],
+        'lowFloat': [127, 127, 23],
+        'highInt': [31, 30, 0],
+        'mediumInt': [31, 30, 0],
+        'lowInt': [31, 30, 0],
+    },
+    'fragment': {
+        'highFloat': [127, 127, 23],
+        'mediumFloat': [127, 127, 23],
+        'lowFloat': [127, 127, 23],
+        'highInt': [31, 30, 0],
+        'mediumInt': [31, 30, 0],
+        'lowInt': [31, 30, 0],
+    },
+}
+
 SHADER_PRECISION_DEFAULT = {
     'vertex': {
         'highFloat': [127, 127, 23],
@@ -384,20 +405,28 @@ FINGERPRINTS: dict[str, FingerprintConfig] = {
                 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) '
                 'Direct3D11 vs_5_0 ps_5_0, D3D11)'
             ),
-            max_texture_size=32768,
-            max_renderbuffer_size=32768,
-            max_viewport_dims=[32768, 32768],
+            max_texture_size=16384,
+            max_renderbuffer_size=16384,
+            max_viewport_dims=[32767, 32767],
+            max_cube_map_texture_size=16384,
+            max_3d_texture_size=2048,
+            max_array_texture_layers=2048,
             max_vertex_attribs=16,
             max_vertex_uniform_vectors=4096,
             max_fragment_uniform_vectors=1024,
-            max_texture_image_units=32,
-            max_vertex_texture_image_units=32,
-            max_combined_texture_image_units=192,
+            max_varying_vectors=30,
+            max_texture_image_units=16,
+            max_vertex_texture_image_units=16,
+            max_combined_texture_image_units=32,
+            max_color_attachments=8,
+            max_draw_buffers=8,
+            max_samples=8,
+            max_uniform_block_size=65536,
             aliased_line_width_range=[1, 1],
             aliased_point_size_range=[1, 1024],
             supported_extensions=DESKTOP_EXTENSIONS,
             webgl2_extensions=DESKTOP_WEBGL2_EXTENSIONS,
-            shader_precision_formats=SHADER_PRECISION_DEFAULT,
+            shader_precision_formats=SHADER_PRECISION_D3D11,
         ),
         screen=ScreenFingerprint(
             width=1920,
