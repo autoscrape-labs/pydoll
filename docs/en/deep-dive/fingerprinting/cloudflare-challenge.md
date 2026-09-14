@@ -116,7 +116,7 @@ So the levers that carry a headless client under the line are covering the chall
 ## What actually works {#what-actually-works}
 
 - **Match the host and the binary.** OS equals the host OS, Chrome major equals the binary major.
-- **Match locale, timezone, and geolocation to the egress IP.** The challenge cross-references `Accept-Language` and timezone against the IP's country (see [Locale/IP mismatch](../../stealth/fingerprint-injection.md#case-study-a-locale-mismatch-triggering-googles-captcha)). On a real deployment this is often the single lever between block and pass.
+- **Match locale, timezone, and geolocation to the egress IP.** The challenge cross-references `Accept-Language` and timezone against the IP's country (see [Locale/IP mismatch](../../stealth/fingerprint-injection.md#match-locale-and-timezone-to-your-egress-ip)). On a real deployment this is often the single lever between block and pass.
 - **Cover the cross-origin iframe.** The challenge reads the fingerprint inside its own `challenges.cloudflare.com` frame; `apply_fingerprint(..., cross_origin_iframes=True)`, the default, replays the identity there too. Left on the real machine, the iframe contradicts the page and the challenge blocks; covered, it is the term that lets a headless client clear.
 - **Click the Turnstile.** The managed challenge now serves an interactive Turnstile, so the checkbox has to be clicked. Use [`expect_and_bypass_cloudflare_captcha()`](../../stealth/captcha-bypass.md); waiting for an auto-clear leaves you blocked.
 - **Fall back to a real display on a marginal IP.** When the IP is not clean enough for a coherent headless client to clear, run headful or headful under Xvfb on a server, so the presentation term stops counting against you.

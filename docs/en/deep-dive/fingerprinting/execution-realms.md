@@ -23,7 +23,7 @@ The interactive map below applies a Windows profile on a real Mac and reads `nav
 
 Two of Pydoll's mechanisms cross realm boundaries on their own, but only within a single process:
 
-- **CDP `Emulation` overrides** (`setUserAgentOverride`, `setHardwareConcurrencyOverride`, `setTimezoneOverride`, `setLocaleOverride`, `setDeviceMetricsOverride`, `setEmulatedMedia`) are applied by the browser at the target level, below JavaScript. They cover the main document and every frame in the same process.
+- **CDP `Emulation` overrides** (`setUserAgentOverride`, which also carries `navigator.platform` and `languages`, `setHardwareConcurrencyOverride`, `setTimezoneOverride`, `setLocaleOverride`, `setDeviceMetricsOverride`, `setTouchEmulationEnabled`, `setEmulatedMedia`) are applied by the browser at the target level, below JavaScript. They cover the main document and every frame in the same process. `Browser.setPermission` goes further and covers the whole browser context.
 - **`Page.addScriptToEvaluateOnNewDocument`** runs a script in every frame of the page target before that frame's own scripts run. It covers the main realm and every same-origin (in-process) iframe.
 
 Together these cover the main document and same-origin iframes with no extra work. A same-origin child iframe reads the injected `platform`, `hardwareConcurrency`, and User-Agent, not the host machine's.
@@ -47,7 +47,14 @@ A Web Worker is a background script with no DOM and its own global, `self`. Ther
 
 Each exposes a `WorkerNavigator` with its own `userAgent`, `platform`, `hardwareConcurrency`, `deviceMemory`, and `languages`. A detector spins up a worker, re-reads those, and compares them to the page. If the worker reports the real machine, the session is flagged.
 
-Pydoll reaches a worker by attaching to it before it runs. It enables `Target.setAutoAttach` with `waitForDebuggerOnStart`, so every worker attaches **paused** on creation. On attach, Pydoll replays the User-Agent and `hardwareConcurrency` CDP overrides and evaluates the worker fingerprint script on that session, then resumes the worker. It starts already wearing the identity, so its first read is already the injected one.
+Pydoll reaches a worker by attaching to it before it runs. It enables `Target.setAutoAttach` with `waitForDebuggerOnStart`, so every worker attaches **paused** on creation. On attach, Pydoll replays the User-Agent, `languages`, and `hardwareConcurrency` CDP overrides and evaluates the worker fingerprint script on that session, then resumes the worker. It starts already wearing the identity, so its first read is already the injected one.
+
+The CDP override does not carry everything into a worker. Measured on Chrome 152: `acceptLanguage` reaches every worker type natively, `userAgent` reaches dedicated workers but not shared or service workers, and `platform` reaches no `WorkerNavigator` at all. The worker script fills exactly those gaps with hardened getters; the page realm needs none of them.
+
+A worker can spawn workers of its own. A nested worker is a child of the *worker* target, not of the page, so an auto-attach set on the page never sees it, and it would run with the real identity. Pydoll sets auto-attach on every attached worker session too, so nested workers attach paused on the same connection and go through the same replay.
+
+!!! note "The service worker script is fetched before the worker exists"
+    The request for a service worker's script is made by the browser process, ahead of any target Pydoll could attach to, so it carries the browser-wide User-Agent and `Accept-Language`, not the profile's. Pass `--user-agent` (reduced form) and `--accept-lang` equal to the profile at launch so that request agrees with the rest; see [Cover the service worker script fetch](../../stealth/fingerprint-injection.md#cover-the-service-worker-script-fetch).
 
 ## Tab scope and browser scope
 
@@ -77,7 +84,7 @@ flowchart TB
     BC -->|attach + replay, scoped to the context| SH
 ```
 
-Because service and shared workers are shared by every tab in a context, a browser context holds a single identity. Applying a second, different fingerprint to a context that already has one raises `FingerprintContextConflict` (see [Multiple fingerprints across contexts](../../stealth/fingerprint-injection.md#multiple-fingerprints-across-contexts)).
+Because service and shared workers are shared by every tab in a context, a browser context holds a single identity. Applying a second, different fingerprint to a context that already has one raises `FingerprintContextConflict` (see [One fingerprint per browser context](../../stealth/fingerprint-injection.md#one-fingerprint-per-browser-context)).
 
 ## Cross-origin iframes run in another process
 
@@ -104,6 +111,7 @@ Pydoll reaches an OOPIF with the same attach-and-replay it uses for workers, app
 | Main document | no | page script + Emulation | tab |
 | Same-origin iframe | no | page script + Emulation | tab |
 | Dedicated worker | yes | attach + replay | tab |
+| Nested worker (worker in worker) | yes | attach + replay, from the parent worker's session | tab |
 | Cross-origin iframe (OOPIF) | yes | attach + replay | tab |
 | Shared worker | yes | attach + replay | browser context |
 | Service worker | yes | attach + replay | browser context |

@@ -5,6 +5,7 @@ from contextlib import suppress
 from typing import TYPE_CHECKING, Awaitable, Callable, Optional
 
 from pydoll.commands import (
+    BrowserCommands,
     EmulationCommands,
     PageCommands,
     RuntimeCommands,
@@ -15,6 +16,12 @@ from pydoll.exceptions import (
     CommandExecutionTimeout,
     FingerprintContextConflict,
     WebSocketConnectionClosed,
+)
+from pydoll.protocol.browser.types import (
+    Bounds,
+    PermissionDescriptor,
+    PermissionSetting,
+    WindowState,
 )
 from pydoll.protocol.emulation.types import (
     MediaFeature,
@@ -29,11 +36,14 @@ from pydoll.utils.fingerprint_builder import build_fingerprint_js, build_fingerp
 if TYPE_CHECKING:
     from pydoll.browser.tab import Tab
     from pydoll.protocol.base import Command
+    from pydoll.protocol.browser.methods import GetWindowForTargetResponse
     from pydoll.protocol.emulation.methods import GetScreenInfosResponse
     from pydoll.protocol.emulation.types import WorkAreaInsets
     from pydoll.protocol.fingerprint.types import (
+        ClientHintsFingerprint,
         FingerprintConfig,
         MediaFeaturesFingerprint,
+        PermissionsFingerprint,
         ScreenFingerprint,
     )
     from pydoll.protocol.target.methods import GetTargetInfoResponse
@@ -82,17 +92,26 @@ class FingerprintApplier:
         effect, since JS overrides are registered via
         ``Page.addScriptToEvaluateOnNewDocument``.
 
-        CDP-level overrides (applied immediately):
-            - User-Agent string + Client Hints (``Emulation.setUserAgentOverride``)
+        CDP-level overrides (applied immediately, no JavaScript behind them):
+            - User-Agent, ``navigator.platform`` / ``appVersion`` / ``vendor``,
+              ``navigator.language(s)`` and Client Hints
+              (``Emulation.setUserAgentOverride``)
             - Timezone (``Emulation.setTimezoneOverride``)
             - Geolocation (``Emulation.setGeolocationOverride``)
-            - Device metrics / screen (``Emulation.setDeviceMetricsOverride``)
+            - Device metrics / screen (``Emulation.setDeviceMetricsOverride``; in
+              headless the virtual screen and window are reshaped natively via
+              ``Emulation.updateScreen`` and ``Browser.setWindowBounds``)
             - Locale (``Emulation.setLocaleOverride``)
             - CSS media features / color-gamut (``Emulation.setEmulatedMedia``)
+            - ``hardwareConcurrency``, touch events, permissions
+              (``Browser.setPermission``, so ``PermissionStatus`` and
+              ``Notification.permission`` are the real ones)
 
-        JS-level overrides (injected on every new document):
-            - Navigator properties, hardware, WebGL, screen extras,
-              plugins, media devices, audio, speech, locale/languages
+        JS-level overrides (injected on every new document), only for the
+        signals CDP cannot set:
+            - ``deviceMemory``, ``maxTouchPoints``, WebGL, media devices, audio
+              device capabilities, speech voices, network connection, fonts,
+              WebRTC policy, and the headful-only screen extras
 
         The same overrides are also replayed on Web Worker targets, which have
         their own ``WorkerNavigator`` and would otherwise leak the real
@@ -131,43 +150,12 @@ class FingerprintApplier:
         if mobile is None:
             mobile = parsed.user_agent_metadata['mobile'] if parsed else False
 
-        if parsed is not None:
-            self._warn_on_user_agent_option_conflict(fingerprint['user_agent'])
-            await self._apply_user_agent(parsed, accept_language, mobile=mobile)
-        if 'timezone' in fingerprint:
-            await tab._execute_command(
-                EmulationCommands.set_timezone_override(fingerprint['timezone'])
-            )
-        if 'geolocation' in fingerprint:
-            geo = fingerprint['geolocation']
-            await tab._execute_command(
-                EmulationCommands.set_geolocation_override(
-                    latitude=geo['latitude'],
-                    longitude=geo['longitude'],
-                    accuracy=geo.get('accuracy'),
-                )
-            )
-        if 'screen' in fingerprint:
-            await self._apply_device_metrics(fingerprint['screen'], mobile=mobile)
-            await self._apply_headless_screen(fingerprint['screen'])
-        if 'hardware' in fingerprint and 'hardware_concurrency' in fingerprint['hardware']:
-            await tab._execute_command(
-                EmulationCommands.set_hardware_concurrency_override(
-                    fingerprint['hardware']['hardware_concurrency']
-                )
-            )
-        if 'locale' in fingerprint:
-            languages = fingerprint['locale']['languages']
-            if languages:
-                await tab._execute_command(
-                    EmulationCommands.set_locale_override(languages[0].replace('-', '_'))
-                )
-        if 'media_features' in fingerprint:
-            await self._apply_media_features(fingerprint['media_features'])
+        headless = self._is_headless()
+        await self._apply_native_overrides(
+            fingerprint, parsed, accept_language, mobile=mobile, headless=headless
+        )
 
-        identity_ua = parsed.reduced_user_agent if parsed else ''
-        identity_platform = parsed.platform if parsed else ''
-        js = build_fingerprint_js(fingerprint, user_agent=identity_ua, platform=identity_platform)
+        js = build_fingerprint_js(self._page_js_config(fingerprint, headless))
         if js:
             await tab._execute_command(
                 PageCommands.add_script_to_evaluate_on_new_document(
@@ -188,6 +176,59 @@ class FingerprintApplier:
         self._applied = fingerprint
         logger.info('Fingerprint profile applied')
 
+    async def _apply_native_overrides(
+        self,
+        fingerprint: FingerprintConfig,
+        parsed: Optional['ParsedUserAgent'],
+        accept_language: Optional[str],
+        mobile: bool,
+        headless: bool,
+    ) -> None:
+        """Send every CDP-native override of the profile to the page session."""
+        tab = self._tab
+        if parsed is not None:
+            self._warn_on_user_agent_option_conflict(fingerprint['user_agent'])
+            self._apply_client_hint_overrides(parsed, fingerprint.get('client_hints'))
+            await self._apply_user_agent(parsed, accept_language, mobile=mobile)
+        if 'timezone' in fingerprint:
+            await tab._execute_command(
+                EmulationCommands.set_timezone_override(fingerprint['timezone'])
+            )
+        if 'geolocation' in fingerprint:
+            geo = fingerprint['geolocation']
+            await tab._execute_command(
+                EmulationCommands.set_geolocation_override(
+                    latitude=geo['latitude'],
+                    longitude=geo['longitude'],
+                    accuracy=geo.get('accuracy'),
+                )
+            )
+        if 'screen' in fingerprint:
+            await self._apply_device_metrics(
+                fingerprint['screen'], mobile=mobile, include_screen_size=not headless
+            )
+            await self._apply_headless_screen(fingerprint['screen'])
+            await self._apply_window_bounds(fingerprint['screen'])
+        if 'hardware' in fingerprint and 'hardware_concurrency' in fingerprint['hardware']:
+            await tab._execute_command(
+                EmulationCommands.set_hardware_concurrency_override(
+                    fingerprint['hardware']['hardware_concurrency']
+                )
+            )
+        touch_command = self._touch_emulation_command(fingerprint)
+        if touch_command is not None:
+            await tab._execute_command(touch_command)
+        if 'permissions' in fingerprint:
+            await self._apply_permissions(fingerprint['permissions'])
+        if 'locale' in fingerprint:
+            languages = fingerprint['locale']['languages']
+            if languages:
+                await tab._execute_command(
+                    EmulationCommands.set_locale_override(languages[0].replace('-', '_'))
+                )
+        if 'media_features' in fingerprint:
+            await self._apply_media_features(fingerprint['media_features'])
+
     async def _apply_media_features(self, media_features: MediaFeaturesFingerprint) -> None:
         """Emulate the configured CSS media features via ``setEmulatedMedia``.
 
@@ -198,6 +239,111 @@ class FingerprintApplier:
         command = self._media_features_command(media_features)
         if command is not None:
             await self._tab._execute_command(command)
+
+    @staticmethod
+    def _page_js_config(fingerprint: FingerprintConfig, headless: bool) -> FingerprintConfig:
+        """Strip from the page-script config every section applied natively.
+
+        In headless mode the whole ``screen`` section is native
+        (``Emulation.updateScreen`` + ``Browser.setWindowBounds`` +
+        ``setDeviceMetricsOverride``), so no screen getter is injected. In
+        headful mode only ``outer_width`` / ``outer_height`` are native (the real
+        window is resized), so those two are dropped and the rest stays JS.
+        """
+        if 'screen' not in fingerprint:
+            return fingerprint
+        page_config = fingerprint.copy()
+        if headless:
+            del page_config['screen']
+            return page_config
+        screen = fingerprint['screen'].copy()
+        screen.pop('outer_width', None)
+        screen.pop('outer_height', None)
+        page_config['screen'] = screen
+        return page_config
+
+    @staticmethod
+    def _apply_client_hint_overrides(
+        parsed: 'ParsedUserAgent', client_hints: Optional['ClientHintsFingerprint']
+    ) -> None:
+        """Pin the high-entropy Client Hints the User-Agent string cannot carry."""
+        if not client_hints:
+            return
+        metadata = parsed.user_agent_metadata
+        if 'platform_version' in client_hints:
+            metadata['platformVersion'] = client_hints['platform_version']
+        if 'architecture' in client_hints:
+            metadata['architecture'] = client_hints['architecture']
+        if 'bitness' in client_hints:
+            metadata['bitness'] = client_hints['bitness']
+        if 'wow64' in client_hints:
+            metadata['wow64'] = client_hints['wow64']
+        if 'model' in client_hints:
+            metadata['model'] = client_hints['model']
+        if 'form_factors' in client_hints:
+            metadata['formFactors'] = client_hints['form_factors']
+
+    @staticmethod
+    def _touch_emulation_command(fingerprint: FingerprintConfig) -> Optional['Command']:
+        """Build the native touch-emulation command for a touch-capable profile.
+
+        A profile claiming touch points must also expose ``ontouchstart`` and
+        match ``(pointer: coarse)``, which only ``Emulation.setTouchEmulationEnabled``
+        can do; ``navigator.maxTouchPoints`` itself stays a JS getter. Profiles
+        with zero touch points leave the real (non-touch) state untouched.
+        """
+        max_touch_points = fingerprint.get('hardware', {}).get('max_touch_points')
+        if not max_touch_points:
+            return None
+        return EmulationCommands.set_touch_emulation_enabled(
+            enabled=True, max_touch_points=max_touch_points
+        )
+
+    async def _apply_permissions(self, permissions: 'PermissionsFingerprint') -> None:
+        """Apply permission states natively for this tab's browser context.
+
+        ``Browser.setPermission`` makes ``navigator.permissions.query()`` return a
+        genuine ``PermissionStatus`` and keeps the legacy surfaces
+        (``Notification.permission``) in agreement, which a JavaScript override of
+        ``query`` cannot do. Service and shared workers share the context, so the
+        states apply to every realm of the identity.
+        """
+        overrides = permissions.get('overrides', {})
+        browser = self._tab._browser
+        for name, state in overrides.items():
+            await browser._connection_handler.execute_command(
+                BrowserCommands.set_permission(
+                    PermissionDescriptor(name=name),
+                    PermissionSetting(state),
+                    browser_context_id=self._tab._browser_context_id,
+                )
+            )
+
+    async def _apply_window_bounds(self, screen: 'ScreenFingerprint') -> None:
+        """Size the real browser window to the profile's ``outer_*`` dimensions.
+
+        ``window.outerWidth`` / ``outerHeight`` then come from the actual window
+        (native getters, no JavaScript), and ``innerWidth`` / ``innerHeight``
+        follow from the window chrome unless ``inner_*`` pin them through
+        ``setDeviceMetricsOverride``. Skipped when the profile sets no outer size.
+        """
+        width = screen.get('outer_width')
+        height = screen.get('outer_height')
+        if width is None or height is None:
+            return
+        tab = self._tab
+        if not tab._target_id:
+            return
+        with suppress(CommandExecutionTimeout, WebSocketConnectionClosed, KeyError):
+            response: GetWindowForTargetResponse = await tab._execute_command(
+                BrowserCommands.get_window_for_target(tab._target_id)
+            )
+            window_id = response['result']['windowId']
+            await tab._execute_command(
+                BrowserCommands.set_window_bounds(
+                    window_id, Bounds(width=width, height=height, windowState=WindowState.NORMAL)
+                )
+            )
 
     def _warn_on_user_agent_option_conflict(self, fingerprint_user_agent: str) -> None:
         """Warn when a ``--user-agent`` option contradicts the fingerprint UA.
@@ -440,7 +586,14 @@ class FingerprintApplier:
         hardware_concurrency: Optional[int],
         worker_js: str,
     ) -> None:
-        """Replay UA / hardwareConcurrency / JS overrides on a single worker session."""
+        """Replay UA / hardwareConcurrency / JS overrides on a single worker session.
+
+        The session also auto-attaches its own child workers: a worker spawned
+        from inside a worker is a child of the worker target, not of the page,
+        so without this it would never pause on start and would run with the
+        real identity. Nested attachments arrive on the same flattened
+        connection and are handled by the same handler.
+        """
         commands: list[Command] = []
         if parsed is not None:
             commands.append(self._user_agent_command(parsed, accept_language, mobile))
@@ -450,6 +603,14 @@ class FingerprintApplier:
             )
         if worker_js:
             commands.append(RuntimeCommands.evaluate(expression=worker_js))
+        commands.append(
+            TargetCommands.set_auto_attach(
+                auto_attach=True,
+                wait_for_debugger_on_start=True,
+                flatten=True,
+                filter=[FilterEntry(type='worker')],
+            )
+        )
         for command in commands:
             command['sessionId'] = session_id
             await connection.execute_command(command, timeout=self._WORKER_COMMAND_TIMEOUT)
@@ -499,7 +660,14 @@ class FingerprintApplier:
                 EmulationCommands.set_hardware_concurrency_override(hardware_concurrency)
             )
         if 'screen' in fingerprint:
-            commands.append(self._device_metrics_command(fingerprint['screen'], mobile))
+            metrics = self._device_metrics_command(
+                fingerprint['screen'], mobile, include_screen_size=not self._is_headless()
+            )
+            if metrics is not None:
+                commands.append(metrics)
+        touch_command = self._touch_emulation_command(fingerprint)
+        if touch_command is not None:
+            commands.append(touch_command)
         if 'media_features' in fingerprint:
             media_command = self._media_features_command(fingerprint['media_features'])
             if media_command is not None:
@@ -529,13 +697,26 @@ class FingerprintApplier:
             user_agent_metadata=metadata,
         )
 
-    def _device_metrics_command(self, screen: 'ScreenFingerprint', mobile: bool) -> 'Command':
+    def _device_metrics_command(
+        self, screen: 'ScreenFingerprint', mobile: bool, include_screen_size: bool = True
+    ) -> Optional['Command']:
         """Build the ``setDeviceMetricsOverride`` command from screen config.
 
-        When ``inner_width`` / ``inner_height`` are omitted, the layout-size is
-        disabled (``0``) so the real window drives ``window.innerWidth`` /
-        ``innerHeight`` instead of ``screen.width`` (a headless-like tell). The
-        ``screen.width`` / ``screen.height`` overrides are always applied.
+        Headful (``include_screen_size``): the ``screen.width`` / ``screen.height``
+        override is applied and, when ``inner_width`` / ``inner_height`` are
+        omitted, the layout-size is disabled (``0``) so the real window drives
+        ``window.innerWidth`` / ``innerHeight`` instead of ``screen.width`` (a
+        headless-like tell).
+
+        Headless: the virtual screen is reshaped natively by
+        ``Emulation.updateScreen`` (size, work area, color depth, integer dpr) and
+        the window by ``Browser.setWindowBounds``, so a desktop profile needs no
+        metrics override at all. Any active override forces ``availWidth`` /
+        ``availHeight`` back to the full screen (losing the taskbar gap), so one
+        is emitted only when something the virtual screen cannot express is
+        requested: a mobile device (viewport, orientation and touch semantics,
+        ``inner_*`` honoured) or a fractional dpr (the virtual screen rounds it).
+        Returns ``None`` when nothing remains to override.
         """
         screen_orientation: Optional[ScreenOrientation] = None
         orientation_type = screen.get('orientation_type')
@@ -545,13 +726,22 @@ class FingerprintApplier:
                 screen_orientation = ScreenOrientation(
                     type=cdp_type, angle=screen.get('orientation_angle', 0)
                 )
+        width = screen.get('inner_width', 0)
+        height = screen.get('inner_height', 0)
+        device_scale_factor = screen.get('device_pixel_ratio', 0)
+        if not include_screen_size and not mobile:
+            if device_scale_factor == int(device_scale_factor):
+                return None
+            width = 0
+            height = 0
+            screen_orientation = None
         return EmulationCommands.set_device_metrics_override(
-            width=screen.get('inner_width', 0),
-            height=screen.get('inner_height', 0),
-            device_scale_factor=screen.get('device_pixel_ratio', 0),
+            width=width,
+            height=height,
+            device_scale_factor=device_scale_factor,
             mobile=mobile,
-            screen_width=screen['width'],
-            screen_height=screen['height'],
+            screen_width=screen['width'] if include_screen_size else None,
+            screen_height=screen['height'] if include_screen_size else None,
             screen_orientation=screen_orientation,
         )
 
@@ -617,25 +807,28 @@ class FingerprintApplier:
             mobile: Whether to emulate a mobile device. Propagated to
                 Client Hints (``Sec-CH-UA-Mobile``).
         """
-        await self._tab._execute_command(
-            self._user_agent_command(parsed, accept_language, mobile)
-        )
+        await self._tab._execute_command(self._user_agent_command(parsed, accept_language, mobile))
 
-    async def _apply_device_metrics(self, screen: ScreenFingerprint, mobile: bool = False) -> None:
+    async def _apply_device_metrics(
+        self, screen: ScreenFingerprint, mobile: bool = False, include_screen_size: bool = True
+    ) -> None:
         """Apply device metrics override from screen fingerprint config.
 
         When ``inner_width`` / ``inner_height`` are omitted, the layout-size
         (``width`` / ``height``) override is disabled by passing ``0`` so the real
         window drives ``window.innerWidth`` / ``innerHeight``, instead of forcing
         them to the full screen size (which yields ``innerWidth == screen.width``,
-        a headless-like tell). The ``screen.width`` / ``screen.height`` overrides
-        (``screen_width`` / ``screen_height``) are applied regardless.
+        a headless-like tell). See :meth:`_device_metrics_command` for
+        ``include_screen_size``.
 
         Args:
             screen: Screen fingerprint configuration.
             mobile: Whether to emulate a mobile device.
+            include_screen_size: Also override ``screen.width`` / ``screen.height``.
         """
-        await self._tab._execute_command(self._device_metrics_command(screen, mobile))
+        command = self._device_metrics_command(screen, mobile, include_screen_size)
+        if command is not None:
+            await self._tab._execute_command(command)
 
     async def _apply_headless_screen(self, screen: 'ScreenFingerprint') -> None:
         """Match the browser-global headless virtual screen to the fingerprint.

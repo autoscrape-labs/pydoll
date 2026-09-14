@@ -33,16 +33,46 @@ class TestEmptyAndBootstrap:
 
 
 class TestNativeToStringHook:
-    def test_gp_uses_computed_name_getter_not_arrow(self):
-        """_gp getters must resolve to native under toString (computed-name + _mark)."""
+    def test_getters_use_computed_name_and_mark(self):
+        """Getters must resolve to native under toString (computed-name + _mark)."""
         js = build_fingerprint_js({'media_devices': {'audio_inputs': 1}})
-        assert 'get [p]()' in js
+        assert 'get [prop]()' in js
         assert 'get: () => v' not in js
+        block = js[js.index('const _defGf') : js.index('const _defG ')]
+        assert '_mark(_g)' in block
 
-    def test_gp_registers_with_mark(self):
+    def test_getters_invoke_native_getter_for_brand_check(self):
+        """Every constant getter calls the original native getter first, so a
+        foreign receiver throws the real Illegal invocation."""
+        js = build_fingerprint_js({'hardware': {'device_memory': 8}})
+        assert '_og.call(self)' in js
+        assert 'native();\n  return value;' in js
+
+
+class TestFakePlatformObjects:
+    """Fake devices/voices are real-prototype objects with no own properties."""
+
+    def test_no_instance_own_properties(self):
         js = build_fingerprint_js({'media_devices': {'audio_inputs': 1}})
-        gp_block = js[js.index('const _gp') : js.index('const NP')]
-        assert '_mark(_g)' in gp_block
+        assert '_gp(' not in js
+        assert '_fake(' in js
+        assert '_defF(MediaDeviceInfo.prototype' in js
+
+    def test_inputs_use_input_device_info_prototype(self):
+        js = build_fingerprint_js({'media_devices': {'audio_inputs': 1, 'video_inputs': 1}})
+        assert 'InputDeviceInfo.prototype' in js
+        assert "kind === 'audiooutput' ? MediaDeviceInfo.prototype : inputProto" in js
+
+    def test_enumerate_devices_awaits_native_call(self):
+        js = build_fingerprint_js({'media_devices': {'audio_inputs': 1}})
+        assert 'origEnumerate.call(this).then(() => devices.slice())' in js
+
+    def test_voices_on_real_prototype_with_native_receiver_check(self):
+        voices = [{'name': 'Samantha', 'lang': 'en-US', 'local_service': True}]
+        js = build_fingerprint_js({'speech': {'voices': voices}})
+        assert '_fake(SpeechSynthesisVoice.prototype' in js
+        assert '_defF(SpeechSynthesisVoice.prototype, prop)' in js
+        assert 'origGetVoices.call(this);' in js
 
 
 class TestPrototypePatching:
@@ -61,13 +91,10 @@ class TestPrototypePatching:
         assert "typeof SpeechSynthesis !== 'undefined'" in js
         assert '_patchM(speechSynthesis' not in js
 
-    def test_permissions_patches_prototype_with_unbound_original(self):
+    def test_permissions_are_never_javascript(self):
+        """Permissions are applied natively (Browser.setPermission), not patched."""
         js = build_fingerprint_js({'permissions': {'overrides': {'notifications': 'denied'}}})
-        assert 'Permissions.prototype.query' in js
-        assert 'const origQuery = Permissions.prototype.query;' in js
-        assert 'origQuery.call(this, desc)' in js
-        assert '_patchM(navigator.permissions' not in js
-        assert '.bind(navigator.permissions)' not in js
+        assert js == ''
 
 
 class TestSections:
@@ -82,10 +109,56 @@ class TestSections:
             'user_agent': 'Mozilla/5.0 ... Chrome/151.0.0.0 Safari/537.36',
             'navigator': {'platform': 'Win32', 'vendor': 'Google Inc.', 'do_not_track': '1'},
         }
-        js = build_fingerprint_js(config, user_agent='Chrome/151.0.0.0', platform='Win32')
+        js = build_fingerprint_js(config)
         # platform/vendor are CDP-handled and must not be JS-injected as navigator getters
         assert "_defG(NP, \"vendor\"" not in js
+        assert "_defG(NP, \"platform\"" not in js
         assert 'doNotTrack' in js
+
+    def test_page_never_injects_identity_or_languages(self):
+        """User-Agent, platform and languages are native on the page (CDP)."""
+        config = {
+            'user_agent': 'Mozilla/5.0 ... Chrome/151.0.0.0 Safari/537.36',
+            'locale': {'languages': ['en-US', 'en']},
+            'hardware': {'device_memory': 8},
+        }
+        js = build_fingerprint_js(config)
+        assert "'userAgent'" not in js
+        assert 'appVersion' not in js
+        assert '"languages"' not in js
+        assert '"language"' not in js
+
+    def test_audio_keeps_offline_contexts_native(self):
+        js = build_fingerprint_js({'audio': {'sample_rate': 48000, 'max_channel_count': 2}})
+        assert 'self instanceof OfflineAudioContext) ? real : 48000' in js
+        assert 'self.context instanceof OfflineAudioContext) ? real : 2' in js
+
+    def test_webgl_never_fakes_extension_objects(self):
+        config = {
+            'webgl': {
+                'vendor': 'Google Inc. (NVIDIA)',
+                'renderer': 'ANGLE (NVIDIA)',
+                'supported_extensions': ['WEBGL_debug_renderer_info'],
+                'max_samples': 8,
+            }
+        }
+        js = build_fingerprint_js(config)
+        assert '|| {}' not in js
+        assert "HIDDEN_EXT = 'WEBGL_debug_shaders'" in js
+        assert 'real.filter(allowed)' in js
+        assert 'const real = origGetParameter.call(this, pname);' in js
+        assert f'{0x8D57}: 8' in js
+
+    def test_webrtc_patches_webkit_alias_too(self):
+        js = build_fingerprint_js({'webrtc_ip_policy': 'relay'})
+        assert 'window.webkitRTCPeerConnection = Patched' in js
+
+    def test_fonts_reject_other_os_markers(self):
+        js = build_fingerprint_js({'fonts': {'available_fonts': ['Segoe UI', 'Arial']}})
+        assert '"helvetica neue"' in js
+        assert '"menlo"' in js
+        assert '"dejavu sans"' in js
+        assert '"segoe ui emoji"' in js
 
     def test_webgl_vendor_and_renderer_present(self):
         config = {'webgl': {'vendor': 'Google Inc. (Apple)', 'renderer': 'ANGLE (Apple, M3)'}}
@@ -114,14 +187,15 @@ class TestWorkerScript:
         assert 'Permissions.prototype' not in worker
         assert 'Screen.prototype' not in worker
 
-    def test_worker_includes_webgl_and_locale(self):
+    def test_worker_includes_webgl_but_not_languages(self):
+        """languages reach every worker natively via acceptLanguage; no JS getter."""
         config = {
             'webgl': {'vendor': 'Google Inc. (Apple)', 'renderer': 'ANGLE (Apple, M3)'},
             'locale': {'languages': ['en-US', 'en']},
         }
         worker = build_fingerprint_worker_js(config, user_agent='Chrome/151.0.0.0')
         assert 'ANGLE (Apple, M3)' in worker
-        assert 'languages' in worker
+        assert 'languages' not in worker
 
     def test_worker_identity_getters(self):
         worker = build_fingerprint_worker_js(

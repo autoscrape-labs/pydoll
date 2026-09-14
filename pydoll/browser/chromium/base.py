@@ -23,7 +23,6 @@ from pydoll.commands import (
     BrowserCommands,
     EmulationCommands,
     FetchCommands,
-    PageCommands,
     RuntimeCommands,
     StorageCommands,
     TargetCommands,
@@ -42,6 +41,7 @@ from pydoll.protocol.fetch.events import FetchEvent
 from pydoll.protocol.fetch.types import AuthChallengeResponseType
 from pydoll.protocol.target.events import TargetEvent
 from pydoll.protocol.target.types import FilterEntry
+from pydoll.utils.fingerprint_builder import build_fingerprint_worker_js
 from pydoll.utils.user_agent_parser import ParsedUserAgent, UserAgentParser
 
 if TYPE_CHECKING:
@@ -789,9 +789,12 @@ class Browser(ABC):  # noqa: PLR0904
     async def _apply_user_agent_override(self, tab: Tab) -> None:
         """Apply consistent User-Agent override to a tab if --user-agent= is set.
 
-        Detects the --user-agent= argument in browser options and automatically
-        synchronizes HTTP headers, navigator JS properties, and Client Hints
-        via CDP Emulation.setUserAgentOverride + JS injection.
+        Detects the --user-agent= argument in browser options and synchronizes
+        HTTP headers, ``navigator.userAgent`` / ``platform`` / ``vendor`` /
+        ``appVersion`` and Client Hints natively via
+        ``Emulation.setUserAgentOverride``; nothing is injected into the page.
+        The reduced form of the User-Agent (``Chrome/MAJOR.0.0.0``) is exposed,
+        matching what real Chrome reports after the User-Agent reduction.
         """
         user_agent = self._get_user_agent_from_options()
         if not user_agent:
@@ -802,23 +805,15 @@ class Browser(ABC):  # noqa: PLR0904
 
         await tab._execute_command(
             EmulationCommands.set_user_agent_override(
-                user_agent=user_agent,
+                user_agent=parsed.reduced_user_agent,
                 platform=parsed.platform,
                 user_agent_metadata=parsed.user_agent_metadata,
             )
         )
 
-        if parsed.navigator_override_js:
-            await tab._execute_command(
-                PageCommands.add_script_to_evaluate_on_new_document(
-                    source=parsed.navigator_override_js,
-                    run_immediately=True,
-                )
-            )
-
         await tab.on(
             TargetEvent.ATTACHED_TO_TARGET,
-            self._build_worker_user_agent_handler(parsed, user_agent, tab._connection_handler),
+            self._build_worker_user_agent_handler(parsed, tab._connection_handler),
         )
         await tab._execute_command(
             TargetCommands.set_auto_attach(
@@ -845,7 +840,7 @@ class Browser(ABC):  # noqa: PLR0904
         parsed = UserAgentParser.parse(user_agent)
         await self.on(
             TargetEvent.ATTACHED_TO_TARGET,
-            self._build_worker_user_agent_handler(parsed, user_agent, self._connection_handler),
+            self._build_worker_user_agent_handler(parsed, self._connection_handler),
         )
         await self._execute_command(
             TargetCommands.set_auto_attach(
@@ -859,16 +854,21 @@ class Browser(ABC):  # noqa: PLR0904
     @staticmethod
     def _build_worker_user_agent_handler(
         parsed: ParsedUserAgent,
-        user_agent: str,
         connection_handler: ConnectionHandler,
     ) -> Callable[[dict], Awaitable[None]]:
         """Build an attachedToTarget handler that replays the UA override on workers.
 
         The returned coroutine applies Emulation.setUserAgentOverride to each
-        attached worker session and always resumes targets paused via
-        waitForDebuggerOnStart, so a worker never hangs on attach.
+        attached worker session, then evaluates the hardened worker identity
+        script (``WorkerNavigator.platform`` is not covered by the CDP override,
+        nor ``userAgent`` on shared / service workers), and always resumes
+        targets paused via waitForDebuggerOnStart, so a worker never hangs on
+        attach.
         """
         worker_types = {'service_worker', 'shared_worker', 'worker'}
+        worker_js = build_fingerprint_worker_js(
+            {}, user_agent=parsed.reduced_user_agent, platform=parsed.platform
+        )
 
         async def on_worker_attached(event: dict) -> None:
             params = event['params']
@@ -877,14 +877,14 @@ class Browser(ABC):  # noqa: PLR0904
             try:
                 if target_type in worker_types:
                     override = EmulationCommands.set_user_agent_override(
-                        user_agent=user_agent,
+                        user_agent=parsed.reduced_user_agent,
                         platform=parsed.platform,
                         user_agent_metadata=parsed.user_agent_metadata,
                     )
                     override['sessionId'] = session_id
                     await connection_handler.execute_command(override)
-                    if parsed.navigator_override_js:
-                        inject = RuntimeCommands.evaluate(expression=parsed.navigator_override_js)
+                    if worker_js:
+                        inject = RuntimeCommands.evaluate(expression=worker_js)
                         inject['sessionId'] = session_id
                         await connection_handler.execute_command(inject)
             except Exception:

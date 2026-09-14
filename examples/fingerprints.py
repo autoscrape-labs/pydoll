@@ -11,7 +11,7 @@ Two rules keep a profile undetectable:
    drive. The network-layer fingerprint (TLS JA3/JA4, HTTP/2 SETTINGS) comes from
    the actual browser and is NOT spoofable, so a UA claiming a different major
    than the binary is itself an inconsistency. Bump ``CHROME_*`` when you upgrade
-   Chrome (these target Chrome 145).
+   Chrome (these target Chrome 152).
 
 2. The locale/timezone/geolocation must match the geography of your egress IP (or
    proxy). The ``Accept-Language`` header (built from ``locale``) is sent on every
@@ -28,6 +28,7 @@ reduced automatically for ``navigator.userAgent``.
 
 from pydoll.protocol.fingerprint.types import (
     AudioFingerprint,
+    ClientHintsFingerprint,
     FingerprintConfig,
     FontFingerprint,
     GeolocationFingerprint,
@@ -45,7 +46,7 @@ from pydoll.protocol.fingerprint.types import (
 )
 
 CHROME_MOBILE = '145.0.7632.45'
-CHROME_DESKTOP = '151.0.7827.201'
+CHROME_DESKTOP = '152.0.7977.83'
 
 UA_ANDROID = (
     'Mozilla/5.0 (Linux; Android 10; K) '
@@ -315,8 +316,9 @@ FINGERPRINTS: dict[str, FingerprintConfig] = {
     # Android (mobile) — Brazilian identity (pair with a Brazilian egress IP).
     'android_s24_ultra_sao_paulo': FingerprintConfig(
         user_agent=UA_ANDROID,
+        client_hints=ClientHintsFingerprint(platform_version='15.0.0', model='SM-S928B'),
         navigator=NavigatorFingerprint(
-            platform='Linux armv81',
+            platform='Linux aarch64',
             vendor='Google Inc.',
             app_version=APP_ANDROID,
             pdf_viewer_enabled=False,
@@ -369,6 +371,7 @@ FINGERPRINTS: dict[str, FingerprintConfig] = {
     # Windows desktop — US identity (pair with a US egress IP / proxy).
     'windows11_rtx3060_nyc': FingerprintConfig(
         user_agent=UA_WINDOWS,
+        client_hints=ClientHintsFingerprint(platform_version='19.0.0'),
         navigator=NavigatorFingerprint(
             platform='Win32',
             vendor='Google Inc.',
@@ -377,7 +380,10 @@ FINGERPRINTS: dict[str, FingerprintConfig] = {
         ),
         webgl=WebGLProfile(
             vendor='Google Inc. (NVIDIA)',
-            renderer='ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 Direct3D11 vs_5_0 ps_5_0, D3D11)',
+            renderer=(
+                'ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 (0x00002504) '
+                'Direct3D11 vs_5_0 ps_5_0, D3D11)'
+            ),
             max_texture_size=32768,
             max_renderbuffer_size=32768,
             max_viewport_dims=[32768, 32768],
@@ -425,6 +431,7 @@ FINGERPRINTS: dict[str, FingerprintConfig] = {
     # macOS desktop — US identity (pair with a US egress IP / proxy).
     'macos_m3_new_york': FingerprintConfig(
         user_agent=UA_MAC,
+        client_hints=ClientHintsFingerprint(platform_version='15.6.1'),
         navigator=NavigatorFingerprint(
             platform='MacIntel',
             vendor='Google Inc.',

@@ -290,7 +290,7 @@ class TestCrossOriginIframes:
     FP = {
         'user_agent': UA,
         'timezone': 'America/New_York',
-        'hardware': {'hardware_concurrency': 8},
+        'hardware': {'hardware_concurrency': 8, 'device_memory': 8},
         'screen': {'width': 1920, 'height': 1080},
         'media_features': {'color_gamut': 'srgb'},
     }
@@ -347,3 +347,165 @@ class TestCrossOriginIframes:
         assert 'Emulation.setUserAgentOverride' not in methods
         # A paused iframe is still resumed so it never hangs.
         assert 'Runtime.runIfWaitingForDebugger' in methods
+
+
+class TestNativeFirst:
+    """Signals with a CDP path are applied natively; the JS script never carries them."""
+
+    async def test_permissions_applied_via_browser_set_permission(self, fake_conn):
+        chrome = Chrome()
+        chrome._connection_handler = fake_conn
+        tab = Tab(
+            browser=chrome,
+            target_id='perm-tab',
+            connection_handler=fake_conn,
+            browser_context_id='ctx-perm',
+        )
+
+        await tab.apply_fingerprint(
+            {'permissions': {'overrides': {'notifications': 'denied', 'geolocation': 'prompt'}}}
+        )
+
+        commands = fake_conn.commands_for('Browser.setPermission')
+        states = {c['params']['permission']['name']: c['params']['setting'] for c in commands}
+        assert states == {'notifications': 'denied', 'geolocation': 'prompt'}
+        assert all(c['params']['browserContextId'] == 'ctx-perm' for c in commands)
+        assert not fake_conn.commands_for('Page.addScriptToEvaluateOnNewDocument')
+
+    async def test_touch_emulation_enabled_for_touch_profiles(self, fp_tab, fake_conn):
+        await fp_tab.apply_fingerprint({'hardware': {'max_touch_points': 10}})
+        params = fake_conn.last_command('Emulation.setTouchEmulationEnabled')['params']
+        assert params == {'enabled': True, 'maxTouchPoints': 10}
+
+    async def test_touch_emulation_untouched_for_desktop_profiles(self, fp_tab, fake_conn):
+        await fp_tab.apply_fingerprint({'hardware': {'max_touch_points': 0}})
+        assert not fake_conn.commands_for('Emulation.setTouchEmulationEnabled')
+
+    async def test_languages_reach_page_only_through_accept_language(self, fp_tab, fake_conn):
+        await fp_tab.apply_fingerprint({'user_agent': UA, 'locale': {'languages': ['pt-BR', 'pt']}})
+        ua_params = fake_conn.last_command('Emulation.setUserAgentOverride')['params']
+        assert ua_params['acceptLanguage'] == 'pt-BR,pt'
+        assert fake_conn.last_command('Emulation.setLocaleOverride')['params']['locale'] == 'pt_BR'
+        assert not fake_conn.commands_for('Page.addScriptToEvaluateOnNewDocument')
+
+    async def test_client_hints_override_parsed_metadata(self, fp_tab, fake_conn):
+        await fp_tab.apply_fingerprint(
+            {
+                'user_agent': UA,
+                'client_hints': {'platform_version': '19.0.0', 'form_factors': ['Desktop']},
+            }
+        )
+        metadata = fake_conn.last_command('Emulation.setUserAgentOverride')['params'][
+            'userAgentMetadata'
+        ]
+        assert metadata['platformVersion'] == '19.0.0'
+        assert metadata['formFactors'] == ['Desktop']
+
+    async def test_worker_session_auto_attaches_nested_workers(self, fp_tab, fake_conn):
+        await fp_tab.apply_fingerprint({'user_agent': UA})
+        event = {
+            'params': {
+                'sessionId': 'worker-1',
+                'targetInfo': {'type': 'worker', 'url': ''},
+                'waitingForDebugger': True,
+            }
+        }
+        for callback in fake_conn.callbacks_for('Target.attachedToTarget'):
+            await callback(event)
+        await asyncio.sleep(0.05)
+
+        nested = [
+            c for c in fake_conn.commands_for('Target.setAutoAttach')
+            if c.get('sessionId') == 'worker-1'
+        ]
+        assert nested
+        assert nested[0]['params']['waitForDebuggerOnStart'] is True
+        assert {entry['type'] for entry in nested[0]['params']['filter']} == {'worker'}
+
+
+class TestScreenNativePaths:
+    SCREEN = {
+        'width': 1920,
+        'height': 1080,
+        'avail_height': 1040,
+        'outer_width': 1920,
+        'outer_height': 1040,
+        'inner_width': 1903,
+        'inner_height': 969,
+        'device_pixel_ratio': 1.0,
+    }
+
+    async def test_headless_screen_is_fully_native(self, fp_tab, fake_conn):
+        fp_tab._browser.options.headless = True
+        fake_conn.set_response(
+            'Emulation.getScreenInfos', {'screenInfos': [{'id': '1', 'isPrimary': True}]}
+        )
+        fake_conn.set_response('Browser.getWindowForTarget', {'windowId': 7, 'bounds': {}})
+
+        await fp_tab.apply_fingerprint({'screen': dict(self.SCREEN)})
+
+        assert not fake_conn.commands_for('Emulation.setDeviceMetricsOverride')
+        assert fake_conn.commands_for('Emulation.updateScreen')
+        bounds = fake_conn.last_command('Browser.setWindowBounds')['params']
+        assert bounds['windowId'] == 7
+        assert bounds['bounds']['width'] == 1920
+        assert bounds['bounds']['height'] == 1040
+        assert not fake_conn.commands_for('Page.addScriptToEvaluateOnNewDocument')
+
+    async def test_headful_keeps_screen_override_and_js_extras(self, fp_tab, fake_conn):
+        fp_tab._browser.options.headless = False
+        fake_conn.set_response('Browser.getWindowForTarget', {'windowId': 7, 'bounds': {}})
+
+        await fp_tab.apply_fingerprint({'screen': dict(self.SCREEN)})
+
+        metrics = fake_conn.last_command('Emulation.setDeviceMetricsOverride')['params']
+        assert metrics['screenWidth'] == 1920
+        assert fake_conn.commands_for('Browser.setWindowBounds')
+        script = fake_conn.last_command('Page.addScriptToEvaluateOnNewDocument')['params']
+        assert 'availHeight' in script['source']
+        assert 'outerWidth' not in script['source']
+
+    async def test_headless_fractional_dpr_overrides_dpr_without_screen_size(
+        self, fp_tab, fake_conn
+    ):
+        fp_tab._browser.options.headless = True
+        fake_conn.set_response(
+            'Emulation.getScreenInfos', {'screenInfos': [{'id': '1', 'isPrimary': True}]}
+        )
+        screen = dict(self.SCREEN, device_pixel_ratio=1.25)
+
+        await fp_tab.apply_fingerprint({'screen': screen})
+
+        metrics = fake_conn.last_command('Emulation.setDeviceMetricsOverride')['params']
+        assert metrics['deviceScaleFactor'] == 1.25
+        assert metrics['width'] == 0
+        assert 'screenWidth' not in metrics
+
+    async def test_headless_mobile_keeps_viewport_override(self, fp_tab, fake_conn):
+        fp_tab._browser.options.headless = True
+        fake_conn.set_response(
+            'Emulation.getScreenInfos', {'screenInfos': [{'id': '1', 'isPrimary': True}]}
+        )
+        screen = {'width': 384, 'height': 832, 'inner_width': 384, 'inner_height': 728,
+                  'device_pixel_ratio': 3.75}
+
+        await fp_tab.apply_fingerprint({'mobile': True, 'screen': screen})
+
+        metrics = fake_conn.last_command('Emulation.setDeviceMetricsOverride')['params']
+        assert metrics['mobile'] is True
+        assert metrics['width'] == 384
+        assert 'screenWidth' not in metrics
+
+    async def test_no_window_bounds_without_outer_size(self, fp_tab, fake_conn):
+        await fp_tab.apply_fingerprint({'screen': {'width': 1920, 'height': 1080}})
+        assert not fake_conn.commands_for('Browser.getWindowForTarget')
+
+    def test_page_js_config_strips_native_screen(self):
+        fingerprint = {'screen': dict(self.SCREEN), 'hardware': {'device_memory': 8}}
+        headless = FingerprintApplier._page_js_config(fingerprint, headless=True)
+        headful = FingerprintApplier._page_js_config(fingerprint, headless=False)
+        assert 'screen' not in headless
+        assert headless['hardware'] == {'device_memory': 8}
+        assert 'outer_width' not in headful['screen']
+        assert headful['screen']['avail_height'] == 1040
+        assert fingerprint['screen']['outer_width'] == 1920

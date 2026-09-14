@@ -2,7 +2,7 @@
 Tests for UserAgentParser class.
 
 Verifies that User-Agent strings are parsed into consistent metadata
-for CDP Emulation.setUserAgentOverride and navigator JS overrides.
+for CDP Emulation.setUserAgentOverride.
 """
 
 import pytest
@@ -76,8 +76,13 @@ class TestChromeWindows:
         result = UserAgentParser.parse(CHROME_WINDOWS_UA)
         brands = result.user_agent_metadata['brands']
         assert len(brands) == 3
-        # First brand is GREASE
-        assert brands[0]['brand'] not in {'Chromium', 'Google Chrome', 'Microsoft Edge'}
+        assert any(
+            b['brand'] not in {'Chromium', 'Google Chrome', 'Microsoft Edge'} for b in brands
+        )
+
+    def test_metadata_form_factors_desktop(self):
+        result = UserAgentParser.parse(CHROME_WINDOWS_UA)
+        assert result.user_agent_metadata['formFactors'] == ['Desktop']
 
     def test_brands_major_version(self):
         result = UserAgentParser.parse(CHROME_WINDOWS_UA)
@@ -90,23 +95,6 @@ class TestChromeWindows:
         fvl = result.user_agent_metadata['fullVersionList']
         chromium_fv = next(b for b in fvl if b['brand'] == 'Chromium')
         assert chromium_fv['version'] == '120.0.6099.109'
-
-    def test_navigator_js_contains_vendor(self):
-        result = UserAgentParser.parse(CHROME_WINDOWS_UA)
-        assert "'vendor'" in result.navigator_override_js
-
-    def test_navigator_js_contains_app_version(self):
-        result = UserAgentParser.parse(CHROME_WINDOWS_UA)
-        assert "'appVersion'" in result.navigator_override_js
-
-    def test_navigator_js_contains_platform(self):
-        result = UserAgentParser.parse(CHROME_WINDOWS_UA)
-        assert "'platform'" in result.navigator_override_js
-        assert result.platform in result.navigator_override_js
-
-    def test_navigator_js_uses_prototype_of_navigator(self):
-        result = UserAgentParser.parse(CHROME_WINDOWS_UA)
-        assert 'Object.getPrototypeOf(navigator)' in result.navigator_override_js
 
 
 # --- Chrome on macOS ---
@@ -127,9 +115,10 @@ class TestChromeMacOS:
         result = UserAgentParser.parse(CHROME_MACOS_UA)
         assert result.user_agent_metadata['platform'] == 'macOS'
 
-    def test_metadata_platform_version(self):
+    def test_metadata_platform_version_ignores_frozen_ua_token(self):
+        """``10_15_7`` is the reduced-UA freeze, not the OS: a real macOS version is reported."""
         result = UserAgentParser.parse(CHROME_MACOS_UA)
-        assert result.user_agent_metadata['platformVersion'] == '10.15.7'
+        assert result.user_agent_metadata['platformVersion'] == '15.6.1'
 
     def test_metadata_architecture(self):
         result = UserAgentParser.parse(CHROME_MACOS_UA)
@@ -219,8 +208,19 @@ CHROME_ANDROID_UA = (
 
 class TestChromeAndroid:
     def test_platform(self):
+        """64-bit Android Chrome reports ``Linux aarch64`` (32-bit builds ``Linux armv8l``)."""
         result = UserAgentParser.parse(CHROME_ANDROID_UA)
-        assert result.platform == 'Linux armv81'
+        assert result.platform == 'Linux aarch64'
+
+    def test_reduced_ua_does_not_echo_frozen_android_10(self):
+        """``Android 10; K`` is the reduced-UA freeze; a current Android version is reported."""
+        reduced = (
+            'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 '
+            '(KHTML, like Gecko) Chrome/145.0.7632.45 Mobile Safari/537.36'
+        )
+        result = UserAgentParser.parse(reduced)
+        assert result.user_agent_metadata['platformVersion'] == '15.0.0'
+        assert result.user_agent_metadata['formFactors'] == ['Mobile']
 
     def test_metadata_platform(self):
         result = UserAgentParser.parse(CHROME_ANDROID_UA)
@@ -304,30 +304,59 @@ class TestWindowsVersionMapping:
 
 # --- GREASE brands ---
 
+
+def _ua_for_major(major: int) -> str:
+    return (
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+        f'(KHTML, like Gecko) Chrome/{major}.0.1000.10 Safari/537.36'
+    )
+
+
 class TestGreaseBrands:
-    def test_grease_brand_is_first(self):
-        result = UserAgentParser.parse(CHROME_WINDOWS_UA)
-        brands = result.user_agent_metadata['brands']
-        grease_brand = brands[0]['brand']
-        assert grease_brand not in {'Chromium', 'Google Chrome', 'Microsoft Edge'}
+    """The greased brand, its version and the brand order follow Chromium's
+    per-major algorithm (``GetGreasedUserAgentBrandVersion`` /
+    ``ShuffleBrandList``), which a detector can recompute exactly."""
 
-    def test_full_version_list_grease_is_first(self):
-        result = UserAgentParser.parse(CHROME_WINDOWS_UA)
-        fvl = result.user_agent_metadata['fullVersionList']
-        grease_brand = fvl[0]['brand']
-        assert grease_brand not in {'Chromium', 'Google Chrome', 'Microsoft Edge'}
+    def test_chrome_152_matches_live_chrome(self):
+        """Captured from a real Chrome 152.0.7977.83: Chromium, grease, Google Chrome."""
+        brands = UserAgentParser.parse(_ua_for_major(152)).user_agent_metadata['brands']
+        assert [(b['brand'], b['version']) for b in brands] == [
+            ('Chromium', '152'),
+            ('Not?A_Brand', '24'),
+            ('Google Chrome', '152'),
+        ]
 
-    def test_grease_version_format_for_brands(self):
-        result = UserAgentParser.parse(CHROME_WINDOWS_UA)
-        brands = result.user_agent_metadata['brands']
-        grease_version = brands[0]['version']
-        assert grease_version.isdigit()
+    def test_chrome_151_grease_token_and_order(self):
+        brands = UserAgentParser.parse(_ua_for_major(151)).user_agent_metadata['brands']
+        assert [(b['brand'], b['version']) for b in brands] == [
+            ('Not=A?Brand', '99'),
+            ('Google Chrome', '151'),
+            ('Chromium', '151'),
+        ]
 
-    def test_grease_version_format_for_full_version_list(self):
-        result = UserAgentParser.parse(CHROME_WINDOWS_UA)
-        fvl = result.user_agent_metadata['fullVersionList']
-        grease_version = fvl[0]['version']
-        assert '.' in grease_version
+    def test_chrome_130_and_131_known_headers(self):
+        """Two majors with widely observed real Sec-CH-UA headers."""
+        brands_130 = UserAgentParser.parse(_ua_for_major(130)).user_agent_metadata['brands']
+        brands_131 = UserAgentParser.parse(_ua_for_major(131)).user_agent_metadata['brands']
+        assert [b['brand'] for b in brands_130] == ['Chromium', 'Google Chrome', 'Not?A_Brand']
+        assert brands_130[2]['version'] == '99'
+        assert [b['brand'] for b in brands_131] == ['Google Chrome', 'Chromium', 'Not_A Brand']
+        assert brands_131[2]['version'] == '24'
+
+    def test_full_version_list_shares_the_brand_order(self):
+        metadata = UserAgentParser.parse(_ua_for_major(152)).user_agent_metadata
+        assert [b['brand'] for b in metadata['fullVersionList']] == [
+            b['brand'] for b in metadata['brands']
+        ]
+        grease = next(b for b in metadata['fullVersionList'] if b['brand'].startswith('Not'))
+        assert grease['version'] == '24.0.0.0'
+        assert metadata['fullVersionList'][0]['version'] == '152.0.1000.10'
+
+    def test_grease_version_cycles_through_8_99_24(self):
+        versions = {
+            UserAgentParser._build_grease(major)[1] for major in (150, 151, 152)
+        }
+        assert versions == {'8', '99', '24'}
 
 
 # --- Edge cases ---
@@ -352,14 +381,6 @@ class TestEdgeCases:
     def test_returns_parsed_user_agent_type(self):
         result = UserAgentParser.parse(CHROME_WINDOWS_UA)
         assert isinstance(result, ParsedUserAgent)
-
-    def test_navigator_js_escapes_single_quotes(self):
-        ua = (
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 Chrome/120.0.6099.109 Safari/537.36"
-        )
-        result = UserAgentParser.parse(ua)
-        assert "\\'" not in result.navigator_override_js or "'" in result.vendor
 
     def test_app_version_strips_mozilla_prefix(self):
         result = UserAgentParser.parse(CHROME_WINDOWS_UA)

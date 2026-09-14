@@ -19,7 +19,7 @@ The rest of this page is the layers you do control.
 
 The most common automation tell is a User-Agent that disagrees with itself: the HTTP `User-Agent` header saying one thing while `navigator.userAgent`, `navigator.platform`, and the Client Hints (`Sec-CH-UA`, `Sec-CH-UA-Platform`) say another. Setting `--user-agent=` as a plain Chrome flag changes only the HTTP header and leaves the JavaScript and Client Hints untouched, which is a mismatch a detector reads immediately.
 
-Pydoll fixes this for you. When it sees a `--user-agent=` argument, it applies `Emulation.setUserAgentOverride` with the matching `platform` and full Client Hints metadata, and injects `navigator.vendor` / `navigator.appVersion`, so every layer agrees, including in new tabs.
+Pydoll fixes this for you. When it sees a `--user-agent=` argument, it applies `Emulation.setUserAgentOverride` with the matching `platform` and full Client Hints metadata (greased brand and brand order computed the way Chromium does for that major), and exposes the reduced `Chrome/MAJOR.0.0.0` form that real Chrome reports, so every layer agrees, including in new tabs and workers. Nothing is injected into the page: `navigator.userAgent`, `platform`, `vendor`, and `appVersion` all come from the override itself.
 
 ```python
 import asyncio

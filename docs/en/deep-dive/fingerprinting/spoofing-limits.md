@@ -10,7 +10,7 @@ A browser signal often has more than one read path. `matchMedia('(color-gamut: p
 
 That is what splits a good override from a detectable one:
 
-- A **native override** changes the value at the engine. Pydoll applies these through the CDP `Emulation` domain, for the User-Agent, timezone, screen, locale, `hardwareConcurrency`, and the CSS media features. Every read path then returns the new value, and they agree. There is no JavaScript wrapper to inspect.
+- A **native override** changes the value at the engine. Pydoll applies these through the CDP `Emulation` and `Browser` domains, for the User-Agent and `navigator.platform` / `appVersion` / `vendor` / `languages`, the Client Hints, timezone, geolocation, screen, locale, `hardwareConcurrency`, touch, permissions, and the CSS media features. Every read path then returns the new value, and they agree. There is no JavaScript wrapper to inspect, and no JavaScript frame in a stack trace.
 - A **JavaScript override** wraps one API, a `navigator` getter or `matchMedia`. It changes that one path. Any other path that reads the same signal still returns the real value.
 
 A media feature lives in the engine's `MediaValues`, and both read paths resolve against it. Toggle the override type below to see which paths each one reaches:
@@ -28,7 +28,9 @@ This is exactly why Pydoll does not spoof `dynamic-range`. Chrome keeps a fixed 
 Pydoll exposes six of the seven. The odd one out is `prefers-reduced-data`: it is in the allowlist but shipped disabled in Chrome, so `matchMedia` reports no match for any value, and setting it would claim something a real Chrome never returns. The only lever left for the unlisted features is JavaScript, which can lie on one path only, so Pydoll leaves `dynamic-range` real and asks you to match `color-gamut` to it instead.
 
 !!! note "When a JavaScript override is safe"
-    Pydoll does use JS overrides, for `deviceMemory`, WebGL strings, plugins, and more. They are safe because CDP cannot reach those signals **and** no second read path contradicts them, and each is hardened to survive `toString`, prototype, and worker inspection (see [Detecting JavaScript overrides](../../stealth/fingerprint-injection.md#detecting-javascript-overrides)). The rule: a JS override is safe only when it is the single source of truth for that signal.
+    Pydoll does use JS overrides, for `deviceMemory`, `maxTouchPoints`, WebGL, media devices, voices, fonts, and the headful work-area extras. They are used only where CDP cannot reach the signal **and** no second read path contradicts them, and each is written to the native shape: `[native code]` under `toString`, the real prototype, no own properties, the original native called first so a foreign receiver throws the real `Illegal invocation`, and values that stay physically possible (see [Native first, JavaScript last](../../stealth/fingerprint-injection.md#native-first)). The rule: a JS override is safe only when it is the single source of truth for that signal.
+
+    One tell survives even that: a JavaScript getter is a function, so an error thrown while it runs carries one extra stack frame a native accessor does not. That is why Pydoll moves everything it can to native overrides and keeps the JavaScript set as small as Chrome allows.
 
 ## The hard floor: signals no override can fake
 
@@ -69,13 +71,13 @@ You could try to close that gap by spoofing WebGPU to match, the vendor string a
 
 So the honest engineering call was to not spoof that layer at all. Chasing a coherence you cannot maintain trades a small, fragile gain for a large upkeep cost and a fresh way to get caught. Pydoll overrides the WebGL renderer string and leaves WebGPU and the rendered output real, which means the profile has to name the GPU family that is actually present.
 
-This is why the [Fingerprint injection checklist](../../stealth/fingerprint-injection.md#checklist) insists the profile OS and GPU match the host. You can move a string, but the rendered output stays real, so the string has to describe the hardware that is actually there.
+This is why the [Fingerprint injection checklist](../../stealth/fingerprint-injection.md#making-a-profile-pass) insists the profile OS and GPU match the host. You can move a string, but the rendered output stays real, so the string has to describe the hardware that is actually there.
 
 ### The OS is the one you cannot move
 
 The clearest signal you can only match, never fake, is the operating system. Set the User-Agent, `navigator.platform`, and Client Hints and the browser says Windows at once, but the OS leaks through layers no override reaches, and through more than one at the same time.
 
-The decisive one is the kernel's TCP/IP stack. Every connection's SYN packet carries the initial TTL (64 on macOS and Linux, 128 on Windows), the TCP window size and scale, and the option order, all set by the host kernel before any JavaScript runs. A Windows User-Agent arriving over a TTL-64 connection is a contradiction read at the transport layer, and no CDP or JavaScript override touches it. [Network fingerprinting](network-fingerprinting.md) covers this stack in depth; it is why a Windows profile on a Mac fails Cloudflare's managed challenge.
+The one furthest from reach is the kernel's TCP/IP stack. Every connection's SYN packet carries the initial TTL (64 on macOS and Linux, 128 on Windows), the TCP window size and scale, and the option order, all set by the host kernel before any JavaScript runs. A Windows User-Agent arriving over a TTL-64 connection is a contradiction read at the server, from the packets themselves, and no CDP or JavaScript override touches it. [Network fingerprinting](network-fingerprinting.md) covers this stack in depth. Whether it is the signal Cloudflare weighs when a Windows profile on a Mac fails the managed challenge has not been isolated: that run changed fonts, canvas, WebGPU, and the kernel stack at once. The experiment that separates them is a Windows profile on a Mac through a proxy hosted on Windows (removes only the TCP contradiction).
 
 Rendering carries the OS too, so canvas is part of the answer. Canvas and fonts draw through the OS text renderer, CoreText on macOS, DirectWrite on Windows, so a Mac-rendered canvas under a Windows profile already describes the wrong OS. That canvas leak is real but not spoofable, and in the measured Cloudflare run it was not the deciding signal, the kernel stack was. The same canvas hashed to `d65506c6...` under both the Windows and macOS profiles on this Mac, while `navigator.platform` read `Win32` and `MacIntel`. Identical hashes only show the profile did not alter the canvas, not that the canvas agrees with the Windows claim; it is the real Mac's, a rendered signal from the [hard floor](#the-hard-floor-signals-no-override-can-fake). The kernel's TCP/IP stack underneath leaks the OS a second time, and is just as untouchable. How a real challenge weighs these, layer by layer, is in the [Cloudflare case study](cloudflare-challenge.md).
 
@@ -86,9 +88,18 @@ A forwarding proxy is the one lever. It re-originates the TCP connection from th
 
 ## What you can actually move
 
-The signals you can change cleanly are the ones a native override reaches, or that a JavaScript override can own without a second path contradicting it: identity (User-Agent, platform, Client Hints), timezone, locale, screen, `hardwareConcurrency`, `deviceMemory`, and the CSS media features. Make those coherent with each other and with your IP and OS.
+The signals you can change cleanly are the ones a native override reaches, or that a JavaScript override can own without a second path contradicting it: identity (User-Agent, platform, Client Hints), timezone, locale, screen, `hardwareConcurrency`, `deviceMemory`, permissions, and the CSS media features. Make those coherent with each other and with your IP and OS.
 
 The hard floor, canvas and audio and GPU, you make coherent only by running on real, matched hardware. Everything in between is a trade that can backfire, so spend the effort on consistency, not on faking more.
+
+## What is still open
+
+Past the hard floor, the remaining gaps are environment, not overrides, and each has a known fix outside the browser:
+
+- **Fonts.** The width-based font probe reads the fonts installed on the host. Claiming Windows from Linux means installing the Windows font set and listing exactly that in `available_fonts`. Text rasterization still differs (FreeType and DirectWrite do not draw the same pixels from the same font), so a canvas that draws text keeps describing the host.
+- **GPU.** WebGL parameters, extensions, and precision can be set from a real capture, but the rendered hash and the WebGPU adapter stay the host's. A host with a GPU of the same vendor as the profile is the only way to make them agree; a host with no GPU cannot claim one.
+- **The kernel.** A proxy exit running the claimed OS, or a packet rewriter on the host, is the only lever for the SYN. Which detectors weigh it is the open measurement above.
+- **The JavaScript residue.** The getters Chrome offers no command for keep their extra stack frame. Fewer of them is the only direction.
 
 ## Related
 

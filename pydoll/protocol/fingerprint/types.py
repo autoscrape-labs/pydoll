@@ -63,12 +63,23 @@ class WebGLProfile(TypedDict):
     WebGL2 has many WebGL1 extensions built-in (e.g. OES_vertex_array_object),
     so their extension lists differ in practice.
 
+    ``supported_extensions`` / ``webgl2_extensions`` are an allow-list: an
+    extension the real GPU does not implement is dropped from
+    ``getSupportedExtensions()`` and ``getExtension()`` returns ``null`` for it,
+    so the page never sees a fake extension object. WebGL2-only limits
+    (``max_3d_texture_size``, ``max_samples``, ``max_uniform_block_size``, ...)
+    are read by fingerprinting suites alongside the WebGL1 ones; leave any of
+    them unset and the real GPU's value is reported, so set the whole family
+    from one real device capture. ``WEBGL_debug_shaders`` is always hidden
+    when a WebGL profile is applied: its translated shader source names the
+    real backend (HLSL, Metal, GLSL) and would contradict the claimed renderer.
+
     Examples:
-        NVIDIA on Windows::
+        NVIDIA on Windows (current Chrome includes the PCI device id)::
 
             WebGLProfile(
                 vendor='Google Inc. (NVIDIA)',
-                renderer='ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 '
+                renderer='ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) '
                 'Direct3D11 vs_5_0 ps_5_0, D3D11)',
             )
 
@@ -101,6 +112,21 @@ class WebGLProfile(TypedDict):
     max_combined_texture_image_units: NotRequired[int]
     aliased_line_width_range: NotRequired[list[float]]  # [min, max]
     aliased_point_size_range: NotRequired[list[float]]  # [min, max]
+    max_cube_map_texture_size: NotRequired[int]  # gl.MAX_CUBE_MAP_TEXTURE_SIZE
+    max_varying_vectors: NotRequired[int]  # gl.MAX_VARYING_VECTORS
+    max_3d_texture_size: NotRequired[int]  # gl2.MAX_3D_TEXTURE_SIZE
+    max_array_texture_layers: NotRequired[int]  # gl2.MAX_ARRAY_TEXTURE_LAYERS
+    max_color_attachments: NotRequired[int]  # gl2.MAX_COLOR_ATTACHMENTS
+    max_draw_buffers: NotRequired[int]  # gl2.MAX_DRAW_BUFFERS
+    max_samples: NotRequired[int]  # gl2.MAX_SAMPLES
+    max_uniform_block_size: NotRequired[int]  # gl2.MAX_UNIFORM_BLOCK_SIZE
+    max_uniform_buffer_bindings: NotRequired[int]  # gl2.MAX_UNIFORM_BUFFER_BINDINGS
+    max_vertex_uniform_blocks: NotRequired[int]  # gl2.MAX_VERTEX_UNIFORM_BLOCKS
+    max_fragment_uniform_blocks: NotRequired[int]  # gl2.MAX_FRAGMENT_UNIFORM_BLOCKS
+    max_combined_uniform_blocks: NotRequired[int]  # gl2.MAX_COMBINED_UNIFORM_BLOCKS
+    max_vertex_output_components: NotRequired[int]  # gl2.MAX_VERTEX_OUTPUT_COMPONENTS
+    max_fragment_input_components: NotRequired[int]  # gl2.MAX_FRAGMENT_INPUT_COMPONENTS
+    max_element_index: NotRequired[int]  # gl2.MAX_ELEMENT_INDEX
     supported_extensions: NotRequired[list[str]]  # WebGL1 extension names
     webgl2_extensions: NotRequired[list[str]]  # WebGL2-specific extension names
     shader_precision_formats: NotRequired[
@@ -133,7 +159,11 @@ class ScreenFingerprint(TypedDict):
     ``inner_width`` and ``inner_height`` override ``window.innerWidth``
     and ``window.innerHeight``. For mobile profiles these should be
     close to or equal to ``width``/``height``. If not set, the real
-    browser viewport dimensions are used.
+    browser viewport dimensions are used. In headless mode a desktop
+    profile is applied without any metrics override (the virtual screen and
+    the window are reshaped natively instead), so there ``inner_*`` follow
+    from ``outer_*`` minus the window chrome; they are honoured for mobile
+    profiles.
 
     ``orientation_type`` controls ``screen.orientation.type`` and should
     be ``'portrait-primary'`` for mobile or ``'landscape-primary'`` for
@@ -217,7 +247,13 @@ class MediaDevicesFingerprint(TypedDict):
     Controls what ``navigator.mediaDevices.enumerateDevices()`` reports.
     A typical desktop setup has 1 audio input (microphone), 1-2 audio
     outputs (speakers + headphones), and 1 video input (webcam).
-    Headless browsers often report 0 devices for all categories.
+    A host with no devices (a server) reports 0 for every category.
+
+    The fake entries are real ``InputDeviceInfo`` / ``MediaDeviceInfo``
+    prototypes with no own properties. The native alternative, preferable
+    when the host has no devices, is launching with
+    ``--use-fake-device-for-media-stream``, which makes Chrome itself expose
+    one fake microphone, camera and speaker.
     """
 
     audio_inputs: NotRequired[int]  # microphones
@@ -228,14 +264,17 @@ class MediaDevicesFingerprint(TypedDict):
 class AudioFingerprint(TypedDict):
     """AudioContext fingerprint profile.
 
-    Controls ``AudioContext`` properties. Anti-bot systems fingerprint
-    audio by creating an ``OfflineAudioContext``, running an oscillator
-    through a ``DynamicsCompressorNode``, and hashing the output samples.
-    The actual processing output depends on hardware/OS/browser internals
-    and is extremely difficult to spoof without detection.
+    Controls what a realtime ``AudioContext`` reports as its device
+    ``sampleRate`` and destination ``maxChannelCount``. Anti-bot systems
+    fingerprint audio by creating an ``OfflineAudioContext``, running an
+    oscillator through a ``DynamicsCompressorNode``, and hashing the output
+    samples; that rendered hash is not affected by these values.
 
-    These properties control the reported capabilities only — they do not
-    affect the actual audio processing output.
+    Only realtime contexts created without an explicit ``sampleRate`` are
+    overridden. An ``OfflineAudioContext``, or an ``AudioContext`` constructed
+    with ``{sampleRate}``, must report exactly the rate it was created with,
+    so those keep their real value (reporting anything else is an impossible
+    value a detector spots without any reference data).
     """
 
     sample_rate: NotRequired[float]  # AudioContext.sampleRate (44100, 48000)
@@ -340,7 +379,10 @@ class PermissionsFingerprint(TypedDict):
     """Permissions API fingerprint profile.
 
     Controls what ``navigator.permissions.query()`` returns for specific
-    permission names. Maps permission name to state string.
+    permission names. Maps permission name to state string. Applied natively
+    through ``Browser.setPermission`` for the tab's browser context, so the
+    query returns a genuine ``PermissionStatus`` and the matching legacy
+    surfaces (``Notification.permission``) agree with it.
 
     Valid states: 'granted', 'denied', 'prompt'
 
@@ -391,6 +433,30 @@ class MediaFeaturesFingerprint(TypedDict):
     prefers_reduced_transparency: NotRequired[str]  # 'no-preference' | 'reduce'
 
 
+class ClientHintsFingerprint(TypedDict):
+    """High-entropy User-Agent Client Hints overrides.
+
+    The User-Agent string no longer carries the real OS version (the reduction
+    froze it at ``Mac OS X 10_15_7`` / ``Android 10; K``), while real Chrome
+    keeps reporting the true one in ``Sec-CH-UA-Platform-Version`` and
+    ``navigator.userAgentData.getHighEntropyValues()``. The parser fills a
+    plausible default per OS; set these to pin the exact values of the device
+    you are impersonating (a Windows 11 24H2 host reports ``'19.0.0'``, an
+    Android phone reports its model such as ``'SM-S928B'``).
+
+    Example::
+
+        ClientHintsFingerprint(platform_version='19.0.0')
+    """
+
+    platform_version: NotRequired[str]  # Sec-CH-UA-Platform-Version
+    architecture: NotRequired[str]  # 'x86' | 'arm'
+    bitness: NotRequired[str]  # '64' | '32'
+    wow64: NotRequired[bool]
+    model: NotRequired[str]  # Sec-CH-UA-Model (mobile devices)
+    form_factors: NotRequired[list[str]]  # Sec-CH-UA-Form-Factors, e.g. ['Desktop']
+
+
 class FingerprintConfig(TypedDict):
     """Complete browser fingerprint configuration.
 
@@ -402,7 +468,9 @@ class FingerprintConfig(TypedDict):
     User-Agent across all layers using the existing UserAgentParser:
     HTTP headers, ``navigator.userAgent``, ``navigator.platform``,
     ``navigator.vendor``, ``navigator.appVersion``, and ``Sec-CH-UA``
-    Client Hints (including GREASE brand rotation).
+    Client Hints, with the greased brand and the brand order computed by
+    Chromium's own per-major algorithm. ``client_hints`` pins the
+    high-entropy values the UA string cannot carry.
 
     When ``mobile`` is set, it overrides the auto-detected mobile flag
     from the User-Agent for both CDP device metrics and Client Hints
@@ -443,6 +511,7 @@ class FingerprintConfig(TypedDict):
 
     user_agent: NotRequired[str]  # full User-Agent string
     mobile: NotRequired[bool]  # override mobile flag (auto-detected from UA)
+    client_hints: NotRequired[ClientHintsFingerprint]
     navigator: NotRequired[NavigatorFingerprint]
     webgl: NotRequired[WebGLProfile]
     screen: NotRequired[ScreenFingerprint]

@@ -1,5 +1,5 @@
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from pydoll.protocol.emulation.types import UserAgentBrandVersion, UserAgentMetadata
 
@@ -14,22 +14,24 @@ _EDGE_RE = re.compile(r'Edg/(\d+)\.(\d+)\.(\d+)\.(\d+)')
 _CHROME_VERSION_TOKEN_RE = re.compile(r'(Chrome/)(\d+)\.\d+\.\d+\.\d+')
 _EDGE_VERSION_TOKEN_RE = re.compile(r'(Edg/)(\d+)\.\d+\.\d+\.\d+')
 
-_GREASE_BRANDS = [
-    'Not/A)Brand',
-    'Not A;Brand',
-    'Not.A/Brand',
-    'Not)A;Brand',
-    'Not=A?Brand',
-]
+# Chromium's greased brand generator (components/embedder_support/user_agent_utils.cc):
+# the brand text, its version and the order of the brand list are all a
+# deterministic function of the browser major version, so a detector can
+# recompute the exact Sec-CH-UA a real Chrome of that major emits.
+_GREASE_CHARS = (' ', '(', ':', '-', '.', '/', ')', ';', '=', '?', '_')
+_GREASE_VERSIONS = ('8', '99', '24')
+_BRAND_ORDERS = ((0, 1, 2), (0, 2, 1), (1, 0, 2), (1, 2, 0), (2, 0, 1), (2, 1, 0))
 
-# Real Chrome pins the greased brand to a fixed version, not the browser major.
-_GREASE_VERSION = '99'
+# The frozen tokens the User-Agent reduction leaves in place of the real OS
+# version: no real OS version can be recovered from a UA carrying these.
+_REDUCED_MAC_VERSION = '10.15.7'
+_REDUCED_ANDROID_MARKER = 'Android 10; K'
 
 _PLATFORM_MAP = {
     'windows': 'Win32',
     'macintosh': 'MacIntel',
     'linux': 'Linux x86_64',
-    'android': 'Linux armv81',
+    'android': 'Linux aarch64',
     'iphone': 'iPhone',
     'ipad': 'iPad',
     'cros': 'Linux x86_64',
@@ -64,8 +66,8 @@ _WINDOWS_VERSION_MAP = {
 
 _DEFAULT_PLATFORM_VERSIONS = {
     'windows': '15.0.0',
-    'macintosh': '14.0.0',
-    'android': '14.0.0',
+    'macintosh': '15.6.1',
+    'android': '15.0.0',
     'iphone': '17.0.0',
     'ipad': '17.0.0',
     'linux': '6.1.0',
@@ -102,7 +104,6 @@ class ParsedUserAgent:
     vendor: str
     app_version: str
     user_agent_metadata: UserAgentMetadata
-    navigator_override_js: str = field(default='', repr=False)
     reduced_user_agent: str = ''
 
 
@@ -113,9 +114,9 @@ class UserAgentParser:
         Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
         (KHTML, like Gecko) Chrome/120.0.6099.109 Safari/537.36
 
-    It produces all the metadata needed for CDP Emulation.setUserAgentOverride
-    and JavaScript navigator property overrides, ensuring full consistency
-    between HTTP headers and JS properties.
+    It produces all the metadata needed for CDP Emulation.setUserAgentOverride,
+    ensuring full consistency between HTTP headers, navigator properties and
+    Client Hints.
     """
 
     @staticmethod
@@ -126,8 +127,8 @@ class UserAgentParser:
             user_agent: Full User-Agent string.
 
         Returns:
-            ParsedUserAgent with platform, vendor, appVersion,
-            userAgentMetadata, and JS override script.
+            ParsedUserAgent with platform, vendor, appVersion, the reduced
+            User-Agent and the Client Hints metadata.
         """
         os_key = UserAgentParser._detect_os_key(user_agent)
         browser_name, major_version, full_version = UserAgentParser._detect_browser(user_agent)
@@ -145,9 +146,6 @@ class UserAgentParser:
             vendor=vendor,
             app_version=app_version,
             user_agent_metadata=metadata,
-            navigator_override_js=UserAgentParser._build_navigator_override_js(
-                vendor, app_version, platform
-            ),
             reduced_user_agent=reduced_user_agent,
         )
 
@@ -186,6 +184,7 @@ class UserAgentParser:
             fullVersion=full_version,
             bitness='64',
             wow64=False,
+            formFactors=['Mobile'] if is_mobile else ['Desktop'],
         )
 
     @staticmethod
@@ -225,6 +224,15 @@ class UserAgentParser:
 
     @staticmethod
     def _get_platform_version(user_agent: str, os_key: str) -> str:
+        """Derive the Client Hints ``platformVersion`` from the User-Agent.
+
+        After the User-Agent reduction the UA string carries a frozen OS token
+        (``Mac OS X 10_15_7``, ``Android 10; K``) while real Chrome still
+        reports the true OS version in ``Sec-CH-UA-Platform-Version``. Those
+        frozen tokens therefore fall back to a plausible current version instead
+        of being echoed (no Apple-silicon Mac runs 10.15, no current phone runs
+        Android 10). Set ``client_hints.platform_version`` to pin the exact value.
+        """
         default = _DEFAULT_PLATFORM_VERSIONS.get(os_key, '0.0.0')
 
         if os_key == 'windows':
@@ -232,9 +240,12 @@ class UserAgentParser:
 
         if os_key in {'macintosh', 'iphone', 'ipad'}:
             pattern = _VERSION_PATTERNS[os_key][0]
-            return UserAgentParser._parse_dotted_version(user_agent, pattern, default)
+            parsed = UserAgentParser._parse_dotted_version(user_agent, pattern, default)
+            return default if parsed == _REDUCED_MAC_VERSION else parsed
 
         if os_key == 'android':
+            if _REDUCED_ANDROID_MARKER in user_agent:
+                return default
             match = re.search(r'Android (\d+(?:\.\d+)*)', user_agent)
             return match.group(1) if match else default
 
@@ -259,47 +270,68 @@ class UserAgentParser:
 
     @staticmethod
     def _build_grease(major_int: int) -> tuple[str, str, str]:
-        """Build GREASE brand and its (fixed) short and full versions.
+        """Build the greased brand exactly as Chromium does for a browser major.
 
-        Real Chrome pins the greased brand to a fixed version (``99``), it is NOT
-        derived from the browser major. Using ``major % 100`` produced values like
-        ``45`` that no real Chrome emits.
+        Mirrors ``GetGreasedUserAgentBrandVersion``: the brand is
+        ``Not<c1>A<c2>Brand`` with ``c1 = chars[major % 11]`` and
+        ``c2 = chars[(major + 1) % 11]``, and the version is one of ``8``, ``99``
+        or ``24`` selected by ``major % 3``. Chrome 152 thus emits
+        ``"Not?A_Brand";v="24"``, Chrome 151 ``"Not=A?Brand";v="99"``.
         """
-        grease_index = major_int % len(_GREASE_BRANDS)
-        brand = _GREASE_BRANDS[grease_index]
-        return brand, _GREASE_VERSION, f'{_GREASE_VERSION}.0.0.0'
+        first = _GREASE_CHARS[major_int % len(_GREASE_CHARS)]
+        second = _GREASE_CHARS[(major_int + 1) % len(_GREASE_CHARS)]
+        brand = f'Not{first}A{second}Brand'
+        version = _GREASE_VERSIONS[major_int % len(_GREASE_VERSIONS)]
+        return brand, version, f'{version}.0.0.0'
+
+    @staticmethod
+    def _order_brands(
+        major_int: int, brands: list[UserAgentBrandVersion]
+    ) -> list[UserAgentBrandVersion]:
+        """Permute ``[grease, Chromium, branded]`` the way Chromium shuffles it.
+
+        Mirrors ``ShuffleBrandList``: the permutation is picked by
+        ``major % 6`` from a fixed table and applied as
+        ``shuffled[order[i]] = brands[i]``, so the list order is stable for a given
+        major and differs between majors (Chrome 152 leads with Chromium, 151
+        with the greased brand).
+        """
+        order = _BRAND_ORDERS[major_int % len(_BRAND_ORDERS)]
+        shuffled: list[UserAgentBrandVersion] = list(brands)
+        for index, brand in enumerate(brands):
+            shuffled[order[index]] = brand
+        return shuffled
+
+    @staticmethod
+    def _major_int(version: str) -> int:
+        major = version.split('.')[0]
+        return int(major) if major.isdigit() else 120
 
     @staticmethod
     def _build_brands(browser_name: str, major_version: str) -> list[UserAgentBrandVersion]:
-        major_int = int(major_version) if major_version.isdigit() else 120
+        major_int = UserAgentParser._major_int(major_version)
         grease_brand, grease_version, _ = UserAgentParser._build_grease(major_int)
 
         brands: list[UserAgentBrandVersion] = [
             UserAgentBrandVersion(brand=grease_brand, version=grease_version),
+            UserAgentBrandVersion(brand='Chromium', version=major_version),
+            UserAgentBrandVersion(brand=browser_name, version=major_version),
         ]
-        # Real Chrome orders the branded entry before Chromium.
-        if browser_name in {'Google Chrome', 'Microsoft Edge'}:
-            brands.append(UserAgentBrandVersion(brand=browser_name, version=major_version))
-        brands.append(UserAgentBrandVersion(brand='Chromium', version=major_version))
-
-        return brands
+        return UserAgentParser._order_brands(major_int, brands)
 
     @staticmethod
     def _build_full_version_list(
         browser_name: str, full_version: str
     ) -> list[UserAgentBrandVersion]:
-        major = full_version.split('.')[0] if '.' in full_version else full_version
-        major_int = int(major) if major.isdigit() else 120
+        major_int = UserAgentParser._major_int(full_version)
         grease_brand, _, grease_full_version = UserAgentParser._build_grease(major_int)
 
         versions: list[UserAgentBrandVersion] = [
             UserAgentBrandVersion(brand=grease_brand, version=grease_full_version),
+            UserAgentBrandVersion(brand='Chromium', version=full_version),
+            UserAgentBrandVersion(brand=browser_name, version=full_version),
         ]
-        if browser_name in {'Google Chrome', 'Microsoft Edge'}:
-            versions.append(UserAgentBrandVersion(brand=browser_name, version=full_version))
-        versions.append(UserAgentBrandVersion(brand='Chromium', version=full_version))
-
-        return versions
+        return UserAgentParser._order_brands(major_int, versions)
 
     @staticmethod
     def _extract_model(user_agent: str) -> str:
@@ -307,29 +339,3 @@ class UserAgentParser:
         if match:
             return match.group(1).strip()
         return ''
-
-    @staticmethod
-    def _build_navigator_override_js(vendor: str, app_version: str, platform: str) -> str:
-        """Build JS aligning navigator properties with the spoofed User-Agent.
-
-        Reads the prototype via Object.getPrototypeOf(navigator) so the same
-        script works in both the page (Navigator) and worker (WorkerNavigator)
-        scopes, and only redefines properties that already exist to avoid
-        introducing anomalies such as navigator.vendor on WorkerNavigator,
-        which does not expose it.
-        """
-        overrides = {
-            'vendor': vendor,
-            'appVersion': app_version,
-            'platform': platform,
-        }
-        lines = ['(function () {', '  var proto = Object.getPrototypeOf(navigator);']
-        for prop, value in overrides.items():
-            safe_value = value.replace('\\', '\\\\').replace("'", "\\'")
-            lines.append(
-                f"  try {{ if ('{prop}' in navigator) {{ Object.defineProperty(proto, "
-                f"'{prop}', {{get: function () {{ return '{safe_value}'; }}, "
-                f'configurable: true}}); }} }} catch (e) {{}}'
-            )
-        lines.append('})();')
-        return '\n'.join(lines)
