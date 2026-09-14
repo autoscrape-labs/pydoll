@@ -30,7 +30,20 @@
         const voices = speechSynthesis.getVoices();
         const offline = new OfflineAudioContext(1, 44100, 44100);
         const getter = (proto, prop) => Object.getOwnPropertyDescriptor(proto, prop).get;
+        const adapter = navigator.gpu ? await navigator.gpu.requestAdapter() : null;
         window.__page = {
+          webgpu: adapter ? {
+            vendor: adapter.info.vendor,
+            architecture: adapter.info.architecture,
+            infoCtor: Object.getPrototypeOf(adapter.info).constructor.name,
+            infoOwnProps: Object.getOwnPropertyNames(adapter.info),
+            maxBufferSize: adapter.limits.maxBufferSize,
+            maxBindGroups: adapter.limits.maxBindGroups,
+            features: [...adapter.features],
+            hasF16: adapter.features.has('shader-f16'),
+            size: adapter.features.size,
+            deviceOk: await adapter.requestDevice().then((d) => d.adapterInfo.vendor).catch((e) => 'err ' + e.message),
+          } : 'no adapter',
           userAgent: navigator.userAgent,
           platform: navigator.platform,
           languages: Array.from(navigator.languages),

@@ -134,6 +134,44 @@ class WebGLProfile(TypedDict):
     ]  # e.g. {"vertex": {"highFloat": [127, 127, 23]}}
 
 
+class WebGPUProfile(TypedDict):
+    """WebGPU adapter fingerprint profile.
+
+    Controls what ``navigator.gpu.requestAdapter()`` reports through
+    ``adapter.info`` (``vendor``, ``architecture``, ``device``,
+    ``description``), ``adapter.limits`` and ``adapter.features``. Detection
+    scripts cross-check the WebGPU vendor against the WebGL renderer and the
+    User-Agent OS, so a WebGL profile that names one GPU while WebGPU reports
+    the host's is a contradiction; this section closes it.
+
+    The real adapter is kept (device creation and rendering stay genuine) and
+    only its reported values are replaced, on the real ``GPUAdapterInfo`` /
+    ``GPUSupportedLimits`` / ``GPUSupportedFeatures`` prototypes. Every value
+    must come from a capture of a real device of the claimed class: the limit
+    set and the feature list are a physical signature of GPU, driver and
+    backend, and a guessed one is easier to flag than the truth. Unset limits
+    keep the real value; an unset ``features`` keeps the real set. On a host
+    with no WebGPU adapter nothing can be reported, since there is no adapter
+    to attach the values to.
+
+    Example (Apple M-series on macOS, Chrome 152, captured)::
+
+        WebGPUProfile(
+            vendor='apple',
+            architecture='metal-3',
+            limits={'maxBufferSize': 4294967292, 'maxTextureDimension2D': 16384},
+            features=['depth-clip-control', 'shader-f16', 'timestamp-query'],
+        )
+    """
+
+    vendor: str  # adapter.info.vendor, e.g. 'nvidia', 'apple', 'intel', 'qualcomm'
+    architecture: NotRequired[str]  # adapter.info.architecture, e.g. 'ampere', 'metal-3'
+    device: NotRequired[str]  # adapter.info.device (Chrome reports '' by default)
+    description: NotRequired[str]  # adapter.info.description (Chrome reports '' by default)
+    limits: NotRequired[dict[str, int]]  # adapter.limits, by limit name
+    features: NotRequired[list[str]]  # adapter.features, the complete set
+
+
 class ScreenFingerprint(TypedDict):
     """Screen and display fingerprint profile.
 
@@ -516,6 +554,7 @@ class FingerprintConfig(TypedDict):
     client_hints: NotRequired[ClientHintsFingerprint]
     navigator: NotRequired[NavigatorFingerprint]
     webgl: NotRequired[WebGLProfile]
+    webgpu: NotRequired[WebGPUProfile]
     screen: NotRequired[ScreenFingerprint]
     geolocation: NotRequired[GeolocationFingerprint]
     hardware: NotRequired[HardwareFingerprint]

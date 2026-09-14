@@ -2,7 +2,7 @@
 
 ## Introduction
 
-`tab.apply_fingerprint()` gives the browser a new identity. It overrides the signals fingerprinting scripts read, User-Agent and Client Hints, `navigator`, WebGL, screen metrics, fonts, audio, permissions, timezone, and locale, across the page, its workers (nested ones included), and its cross-origin iframes, before the first navigation. You don't hand-build a fingerprint or patch `navigator` yourself; you pass a profile and Pydoll applies it coherently, through the browser's own override commands wherever one exists and through hardened JavaScript only where none does.
+`tab.apply_fingerprint()` gives the browser a new identity. It overrides the signals fingerprinting scripts read, User-Agent and Client Hints, `navigator`, WebGL and WebGPU, screen metrics, fonts, audio, permissions, timezone, and locale, across the page, its workers (nested ones included), and its cross-origin iframes, before the first navigation. You don't hand-build a fingerprint or patch `navigator` yourself; you pass a profile and Pydoll applies it coherently, through the browser's own override commands wherever one exists and through hardened JavaScript only where none does.
 
 The payoff is concrete. With a matched profile, headless Chrome goes from an instant bot flag to reading as an ordinary desktop, enough to [clear Cloudflare's managed challenge in headless mode](#clear-cloudflares-challenge-headless).
 
@@ -180,7 +180,7 @@ await tab_br.apply_fingerprint(FINGERPRINTS['android_s24_ultra_sao_paulo'])
 
 See [Browser contexts](../guides/browser-contexts.md).
 
-A few smaller rules round it out: apply the fingerprint before the first navigation; if you set the `--user-agent` option, keep it equal to the profile's (the profile owns the User-Agent); match the WebGL vendor/renderer and color-gamut to the host GPU and display; use a clean residential IP. For why some signals can be overridden and others cannot be faked at all, see [The limits of spoofing](../deep-dive/fingerprinting/spoofing-limits.md).
+A few smaller rules round it out: apply the fingerprint before the first navigation; if you set the `--user-agent` option, keep it equal to the profile's (the profile owns the User-Agent); match the WebGL vendor/renderer, the WebGPU adapter and color-gamut to the host GPU and display, capturing the WebGPU limits and features from a real device of that class; use a clean residential IP. For why some signals can be overridden and others cannot be faked at all, see [The limits of spoofing](../deep-dive/fingerprinting/spoofing-limits.md).
 
 ### Headless mode {#headless-mode}
 
@@ -194,7 +194,7 @@ Every signal Chrome can override through its own protocol is applied there, and 
 
 A native override has no function behind it. That matters for the one check a JavaScript getter cannot pass: call the getter on a foreign object and read the stack. A native accessor throws `Illegal invocation` with no frame of its own; a JavaScript accessor throws the same error with one extra `at get userAgent` line. Detection vendors describe exactly this probe. Moving the identity to native overrides removes the frame for every signal above.
 
-What stays JavaScript is the set Chrome offers no command for: `deviceMemory`, `maxTouchPoints`, WebGL, media devices, speech voices, the audio device capabilities, `navigator.connection`, fonts, the WebRTC policy, and the headful work-area extras. Each is written to the native shape. Getters and methods report `[native code]` under `toString`, live on the real prototype, call the original native first so a foreign receiver throws the real error, and never create own properties: a fake microphone is an `InputDeviceInfo`, a fake voice a `SpeechSynthesisVoice`, both with an empty `Object.getOwnPropertyNames()`. Values stay physically possible: an `OfflineAudioContext` reports the sample rate it was constructed with, a WebGL extension the GPU lacks is dropped from the list rather than faked as an empty object, and `WEBGL_debug_shaders` is hidden because its translated shader source names the real backend.
+What stays JavaScript is the set Chrome offers no command for: `deviceMemory`, `maxTouchPoints`, WebGL, WebGPU, media devices, speech voices, the audio device capabilities, `navigator.connection`, fonts, the WebRTC policy, and the headful work-area extras. Each is written to the native shape. Getters and methods report `[native code]` under `toString`, live on the real prototype, call the original native first so a foreign receiver throws the real error, and never create own properties: a fake microphone is an `InputDeviceInfo`, a fake voice a `SpeechSynthesisVoice`, both with an empty `Object.getOwnPropertyNames()`. Values stay physically possible: an `OfflineAudioContext` reports the sample rate it was constructed with, a WebGL extension the GPU lacks is dropped from the list rather than faked as an empty object, and `WEBGL_debug_shaders` is hidden because its translated shader source names the real backend.
 
 One residual is inherent: those JavaScript getters are still functions, so the extra stack frame exists for them. It cannot be removed from JavaScript; the strategy above keeps that set as small as Chrome allows. Read a signal two ways to see where you stand: [Auditing a fingerprint](../deep-dive/fingerprinting/auditing.md).
 

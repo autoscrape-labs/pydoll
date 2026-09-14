@@ -8,6 +8,12 @@ async function report() {
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
   };
   try {
+    const adapter = self.navigator.gpu ? await self.navigator.gpu.requestAdapter() : null;
+    out.webgpuVendor = adapter ? adapter.info.vendor : 'no adapter';
+  } catch (e) {
+    out.webgpuVendor = 'err';
+  }
+  try {
     const high = await self.navigator.userAgentData.getHighEntropyValues(['formFactors']);
     out.formFactors = high.formFactors;
   } catch (e) {

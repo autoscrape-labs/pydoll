@@ -171,6 +171,30 @@ class TestSections:
         assert 'const real = origGetParameter.call(this, pname);' in js
         assert f'{0x8D57}: 8' in js
 
+    def test_webgpu_registers_real_adapter_objects(self):
+        config = {
+            'webgpu': {
+                'vendor': 'nvidia',
+                'architecture': 'ampere',
+                'limits': {'maxBufferSize': 2147483648},
+                'features': ['shader-f16'],
+            }
+        }
+        js = build_fingerprint_js(config)
+        assert '_defF(GPUAdapterInfo.prototype, prop)' in js
+        assert '_defF(GPUSupportedLimits.prototype, prop)' in js
+        assert '_FAKES.set(adapter.info, info)' in js
+        assert "_patchM(GPU.prototype, 'requestAdapter'" in js
+        assert '"maxBufferSize": 2147483648' in js
+        assert 'featureSet.has(String(value))' in js
+        worker = build_fingerprint_worker_js(config)
+        assert '_FAKES.set(adapter.limits, limits)' in worker
+
+    def test_webgpu_without_limits_or_features_keeps_them_real(self):
+        js = build_fingerprint_js({'webgpu': {'vendor': 'intel'}})
+        assert 'const limits = null;' in js
+        assert 'const features = null;' in js
+
     def test_webrtc_patches_webkit_alias_too(self):
         js = build_fingerprint_js({'webrtc_ip_policy': 'relay'})
         assert "_wrapCtor(window, 'RTCPeerConnection'" in js

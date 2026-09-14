@@ -42,6 +42,12 @@ FINGERPRINT = {
     'speech': {'voices': [{'name': 'Microsoft David - English (United States)', 'lang': 'en-US'}]},
     'audio': {'sample_rate': 48000, 'max_channel_count': 2},
     'webgl': {'vendor': 'Google Inc. (NVIDIA)', 'renderer': 'ANGLE (NVIDIA, RTX 3060, D3D11)'},
+    'webgpu': {
+        'vendor': 'nvidia',
+        'architecture': 'ampere',
+        'limits': {'maxBufferSize': 2147483648, 'maxTextureDimension2D': 16384},
+        'features': ['depth-clip-control', 'shader-f16'],
+    },
 }
 
 
@@ -204,6 +210,25 @@ class TestHardenedJavaScriptOverrides:
         if page['debugShaders'] == 'no-webgl':
             pytest.skip('WebGL unavailable on this host')
         assert page['debugShaders'] == {'hidden': True, 'listed': False}
+
+
+class TestWebGPU:
+    def test_adapter_reports_the_profile_on_real_objects(self, applied_page):
+        page, workers = applied_page
+        gpu = page['webgpu']
+        if gpu == 'no adapter':
+            pytest.skip('no WebGPU adapter on this host')
+        assert gpu['vendor'] == 'nvidia'
+        assert gpu['architecture'] == 'ampere'
+        assert gpu['infoCtor'] == 'GPUAdapterInfo'
+        assert gpu['infoOwnProps'] == []
+        assert gpu['maxBufferSize'] == 2147483648
+        assert gpu['maxBindGroups'] == 4
+        assert sorted(gpu['features']) == ['depth-clip-control', 'shader-f16']
+        assert gpu['hasF16'] is True
+        assert gpu['size'] == 2
+        assert gpu['deviceOk'] == 'nvidia'
+        assert workers['own']['webgpuVendor'] in ('nvidia', 'no adapter')
 
 
 class TestWorkerRealms:

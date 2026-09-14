@@ -66,6 +66,7 @@ if TYPE_CHECKING:
         ScreenFingerprint,
         SpeechFingerprint,
         WebGLProfile,
+        WebGPUProfile,
     )
 
 # Navigator properties that CDP setUserAgentOverride already sets natively when
@@ -302,6 +303,8 @@ def build_fingerprint_worker_js(
         parts.append(_build_network_connection_js(config['network_connection']))
     if 'webgl' in config:
         parts.append(_build_webgl_js(config['webgl']))
+    if 'webgpu' in config:
+        parts.append(_build_webgpu_js(config['webgpu']))
     if 'fonts' in config:
         parts.append(_build_fonts_js(config['fonts']))
     return _wrap(parts)
@@ -573,6 +576,92 @@ def _build_webgl_js(webgl: WebGLProfile) -> str:
         ext1_js,
         ext2_js,
         precision_js,
+    )
+
+
+_WEBGPU_JS_TEMPLATE = """\
+if (typeof GPU !== 'undefined' && navigator.gpu && typeof GPUAdapterInfo !== 'undefined'
+    && typeof GPUSupportedLimits !== 'undefined') {
+  const info = %s;
+  const limits = %s;
+  const features = %s;
+  for (const prop of Object.keys(info)) _defF(GPUAdapterInfo.prototype, prop);
+  if (limits !== null) {
+    for (const prop of Object.keys(limits)) _defF(GPUSupportedLimits.prototype, prop);
+  }
+  const featureSet = features === null ? null : new Set(features);
+  if (featureSet !== null && typeof GPUSupportedFeatures !== 'undefined') {
+    const FP = GPUSupportedFeatures.prototype;
+    const origHas = FP.has;
+    _patchM(FP, 'has', function has(value) {
+      const real = origHas.call(this, value);
+      return _FAKES.has(this) ? featureSet.has(String(value)) : real;
+    });
+    _defGf(FP, 'size', (self, real) => (_FAKES.has(self) ? featureSet.size : real));
+    for (const method of ['keys', 'values', 'entries']) {
+      const orig = FP[method];
+      _patchM(FP, method, function () {
+        const real = orig.call(this);
+        return _FAKES.has(this) ? new Set(featureSet)[method]() : real;
+      });
+    }
+    const origForEach = FP.forEach;
+    _patchM(FP, 'forEach', function forEach(callback, thisArg) {
+      if (!_FAKES.has(this)) return origForEach.apply(this, arguments);
+      origForEach.call(this, () => {});
+      const self = this;
+      new Set(featureSet).forEach((value, key) => callback.call(thisArg, value, key, self));
+    });
+    try {
+      Object.defineProperty(FP, Symbol.iterator,
+        {value: FP.values, writable: true, configurable: true});
+    } catch (e) {}
+  }
+  const register = (adapter) => {
+    if (!adapter) return adapter;
+    try {
+      _FAKES.set(adapter.info, info);
+      if (limits !== null) _FAKES.set(adapter.limits, limits);
+      if (featureSet !== null) _FAKES.set(adapter.features, {});
+    } catch (e) {}
+    return adapter;
+  };
+  const origRequestAdapter = GPU.prototype.requestAdapter;
+  _patchM(GPU.prototype, 'requestAdapter', function requestAdapter() {
+    return origRequestAdapter.apply(this, arguments).then(register);
+  });
+  if (typeof GPUAdapter !== 'undefined' && GPUAdapter.prototype.requestDevice) {
+    const origRequestDevice = GPUAdapter.prototype.requestDevice;
+    _patchM(GPUAdapter.prototype, 'requestDevice', function requestDevice() {
+      return origRequestDevice.apply(this, arguments).then((device) => {
+        try { _FAKES.set(device.adapterInfo, info); } catch (e) {}
+        return device;
+      });
+    });
+  }
+}"""
+
+
+def _build_webgpu_js(webgpu: WebGPUProfile) -> str:
+    """Override what the real WebGPU adapter reports.
+
+    ``requestAdapter()`` still resolves the real adapter (so ``requestDevice``
+    and rendering work), and its ``info``, ``limits`` and ``features`` objects
+    are registered as fakes: prototype getters then answer the profile's
+    values for those objects and the native value for anything else, with the
+    native brand check intact. ``features`` is a setlike, so ``has``, ``size``,
+    the iterators and ``forEach`` are patched together to describe one set.
+    """
+    info = {'vendor': webgpu['vendor']}
+    for key in ('architecture', 'device', 'description'):
+        if key in webgpu:
+            info[key] = webgpu[key]
+    limits = webgpu.get('limits')
+    features = webgpu.get('features')
+    return _WEBGPU_JS_TEMPLATE % (
+        json.dumps(info),
+        json.dumps(limits) if limits else 'null',
+        json.dumps(features) if features is not None else 'null',
     )
 
 
@@ -893,6 +982,7 @@ _SECTION_BUILDERS: dict[str, Callable[..., str]] = {
     'hardware': _build_hardware_js,
     'screen': _build_screen_js,
     'webgl': _build_webgl_js,
+    'webgpu': _build_webgpu_js,
     'media_devices': _build_media_devices_js,
     'audio': _build_audio_js,
     'speech': _build_speech_js,

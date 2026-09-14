@@ -43,6 +43,7 @@ from pydoll.protocol.fingerprint.types import (
     SpeechFingerprint,
     SpeechVoice,
     WebGLProfile,
+    WebGPUProfile,
 )
 
 CHROME_MOBILE = '145.0.7632.45'
@@ -209,6 +210,79 @@ SHADER_PRECISION_DEFAULT = {
         'lowInt': [15, 14, 0],
     },
 }
+
+# Captured from Chrome 152 on an Apple M4 (macOS, Metal backend). Chrome blanks
+# ``device`` and ``description``; the limits and the feature set are the whole
+# adapter as ``requestAdapter()`` reports it.
+WEBGPU_APPLE_M_SERIES = WebGPUProfile(
+    vendor='apple',
+    architecture='metal-3',
+    device='',
+    description='',
+    limits={
+        'maxTextureDimension1D': 16384,
+        'maxTextureDimension2D': 16384,
+        'maxTextureDimension3D': 2048,
+        'maxTextureArrayLayers': 2048,
+        'maxBindGroups': 4,
+        'maxBindGroupsPlusVertexBuffers': 24,
+        'maxBindingsPerBindGroup': 1000,
+        'maxDynamicUniformBuffersPerPipelineLayout': 10,
+        'maxDynamicStorageBuffersPerPipelineLayout': 8,
+        'maxSampledTexturesPerShaderStage': 48,
+        'maxSamplersPerShaderStage': 16,
+        'maxStorageBuffersPerShaderStage': 10,
+        'maxStorageTexturesPerShaderStage': 8,
+        'maxUniformBuffersPerShaderStage': 12,
+        'maxUniformBufferBindingSize': 65536,
+        'maxStorageBufferBindingSize': 4294967292,
+        'minUniformBufferOffsetAlignment': 256,
+        'minStorageBufferOffsetAlignment': 256,
+        'maxVertexBuffers': 8,
+        'maxBufferSize': 4294967292,
+        'maxVertexAttributes': 30,
+        'maxVertexBufferArrayStride': 2048,
+        'maxInterStageShaderVariables': 28,
+        'maxColorAttachments': 8,
+        'maxColorAttachmentBytesPerSample': 128,
+        'maxComputeWorkgroupStorageSize': 32768,
+        'maxComputeInvocationsPerWorkgroup': 1024,
+        'maxComputeWorkgroupSizeX': 1024,
+        'maxComputeWorkgroupSizeY': 1024,
+        'maxComputeWorkgroupSizeZ': 64,
+        'maxComputeWorkgroupsPerDimension': 65535,
+        'maxImmediateSize': 64,
+        'maxStorageBuffersInFragmentStage': 10,
+        'maxStorageTexturesInFragmentStage': 8,
+        'maxStorageBuffersInVertexStage': 10,
+        'maxStorageTexturesInVertexStage': 8,
+    },
+    features=[
+        'depth32float-stencil8',
+        'rg11b10ufloat-renderable',
+        'bgra8unorm-storage',
+        'texture-formats-tier1',
+        'texture-compression-bc',
+        'dual-source-blending',
+        'core-features-and-limits',
+        'float32-filterable',
+        'indirect-first-instance',
+        'texture-compression-astc-sliced-3d',
+        'float32-blendable',
+        'subgroup-size-control',
+        'texture-compression-astc',
+        'texture-compression-etc2',
+        'depth-clip-control',
+        'texture-compression-bc-sliced-3d',
+        'clip-distances',
+        'texture-formats-tier2',
+        'shader-f16',
+        'timestamp-query',
+        'primitive-index',
+        'texture-component-swizzle',
+        'subgroups',
+    ],
+)
 
 SPEECH_WINDOWS = SpeechFingerprint(
     voices=[
@@ -483,6 +557,7 @@ FINGERPRINTS: dict[str, FingerprintConfig] = {
             aliased_point_size_range=[1, 511],
             shader_precision_formats=SHADER_PRECISION_DEFAULT,
         ),
+        webgpu=WEBGPU_APPLE_M_SERIES,
         screen=ScreenFingerprint(
             width=1440,
             height=900,

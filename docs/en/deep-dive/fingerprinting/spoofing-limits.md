@@ -53,7 +53,7 @@ What these signals expose is *which machine*, not *that it is a bot*. For a scra
 
 A fingerprint is read across layers and correlated. Overriding one layer while another still reports the truth is a contradiction, and a contradiction scores worse than an unmodified browser.
 
-Take a GPU. Pydoll overrides the WebGL renderer string, so a profile can name an NVIDIA card, but it does not touch WebGPU. Applying the Windows profile on this host (Apple M3, Chrome 151) and reading both APIs, measured:
+Take a GPU. A WebGL profile names a card, but the same GPU is described a second time by WebGPU: `navigator.gpu.requestAdapter()` exposes `adapter.info` (`vendor`, `architecture`), roughly thirty `adapter.limits` and a feature set. Applying a Windows NVIDIA profile on this host (Apple M4, Chrome 152) with only the WebGL section set, measured:
 
 | Signal | Reads | Comes from |
 |--------|-------|------------|
@@ -63,15 +63,13 @@ Take a GPU. Pydoll overrides the WebGL renderer string, so a profile can name an
 | WebGPU `maxComputeWorkgroupStorageSize` | `32768` | the real GPU |
 | Canvas hash, this profile vs the macOS profile | identical | the real GPU |
 
-WebGL says NVIDIA; WebGPU, its limits, and the canvas all say Apple. The override moved one string and left every other rendered and reported signal describing the real GPU, so a Windows profile on Apple hardware contradicts itself. A half-spoofed GPU is more detectable than the real one.
+WebGL says NVIDIA; WebGPU and the canvas say Apple. Detection vendors cross-check exactly this pair. The `webgpu` section of the profile closes the reported half: the real adapter is kept, so `requestDevice()` and rendering keep working, and its `info`, `limits` and `features` objects answer the profile's values through getters on the real `GPUAdapterInfo` / `GPUSupportedLimits` / `GPUSupportedFeatures` prototypes, with no own properties and the native brand checks intact.
 
-### Why Pydoll leaves WebGPU alone
+### What a WebGPU profile has to be
 
-You could try to close that gap by spoofing WebGPU to match, the vendor string and then the roughly thirty adapter limits. Pydoll built exactly that and reverted it. Each limit has to be a physically real value for the card you claim, the same constraint that makes a wrong WebGL parameter a tell; real per-GPU limit sets are not published, so you would be guessing; the list changes with Chrome releases; and even a perfect set cannot move the GPU-timing hash, which is rendered, not reported.
+The limit set and the feature list are a physical signature of GPU, driver and backend, and Chrome does not publish them per card. A guessed set is easier to flag than the truth, so the values have to be a capture from a real device of the claimed class, read with `requestAdapter()` on that machine (the macOS example profile is a capture of an Apple M4). What no section can move is what the GPU computes: a rendered or timed WebGPU workload still describes the host. On a host with no adapter at all there is nothing to attach the values to, and the profile cannot claim a GPU.
 
-So the honest engineering call was to not spoof that layer at all. Chasing a coherence you cannot maintain trades a small, fragile gain for a large upkeep cost and a fresh way to get caught. Pydoll overrides the WebGL renderer string and leaves WebGPU and the rendered output real, which means the profile has to name the GPU family that is actually present.
-
-This is why the [Fingerprint injection checklist](../../stealth/fingerprint-injection.md#making-a-profile-pass) insists the profile OS and GPU match the host. You can move a string, but the rendered output stays real, so the string has to describe the hardware that is actually there.
+This is why the [Fingerprint injection checklist](../../stealth/fingerprint-injection.md#making-a-profile-pass) insists the profile GPU family matches the host. You can move every reported value, but the rendered output stays real, so the values have to describe hardware of the class that is actually there.
 
 ### The OS is the one you cannot move
 
@@ -100,7 +98,7 @@ The hard floor, canvas and audio and GPU, you make coherent only by running on r
 Past the hard floor, the remaining gaps are environment, not overrides, and each has a known fix outside the browser:
 
 - **Fonts.** The width-based font probe reads the fonts installed on the host. Claiming Windows from Linux means installing the Windows font set and listing exactly that in `available_fonts`. Text rasterization still differs (FreeType and DirectWrite do not draw the same pixels from the same font), so a canvas that draws text keeps describing the host.
-- **GPU.** WebGL parameters, extensions, and precision can be set from a real capture, but the rendered hash and the WebGPU adapter stay the host's. A host with a GPU of the same vendor as the profile is the only way to make them agree; a host with no GPU cannot claim one.
+- **GPU.** WebGL parameters, extensions, precision and the WebGPU adapter can all be set from a real capture, but the rendered and timed output stays the host's. A host with a GPU of the same vendor as the profile is the only way to make them agree; a host with no GPU cannot claim one.
 - **The kernel.** A proxy exit running the claimed OS, or a packet rewriter on the host, is the only lever for the SYN. Which detectors weigh it is the open measurement above.
 - **The JavaScript residue.** The getters Chrome offers no command for keep their extra stack frame. Fewer of them is the only direction.
 
