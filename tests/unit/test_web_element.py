@@ -300,3 +300,21 @@ async def test_click_falls_back_to_js_bounds_when_box_model_missing(fake_conn, m
     pressed = [event for event in dispatched if event['params']['type'] == 'mousePressed']
     assert pressed
     assert (pressed[0]['params']['x'], pressed[0]['params']['y']) == (30, 35)
+
+
+@pytest.mark.asyncio
+async def test_scroll_into_view_asks_for_the_box_plus_a_margin(make_element, fake_conn):
+    fake_conn.set_response(
+        'Runtime.callFunctionOn',
+        {'result': {'value': '{"x": 10, "y": 380, "width": 100, "height": 20}'}},
+    )
+    await make_element().scroll_into_view()
+    rect = fake_conn.last_command('DOM.scrollIntoViewIfNeeded')['params']['rect']
+    margin = WebElement._SCROLL_INTO_VIEW_MARGIN
+    assert rect == {'x': -margin, 'y': -margin, 'width': 100 + 2 * margin, 'height': 20 + 2 * margin}
+
+
+@pytest.mark.asyncio
+async def test_scroll_into_view_falls_back_to_plain_scroll_without_a_box(make_element, fake_conn):
+    await make_element().scroll_into_view()
+    assert 'rect' not in fake_conn.last_command('DOM.scrollIntoViewIfNeeded')['params']

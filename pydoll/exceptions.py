@@ -150,6 +150,35 @@ class CommandExecutionTimeout(ProtocolException):
     message = 'The command execution timed out'
 
 
+class CommandFailed(ProtocolException):
+    """Raised when the browser answers a command with a CDP error instead of a result.
+
+    Covers protocol-level rejections (unknown method, invalid params, session not
+    found) and domain-level failures such as an object id that no longer resolves
+    or an execution context destroyed by a navigation.
+
+    Attributes:
+        method: CDP method that was rejected.
+        code: JSON-RPC style error code reported by the browser.
+        data: Optional extra detail the browser attached to the error.
+    """
+
+    message = 'The browser rejected the command'
+
+    def __init__(
+        self,
+        method: str = '',
+        code: int = 0,
+        message: str = '',
+        data: str = '',
+    ):
+        self.method = method
+        self.code = code
+        self.data = data
+        detail = message or self.__class__.message
+        super().__init__(f'{method}: {detail} (code {code})' if method else detail)
+
+
 class InvalidCallback(ProtocolException):
     """Raised when an invalid callback is provided for an event."""
 

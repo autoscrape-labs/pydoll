@@ -15,6 +15,7 @@ from pydoll.commands import (
 from pydoll.connection import ConnectionHandler
 from pydoll.exceptions import (
     CommandExecutionTimeout,
+    CommandFailed,
     FingerprintContextConflict,
     WebSocketConnectionClosed,
 )
@@ -610,7 +611,7 @@ class FingerprintApplier:
                 TargetCommands.get_target_info(tab._target_id)
             )
             return response['result']['targetInfo'].get('browserContextId', _NO_WORKER_SCOPE)
-        except (CommandExecutionTimeout, WebSocketConnectionClosed) as exc:
+        except (CommandExecutionTimeout, CommandFailed, WebSocketConnectionClosed) as exc:
             logger.debug('Could not resolve browser context id for worker scope: %s', exc)
             return _NO_WORKER_SCOPE
         except KeyError as exc:
@@ -680,13 +681,20 @@ class FingerprintApplier:
                             fingerprint,
                             page_js,
                         )
-            except (CommandExecutionTimeout, WebSocketConnectionClosed, KeyError) as exc:
+            except (
+                CommandExecutionTimeout,
+                CommandFailed,
+                WebSocketConnectionClosed,
+                KeyError,
+            ) as exc:
                 logger.debug('Skipped fingerprint on attached session %s: %s', session_id, exc)
             finally:
                 if params.get('waitingForDebugger'):
                     resume = RuntimeCommands.run_if_waiting_for_debugger()
                     resume['sessionId'] = session_id
-                    with suppress(CommandExecutionTimeout, WebSocketConnectionClosed):
+                    with suppress(
+                        CommandExecutionTimeout, CommandFailed, WebSocketConnectionClosed
+                    ):
                         await connection.execute_command(
                             resume, timeout=self._WORKER_COMMAND_TIMEOUT
                         )
@@ -976,7 +984,7 @@ class FingerprintApplier:
         if not self._is_headless():
             return
         tab = self._tab
-        with suppress(CommandExecutionTimeout, WebSocketConnectionClosed):
+        with suppress(CommandExecutionTimeout, CommandFailed, WebSocketConnectionClosed):
             response: GetScreenInfosResponse = await tab._execute_command(
                 EmulationCommands.get_screen_infos()
             )

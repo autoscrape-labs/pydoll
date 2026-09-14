@@ -216,6 +216,17 @@ class TestHeadlessScreen:
         assert params['colorDepth'] == 30
         assert params['workAreaInsets'] == {'top': 50, 'bottom': 30, 'left': 0, 'right': 0}
 
+    async def test_screen_update_skipped_when_browser_rejects_get_screen_infos(
+        self, fp_tab, fake_conn
+    ):
+        fp_tab._browser.options.headless = True
+        fake_conn.set_failure(
+            'Emulation.getScreenInfos', -32601, "'Emulation.getScreenInfos' wasn't found"
+        )
+        screen = {'width': 1440, 'height': 900, 'device_pixel_ratio': 2.0}
+        await FingerprintApplier(fp_tab)._apply_headless_screen(screen)
+        assert fake_conn.commands_for('Emulation.updateScreen') == []
+
     async def test_fractional_dpr_is_rounded_to_integer(self, fp_tab, fake_conn):
         """Headless virtual screens only accept an integer dpr, so it is rounded
         and the physical size is scaled by the rounded value."""
@@ -337,6 +348,15 @@ class TestCrossOriginIframes:
         assert methods.index('Page.addScriptToEvaluateOnNewDocument') < methods.index(
             'Runtime.runIfWaitingForDebugger'
         )
+
+    async def test_iframe_attach_still_resumes_when_a_command_is_rejected(self, fp_tab, fake_conn):
+        await fp_tab.apply_fingerprint(dict(self.FP))
+        fake_conn.set_failure(
+            'Emulation.setUserAgentOverride', -32001, 'Session with given id not found.'
+        )
+        await self._fire_iframe_attach(fake_conn)
+        methods = [c['method'] for c in fake_conn.commands if c.get('sessionId') == 'oopif-1']
+        assert 'Runtime.runIfWaitingForDebugger' in methods
 
     async def test_iframe_attach_not_replayed_when_disabled(self, fp_tab, fake_conn):
         await fp_tab.apply_fingerprint(dict(self.FP), cross_origin_iframes=False)
