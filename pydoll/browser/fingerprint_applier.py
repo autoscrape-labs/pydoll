@@ -107,15 +107,16 @@ class FingerprintApplier:
               ``Emulation.updateScreen`` and ``Browser.setWindowBounds``)
             - Locale (``Emulation.setLocaleOverride``)
             - CSS media features / color-gamut (``Emulation.setEmulatedMedia``)
-            - ``hardwareConcurrency``, touch events, permissions
-              (``Browser.setPermission``, so ``PermissionStatus`` and
-              ``Notification.permission`` are the real ones)
+            - ``hardwareConcurrency``, touch (``maxTouchPoints``, touch events,
+              coarse pointer), permissions (``Browser.setPermission``, so
+              ``PermissionStatus`` and ``Notification.permission`` are the real
+              ones)
 
         JS-level overrides (injected on every new document), only for the
         signals CDP cannot set:
-            - ``deviceMemory``, ``maxTouchPoints``, WebGL, media devices, audio
-              device capabilities, speech voices, network connection, fonts,
-              WebRTC policy, and the headful-only screen extras
+            - ``deviceMemory``, WebGL, media devices, audio device
+              capabilities, speech voices, network connection, fonts, WebRTC
+              policy, and the headful-only screen extras
 
         The same overrides are also replayed on Web Worker targets, which have
         their own ``WorkerNavigator`` and would otherwise leak the real
@@ -291,10 +292,10 @@ class FingerprintApplier:
     def _touch_emulation_command(fingerprint: FingerprintConfig) -> Optional['Command']:
         """Build the native touch-emulation command for a touch-capable profile.
 
-        A profile claiming touch points must also expose ``ontouchstart`` and
-        match ``(pointer: coarse)``, which only ``Emulation.setTouchEmulationEnabled``
-        can do; ``navigator.maxTouchPoints`` itself stays a JS getter. Profiles
-        with zero touch points leave the real (non-touch) state untouched.
+        ``Emulation.setTouchEmulationEnabled`` sets ``navigator.maxTouchPoints``,
+        exposes ``ontouchstart`` and matches ``(pointer: coarse)`` natively, so no
+        JS getter is needed. Profiles with zero touch points leave the real
+        (non-touch) state untouched.
         """
         max_touch_points = fingerprint.get('hardware', {}).get('max_touch_points')
         if not max_touch_points:

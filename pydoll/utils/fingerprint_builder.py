@@ -14,10 +14,10 @@ Native first:
     ``languages`` (``Emulation.setUserAgentOverride`` sets all of them), screen
     metrics, ``devicePixelRatio``, ``hardwareConcurrency``, timezone,
     geolocation, locale, CSS media features, permissions
-    (``Browser.setPermission``) and touch. A native override has no JavaScript
-    function behind it, so nothing shows up in a stack trace and every read
-    path agrees. Only signals CDP cannot set (``deviceMemory``,
-    ``maxTouchPoints``, WebGL, media devices, speech voices, audio device
+    (``Browser.setPermission``) and touch (``maxTouchPoints`` included). A
+    native override has no JavaScript function behind it, so nothing shows up
+    in a stack trace and every read path agrees. Only signals CDP cannot set
+    (``deviceMemory``, WebGL, media devices, speech voices, audio device
     capabilities, network connection, fonts, WebRTC policy, and the screen
     extras in headful mode) are handled with hardened JavaScript here.
 
@@ -397,22 +397,16 @@ def _build_navigator_js(nav: dict[str, object]) -> str:
 def _build_hardware_js(hw: HardwareFingerprint) -> str:
     """Override navigator hardware getters CDP does not cover.
 
-    ``hardware_concurrency`` is intentionally omitted: ``FingerprintApplier``
-    sets it via ``Emulation.setHardwareConcurrencyOverride`` so the getter stays
-    genuinely native. ``max_touch_points`` keeps a JS getter for the value
-    (``Emulation.setTouchEmulationEnabled`` enables touch events and coarse
-    pointer media natively but does not move ``navigator.maxTouchPoints``).
+    ``hardware_concurrency`` and ``max_touch_points`` are intentionally
+    omitted: ``FingerprintApplier`` sets them via
+    ``Emulation.setHardwareConcurrencyOverride`` and
+    ``Emulation.setTouchEmulationEnabled`` (which also sets
+    ``navigator.maxTouchPoints``), so both getters stay genuinely native. A
+    profile with zero touch points relies on the host being non-touch.
     """
-    items: dict[str, object] = dict(hw)
-    lines: list[str] = []
-    for key, js_prop in (
-        ('device_memory', 'deviceMemory'),
-        ('max_touch_points', 'maxTouchPoints'),
-    ):
-        if key in items:
-            val = json.dumps(items[key])
-            lines.append(f'_defG(NP, {json.dumps(js_prop)}, {val});')
-    return '\n'.join(lines)
+    if 'device_memory' not in hw:
+        return ''
+    return f'_defG(NP, "deviceMemory", {json.dumps(hw["device_memory"])});'
 
 
 def _build_screen_js(scr: ScreenFingerprint) -> str:
