@@ -11,10 +11,10 @@
         <link rel="canonical" href="https://pydoll.tech/docs/deep-dive/fingerprinting/auditing/">
       
       
-        <link rel="prev" href="../spoofing-limits/">
+        <link rel="prev" href="../behavioral-fingerprinting/">
       
       
-        <link rel="next" href="../execution-realms/">
+        <link rel="next" href="../../../api/">
       
       
         
@@ -2387,12 +2387,6 @@
       
         
       
-        
-      
-        
-      
-        
-      
     
     
     
@@ -2521,34 +2515,6 @@
     
   
     Behavioral fingerprinting
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../spoofing-limits/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    The limits of spoofing
   
 
     
@@ -2698,62 +2664,6 @@
   
 </nav>
       
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../execution-realms/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Workers and cross-origin iframes
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../cloudflare-challenge/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Cloudflare's managed challenge
-  
-
-    
-  </span>
-  
-  
-
-      </a>
     </li>
   
 
@@ -3558,7 +3468,7 @@
 
 <h1 id="auditing-a-fingerprint">Auditing a fingerprint</h1>
 <p>You cannot improve what you cannot measure. Once a profile is applied, the question is which signals now read as a real device and which still leak, and no amount of reading the code answers it as well as pointing a detector at the browser. This page covers how to measure that, from a free bot score to reading exactly what a commercial detector collects.</p>
-<p>It builds on <a href="../spoofing-limits/">The limits of spoofing</a>: that page explains what can and cannot be faked, this one shows how to check what your setup actually did.</p>
+<p>It is the measuring side of <a href="../../../stealth/fingerprint-injection/">Fingerprint injection</a>: that page applies a profile, this one shows how to check what it actually did.</p>
 <h2 id="read-the-bot-score">Read the bot score</h2>
 <p><a href="https://fingerprint-scan.com/">fingerprint-scan.com</a> runs a fingerprinting and bot-detection test inside the page and reports a score from 0 to 100, where lower reads as more human. Drive it with Pydoll and screenshot the result:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
@@ -3612,7 +3522,7 @@
 </span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="s1">    };</span>
 </span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="s1">'''</span><span class="p">,</span> <span class="n">return_by_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span></code></pre></div>
-<p>If <code>matchMedia</code> and the CSS path disagree, an override is lying on one path only, the failure mode <a href="../spoofing-limits/">The limits of spoofing</a> walks through. The same test applies across realms (page versus worker) and across APIs (the WebGL string versus the WebGPU adapter). A coherent profile passes all of them; a contradiction is a signal you introduced.</p>
+<p>If <code>matchMedia</code> and the CSS path disagree, an override is lying on one path only. The same test applies across realms (page versus worker) and across APIs (the WebGL string versus the WebGPU adapter). A coherent profile passes all of them; a contradiction is a signal you introduced.</p>
 <h2 id="read-what-a-real-detector-collects">Read what a real detector collects</h2>
 <p>The deepest audit is to stop guessing which signals matter and read the list a production detector actually reads. These agents ship heavily obfuscated, but the surface they measure is public browser API, so it can be reverse-engineered.</p>
 <p>A public teardown of <strong>Fingerprint Pro v4</strong> (build <code>jsl/4.0.0</code>), measured against the vendor's public demo tenant on one machine in August 2026, catalogs roughly <strong>143 individual signals</strong>, across screen and display, hardware, <code>navigator</code>, GPU (WebGL and WebGPU), audio, fonts, media, storage, and automation flags. Those numbers are specific to that build, tenant, and moment, not a universal law, but two findings reshape how you audit:</p>
@@ -3633,7 +3543,6 @@
 <p>So the deepest audit is a capture. Use <a href="../../../guides/request-interception/">request interception</a> to grab the body of the agent's POST, reverse the framing, and inflate it. What comes out is the exact signal set the detector built for your session, read straight from the code that scores you. That is the ground truth for which of your overrides held and which leaked, and it is more reliable than any bot score, because it is the input to the score rather than the output.</p>
 <h2 id="related">Related</h2>
 <ul>
-<li><a href="../spoofing-limits/">The limits of spoofing</a>: what a spoof can and cannot move.</li>
 <li><a href="../../../stealth/fingerprint-injection/">Fingerprint injection</a>: applying a coherent profile.</li>
 <li><a href="../../../guides/browser-contexts/">Browser contexts</a>: one identity per context, the real lever for a fresh visitor.</li>
 </ul>

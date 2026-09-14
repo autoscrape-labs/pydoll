@@ -2528,12 +2528,6 @@
       
         
       
-        
-      
-        
-      
-        
-      
     
     
     
@@ -2681,34 +2675,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../deep-dive/fingerprinting/spoofing-limits/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    The limits of spoofing
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../deep-dive/fingerprinting/auditing/" class="md-nav__link">
         
   
@@ -2717,62 +2683,6 @@
     
   
     Auditing a fingerprint
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../deep-dive/fingerprinting/execution-realms/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Workers and cross-origin iframes
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../deep-dive/fingerprinting/cloudflare-challenge/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Cloudflare's managed challenge
   
 
     
@@ -3613,7 +3523,7 @@
 <p>The rest of this page is the layers you do control.</p>
 <h2 id="keep-the-user-agent-consistent">Keep the User-Agent consistent</h2>
 <p>The most common automation tell is a User-Agent that disagrees with itself: the HTTP <code>User-Agent</code> header saying one thing while <code>navigator.userAgent</code>, <code>navigator.platform</code>, and the Client Hints (<code>Sec-CH-UA</code>, <code>Sec-CH-UA-Platform</code>) say another. Setting <code>--user-agent=</code> as a plain Chrome flag changes only the HTTP header and leaves the JavaScript and Client Hints untouched, which is a mismatch a detector reads immediately.</p>
-<p>Pydoll fixes this for you. When it sees a <code>--user-agent=</code> argument, it applies <code>Emulation.setUserAgentOverride</code> with the matching <code>platform</code> and full Client Hints metadata, and injects <code>navigator.vendor</code> / <code>navigator.appVersion</code>, so every layer agrees, including in new tabs.</p>
+<p>Pydoll fixes this for you. When it sees a <code>--user-agent=</code> argument, it applies <code>Emulation.setUserAgentOverride</code> with the matching <code>platform</code> and full Client Hints metadata (greased brand and brand order computed the way Chromium does for that major), and exposes the reduced <code>Chrome/MAJOR.0.0.0</code> form that real Chrome reports, so every layer agrees, including in new tabs and workers. Nothing is injected into the page: <code>navigator.userAgent</code>, <code>platform</code>, <code>vendor</code>, and <code>appVersion</code> all come from the override itself.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.chromium</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>

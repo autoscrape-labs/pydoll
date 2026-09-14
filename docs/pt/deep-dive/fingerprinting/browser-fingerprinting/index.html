@@ -2391,12 +2391,6 @@
       
         
       
-        
-      
-        
-      
-        
-      
     
     
     
@@ -2802,34 +2796,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../spoofing-limits/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Os limites do spoofing
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../auditing/" class="md-nav__link">
         
   
@@ -2838,62 +2804,6 @@
     
   
     Auditando um fingerprint
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../execution-realms/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Workers e iframes cross-origin
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../cloudflare-challenge/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    O managed challenge do Cloudflare
   
 
     
@@ -3894,7 +3804,7 @@
 <h3 id="consistencia-de-platform-e-user-agent">Consistência de platform e User-Agent</h3>
 <p>A propriedade <code>navigator.platform</code> retorna uma string como <code>Win32</code>, <code>MacIntel</code> ou <code>Linux x86_64</code>. Os sistemas de detecção comparam isso com o cabeçalho User-Agent. Se o User-Agent HTTP alega <code>Windows NT 10.0</code> mas <code>navigator.platform</code> retorna <code>Linux x86_64</code>, a divergência é um forte sinal. Esse é um dos erros mais comuns em automação: definir um User-Agent customizado via <code>--user-agent=</code> sem também sobrescrever a plataforma.</p>
 <h3 id="propriedades-de-hardware">Propriedades de hardware</h3>
-<p><code>navigator.hardwareConcurrency</code> retorna o número de núcleos lógicos de CPU. Um valor de 1 ou 2 sugere uma VM ou container mínimo, e não a máquina de um usuário real. <code>navigator.deviceMemory</code> reporta a RAM aproximada em gigabytes (0.25, 0.5, 1, 2, 4, 8). Essa propriedade só está disponível em navegadores Chromium; Firefox e Safari retornam <code>undefined</code>. Ambos os valores devem ser consistentes com o dispositivo alegado: um User-Agent que alega um desktop moderno mas reporta 1 núcleo e 0.5 GB de RAM é suspeito.</p>
+<p><code>navigator.hardwareConcurrency</code> retorna o número de núcleos lógicos de CPU. Um valor de 1 ou 2 sugere uma VM ou container mínimo, e não a máquina de um usuário real. <code>navigator.deviceMemory</code> reporta a RAM aproximada em gigabytes (0.25, 0.5, 1, 2, 4, 8, e 16 nas builds atuais do Chrome desktop). Essa propriedade só está disponível em navegadores Chromium; Firefox e Safari retornam <code>undefined</code>. Ambos os valores devem ser consistentes com o dispositivo alegado: um User-Agent que alega um desktop moderno mas reporta 1 núcleo e 0.5 GB de RAM é suspeito.</p>
 <h3 id="propriedade-webdriver">Propriedade WebDriver</h3>
 <p>A propriedade <code>navigator.webdriver</code> é <code>true</code> quando o navegador é controlado por automação baseada em WebDriver (Selenium, Playwright em modo WebDriver). Esse é o indicador de automação mais óbvio de todos. O Chrome moderno define a propriedade como um getter que retorna <code>false</code> numa sessão normal, e só a inverte para <code>true</code> sob flags de automação. O Pydoll dirige o Chrome através do CDP sem essas flags, então <code>navigator.webdriver</code> reporta <code>false</code>, o mesmo que a sessão de um usuário normal. Não é <code>undefined</code>; um valor <code>undefined</code> seria por si só incomum e não é o que o Pydoll produz.</p>
 <h3 id="plugins">Plugins</h3>
@@ -4042,7 +3952,7 @@
 <p>O cabeçalho <code>Accept-Language</code> deve ser consistente com <code>navigator.language</code>, <code>navigator.languages</code>, o fuso horário e a geolocalização do IP. Uma requisição com <code>Accept-Language: en-US</code> de um IP em Tóquio com fuso horário <code>Asia/Tokyo</code> é plausível para um viajante, mas suspeita em combinação com outros sinais. Uma requisição com <code>Accept-Language: zh-CN</code> e fuso horário <code>America/New_York</code> de um IP de datacenter chinês é um forte indicador de proxy.</p>
 <h2 id="implicacoes-para-o-pydoll">Implicações para o Pydoll</h2>
 <p>Como o Pydoll dirige um navegador Chromium real através do CDP, todos os fingerprints de nível de navegador são autênticos por padrão. Os fingerprints de canvas, WebGL e AudioContext vêm de hardware de GPU e áudio de verdade. As propriedades do navigator, os plugins e as dimensões de tela refletem o estado real do navegador. Os cabeçalhos HTTP, incluindo sua ordem, são gerados pela pilha de rede do Chrome.</p>
-<p>O principal risco em automação é a inconsistência entre camadas. Definir um User-Agent customizado sem sincronizar as propriedades relacionadas cria divergências trivialmente detectáveis. O Pydoll cuida disso automaticamente: quando ele detecta <code>--user-agent=</code> nos argumentos do navegador, usa <code>Emulation.setUserAgentOverride</code> para sincronizar a string do User-Agent, a plataforma e os metadados completos de Client Hints em todas as camadas. Ele também injeta sobrescritas de <code>navigator.vendor</code> e <code>navigator.appVersion</code> via <code>Page.addScriptToEvaluateOnNewDocument</code> para garantir consistência em abas recém-abertas.</p>
+<p>O principal risco em automação é a inconsistência entre camadas. Definir um User-Agent customizado sem sincronizar as propriedades relacionadas cria divergências trivialmente detectáveis. O Pydoll cuida disso automaticamente: quando ele detecta <code>--user-agent=</code> nos argumentos do navegador, usa <code>Emulation.setUserAgentOverride</code> para sincronizar a string do User-Agent, <code>navigator.platform</code>, <code>vendor</code>, <code>appVersion</code> e os metadados completos de Client Hints em todas as camadas, em toda aba, sem nada injetado na página. Os workers, cujo <code>WorkerNavigator</code> o override só alcança em parte, recebem o mesmo script de identidade reforçado que <code>apply_fingerprint()</code> usa.</p>
 <p>Os cabeçalhos de idioma vêm da flag <code>--lang</code> e de <code>set_accept_languages()</code>, e <code>webrtc_leak_protection</code> impede que o WebRTC exponha o IP real por trás de um proxy. O fuso horário e a geolocalização precisam casar com a localização do IP do proxy e permanecer consistentes com todo o resto; <a href="../../../stealth/fingerprint-injection/"><code>tab.apply_fingerprint()</code></a> os aplica junto com a localidade, o User-Agent e os Client Hints, a partir de um único perfil coerente.</p>
 <p>O princípio é que o Pydoll te dá o fingerprint autêntico do navegador como linha de base, e você só precisa manter as camadas configuráveis (User-Agent, fuso horário, idioma, geolocalização) consistentes entre si e com o proxy.</p>
 <h2 id="relacionado">Relacionado</h2>

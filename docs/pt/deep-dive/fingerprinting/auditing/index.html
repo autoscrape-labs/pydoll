@@ -11,10 +11,10 @@
         <link rel="canonical" href="https://pydoll.tech/docs/pt/deep-dive/fingerprinting/auditing/">
       
       
-        <link rel="prev" href="../spoofing-limits/">
+        <link rel="prev" href="../behavioral-fingerprinting/">
       
       
-        <link rel="next" href="../execution-realms/">
+        <link rel="next" href="../../../api/">
       
       
         
@@ -2391,12 +2391,6 @@
       
         
       
-        
-      
-        
-      
-        
-      
     
     
     
@@ -2525,34 +2519,6 @@
     
   
     Fingerprinting comportamental
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../spoofing-limits/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Os limites do spoofing
   
 
     
@@ -2702,62 +2668,6 @@
   
 </nav>
       
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../execution-realms/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Workers e iframes cross-origin
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../cloudflare-challenge/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    O managed challenge do Cloudflare
-  
-
-    
-  </span>
-  
-  
-
-      </a>
     </li>
   
 
@@ -3562,7 +3472,7 @@
 
 <h1 id="auditando-um-fingerprint">Auditando um fingerprint</h1>
 <p>Você não consegue melhorar o que não consegue medir. Uma vez que um perfil é aplicado, a questão é quais sinais agora são lidos como um dispositivo real e quais ainda vazam, e nenhuma quantidade de leitura do código responde isso tão bem quanto apontar um detector para o navegador. Esta página cobre como medir isso, de um bot score gratuito até ler exatamente o que um detector comercial coleta.</p>
-<p>Ela se apoia em <a href="../spoofing-limits/">Os limites do spoofing</a>: aquela página explica o que pode e o que não pode ser forjado, esta mostra como verificar o que a sua configuração de fato fez.</p>
+<p>Ela é o lado de medição de <a href="../../../stealth/fingerprint-injection/">Injeção de fingerprint</a>: aquela página aplica um perfil, esta mostra como verificar o que ele de fato fez.</p>
 <h2 id="leia-o-bot-score">Leia o bot score</h2>
 <p>O <a href="https://fingerprint-scan.com/">fingerprint-scan.com</a> roda um teste de fingerprinting e detecção de bots dentro da página e reporta um score de 0 a 100, onde mais baixo é lido como mais humano. Dirija-o com o Pydoll e tire um screenshot do resultado:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
@@ -3616,7 +3526,7 @@
 </span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="s1">    };</span>
 </span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="s1">'''</span><span class="p">,</span> <span class="n">return_by_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span></code></pre></div>
-<p>Se o <code>matchMedia</code> e o caminho CSS discordam, um override está mentindo em apenas um caminho, o modo de falha que <a href="../spoofing-limits/">Os limites do spoofing</a> percorre. O mesmo teste se aplica entre realms (página versus worker) e entre APIs (a string do WebGL versus o adapter do WebGPU). Um perfil coerente passa em todos eles; uma contradição é um sinal que você introduziu.</p>
+<p>Se o <code>matchMedia</code> e o caminho CSS discordam, um override está mentindo em apenas um caminho. O mesmo teste se aplica entre realms (página versus worker) e entre APIs (a string do WebGL versus o adapter do WebGPU). Um perfil coerente passa em todos eles; uma contradição é um sinal que você introduziu.</p>
 <h2 id="leia-o-que-um-detector-real-coleta">Leia o que um detector real coleta</h2>
 <p>A auditoria mais profunda é parar de adivinhar quais sinais importam e ler a lista que um detector de produção de fato lê. Esses agentes são distribuídos fortemente ofuscados, mas a superfície que eles medem é API pública do navegador, então ela pode passar por engenharia reversa.</p>
 <p>Uma análise pública do <strong>Fingerprint Pro v4</strong> (build <code>jsl/4.0.0</code>), medida contra o tenant de demonstração público do fornecedor numa máquina em agosto de 2026, cataloga cerca de <strong>143 sinais individuais</strong>, entre tela e display, hardware, <code>navigator</code>, GPU (WebGL e WebGPU), áudio, fontes, mídia, armazenamento e flags de automação. Esses números são específicos daquela build, daquele tenant e daquele momento, não uma lei universal, mas duas descobertas remodelam como você audita:</p>
@@ -3637,7 +3547,6 @@
 <p>Então a auditoria mais profunda é uma captura. Use a <a href="../../../guides/request-interception/">interceptação de requisições</a> para pegar o corpo do POST do agente, reverter o enquadramento e descomprimi-lo. O que sai é o conjunto exato de sinais que o detector construiu para a sua sessão, lido direto do código que te pontua. Essa é a verdade de base para saber quais dos seus overrides seguraram e quais vazaram, e é mais confiável do que qualquer bot score, porque é a entrada do score, e não a saída.</p>
 <h2 id="relacionado">Relacionado</h2>
 <ul>
-<li><a href="../spoofing-limits/">Os limites do spoofing</a>: o que um spoof consegue e não consegue mover.</li>
 <li><a href="../../../stealth/fingerprint-injection/">Injeção de fingerprint</a>: aplicando um perfil coerente.</li>
 <li><a href="../../../guides/browser-contexts/">Contextos de navegador</a>: uma identidade por contexto, a alavanca real para um novo visitante.</li>
 </ul>

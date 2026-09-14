@@ -2389,12 +2389,6 @@
       
         
       
-        
-      
-        
-      
-        
-      
     
     
     
@@ -2800,34 +2794,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../spoofing-limits/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    伪造的极限
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../auditing/" class="md-nav__link">
         
   
@@ -2836,62 +2802,6 @@
     
   
     审计一个 fingerprint
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../execution-realms/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Worker 与跨域 iframe
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../cloudflare-challenge/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Cloudflare 的托管挑战
   
 
     
@@ -3892,7 +3802,7 @@
 <h3 id="platform-user-agent">Platform 与 User-Agent 的一致性</h3>
 <p><code>navigator.platform</code> 属性返回一个类似 <code>Win32</code>、<code>MacIntel</code> 或 <code>Linux x86_64</code> 的字符串。检测系统会把它与 User-Agent 头比较。如果 HTTP User-Agent 声称是 <code>Windows NT 10.0</code>，但 <code>navigator.platform</code> 返回 <code>Linux x86_64</code>，这个不匹配就是一个强信号。这是自动化中最常见的错误之一：通过 <code>--user-agent=</code> 设置自定义 User-Agent，却没有同时覆盖 platform。</p>
 <h3 id="_1">硬件属性</h3>
-<p><code>navigator.hardwareConcurrency</code> 返回逻辑 CPU 核心数。值为 1 或 2 暗示是一台极简的虚拟机或容器，而不是真实用户的机器。<code>navigator.deviceMemory</code> 报告以 GB 为单位的近似 RAM（0.25、0.5、1、2、4、8）。这个属性只在 Chromium 浏览器中可用；Firefox 和 Safari 返回 <code>undefined</code>。这两个值都应与所声称的设备一致：一个声称是现代桌面机的 User-Agent，却报告 1 个核心和 0.5 GB 的 RAM，是可疑的。</p>
+<p><code>navigator.hardwareConcurrency</code> 返回逻辑 CPU 核心数。值为 1 或 2 暗示是一台极简的虚拟机或容器，而不是真实用户的机器。<code>navigator.deviceMemory</code> 报告以 GB 为单位的近似 RAM（0.25、0.5、1、2、4、8，以及当前 Chrome 桌面版 build 上的 16）。这个属性只在 Chromium 浏览器中可用；Firefox 和 Safari 返回 <code>undefined</code>。这两个值都应与所声称的设备一致：一个声称是现代桌面机的 User-Agent，却报告 1 个核心和 0.5 GB 的 RAM，是可疑的。</p>
 <h3 id="webdriver">WebDriver 属性</h3>
 <p>当浏览器由基于 WebDriver 的自动化控制时（Selenium、处于 WebDriver 模式的 Playwright），<code>navigator.webdriver</code> 属性为 <code>true</code>。这是最明显的单一自动化指标。现代 Chrome 把该属性定义为一个 getter，在正常会话中返回 <code>false</code>，只有在自动化标志下才翻转为 <code>true</code>。Pydoll 在不带那些标志的情况下通过 CDP 驱动 Chrome，因此 <code>navigator.webdriver</code> 报告 <code>false</code>，与正常用户会话相同。它不是 <code>undefined</code>；<code>undefined</code> 的值本身就会是不寻常的，也不是 Pydoll 所产生的。</p>
 <h3 id="_2">插件</h3>
@@ -4040,7 +3950,7 @@
 <p><code>Accept-Language</code> 头应与 <code>navigator.language</code>、<code>navigator.languages</code>、时区以及 IP 地理位置一致。一个来自东京 IP、时区为 <code>Asia/Tokyo</code>、却带有 <code>Accept-Language: en-US</code> 的请求，对旅行者来说是合理的，但与其他信号组合时是可疑的。一个来自中国数据中心 IP、带有 <code>Accept-Language: zh-CN</code> 和时区 <code>America/New_York</code> 的请求，是一个强 proxy 指标。</p>
 <h2 id="pydoll">对 Pydoll 的影响</h2>
 <p>因为 Pydoll 通过 CDP 驱动的是一个真实的 Chromium 浏览器，所有浏览器级别的 fingerprint 默认都是真实的。canvas、WebGL 和 AudioContext fingerprint 来自实际的 GPU 和音频硬件。navigator 属性、插件和屏幕尺寸反映的是真实的浏览器状态。HTTP 头（包括它们的顺序）由 Chrome 的网络栈生成。</p>
-<p>自动化中的主要风险是各层次之间的不一致。设置自定义 User-Agent 而不同步相关属性，会造成极易检测的不匹配。Pydoll 会自动处理这一点：当它检测到浏览器参数中的 <code>--user-agent=</code> 时，会使用 <code>Emulation.setUserAgentOverride</code> 在所有层次之间同步 User-Agent 字符串、platform 以及完整的 Client Hints 元数据。它还通过 <code>Page.addScriptToEvaluateOnNewDocument</code> 注入 <code>navigator.vendor</code> 和 <code>navigator.appVersion</code> 的覆盖，以确保在新打开的标签页中保持一致。</p>
+<p>自动化中的主要风险是各层次之间的不一致。设置自定义 User-Agent 而不同步相关属性，会造成极易检测的不匹配。Pydoll 会自动处理这一点：当它检测到浏览器参数中的 <code>--user-agent=</code> 时，会使用 <code>Emulation.setUserAgentOverride</code> 在所有层次、每一个标签页中同步 User-Agent 字符串、<code>navigator.platform</code>、<code>vendor</code>、<code>appVersion</code> 以及完整的 Client Hints 元数据，不向页面注入任何东西。workers 的 <code>WorkerNavigator</code> 只被这个覆盖部分触及，它们会收到 <code>apply_fingerprint()</code> 所用的同一份加固身份脚本。</p>
 <p>语言头来自 <code>--lang</code> 标志和 <code>set_accept_languages()</code>，而 <code>webrtc_leak_protection</code> 阻止 WebRTC 暴露 proxy 背后的真实 IP。时区和地理位置需要与 proxy IP 的位置匹配，并与其他一切保持一致；<a href="../../../stealth/fingerprint-injection/"><code>tab.apply_fingerprint()</code></a> 会把它们与来自同一个一致 profile 的区域设置、User-Agent 和 Client Hints 一起应用。</p>
 <p>原则是，Pydoll 给你真实的浏览器 fingerprint 作为基线，你只需要让可配置的层次（User-Agent、时区、语言、地理位置）彼此之间以及与 proxy 保持一致。</p>
 <h2 id="_5">相关内容</h2>

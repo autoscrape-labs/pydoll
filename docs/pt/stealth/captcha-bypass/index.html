@@ -2510,12 +2510,6 @@
       
         
       
-        
-      
-        
-      
-        
-      
     
     
     
@@ -2663,34 +2657,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../deep-dive/fingerprinting/spoofing-limits/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Os limites do spoofing
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../deep-dive/fingerprinting/auditing/" class="md-nav__link">
         
   
@@ -2699,62 +2665,6 @@
     
   
     Auditando um fingerprint
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../deep-dive/fingerprinting/execution-realms/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Workers e iframes cross-origin
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../deep-dive/fingerprinting/cloudflare-challenge/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    O managed challenge do Cloudflare
   
 
     
@@ -3622,7 +3532,7 @@
 <li><strong>Uma identidade que para na página.</strong> O widget lê o fingerprint dentro do seu próprio iframe cross-origin, então o perfil precisa alcançar lá também. <code>apply_fingerprint()</code> faz isso por padrão (<code>cross_origin_iframes</code>), e combinar o locale, o fuso horário e a geolocalização do perfil com o IP de saída completa o quadro.</li>
 </ul>
 </li>
-<li><strong>Headful vs headless.</strong> O headless emite um sinal de display mais fraco que pode reduzir a pontuação de confiança, mas não é uma barreira. Com um fingerprint totalmente coerente (incluindo o iframe cross-origin) e um locale combinado com o IP, o headless passa pelo Turnstile num IP decente. Num IP marginal, prefira headful, ou headful sob um framebuffer virtual (Xvfb) num servidor, para que o sinal de display pare de pesar contra você. O aprofundamento sobre o <a href="../../deep-dive/fingerprinting/cloudflare-challenge/">managed challenge do Cloudflare</a> traz o detalhamento completo.</li>
+<li><strong>Headful vs headless.</strong> O headless emite um sinal de display mais fraco que pode reduzir a pontuação de confiança, mas não é uma barreira. Com um fingerprint coerente e um locale combinado com o IP, o headless passa pelo Turnstile num IP decente. Num IP marginal, prefira headful, ou headful sob um framebuffer virtual (Xvfb) num servidor, para que o sinal de display pare de pesar contra você.</li>
 </ul>
 <p>Se o checkbox é clicado mas um desafio de quebra-cabeça ou de imagem aparece em seguida, a pontuação de confiança estava baixa demais. O Pydoll não consegue resolver esse desafio; melhore o IP e o fingerprint em vez disso.</p>
 <iframe scrolling="no" src="/docs/resources/visuals/turnstile-trust-score.html" aria-label="Reputação do IP, consistência do fingerprint e o modo do navegador alimentam uma pontuação de confiança que resulta em aceito, desafiado ou bloqueado; o clique que o Pydoll automatiza é apenas uma das entradas" style="width: 100%; height: 430px; border: 0;" loading="lazy"></iframe>

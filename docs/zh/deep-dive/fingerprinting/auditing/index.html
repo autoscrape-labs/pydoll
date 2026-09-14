@@ -11,10 +11,10 @@
         <link rel="canonical" href="https://pydoll.tech/docs/zh/deep-dive/fingerprinting/auditing/">
       
       
-        <link rel="prev" href="../spoofing-limits/">
+        <link rel="prev" href="../behavioral-fingerprinting/">
       
       
-        <link rel="next" href="../execution-realms/">
+        <link rel="next" href="../../../api/">
       
       
         
@@ -2389,12 +2389,6 @@
       
         
       
-        
-      
-        
-      
-        
-      
     
     
     
@@ -2523,34 +2517,6 @@
     
   
     行为指纹识别
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../spoofing-limits/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    伪造的极限
   
 
     
@@ -2700,62 +2666,6 @@
   
 </nav>
       
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../execution-realms/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Worker 与跨域 iframe
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../cloudflare-challenge/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Cloudflare 的托管挑战
-  
-
-    
-  </span>
-  
-  
-
-      </a>
     </li>
   
 
@@ -3560,7 +3470,7 @@
 
 <h1 id="fingerprint">审计一个 fingerprint</h1>
 <p>你无法改进你无法测量的东西。一旦应用了一个 profile，问题就变成：现在哪些信号会被读作一个真实设备，哪些仍然在泄露，而无论你怎么读代码，都不如把一个检测器对准浏览器来得管用。本页讲的就是如何测量这一点，从一个免费的 bot score，到精确读取一个商业检测器所收集的内容。</p>
-<p>它建立在 <a href="../spoofing-limits/">伪造的极限</a> 之上：那一页解释了什么能被伪造、什么不能，这一页展示如何检查你的配置实际做到了什么。</p>
+<p>它是 <a href="../../../stealth/fingerprint-injection/">Fingerprint 注入</a> 的测量面：那一页应用一个 profile，这一页展示如何检查它实际做到了什么。</p>
 <h2 id="bot-score">读取 bot score</h2>
 <p><a href="https://fingerprint-scan.com/">fingerprint-scan.com</a> 会在页面内运行一项 fingerprinting 和机器人检测测试，并给出一个从 0 到 100 的得分，越低意味着越像人类。用 Pydoll 驱动它，并对结果截图：</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
@@ -3614,7 +3524,7 @@
 </span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="s1">    };</span>
 </span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="s1">'''</span><span class="p">,</span> <span class="n">return_by_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span></code></pre></div>
-<p>如果 <code>matchMedia</code> 和 CSS 路径不一致，那就是有一个覆盖只在一条路径上撒谎，也就是 <a href="../spoofing-limits/">伪造的极限</a> 所讲解的那种失败模式。同样的测试也适用于跨 realm（页面对比 worker）以及跨 API（WebGL 字符串对比 WebGPU adapter）。一个连贯的 profile 会通过所有这些测试；而一个矛盾就是一个由你引入的信号。</p>
+<p>如果 <code>matchMedia</code> 和 CSS 路径不一致，那就是有一个覆盖只在一条路径上撒谎。同样的测试也适用于跨 realm（页面对比 worker）以及跨 API（WebGL 字符串对比 WebGPU adapter）。一个连贯的 profile 会通过所有这些测试；而一个矛盾就是一个由你引入的信号。</p>
 <h2 id="_3">读取一个真实检测器所收集的内容</h2>
 <p>最深入的审计，是不再去猜哪些信号重要，而是去读一个生产环境检测器实际读取的那份清单。这些代理发布时都经过了重度混淆，但它们所测量的那个面是公开的浏览器 API，所以它可以被逆向工程。</p>
 <p>一次对 <strong>Fingerprint Pro v4</strong>（构建 <code>jsl/4.0.0</code>）的公开拆解，于 2026 年 8 月在一台机器上针对该厂商的公开演示租户进行测量，编目了大约 <strong>143 个独立信号</strong>，横跨屏幕与显示、硬件、<code>navigator</code>、GPU（WebGL 和 WebGPU）、音频、字体、媒体、存储以及自动化标志。这些数字是那个构建、那个租户、那个时刻所特有的，并不是一条普适定律，但其中有两个发现重塑了你审计的方式：</p>
@@ -3635,7 +3545,6 @@
 <p>所以最深入的审计就是一次捕获。用 <a href="../../../guides/request-interception/">请求拦截</a> 抓取代理那次 POST 的 body，把帧还原，再把它解压。出来的东西就是检测器为你的会话所构建的那个确切的信号集合，直接从给你打分的代码里读出来。对于你的哪些覆盖站住了、哪些泄露了，这就是那个基准真相，而且它比任何 bot score 都更可靠，因为它是那个得分的输入，而不是输出。</p>
 <h2 id="_5">相关</h2>
 <ul>
-<li><a href="../spoofing-limits/">伪造的极限</a>：一次伪造能改动什么、不能改动什么。</li>
 <li><a href="../../../stealth/fingerprint-injection/">Fingerprint 注入</a>：应用一个连贯的 profile。</li>
 <li><a href="../../../guides/browser-contexts/">浏览器上下文</a>：每个 context 一个身份，也就是获得一个全新访客的真正杠杆。</li>
 </ul>

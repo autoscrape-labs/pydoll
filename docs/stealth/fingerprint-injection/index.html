@@ -2055,21 +2055,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#clear-cloudflares-challenge-headless" class="md-nav__link">
+  <a href="#what-a-profile-can-set" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Clear Cloudflare's challenge headless
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#prove-it-with-a-bot-score" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Prove it with a bot score
+        What a profile can set
       
     </span>
   </a>
@@ -2122,10 +2111,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#cover-cross-origin-iframes" class="md-nav__link">
+  <a href="#match-the-gpu-and-the-fonts-to-the-host" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Cover cross-origin iframes
+        Match the GPU and the fonts to the host
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pin-the-client-hints-the-user-agent-cannot-carry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pin the Client Hints the User-Agent cannot carry
       
     </span>
   </a>
@@ -2567,12 +2567,6 @@
       
         
       
-        
-      
-        
-      
-        
-      
     
     
     
@@ -2720,34 +2714,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../deep-dive/fingerprinting/spoofing-limits/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    The limits of spoofing
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../deep-dive/fingerprinting/auditing/" class="md-nav__link">
         
   
@@ -2756,62 +2722,6 @@
     
   
     Auditing a fingerprint
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../deep-dive/fingerprinting/execution-realms/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Workers and cross-origin iframes
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../deep-dive/fingerprinting/cloudflare-challenge/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Cloudflare's managed challenge
   
 
     
@@ -3493,21 +3403,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#clear-cloudflares-challenge-headless" class="md-nav__link">
+  <a href="#what-a-profile-can-set" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Clear Cloudflare's challenge headless
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#prove-it-with-a-bot-score" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Prove it with a bot score
+        What a profile can set
       
     </span>
   </a>
@@ -3560,10 +3459,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#cover-cross-origin-iframes" class="md-nav__link">
+  <a href="#match-the-gpu-and-the-fonts-to-the-host" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Cover cross-origin iframes
+        Match the GPU and the fonts to the host
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pin-the-client-hints-the-user-agent-cannot-carry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pin the Client Hints the User-Agent cannot carry
       
     </span>
   </a>
@@ -3678,15 +3588,17 @@
 
 <h1 id="fingerprint-injection">Fingerprint injection</h1>
 <h2 id="introduction">Introduction</h2>
-<p><code>tab.apply_fingerprint()</code> gives the browser a new identity. It overrides the signals fingerprinting scripts read, User-Agent and Client Hints, <code>navigator</code>, WebGL, screen metrics, fonts, audio, timezone, and locale, across the page, its workers, and its cross-origin iframes, before the first navigation. You don't hand-build a fingerprint or patch <code>navigator</code> yourself; you pass a profile and Pydoll applies it coherently.</p>
-<p>The payoff is concrete. With a matched profile, headless Chrome goes from an instant bot flag to reading as an ordinary desktop, enough to <a href="#clear-cloudflares-challenge-headless">clear Cloudflare's managed challenge in headless mode</a>.</p>
-<p>One honest limit up front: this is identity substitution, not anonymity. It does not change your egress IP or the network-layer fingerprint, and an inconsistent profile is more detectable than an untouched browser. Making the profile <em>match</em> your machine and IP is the whole job, and <a href="#making-a-profile-pass">the rules below</a> are that checklist.</p>
+<p><code>tab.apply_fingerprint()</code> gives the browser a new identity. It overrides the signals fingerprinting scripts read, User-Agent and Client Hints, <code>navigator</code>, WebGL and WebGPU, screen metrics, fonts, audio, permissions, timezone, and locale, before the first navigation. You pass a profile; Pydoll applies it through the browser's own override commands wherever one exists and through hardened JavaScript only where none does.</p>
+<p>One honest limit up front: this is identity substitution, not anonymity. It does not change your egress IP or the network-layer fingerprint, and an inconsistent profile is more detectable than an untouched browser. A profile has to match the machine and the IP it runs on.</p>
+<div class="admonition warning">
+<p class="admonition-title">None of this is a guarantee</p>
+<p>Each site reads its own subset of signals and weighs it its own way. A minimal profile (User-Agent, locale, timezone matched to the host and the IP) clears many targets on its own, and a small residual inconsistency may never be read at all. Start simple, test against the actual site, and add fields only when a measurement says a specific signal is what blocks you.</p>
+</div>
 <p><strong>You will learn</strong></p>
 <ul>
 <li><a href="#quick-start">How to apply a fingerprint</a></li>
-<li><a href="#clear-cloudflares-challenge-headless">How it clears Cloudflare headless</a></li>
-<li><a href="#prove-it-with-a-bot-score">How to prove it is working</a></li>
-<li><a href="#making-a-profile-pass">How to make a profile pass</a></li>
+<li><a href="#what-a-profile-can-set">What a profile can set</a></li>
+<li><a href="#making-a-profile-pass">The rules that keep a profile coherent</a></li>
 <li><a href="#bring-your-own-profiles">How to use your own profiles</a></li>
 </ul>
 <h2 id="quick-start">Quick start</h2>
@@ -3711,120 +3623,108 @@
 </span></code></pre></div>
 <div class="admonition note">
 <p class="admonition-title">Where <code>FINGERPRINTS</code> comes from</p>
-<p>Pydoll does not ship fingerprint profiles. <code>FINGERPRINTS</code> lives in <code>examples/fingerprints.py</code> in the <a href="https://github.com/autoscrape-labs/pydoll">pydoll repository</a>, as reference profiles for the <code>FingerprintConfig</code> shape (a typed dictionary from <code>pydoll.protocol.fingerprint.types</code>). Copy that file into your project, then adapt each profile to your own machine and IP, <a href="#making-a-profile-pass">the rules below</a> explain why. A profile reused as-is is a shared signature, not a disguise.</p>
+<p>Pydoll does not ship fingerprint profiles. <code>FINGERPRINTS</code> lives in <code>examples/fingerprints.py</code> in the <a href="https://github.com/autoscrape-labs/pydoll">pydoll repository</a>, as reference profiles for the <code>FingerprintConfig</code> shape (a typed dictionary from <code>pydoll.protocol.fingerprint.types</code>). Copy that file into your project, then adapt each profile to your own machine and IP. A profile reused as-is is a shared signature, not a disguise.</p>
 </div>
-<h2 id="clear-cloudflares-challenge-headless">Clear Cloudflare's challenge headless</h2>
-<p>Headless Chrome normally fails bot checks on sight: a software WebGL renderer, a hardcoded 800x600 screen, empty plugin lists. A matched profile neutralizes those rendering signals, so a headless session reads as headful. With the identity also replayed into the cross-origin challenge frame (<code>cross_origin_iframes</code>, on by default), that is enough to pass Cloudflare's managed challenge, no captcha solver involved.</p>
-<p align="center">
-  <img src="/docs/resources/images/cloudflare-headless-bypass.gif" alt="Pydoll in headless mode loading a Cloudflare-protected site and clearing the managed challenge with a fingerprint applied" width="760" />
-</p>
-<p align="center"><sub>Headless has no visible window; this is its CDP screencast. With a matched fingerprint, the managed challenge clears.</sub></p>
-
-<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">()</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">headless</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="c1"># Match the profile to THIS host and IP (see the rules below).</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">apply_fingerprint</span><span class="p">(</span><span class="n">FINGERPRINTS</span><span class="p">[</span><span class="s1">'macos_m3_new_york'</span><span class="p">])</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">'https://a-site-behind-cloudflare.com'</span><span class="p">)</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="c1"># The interstitial clears when the identity is coherent.</span>
-</span></code></pre></div>
-<p>Two conditions make it work, both from <a href="#making-a-profile-pass">the rules below</a>: the profile has to be coherent (OS, Chrome version, and locale all matching your host and IP), and the IP has to be clean. A datacenter IP with poor reputation is still challenged headless and headful alike. On a marginal IP, prefer headful, or headful under Xvfb.</p>
-<p>Under the hood, headless also has one client-side leak a cross-origin frame reads directly: its own <code>window.screen</code>. Without the reshape the frame reads the raw 800x600 headless screen and contradicts the page; with it, they match.</p>
-<iframe scrolling="no" src="/docs/resources/visuals/headless-screen-oopif.html" aria-label="A headless page and its cross-origin iframe each reading window.screen; toggling the reshape flips the iframe from the raw 800x600 headless screen to matching the page" style="width: 100%; height: 460px; border: 0;" loading="lazy"></iframe>
-
-<p>For the full breakdown of what the challenge reads and why coherence passes it, see <a href="../../deep-dive/fingerprinting/cloudflare-challenge/">Cloudflare's managed challenge</a>.</p>
-<h2 id="prove-it-with-a-bot-score">Prove it with a bot score</h2>
-<p>Whether a fingerprint helps or hurts is measurable. <a href="https://fingerprint-scan.com/">fingerprint-scan.com</a>, built by the engineer behind the Castle anti-bot blog, reports a <strong>bot score</strong> from 0 to 100, lower reads as more human. Headless is the sharpest demonstration: with no profile, headless Chrome scores the maximum; a matched profile drops it to the headful level.</p>
+<h2 id="what-a-profile-can-set">What a profile can set</h2>
+<p><code>FingerprintConfig</code> is a typed dictionary; every section is optional and each one covers one surface a fingerprinting script reads.</p>
 <table>
 <thead>
 <tr>
-<th>Run (same Mac, Chrome 151)</th>
-<th>Bot score</th>
+<th>Section</th>
+<th>Sets</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Headless, no profile</td>
-<td>100 / 100</td>
+<td><code>user_agent</code></td>
+<td>the User-Agent string, <code>navigator.platform</code> / <code>vendor</code> / <code>appVersion</code>, and the <code>Sec-CH-UA*</code> Client Hints (brands and their order follow Chromium's own algorithm for the major)</td>
 </tr>
 <tr>
-<td>Headless, matched macOS profile</td>
-<td>15 / 100</td>
+<td><code>client_hints</code></td>
+<td>the high-entropy hints the User-Agent string cannot carry: <code>platform_version</code>, <code>model</code>, <code>architecture</code>, <code>bitness</code>, <code>form_factors</code></td>
 </tr>
 <tr>
-<td>Headful, no profile</td>
-<td>15 / 100</td>
+<td><code>locale</code></td>
+<td><code>navigator.language(s)</code>, the <code>Accept-Language</code> header and the <code>Intl</code> locale</td>
 </tr>
 <tr>
-<td>Headful, matched macOS profile</td>
-<td>15 / 100</td>
+<td><code>timezone</code>, <code>geolocation</code></td>
+<td><code>Intl</code> timezone, <code>Date</code>, and the Geolocation API</td>
 </tr>
 <tr>
-<td>Headful, mismatched Windows profile</td>
-<td>57 / 100</td>
+<td><code>screen</code></td>
+<td><code>screen.*</code>, <code>devicePixelRatio</code>, window and viewport size</td>
+</tr>
+<tr>
+<td><code>hardware</code></td>
+<td><code>hardwareConcurrency</code>, <code>deviceMemory</code>, <code>maxTouchPoints</code> (touch events are enabled for touch profiles)</td>
+</tr>
+<tr>
+<td><code>permissions</code></td>
+<td><code>navigator.permissions.query()</code> states, in agreement with <code>Notification.permission</code></td>
+</tr>
+<tr>
+<td><code>media_features</code></td>
+<td><code>color-gamut</code>, <code>prefers-color-scheme</code> and the other CSS media features Chrome can emulate</td>
+</tr>
+<tr>
+<td><code>webgl</code></td>
+<td>vendor and renderer strings, WebGL and WebGL2 limits, extensions, shader precision</td>
+</tr>
+<tr>
+<td><code>webgpu</code></td>
+<td><code>adapter.info</code>, limits and features of the real adapter</td>
+</tr>
+<tr>
+<td><code>media_devices</code>, <code>speech</code>, <code>audio</code>, <code>network_connection</code>, <code>fonts</code>, <code>webrtc_ip_policy</code></td>
+<td>media device counts, speech voices, audio device capabilities, <code>navigator.connection</code>, local fonts, the WebRTC ICE policy</td>
 </tr>
 </tbody>
 </table>
-<p align="center">
-  <img src="/docs/resources/images/fp-scan-headless-nofp.png" alt="fingerprint-scan.com reporting a bot score of 100/100 for headless Chrome with no fingerprint" width="380" />
-  <img src="/docs/resources/images/fp-scan-headless-mac.png" alt="fingerprint-scan.com reporting a bot score of 15/100 for headless Chrome with a macOS fingerprint applied" width="380" />
-</p>
-<p align="center"><sub>Headless: 100/100 with no profile, 15/100 with a matched macOS profile.</sub></p>
-
-<p>Two things this proves. The profile does not make the browser invisible: even matched, it scores 15, not 0 (real Chrome over CDP is already human-like, and closing the last gap is an open area). And a <em>mismatched</em> profile scores worse than no profile at all, the last row jumps to 57 because one field (the OS) contradicts the hardware underneath. That is the whole reason these rules exist.</p>
-<div class="admonition warning">
-<p class="admonition-title">These numbers are a snapshot</p>
-<p>One machine, one IP, one Chrome build, one moment. Yours will differ and detection sites change their scoring. Treat them as direction (matched stays low, mismatched jumps), not a guaranteed result.</p>
-</div>
-<p>For the full audit method, reading a signal back and comparing realms, see <a href="../../deep-dive/fingerprinting/auditing/">Auditing a fingerprint</a>.</p>
+<p>The full field list, with the accepted values and an example per section, is in the docstrings of <code>pydoll/protocol/fingerprint/types.py</code>.</p>
 <h2 id="making-a-profile-pass">Making a profile pass</h2>
-<p>A profile passes when it agrees with the machine and IP it runs on. Most of these rules describe a layer <code>apply_fingerprint()</code> cannot reach, so you match it instead of fighting it. They are all the same rule underneath: <strong>coherence across every layer</strong>.</p>
+<p>A profile passes when it agrees with the machine and the IP it runs on. The rules are all the same rule underneath: coherence across every layer.</p>
 <h3 id="match-the-profile-os-to-your-host-os">Match the profile OS to your host OS</h3>
-<p>The kernel TCP/IP stack and the OS text rendering expose the real OS in layers no override reaches. A Windows profile on a Mac is a contradiction Cloudflare blocks on, and the mismatch that pushes the bot score to 57 above. Run a macOS profile on macOS, a Windows profile on Windows. A forwarding proxy re-originates the TCP connection from the proxy's kernel, so a Windows profile then needs a proxy running on Windows. Full measurement: <a href="../../deep-dive/fingerprinting/cloudflare-challenge/#the-os-must-match-the-host">The OS must match the host</a>.</p>
+<p>The kernel and the OS text rendering expose the real OS in layers no override reaches. Run a macOS profile on macOS, a Windows profile on Windows. A forwarding proxy re-originates the connection from the proxy's kernel, so a Windows profile then needs a proxy running on Windows.</p>
 <h3 id="match-the-chrome-version-to-your-binary">Match the Chrome version to your binary</h3>
-<p>The TLS handshake and the JavaScript engine report the real binary version; the User-Agent is the only part <code>apply_fingerprint()</code> changes. A profile claiming Chrome 145 on a Chrome 151 binary is a contradiction, and the most common cause of Turnstile failure with a fingerprint applied. Read the binary version and keep the profile's <code>CHROME_DESKTOP</code> / <code>CHROME_MOBILE</code> major equal to it, updating on every Chrome upgrade.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">version</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">get_version</span><span class="p">()</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="nb">print</span><span class="p">(</span><span class="n">version</span><span class="p">[</span><span class="s1">'product'</span><span class="p">])</span>  <span class="c1"># e.g. 'Chrome/151.0.7922.137'</span>
+<p>The TLS handshake and the JavaScript engine report the real binary version; the User-Agent is the only part <code>apply_fingerprint()</code> changes. Read the binary version and keep the profile's major equal to it, updating on every Chrome upgrade.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">version</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">get_version</span><span class="p">()</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nb">print</span><span class="p">(</span><span class="n">version</span><span class="p">[</span><span class="s1">'product'</span><span class="p">])</span>  <span class="c1"># e.g. 'Chrome/152.0.7977.83'</span>
 </span></code></pre></div>
-<p>Full breakdown: <a href="../../deep-dive/fingerprinting/cloudflare-challenge/#the-chrome-version-must-match-the-binary">The Chrome version must match the binary</a>.</p>
 <h3 id="match-locale-and-timezone-to-your-egress-ip">Match locale and timezone to your egress IP</h3>
-<p><code>Accept-Language</code>, <code>navigator.languages</code>, and the timezone are cross-referenced against the IP's country. A US profile behind a Brazilian IP made a plain Google search return a captcha; setting a Brazilian locale, matching the IP, removed the block with no other change.</p>
+<p><code>Accept-Language</code>, <code>navigator.languages</code>, the timezone and the geolocation are cross-referenced against the IP's country. A US profile behind a Brazilian IP made a plain Google search return a captcha; a Brazilian locale, matching the IP, removed the block with no other change.</p>
 <p align="center">
   <img src="/docs/resources/images/fingerprint-inconsistent-captcha.png" alt="Google serving a captcha because the injected fingerprint's US locale contradicts the Brazilian egress IP" width="640" />
 </p>
 <p align="center"><sub>US locale over a Brazilian IP: Google returns a captcha.</sub></p>
 
-<h3 id="cover-cross-origin-iframes">Cover cross-origin iframes</h3>
-<p>Leave <code>cross_origin_iframes</code> on (the default) so a challenge or captcha frame in its own process reads the injected identity, not the real machine. It is scoped to frames that actually read a fingerprint, so it does not slow ordinary third-party iframes.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Default: the identity also covers cross-origin iframes.</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">apply_fingerprint</span><span class="p">(</span><span class="n">FINGERPRINTS</span><span class="p">[</span><span class="s1">'macos_m3_new_york'</span><span class="p">])</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># Opt out to cover only the top page, same-origin frames, and workers.</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">apply_fingerprint</span><span class="p">(</span><span class="n">FINGERPRINTS</span><span class="p">[</span><span class="s1">'macos_m3_new_york'</span><span class="p">],</span> <span class="n">cross_origin_iframes</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<h3 id="match-the-gpu-and-the-fonts-to-the-host">Match the GPU and the fonts to the host</h3>
+<p>The <code>webgl</code> and <code>webgpu</code> sections change what the browser reports about the GPU; what the GPU draws stays real. Name the GPU family that is actually in the machine, and capture the limits and features from a real device of that class rather than guessing. The <code>fonts</code> section covers the JavaScript font probes; the layout engine measures the fonts really installed, so list exactly what is installed.</p>
+<h3 id="pin-the-client-hints-the-user-agent-cannot-carry">Pin the Client Hints the User-Agent cannot carry</h3>
+<p>The User-Agent string is frozen (<code>Mac OS X 10_15_7</code>, <code>Android 10; K</code>); real Chrome reports the true OS version, device model and form factor in the Client Hints. The parser fills plausible defaults; set <code>client_hints</code> to pin the values read on a real device.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">fingerprint</span> <span class="o">=</span> <span class="n">FingerprintConfig</span><span class="p">(</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="n">user_agent</span><span class="o">=</span><span class="n">UA_WINDOWS</span><span class="p">,</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="n">client_hints</span><span class="o">=</span><span class="n">ClientHintsFingerprint</span><span class="p">(</span><span class="n">platform_version</span><span class="o">=</span><span class="s1">'15.0.0'</span><span class="p">),</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="p">)</span>
 </span></code></pre></div>
-<p>How the identity reaches each realm: <a href="../../deep-dive/fingerprinting/execution-realms/">Workers and cross-origin iframes</a>.</p>
 <h3 id="one-fingerprint-per-browser-context">One fingerprint per browser context</h3>
-<p>Service and shared workers are shared across a browser context, so a context holds one identity. Applying a second fingerprint to the same context raises <code>FingerprintContextConflict</code>. Run different identities in separate contexts.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">ctx_id</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">create_browser_context</span><span class="p">()</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">tab_us</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">tab_br</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">new_tab</span><span class="p">(</span><span class="n">browser_context_id</span><span class="o">=</span><span class="n">ctx_id</span><span class="p">)</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="k">await</span> <span class="n">tab_us</span><span class="o">.</span><span class="n">apply_fingerprint</span><span class="p">(</span><span class="n">FINGERPRINTS</span><span class="p">[</span><span class="s1">'windows11_rtx3060_nyc'</span><span class="p">])</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="k">await</span> <span class="n">tab_br</span><span class="o">.</span><span class="n">apply_fingerprint</span><span class="p">(</span><span class="n">FINGERPRINTS</span><span class="p">[</span><span class="s1">'android_s24_ultra_sao_paulo'</span><span class="p">])</span>
+<p>A browser context holds one identity. Applying a second, different fingerprint to the same context raises <code>FingerprintContextConflict</code>. Run different identities in separate contexts.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">ctx_id</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">create_browser_context</span><span class="p">()</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">tab_us</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">tab_br</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">new_tab</span><span class="p">(</span><span class="n">browser_context_id</span><span class="o">=</span><span class="n">ctx_id</span><span class="p">)</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="k">await</span> <span class="n">tab_us</span><span class="o">.</span><span class="n">apply_fingerprint</span><span class="p">(</span><span class="n">FINGERPRINTS</span><span class="p">[</span><span class="s1">'windows11_rtx3060_nyc'</span><span class="p">])</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="k">await</span> <span class="n">tab_br</span><span class="o">.</span><span class="n">apply_fingerprint</span><span class="p">(</span><span class="n">FINGERPRINTS</span><span class="p">[</span><span class="s1">'android_s24_ultra_sao_paulo'</span><span class="p">])</span>
 </span></code></pre></div>
 <p>See <a href="../../guides/browser-contexts/">Browser contexts</a>.</p>
-<p>A few smaller rules round it out: apply the fingerprint before the first navigation; do not combine the <code>--user-agent</code> option with <code>apply_fingerprint()</code> (the profile owns the User-Agent); match the WebGL vendor/renderer and color-gamut to the host GPU and display; use a clean residential IP. For why some signals can be overridden and others cannot be faked at all, see <a href="../../deep-dive/fingerprinting/spoofing-limits/">The limits of spoofing</a>.</p>
+<p>A few smaller rules round it out: apply the fingerprint before the first navigation; if you set the <code>--user-agent</code> option, keep it equal to the profile's (a different value logs a warning); use a clean residential IP; prefer <code>click(humanize=True)</code> and the <a href="../human-like-interactions/">human-like interactions</a>, because input is what many targets weigh most.</p>
 <h2 id="bring-your-own-profiles">Bring your own profiles</h2>
-<p>Pydoll does not generate or ship fingerprints. The profiles in <code>examples/fingerprints.py</code> are a reference for the coherence a profile requires and the <code>FingerprintConfig</code> shape, not a catalog to deploy as-is. A profile has to match the Chrome binary in use (the network layer is authentic and cannot be overridden) and the egress IP geography (locale, timezone, geolocation). A public profile reused widely becomes a shared signature rather than a disguise.</p>
+<p>Pydoll does not generate or ship fingerprints. The profiles in <code>examples/fingerprints.py</code> are a reference for the coherence a profile requires and the <code>FingerprintConfig</code> shape, not a catalog to deploy as-is. A profile has to match the Chrome binary in use and the egress IP geography (locale, timezone, geolocation). A public profile reused widely becomes a shared signature rather than a disguise.</p>
 <h2 id="whats-next">What's next</h2>
 <ul>
-<li><a href="../../deep-dive/fingerprinting/auditing/">Auditing a fingerprint</a>: read a signal back, compare realms, and confirm a profile took effect.</li>
-<li><a href="../../deep-dive/fingerprinting/cloudflare-challenge/">Cloudflare's managed challenge</a>: the per-layer breakdown of what passes headless and why.</li>
-<li><a href="../../deep-dive/fingerprinting/spoofing-limits/">The limits of spoofing</a>: which signals are safe to override and which cannot be faked.</li>
-<li><a href="../../deep-dive/fingerprinting/execution-realms/">Workers and cross-origin iframes</a>: how the identity is replayed into every realm.</li>
-<li><a href="../../deep-dive/fingerprinting/network-fingerprinting/">Network fingerprinting</a>: the TLS/TCP/HTTP2 layer injection cannot reach.</li>
+<li><a href="../../deep-dive/fingerprinting/auditing/">Auditing a fingerprint</a>: read a signal back and confirm a profile took effect.</li>
 <li><a href="../evasion-techniques/">Evasion techniques</a>: User-Agent consistency, WebRTC leak protection, and what Pydoll gives you for free.</li>
+<li><a href="../human-like-interactions/">Human-like interactions</a>: the behavioral layer.</li>
 </ul>
 
 

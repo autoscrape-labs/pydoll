@@ -2373,12 +2373,6 @@
       
         
       
-        
-      
-        
-      
-        
-      
     
     
     
@@ -2526,34 +2520,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../deep-dive/fingerprinting/spoofing-limits/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    The limits of spoofing
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../../deep-dive/fingerprinting/auditing/" class="md-nav__link">
         
   
@@ -2562,62 +2528,6 @@
     
   
     Auditing a fingerprint
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../deep-dive/fingerprinting/execution-realms/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Workers and cross-origin iframes
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../deep-dive/fingerprinting/cloudflare-challenge/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Cloudflare's managed challenge
   
 
     
@@ -4312,9 +4222,9 @@ SOCKS5 proxy.</p>
   <summary>Given a UA string like</summary>
   <p>Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
 (KHTML, like Gecko) Chrome/120.0.6099.109 Safari/537.36</p>
-</details>        <p>It produces all the metadata needed for CDP Emulation.setUserAgentOverride
-and JavaScript navigator property overrides, ensuring full consistency
-between HTTP headers and JS properties.</p>
+</details>        <p>It produces all the metadata needed for CDP Emulation.setUserAgentOverride,
+ensuring full consistency between HTTP headers, navigator properties and
+Client Hints.</p>
 
 
 
@@ -4401,7 +4311,7 @@ between HTTP headers and JS properties.</p>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
-                <p>ParsedUserAgent with platform, vendor, appVersion,</p>
+                <p>ParsedUserAgent with platform, vendor, appVersion, the reduced</p>
               </div>
             </td>
           </tr>
@@ -4413,7 +4323,7 @@ between HTTP headers and JS properties.</p>
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
-                <p>userAgentMetadata, and JS override script.</p>
+                <p>User-Agent and the Client Hints metadata.</p>
               </div>
             </td>
           </tr>

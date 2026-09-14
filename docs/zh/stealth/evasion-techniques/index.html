@@ -2530,12 +2530,6 @@
       
         
       
-        
-      
-        
-      
-        
-      
     
     
     
@@ -2683,34 +2677,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../deep-dive/fingerprinting/spoofing-limits/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    伪造的极限
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../deep-dive/fingerprinting/auditing/" class="md-nav__link">
         
   
@@ -2719,62 +2685,6 @@
     
   
     审计一个 fingerprint
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../deep-dive/fingerprinting/execution-realms/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Worker 与跨域 iframe
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../deep-dive/fingerprinting/cloudflare-challenge/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Cloudflare 的托管挑战
   
 
     
@@ -3615,7 +3525,7 @@
 <p>本页接下来讲的是你确实能掌控的那些层。</p>
 <h2 id="user-agent">保持 User-Agent 一致</h2>
 <p>最常见的自动化破绽是一个自相矛盾的 User-Agent：HTTP <code>User-Agent</code> 首部说的是一回事，而 <code>navigator.userAgent</code>、<code>navigator.platform</code> 和 Client Hints（<code>Sec-CH-UA</code>、<code>Sec-CH-UA-Platform</code>）说的又是另一回事。把 <code>--user-agent=</code> 作为普通的 Chrome 标志来设置，只会改变 HTTP 首部，而不会改动 JavaScript 和 Client Hints，这种不匹配会被检测器立刻读出来。</p>
-<p>Pydoll 会帮你修正这一点。当它检测到 <code>--user-agent=</code> 参数时，会用匹配的 <code>platform</code> 和完整的 Client Hints 元数据来应用 <code>Emulation.setUserAgentOverride</code>，并注入 <code>navigator.vendor</code> / <code>navigator.appVersion</code>，使每一层都保持一致，新标签页也不例外。</p>
+<p>Pydoll 会帮你修正这一点。当它检测到 <code>--user-agent=</code> 参数时，会用匹配的 <code>platform</code> 和完整的 Client Hints 元数据（greased brand 和 brand 顺序按 Chromium 对那个主版本的算法算出）来应用 <code>Emulation.setUserAgentOverride</code>，并暴露真实 Chrome 所报告的精简形式 <code>Chrome/MAJOR.0.0.0</code>，使每一层都保持一致，新标签页和 workers 也不例外。没有任何东西被注入页面：<code>navigator.userAgent</code>、<code>platform</code>、<code>vendor</code> 和 <code>appVersion</code> 全都来自 override 本身。</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.chromium</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
