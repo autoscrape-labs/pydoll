@@ -897,10 +897,6 @@ if (typeof FontFace !== 'undefined' && FontFace.prototype.load) {
   const allow = new Set(%s);
   const reject = new Set(%s);
   const norm = (s) => String(s).trim().replace(/^["']|["']$/g, '').toLowerCase();
-  const famOf = (font) => {
-    const m = /["']([^"']+)["']\\s*$/.exec(String(font)) || /(\\S+)\\s*$/.exec(String(font));
-    return m ? norm(m[1]) : '';
-  };
   const _realLoad = FontFace.prototype.load;
   _patchM(FontFace.prototype, 'load', function load() {
     const fam = norm(this.family);
@@ -914,34 +910,30 @@ if (typeof FontFace !== 'undefined' && FontFace.prototype.load) {
     }
     return real;
   });
-  if (typeof FontFaceSet !== 'undefined' && FontFaceSet.prototype.check) {
-    const _realCheck = FontFaceSet.prototype.check;
-    _patchM(FontFaceSet.prototype, 'check', function check(font) {
-      const real = _realCheck.apply(this, arguments);
-      const fam = famOf(font);
-      if (allow.has(fam)) return true;
-      if (reject.has(fam)) return false;
-      return real;
-    });
-  }
 }"""
 
 
 def _build_fonts_js(fonts: FontFingerprint) -> str:
-    """Override FontFace.load()/FontFaceSet.check() to present a coherent font set.
+    """Override ``FontFace.load()`` to present a coherent local font set.
 
-    CreepJS detects fonts via BOTH ``FontFaceSet.check`` and
-    ``new FontFace(f, 'local("f")').load()`` and unions the results. Both are
-    overridden with the same allow/reject sets: allowed fonts resolve / return
-    true, cross-OS marker fonts the profile does not claim reject / return
-    false, and everything else (real ``url()`` web fonts, the random-name liar
-    probe) falls through to native behaviour.
+    ``new FontFace(f, 'local("f")').load()`` is the JavaScript presence probe
+    (CreepJS unions it with the width-based measurement): it resolves when the
+    local font exists and rejects with a ``NetworkError`` otherwise. Allowed
+    fonts resolve even when the host lacks them, cross-OS marker fonts the
+    profile does not claim reject the way an absent font does, and everything
+    else (real ``url()`` web fonts, the random-name liar probe) keeps native
+    behaviour.
+
+    ``FontFaceSet.check()`` is deliberately left native: it answers whether a
+    font needs loading, so real Chrome returns ``true`` for any family name,
+    and forcing ``false`` there would be a lie against the native API itself,
+    not only against the layout engine.
 
     Width-based detection (the FingerprintJS technique: a span's ``offsetWidth``
     in the probed family against a fallback) reads the layout engine and is
     not reachable from here. The only way to pass it is to install the claimed
     fonts on the host and keep ``available_fonts`` equal to what is installed.
-    Works in workers too (``FontFace``/``FontFaceSet`` exist there).
+    Works in workers too (``FontFace`` exists there).
     """
     available = fonts.get('available_fonts', [])
     if not available:

@@ -150,9 +150,10 @@ class TestSections:
         assert '_fake(WebGLShaderPrecisionFormat.prototype' in js
         assert "_defF(WebGLShaderPrecisionFormat.prototype, prop)" in js
 
-    def test_fonts_check_keeps_native_arity(self):
+    def test_fonts_patch_load_only_and_keep_check_native(self):
         js = build_fingerprint_js({'fonts': {'available_fonts': ['Arial']}})
-        assert 'function check(font) {' in js
+        assert 'FontFaceSet.prototype' not in js
+        assert "_patchM(FontFace.prototype, 'load'" in js
         assert 'return real.catch(() => face)' in js
 
     def test_webgl_never_fakes_extension_objects(self):

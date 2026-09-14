@@ -406,9 +406,13 @@ class NetworkConnectionFingerprint(TypedDict):
 class FontFingerprint(TypedDict):
     """Font fingerprint profile.
 
-    Controls what ``document.fonts.check()`` reports as available.
-    Font availability is highly OS-specific and a strong fingerprinting
-    signal. Windows, macOS, and Linux each have distinct default font sets.
+    Controls which local fonts ``new FontFace(name, 'local(name)').load()``
+    resolves for: the listed fonts resolve, cross-OS marker fonts not listed
+    reject like absent fonts, everything else stays native. Font availability
+    is highly OS-specific and a strong fingerprinting signal. The width-based
+    probe (an element measured in the claimed family against a fallback) reads
+    the layout engine and cannot be overridden: install the claimed fonts on
+    the host and list exactly what is installed.
     """
 
     available_fonts: list[str]  # font families reported as available

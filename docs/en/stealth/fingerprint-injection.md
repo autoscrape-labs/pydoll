@@ -163,7 +163,7 @@ The greased brand (`"Not?A_Brand";v="24"`) and the order of the three brands are
 
 ### Match the fonts you claim to the fonts you install
 
-The `fonts` section covers `document.fonts.check()` and `FontFace.load()`. The oldest font probe reads neither: it measures the width of a text span in the claimed family against a fallback, and the layout engine answers from the fonts really installed. On a Mac, a Windows profile measures Segoe UI and Calibri absent and Menlo and Helvetica Neue present, whatever the profile says. To pass that probe the claimed fonts have to be installed on the host, and `available_fonts` has to list what is installed, nothing more.
+The `fonts` section covers the `FontFace.load()` presence probe (`document.fonts.check()` is left native: real Chrome answers `true` for any family, so forcing `false` there is itself a tell). The oldest font probe reads neither: it measures the width of a text span in the claimed family against a fallback, and the layout engine answers from the fonts really installed. On a Mac, a Windows profile measures Segoe UI and Calibri absent and Menlo and Helvetica Neue present, whatever the profile says. To pass that probe the claimed fonts have to be installed on the host, and `available_fonts` has to list what is installed, nothing more.
 
 ### One fingerprint per browser context
 
