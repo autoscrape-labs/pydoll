@@ -420,6 +420,28 @@ class NetworkConnectionFingerprint(TypedDict):
     save_data: NotRequired[bool]
 
 
+class PlatformApisFingerprint(TypedDict):
+    """Web APIs that exist on some operating systems and not on others.
+
+    Chrome only exposes an API where the platform can back it, so the set of
+    interfaces a browser has is itself a statement about the host: the Contact
+    Picker and the Content Index ship on Android only, WebHID, Web Serial and
+    ``SharedWorker`` on desktop only, the Web Share API everywhere but desktop
+    Linux, Shape Detection (``BarcodeDetector``) only where the platform has a
+    barcode backend (macOS, Android, ChromeOS), and ``downlinkMax`` only on
+    Chrome for Android. A profile that claims one OS while the host exposes
+    another's set contradicts itself, and CreepJS reads exactly this.
+
+    ``hidden`` names what to remove, as a dotted path resolved from the global
+    scope (``BarcodeDetector``, ``navigator.share``, ``NetworkInformation.downlinkMax``).
+    Removing is all a profile can do honestly: an API the host does not
+    implement cannot be conjured, so a profile that needs one the host lacks
+    belongs on a different host.
+    """
+
+    hidden: list[str]  # dotted paths to delete, e.g. ['BarcodeDetector', 'navigator.share']
+
+
 class FontFingerprint(TypedDict):
     """Font fingerprint profile.
 
@@ -586,6 +608,7 @@ class FingerprintConfig(TypedDict):
     timezone: NotRequired[str]  # IANA timezone e.g. "America/New_York"
     network_connection: NotRequired[NetworkConnectionFingerprint]
     fonts: NotRequired[FontFingerprint]
+    platform_apis: NotRequired[PlatformApisFingerprint]
     permissions: NotRequired[PermissionsFingerprint]
     media_features: NotRequired[MediaFeaturesFingerprint]
     webrtc_ip_policy: NotRequired[str]  # 'default' or 'relay'

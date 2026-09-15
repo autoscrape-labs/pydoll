@@ -71,6 +71,7 @@ if TYPE_CHECKING:
         HardwareFingerprint,
         MediaDevicesFingerprint,
         NetworkConnectionFingerprint,
+        PlatformApisFingerprint,
         ScreenFingerprint,
         SpeechFingerprint,
         WebGLProfile,
@@ -424,6 +425,8 @@ def build_fingerprint_worker_js(
         parts.append(_build_webgl_js(config['webgl']))
     if 'fonts' in config:
         parts.append(_build_fonts_js(config['fonts']))
+    if 'platform_apis' in config:
+        parts.append(_build_platform_apis_js(config['platform_apis']))
     return _wrap(parts)
 
 
@@ -1107,6 +1110,41 @@ def _build_webrtc_js(policy: str) -> str:
     )
 
 
+_PLATFORM_APIS_JS_TEMPLATE = """\
+for (const path of %s) {
+  try {
+    const parts = path.split('.');
+    const prop = parts.pop();
+    let owner = self;
+    for (const part of parts) owner = owner && owner[part];
+    if (owner === undefined || owner === null) continue;
+    let target = owner;
+    while (target && !Object.prototype.hasOwnProperty.call(target, prop)) {
+      target = Object.getPrototypeOf(target);
+    }
+    if (target) delete target[prop];
+  } catch (e) {}
+}"""
+
+
+def _build_platform_apis_js(apis: PlatformApisFingerprint) -> str:
+    """Remove the Web APIs the claimed operating system does not implement.
+
+    Chrome exposes an interface only where the platform can back it, so the set
+    a browser has describes its host: the Contact Picker and the Content Index
+    are Android only, WebHID, Web Serial and ``SharedWorker`` desktop only, Web
+    Share is everywhere but desktop Linux, Shape Detection needs a platform
+    barcode backend, and ``downlinkMax`` is Chrome for Android. Each path is
+    deleted where it is actually defined, own property or prototype, which is
+    the state the claimed machine is in; a path that does not exist here is
+    left alone, since there is nothing to hide.
+    """
+    paths = [path for path in apis.get('hidden', []) if path]
+    if not paths:
+        return ''
+    return _PLATFORM_APIS_JS_TEMPLATE % json.dumps(paths)
+
+
 _SECTION_BUILDERS: dict[str, Callable[..., str]] = {
     'hardware': _build_hardware_js,
     'screen': _build_screen_js,
@@ -1117,5 +1155,6 @@ _SECTION_BUILDERS: dict[str, Callable[..., str]] = {
     'speech': _build_speech_js,
     'network_connection': _build_network_connection_js,
     'fonts': _build_fonts_js,
+    'platform_apis': _build_platform_apis_js,
     'webrtc_ip_policy': _build_webrtc_js,
 }

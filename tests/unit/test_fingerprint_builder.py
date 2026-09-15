@@ -372,3 +372,20 @@ class TestWorkerScript:
         )
         assert 'userAgent' in worker
         assert 'deviceMemory' in worker
+
+
+class TestPlatformApis:
+    def test_hidden_paths_are_deleted_where_they_live(self):
+        js = build_fingerprint_js(
+            {'platform_apis': {'hidden': ['BarcodeDetector', 'navigator.share']}}
+        )
+        assert '"BarcodeDetector", "navigator.share"' in js
+        assert 'delete target[prop]' in js
+        assert 'hasOwnProperty.call(target, prop)' in js
+
+    def test_empty_list_injects_nothing(self):
+        assert build_fingerprint_js({'platform_apis': {'hidden': []}}) == ''
+
+    def test_workers_hide_the_same_apis(self):
+        worker = build_fingerprint_worker_js({'platform_apis': {'hidden': ['SharedWorker']}})
+        assert '"SharedWorker"' in worker

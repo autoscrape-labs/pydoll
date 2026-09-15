@@ -39,6 +39,7 @@ from pydoll.protocol.fingerprint.types import (
     NavigatorFingerprint,
     NetworkConnectionFingerprint,
     PermissionsFingerprint,
+    PlatformApisFingerprint,
     ScreenFingerprint,
     SpeechFingerprint,
     SpeechVoice,
@@ -576,6 +577,40 @@ ANDROID_PERMISSIONS = PermissionsFingerprint(
     }
 )
 
+WINDOWS_ABSENT_APIS = [
+    # Shape Detection needs a platform barcode backend, which Windows has none of.
+    'BarcodeDetector',
+    # The Contact Picker and the Content Index ship on Android only.
+    'ContactsManager',
+    'ContentIndex',
+    'navigator.contacts',
+    # NetworkInformation.downlinkMax is exposed on Chrome for Android only.
+    'NetworkInformation.downlinkMax',
+]
+MACOS_ABSENT_APIS = [
+    'ContactsManager',
+    'ContentIndex',
+    'navigator.contacts',
+    'NetworkInformation.downlinkMax',
+]
+ANDROID_ABSENT_APIS = [
+    # Chrome for Android has no SharedWorker, no WebHID and no Web Serial, no
+    # audio output selection, and the window controls overlay and the built-in
+    # AI models are desktop only.
+    'SharedWorker',
+    'navigator.hid',
+    'navigator.serial',
+    'navigator.windowControlsOverlay',
+    'HTMLMediaElement.sinkId',
+    'HTMLMediaElement.setSinkId',
+    'MediaDevices.selectAudioOutput',
+    'Summarizer',
+    'LanguageModel',
+]
+# Removing is all a profile can do. The Contact Picker and the Content Index
+# exist on Android and not on a desktop host, so an Android profile run from a
+# desktop still answers without them: that pair only closes on an Android host.
+
 FINGERPRINTS: dict[str, FingerprintConfig] = {
     # Android (mobile) — Brazilian identity (pair with a Brazilian egress IP).
     'android_s24_ultra_sao_paulo': FingerprintConfig(
@@ -630,6 +665,7 @@ FINGERPRINTS: dict[str, FingerprintConfig] = {
         speech=SPEECH_ANDROID,
         network_connection=MOBILE_NETWORK,
         fonts=ANDROID_FONTS,
+        platform_apis=PlatformApisFingerprint(hidden=ANDROID_ABSENT_APIS),
         media_features=MediaFeaturesFingerprint(color_gamut='p3'),
         permissions=ANDROID_PERMISSIONS,
     ),
@@ -721,6 +757,7 @@ FINGERPRINTS: dict[str, FingerprintConfig] = {
         speech=SPEECH_WINDOWS,
         network_connection=DESKTOP_NETWORK,
         fonts=WINDOWS_FONTS,
+        platform_apis=PlatformApisFingerprint(hidden=WINDOWS_ABSENT_APIS),
         media_features=MediaFeaturesFingerprint(color_gamut='srgb'),
         permissions=DESKTOP_PERMISSIONS,
     ),
@@ -796,6 +833,7 @@ FINGERPRINTS: dict[str, FingerprintConfig] = {
         speech=SPEECH_MAC,
         network_connection=DESKTOP_NETWORK,
         fonts=MAC_FONTS,
+        platform_apis=PlatformApisFingerprint(hidden=MACOS_ABSENT_APIS),
         media_features=MediaFeaturesFingerprint(color_gamut='p3'),
         permissions=DESKTOP_PERMISSIONS,
     ),
