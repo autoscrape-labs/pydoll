@@ -35,7 +35,9 @@ def fp_tab(fake_conn):
 
 class TestAcceptLanguage:
     def test_plain_unweighted_list(self):
-        result = FingerprintApplier._build_accept_language({'locale': {'languages': ['en-US', 'en']}})
+        result = FingerprintApplier._build_accept_language({
+            'locale': {'languages': ['en-US', 'en']}
+        })
         assert result == 'en-US,en'
 
     def test_no_locale_returns_none(self):
@@ -68,9 +70,10 @@ class TestDeviceMetrics:
 
 class TestMediaFeatures:
     async def test_features_mapped_to_css_names(self, fp_tab, fake_conn):
-        await FingerprintApplier(fp_tab)._apply_media_features(
-            {'color_gamut': 'p3', 'prefers_color_scheme': 'dark'}
-        )
+        await FingerprintApplier(fp_tab)._apply_media_features({
+            'color_gamut': 'p3',
+            'prefers_color_scheme': 'dark',
+        })
         params = fake_conn.last_command('Emulation.setEmulatedMedia')['params']
         names = {f['name']: f['value'] for f in params['features']}
         assert names['color-gamut'] == 'p3'
@@ -96,8 +99,10 @@ class TestIdempotency:
 
         await fp_tab.apply_fingerprint(dict(fingerprint))  # equal value, new object
 
-        assert len(fake_conn.commands_for('Page.addScriptToEvaluateOnNewDocument')) == \
-            scripts_after_first
+        assert (
+            len(fake_conn.commands_for('Page.addScriptToEvaluateOnNewDocument'))
+            == scripts_after_first
+        )
         assert len(fake_conn.callbacks_for('Target.attachedToTarget')) == callbacks_after_first
         assert fp_tab._fingerprint_applier is not None
         assert fp_tab._fingerprint_applier._applied == fingerprint
@@ -146,22 +151,44 @@ class TestWorkerHandlerCleanup:
 class TestWorkAreaInsets:
     def test_mac_menu_bar_split(self):
         """avail_top is the top inset; the remaining gap is the bottom (dock)."""
-        screen = {'width': 1440, 'height': 900, 'avail_width': 1440, 'avail_height': 860,
-                  'avail_top': 25}
-        assert FingerprintApplier._work_area_insets(screen, 2) == \
-            {'top': 50, 'bottom': 30, 'left': 0, 'right': 0}
+        screen = {
+            'width': 1440,
+            'height': 900,
+            'avail_width': 1440,
+            'avail_height': 860,
+            'avail_top': 25,
+        }
+        assert FingerprintApplier._work_area_insets(screen, 2) == {
+            'top': 50,
+            'bottom': 30,
+            'left': 0,
+            'right': 0,
+        }
 
     def test_windows_taskbar_bottom(self):
-        screen = {'width': 1920, 'height': 1080, 'avail_width': 1920, 'avail_height': 1040,
-                  'avail_top': 0}
-        assert FingerprintApplier._work_area_insets(screen, 1) == \
-            {'top': 0, 'bottom': 40, 'left': 0, 'right': 0}
+        screen = {
+            'width': 1920,
+            'height': 1080,
+            'avail_width': 1920,
+            'avail_height': 1040,
+            'avail_top': 0,
+        }
+        assert FingerprintApplier._work_area_insets(screen, 1) == {
+            'top': 0,
+            'bottom': 40,
+            'left': 0,
+            'right': 0,
+        }
 
     def test_defaults_whole_gap_to_top(self):
         """Without avail_top the whole vertical gap is reserved at the top."""
         screen = {'width': 1440, 'height': 900, 'avail_height': 860}
-        assert FingerprintApplier._work_area_insets(screen, 1) == \
-            {'top': 40, 'bottom': 0, 'left': 0, 'right': 0}
+        assert FingerprintApplier._work_area_insets(screen, 1) == {
+            'top': 40,
+            'bottom': 0,
+            'left': 0,
+            'right': 0,
+        }
 
     def test_avail_top_clamped_to_gap(self):
         """avail_top without a matching avail_height cannot reserve absent space."""
@@ -170,10 +197,20 @@ class TestWorkAreaInsets:
 
     def test_negative_offsets_clamped_to_zero(self):
         """A negative avail_top/avail_left never yields a negative CDP inset."""
-        screen = {'width': 1440, 'height': 900, 'avail_width': 1400, 'avail_height': 860,
-                  'avail_top': -10, 'avail_left': -10}
-        assert FingerprintApplier._work_area_insets(screen, 1) == \
-            {'top': 0, 'bottom': 40, 'left': 0, 'right': 40}
+        screen = {
+            'width': 1440,
+            'height': 900,
+            'avail_width': 1400,
+            'avail_height': 860,
+            'avail_top': -10,
+            'avail_left': -10,
+        }
+        assert FingerprintApplier._work_area_insets(screen, 1) == {
+            'top': 0,
+            'bottom': 40,
+            'left': 0,
+            'right': 40,
+        }
 
     def test_none_when_no_gap(self):
         screen = {'width': 1440, 'height': 900, 'avail_width': 1440, 'avail_height': 900}
@@ -182,8 +219,11 @@ class TestWorkAreaInsets:
 
 class TestPrimaryScreenId:
     def test_picks_primary(self):
-        response = {'result': {'screenInfos': [
-            {'id': '2', 'isPrimary': False}, {'id': '1', 'isPrimary': True}]}}
+        response = {
+            'result': {
+                'screenInfos': [{'id': '2', 'isPrimary': False}, {'id': '1', 'isPrimary': True}]
+            }
+        }
         assert FingerprintApplier._primary_screen_id(response) == '1'
 
     def test_falls_back_to_first(self):
@@ -203,8 +243,15 @@ class TestHeadlessScreen:
         fake_conn.set_response(
             'Emulation.getScreenInfos', {'screenInfos': [{'id': '1', 'isPrimary': True}]}
         )
-        screen = {'width': 1440, 'height': 900, 'avail_width': 1440, 'avail_height': 860,
-                  'avail_top': 25, 'color_depth': 30, 'device_pixel_ratio': 2.0}
+        screen = {
+            'width': 1440,
+            'height': 900,
+            'avail_width': 1440,
+            'avail_height': 860,
+            'avail_top': 25,
+            'color_depth': 30,
+            'device_pixel_ratio': 2.0,
+        }
 
         await FingerprintApplier(fp_tab)._apply_headless_screen(screen)
 
@@ -261,9 +308,11 @@ class TestHeadlessScreen:
     async def test_headful_does_not_touch_screen(self, fp_tab, fake_conn):
         fp_tab._browser.options.headless = False
 
-        await FingerprintApplier(fp_tab)._apply_headless_screen(
-            {'width': 1440, 'height': 900, 'device_pixel_ratio': 2.0}
-        )
+        await FingerprintApplier(fp_tab)._apply_headless_screen({
+            'width': 1440,
+            'height': 900,
+            'device_pixel_ratio': 2.0,
+        })
 
         assert fake_conn.commands_for('Emulation.getScreenInfos') == []
         assert fake_conn.commands_for('Emulation.updateScreen') == []
@@ -282,9 +331,15 @@ class TestHeadlessScreen:
             'Emulation.getScreenInfos', {'screenInfos': [{'id': '1', 'isPrimary': True}]}
         )
 
-        await fp_tab.apply_fingerprint({'screen': {'width': 1440, 'height': 900,
-                                                   'avail_height': 860, 'avail_top': 25,
-                                                   'device_pixel_ratio': 2.0}})
+        await fp_tab.apply_fingerprint({
+            'screen': {
+                'width': 1440,
+                'height': 900,
+                'avail_height': 860,
+                'avail_top': 25,
+                'device_pixel_ratio': 2.0,
+            }
+        })
 
         assert fake_conn.commands_for('Emulation.updateScreen')
 
@@ -382,9 +437,9 @@ class TestNativeFirst:
             browser_context_id='ctx-perm',
         )
 
-        await tab.apply_fingerprint(
-            {'permissions': {'overrides': {'notifications': 'denied', 'geolocation': 'prompt'}}}
-        )
+        await tab.apply_fingerprint({
+            'permissions': {'overrides': {'notifications': 'denied', 'geolocation': 'prompt'}}
+        })
 
         commands = fake_conn.commands_for('Browser.setPermission')
         states = {c['params']['permission']['name']: c['params']['setting'] for c in commands}
@@ -396,6 +451,22 @@ class TestNativeFirst:
         await fp_tab.apply_fingerprint({'hardware': {'max_touch_points': 10}})
         params = fake_conn.last_command('Emulation.setTouchEmulationEnabled')['params']
         assert params == {'enabled': True, 'maxTouchPoints': 10}
+
+    async def test_touch_emulation_reasserted_when_main_frame_navigates(self, fp_tab, fake_conn):
+        await fp_tab.apply_fingerprint({'hardware': {'max_touch_points': 10}})
+        assert len(fake_conn.commands_for('Emulation.setTouchEmulationEnabled')) == 1
+
+        for callback in fake_conn.callbacks_for('Page.frameNavigated'):
+            await callback({'params': {'frame': {'id': 'child', 'parentId': 'main', 'url': ''}}})
+        await asyncio.sleep(0.05)
+        assert len(fake_conn.commands_for('Emulation.setTouchEmulationEnabled')) == 1
+
+        for callback in fake_conn.callbacks_for('Page.frameNavigated'):
+            await callback({'params': {'frame': {'id': 'main', 'url': 'http://example.test/'}}})
+        await asyncio.sleep(0.05)
+        commands = fake_conn.commands_for('Emulation.setTouchEmulationEnabled')
+        assert len(commands) == 2
+        assert commands[-1]['params'] == {'enabled': True, 'maxTouchPoints': 10}
 
     async def test_touch_emulation_untouched_for_desktop_profiles(self, fp_tab, fake_conn):
         await fp_tab.apply_fingerprint({'hardware': {'max_touch_points': 0}})
@@ -409,12 +480,10 @@ class TestNativeFirst:
         assert not fake_conn.commands_for('Page.addScriptToEvaluateOnNewDocument')
 
     async def test_client_hints_override_parsed_metadata(self, fp_tab, fake_conn):
-        await fp_tab.apply_fingerprint(
-            {
-                'user_agent': UA,
-                'client_hints': {'platform_version': '13.0.0', 'form_factors': ['Desktop']},
-            }
-        )
+        await fp_tab.apply_fingerprint({
+            'user_agent': UA,
+            'client_hints': {'platform_version': '13.0.0', 'form_factors': ['Desktop']},
+        })
         metadata = fake_conn.last_command('Emulation.setUserAgentOverride')['params'][
             'userAgentMetadata'
         ]
@@ -435,12 +504,55 @@ class TestNativeFirst:
         await asyncio.sleep(0.05)
 
         nested = [
-            c for c in fake_conn.commands_for('Target.setAutoAttach')
+            c
+            for c in fake_conn.commands_for('Target.setAutoAttach')
             if c.get('sessionId') == 'worker-1'
         ]
         assert nested
         assert nested[0]['params']['waitForDebuggerOnStart'] is True
         assert {entry['type'] for entry in nested[0]['params']['filter']} == {'worker'}
+
+    async def test_worker_webgpu_evaluated_after_resume(self, fp_tab, fake_conn):
+        await fp_tab.apply_fingerprint({'user_agent': UA, 'webgpu': {'vendor': 'nvidia'}})
+        event = {
+            'params': {
+                'sessionId': 'worker-1',
+                'targetInfo': {'type': 'worker', 'url': ''},
+                'waitingForDebugger': True,
+            }
+        }
+        for callback in fake_conn.callbacks_for('Target.attachedToTarget'):
+            await callback(event)
+        await asyncio.sleep(0.05)
+
+        session = [c for c in fake_conn.commands if c.get('sessionId') == 'worker-1']
+        methods = [c['method'] for c in session]
+        evaluations = [
+            c['params']['expression'] for c in session if c['method'] == 'Runtime.evaluate'
+        ]
+        assert len(evaluations) == 2
+        assert 'GPUAdapterInfo' not in evaluations[0]
+        assert 'GPUAdapterInfo' in evaluations[1]
+        resume = methods.index('Runtime.runIfWaitingForDebugger')
+        assert methods.index('Runtime.evaluate') < resume
+        assert len(methods) - 1 - methods[::-1].index('Runtime.evaluate') > resume
+
+    async def test_worker_without_webgpu_evaluates_once(self, fp_tab, fake_conn):
+        await fp_tab.apply_fingerprint({'user_agent': UA, 'hardware': {'device_memory': 8}})
+        event = {
+            'params': {
+                'sessionId': 'worker-1',
+                'targetInfo': {'type': 'worker', 'url': ''},
+                'waitingForDebugger': True,
+            }
+        }
+        for callback in fake_conn.callbacks_for('Target.attachedToTarget'):
+            await callback(event)
+        await asyncio.sleep(0.05)
+
+        methods = [c['method'] for c in fake_conn.commands if c.get('sessionId') == 'worker-1']
+        assert methods.count('Runtime.evaluate') == 1
+        assert methods[-1] == 'Runtime.runIfWaitingForDebugger'
 
 
 class TestScreenNativePaths:
@@ -506,8 +618,13 @@ class TestScreenNativePaths:
         fake_conn.set_response(
             'Emulation.getScreenInfos', {'screenInfos': [{'id': '1', 'isPrimary': True}]}
         )
-        screen = {'width': 384, 'height': 832, 'inner_width': 384, 'inner_height': 728,
-                  'device_pixel_ratio': 3.75}
+        screen = {
+            'width': 384,
+            'height': 832,
+            'inner_width': 384,
+            'inner_height': 728,
+            'device_pixel_ratio': 3.75,
+        }
 
         await fp_tab.apply_fingerprint({'mobile': True, 'screen': screen})
 
@@ -572,8 +689,12 @@ class TestScriptFetchOverride:
     def _two_contexts(fake_conn):
         chrome = Chrome()
         chrome._connection_handler = fake_conn
-        first = Tab(browser=chrome, target_id='t1', connection_handler=fake_conn, browser_context_id='c1')
-        second = Tab(browser=chrome, target_id='t2', connection_handler=fake_conn, browser_context_id='c2')
+        first = Tab(
+            browser=chrome, target_id='t1', connection_handler=fake_conn, browser_context_id='c1'
+        )
+        second = Tab(
+            browser=chrome, target_id='t2', connection_handler=fake_conn, browser_context_id='c2'
+        )
         return chrome, first, second
 
     async def test_worker_target_id_resolves_its_context_fingerprint(self, fake_conn):
@@ -581,12 +702,19 @@ class TestScriptFetchOverride:
         so the context comes from Target.getTargetInfo, not from a tab lookup."""
         chrome, first, second = self._two_contexts(fake_conn)
         await first.apply_fingerprint({'user_agent': UA, 'locale': {'languages': ['en-US', 'en']}})
-        await second.apply_fingerprint(
-            {'user_agent': UA.replace('151', '150'), 'locale': {'languages': ['pt-BR', 'pt']}}
-        )
+        await second.apply_fingerprint({
+            'user_agent': UA.replace('151', '150'),
+            'locale': {'languages': ['pt-BR', 'pt']},
+        })
         fake_conn.set_response(
             'Target.getTargetInfo',
-            {'targetInfo': {'targetId': 'sw-1', 'type': 'service_worker', 'browserContextId': 'c2'}},
+            {
+                'targetInfo': {
+                    'targetId': 'sw-1',
+                    'type': 'service_worker',
+                    'browserContextId': 'c2',
+                }
+            },
         )
         event = {'params': dict(self.EVENT['params'], frameId='sw-1')}
         for callback in fake_conn.callbacks_for('Fetch.requestPaused'):
@@ -603,7 +731,9 @@ class TestScriptFetchOverride:
         chrome, first, second = self._two_contexts(fake_conn)
         await first.apply_fingerprint({'user_agent': UA})
         await second.apply_fingerprint({'user_agent': UA.replace('151', '150')})
-        fake_conn.set_response('Target.getTargetInfo', {'targetInfo': {'targetId': 'x', 'type': 'worker'}})
+        fake_conn.set_response(
+            'Target.getTargetInfo', {'targetInfo': {'targetId': 'x', 'type': 'worker'}}
+        )
         event = {'params': dict(self.EVENT['params'], frameId='unknown-frame')}
         for callback in fake_conn.callbacks_for('Fetch.requestPaused'):
             await callback(event)

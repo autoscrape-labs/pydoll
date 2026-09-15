@@ -17,6 +17,7 @@ from pydoll.commands import (
 )
 from pydoll.connection import ConnectionHandler
 from pydoll.constants import (
+    PRESSED_POINTER_FORCE,
     Key,
     Scripts,
 )
@@ -40,6 +41,7 @@ from pydoll.interactions.iframe import IFrameContext, IFrameContextResolver
 from pydoll.interactions.keyboard import Keyboard
 from pydoll.protocol.dom.types import Rect, ShadowRootType
 from pydoll.protocol.input.types import (
+    MOUSE_BUTTON_MASK,
     KeyEventType,
     KeyModifier,
     MouseButton,
@@ -656,6 +658,8 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
             y=int(position_to_click[1]),
             button=MouseButton.LEFT,
             click_count=1,
+            buttons=MOUSE_BUTTON_MASK[MouseButton.LEFT],
+            force=PRESSED_POINTER_FORCE,
         )
         release_command = InputCommands.dispatch_mouse_event(
             type=MouseEventType.MOUSE_RELEASED,

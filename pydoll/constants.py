@@ -514,6 +514,15 @@ new Promise((resolve) => {{
     """
 
 
+# Pointer Events give a mouse no pressure sensor: Blink reports pressure 0.5
+# while a button is held and 0 otherwise (GetPointerEventPressure in
+# third_party/blink/renderer/core/events/pointer_event_factory.cc returns 0
+# without buttons and 0.5 when the platform force is NaN). Input.dispatchMouseEvent
+# sends force 0 unless told otherwise, so pressed events must carry this value to
+# read like real mouse input.
+PRESSED_POINTER_FORCE = 0.5
+
+
 class Key(tuple[str, int], Enum):
     BACKSPACE = ('Backspace', 8)
     TAB = ('Tab', 9)

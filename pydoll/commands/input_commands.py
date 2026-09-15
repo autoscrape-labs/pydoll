@@ -176,6 +176,7 @@ class InputCommands:
         timestamp: Optional[float] = None,
         button: Optional[MouseButton] = None,
         click_count: Optional[int] = None,
+        buttons: Optional[int] = None,
         force: Optional[float] = None,
         tangential_pressure: Optional[float] = None,
         tilt_x: Optional[float] = None,
@@ -207,6 +208,8 @@ class InputCommands:
                 Allowed values: "none", "left", "middle", "right", "back", "forward".
             click_count: Number of times the mouse button was clicked (default: 0).
                 For example, 2 for a double-click.
+            buttons: Bitmask of the buttons held during the event: Left=1, Right=2,
+                Middle=4, Back=8, Forward=16 (default: 0).
             force: The normalized pressure, which has a range of [0,1] (default: 0).
                 Used primarily for pressure-sensitive inputs.
             tangential_pressure: The normalized tangential pressure, which has a range
@@ -237,6 +240,27 @@ class InputCommands:
             params['button'] = button
         if click_count is not None:
             params['clickCount'] = click_count
+        if buttons is not None:
+            params['buttons'] = buttons
+        if delta_x is not None:
+            params['deltaX'] = delta_x
+        if delta_y is not None:
+            params['deltaY'] = delta_y
+        InputCommands._set_pointer_physics(
+            params, force, tangential_pressure, tilt_x, tilt_y, twist, pointer_type
+        )
+        return Command(method=InputMethod.DISPATCH_MOUSE_EVENT, params=params)
+
+    @staticmethod
+    def _set_pointer_physics(
+        params: DispatchMouseEventParams,
+        force: Optional[float],
+        tangential_pressure: Optional[float],
+        tilt_x: Optional[float],
+        tilt_y: Optional[float],
+        twist: Optional[int],
+        pointer_type: Optional[PointerType],
+    ) -> None:
         if force is not None:
             params['force'] = force
         if tangential_pressure is not None:
@@ -247,13 +271,8 @@ class InputCommands:
             params['tiltY'] = tilt_y
         if twist is not None:
             params['twist'] = twist
-        if delta_x is not None:
-            params['deltaX'] = delta_x
-        if delta_y is not None:
-            params['deltaY'] = delta_y
         if pointer_type is not None:
             params['pointerType'] = pointer_type
-        return Command(method=InputMethod.DISPATCH_MOUSE_EVENT, params=params)
 
     @staticmethod
     def dispatch_touch_event(

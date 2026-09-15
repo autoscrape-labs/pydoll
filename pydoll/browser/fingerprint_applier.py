@@ -33,10 +33,15 @@ from pydoll.protocol.emulation.types import (
 from pydoll.protocol.fetch.events import FetchEvent
 from pydoll.protocol.fetch.types import HeaderEntry, RequestStage
 from pydoll.protocol.network.types import ResourceType
+from pydoll.protocol.page.events import PageEvent
 from pydoll.protocol.target.events import TargetEvent
 from pydoll.protocol.target.types import FilterEntry
 from pydoll.utils import UserAgentParser
-from pydoll.utils.fingerprint_builder import build_fingerprint_js, build_fingerprint_worker_js
+from pydoll.utils.fingerprint_builder import (
+    build_fingerprint_js,
+    build_fingerprint_worker_deferred_js,
+    build_fingerprint_worker_js,
+)
 
 if TYPE_CHECKING:
     from pydoll.browser.tab import Tab
@@ -224,6 +229,7 @@ class FingerprintApplier:
         touch_command = self._touch_emulation_command(fingerprint)
         if touch_command is not None:
             await tab._execute_command(touch_command)
+            await tab.on(PageEvent.FRAME_NAVIGATED, self._touch_reassert_handler(touch_command))
         if 'permissions' in fingerprint:
             await self._apply_permissions(fingerprint['permissions'])
         if 'locale' in fingerprint:
@@ -288,6 +294,27 @@ class FingerprintApplier:
             metadata['model'] = client_hints['model']
         if 'form_factors' in client_hints:
             metadata['formFactors'] = client_hints['form_factors']
+
+    def _touch_reassert_handler(
+        self, touch_command: 'Command'
+    ) -> Callable[[dict], Awaitable[None]]:
+        """Build a ``Page.frameNavigated`` handler that re-sends the touch emulation.
+
+        Measured on Chrome 152: after the first navigation away from the
+        initial ``about:blank`` the new document reads the profile's
+        ``maxTouchPoints`` while parsing and 0 a hundred milliseconds later,
+        with ``ontouchstart`` and ``(pointer: coarse)`` still emulated; later
+        navigations and reloads keep the value.
+        """
+        tab = self._tab
+
+        async def on_frame_navigated(event: dict) -> None:
+            if event['params']['frame'].get('parentId'):
+                return
+            with suppress(CommandExecutionTimeout, WebSocketConnectionClosed):
+                await tab._execute_command(touch_command)
+
+        return on_frame_navigated
 
     @staticmethod
     def _touch_emulation_command(fingerprint: FingerprintConfig) -> Optional['Command']:
@@ -440,6 +467,7 @@ class FingerprintApplier:
             platform=parsed.platform if parsed else '',
             user_agent=parsed.reduced_user_agent if parsed else '',
         )
+        worker_deferred_js = build_fingerprint_worker_deferred_js(fingerprint)
         hardware_concurrency = fingerprint.get('hardware', {}).get('hardware_concurrency')
 
         tab_conn = tab._connection_handler
@@ -451,6 +479,7 @@ class FingerprintApplier:
             mobile,
             hardware_concurrency,
             worker_js,
+            worker_deferred_js=worker_deferred_js,
             include_iframes=cross_origin_iframes,
             fingerprint=fingerprint,
             page_js=page_js,
@@ -483,6 +512,7 @@ class FingerprintApplier:
             mobile,
             hardware_concurrency,
             worker_js,
+            worker_deferred_js=worker_deferred_js,
             scope_context_id=scope_context_id,
         )
         callback_id = await tab._browser.on(TargetEvent.ATTACHED_TO_TARGET, browser_handler)
@@ -508,6 +538,13 @@ class FingerprintApplier:
         rewritten there from the fingerprint registered for the request's
         context. Enabled once per browser; the handler resolves the profile per
         request, so contexts with different identities stay separate.
+
+        Known gap: the update check Chrome schedules for a registered service
+        worker (a second fetch of the script about two seconds after a later
+        navigation to a controlled page) is not observable through ``Fetch``
+        on the browser connection nor on the service worker's own session, so
+        it leaves with the browser's launch identity; only the
+        ``--user-agent`` and ``--accept-lang`` launch flags cover it.
         """
         browser = self._tab._browser
         connection = browser._connection_handler
@@ -627,6 +664,7 @@ class FingerprintApplier:
         mobile: bool,
         hardware_concurrency: Optional[int],
         worker_js: str,
+        worker_deferred_js: str = '',
         scope_context_id: object = _NO_WORKER_SCOPE,
         include_iframes: bool = False,
         fingerprint: Optional['FingerprintConfig'] = None,
@@ -654,6 +692,7 @@ class FingerprintApplier:
         async def on_worker_attached(event: dict) -> None:
             params = event['params']
             session_id = params['sessionId']
+            deferred_js = ''
             try:
                 target_info = params['targetInfo']
                 in_scope = (
@@ -670,6 +709,7 @@ class FingerprintApplier:
                         hardware_concurrency,
                         worker_js,
                     )
+                    deferred_js = worker_deferred_js
                 elif include_iframes and target_info['type'] == 'iframe':
                     if fingerprint is not None:
                         await self._apply_oopif_session(
@@ -698,8 +738,24 @@ class FingerprintApplier:
                         await connection.execute_command(
                             resume, timeout=self._WORKER_COMMAND_TIMEOUT
                         )
+                if deferred_js:
+                    await self._evaluate_deferred(connection, session_id, deferred_js)
 
         return on_worker_attached
+
+    async def _evaluate_deferred(
+        self, connection: ConnectionHandler, session_id: str, deferred_js: str
+    ) -> None:
+        """Evaluate the deferred worker script once the worker is running.
+
+        The paused-on-start evaluation happens before Blink installs the
+        worker's conditional features, so the WebGPU interfaces do not exist
+        there.
+        """
+        command = RuntimeCommands.evaluate(expression=deferred_js)
+        command['sessionId'] = session_id
+        with suppress(CommandExecutionTimeout, WebSocketConnectionClosed):
+            await connection.execute_command(command, timeout=self._WORKER_COMMAND_TIMEOUT)
 
     async def _apply_worker_session(
         self,

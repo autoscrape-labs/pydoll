@@ -36,8 +36,13 @@ class TypoResult:
 
 @dataclass(frozen=True)
 class TimingConfig:
-    """Configuration for realistic typing timing."""
+    """Configuration for realistic typing timing.
 
+    ``key_hold_*`` bound the time a key stays down (keydown to keyup).
+    """
+
+    key_hold_min: float = 0.06
+    key_hold_max: float = 0.14
     keystroke_min: float = 0.03
     keystroke_max: float = 0.12
     punctuation_min: float = 0.08
@@ -79,6 +84,7 @@ class Keyboard:
     """
 
     PAUSE_CHARS = frozenset(' .,!?;:\n')
+    DEFAULT_KEY_HOLD = 0.08
 
     def __init__(
         self,
@@ -225,7 +231,7 @@ class Keyboard:
             return
 
         for current_char in text:
-            await self._type_char(current_char)
+            await self._type_char(current_char, self.DEFAULT_KEY_HOLD)
             await asyncio.sleep(0.05)
 
     async def _type_text_humanized(self, text: str):
@@ -243,7 +249,10 @@ class Keyboard:
             await self._apply_realistic_delay(current_char)
             char_index += 1
 
-    async def _type_char(self, char: str):
+    def _key_hold(self) -> float:
+        return random.uniform(self._timing.key_hold_min, self._timing.key_hold_max)
+
+    async def _type_char(self, char: str, hold: Optional[float] = None):
         """Type a single character, re-focusing the element before each keystroke."""
         await self._ensure_focus()
         key, code, keycode = CHAR_TO_KEY_INFO.get(char, (char, '', 0))
@@ -257,6 +266,7 @@ class Keyboard:
             native_virtual_key_code=keycode,
         )
         await self._executor._execute_command(command_down)
+        await asyncio.sleep(self._key_hold() if hold is None else hold)
 
         command_up = InputCommands.dispatch_key_event(
             type=KeyEventType.KEY_UP,
@@ -271,6 +281,7 @@ class Keyboard:
         """Send backspace keypress."""
         await self._ensure_focus()
         await self.down(Key.BACKSPACE)
+        await asyncio.sleep(self._key_hold())
         await self.up(Key.BACKSPACE)
 
     async def _process_char_with_typo(

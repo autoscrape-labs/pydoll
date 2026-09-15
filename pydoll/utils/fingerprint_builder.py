@@ -346,6 +346,9 @@ def build_fingerprint_worker_js(
     WebGL (via ``OffscreenCanvas``) and fonts. ``languages`` and
     ``hardwareConcurrency`` are applied natively to the worker session by
     ``FingerprintApplier`` (``acceptLanguage`` reaches every worker type).
+    WebGPU is not part of this script: its interfaces are installed after the
+    paused-on-start point, so ``build_fingerprint_worker_deferred_js`` carries
+    it and the applier evaluates that script after resuming the worker.
     ``vendor`` is never injected: ``WorkerNavigator`` does not expose it, so
     adding it would itself be an anomaly.
 
@@ -370,10 +373,29 @@ def build_fingerprint_worker_js(
         parts.append(_build_network_connection_js(config['network_connection']))
     if 'webgl' in config:
         parts.append(_build_webgl_js(config['webgl']))
-    if 'webgpu' in config:
-        parts.append(_build_webgpu_js(config['webgpu']))
     if 'fonts' in config:
         parts.append(_build_fonts_js(config['fonts']))
+    return _wrap(parts)
+
+
+def build_fingerprint_worker_deferred_js(config: FingerprintConfig) -> str:
+    """Build the worker script for sections that need the worker's conditional features.
+
+    A worker paused on start (``waitForDebuggerOnStart``) is evaluated before
+    Blink installs its conditional features: the ``[SecureContext]`` WebGPU
+    interfaces (``GPU``, ``GPUAdapterInfo``, ``GPUSupportedLimits``) do not
+    exist yet, so a WebGPU override evaluated at that point is a no-op, and a
+    timer scheduled there never fires.
+
+    Args:
+        config: Fingerprint configuration.
+
+    Returns:
+        The deferred worker script, or '' when the profile has no such section.
+    """
+    parts: list[str] = []
+    if 'webgpu' in config:
+        parts.append(_build_webgpu_js(config['webgpu']))
     return _wrap(parts)
 
 
@@ -689,19 +711,16 @@ if (typeof GPU !== 'undefined' && navigator.gpu && typeof GPUAdapterInfo !== 'un
         {value: FP.values, writable: true, configurable: true});
     } catch (e) {}
   }
-  const register = (adapter) => {
-    if (!adapter) return adapter;
-    try {
-      _FAKES.set(adapter.info, info);
-      if (limits !== null) _FAKES.set(adapter.limits, limits);
-      if (featureSet !== null) _FAKES.set(adapter.features, {});
-    } catch (e) {}
-    return adapter;
-  };
-  const origRequestAdapter = GPU.prototype.requestAdapter;
-  _patchM(GPU.prototype, 'requestAdapter', function requestAdapter() {
-    return origRequestAdapter.apply(this, arguments).then(register);
-  });
+  if (typeof GPUAdapter !== 'undefined') {
+    const registry = {info: info, limits: limits, features: featureSet === null ? null : {}};
+    for (const prop of Object.keys(registry)) {
+      if (registry[prop] === null) continue;
+      _defGf(GPUAdapter.prototype, prop, (adapter, real) => {
+        if (real) _FAKES.set(real, registry[prop]);
+        return real;
+      });
+    }
+  }
   if (typeof GPUAdapter !== 'undefined' && GPUAdapter.prototype.requestDevice) {
     const origRequestDevice = GPUAdapter.prototype.requestDevice;
     _patchM(GPUAdapter.prototype, 'requestDevice', function requestDevice() {
@@ -718,10 +737,7 @@ def _build_webgpu_js(webgpu: WebGPUProfile) -> str:
     """Override what the real WebGPU adapter reports.
 
     ``requestAdapter()`` still resolves the real adapter (so ``requestDevice``
-    and rendering work), and its ``info``, ``limits`` and ``features`` objects
-    are registered as fakes: prototype getters then answer the profile's
-    values for those objects and the native value for anything else, with the
-    native brand check intact. ``features`` is a setlike, so ``has``, ``size``,
+    and rendering work). ``features`` is a setlike, so ``has``, ``size``,
     the iterators and ``forEach`` are patched together to describe one set.
     """
     info: dict[str, object] = {'vendor': webgpu['vendor']}

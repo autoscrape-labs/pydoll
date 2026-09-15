@@ -85,9 +85,7 @@ async def test_humanized_typing_without_typos_reproduces_text(field, monkeypatch
     ],
 )
 @pytest.mark.asyncio
-async def test_each_typo_type_self_corrects_to_intended_text(
-    field, force_typos, weight_name, text
-):
+async def test_each_typo_type_self_corrects_to_intended_text(field, force_typos, weight_name, text):
     await Keyboard(field, typo_config=_only(weight_name)).type_text(text, humanize=True)
     assert field.text == text
 
@@ -102,3 +100,64 @@ async def test_adjacent_typo_on_non_qwerty_char_still_yields_char(field, force_t
 async def test_transpose_typo_without_alpha_neighbor_still_yields_text(field, force_typos):
     await Keyboard(field, typo_config=_only('transpose_weight')).type_text('a1', humanize=True)
     assert field.text == 'a1'
+
+
+class RecordingField(FakeTextField):
+    def __init__(self):
+        super().__init__()
+        self.trace: list[tuple[str, object]] = []
+
+    async def _execute_command(self, command):
+        params = command['params']
+        self.trace.append((params.get('type'), params.get('key')))
+        return await super()._execute_command(command)
+
+
+@pytest.fixture
+def recording_field():
+    return RecordingField()
+
+
+@pytest.mark.asyncio
+async def test_default_typing_holds_each_key_before_releasing(recording_field, monkeypatch):
+    sleeps: list[float] = []
+
+    async def fake_sleep(delay):
+        recording_field.trace.append(('sleep', delay))
+        sleeps.append(delay)
+
+    monkeypatch.setattr('pydoll.interactions.keyboard.asyncio.sleep', fake_sleep)
+    keyboard = Keyboard(recording_field)
+    await keyboard.type_text('ab')
+
+    trace = recording_field.trace
+    down = trace.index(('keyDown', 'a'))
+    assert trace[down + 1] == ('sleep', Keyboard.DEFAULT_KEY_HOLD)
+    assert trace[down + 2] == ('keyUp', 'a')
+    assert recording_field.text == 'ab'
+
+
+@pytest.mark.asyncio
+async def test_humanized_typing_draws_the_hold_from_the_timing_config(recording_field, monkeypatch):
+    draws: list[tuple[float, float]] = []
+
+    def fake_uniform(a, b):
+        draws.append((a, b))
+        return b
+
+    monkeypatch.setattr(f'{RANDOM}.random', lambda: 0.99)
+    monkeypatch.setattr(f'{RANDOM}.uniform', fake_uniform)
+
+    async def fake_sleep(delay):
+        recording_field.trace.append(('sleep', delay))
+
+    monkeypatch.setattr('pydoll.interactions.keyboard.asyncio.sleep', fake_sleep)
+    keyboard = Keyboard(recording_field)
+    timing = keyboard._timing
+    await keyboard.type_text('a', humanize=True)
+
+    trace = recording_field.trace
+    down = trace.index(('keyDown', 'a'))
+    assert trace[down + 1] == ('sleep', timing.key_hold_max)
+    assert trace[down + 2] == ('keyUp', 'a')
+    assert (timing.key_hold_min, timing.key_hold_max) in draws

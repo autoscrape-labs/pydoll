@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from pydoll.utils.fingerprint_builder import (
     build_fingerprint_js,
+    build_fingerprint_worker_deferred_js,
     build_fingerprint_worker_js,
 )
 
@@ -190,12 +191,25 @@ class TestSections:
         js = build_fingerprint_js(config)
         assert '_defF(GPUAdapterInfo.prototype, prop)' in js
         assert '_defF(GPUSupportedLimits.prototype, prop)' in js
-        assert '_FAKES.set(adapter.info, info)' in js
-        assert "_patchM(GPU.prototype, 'requestAdapter'" in js
+        assert '_defGf(GPUAdapter.prototype, prop' in js
+        assert '_FAKES.set(real, registry[prop])' in js
+        assert 'requestAdapter' not in js
         assert '"maxBufferSize": 2147483648' in js
         assert 'featureSet.has(String(value))' in js
+
+    def test_webgpu_is_deferred_in_workers(self):
+        config = {
+            'webgpu': {'vendor': 'nvidia', 'limits': {'maxBufferSize': 2147483648}},
+            'webgl': {'vendor': 'Google Inc. (NVIDIA)', 'renderer': 'ANGLE (NVIDIA)'},
+        }
         worker = build_fingerprint_worker_js(config)
-        assert '_FAKES.set(adapter.limits, limits)' in worker
+        assert 'GPUAdapterInfo' not in worker
+        assert 'ANGLE (NVIDIA)' in worker
+        deferred = build_fingerprint_worker_deferred_js(config)
+        assert '_defF(GPUAdapterInfo.prototype, prop)' in deferred
+        assert '_FAKES.set(real, registry[prop])' in deferred
+        assert 'ANGLE (NVIDIA)' not in deferred
+        assert build_fingerprint_worker_deferred_js({'webgl': config['webgl']}) == ''
 
     def test_webgpu_fallback_flag_is_part_of_info(self):
         js = build_fingerprint_js({'webgpu': {'vendor': 'nvidia', 'is_fallback_adapter': False}})
