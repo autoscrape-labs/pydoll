@@ -39,6 +39,7 @@ from pydoll.protocol.fingerprint.types import (
     NavigatorFingerprint,
     NetworkConnectionFingerprint,
     PermissionsFingerprint,
+    PlatformApisFingerprint,
     ScreenFingerprint,
     SpeechFingerprint,
     SpeechVoice,
@@ -79,13 +80,17 @@ SAO_PAULO_GEO = GeolocationFingerprint(latitude=-23.5505, longitude=-46.6333, ac
 DESKTOP_EXTENSIONS = [
     'ANGLE_instanced_arrays',
     'EXT_blend_minmax',
+    'EXT_clip_control',
     'EXT_color_buffer_half_float',
+    'EXT_depth_clamp',
+    'EXT_disjoint_timer_query',
     'EXT_float_blend',
     'EXT_frag_depth',
     'EXT_shader_texture_lod',
     'EXT_texture_compression_bptc',
     'EXT_texture_compression_rgtc',
     'EXT_texture_filter_anisotropic',
+    'EXT_texture_mirror_clamp_to_edge',
     'EXT_sRGB',
     'KHR_parallel_shader_compile',
     'OES_element_index_uint',
@@ -100,10 +105,17 @@ DESKTOP_EXTENSIONS = [
     'WEBGL_compressed_texture_s3tc',
     'WEBGL_compressed_texture_s3tc_srgb',
     'WEBGL_debug_renderer_info',
+    # 99.71% of Windows machines expose this one (web3dsurvey), so a Windows
+    # profile that hides it stands out. It is only safe on a host whose real
+    # backend matches the claim: getTranslatedShaderSource returns the compiled
+    # source, and HLSL against Metal gives the host away. Drop it from this list
+    # when running a Windows profile on a Mac or a Linux box.
+    'WEBGL_debug_shaders',
     'WEBGL_depth_texture',
     'WEBGL_draw_buffers',
     'WEBGL_lose_context',
     'WEBGL_multi_draw',
+    'WEBGL_polygon_mode',
 ]
 
 MOBILE_EXTENSIONS = [
@@ -136,23 +148,34 @@ MOBILE_EXTENSIONS = [
 ]
 
 DESKTOP_WEBGL2_EXTENSIONS = [
+    'EXT_clip_control',
     'EXT_color_buffer_float',
     'EXT_color_buffer_half_float',
+    'EXT_conservative_depth',
+    'EXT_depth_clamp',
     'EXT_float_blend',
+    'EXT_render_snorm',
     'EXT_texture_compression_bptc',
     'EXT_texture_compression_rgtc',
     'EXT_texture_filter_anisotropic',
+    'EXT_texture_mirror_clamp_to_edge',
     'EXT_texture_norm16',
     'KHR_parallel_shader_compile',
+    'NV_shader_noperspective_interpolation',
     'OES_draw_buffers_indexed',
+    'OES_sample_variables',
+    'OES_shader_multisample_interpolation',
     'OES_texture_float_linear',
     'WEBGL_clip_cull_distance',
     'WEBGL_compressed_texture_s3tc',
     'WEBGL_compressed_texture_s3tc_srgb',
     'WEBGL_debug_renderer_info',
+    'WEBGL_debug_shaders',
     'WEBGL_lose_context',
     'WEBGL_multi_draw',
+    'WEBGL_polygon_mode',
     'WEBGL_provoking_vertex',
+    'WEBGL_stencil_texturing',
 ]
 
 MOBILE_WEBGL2_EXTENSIONS = [
@@ -287,10 +310,10 @@ WEBGPU_APPLE_M_SERIES = WebGPUProfile(
 # NVIDIA GeForce RTX 3060 on Windows, Chrome D3D12 backend. ``vendor`` and
 # ``architecture`` come from a real Chrome 150 capture of an RTX 3060; the
 # limits are the webgpu.report aggregate for NVIDIA + Windows + Chrome (42
-# adapters, every limit identical across them) and match Dawn's D3D12 tier
-# tables; the features are the ones at 100% in that aggregate (Ampere has
-# shader-f16), plus subgroup-size-control which Dawn enables on any current
-# NVIDIA driver.
+# adapters, every limit identical across them, including the per-stage storage
+# buffer limits at 16) and match Dawn's D3D12 tier tables; the features are the
+# ones at 100% in that aggregate (Ampere has shader-f16), plus
+# subgroup-size-control which Dawn enables on any current NVIDIA driver.
 WEBGPU_NVIDIA_AMPERE_D3D12 = WebGPUProfile(
     vendor='nvidia',
     architecture='ampere',
@@ -328,6 +351,8 @@ WEBGPU_NVIDIA_AMPERE_D3D12 = WebGPUProfile(
         'maxComputeWorkgroupSizeY': 1024,
         'maxComputeWorkgroupSizeZ': 64,
         'maxComputeWorkgroupsPerDimension': 65535,
+        'maxStorageBuffersInVertexStage': 16,
+        'maxStorageBuffersInFragmentStage': 16,
     },
     features=[
         'core-features-and-limits',
@@ -359,7 +384,9 @@ WEBGPU_NVIDIA_AMPERE_D3D12 = WebGPUProfile(
 # derived from the Galaxy S24 Ultra Vulkan capability reports through Dawn's
 # Vulkan mapping and Chrome's limit tiers, and agree with the webgpu.report
 # Qualcomm + Android aggregate on every discriminating value (128 MiB storage
-# binding, 16 inter-stage variables, 2 GiB maxBufferSize).
+# binding, 16 inter-stage variables, 2 GiB maxBufferSize). The per-stage
+# storage buffer limits repeat maxStorageBuffersPerShaderStage, which is how
+# Dawn reports them on every adapter webgpu.report has measured.
 WEBGPU_ADRENO_750_VULKAN = WebGPUProfile(
     vendor='qualcomm',
     architecture='adreno-7xx',
@@ -397,6 +424,8 @@ WEBGPU_ADRENO_750_VULKAN = WebGPUProfile(
         'maxComputeWorkgroupSizeY': 1024,
         'maxComputeWorkgroupSizeZ': 64,
         'maxComputeWorkgroupsPerDimension': 65535,
+        'maxStorageBuffersInVertexStage': 16,
+        'maxStorageBuffersInFragmentStage': 16,
     },
     features=[
         'core-features-and-limits',
@@ -548,6 +577,40 @@ ANDROID_PERMISSIONS = PermissionsFingerprint(
     }
 )
 
+WINDOWS_ABSENT_APIS = [
+    # Shape Detection needs a platform barcode backend, which Windows has none of.
+    'BarcodeDetector',
+    # The Contact Picker and the Content Index ship on Android only.
+    'ContactsManager',
+    'ContentIndex',
+    'navigator.contacts',
+    # NetworkInformation.downlinkMax is exposed on Chrome for Android only.
+    'NetworkInformation.downlinkMax',
+]
+MACOS_ABSENT_APIS = [
+    'ContactsManager',
+    'ContentIndex',
+    'navigator.contacts',
+    'NetworkInformation.downlinkMax',
+]
+ANDROID_ABSENT_APIS = [
+    # Chrome for Android has no SharedWorker, no WebHID and no Web Serial, no
+    # audio output selection, and the window controls overlay and the built-in
+    # AI models are desktop only.
+    'SharedWorker',
+    'navigator.hid',
+    'navigator.serial',
+    'navigator.windowControlsOverlay',
+    'HTMLMediaElement.sinkId',
+    'HTMLMediaElement.setSinkId',
+    'MediaDevices.selectAudioOutput',
+    'Summarizer',
+    'LanguageModel',
+]
+# Removing is all a profile can do. The Contact Picker and the Content Index
+# exist on Android and not on a desktop host, so an Android profile run from a
+# desktop still answers without them: that pair only closes on an Android host.
+
 FINGERPRINTS: dict[str, FingerprintConfig] = {
     # Android (mobile) — Brazilian identity (pair with a Brazilian egress IP).
     'android_s24_ultra_sao_paulo': FingerprintConfig(
@@ -602,10 +665,19 @@ FINGERPRINTS: dict[str, FingerprintConfig] = {
         speech=SPEECH_ANDROID,
         network_connection=MOBILE_NETWORK,
         fonts=ANDROID_FONTS,
+        platform_apis=PlatformApisFingerprint(hidden=ANDROID_ABSENT_APIS),
         media_features=MediaFeaturesFingerprint(color_gamut='p3'),
         permissions=ANDROID_PERMISSIONS,
     ),
     # Windows desktop — US identity (pair with a US egress IP / proxy).
+    # The uniform, varying and transform-feedback limits are ANGLE's own D3D11
+    # caps (renderer11_utils.cpp GenerateCaps): 14 constant buffer slots minus
+    # 2 reserved gives 12 uniform blocks per stage, bindings and combined
+    # blocks are their sum, components are 4 x vectors, combined components are
+    # components + blocks x blockSize/4, maxLODBias is 2.0, the UBO alignment
+    # is 256 and interleaved transform-feedback components are vertex output
+    # vectors x 4. web3dsurvey's Windows distribution reports the same values
+    # on 97% of machines or more.
     'windows11_rtx3060_nyc': FingerprintConfig(
         user_agent=UA_WINDOWS,
         client_hints=ClientHintsFingerprint(platform_version='15.0.0'),
@@ -629,8 +701,13 @@ FINGERPRINTS: dict[str, FingerprintConfig] = {
             max_array_texture_layers=2048,
             max_vertex_attribs=16,
             max_vertex_uniform_vectors=4096,
+            max_vertex_uniform_components=16384,
             max_fragment_uniform_vectors=1024,
+            max_fragment_uniform_components=4096,
             max_varying_vectors=30,
+            max_varying_components=120,
+            max_vertex_output_components=120,
+            max_fragment_input_components=120,
             max_texture_image_units=16,
             max_vertex_texture_image_units=16,
             max_combined_texture_image_units=32,
@@ -638,6 +715,15 @@ FINGERPRINTS: dict[str, FingerprintConfig] = {
             max_draw_buffers=8,
             max_samples=8,
             max_uniform_block_size=65536,
+            max_uniform_buffer_bindings=24,
+            max_vertex_uniform_blocks=12,
+            max_fragment_uniform_blocks=12,
+            max_combined_uniform_blocks=24,
+            max_combined_vertex_uniform_components=212992,
+            max_combined_fragment_uniform_components=200704,
+            uniform_buffer_offset_alignment=256,
+            max_texture_lod_bias=2.0,
+            max_transform_feedback_interleaved_components=120,
             aliased_line_width_range=[1, 1],
             aliased_point_size_range=[1, 1024],
             supported_extensions=DESKTOP_EXTENSIONS,
@@ -671,10 +757,14 @@ FINGERPRINTS: dict[str, FingerprintConfig] = {
         speech=SPEECH_WINDOWS,
         network_connection=DESKTOP_NETWORK,
         fonts=WINDOWS_FONTS,
+        platform_apis=PlatformApisFingerprint(hidden=WINDOWS_ABSENT_APIS),
         media_features=MediaFeaturesFingerprint(color_gamut='srgb'),
         permissions=DESKTOP_PERMISSIONS,
     ),
     # macOS desktop — US identity (pair with a US egress IP / proxy).
+    # The uniform, varying and transform-feedback limits are ANGLE Metal on
+    # Apple silicon, read from an M4 under Chrome 152. No public per-parameter
+    # distribution exists for Metal, so this capture is the only reference.
     'macos_m3_new_york': FingerprintConfig(
         user_agent=UA_MAC,
         client_hints=ClientHintsFingerprint(platform_version='15.6.1'),
@@ -692,10 +782,26 @@ FINGERPRINTS: dict[str, FingerprintConfig] = {
             max_viewport_dims=[16384, 16384],
             max_vertex_attribs=16,
             max_vertex_uniform_vectors=1024,
+            max_vertex_uniform_components=4096,
             max_fragment_uniform_vectors=1024,
+            max_fragment_uniform_components=4096,
+            max_varying_vectors=30,
+            max_varying_components=120,
+            max_vertex_output_components=120,
+            max_fragment_input_components=120,
             max_texture_image_units=16,
             max_vertex_texture_image_units=16,
             max_combined_texture_image_units=32,
+            max_uniform_block_size=16384,
+            max_uniform_buffer_bindings=32,
+            max_vertex_uniform_blocks=16,
+            max_fragment_uniform_blocks=16,
+            max_combined_uniform_blocks=32,
+            max_combined_vertex_uniform_components=69632,
+            max_combined_fragment_uniform_components=69632,
+            uniform_buffer_offset_alignment=16,
+            max_texture_lod_bias=15.0,
+            max_transform_feedback_interleaved_components=128,
             aliased_line_width_range=[1, 1],
             aliased_point_size_range=[1, 511],
             shader_precision_formats=SHADER_PRECISION_DEFAULT,
@@ -727,6 +833,7 @@ FINGERPRINTS: dict[str, FingerprintConfig] = {
         speech=SPEECH_MAC,
         network_connection=DESKTOP_NETWORK,
         fonts=MAC_FONTS,
+        platform_apis=PlatformApisFingerprint(hidden=MACOS_ABSENT_APIS),
         media_features=MediaFeaturesFingerprint(color_gamut='p3'),
         permissions=DESKTOP_PERMISSIONS,
     ),

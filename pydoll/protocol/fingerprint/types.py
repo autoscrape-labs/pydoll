@@ -57,6 +57,14 @@ class WebGLProfile(TypedDict):
     (e.g. a spoofed combined of 128 over a real per-stage of 16). A single
     impossible triple is a reliable WebGL lie signal.
 
+    The uniform limits are bound by GLES 3.0 arithmetic a detector recomputes
+    from the same context: ``MAX_*_UNIFORM_COMPONENTS`` is exactly
+    ``4 * MAX_*_UNIFORM_VECTORS``, and ``MAX_COMBINED_*_UNIFORM_COMPONENTS`` is
+    exactly ``MAX_*_UNIFORM_COMPONENTS + MAX_*_UNIFORM_BLOCKS *
+    MAX_UNIFORM_BLOCK_SIZE / 4``. Override one member of a family and the rest
+    fall back to the real GPU, which leaves the identity broken, so set the
+    whole family from one device or leave all of it unset.
+
     When ``webgl2_extensions`` is provided, it is used for WebGL2 contexts
     while ``supported_extensions`` is used for WebGL1. If only
     ``supported_extensions`` is provided, it is used for both contexts.
@@ -106,7 +114,9 @@ class WebGLProfile(TypedDict):
     max_viewport_dims: NotRequired[list[int]]  # [width, height]
     max_vertex_attribs: NotRequired[int]  # gl.MAX_VERTEX_ATTRIBS
     max_vertex_uniform_vectors: NotRequired[int]
+    max_vertex_uniform_components: NotRequired[int]  # gl2.MAX_VERTEX_UNIFORM_COMPONENTS
     max_fragment_uniform_vectors: NotRequired[int]
+    max_fragment_uniform_components: NotRequired[int]  # gl2.MAX_FRAGMENT_UNIFORM_COMPONENTS
     max_texture_image_units: NotRequired[int]  # gl.MAX_TEXTURE_IMAGE_UNITS (fragment stage)
     max_vertex_texture_image_units: NotRequired[int]  # gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS
     max_combined_texture_image_units: NotRequired[int]
@@ -114,6 +124,7 @@ class WebGLProfile(TypedDict):
     aliased_point_size_range: NotRequired[list[float]]  # [min, max]
     max_cube_map_texture_size: NotRequired[int]  # gl.MAX_CUBE_MAP_TEXTURE_SIZE
     max_varying_vectors: NotRequired[int]  # gl.MAX_VARYING_VECTORS
+    max_varying_components: NotRequired[int]  # gl2.MAX_VARYING_COMPONENTS
     max_3d_texture_size: NotRequired[int]  # gl2.MAX_3D_TEXTURE_SIZE
     max_array_texture_layers: NotRequired[int]  # gl2.MAX_ARRAY_TEXTURE_LAYERS
     max_color_attachments: NotRequired[int]  # gl2.MAX_COLOR_ATTACHMENTS
@@ -124,6 +135,11 @@ class WebGLProfile(TypedDict):
     max_vertex_uniform_blocks: NotRequired[int]  # gl2.MAX_VERTEX_UNIFORM_BLOCKS
     max_fragment_uniform_blocks: NotRequired[int]  # gl2.MAX_FRAGMENT_UNIFORM_BLOCKS
     max_combined_uniform_blocks: NotRequired[int]  # gl2.MAX_COMBINED_UNIFORM_BLOCKS
+    max_combined_vertex_uniform_components: NotRequired[int]
+    max_combined_fragment_uniform_components: NotRequired[int]
+    uniform_buffer_offset_alignment: NotRequired[int]  # gl2.UNIFORM_BUFFER_OFFSET_ALIGNMENT
+    max_texture_lod_bias: NotRequired[float]  # gl2.MAX_TEXTURE_LOD_BIAS
+    max_transform_feedback_interleaved_components: NotRequired[int]
     max_vertex_output_components: NotRequired[int]  # gl2.MAX_VERTEX_OUTPUT_COMPONENTS
     max_fragment_input_components: NotRequired[int]  # gl2.MAX_FRAGMENT_INPUT_COMPONENTS
     max_element_index: NotRequired[int]  # gl2.MAX_ELEMENT_INDEX
@@ -404,6 +420,28 @@ class NetworkConnectionFingerprint(TypedDict):
     save_data: NotRequired[bool]
 
 
+class PlatformApisFingerprint(TypedDict):
+    """Web APIs that exist on some operating systems and not on others.
+
+    Chrome only exposes an API where the platform can back it, so the set of
+    interfaces a browser has is itself a statement about the host: the Contact
+    Picker and the Content Index ship on Android only, WebHID, Web Serial and
+    ``SharedWorker`` on desktop only, the Web Share API everywhere but desktop
+    Linux, Shape Detection (``BarcodeDetector``) only where the platform has a
+    barcode backend (macOS, Android, ChromeOS), and ``downlinkMax`` only on
+    Chrome for Android. A profile that claims one OS while the host exposes
+    another's set contradicts itself, and CreepJS reads exactly this.
+
+    ``hidden`` names what to remove, as a dotted path resolved from the global
+    scope (``BarcodeDetector``, ``navigator.share``, ``NetworkInformation.downlinkMax``).
+    Removing is all a profile can do honestly: an API the host does not
+    implement cannot be conjured, so a profile that needs one the host lacks
+    belongs on a different host.
+    """
+
+    hidden: list[str]  # dotted paths to delete, e.g. ['BarcodeDetector', 'navigator.share']
+
+
 class FontFingerprint(TypedDict):
     """Font fingerprint profile.
 
@@ -570,6 +608,7 @@ class FingerprintConfig(TypedDict):
     timezone: NotRequired[str]  # IANA timezone e.g. "America/New_York"
     network_connection: NotRequired[NetworkConnectionFingerprint]
     fonts: NotRequired[FontFingerprint]
+    platform_apis: NotRequired[PlatformApisFingerprint]
     permissions: NotRequired[PermissionsFingerprint]
     media_features: NotRequired[MediaFeaturesFingerprint]
     webrtc_ip_policy: NotRequired[str]  # 'default' or 'relay'

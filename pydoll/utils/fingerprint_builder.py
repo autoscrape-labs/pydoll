@@ -41,9 +41,11 @@ Detectability notes:
     - Values must stay physically possible: an ``OfflineAudioContext`` reports
       the sample rate it was created with, a claimed WebGL extension the GPU
       lacks is never faked as an empty object.
-    - Platform objects cannot be structured-cloned, so ``structuredClone`` and
-      ``postMessage`` refuse the fake objects with the native
-      ``DataCloneError`` (nested anywhere a clone would reach, within a bound).
+    - Platform objects cannot be structured-cloned, so every sink that
+      serialises one (``structuredClone``, ``postMessage``, the history state,
+      a notification's ``data``, and the same sinks in another same-origin
+      realm) refuses the fake objects with the native ``DataCloneError``
+      (nested anywhere a clone would reach, within a bound).
     - Wrapped constructors are plain functions sharing the native prototype
       chain, never Proxies: a Proxy fails the ``Object.setPrototypeOf(fn, fn)``
       cyclic check and prints anonymous under another realm's ``toString``.
@@ -69,6 +71,7 @@ if TYPE_CHECKING:
         HardwareFingerprint,
         MediaDevicesFingerprint,
         NetworkConnectionFingerprint,
+        PlatformApisFingerprint,
         ScreenFingerprint,
         SpeechFingerprint,
         WebGLProfile,
@@ -211,22 +214,52 @@ const _wrapCtor = (owner, name, onConstruct, onCreated) => {
   } catch (e) { return undefined; }
 };
 // Platform objects cannot be structured-cloned; the fakes must refuse it too.
-const _cloneError = (owner, method, value) => {
+const _cloneError = (context, value) => {
   const ctor = Object.getPrototypeOf(value).constructor.name;
-  return new DOMException("Failed to execute '" + method + "' on '" + owner + "': "
-    + ctor + ' object could not be cloned.', 'DataCloneError');
+  return new DOMException(context + ': ' + ctor + ' object could not be cloned.',
+    'DataCloneError');
+};
+// A fake built in another same-origin realm is absent from this realm's _FAKES:
+// each realm keeps its own, so there is no shared slot to find. It stays
+// recognisable without one, the same way the toString hook works: the
+// prototypes this script patches carry accessors whose source every realm
+// records in _FAKED, so a foreign object standing on such a prototype is a
+// platform object over there, and no platform object clones. The answer is
+// cached per prototype.
+const _MARKED = new WeakMap();
+const _markedProto = (proto) => {
+  let marked = _MARKED.get(proto);
+  if (marked !== undefined) return marked;
+  marked = false;
+  try {
+    for (const key of Object.getOwnPropertyNames(proto)) {
+      const d = Object.getOwnPropertyDescriptor(proto, key);
+      if (d && d.get && _FAKED.has(_ORIG.call(d.get))) { marked = true; break; }
+    }
+  } catch (e) {}
+  _MARKED.set(proto, marked);
+  return marked;
+};
+const _foreignFake = (value) => {
+  if (value instanceof Object) return false;
+  for (let proto = Object.getPrototypeOf(value); proto !== null;
+    proto = Object.getPrototypeOf(proto)) {
+    if (_markedProto(proto)) return true;
+  }
+  return false;
 };
 // Finds a fake anywhere a structured clone would reach: own enumerable
 // properties of plain objects and arrays, Map / Set entries. Bounded so an
 // adversarial graph cannot stall the page; a fake past the bound is missed.
 const _findFake = (value, seen, budget) => {
   if (value === null || typeof value !== 'object' || seen.has(value)) return null;
-  if (_FAKES.has(value)) return value;
+  if (_FAKES.has(value) || _foreignFake(value)) return value;
   seen.add(value);
   if (seen.size > budget) return null;
   const proto = Object.getPrototypeOf(value);
   let children = [];
-  if (Array.isArray(value) || proto === Object.prototype || proto === null) {
+  if (Array.isArray(value) || proto === null || proto === Object.prototype
+      || Object.getPrototypeOf(proto) === null) {
     children = Object.keys(value).map((k) => value[k]);
   } else if (value instanceof Map) {
     children = [...value.keys(), ...value.values()];
@@ -243,9 +276,10 @@ const _guardClone = (target, method, owner) => {
   try {
     const orig = target[method];
     if (typeof orig !== 'function') return;
+    const context = "Failed to execute '" + method + "' on '" + owner + "'";
     _patchM(target, method, function (value) {
       const fake = _findFake(value, new Set(), 5000);
-      if (fake !== null) throw _cloneError(owner, method, fake);
+      if (fake !== null) throw _cloneError(context, fake);
       return orig.apply(this, arguments);
     });
   } catch (e) {}
@@ -261,6 +295,22 @@ if (typeof BroadcastChannel !== 'undefined') {
 }
 if (typeof window !== 'undefined') _guardClone(window, 'postMessage', 'Window');
 else _guardClone(self, 'postMessage', 'DedicatedWorkerGlobalScope');
+if (typeof History !== 'undefined') {
+  _guardClone(History.prototype, 'pushState', 'History');
+  _guardClone(History.prototype, 'replaceState', 'History');
+}
+// A notification serialises options.data, so its guard sits on the constructor
+// and raises the message Chrome raises while constructing one.
+if (typeof Notification !== 'undefined') {
+  _wrapCtor(self, 'Notification', (args) => {
+    const options = args.length > 1 ? args[1] : null;
+    if (options !== null && typeof options === 'object') {
+      const fake = _findFake(options.data, new Set(), 5000);
+      if (fake !== null) throw _cloneError("Failed to construct 'Notification'", fake);
+    }
+    return args;
+  }, null);
+}
 const NP = Object.getPrototypeOf(navigator);
 """
 
@@ -375,6 +425,8 @@ def build_fingerprint_worker_js(
         parts.append(_build_webgl_js(config['webgl']))
     if 'fonts' in config:
         parts.append(_build_fonts_js(config['fonts']))
+    if 'platform_apis' in config:
+        parts.append(_build_platform_apis_js(config['platform_apis']))
     return _wrap(parts)
 
 
@@ -475,20 +527,41 @@ def _build_screen_js(scr: ScreenFingerprint) -> str:
 _WEBGL_JS_TEMPLATE = """\
 const VENDOR = 0x9245;
 const RENDERER = 0x9246;
+const COMPRESSED_FORMATS = 0x86A3;
 const spoofVendor = %s;
 const spoofRenderer = %s;
 const paramOverrides = %s;
 const ext1 = %s;
 const ext2 = %s;
 const precisionOverrides = %s;
+const formatsByExtension = %s;
+// getTranslatedShaderSource names the real backend (Metal, HLSL, GLSL), so the
+// extension is dropped unless the profile lists it: a profile that claims a host
+// where almost every machine exposes it can ask for it back, and then the
+// translated source has to match the claimed backend.
 const HIDDEN_EXT = 'WEBGL_debug_shaders';
 
 function patchContext(proto, extOverrides) {
+  const allowed = (name) => (extOverrides === null
+    ? name !== HIDDEN_EXT
+    : extOverrides.includes(name));
+  const formatAllowed = (code) => {
+    let owned = false;
+    for (const name in formatsByExtension) {
+      if (formatsByExtension[name].indexOf(code) === -1) continue;
+      if (allowed(name)) return true;
+      owned = true;
+    }
+    return !owned;
+  };
   const origGetParameter = proto.getParameter;
   _patchM(proto, 'getParameter', function getParameter(pname) {
     const real = origGetParameter.call(this, pname);
     if (pname === VENDOR) return spoofVendor;
     if (pname === RENDERER) return spoofRenderer;
+    if (pname === COMPRESSED_FORMATS && ArrayBuffer.isView(real)) {
+      return new Uint32Array(Array.prototype.filter.call(real, formatAllowed));
+    }
     const override = paramOverrides[pname];
     if (override === undefined) return real;
     return ArrayBuffer.isView(override) ? override.slice() : override;
@@ -509,8 +582,6 @@ function patchContext(proto, extOverrides) {
 
   const origGetExtension = proto.getExtension;
   const origGetSupportedExtensions = proto.getSupportedExtensions;
-  const allowed = (name) => name !== HIDDEN_EXT
-    && (extOverrides === null || extOverrides.includes(name));
   _patchM(proto, 'getExtension', function getExtension(name) {
     const real = origGetExtension.call(this, name);
     return allowed(name) ? real : null;
@@ -562,12 +633,39 @@ _WEBGL_PARAM_MAP: dict[str, int] = {
     'max_vertex_output_components': 0x9122,
     'max_fragment_input_components': 0x9125,
     'max_element_index': 0x8D6B,
+    'max_vertex_uniform_components': 0x8B4A,
+    'max_fragment_uniform_components': 0x8B49,
+    'max_varying_components': 0x8B4B,
+    'max_combined_vertex_uniform_components': 0x8A31,
+    'max_combined_fragment_uniform_components': 0x8A33,
+    'uniform_buffer_offset_alignment': 0x8A34,
+    'max_texture_lod_bias': 0x84FD,
+    'max_transform_feedback_interleaved_components': 0x8C8A,
 }
 
 # Maps shader type names to WebGL constants
 _SHADER_TYPE_MAP: dict[str, int] = {
     'vertex': 0x8B31,
     'fragment': 0x8B30,
+}
+
+# Format enums each compressed-texture extension contributes to
+# getParameter(COMPRESSED_TEXTURE_FORMATS), as (first, last) inclusive ranges.
+# Chrome enables an extension the moment getExtension asks for it, even when the
+# profile hides the extension from the context, and an enabled extension adds
+# its formats to that list: without filtering, a claimed D3D11 GPU still reports
+# the ASTC/ETC/PVRTC formats of the host's real GPU.
+_COMPRESSED_TEXTURE_FORMATS: dict[str, tuple[tuple[int, int], ...]] = {
+    'WEBGL_compressed_texture_s3tc': ((0x83F0, 0x83F3),),
+    'WEBKIT_WEBGL_compressed_texture_s3tc': ((0x83F0, 0x83F3),),
+    'WEBGL_compressed_texture_s3tc_srgb': ((0x8C4C, 0x8C4F),),
+    'WEBGL_compressed_texture_pvrtc': ((0x8C00, 0x8C03),),
+    'WEBKIT_WEBGL_compressed_texture_pvrtc': ((0x8C00, 0x8C03),),
+    'WEBGL_compressed_texture_etc1': ((0x8D64, 0x8D64),),
+    'WEBGL_compressed_texture_etc': ((0x9270, 0x9279),),
+    'WEBGL_compressed_texture_astc': ((0x93B0, 0x93BD), (0x93D0, 0x93DD)),
+    'EXT_texture_compression_rgtc': ((0x8DBB, 0x8DBE),),
+    'EXT_texture_compression_bptc': ((0x8E8C, 0x8E8F),),
 }
 
 _PRECISION_TYPE_MAP: dict[str, int] = {
@@ -605,6 +703,15 @@ def _build_webgl_param_js(webgl: WebGLProfile) -> str:
     return '{' + ', '.join(entries) + '}'
 
 
+def _build_compressed_formats_js() -> str:
+    """Build the JS map of extension name to the format enums it advertises."""
+    expanded = {
+        name: [code for low, high in ranges for code in range(low, high + 1)]
+        for name, ranges in _COMPRESSED_TEXTURE_FORMATS.items()
+    }
+    return json.dumps(expanded)
+
+
 def _build_webgl_precision_js(webgl: WebGLProfile) -> str:
     """Build the JS object literal for shader precision format overrides."""
     if 'shader_precision_formats' not in webgl:
@@ -637,6 +744,13 @@ def _build_webgl_js(webgl: WebGLProfile) -> str:
     none of the extension's constants and is an instant tell), and
     ``WEBGL_debug_shaders`` is always hidden because its translated shader
     source names the real backend.
+
+    ``COMPRESSED_TEXTURE_FORMATS`` follows the same allow-list: the native
+    ``getExtension`` call the override makes before hiding an extension still
+    enables it inside Chrome, which appends the extension's formats to that
+    parameter, so the array is filtered back to the formats of the extensions
+    the context advertises (an ASTC or ETC format under a D3D11 renderer names
+    the host GPU on its own).
     """
     param_js = _build_webgl_param_js(webgl)
 
@@ -659,6 +773,7 @@ def _build_webgl_js(webgl: WebGLProfile) -> str:
         ext1_js,
         ext2_js,
         precision_js,
+        _build_compressed_formats_js(),
     )
 
 
@@ -814,6 +929,14 @@ def _build_audio_js(audio: AudioFingerprint) -> str:
     explicit rates); only realtime contexts created without a rate,
     the ones that describe the audio device, take the profile's values. The
     rendered audio hash is not touched by any of this.
+
+    ``baseLatency`` and ``outputLatency`` are a whole output buffer divided by
+    the device rate, so overriding the rate alone leaves a latency that resolves
+    to a fractional frame count at the claimed rate (measured: 256/44100 s
+    reported next to a claimed 48000 Hz, which needs 278.64 frames). Both are
+    re-derived here: the host's buffer size in frames, recovered from the real
+    getters, divided by the claimed rate. A zero ``outputLatency`` (headless has
+    no output device) stays zero.
     """
     lines: list[str] = [
         'const _truthful = new WeakSet();',
@@ -828,9 +951,20 @@ def _build_audio_js(audio: AudioFingerprint) -> str:
     ]
     if 'sample_rate' in audio:
         val = json.dumps(audio['sample_rate'])
+        lines.append("const _deviceRate = _nativeGetter(BaseAudioContext.prototype, 'sampleRate');")
         lines.append(
             "_defGf(BaseAudioContext.prototype, 'sampleRate', (self, real) =>\n"
             f'  (_isOffline(self) || _truthful.has(self)) ? real : {val});'
+        )
+        lines.append(
+            "if (typeof AudioContext !== 'undefined' && _deviceRate) {\n"
+            "  for (const _prop of ['baseLatency', 'outputLatency']) {\n"
+            '    if (!_nativeGetter(AudioContext.prototype, _prop)) continue;\n'
+            '    _defGf(AudioContext.prototype, _prop, (self, real) =>\n'
+            '      (!real || _truthful.has(self))\n'
+            f'        ? real : Math.round(real * _deviceRate.call(self)) / {val});\n'
+            '  }\n'
+            '}'
         )
     if 'max_channel_count' in audio:
         val = json.dumps(audio['max_channel_count'])
@@ -891,114 +1025,24 @@ def _build_network_connection_js(nc: NetworkConnectionFingerprint) -> str:
     return f"if (typeof NetworkInformation !== 'undefined') {{\n{body}\n}}"
 
 
-# Fonts that ship with exactly one OS family. A profile that does not claim one
-# of these must report it absent, otherwise the font set mixes two operating
-# systems (CreepJS ``isFontOSBad``, FP-Scanner ``are_font_consistent_os``).
-_OS_MARKER_FONTS = frozenset({
-    'Segoe UI',
-    'Segoe UI Emoji',
-    'Segoe UI Symbol',
-    'Segoe UI Historic',
-    'Segoe Print',
-    'Segoe Script',
-    'Segoe Fluent Icons',
-    'Segoe MDL2 Assets',
-    'HoloLens MDL2 Assets',
-    'Calibri',
-    'Cambria',
-    'Cambria Math',
-    'Candara',
-    'Consolas',
-    'Constantia',
-    'Corbel',
-    'Ebrima',
-    'Franklin Gothic Medium',
-    'Gabriola',
-    'Gadugi',
-    'Leelawadee UI',
-    'Lucida Console',
-    'Lucida Sans Unicode',
-    'Malgun Gothic',
-    'Marlett',
-    'Microsoft Sans Serif',
-    'MS Gothic',
-    'MS UI Gothic',
-    'Nirmala UI',
-    'Sylfaen',
-    'Yu Gothic',
-    'Helvetica Neue',
-    'Lucida Grande',
-    'Menlo',
-    'Monaco',
-    'Geneva',
-    'Apple Color Emoji',
-    'Apple Symbols',
-    'AppleGothic',
-    'Avenir',
-    'Avenir Next',
-    'Chalkboard',
-    'Cochin',
-    'Futura',
-    'Gill Sans',
-    'Herculanum',
-    'Hoefler Text',
-    'Luminari',
-    'Marker Felt',
-    'Optima',
-    'PingFang SC',
-    'PingFang HK',
-    'PingFang HK Light',
-    'Skia',
-    'SF Pro',
-    'SF Pro Text',
-    'SF Pro Display',
-    'Galvji',
-    'InaiMathi',
-    'InaiMathi Bold',
-    'Zapfino',
-    'DejaVu Sans',
-    'DejaVu Serif',
-    'DejaVu Sans Mono',
-    'Liberation Sans',
-    'Liberation Serif',
-    'Liberation Mono',
-    'Ubuntu',
-    'Ubuntu Mono',
-    'Cantarell',
-    'Noto Color Emoji',
-    'Droid Sans',
-    'Droid Sans Mono',
-    'FreeSans',
-    'FreeSerif',
-    'Nimbus Sans',
-    'URW Gothic',
-    'Bitstream Vera Sans',
-    'Chakra Petch',
-    'Arimo',
-    'Cousine',
-    'Tinos',
-    'Dancing Script',
-    'MONO',
-})
-
-
-_FONTS_JS_TEMPLATE = """\
-if (typeof FontFace !== 'undefined' && FontFace.prototype.load) {
+_FONTS_JS_TEMPLATE = r"""if (typeof FontFace !== 'undefined' && FontFace.prototype.load) {
   const allow = new Set(%s);
-  const reject = new Set(%s);
+  const LOCAL = /local\s*\(/i;
+  const REMOTE = /url\s*\(/i;
+  const sources = new WeakMap();
+  _wrapCtor(self, 'FontFace', null, (face, args) => {
+    if (typeof args[1] === 'string') sources.set(face, args[1]);
+  });
   const norm = (s) => String(s).trim().replace(/^["']|["']$/g, '').toLowerCase();
   const _realLoad = FontFace.prototype.load;
   _patchM(FontFace.prototype, 'load', function load() {
-    const fam = norm(this.family);
-    const face = this;
+    const source = sources.get(this);
+    const local = typeof source === 'string' && LOCAL.test(source) && !REMOTE.test(source);
     const real = _realLoad.apply(this, arguments);
-    if (allow.has(fam)) return real.catch(() => face);
-    if (reject.has(fam)) {
-      return real.then(() => {
-        throw new DOMException('A network error occurred.', 'NetworkError');
-      });
-    }
-    return real;
+    if (!local || allow.has(norm(this.family))) return real;
+    return real.then(() => {
+      throw new DOMException('A network error occurred.', 'NetworkError');
+    });
   });
 }"""
 
@@ -1008,11 +1052,18 @@ def _build_fonts_js(fonts: FontFingerprint) -> str:
 
     ``new FontFace(f, 'local("f")').load()`` is the JavaScript presence probe
     (CreepJS unions it with the width-based measurement): it resolves when the
-    local font exists and rejects with a ``NetworkError`` otherwise. Allowed
-    fonts resolve even when the host lacks them, cross-OS marker fonts the
-    profile does not claim reject the way an absent font does, and everything
-    else (real ``url()`` web fonts, the random-name liar probe) keeps native
-    behaviour.
+    local font exists and rejects with a ``NetworkError`` otherwise. The probe
+    is answered from the profile's own list: a family outside
+    ``available_fonts`` rejects the way an absent font does, whatever the host
+    has installed, so the host's own font set (and the OS it names) stops
+    leaking through the families the profile never mentions.
+
+    A family on the list still has to convince the layout engine, which this
+    cannot reach, so a listed family the host lacks keeps the native rejection
+    instead of resolving against a fallback the page would measure. Only
+    ``local()``-only sources are answered this way: the source string is
+    recorded at construction so a real ``url()`` web font, which loads
+    regardless of what is installed, keeps native behaviour end to end.
 
     ``FontFaceSet.check()`` is deliberately left native: it answers whether a
     font needs loading, so real Chrome returns ``true`` for any family name,
@@ -1029,8 +1080,7 @@ def _build_fonts_js(fonts: FontFingerprint) -> str:
     if not available:
         return ''
     allow = sorted({f.lower() for f in available})
-    reject = sorted({m.lower() for m in _OS_MARKER_FONTS} - set(allow))
-    return _FONTS_JS_TEMPLATE % (json.dumps(allow), json.dumps(reject))
+    return _FONTS_JS_TEMPLATE % json.dumps(allow)
 
 
 def _build_webrtc_js(policy: str) -> str:
@@ -1060,6 +1110,41 @@ def _build_webrtc_js(policy: str) -> str:
     )
 
 
+_PLATFORM_APIS_JS_TEMPLATE = """\
+for (const path of %s) {
+  try {
+    const parts = path.split('.');
+    const prop = parts.pop();
+    let owner = self;
+    for (const part of parts) owner = owner && owner[part];
+    if (owner === undefined || owner === null) continue;
+    let target = owner;
+    while (target && !Object.prototype.hasOwnProperty.call(target, prop)) {
+      target = Object.getPrototypeOf(target);
+    }
+    if (target) delete target[prop];
+  } catch (e) {}
+}"""
+
+
+def _build_platform_apis_js(apis: PlatformApisFingerprint) -> str:
+    """Remove the Web APIs the claimed operating system does not implement.
+
+    Chrome exposes an interface only where the platform can back it, so the set
+    a browser has describes its host: the Contact Picker and the Content Index
+    are Android only, WebHID, Web Serial and ``SharedWorker`` desktop only, Web
+    Share is everywhere but desktop Linux, Shape Detection needs a platform
+    barcode backend, and ``downlinkMax`` is Chrome for Android. Each path is
+    deleted where it is actually defined, own property or prototype, which is
+    the state the claimed machine is in; a path that does not exist here is
+    left alone, since there is nothing to hide.
+    """
+    paths = [path for path in apis.get('hidden', []) if path]
+    if not paths:
+        return ''
+    return _PLATFORM_APIS_JS_TEMPLATE % json.dumps(paths)
+
+
 _SECTION_BUILDERS: dict[str, Callable[..., str]] = {
     'hardware': _build_hardware_js,
     'screen': _build_screen_js,
@@ -1070,5 +1155,6 @@ _SECTION_BUILDERS: dict[str, Callable[..., str]] = {
     'speech': _build_speech_js,
     'network_connection': _build_network_connection_js,
     'fonts': _build_fonts_js,
+    'platform_apis': _build_platform_apis_js,
     'webrtc_ip_policy': _build_webrtc_js,
 }
