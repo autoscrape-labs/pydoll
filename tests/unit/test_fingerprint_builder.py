@@ -8,6 +8,8 @@ native-``toString`` hook, and that the worker script omits page-only surfaces.
 
 from __future__ import annotations
 
+import json
+
 from pydoll.utils.fingerprint_builder import (
     build_fingerprint_js,
     build_fingerprint_worker_deferred_js,
@@ -145,6 +147,24 @@ class TestSections:
         assert '_isOffline(self.context) ? real : 2' in js
         assert "_wrapCtor(self, 'AudioContext'" in js
 
+    def test_audio_latency_is_a_whole_buffer_at_the_claimed_rate(self):
+        """baseLatency/outputLatency keep the host buffer, divided by the claimed rate."""
+        js = build_fingerprint_js({'audio': {'sample_rate': 48000}})
+        assert "for (const _prop of ['baseLatency', 'outputLatency'])" in js
+        assert 'Math.round(real * _deviceRate.call(self)) / 48000' in js
+        assert '(!real || _truthful.has(self))' in js
+
+    def test_audio_reads_the_device_rate_before_overriding_it(self):
+        js = build_fingerprint_js({'audio': {'sample_rate': 48000}})
+        captured = js.index("const _deviceRate = _nativeGetter(BaseAudioContext.prototype")
+        overridden = js.index("_defGf(BaseAudioContext.prototype, 'sampleRate'")
+        assert captured < overridden
+
+    def test_audio_without_sample_rate_leaves_latency_native(self):
+        js = build_fingerprint_js({'audio': {'max_channel_count': 2}})
+        assert 'baseLatency' not in js
+        assert 'outputLatency' not in js
+
     def test_precision_overrides_are_real_prototype_objects(self):
         config = {
             'webgl': {
@@ -161,7 +181,7 @@ class TestSections:
         js = build_fingerprint_js({'fonts': {'available_fonts': ['Arial']}})
         assert 'FontFaceSet.prototype' not in js
         assert "_patchM(FontFace.prototype, 'load'" in js
-        assert 'return real.catch(() => face)' in js
+        assert 'check(' not in js
 
     def test_webgl_never_fakes_extension_objects(self):
         config = {
@@ -178,6 +198,37 @@ class TestSections:
         assert 'real.filter(allowed)' in js
         assert 'const real = origGetParameter.call(this, pname);' in js
         assert f'{0x8D57}: 8' in js
+
+    def test_compressed_formats_follow_the_advertised_extensions(self):
+        """A hidden extension takes its format enums out of COMPRESSED_TEXTURE_FORMATS."""
+        config = {
+            'webgl': {
+                'vendor': 'Google Inc. (NVIDIA)',
+                'renderer': 'ANGLE (NVIDIA)',
+                'supported_extensions': ['WEBGL_compressed_texture_s3tc'],
+            }
+        }
+        js = build_fingerprint_js(config)
+        assert 'const COMPRESSED_FORMATS = 0x86A3;' in js
+        assert 'if (pname === COMPRESSED_FORMATS && ArrayBuffer.isView(real))' in js
+        assert 'new Uint32Array(Array.prototype.filter.call(real, formatAllowed))' in js
+        assert 'if (allowed(name)) return true;' in js
+
+    def test_compressed_format_enums_match_the_extension_specs(self):
+        js = build_fingerprint_js({'webgl': {'vendor': 'v', 'renderer': 'r'}})
+        head = 'const formatsByExtension = '
+        start = js.index(head) + len(head)
+        formats = json.loads(js[start : js.index(';\n', start)])
+        assert formats['WEBGL_compressed_texture_s3tc'] == [0x83F0, 0x83F1, 0x83F2, 0x83F3]
+        assert formats['WEBGL_compressed_texture_s3tc_srgb'] == [0x8C4C, 0x8C4D, 0x8C4E, 0x8C4F]
+        assert formats['WEBGL_compressed_texture_pvrtc'] == [0x8C00, 0x8C01, 0x8C02, 0x8C03]
+        assert formats['WEBGL_compressed_texture_etc1'] == [0x8D64]
+        assert formats['WEBGL_compressed_texture_etc'] == list(range(0x9270, 0x927A))
+        assert formats['WEBGL_compressed_texture_astc'] == list(range(0x93B0, 0x93BE)) + list(
+            range(0x93D0, 0x93DE)
+        )
+        assert formats['EXT_texture_compression_rgtc'] == [0x8DBB, 0x8DBC, 0x8DBD, 0x8DBE]
+        assert formats['EXT_texture_compression_bptc'] == [0x8E8C, 0x8E8D, 0x8E8E, 0x8E8F]
 
     def test_webgpu_registers_real_adapter_objects(self):
         config = {
@@ -233,12 +284,48 @@ class TestSections:
         assert "_guardClone(MessagePort.prototype, 'postMessage'" in js
         assert "'DataCloneError'" in js
 
-    def test_fonts_reject_other_os_markers(self):
+    def test_fakes_refuse_every_clone_sink(self):
+        """History state and notification data serialise too, so both refuse a fake."""
+        js = build_fingerprint_js({'media_devices': {'audio_inputs': 1}})
+        assert "_guardClone(History.prototype, 'pushState', 'History')" in js
+        assert "_guardClone(History.prototype, 'replaceState', 'History')" in js
+        assert "_wrapCtor(self, 'Notification'" in js
+        assert '_findFake(options.data, new Set(), 5000)' in js
+        assert '_cloneError("Failed to construct \'Notification\'", fake)' in js
+
+    def test_clone_guard_recognises_a_fake_from_another_realm(self):
+        """Each realm keeps its own _FAKES, so a foreign fake is found by its prototype."""
+        js = build_fingerprint_js({'media_devices': {'audio_inputs': 1}})
+        assert '_FAKES.has(value) || _foreignFake(value)' in js
+        assert 'if (value instanceof Object) return false;' in js
+        assert '_FAKED.has(_ORIG.call(d.get))' in js
+        assert 'new Proxy(' not in js
+
+    def test_clone_error_keeps_the_native_message(self):
+        js = build_fingerprint_js({'media_devices': {'audio_inputs': 1}})
+        assert '"Failed to execute \'" + method + "\' on \'" + owner + "\'"' in js
+        assert "context + ': ' + ctor + ' object could not be cloned.'" in js
+
+    def test_fonts_resolve_only_the_families_the_profile_lists(self):
+        """load() answers from the profile's allow-list, not from a marker denylist."""
         js = build_fingerprint_js({'fonts': {'available_fonts': ['Segoe UI', 'Arial']}})
-        assert '"helvetica neue"' in js
-        assert '"menlo"' in js
-        assert '"dejavu sans"' in js
-        assert '"segoe ui emoji"' in js
+        assert 'const allow = new Set(["arial", "segoe ui"]);' in js
+        assert 'if (!local || allow.has(norm(this.family))) return real;' in js
+        assert "throw new DOMException('A network error occurred.', 'NetworkError');" in js
+        assert 'const reject' not in js
+        assert '"helvetica neue"' not in js
+
+    def test_fonts_answer_local_sources_only(self):
+        """A url() web font must keep loading: only local() probes are answered."""
+        js = build_fingerprint_js({'fonts': {'available_fonts': ['Arial']}})
+        assert "_wrapCtor(self, 'FontFace', null" in js
+        assert 'sources.set(face, args[1])' in js
+        assert 'LOCAL.test(source) && !REMOTE.test(source)' in js
+
+    def test_fonts_keep_the_native_rejection_for_a_family_the_host_lacks(self):
+        """An allowed family the host lacks rejects natively instead of resolving."""
+        js = build_fingerprint_js({'fonts': {'available_fonts': ['Segoe UI']}})
+        assert 'real.catch' not in js
 
     def test_webgl_vendor_and_renderer_present(self):
         config = {'webgl': {'vendor': 'Google Inc. (Apple)', 'renderer': 'ANGLE (Apple, M3)'}}
