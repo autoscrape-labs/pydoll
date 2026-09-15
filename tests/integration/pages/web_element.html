@@ -6,6 +6,7 @@
     <style>
         #hidden { display: none; }
         #hidden-btn { display: none; }
+        #late-btn { display: none; }
         .spacer { height: 2000px; }
         #contents-only { display: contents; }
     </style>
@@ -21,6 +22,9 @@
 
     <button id="js-btn" onclick="document.getElementById('js-clicks').textContent = 'clicked'">JS</button>
     <span id="js-clicks"></span>
+
+    <button id="late-btn" onclick="document.getElementById('late-clicks').textContent = 'clicked'">Late</button>
+    <span id="late-clicks"></span>
 
     <input id="text-input" type="text" value="initial">
 
@@ -100,6 +104,10 @@
                 const root = host.attachShadow({ mode: 'open' });
                 root.innerHTML = '<span id="late-shadow">late shadow content</span>';
             }
+        }, 400);
+
+        setTimeout(function () {
+            document.getElementById('late-btn').style.display = 'block';
         }, 400);
     </script>
 </body>
