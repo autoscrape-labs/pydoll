@@ -4011,7 +4011,7 @@ context of active modifiers, keyboard layout, etc. (e.g., 'AltGr')
   </span>
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">dispatch_mouse_event</span><span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">modifiers</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">button</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">click_count</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tangential_pressure</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tilt_x</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tilt_y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">twist</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">delta_x</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">delta_y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pointer_type</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">dispatch_mouse_event</span><span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">modifiers</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">button</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">click_count</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">buttons</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tangential_pressure</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tilt_x</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tilt_y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">twist</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">delta_x</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">delta_y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pointer_type</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4152,6 +4152,27 @@ Allowed values: "none", "left", "middle", "right", "back", "forward".</p>
               <div class="doc-md-description">
                 <p>Number of times the mouse button was clicked (default: 0).
 For example, 2 for a double-click.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="typing.Optional">Optional</span>[<span title="int">int</span>]</code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>None</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>buttons</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Bitmask of the buttons held during the event: Left=1, Right=2,
+Middle=4, Back=8, Forward=16 (default: 0).</p>
               </div>
               <p>
                   <span class="doc-param-annotation">
