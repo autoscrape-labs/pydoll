@@ -599,7 +599,7 @@ class FingerprintApplier:
         is left to write the headers, and the brands it derives are the ones the
         profile asks for because the major matches the binary.
         """
-        if 'client_hints' in fingerprint:
+        if fingerprint.get('client_hints'):
             return False
         if not self._launch_identity_matches(fingerprint, parsed):
             return False
