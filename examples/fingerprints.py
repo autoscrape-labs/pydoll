@@ -71,6 +71,12 @@ APP_ANDROID = UA_ANDROID[len('Mozilla/') :]
 APP_WINDOWS = UA_WINDOWS[len('Mozilla/') :]
 APP_MAC = UA_MAC[len('Mozilla/') :]
 
+UA_LINUX = (
+    f'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
+    f'Chrome/{CHROME_DESKTOP} Safari/537.36'
+)
+APP_LINUX = UA_LINUX[len('Mozilla/') :]
+
 US_LOCALE = LocaleFingerprint(languages=['en-US', 'en'])
 BR_LOCALE = LocaleFingerprint(languages=['pt-BR', 'pt', 'en-US', 'en'])
 
@@ -475,6 +481,18 @@ SPEECH_MAC = SpeechFingerprint(
     ]
 )
 
+#: Um Chrome de Linux só expõe vozes quando o ``speech-dispatcher`` está
+#: instalado e rodando; sem ele a lista volta vazia, o que é marcador de Linux e
+#: não de automação. Estas são as que um sistema com espeak-ng em português
+#: apresenta.
+SPEECH_LINUX_PT_BR = SpeechFingerprint(
+    voices=[
+        SpeechVoice(name='Portuguese (Brazil)', lang='pt-BR', local_service=True),
+        SpeechVoice(name='English', lang='en-US', local_service=True),
+        SpeechVoice(name='Google português do Brasil', lang='pt-BR', local_service=False),
+    ]
+)
+
 SPEECH_ANDROID = SpeechFingerprint(
     voices=[
         SpeechVoice(
@@ -665,7 +683,138 @@ ANDROID_ABSENT_APIS = [
 # exist on Android and not on a desktop host, so an Android profile run from a
 # desktop still answers without them: that pair only closes on an Android host.
 
+#: Fontes que um desktop Linux traz e que o pacote de fontes de uma imagem de
+#: container consegue instalar. As dez primeiras são as que a coleta do hCaptcha
+#: sonda por nome, medido em 2026-09-16, e três delas (DejaVu Sans, Ubuntu e
+#: Noto Color Emoji) são justamente o que marca Linux no teste cruzado de
+#: sistema operacional. Declarar aqui não basta: o pacote precisa estar na
+#: imagem, porque a largura que o motor de layout calcula não é alcançável por
+#: JavaScript.
+LINUX_FONTS = FontFingerprint(
+    available_fonts=[
+        'DejaVu Sans',
+        'DejaVu Serif',
+        'DejaVu Sans Mono',
+        'Liberation Sans',
+        'Liberation Serif',
+        'Liberation Mono',
+        'Noto Sans',
+        'Noto Serif',
+        'Noto Color Emoji',
+        'Ubuntu',
+        'Ubuntu Mono',
+        'Cantarell',
+        'FreeSans',
+        'FreeSerif',
+        'FreeMono',
+        'Nimbus Sans',
+        'Nimbus Roman',
+        'Nimbus Mono PS',
+        'URW Bookman',
+        'URW Gothic',
+        'C059',
+        'P052',
+        'Z003',
+        'Droid Sans Fallback',
+        'Arial',
+        'Roboto',
+    ]
+)
+
+#: Globais que um Chrome de Linux não expõe. BarcodeDetector precisa de um
+#: backend de leitura de código de barras que só existe em alguns sistemas, e
+#: os demais são interfaces que o Chrome de Linux não instala.
+LINUX_ABSENT_APIS = [
+    'BarcodeDetector',
+    'navigator.windowControlsOverlay',
+    'DocumentPictureInPicture',
+    'documentPictureInPicture',
+]
+
+#: Perfil de desktop Linux para rodar dentro de container.
+#:
+#: ⚠️ **A seção ``webgl`` é deliberadamente omitida, e isso é o ponto do perfil.**
+#: Um container sem nó de render rasteriza por software, e medido em 2026-09-16
+#: o teto real ali é ``MAX_TEXTURE_SIZE`` de 8192. Declarar uma GPU moderna, que
+#: reporta 16384, cria uma contradição que qualquer página encontra em três
+#: linhas: basta pedir uma textura do tamanho que o próprio contexto acabou de
+#: anunciar e ler o erro. Sem a seção, os limites continuam sendo os reais do
+#: rasterizador, tudo que é declarado pode ser cumprido, e não sobra nenhuma
+#: auto-contradição.
+#:
+#: Para trocar o **nome** do renderizador sem tocar nas capacidades, o caminho
+#: é a variável de ambiente ``ANGLE_GL_RENDERER`` (com ``ANGLE_GL_VENDOR``),
+#: lida pelo ANGLE na subida do processo: medido, ela alcança a página e o Web
+#: Worker igualmente, sem nenhum getter reescrito. Isso é configuração de
+#: imagem, não de biblioteca, e por isso não vive aqui.
+#:
+#: ``hardware_concurrency`` deve bater com o que o container de fato tem. Medido:
+#: um limite por cota (``--cpus=2``) não chega ao navegador, que segue anunciando
+#: os núcleos do host; só ``--cpuset-cpus`` chega. Ajuste o valor abaixo ao
+#: tamanho do cpuset.
+LINUX_CONTAINER = FingerprintConfig(
+    user_agent=UA_LINUX,
+    navigator=NavigatorFingerprint(
+        platform='Linux x86_64',
+        vendor='Google Inc.',
+        app_version=APP_LINUX,
+        pdf_viewer_enabled=True,
+    ),
+    # Client Hints de alta entropia de um desktop Linux. A versão completa do
+    # build não entra aqui: ela é derivada do ``user_agent`` acima, que já traz
+    # o build inteiro, e a User-Agent exposta à página é a reduzida.
+    client_hints=ClientHintsFingerprint(
+        platform_version='',
+        architecture='x86',
+        bitness='64',
+        model='',
+        form_factors=['Desktop'],
+    ),
+    screen=ScreenFingerprint(
+        width=1920,
+        height=1080,
+        avail_width=1920,
+        avail_height=1053,
+        avail_top=27,
+        avail_left=0,
+        color_depth=24,
+        pixel_depth=24,
+        device_pixel_ratio=1.0,
+        orientation_type='landscape-primary',
+        orientation_angle=0,
+    ),
+    hardware=HardwareFingerprint(
+        hardware_concurrency=4,
+        device_memory=8,
+        max_touch_points=0,
+    ),
+    locale=BR_LOCALE,
+    timezone='America/Sao_Paulo',
+    geolocation=SAO_PAULO_GEO,
+    fonts=LINUX_FONTS,
+    media_devices=MediaDevicesFingerprint(audio_inputs=1, audio_outputs=1, video_inputs=0),
+    media_codecs=DESKTOP_CHROMIUM_CODECS,
+    media_features=MediaFeaturesFingerprint(
+        prefers_color_scheme='light',
+        prefers_contrast='no-preference',
+        prefers_reduced_motion='no-preference',
+        prefers_reduced_transparency='no-preference',
+        forced_colors='none',
+        color_gamut='srgb',
+    ),
+    permissions=PermissionsFingerprint(
+        overrides={'notifications': 'prompt', 'geolocation': 'prompt'}
+    ),
+    network_connection=DESKTOP_NETWORK,
+    platform_apis=PlatformApisFingerprint(hidden=LINUX_ABSENT_APIS),
+    audio=AudioFingerprint(sample_rate=48000, max_channel_count=2),
+    speech=SPEECH_LINUX_PT_BR,
+    webrtc_ip_policy='default_public_interface_only',
+)
+
+
 FINGERPRINTS: dict[str, FingerprintConfig] = {
+    'linux_container': LINUX_CONTAINER,
     # Android (mobile) — Brazilian identity (pair with a Brazilian egress IP).
     'android_s24_ultra_sao_paulo': FingerprintConfig(
         user_agent=UA_ANDROID,
