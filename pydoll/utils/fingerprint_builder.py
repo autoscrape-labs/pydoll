@@ -74,6 +74,7 @@ if TYPE_CHECKING:
         MediaDevicesFingerprint,
         NetworkConnectionFingerprint,
         PlatformApisFingerprint,
+        PluginsFingerprint,
         ScreenFingerprint,
         SpeechFingerprint,
         WebGLProfile,
@@ -1152,6 +1153,112 @@ def _build_media_codecs_js(codecs: MediaCodecsFingerprint) -> str:
     return _MEDIA_CODECS_JS_TEMPLATE % (json.dumps(can_play), json.dumps(media_source))
 
 
+_PLUGINS_JS_TEMPLATE = """\
+if (typeof Plugin !== 'undefined' && typeof PluginArray !== 'undefined'
+    && typeof MimeType !== 'undefined' && typeof MimeTypeArray !== 'undefined') {
+  const MIMES = %s;
+  const PLUGS = %s;
+  for (const prop of ['type', 'description', 'suffixes', 'enabledPlugin']) {
+    _defF(MimeType.prototype, prop);
+  }
+  for (const prop of ['name', 'description', 'filename', 'length']) _defF(Plugin.prototype, prop);
+  _defF(PluginArray.prototype, 'length');
+  _defF(MimeTypeArray.prototype, 'length');
+
+  const mimes = MIMES.map((m) => _fake(MimeType.prototype, {type: m.type,
+    description: m.description || '', suffixes: m.suffixes || '', enabledPlugin: null}));
+
+  const index = (obj, items) => {
+    items.forEach((it, i) => Object.defineProperty(obj, i,
+      {value: it, enumerable: true, configurable: true}));
+    _FAKES.get(obj).__items = items;
+    return obj;
+  };
+  const plugins = PLUGS.map((p) => {
+    const own = (p.mime_types || []).map((i) => mimes[i]).filter(Boolean);
+    return index(_fake(Plugin.prototype, {name: p.name, description: p.description || '',
+      filename: p.filename || '', length: own.length}), own);
+  });
+  for (const m of mimes) {
+    const owner = plugins.find((p) => (_FAKES.get(p).__items || []).indexOf(m) !== -1);
+    _FAKES.get(m).enabledPlugin = owner || null;
+  }
+  const named = (obj, items, key) => {
+    for (const it of items) {
+      const n = _FAKES.get(it)[key];
+      if (n && !(n in obj)) {
+        Object.defineProperty(obj, n, {value: it, enumerable: false, configurable: true});
+      }
+    }
+    return obj;
+  };
+  const pluginArray = named(
+    index(_fake(PluginArray.prototype, {length: plugins.length}), plugins), plugins, 'name');
+  const mimeArray = named(
+    index(_fake(MimeTypeArray.prototype, {length: mimes.length}), mimes), mimes, 'type');
+
+  const patchItem = (proto, key) => {
+    const orig = proto.item;
+    if (typeof orig === 'function') {
+      _patchM(proto, 'item', function item(i) {
+        const f = _FAKES.get(this);
+        if (!f || !f.__items) return orig.apply(this, arguments);
+        const n = Number(i) | 0;
+        return n >= 0 && n < f.__items.length ? f.__items[n] : null;
+      });
+    }
+    const origNamed = proto.namedItem;
+    if (typeof origNamed === 'function') {
+      _patchM(proto, 'namedItem', function namedItem(name) {
+        const f = _FAKES.get(this);
+        if (!f || !f.__items) return origNamed.apply(this, arguments);
+        const wanted = String(name);
+        for (const it of f.__items) if (_FAKES.get(it)[key] === wanted) return it;
+        return null;
+      });
+    }
+  };
+  patchItem(PluginArray.prototype, 'name');
+  patchItem(MimeTypeArray.prototype, 'type');
+  patchItem(Plugin.prototype, 'type');
+
+  const origRefresh = PluginArray.prototype.refresh;
+  if (typeof origRefresh === 'function') {
+    _patchM(PluginArray.prototype, 'refresh', function refresh() {
+      return _FAKES.has(this) ? undefined : origRefresh.apply(this, arguments);
+    });
+  }
+  _defG(NP, 'plugins', pluginArray);
+  _defG(NP, 'mimeTypes', mimeArray);
+}"""
+
+
+def _build_plugins_js(plugins: PluginsFingerprint) -> str:
+    """Rebuild ``navigator.plugins`` and ``navigator.mimeTypes`` from the profile.
+
+    Modern Chrome has no real plugins: it reports five aliases of the same
+    built-in PDF viewer and two MIME types, and that fixed shape is the expected
+    answer. A Chromium with a brand differs, and Brave randomises the names on
+    every run, which both separates it from Chrome and makes the value unstable
+    between page loads. Measured on 2026-09-16: with a profile applied, Brave and
+    Chromium already agree on User-Agent, Client Hints brands and codecs, and the
+    plugin names were the one channel still telling them apart.
+
+    Both arrays are built from the real ``Plugin``, ``MimeType``, ``PluginArray``
+    and ``MimeTypeArray`` prototypes with no own value properties, so the
+    prototype getters answer from the registry and every real instance and
+    foreign receiver keeps the native path. Indexed access, named access,
+    ``item()``, ``namedItem()``, ``refresh()`` and iteration all behave as the
+    browser's own, and each ``MimeType`` points back at the plugin that enables
+    it, as Chrome relates the two arrays.
+    """
+    mimes = plugins.get('mime_types', [])
+    entries = plugins.get('plugins', [])
+    if not mimes and not entries:
+        return ''
+    return _PLUGINS_JS_TEMPLATE % (json.dumps(mimes), json.dumps(entries))
+
+
 def _build_webrtc_js(policy: str) -> str:
     """Patch RTCPeerConnection (and its ``webkit`` alias) to force iceTransportPolicy.
 
@@ -1221,6 +1328,7 @@ _SECTION_BUILDERS: dict[str, Callable[..., str]] = {
     'webgpu': _build_webgpu_js,
     'media_devices': _build_media_devices_js,
     'media_codecs': _build_media_codecs_js,
+    'plugins': _build_plugins_js,
     'audio': _build_audio_js,
     'speech': _build_speech_js,
     'network_connection': _build_network_connection_js,

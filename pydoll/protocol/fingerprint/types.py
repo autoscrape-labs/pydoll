@@ -302,6 +302,62 @@ class HardwareFingerprint(TypedDict):
     max_touch_points: NotRequired[int]  # navigator.maxTouchPoints
 
 
+class MimeTypeEntry(TypedDict):
+    """One entry of ``navigator.mimeTypes``."""
+
+    type: str  # e.g. 'application/pdf'
+    description: NotRequired[str]
+    suffixes: NotRequired[str]  # e.g. 'pdf'
+
+
+class PluginEntry(TypedDict):
+    """One entry of ``navigator.plugins``.
+
+    ``mime_types`` holds indices into the profile's ``mime_types`` list, which
+    is how the browser relates the two arrays: every ``MimeType`` points back at
+    the plugin that enables it, and every ``Plugin`` indexes the types it takes.
+    """
+
+    name: str  # e.g. 'Chrome PDF Viewer'
+    description: NotRequired[str]
+    filename: NotRequired[str]  # e.g. 'internal-pdf-viewer'
+    mime_types: NotRequired[list[int]]
+
+
+class PluginsFingerprint(TypedDict):
+    """What ``navigator.plugins`` and ``navigator.mimeTypes`` report.
+
+    Modern Chrome no longer has real plugins: it reports five aliases of the
+    same built-in PDF viewer and two MIME types, and that fixed shape is itself
+    the expected answer. A Chromium with a brand may differ, and Brave in
+    particular randomises the names on every run, which both separates it from
+    Chrome and makes the value unstable between page loads.
+
+    Both arrays are rebuilt from the real ``Plugin``, ``MimeType``,
+    ``PluginArray`` and ``MimeTypeArray`` prototypes, so indexed access, named
+    access, ``item()``, ``namedItem()`` and iteration behave as the browser's own.
+
+    Usage example::
+
+        plugins = PluginsFingerprint(
+            mime_types=[
+                MimeTypeEntry(type='application/pdf', suffixes='pdf'),
+                MimeTypeEntry(type='text/pdf', suffixes='pdf'),
+            ],
+            plugins=[
+                PluginEntry(
+                    name='PDF Viewer',
+                    filename='internal-pdf-viewer',
+                    mime_types=[0, 1],
+                ),
+            ],
+        )
+    """
+
+    plugins: NotRequired[list[PluginEntry]]
+    mime_types: NotRequired[list[MimeTypeEntry]]
+
+
 class MediaCodecsFingerprint(TypedDict):
     """What the media codec probes answer.
 
@@ -643,6 +699,7 @@ class FingerprintConfig(TypedDict):
     hardware: NotRequired[HardwareFingerprint]
     media_devices: NotRequired[MediaDevicesFingerprint]
     media_codecs: NotRequired[MediaCodecsFingerprint]
+    plugins: NotRequired[PluginsFingerprint]
     audio: NotRequired[AudioFingerprint]
     speech: NotRequired[SpeechFingerprint]
     locale: NotRequired[LocaleFingerprint]

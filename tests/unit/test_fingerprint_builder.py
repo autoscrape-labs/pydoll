@@ -72,7 +72,7 @@ class TestFakePlatformObjects:
         video = js.index("makeDev('videoinput')")
         outputs = js.index("makeDev('audiooutput')")
         assert inputs < video < outputs
-        assert "_FAKES.has(this) ? {}" in js
+        assert '_FAKES.has(this) ? {}' in js
 
     def test_voices_on_real_prototype_with_native_receiver_check(self):
         voices = [{'name': 'Samantha', 'lang': 'en-US', 'local_service': True}]
@@ -124,8 +124,8 @@ class TestSections:
         }
         js = build_fingerprint_js(config)
         # platform/vendor are CDP-handled and must not be JS-injected as navigator getters
-        assert "_defG(NP, \"vendor\"" not in js
-        assert "_defG(NP, \"platform\"" not in js
+        assert '_defG(NP, "vendor"' not in js
+        assert '_defG(NP, "platform"' not in js
         assert 'doNotTrack' in js
 
     def test_page_never_injects_identity_or_languages(self):
@@ -156,7 +156,7 @@ class TestSections:
 
     def test_audio_reads_the_device_rate_before_overriding_it(self):
         js = build_fingerprint_js({'audio': {'sample_rate': 48000}})
-        captured = js.index("const _deviceRate = _nativeGetter(BaseAudioContext.prototype")
+        captured = js.index('const _deviceRate = _nativeGetter(BaseAudioContext.prototype')
         overridden = js.index("_defGf(BaseAudioContext.prototype, 'sampleRate'")
         assert captured < overridden
 
@@ -175,7 +175,7 @@ class TestSections:
         }
         js = build_fingerprint_js(config)
         assert '_fake(WebGLShaderPrecisionFormat.prototype' in js
-        assert "_defF(WebGLShaderPrecisionFormat.prototype, prop)" in js
+        assert '_defF(WebGLShaderPrecisionFormat.prototype, prop)' in js
 
     def test_fonts_patch_load_only_and_keep_check_native(self):
         js = build_fingerprint_js({'fonts': {'available_fonts': ['Arial']}})
@@ -376,9 +376,9 @@ class TestWorkerScript:
 
 class TestPlatformApis:
     def test_hidden_paths_are_deleted_where_they_live(self):
-        js = build_fingerprint_js(
-            {'platform_apis': {'hidden': ['BarcodeDetector', 'navigator.share']}}
-        )
+        js = build_fingerprint_js({
+            'platform_apis': {'hidden': ['BarcodeDetector', 'navigator.share']}
+        })
         assert '"BarcodeDetector", "navigator.share"' in js
         assert 'delete target[prop]' in js
         assert 'hasOwnProperty.call(target, prop)' in js
@@ -393,9 +393,9 @@ class TestPlatformApis:
 
 class TestMediaCodecs:
     def test_keys_are_normalised_so_any_spelling_matches(self):
-        js = build_fingerprint_js(
-            {'media_codecs': {'can_play_type': {'video/mp4; codecs="avc1.42E01E"': 'probably'}}}
-        )
+        js = build_fingerprint_js({
+            'media_codecs': {'can_play_type': {'video/mp4; codecs="avc1.42E01E"': 'probably'}}
+        })
         assert '"video/mp4;codecs=avc1.42e01e": "probably"' in js
 
     def test_native_answer_runs_first_on_every_call(self):
@@ -404,9 +404,9 @@ class TestMediaCodecs:
         assert 'answer === undefined ? real : answer' in js
 
     def test_media_source_map_is_coerced_to_booleans(self):
-        js = build_fingerprint_js(
-            {'media_codecs': {'media_source': {'video/webm; codecs="vp9"': 1}}}
-        )
+        js = build_fingerprint_js({
+            'media_codecs': {'media_source': {'video/webm; codecs="vp9"': 1}}
+        })
         assert '"video/webm;codecs=vp9": true' in js
 
     def test_both_probes_are_guarded_by_existence(self):
@@ -419,8 +419,51 @@ class TestMediaCodecs:
         assert build_fingerprint_js({'media_codecs': {'can_play_type': {}}}) == ''
 
     def test_workers_get_the_same_script(self):
-        worker = build_fingerprint_worker_js(
-            {'media_codecs': {'media_source': {'audio/mpeg': True}}}
-        )
+        worker = build_fingerprint_worker_js({
+            'media_codecs': {'media_source': {'audio/mpeg': True}}
+        })
         assert '"audio/mpeg": true' in worker
         assert 'isTypeSupported' in worker
+
+
+class TestPlugins:
+    def test_both_arrays_are_built_from_the_real_prototypes(self):
+        js = build_fingerprint_js({
+            'plugins': {
+                'mime_types': [{'type': 'application/pdf', 'suffixes': 'pdf'}],
+                'plugins': [{'name': 'PDF Viewer', 'mime_types': [0]}],
+            }
+        })
+        assert '_fake(MimeType.prototype' in js
+        assert '_fake(Plugin.prototype' in js
+        assert '_fake(PluginArray.prototype' in js
+        assert '_fake(MimeTypeArray.prototype' in js
+
+    def test_named_and_indexed_access_are_both_defined(self):
+        js = build_fingerprint_js({'plugins': {'plugins': [{'name': 'PDF Viewer'}]}})
+        assert "_patchM(proto, 'item'" in js
+        assert "_patchM(proto, 'namedItem'" in js
+        assert 'Object.defineProperty(obj, i,' in js
+
+    def test_every_mime_type_points_back_at_its_plugin(self):
+        js = build_fingerprint_js({
+            'plugins': {
+                'mime_types': [{'type': 'application/pdf'}],
+                'plugins': [{'name': 'PDF Viewer', 'mime_types': [0]}],
+            }
+        })
+        assert '_FAKES.get(m).enabledPlugin = owner || null;' in js
+
+    def test_the_arrays_replace_the_navigator_getters(self):
+        js = build_fingerprint_js({'plugins': {'plugins': [{'name': 'PDF Viewer'}]}})
+        assert "_defG(NP, 'plugins', pluginArray);" in js
+        assert "_defG(NP, 'mimeTypes', mimeArray);" in js
+
+    def test_guarded_by_the_four_interfaces(self):
+        js = build_fingerprint_js({'plugins': {'plugins': [{'name': 'x'}]}})
+        for name in ('Plugin', 'PluginArray', 'MimeType', 'MimeTypeArray'):
+            assert f"typeof {name} !== 'undefined'" in js
+
+    def test_empty_section_injects_nothing(self):
+        assert build_fingerprint_js({'plugins': {}}) == ''
+        assert build_fingerprint_js({'plugins': {'plugins': [], 'mime_types': []}}) == ''

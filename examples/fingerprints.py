@@ -37,10 +37,13 @@ from pydoll.protocol.fingerprint.types import (
     MediaCodecsFingerprint,
     MediaDevicesFingerprint,
     MediaFeaturesFingerprint,
+    MimeTypeEntry,
     NavigatorFingerprint,
     NetworkConnectionFingerprint,
     PermissionsFingerprint,
     PlatformApisFingerprint,
+    PluginEntry,
+    PluginsFingerprint,
     ScreenFingerprint,
     SpeechFingerprint,
     SpeechVoice,
@@ -860,6 +863,41 @@ WEBGL_LINUX_MESA_INTEL = WebGLProfile(
 )
 
 
+#: O que um Chrome moderno reporta em ``navigator.plugins`` e ``navigator.mimeTypes``.
+#:
+#: Não há plugins de verdade desde que o NPAPI morreu: sobraram cinco apelidos do
+#: mesmo visualizador de PDF embutido e dois tipos MIME, e essa forma fixa é a
+#: resposta esperada. Medido em 2026-09-16 no Chromium 152: exatamente estes cinco
+#: nomes, e ``mimeTypes`` de comprimento dois.
+#:
+#: Um Chromium de marca difere, e o Brave em particular randomiza os nomes a cada
+#: execução, o que o separa do Chrome e ainda torna o valor instável entre
+#: carregamentos. A coleta do hCaptcha lê ``plugins`` 15 vezes e ``mimeTypes`` 12.
+CHROME_PLUGINS = PluginsFingerprint(
+    mime_types=[
+        MimeTypeEntry(
+            type='application/pdf', suffixes='pdf', description='Portable Document Format'
+        ),
+        MimeTypeEntry(type='text/pdf', suffixes='pdf', description='Portable Document Format'),
+    ],
+    plugins=[
+        PluginEntry(
+            name=nome,
+            filename='internal-pdf-viewer',
+            description='Portable Document Format',
+            mime_types=[0, 1],
+        )
+        for nome in (
+            'PDF Viewer',
+            'Chrome PDF Viewer',
+            'Chromium PDF Viewer',
+            'Microsoft Edge PDF Viewer',
+            'WebKit built-in PDF',
+        )
+    ],
+)
+
+
 #: Globais que identificam a MARCA do binário, e não o sistema operacional.
 #:
 #: Existem porque um Chromium de marca se anuncia: o Brave expõe
@@ -940,6 +978,7 @@ LINUX_CONTAINER = FingerprintConfig(
     fonts=LINUX_FONTS,
     media_devices=MediaDevicesFingerprint(audio_inputs=1, audio_outputs=1, video_inputs=0),
     media_codecs=DESKTOP_CHROMIUM_CODECS,
+    plugins=CHROME_PLUGINS,
     media_features=MediaFeaturesFingerprint(
         prefers_color_scheme='light',
         prefers_contrast='no-preference',
