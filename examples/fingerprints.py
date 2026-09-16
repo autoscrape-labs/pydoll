@@ -490,62 +490,57 @@ SPEECH_ANDROID = SpeechFingerprint(
     ]
 )
 
-# Media codec support, which is a statement about the build and the operating
-# system: ``canPlayType()`` and ``MediaSource.isTypeSupported()`` answer from
-# what the binary can decode. Measured on 2026-09-16 with Chrome 152: a macOS
-# Chrome answers 'probably' for HEVC, while the Chromium of Debian trixie
-# answers '' for the same type and 'probably' for everything else here. H.264
-# and AAC are the pair that separates Google Chrome from a Chromium built
-# without the proprietary codecs, whatever the platform.
-_BASE_CODECS = {
-    'video/mp4; codecs="avc1.42E01E"': 'probably',
-    'video/mp4; codecs="avc1.64001F"': 'probably',
-    'audio/mp4; codecs="mp4a.40.2"': 'probably',
-    'audio/mpeg': 'probably',
-    'video/webm; codecs="vp9"': 'probably',
-    'video/webm; codecs="vp8"': 'probably',
-    'audio/ogg; codecs="opus"': 'probably',
-    'audio/webm; codecs="opus"': 'probably',
-}
-
-_BASE_MEDIA_SOURCE = {
-    'video/mp4; codecs="avc1.42E01E"': True,
-    'audio/mp4; codecs="mp4a.40.2"': True,
-    'video/webm; codecs="vp9"': True,
-}
-
-#: HEVC decodes on macOS and on Windows, so both claim it.
-HEVC_TYPES = {
-    'video/mp4; codecs="hvc1.1.6.L93.B0"': 'probably',
-    'video/mp4; codecs="hev1.1.6.L93.B0"': 'probably',
-}
-
-#: A Linux desktop Chrome refuses HEVC; saying so is what makes the profile
-#: coherent with the platform it claims. Measured on Debian trixie.
-NO_HEVC_TYPES = {
-    'video/mp4; codecs="hvc1.1.6.L93.B0"': '',
-    'video/mp4; codecs="hev1.1.6.L93.B0"': '',
-}
-
-WINDOWS_CODECS = MediaCodecsFingerprint(
-    can_play_type={**_BASE_CODECS, **HEVC_TYPES},
-    media_source={**_BASE_MEDIA_SOURCE, 'video/mp4; codecs="hvc1.1.6.L93.B0"': True},
+# Media codec support. The twelve content types below are the ones the hCaptcha
+# payload actually queries, recovered on 2026-09-16 by deobfuscating its script
+# and reading its own string table, so a map that covers them answers every
+# ``canPlayType`` and ``MediaSource.isTypeSupported`` call it makes.
+#
+# The values are measured, not assumed: Chrome 153 on macOS and the Chromium
+# 152 of Debian trixie answer these twelve identically, item by item. The set
+# therefore does NOT separate one desktop OS from another, which is why the
+# three profiles below share one map. What it does separate is browser family
+# (Firefox accepts theora and vorbis, Safari accepts quicktime and x-m4a) and a
+# Chromium built without the proprietary codecs, which answers '' for
+# ``avc1.42E01E`` and ``audio/aac`` where both binaries measured here answer
+# 'probably'. Override these only when the binary you drive is such a build, or
+# when the profile claims a browser from another family.
+DESKTOP_CHROMIUM_CODECS = MediaCodecsFingerprint(
+    can_play_type={
+        'video/mp4; codecs="avc1.42E01E"': 'probably',
+        'video/webm; codecs="vp8"': 'probably',
+        'video/webm; codecs="vp9"': 'probably',
+        'video/ogg; codecs="theora"': '',
+        'video/quicktime': '',
+        'video/x-matroska': 'maybe',
+        'audio/aac': 'probably',
+        'audio/mpeg': 'probably',
+        'audio/mpegurl': 'maybe',
+        'audio/ogg; codecs="vorbis"': 'probably',
+        'audio/wav; codecs="1"': 'probably',
+        'audio/x-m4a': 'maybe',
+    },
+    media_source={
+        'video/mp4; codecs="avc1.42E01E"': True,
+        'video/webm; codecs="vp8"': True,
+        'video/webm; codecs="vp9"': True,
+        'video/ogg; codecs="theora"': False,
+        'video/quicktime': False,
+        'video/x-matroska': False,
+        'audio/aac': True,
+        'audio/mpeg': True,
+        'audio/mpegurl': False,
+        'audio/ogg; codecs="vorbis"': False,
+        'audio/wav; codecs="1"': False,
+        'audio/x-m4a': False,
+    },
 )
 
-MACOS_CODECS = MediaCodecsFingerprint(
-    can_play_type={**_BASE_CODECS, **HEVC_TYPES},
-    media_source={**_BASE_MEDIA_SOURCE, 'video/mp4; codecs="hvc1.1.6.L93.B0"': True},
-)
-
-LINUX_CODECS = MediaCodecsFingerprint(
-    can_play_type={**_BASE_CODECS, **NO_HEVC_TYPES},
-    media_source={**_BASE_MEDIA_SOURCE, 'video/mp4; codecs="hvc1.1.6.L93.B0"': False},
-)
-
-ANDROID_CODECS = MediaCodecsFingerprint(
-    can_play_type={**_BASE_CODECS, **HEVC_TYPES},
-    media_source={**_BASE_MEDIA_SOURCE, 'video/mp4; codecs="hvc1.1.6.L93.B0"': True},
-)
+#: The three desktop profiles share the measured Chromium answers. Android was
+#: not measured here, so it carries the same map rather than an invented one.
+WINDOWS_CODECS = DESKTOP_CHROMIUM_CODECS
+MACOS_CODECS = DESKTOP_CHROMIUM_CODECS
+LINUX_CODECS = DESKTOP_CHROMIUM_CODECS
+ANDROID_CODECS = DESKTOP_CHROMIUM_CODECS
 
 
 DESKTOP_NETWORK = NetworkConnectionFingerprint(
