@@ -219,11 +219,14 @@ class FingerprintApplier:
                 )
             )
         if 'screen' in fingerprint:
+            include_screen_size = not headless
             await self._apply_device_metrics(
-                fingerprint['screen'], mobile=mobile, include_screen_size=not headless
+                fingerprint['screen'], mobile=mobile, include_screen_size=include_screen_size
             )
             await self._apply_headless_screen(fingerprint['screen'])
-            await self._apply_window_bounds(fingerprint['screen'])
+            await self._apply_window_bounds(
+                fingerprint['screen'], mobile=mobile, include_screen_size=include_screen_size
+            )
         if 'hardware' in fingerprint and 'hardware_concurrency' in fingerprint['hardware']:
             await tab._execute_command(
                 EmulationCommands.set_hardware_concurrency_override(
@@ -356,7 +359,9 @@ class FingerprintApplier:
                 )
             )
 
-    async def _apply_window_bounds(self, screen: 'ScreenFingerprint') -> None:
+    async def _apply_window_bounds(
+        self, screen: 'ScreenFingerprint', mobile: bool = False, include_screen_size: bool = True
+    ) -> None:
         """Size the real browser window to the profile's ``outer_*`` dimensions.
 
         ``window.outerWidth`` / ``outerHeight`` then come from the actual window
@@ -388,7 +393,9 @@ class FingerprintApplier:
             actual_width = int(bounds.get('width', width))
             actual_height = int(bounds.get('height', height))
             if actual_width < width or actual_height < height:
-                await self._reconcile_clamped_window(screen, actual_width, actual_height)
+                await self._reconcile_clamped_window(
+                    screen, actual_width, actual_height, mobile, include_screen_size
+                )
                 logger.warning(
                     'The profile window (%sx%s) does not fit this display and was clamped to '
                     '%sx%s; the viewport was resized with it so the inner and outer sizes stay '
@@ -400,7 +407,12 @@ class FingerprintApplier:
                 )
 
     async def _reconcile_clamped_window(
-        self, screen: 'ScreenFingerprint', actual_width: int, actual_height: int
+        self,
+        screen: 'ScreenFingerprint',
+        actual_width: int,
+        actual_height: int,
+        mobile: bool = False,
+        include_screen_size: bool = True,
     ) -> None:
         """Re-issue the viewport override after the window was clamped by the display.
 
@@ -424,7 +436,9 @@ class FingerprintApplier:
         reconciled['inner_width'] = max(1, actual_width - (outer_width - inner_width))
         reconciled['inner_height'] = max(1, actual_height - (outer_height - inner_height))
         command = self._device_metrics_command(
-            cast('ScreenFingerprint', reconciled), mobile=False, include_screen_size=True
+            cast('ScreenFingerprint', reconciled),
+            mobile=mobile,
+            include_screen_size=include_screen_size,
         )
         if command is not None:
             await self._tab._execute_command(command)
