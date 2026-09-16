@@ -1,3 +1,44 @@
+## 2.27.0 (2026-09-16)
+
+### Feat
+
+- **fingerprint**: let the profile answer navigator.plugins and mimeTypes
+- **examples**: hide the globals that name the browser brand
+- **examples**: add a Linux desktop profile shaped for a container
+- **fingerprint**: cover the WebGL limits the hCaptcha payload actually asks for
+- **fingerprint**: let the profile answer the media codec probes
+- **fingerprint**: hide the Web APIs the claimed OS does not implement
+- **fingerprint**: WebGPU profiles for the Windows and Android examples
+- **fingerprint**: WebGPU adapter profile
+- **fingerprint**: rewrite browser-process script fetches with the profile identity
+- **fingerprint**: native-first overrides and Chromium client hints algorithm
+
+### Fix
+
+- **fingerprint**: stop warning about the User-Agent the header path requires
+- **fingerprint**: check the font names a local() source asks for
+- **fingerprint**: give a patched method the native arity, not the callback's
+- **fingerprint**: correct the transform-feedback enum mapping
+- **examples**: complete the Android uniform families and enforce it
+- **fingerprint**: treat an empty client_hints as no Client Hints at all
+- **fingerprint**: keep the emulation mode when a clamped window is reconciled
+- **examples**: drop the invalid webrtc_ip_policy from the container profile
+- **examples**: declare WebGL on the Linux container profile
+- **fingerprint**: anchor the example codec maps to measured answers
+- **fingerprint**: make the values the profile reports physically possible
+- **fingerprint**: stop the override from rewriting Chrome's header order
+- **input**: read like real mouse and keyboard input, keep touch emulation after navigation
+- **fingerprint**: apply the WebGPU profile inside workers
+- keep a margin when scrolling an element into view before clicking
+- keep worker and iframe session flows tolerant to rejected commands
+- raise CommandFailed when the browser answers a command with an error
+- **fingerprint**: let touch emulation own navigator.maxTouchPoints
+- **fingerprint**: faithful constructor wrappers and non-cloneable fakes
+- **fingerprint**: leave document.fonts.check() native
+- **fingerprint**: resolve script-fetch contexts by target and harden the JS residue
+- **fingerprint**: keep Chrome's frozen Android platform and soften platformVersion claims
+- preserve ws address when resolving iframe connections
+
 ## 2.26.0 (2026-08-26)
 
 ### Feat
