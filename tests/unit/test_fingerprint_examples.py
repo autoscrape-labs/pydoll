@@ -53,8 +53,11 @@ def webgpu_profile(name: str) -> WebGPUProfile:
 def test_components_are_four_times_the_vectors(name: str) -> None:
     webgl = webgl_profile(name)
     for vectors, components in VECTOR_FAMILIES:
-        if vectors in webgl and components in webgl:
-            assert webgl[components] == COMPONENTS_PER_VECTOR * webgl[vectors], components
+        if vectors not in webgl and components not in webgl:
+            continue
+        assert vectors in webgl, f'{name} sets {components} without {vectors}'
+        assert components in webgl, f'{name} sets {vectors} without {components}'
+        assert webgl[components] == COMPONENTS_PER_VECTOR * webgl[vectors], components
 
 
 @pytest.mark.parametrize('name', PROFILE_NAMES)
