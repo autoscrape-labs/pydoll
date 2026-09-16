@@ -199,7 +199,7 @@ class FingerprintApplier:
         """Send every CDP-native override of the profile to the page session."""
         tab = self._tab
         if parsed is not None:
-            self._warn_on_user_agent_option_conflict(fingerprint['user_agent'])
+            self._warn_on_user_agent_option_conflict(fingerprint['user_agent'], parsed)
             self._apply_client_hint_overrides(parsed, fingerprint.get('client_hints'))
             if self._launch_identity_covers_page(fingerprint, parsed):
                 logger.debug('Identity already set at launch; leaving the header order to Chrome')
@@ -443,7 +443,9 @@ class FingerprintApplier:
         if command is not None:
             await self._tab._execute_command(command)
 
-    def _warn_on_user_agent_option_conflict(self, fingerprint_user_agent: str) -> None:
+    def _warn_on_user_agent_option_conflict(
+        self, fingerprint_user_agent: str, parsed: 'ParsedUserAgent'
+    ) -> None:
         """Warn when a ``--user-agent`` option contradicts the fingerprint UA.
 
         The options-based ``--user-agent`` handling
@@ -453,9 +455,21 @@ class FingerprintApplier:
         conflicting worker override, so the two disagree on what a worker reports.
         The fingerprint owns the page User-Agent, but the option handler may still
         fire on workers, so setting both is a misconfiguration.
+
+        Both spellings of the profile's own identity are accepted. A profile
+        carries the four-part build in ``user_agent`` because the full version
+        feeds the Client Hints, while what Chrome exposes is the reduced string,
+        so the reduced form is the one a launch switch has to hold to say the
+        same thing. It is also the spelling
+        :meth:`_launch_identity_matches` requires before it leaves the header
+        order to Chrome, and warning about it would contradict that path.
         """
         options_user_agent = self._tab._browser._get_user_agent_from_options()
-        if options_user_agent and options_user_agent != fingerprint_user_agent:
+        matches_profile = options_user_agent in {
+            fingerprint_user_agent,
+            parsed.reduced_user_agent,
+        }
+        if options_user_agent and not matches_profile:
             logger.warning(
                 'A --user-agent browser option is set and differs from the fingerprint '
                 "User-Agent; don't combine --user-agent with apply_fingerprint (the "
