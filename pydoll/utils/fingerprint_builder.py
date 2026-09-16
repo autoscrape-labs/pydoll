@@ -152,8 +152,10 @@ const _defGf = (target, prop, compute) => {
 };
 const _patchM = (obj, prop, fn) => {
   try {
+    const orig = obj[prop];
+    const arity = typeof orig === 'function' ? orig.length : fn.length;
     const wrapper = { [prop](...args) { return fn.apply(this, args); } }[prop];
-    try { Object.defineProperty(wrapper, 'length', {value: fn.length, configurable: true}); }
+    try { Object.defineProperty(wrapper, 'length', {value: arity, configurable: true}); }
     catch (e) {}
     _mark(wrapper);
     Object.defineProperty(obj, prop, {value: wrapper, configurable: true, writable: true});
