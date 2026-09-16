@@ -860,6 +860,31 @@ WEBGL_LINUX_MESA_INTEL = WebGLProfile(
 )
 
 
+#: Globais que identificam a MARCA do binário, e não o sistema operacional.
+#:
+#: Existem porque um Chromium de marca se anuncia: o Brave expõe
+#: ``navigator.brave``, cujo ``isBrave()`` devolve ``true``, e o Opera expõe
+#: ``window.opr``. Um perfil que diz ser Google Chrome precisa que eles não
+#: existam, e a varredura de ``Object.getOwnPropertyNames`` que a coleta do
+#: hCaptcha faz 52 vezes acha qualquer um deles sem esforço.
+#:
+#: Medido em 2026-09-16, com Brave 153 e Chromium 152 no mesmo container: sem o
+#: perfil, o Brave se entrega por três canais, a marca em ``userAgentData``,
+#: o ``navigator.brave`` e os nomes dos plugins. Com o perfil aplicado, os dois
+#: primeiros ficam idênticos aos do Chromium. ``window.opr`` não foi medido,
+#: porque não há build de Opera para esta arquitetura; apagar um caminho que não
+#: existe é inócuo, então incluí-lo não custa nada.
+#:
+#: ⚠️ ``navigator.plugins`` continua entregando o Brave e o perfil não alcança:
+#: o farbling dele randomiza os nomes, e eles mudam a cada execução. Não há
+#: seção de plugins no ``FingerprintConfig``.
+BROWSER_BRAND_APIS = [
+    'navigator.brave',
+    'window.opr',
+    'opr',
+]
+
+
 #: Perfil de desktop Linux para rodar dentro de container.
 #:
 #: A seção ``webgl`` é declarada, e isso reverte a primeira versão deste perfil. O argumento
@@ -927,7 +952,7 @@ LINUX_CONTAINER = FingerprintConfig(
         overrides={'notifications': 'prompt', 'geolocation': 'prompt'}
     ),
     network_connection=DESKTOP_NETWORK,
-    platform_apis=PlatformApisFingerprint(hidden=LINUX_ABSENT_APIS),
+    platform_apis=PlatformApisFingerprint(hidden=[*LINUX_ABSENT_APIS, *BROWSER_BRAND_APIS]),
     audio=AudioFingerprint(sample_rate=48000, max_channel_count=2),
     speech=SPEECH_LINUX_PT_BR,
     webrtc_ip_policy='default_public_interface_only',
