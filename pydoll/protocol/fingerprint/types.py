@@ -297,6 +297,41 @@ class HardwareFingerprint(TypedDict):
     max_touch_points: NotRequired[int]  # navigator.maxTouchPoints
 
 
+class MediaCodecsFingerprint(TypedDict):
+    """What the media codec probes answer.
+
+    ``HTMLMediaElement.canPlayType()`` and ``MediaSource.isTypeSupported()``
+    describe what the *build* can decode, and the answer differs by operating
+    system and by binary: a Chromium built without the proprietary codecs
+    answers ``''`` for H.264 and AAC where Google Chrome answers
+    ``'probably'``, and HEVC is supported on macOS and Windows while a Linux
+    build typically refuses it. A profile that claims one platform while the
+    binary answers for another contradicts itself on a surface that costs a
+    page two calls to read.
+
+    Both maps are keyed by the content type as the page writes it. The lookup
+    normalises whitespace, quotes and case, so ``'video/mp4; codecs="avc1.42E01E"'``
+    and ``'video/mp4;codecs=avc1.42E01E'`` are the same key. A type that is not
+    in the map keeps the browser's own answer, so a partial map is safe.
+
+    ``can_play_type`` values are the three the specification allows:
+    ``'probably'``, ``'maybe'`` and ``''`` (cannot play).
+
+    Usage example::
+
+        media_codecs = MediaCodecsFingerprint(
+            can_play_type={
+                'video/mp4; codecs="avc1.42E01E"': 'probably',
+                'video/mp4; codecs="hvc1.1.6.L93.B0"': '',
+            },
+            media_source={'video/mp4; codecs="avc1.42E01E"': True},
+        )
+    """
+
+    can_play_type: NotRequired[dict[str, str]]
+    media_source: NotRequired[dict[str, bool]]
+
+
 class MediaDevicesFingerprint(TypedDict):
     """Media devices fingerprint profile.
 
@@ -602,6 +637,7 @@ class FingerprintConfig(TypedDict):
     geolocation: NotRequired[GeolocationFingerprint]
     hardware: NotRequired[HardwareFingerprint]
     media_devices: NotRequired[MediaDevicesFingerprint]
+    media_codecs: NotRequired[MediaCodecsFingerprint]
     audio: NotRequired[AudioFingerprint]
     speech: NotRequired[SpeechFingerprint]
     locale: NotRequired[LocaleFingerprint]

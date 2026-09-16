@@ -389,3 +389,38 @@ class TestPlatformApis:
     def test_workers_hide_the_same_apis(self):
         worker = build_fingerprint_worker_js({'platform_apis': {'hidden': ['SharedWorker']}})
         assert '"SharedWorker"' in worker
+
+
+class TestMediaCodecs:
+    def test_keys_are_normalised_so_any_spelling_matches(self):
+        js = build_fingerprint_js(
+            {'media_codecs': {'can_play_type': {'video/mp4; codecs="avc1.42E01E"': 'probably'}}}
+        )
+        assert '"video/mp4;codecs=avc1.42e01e": "probably"' in js
+
+    def test_native_answer_runs_first_on_every_call(self):
+        js = build_fingerprint_js({'media_codecs': {'can_play_type': {'audio/mpeg': 'maybe'}}})
+        assert '_native.apply(this, arguments)' in js
+        assert 'answer === undefined ? real : answer' in js
+
+    def test_media_source_map_is_coerced_to_booleans(self):
+        js = build_fingerprint_js(
+            {'media_codecs': {'media_source': {'video/webm; codecs="vp9"': 1}}}
+        )
+        assert '"video/webm;codecs=vp9": true' in js
+
+    def test_both_probes_are_guarded_by_existence(self):
+        js = build_fingerprint_js({'media_codecs': {'can_play_type': {'audio/mpeg': ''}}})
+        assert "typeof HTMLMediaElement !== 'undefined'" in js
+        assert "typeof MediaSource !== 'undefined'" in js
+
+    def test_empty_section_injects_nothing(self):
+        assert build_fingerprint_js({'media_codecs': {}}) == ''
+        assert build_fingerprint_js({'media_codecs': {'can_play_type': {}}}) == ''
+
+    def test_workers_get_the_same_script(self):
+        worker = build_fingerprint_worker_js(
+            {'media_codecs': {'media_source': {'audio/mpeg': True}}}
+        )
+        assert '"audio/mpeg": true' in worker
+        assert 'isTypeSupported' in worker

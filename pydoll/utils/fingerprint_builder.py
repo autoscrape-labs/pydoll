@@ -60,6 +60,7 @@ Detectability notes:
 from __future__ import annotations
 
 import json
+import re
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 
@@ -69,6 +70,7 @@ if TYPE_CHECKING:
         FingerprintConfig,
         FontFingerprint,
         HardwareFingerprint,
+        MediaCodecsFingerprint,
         MediaDevicesFingerprint,
         NetworkConnectionFingerprint,
         PlatformApisFingerprint,
@@ -425,6 +427,8 @@ def build_fingerprint_worker_js(
         parts.append(_build_webgl_js(config['webgl']))
     if 'fonts' in config:
         parts.append(_build_fonts_js(config['fonts']))
+    if 'media_codecs' in config:
+        parts.append(_build_media_codecs_js(config['media_codecs']))
     if 'platform_apis' in config:
         parts.append(_build_platform_apis_js(config['platform_apis']))
     return _wrap(parts)
@@ -1083,6 +1087,66 @@ def _build_fonts_js(fonts: FontFingerprint) -> str:
     return _FONTS_JS_TEMPLATE % json.dumps(allow)
 
 
+_MEDIA_CODECS_JS_TEMPLATE = """\
+(() => {
+  const CPT = %s;
+  const MS = %s;
+  const _norm = (t) => String(t).replace(/["']/g, '').replace(/\\s+/g, '').toLowerCase();
+  if (typeof HTMLMediaElement !== 'undefined' && HTMLMediaElement.prototype.canPlayType) {
+    const _native = HTMLMediaElement.prototype.canPlayType;
+    _patchM(HTMLMediaElement.prototype, 'canPlayType', function canPlayType(type) {
+      const real = _native.apply(this, arguments);
+      const answer = CPT[_norm(type)];
+      return answer === undefined ? real : answer;
+    });
+  }
+  if (typeof MediaSource !== 'undefined' && MediaSource.isTypeSupported) {
+    const _nativeMS = MediaSource.isTypeSupported;
+    _patchM(MediaSource, 'isTypeSupported', function isTypeSupported(type) {
+      const real = _nativeMS.apply(this, arguments);
+      const answer = MS[_norm(type)];
+      return answer === undefined ? real : answer;
+    });
+  }
+})();
+"""
+
+
+def _normalize_codec_key(content_type: str) -> str:
+    """Strip quotes, whitespace and case so the JS lookup matches any spelling."""
+    return re.sub(r'\s+', '', content_type.replace('"', '').replace("'", '')).lower()
+
+
+def _build_media_codecs_js(codecs: MediaCodecsFingerprint) -> str:
+    """Override what the codec probes answer, keeping the native call first.
+
+    ``canPlayType`` and ``MediaSource.isTypeSupported`` report what the binary
+    can decode, which is a statement about the build and the operating system:
+    a Chromium without proprietary codecs answers ``''`` for H.264 and AAC, and
+    HEVC is refused on Linux while macOS and Windows accept it. A cross-OS
+    profile that leaves them alone contradicts the platform it claims.
+
+    The native method runs first on every call, so the receiver check, the
+    argument coercion and the native throw for a missing argument are the real
+    ones; only the returned value is replaced, and only for a content type the
+    profile actually lists. Types outside the map keep the browser's answer,
+    which makes a partial map safe.
+
+    ``HTMLMediaElement`` does not exist in a worker and ``MediaSource`` does,
+    so the same script covers both realms through existence guards.
+    """
+    can_play = {
+        _normalize_codec_key(key): value for key, value in codecs.get('can_play_type', {}).items()
+    }
+    media_source = {
+        _normalize_codec_key(key): bool(value)
+        for key, value in codecs.get('media_source', {}).items()
+    }
+    if not can_play and not media_source:
+        return ''
+    return _MEDIA_CODECS_JS_TEMPLATE % (json.dumps(can_play), json.dumps(media_source))
+
+
 def _build_webrtc_js(policy: str) -> str:
     """Patch RTCPeerConnection (and its ``webkit`` alias) to force iceTransportPolicy.
 
@@ -1151,6 +1215,7 @@ _SECTION_BUILDERS: dict[str, Callable[..., str]] = {
     'webgl': _build_webgl_js,
     'webgpu': _build_webgpu_js,
     'media_devices': _build_media_devices_js,
+    'media_codecs': _build_media_codecs_js,
     'audio': _build_audio_js,
     'speech': _build_speech_js,
     'network_connection': _build_network_connection_js,

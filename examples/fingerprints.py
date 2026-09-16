@@ -34,6 +34,7 @@ from pydoll.protocol.fingerprint.types import (
     GeolocationFingerprint,
     HardwareFingerprint,
     LocaleFingerprint,
+    MediaCodecsFingerprint,
     MediaDevicesFingerprint,
     MediaFeaturesFingerprint,
     NavigatorFingerprint,
@@ -489,6 +490,64 @@ SPEECH_ANDROID = SpeechFingerprint(
     ]
 )
 
+# Media codec support, which is a statement about the build and the operating
+# system: ``canPlayType()`` and ``MediaSource.isTypeSupported()`` answer from
+# what the binary can decode. Measured on 2026-09-16 with Chrome 152: a macOS
+# Chrome answers 'probably' for HEVC, while the Chromium of Debian trixie
+# answers '' for the same type and 'probably' for everything else here. H.264
+# and AAC are the pair that separates Google Chrome from a Chromium built
+# without the proprietary codecs, whatever the platform.
+_BASE_CODECS = {
+    'video/mp4; codecs="avc1.42E01E"': 'probably',
+    'video/mp4; codecs="avc1.64001F"': 'probably',
+    'audio/mp4; codecs="mp4a.40.2"': 'probably',
+    'audio/mpeg': 'probably',
+    'video/webm; codecs="vp9"': 'probably',
+    'video/webm; codecs="vp8"': 'probably',
+    'audio/ogg; codecs="opus"': 'probably',
+    'audio/webm; codecs="opus"': 'probably',
+}
+
+_BASE_MEDIA_SOURCE = {
+    'video/mp4; codecs="avc1.42E01E"': True,
+    'audio/mp4; codecs="mp4a.40.2"': True,
+    'video/webm; codecs="vp9"': True,
+}
+
+#: HEVC decodes on macOS and on Windows, so both claim it.
+HEVC_TYPES = {
+    'video/mp4; codecs="hvc1.1.6.L93.B0"': 'probably',
+    'video/mp4; codecs="hev1.1.6.L93.B0"': 'probably',
+}
+
+#: A Linux desktop Chrome refuses HEVC; saying so is what makes the profile
+#: coherent with the platform it claims. Measured on Debian trixie.
+NO_HEVC_TYPES = {
+    'video/mp4; codecs="hvc1.1.6.L93.B0"': '',
+    'video/mp4; codecs="hev1.1.6.L93.B0"': '',
+}
+
+WINDOWS_CODECS = MediaCodecsFingerprint(
+    can_play_type={**_BASE_CODECS, **HEVC_TYPES},
+    media_source={**_BASE_MEDIA_SOURCE, 'video/mp4; codecs="hvc1.1.6.L93.B0"': True},
+)
+
+MACOS_CODECS = MediaCodecsFingerprint(
+    can_play_type={**_BASE_CODECS, **HEVC_TYPES},
+    media_source={**_BASE_MEDIA_SOURCE, 'video/mp4; codecs="hvc1.1.6.L93.B0"': True},
+)
+
+LINUX_CODECS = MediaCodecsFingerprint(
+    can_play_type={**_BASE_CODECS, **NO_HEVC_TYPES},
+    media_source={**_BASE_MEDIA_SOURCE, 'video/mp4; codecs="hvc1.1.6.L93.B0"': False},
+)
+
+ANDROID_CODECS = MediaCodecsFingerprint(
+    can_play_type={**_BASE_CODECS, **HEVC_TYPES},
+    media_source={**_BASE_MEDIA_SOURCE, 'video/mp4; codecs="hvc1.1.6.L93.B0"': True},
+)
+
+
 DESKTOP_NETWORK = NetworkConnectionFingerprint(
     effective_type='4g',
     downlink=10.0,
@@ -661,6 +720,7 @@ FINGERPRINTS: dict[str, FingerprintConfig] = {
         timezone='America/Sao_Paulo',
         locale=BR_LOCALE,
         media_devices=MediaDevicesFingerprint(audio_inputs=1, audio_outputs=1, video_inputs=1),
+        media_codecs=ANDROID_CODECS,
         audio=AudioFingerprint(sample_rate=48000, max_channel_count=2),
         speech=SPEECH_ANDROID,
         network_connection=MOBILE_NETWORK,
@@ -753,6 +813,7 @@ FINGERPRINTS: dict[str, FingerprintConfig] = {
         timezone='America/New_York',
         locale=US_LOCALE,
         media_devices=MediaDevicesFingerprint(audio_inputs=1, audio_outputs=1, video_inputs=1),
+        media_codecs=WINDOWS_CODECS,
         audio=AudioFingerprint(sample_rate=48000, max_channel_count=2),
         speech=SPEECH_WINDOWS,
         network_connection=DESKTOP_NETWORK,
@@ -829,6 +890,7 @@ FINGERPRINTS: dict[str, FingerprintConfig] = {
         timezone='America/New_York',
         locale=US_LOCALE,
         media_devices=MediaDevicesFingerprint(audio_inputs=1, audio_outputs=2, video_inputs=1),
+        media_codecs=MACOS_CODECS,
         audio=AudioFingerprint(sample_rate=44100, max_channel_count=2),
         speech=SPEECH_MAC,
         network_connection=DESKTOP_NETWORK,
