@@ -731,27 +731,147 @@ LINUX_ABSENT_APIS = [
     'documentPictureInPicture',
 ]
 
+#: Precisão de shader de um desktop GL. Medido: um Chrome com GPU real responde a faixa
+#: alta em TODAS as precisões, inclusive ``mediump``, porque o driver promove; um container
+#: por software responde a faixa média de verdade, ``[15, 15, 10]``. O payload do hCaptcha lê
+#: ``getShaderPrecisionFormat`` 16 vezes e ainda declara ``precision mediump float`` no próprio
+#: shader, então este é um dos poucos campos onde o valor declarado importa de verdade.
+SHADER_PRECISION_DESKTOP_GL = {
+    'vertex': {
+        'highFloat': [127, 127, 23],
+        'mediumFloat': [127, 127, 23],
+        'lowFloat': [127, 127, 23],
+        'highInt': [31, 30, 0],
+        'mediumInt': [31, 30, 0],
+        'lowInt': [31, 30, 0],
+    },
+    'fragment': {
+        'highFloat': [127, 127, 23],
+        'mediumFloat': [127, 127, 23],
+        'lowFloat': [127, 127, 23],
+        'highInt': [31, 30, 0],
+        'mediumInt': [31, 30, 0],
+        'lowInt': [31, 30, 0],
+    },
+}
+
+#: WebGL de uma Intel integrada com a pilha Mesa, para um perfil Linux.
+#:
+#: ⚠️ **Declarar esta seção é seguro, e a razão vem da engenharia reversa do payload.** A
+#: tabela de strings do ``hsw.js`` traz o pipeline de desenho inteiro (``createShader``,
+#: ``compileShader``, ``bufferData``, ``drawArrays`` com ``TRIANGLE_STRIP``) e lê o resultado
+#: por ``canvas.toDataURL``. O que ela **não** traz é ``texImage2D``, ``createTexture``,
+#: ``renderbufferStorage``, ``createFramebuffer`` nem ``readPixels``: ele nunca tenta alocar
+#: nada no limite que acabou de ler. Os 47 enums que ele varre são apenas **lidos**, então um
+#: limite declarado não é verificável por ele.
+#:
+#: Os valores vêm de uma medição de 2026-09-16 num backend GL real da Mesa, e não de uma
+#: tabela inventada, justamente porque o payload lê os 47 numa varredura única e os limites
+#: por estágio e combinados têm relação aritmética entre si. Copiar um vetor real mantém essa
+#: aritmética de pé.
+#:
+#: ⚠️ **Não foi medido contra uma Intel UHD 620 física.** Não há máquina Intel na bancada.
+#: Dois valores denunciam o backend por software por baixo, ``max_elements_vertices`` e
+#: ``max_samples``, e ficam registrados como a lacuna conhecida deste perfil.
+#:
+#: ⚠️ **Três valores foram corrigidos em relação ao vetor medido, e o motivo é aritmético.**
+#: O backend reportou ``MAX_COMBINED_UNIFORM_BLOCKS`` 45 com 15 por estágio, e
+#: ``MAX_COMBINED_*_UNIFORM_COMPONENTS`` 262144 contra um orçamento de 249856. São números de
+#: OpenGL de desktop, que tem estágios de geometria e tesselação, vazando para dentro de um
+#: contexto WebGL, que só expõe vértice e fragmento. Um contexto WebGL de GPU real não os
+#: reporta assim, e os testes do próprio pydoll recusam o vetor cru. Aqui eles são o teto
+#: coerente: 30 blocos combinados e 249856 componentes.
+WEBGL_LINUX_MESA_INTEL = WebGLProfile(
+    vendor='Google Inc. (Intel)',
+    renderer='ANGLE (Intel, Mesa Intel(R) UHD Graphics 620 (KBL GT2), OpenGL 4.6)',
+    max_texture_size=16384,
+    max_renderbuffer_size=16384,
+    max_cube_map_texture_size=16384,
+    max_viewport_dims=[16384, 16384],
+    max_3d_texture_size=2048,
+    max_array_texture_layers=2048,
+    max_vertex_attribs=16,
+    max_vertex_uniform_vectors=1024,
+    max_fragment_uniform_vectors=1024,
+    max_vertex_uniform_components=4096,
+    max_fragment_uniform_components=4096,
+    max_combined_vertex_uniform_components=249856,
+    max_combined_fragment_uniform_components=249856,
+    max_varying_vectors=32,
+    max_varying_components=128,
+    max_vertex_output_components=128,
+    max_fragment_input_components=128,
+    max_texture_image_units=32,
+    max_vertex_texture_image_units=32,
+    max_combined_texture_image_units=64,
+    max_draw_buffers=8,
+    max_color_attachments=8,
+    max_samples=4,
+    max_uniform_buffer_bindings=72,
+    max_uniform_block_size=65536,
+    max_vertex_uniform_blocks=15,
+    max_fragment_uniform_blocks=15,
+    max_combined_uniform_blocks=30,
+    uniform_buffer_offset_alignment=16,
+    max_texture_lod_bias=16.0,
+    max_elements_vertices=3000,
+    max_elements_indices=3000,
+    max_transform_feedback_interleaved_components=4,
+    max_transform_feedback_separate_components=4,
+    max_transform_feedback_separate_attribs=64,
+    subpixel_bits=4,
+    aliased_point_size_range=[1, 256],
+    aliased_line_width_range=[1, 255],
+    supported_extensions=[
+        'EXT_clip_control',
+        'EXT_color_buffer_float',
+        'EXT_color_buffer_half_float',
+        'EXT_conservative_depth',
+        'EXT_depth_clamp',
+        'EXT_disjoint_timer_query_webgl2',
+        'EXT_float_blend',
+        'EXT_polygon_offset_clamp',
+        'EXT_render_snorm',
+        'EXT_texture_compression_bptc',
+        'EXT_texture_compression_rgtc',
+        'EXT_texture_filter_anisotropic',
+        'EXT_texture_mirror_clamp_to_edge',
+        'EXT_texture_norm16',
+        'KHR_parallel_shader_compile',
+        'NV_shader_noperspective_interpolation',
+        'OES_draw_buffers_indexed',
+        'OES_sample_variables',
+        'OES_shader_multisample_interpolation',
+        'OES_texture_float_linear',
+        'OVR_multiview2',
+        'WEBGL_blend_func_extended',
+        'WEBGL_clip_cull_distance',
+        'WEBGL_compressed_texture_s3tc',
+        'WEBGL_compressed_texture_s3tc_srgb',
+        'WEBGL_debug_renderer_info',
+        'WEBGL_debug_shaders',
+        'WEBGL_lose_context',
+        'WEBGL_multi_draw',
+        'WEBGL_polygon_mode',
+        'WEBGL_provoking_vertex',
+        'WEBGL_stencil_texturing',
+    ],
+    shader_precision_formats=SHADER_PRECISION_DESKTOP_GL,
+)
+
+
 #: Perfil de desktop Linux para rodar dentro de container.
 #:
-#: ⚠️ **A seção ``webgl`` é deliberadamente omitida, e isso é o ponto do perfil.**
-#: Um container sem nó de render rasteriza por software, e medido em 2026-09-16
-#: o teto real ali é ``MAX_TEXTURE_SIZE`` de 8192. Declarar uma GPU moderna, que
-#: reporta 16384, cria uma contradição que qualquer página encontra em três
-#: linhas: basta pedir uma textura do tamanho que o próprio contexto acabou de
-#: anunciar e ler o erro. Sem a seção, os limites continuam sendo os reais do
-#: rasterizador, tudo que é declarado pode ser cumprido, e não sobra nenhuma
-#: auto-contradição.
+#: A seção ``webgl`` é declarada, e isso reverte a primeira versão deste perfil. O argumento
+#: de então era que declarar um limite acima do que o rasterizador entrega se desmente no
+#: teste de alocação. Isso é verdade contra um auditor que alocue, e o nosso scanner aloca.
+#: Não é verdade contra o payload do hCaptcha, cuja tabela de strings não traz ``texImage2D``
+#: nem ``renderbufferStorage``: ele lê os 47 enums e nunca os verifica. Otimizar contra o
+#: auditor em vez do alvo era o erro.
 #:
-#: Para trocar o **nome** do renderizador sem tocar nas capacidades, o caminho
-#: é a variável de ambiente ``ANGLE_GL_RENDERER`` (com ``ANGLE_GL_VENDOR``),
-#: lida pelo ANGLE na subida do processo: medido, ela alcança a página e o Web
-#: Worker igualmente, sem nenhum getter reescrito. Isso é configuração de
-#: imagem, não de biblioteca, e por isso não vive aqui.
-#:
-#: ``hardware_concurrency`` deve bater com o que o container de fato tem. Medido:
-#: um limite por cota (``--cpus=2``) não chega ao navegador, que segue anunciando
-#: os núcleos do host; só ``--cpuset-cpus`` chega. Ajuste o valor abaixo ao
-#: tamanho do cpuset.
+#: ``hardware_concurrency`` deve bater com o que o container de fato tem. Medido: um limite
+#: por cota (``--cpus=2``) não chega ao navegador, que segue anunciando os núcleos do host;
+#: só ``--cpuset-cpus`` chega. Ajuste o valor abaixo ao tamanho do cpuset.
 LINUX_CONTAINER = FingerprintConfig(
     user_agent=UA_LINUX,
     navigator=NavigatorFingerprint(
@@ -791,6 +911,7 @@ LINUX_CONTAINER = FingerprintConfig(
     locale=BR_LOCALE,
     timezone='America/Sao_Paulo',
     geolocation=SAO_PAULO_GEO,
+    webgl=WEBGL_LINUX_MESA_INTEL,
     fonts=LINUX_FONTS,
     media_devices=MediaDevicesFingerprint(audio_inputs=1, audio_outputs=1, video_inputs=0),
     media_codecs=DESKTOP_CHROMIUM_CODECS,
