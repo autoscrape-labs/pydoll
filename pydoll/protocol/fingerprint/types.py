@@ -109,6 +109,11 @@ class WebGLProfile(TypedDict):
 
     vendor: str  # UNMASKED_VENDOR_WEBGL
     renderer: str  # UNMASKED_RENDERER_WEBGL
+    subpixel_bits: NotRequired[int]  # gl.SUBPIXEL_BITS (4 on most desktop GPUs)
+    max_elements_vertices: NotRequired[int]  # gl.MAX_ELEMENTS_VERTICES
+    max_elements_indices: NotRequired[int]  # gl.MAX_ELEMENTS_INDICES
+    max_transform_feedback_interleaved_components: NotRequired[int]
+    max_transform_feedback_separate_components: NotRequired[int]
     max_texture_size: NotRequired[int]  # gl.MAX_TEXTURE_SIZE (e.g. 16384)
     max_renderbuffer_size: NotRequired[int]  # gl.MAX_RENDERBUFFER_SIZE
     max_viewport_dims: NotRequired[list[int]]  # [width, height]
@@ -139,7 +144,7 @@ class WebGLProfile(TypedDict):
     max_combined_fragment_uniform_components: NotRequired[int]
     uniform_buffer_offset_alignment: NotRequired[int]  # gl2.UNIFORM_BUFFER_OFFSET_ALIGNMENT
     max_texture_lod_bias: NotRequired[float]  # gl2.MAX_TEXTURE_LOD_BIAS
-    max_transform_feedback_interleaved_components: NotRequired[int]
+    max_transform_feedback_separate_attribs: NotRequired[int]
     max_vertex_output_components: NotRequired[int]  # gl2.MAX_VERTEX_OUTPUT_COMPONENTS
     max_fragment_input_components: NotRequired[int]  # gl2.MAX_FRAGMENT_INPUT_COMPONENTS
     max_element_index: NotRequired[int]  # gl2.MAX_ELEMENT_INDEX
