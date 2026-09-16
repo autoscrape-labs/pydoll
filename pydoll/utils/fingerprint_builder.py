@@ -1028,17 +1028,27 @@ _FONTS_JS_TEMPLATE = r"""if (typeof FontFace !== 'undefined' && FontFace.prototy
   const allow = new Set(%s);
   const LOCAL = /local\s*\(/i;
   const REMOTE = /url\s*\(/i;
+  const OPERAND = /local\s*\(\s*("[^"]*"|'[^']*'|[^)]*?)\s*\)/gi;
   const sources = new WeakMap();
   _wrapCtor(self, 'FontFace', null, (face, args) => {
     if (typeof args[1] === 'string') sources.set(face, args[1]);
   });
   const norm = (s) => String(s).trim().replace(/^["']|["']$/g, '').toLowerCase();
+  const named = (source) => {
+    const out = [];
+    OPERAND.lastIndex = 0;
+    let m;
+    while ((m = OPERAND.exec(source)) !== null) out.push(norm(m[1]));
+    return out;
+  };
   const _realLoad = FontFace.prototype.load;
   _patchM(FontFace.prototype, 'load', function load() {
     const source = sources.get(this);
     const local = typeof source === 'string' && LOCAL.test(source) && !REMOTE.test(source);
     const real = _realLoad.apply(this, arguments);
-    if (!local || allow.has(norm(this.family))) return real;
+    if (!local) return real;
+    const wanted = named(source);
+    if (wanted.length > 0 && wanted.every((f) => allow.has(f))) return real;
     return real.then(() => {
       throw new DOMException('A network error occurred.', 'NetworkError');
     });

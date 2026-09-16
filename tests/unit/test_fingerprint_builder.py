@@ -310,7 +310,9 @@ class TestSections:
         """load() answers from the profile's allow-list, not from a marker denylist."""
         js = build_fingerprint_js({'fonts': {'available_fonts': ['Segoe UI', 'Arial']}})
         assert 'const allow = new Set(["arial", "segoe ui"]);' in js
-        assert 'if (!local || allow.has(norm(this.family))) return real;' in js
+        assert 'const wanted = named(source);' in js
+        assert 'if (wanted.length > 0 && wanted.every((f) => allow.has(f))) return real;' in js
+        assert 'this.family' not in js
         assert "throw new DOMException('A network error occurred.', 'NetworkError');" in js
         assert 'const reject' not in js
         assert '"helvetica neue"' not in js
