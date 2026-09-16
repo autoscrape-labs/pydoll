@@ -754,3 +754,66 @@ class TestScriptFetchOverride:
         assert FingerprintApplier._accept_language_header(['pt-BR', 'pt', 'en-US', 'en']) == (
             'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7'
         )
+
+
+class TestLaunchIdentity:
+    UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.7977.83 Safari/537.36'
+    REDUCED = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36'
+
+    async def test_accept_language_is_not_overridden_when_launch_matches(self, fp_tab, fake_conn):
+        fp_tab._browser.options.set_accept_languages('en-US,en')
+        await fp_tab.apply_fingerprint({'user_agent': UA, 'locale': {'languages': ['en-US', 'en']}})
+        params = fake_conn.last_command('Emulation.setUserAgentOverride')['params']
+        assert 'acceptLanguage' not in params
+
+    async def test_accept_language_is_overridden_when_launch_differs(self, fp_tab, fake_conn):
+        fp_tab._browser.options.set_accept_languages('pt-BR,pt')
+        await fp_tab.apply_fingerprint({'user_agent': UA, 'locale': {'languages': ['en-US', 'en']}})
+        params = fake_conn.last_command('Emulation.setUserAgentOverride')['params']
+        assert params['acceptLanguage'] == 'en-US,en'
+
+    async def test_user_agent_override_skipped_when_launch_carries_the_identity(
+        self, fp_tab, fake_conn, monkeypatch
+    ):
+        monkeypatch.setattr('pydoll.browser.fingerprint_applier.platform.system', lambda: 'Darwin')
+        fp_tab._browser.options.add_argument(f'--user-agent={self.REDUCED}')
+        fp_tab._browser.options.set_accept_languages('en-US,en')
+        await fp_tab.apply_fingerprint({
+            'user_agent': self.UA,
+            'locale': {'languages': ['en-US', 'en']},
+        })
+        assert not fake_conn.commands_for('Emulation.setUserAgentOverride')
+        assert not fake_conn.commands_for('Fetch.enable')
+
+    async def test_client_hints_force_the_override(self, fp_tab, fake_conn, monkeypatch):
+        monkeypatch.setattr('pydoll.browser.fingerprint_applier.platform.system', lambda: 'Darwin')
+        fp_tab._browser.options.add_argument(f'--user-agent={self.REDUCED}')
+        fp_tab._browser.options.set_accept_languages('en-US,en')
+        await fp_tab.apply_fingerprint({
+            'user_agent': self.UA,
+            'locale': {'languages': ['en-US', 'en']},
+            'client_hints': {'platform_version': '15.0.0'},
+        })
+        assert fake_conn.commands_for('Emulation.setUserAgentOverride')
+
+    async def test_cross_platform_profile_keeps_the_override(self, fp_tab, fake_conn, monkeypatch):
+        monkeypatch.setattr('pydoll.browser.fingerprint_applier.platform.system', lambda: 'Darwin')
+        fp_tab._browser.options.add_argument(f'--user-agent={UA}')
+        await fp_tab.apply_fingerprint({'user_agent': UA})
+        assert fake_conn.commands_for('Emulation.setUserAgentOverride')
+
+    async def test_identity_headers_keep_their_position(self):
+        headers = {
+            'accept': '*/*',
+            'sec-fetch-site': 'same-origin',
+            'user-agent': 'old',
+            'accept-encoding': 'gzip',
+            'accept-language': 'pt-BR',
+        }
+        rewritten = FingerprintApplier._identity_headers(
+            {'user_agent': UA, 'locale': {'languages': ['en-US', 'en']}}, headers
+        )
+        assert [entry['name'] for entry in rewritten] == list(headers)
+        by_name = {entry['name']: entry['value'] for entry in rewritten}
+        assert by_name['user-agent'].endswith('Chrome/151.0.0.0 Safari/537.36')
+        assert by_name['accept-language'] == 'en-US,en;q=0.9'

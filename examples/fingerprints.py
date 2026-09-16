@@ -34,11 +34,16 @@ from pydoll.protocol.fingerprint.types import (
     GeolocationFingerprint,
     HardwareFingerprint,
     LocaleFingerprint,
+    MediaCodecsFingerprint,
     MediaDevicesFingerprint,
     MediaFeaturesFingerprint,
+    MimeTypeEntry,
     NavigatorFingerprint,
     NetworkConnectionFingerprint,
     PermissionsFingerprint,
+    PlatformApisFingerprint,
+    PluginEntry,
+    PluginsFingerprint,
     ScreenFingerprint,
     SpeechFingerprint,
     SpeechVoice,
@@ -69,6 +74,12 @@ APP_ANDROID = UA_ANDROID[len('Mozilla/') :]
 APP_WINDOWS = UA_WINDOWS[len('Mozilla/') :]
 APP_MAC = UA_MAC[len('Mozilla/') :]
 
+UA_LINUX = (
+    f'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
+    f'Chrome/{CHROME_DESKTOP} Safari/537.36'
+)
+APP_LINUX = UA_LINUX[len('Mozilla/') :]
+
 US_LOCALE = LocaleFingerprint(languages=['en-US', 'en'])
 BR_LOCALE = LocaleFingerprint(languages=['pt-BR', 'pt', 'en-US', 'en'])
 
@@ -79,13 +90,17 @@ SAO_PAULO_GEO = GeolocationFingerprint(latitude=-23.5505, longitude=-46.6333, ac
 DESKTOP_EXTENSIONS = [
     'ANGLE_instanced_arrays',
     'EXT_blend_minmax',
+    'EXT_clip_control',
     'EXT_color_buffer_half_float',
+    'EXT_depth_clamp',
+    'EXT_disjoint_timer_query',
     'EXT_float_blend',
     'EXT_frag_depth',
     'EXT_shader_texture_lod',
     'EXT_texture_compression_bptc',
     'EXT_texture_compression_rgtc',
     'EXT_texture_filter_anisotropic',
+    'EXT_texture_mirror_clamp_to_edge',
     'EXT_sRGB',
     'KHR_parallel_shader_compile',
     'OES_element_index_uint',
@@ -100,10 +115,12 @@ DESKTOP_EXTENSIONS = [
     'WEBGL_compressed_texture_s3tc',
     'WEBGL_compressed_texture_s3tc_srgb',
     'WEBGL_debug_renderer_info',
+    'WEBGL_debug_shaders',
     'WEBGL_depth_texture',
     'WEBGL_draw_buffers',
     'WEBGL_lose_context',
     'WEBGL_multi_draw',
+    'WEBGL_polygon_mode',
 ]
 
 MOBILE_EXTENSIONS = [
@@ -136,23 +153,34 @@ MOBILE_EXTENSIONS = [
 ]
 
 DESKTOP_WEBGL2_EXTENSIONS = [
+    'EXT_clip_control',
     'EXT_color_buffer_float',
     'EXT_color_buffer_half_float',
+    'EXT_conservative_depth',
+    'EXT_depth_clamp',
     'EXT_float_blend',
+    'EXT_render_snorm',
     'EXT_texture_compression_bptc',
     'EXT_texture_compression_rgtc',
     'EXT_texture_filter_anisotropic',
+    'EXT_texture_mirror_clamp_to_edge',
     'EXT_texture_norm16',
     'KHR_parallel_shader_compile',
+    'NV_shader_noperspective_interpolation',
     'OES_draw_buffers_indexed',
+    'OES_sample_variables',
+    'OES_shader_multisample_interpolation',
     'OES_texture_float_linear',
     'WEBGL_clip_cull_distance',
     'WEBGL_compressed_texture_s3tc',
     'WEBGL_compressed_texture_s3tc_srgb',
     'WEBGL_debug_renderer_info',
+    'WEBGL_debug_shaders',
     'WEBGL_lose_context',
     'WEBGL_multi_draw',
+    'WEBGL_polygon_mode',
     'WEBGL_provoking_vertex',
+    'WEBGL_stencil_texturing',
 ]
 
 MOBILE_WEBGL2_EXTENSIONS = [
@@ -287,10 +315,6 @@ WEBGPU_APPLE_M_SERIES = WebGPUProfile(
 # NVIDIA GeForce RTX 3060 on Windows, Chrome D3D12 backend. ``vendor`` and
 # ``architecture`` come from a real Chrome 150 capture of an RTX 3060; the
 # limits are the webgpu.report aggregate for NVIDIA + Windows + Chrome (42
-# adapters, every limit identical across them) and match Dawn's D3D12 tier
-# tables; the features are the ones at 100% in that aggregate (Ampere has
-# shader-f16), plus subgroup-size-control which Dawn enables on any current
-# NVIDIA driver.
 WEBGPU_NVIDIA_AMPERE_D3D12 = WebGPUProfile(
     vendor='nvidia',
     architecture='ampere',
@@ -328,6 +352,8 @@ WEBGPU_NVIDIA_AMPERE_D3D12 = WebGPUProfile(
         'maxComputeWorkgroupSizeY': 1024,
         'maxComputeWorkgroupSizeZ': 64,
         'maxComputeWorkgroupsPerDimension': 65535,
+        'maxStorageBuffersInVertexStage': 16,
+        'maxStorageBuffersInFragmentStage': 16,
     },
     features=[
         'core-features-and-limits',
@@ -359,7 +385,6 @@ WEBGPU_NVIDIA_AMPERE_D3D12 = WebGPUProfile(
 # derived from the Galaxy S24 Ultra Vulkan capability reports through Dawn's
 # Vulkan mapping and Chrome's limit tiers, and agree with the webgpu.report
 # Qualcomm + Android aggregate on every discriminating value (128 MiB storage
-# binding, 16 inter-stage variables, 2 GiB maxBufferSize).
 WEBGPU_ADRENO_750_VULKAN = WebGPUProfile(
     vendor='qualcomm',
     architecture='adreno-7xx',
@@ -397,6 +422,8 @@ WEBGPU_ADRENO_750_VULKAN = WebGPUProfile(
         'maxComputeWorkgroupSizeY': 1024,
         'maxComputeWorkgroupSizeZ': 64,
         'maxComputeWorkgroupsPerDimension': 65535,
+        'maxStorageBuffersInVertexStage': 16,
+        'maxStorageBuffersInFragmentStage': 16,
     },
     features=[
         'core-features-and-limits',
@@ -445,6 +472,14 @@ SPEECH_MAC = SpeechFingerprint(
     ]
 )
 
+SPEECH_LINUX_PT_BR = SpeechFingerprint(
+    voices=[
+        SpeechVoice(name='Portuguese (Brazil)', lang='pt-BR', local_service=True),
+        SpeechVoice(name='English', lang='en-US', local_service=True),
+        SpeechVoice(name='Google português do Brasil', lang='pt-BR', local_service=False),
+    ]
+)
+
 SPEECH_ANDROID = SpeechFingerprint(
     voices=[
         SpeechVoice(
@@ -459,6 +494,43 @@ SPEECH_ANDROID = SpeechFingerprint(
         ),
     ]
 )
+
+DESKTOP_CHROMIUM_CODECS = MediaCodecsFingerprint(
+    can_play_type={
+        'video/mp4; codecs="avc1.42E01E"': 'probably',
+        'video/webm; codecs="vp8"': 'probably',
+        'video/webm; codecs="vp9"': 'probably',
+        'video/ogg; codecs="theora"': '',
+        'video/quicktime': '',
+        'video/x-matroska': 'maybe',
+        'audio/aac': 'probably',
+        'audio/mpeg': 'probably',
+        'audio/mpegurl': 'maybe',
+        'audio/ogg; codecs="vorbis"': 'probably',
+        'audio/wav; codecs="1"': 'probably',
+        'audio/x-m4a': 'maybe',
+    },
+    media_source={
+        'video/mp4; codecs="avc1.42E01E"': True,
+        'video/webm; codecs="vp8"': True,
+        'video/webm; codecs="vp9"': True,
+        'video/ogg; codecs="theora"': False,
+        'video/quicktime': False,
+        'video/x-matroska': False,
+        'audio/aac': True,
+        'audio/mpeg': True,
+        'audio/mpegurl': False,
+        'audio/ogg; codecs="vorbis"': False,
+        'audio/wav; codecs="1"': False,
+        'audio/x-m4a': False,
+    },
+)
+
+WINDOWS_CODECS = DESKTOP_CHROMIUM_CODECS
+MACOS_CODECS = DESKTOP_CHROMIUM_CODECS
+LINUX_CODECS = DESKTOP_CHROMIUM_CODECS
+ANDROID_CODECS = DESKTOP_CHROMIUM_CODECS
+
 
 DESKTOP_NETWORK = NetworkConnectionFingerprint(
     effective_type='4g',
@@ -548,7 +620,260 @@ ANDROID_PERMISSIONS = PermissionsFingerprint(
     }
 )
 
+WINDOWS_ABSENT_APIS = [
+    'BarcodeDetector',
+    'ContactsManager',
+    'ContentIndex',
+    'navigator.contacts',
+    'NetworkInformation.downlinkMax',
+]
+MACOS_ABSENT_APIS = [
+    'ContactsManager',
+    'ContentIndex',
+    'navigator.contacts',
+    'NetworkInformation.downlinkMax',
+]
+ANDROID_ABSENT_APIS = [
+    'SharedWorker',
+    'navigator.hid',
+    'navigator.serial',
+    'navigator.windowControlsOverlay',
+    'HTMLMediaElement.sinkId',
+    'HTMLMediaElement.setSinkId',
+    'MediaDevices.selectAudioOutput',
+    'Summarizer',
+    'LanguageModel',
+]
+
+LINUX_FONTS = FontFingerprint(
+    available_fonts=[
+        'DejaVu Sans',
+        'DejaVu Serif',
+        'DejaVu Sans Mono',
+        'Liberation Sans',
+        'Liberation Serif',
+        'Liberation Mono',
+        'Noto Sans',
+        'Noto Serif',
+        'Noto Color Emoji',
+        'Ubuntu',
+        'Ubuntu Mono',
+        'Cantarell',
+        'FreeSans',
+        'FreeSerif',
+        'FreeMono',
+        'Nimbus Sans',
+        'Nimbus Roman',
+        'Nimbus Mono PS',
+        'URW Bookman',
+        'URW Gothic',
+        'C059',
+        'P052',
+        'Z003',
+        'Droid Sans Fallback',
+        'Arial',
+        'Roboto',
+    ]
+)
+
+LINUX_ABSENT_APIS = [
+    'BarcodeDetector',
+    'navigator.windowControlsOverlay',
+    'DocumentPictureInPicture',
+    'documentPictureInPicture',
+]
+
+SHADER_PRECISION_DESKTOP_GL = {
+    'vertex': {
+        'highFloat': [127, 127, 23],
+        'mediumFloat': [127, 127, 23],
+        'lowFloat': [127, 127, 23],
+        'highInt': [31, 30, 0],
+        'mediumInt': [31, 30, 0],
+        'lowInt': [31, 30, 0],
+    },
+    'fragment': {
+        'highFloat': [127, 127, 23],
+        'mediumFloat': [127, 127, 23],
+        'lowFloat': [127, 127, 23],
+        'highInt': [31, 30, 0],
+        'mediumInt': [31, 30, 0],
+        'lowInt': [31, 30, 0],
+    },
+}
+
+WEBGL_LINUX_MESA_INTEL = WebGLProfile(
+    vendor='Google Inc. (Intel)',
+    renderer='ANGLE (Intel, Mesa Intel(R) UHD Graphics 620 (KBL GT2), OpenGL 4.6)',
+    max_texture_size=16384,
+    max_renderbuffer_size=16384,
+    max_cube_map_texture_size=16384,
+    max_viewport_dims=[16384, 16384],
+    max_3d_texture_size=2048,
+    max_array_texture_layers=2048,
+    max_vertex_attribs=16,
+    max_vertex_uniform_vectors=1024,
+    max_fragment_uniform_vectors=1024,
+    max_vertex_uniform_components=4096,
+    max_fragment_uniform_components=4096,
+    max_combined_vertex_uniform_components=249856,
+    max_combined_fragment_uniform_components=249856,
+    max_varying_vectors=32,
+    max_varying_components=128,
+    max_vertex_output_components=128,
+    max_fragment_input_components=128,
+    max_texture_image_units=32,
+    max_vertex_texture_image_units=32,
+    max_combined_texture_image_units=64,
+    max_draw_buffers=8,
+    max_color_attachments=8,
+    max_samples=4,
+    max_uniform_buffer_bindings=72,
+    max_uniform_block_size=65536,
+    max_vertex_uniform_blocks=15,
+    max_fragment_uniform_blocks=15,
+    max_combined_uniform_blocks=30,
+    uniform_buffer_offset_alignment=16,
+    max_texture_lod_bias=16.0,
+    max_elements_vertices=3000,
+    max_elements_indices=3000,
+    max_transform_feedback_interleaved_components=4,
+    max_transform_feedback_separate_components=4,
+    max_transform_feedback_separate_attribs=64,
+    subpixel_bits=4,
+    aliased_point_size_range=[1, 256],
+    aliased_line_width_range=[1, 255],
+    supported_extensions=[
+        'EXT_clip_control',
+        'EXT_color_buffer_float',
+        'EXT_color_buffer_half_float',
+        'EXT_conservative_depth',
+        'EXT_depth_clamp',
+        'EXT_disjoint_timer_query_webgl2',
+        'EXT_float_blend',
+        'EXT_polygon_offset_clamp',
+        'EXT_render_snorm',
+        'EXT_texture_compression_bptc',
+        'EXT_texture_compression_rgtc',
+        'EXT_texture_filter_anisotropic',
+        'EXT_texture_mirror_clamp_to_edge',
+        'EXT_texture_norm16',
+        'KHR_parallel_shader_compile',
+        'NV_shader_noperspective_interpolation',
+        'OES_draw_buffers_indexed',
+        'OES_sample_variables',
+        'OES_shader_multisample_interpolation',
+        'OES_texture_float_linear',
+        'OVR_multiview2',
+        'WEBGL_blend_func_extended',
+        'WEBGL_clip_cull_distance',
+        'WEBGL_compressed_texture_s3tc',
+        'WEBGL_compressed_texture_s3tc_srgb',
+        'WEBGL_debug_renderer_info',
+        'WEBGL_debug_shaders',
+        'WEBGL_lose_context',
+        'WEBGL_multi_draw',
+        'WEBGL_polygon_mode',
+        'WEBGL_provoking_vertex',
+        'WEBGL_stencil_texturing',
+    ],
+    shader_precision_formats=SHADER_PRECISION_DESKTOP_GL,
+)
+
+
+CHROME_PLUGINS = PluginsFingerprint(
+    mime_types=[
+        MimeTypeEntry(
+            type='application/pdf', suffixes='pdf', description='Portable Document Format'
+        ),
+        MimeTypeEntry(type='text/pdf', suffixes='pdf', description='Portable Document Format'),
+    ],
+    plugins=[
+        PluginEntry(
+            name=nome,
+            filename='internal-pdf-viewer',
+            description='Portable Document Format',
+            mime_types=[0, 1],
+        )
+        for nome in (
+            'PDF Viewer',
+            'Chrome PDF Viewer',
+            'Chromium PDF Viewer',
+            'Microsoft Edge PDF Viewer',
+            'WebKit built-in PDF',
+        )
+    ],
+)
+
+
+BROWSER_BRAND_APIS = [
+    'navigator.brave',
+    'window.opr',
+    'opr',
+]
+
+
+LINUX_CONTAINER = FingerprintConfig(
+    user_agent=UA_LINUX,
+    navigator=NavigatorFingerprint(
+        platform='Linux x86_64',
+        vendor='Google Inc.',
+        app_version=APP_LINUX,
+        pdf_viewer_enabled=True,
+    ),
+    client_hints=ClientHintsFingerprint(
+        platform_version='',
+        architecture='x86',
+        bitness='64',
+        model='',
+        form_factors=['Desktop'],
+    ),
+    screen=ScreenFingerprint(
+        width=1920,
+        height=1080,
+        avail_width=1920,
+        avail_height=1053,
+        avail_top=27,
+        avail_left=0,
+        color_depth=24,
+        pixel_depth=24,
+        device_pixel_ratio=1.0,
+        orientation_type='landscape-primary',
+        orientation_angle=0,
+    ),
+    hardware=HardwareFingerprint(
+        hardware_concurrency=4,
+        device_memory=8,
+        max_touch_points=0,
+    ),
+    locale=BR_LOCALE,
+    timezone='America/Sao_Paulo',
+    geolocation=SAO_PAULO_GEO,
+    webgl=WEBGL_LINUX_MESA_INTEL,
+    fonts=LINUX_FONTS,
+    media_devices=MediaDevicesFingerprint(audio_inputs=1, audio_outputs=1, video_inputs=0),
+    media_codecs=DESKTOP_CHROMIUM_CODECS,
+    plugins=CHROME_PLUGINS,
+    media_features=MediaFeaturesFingerprint(
+        prefers_color_scheme='light',
+        prefers_contrast='no-preference',
+        prefers_reduced_motion='no-preference',
+        prefers_reduced_transparency='no-preference',
+        forced_colors='none',
+        color_gamut='srgb',
+    ),
+    permissions=PermissionsFingerprint(
+        overrides={'notifications': 'prompt', 'geolocation': 'prompt'}
+    ),
+    network_connection=DESKTOP_NETWORK,
+    platform_apis=PlatformApisFingerprint(hidden=[*LINUX_ABSENT_APIS, *BROWSER_BRAND_APIS]),
+    audio=AudioFingerprint(sample_rate=48000, max_channel_count=2),
+    speech=SPEECH_LINUX_PT_BR,
+)
+
+
 FINGERPRINTS: dict[str, FingerprintConfig] = {
+    'linux_container': LINUX_CONTAINER,
     # Android (mobile) — Brazilian identity (pair with a Brazilian egress IP).
     'android_s24_ultra_sao_paulo': FingerprintConfig(
         user_agent=UA_ANDROID,
@@ -567,7 +892,9 @@ FINGERPRINTS: dict[str, FingerprintConfig] = {
             max_viewport_dims=[16384, 16384],
             max_vertex_attribs=32,
             max_vertex_uniform_vectors=256,
+            max_vertex_uniform_components=1024,
             max_fragment_uniform_vectors=224,
+            max_fragment_uniform_components=896,
             max_texture_image_units=16,
             max_vertex_texture_image_units=16,
             max_combined_texture_image_units=32,
@@ -598,10 +925,12 @@ FINGERPRINTS: dict[str, FingerprintConfig] = {
         timezone='America/Sao_Paulo',
         locale=BR_LOCALE,
         media_devices=MediaDevicesFingerprint(audio_inputs=1, audio_outputs=1, video_inputs=1),
+        media_codecs=ANDROID_CODECS,
         audio=AudioFingerprint(sample_rate=48000, max_channel_count=2),
         speech=SPEECH_ANDROID,
         network_connection=MOBILE_NETWORK,
         fonts=ANDROID_FONTS,
+        platform_apis=PlatformApisFingerprint(hidden=ANDROID_ABSENT_APIS),
         media_features=MediaFeaturesFingerprint(color_gamut='p3'),
         permissions=ANDROID_PERMISSIONS,
     ),
@@ -629,8 +958,13 @@ FINGERPRINTS: dict[str, FingerprintConfig] = {
             max_array_texture_layers=2048,
             max_vertex_attribs=16,
             max_vertex_uniform_vectors=4096,
+            max_vertex_uniform_components=16384,
             max_fragment_uniform_vectors=1024,
+            max_fragment_uniform_components=4096,
             max_varying_vectors=30,
+            max_varying_components=120,
+            max_vertex_output_components=120,
+            max_fragment_input_components=120,
             max_texture_image_units=16,
             max_vertex_texture_image_units=16,
             max_combined_texture_image_units=32,
@@ -638,6 +972,15 @@ FINGERPRINTS: dict[str, FingerprintConfig] = {
             max_draw_buffers=8,
             max_samples=8,
             max_uniform_block_size=65536,
+            max_uniform_buffer_bindings=24,
+            max_vertex_uniform_blocks=12,
+            max_fragment_uniform_blocks=12,
+            max_combined_uniform_blocks=24,
+            max_combined_vertex_uniform_components=212992,
+            max_combined_fragment_uniform_components=200704,
+            uniform_buffer_offset_alignment=256,
+            max_texture_lod_bias=2.0,
+            max_transform_feedback_interleaved_components=120,
             aliased_line_width_range=[1, 1],
             aliased_point_size_range=[1, 1024],
             supported_extensions=DESKTOP_EXTENSIONS,
@@ -667,10 +1010,12 @@ FINGERPRINTS: dict[str, FingerprintConfig] = {
         timezone='America/New_York',
         locale=US_LOCALE,
         media_devices=MediaDevicesFingerprint(audio_inputs=1, audio_outputs=1, video_inputs=1),
+        media_codecs=WINDOWS_CODECS,
         audio=AudioFingerprint(sample_rate=48000, max_channel_count=2),
         speech=SPEECH_WINDOWS,
         network_connection=DESKTOP_NETWORK,
         fonts=WINDOWS_FONTS,
+        platform_apis=PlatformApisFingerprint(hidden=WINDOWS_ABSENT_APIS),
         media_features=MediaFeaturesFingerprint(color_gamut='srgb'),
         permissions=DESKTOP_PERMISSIONS,
     ),
@@ -692,10 +1037,26 @@ FINGERPRINTS: dict[str, FingerprintConfig] = {
             max_viewport_dims=[16384, 16384],
             max_vertex_attribs=16,
             max_vertex_uniform_vectors=1024,
+            max_vertex_uniform_components=4096,
             max_fragment_uniform_vectors=1024,
+            max_fragment_uniform_components=4096,
+            max_varying_vectors=30,
+            max_varying_components=120,
+            max_vertex_output_components=120,
+            max_fragment_input_components=120,
             max_texture_image_units=16,
             max_vertex_texture_image_units=16,
             max_combined_texture_image_units=32,
+            max_uniform_block_size=16384,
+            max_uniform_buffer_bindings=32,
+            max_vertex_uniform_blocks=16,
+            max_fragment_uniform_blocks=16,
+            max_combined_uniform_blocks=32,
+            max_combined_vertex_uniform_components=69632,
+            max_combined_fragment_uniform_components=69632,
+            uniform_buffer_offset_alignment=16,
+            max_texture_lod_bias=15.0,
+            max_transform_feedback_interleaved_components=128,
             aliased_line_width_range=[1, 1],
             aliased_point_size_range=[1, 511],
             shader_precision_formats=SHADER_PRECISION_DEFAULT,
@@ -723,10 +1084,12 @@ FINGERPRINTS: dict[str, FingerprintConfig] = {
         timezone='America/New_York',
         locale=US_LOCALE,
         media_devices=MediaDevicesFingerprint(audio_inputs=1, audio_outputs=2, video_inputs=1),
+        media_codecs=MACOS_CODECS,
         audio=AudioFingerprint(sample_rate=44100, max_channel_count=2),
         speech=SPEECH_MAC,
         network_connection=DESKTOP_NETWORK,
         fonts=MAC_FONTS,
+        platform_apis=PlatformApisFingerprint(hidden=MACOS_ABSENT_APIS),
         media_features=MediaFeaturesFingerprint(color_gamut='p3'),
         permissions=DESKTOP_PERMISSIONS,
     ),

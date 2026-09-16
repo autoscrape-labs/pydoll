@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import logging
+import platform
 from contextlib import suppress
-from typing import TYPE_CHECKING, Awaitable, Callable, Optional
+from typing import TYPE_CHECKING, Awaitable, Callable, Optional, cast
 
 from pydoll.commands import (
     BrowserCommands,
@@ -149,7 +150,7 @@ class FingerprintApplier:
         if not tab.page_events_enabled:
             await tab.enable_page_events()
 
-        accept_language = self._build_accept_language(fingerprint)
+        accept_language = self._accept_language_override(fingerprint)
 
         parsed = (
             UserAgentParser.parse(fingerprint['user_agent'])
@@ -198,9 +199,12 @@ class FingerprintApplier:
         """Send every CDP-native override of the profile to the page session."""
         tab = self._tab
         if parsed is not None:
-            self._warn_on_user_agent_option_conflict(fingerprint['user_agent'])
+            self._warn_on_user_agent_option_conflict(fingerprint['user_agent'], parsed)
             self._apply_client_hint_overrides(parsed, fingerprint.get('client_hints'))
-            await self._apply_user_agent(parsed, accept_language, mobile=mobile)
+            if self._launch_identity_covers_page(fingerprint, parsed):
+                logger.debug('Identity already set at launch; leaving the header order to Chrome')
+            else:
+                await self._apply_user_agent(parsed, accept_language, mobile=mobile)
         if 'timezone' in fingerprint:
             await tab._execute_command(
                 EmulationCommands.set_timezone_override(fingerprint['timezone'])
@@ -215,11 +219,14 @@ class FingerprintApplier:
                 )
             )
         if 'screen' in fingerprint:
+            include_screen_size = not headless
             await self._apply_device_metrics(
-                fingerprint['screen'], mobile=mobile, include_screen_size=not headless
+                fingerprint['screen'], mobile=mobile, include_screen_size=include_screen_size
             )
             await self._apply_headless_screen(fingerprint['screen'])
-            await self._apply_window_bounds(fingerprint['screen'])
+            await self._apply_window_bounds(
+                fingerprint['screen'], mobile=mobile, include_screen_size=include_screen_size
+            )
         if 'hardware' in fingerprint and 'hardware_concurrency' in fingerprint['hardware']:
             await tab._execute_command(
                 EmulationCommands.set_hardware_concurrency_override(
@@ -352,7 +359,9 @@ class FingerprintApplier:
                 )
             )
 
-    async def _apply_window_bounds(self, screen: 'ScreenFingerprint') -> None:
+    async def _apply_window_bounds(
+        self, screen: 'ScreenFingerprint', mobile: bool = False, include_screen_size: bool = True
+    ) -> None:
         """Size the real browser window to the profile's ``outer_*`` dimensions.
 
         ``window.outerWidth`` / ``outerHeight`` then come from the actual window
@@ -381,18 +390,62 @@ class FingerprintApplier:
                 BrowserCommands.get_window_for_target(tab._target_id)
             )
             bounds = after['result']['bounds']
-            if bounds.get('width', width) < width or bounds.get('height', height) < height:
+            actual_width = int(bounds.get('width', width))
+            actual_height = int(bounds.get('height', height))
+            if actual_width < width or actual_height < height:
+                await self._reconcile_clamped_window(
+                    screen, actual_width, actual_height, mobile, include_screen_size
+                )
                 logger.warning(
-                    'The profile window (%sx%s) does not fit this display; the window was '
-                    'clamped to %sx%s, so outer and inner sizes will contradict each other. '
-                    'Use a profile whose screen matches the host.',
+                    'The profile window (%sx%s) does not fit this display and was clamped to '
+                    '%sx%s; the viewport was resized with it so the inner and outer sizes stay '
+                    'consistent. Use a profile whose screen matches the host to keep both.',
                     width,
                     height,
-                    bounds.get('width'),
-                    bounds.get('height'),
+                    actual_width,
+                    actual_height,
                 )
 
-    def _warn_on_user_agent_option_conflict(self, fingerprint_user_agent: str) -> None:
+    async def _reconcile_clamped_window(
+        self,
+        screen: 'ScreenFingerprint',
+        actual_width: int,
+        actual_height: int,
+        mobile: bool = False,
+        include_screen_size: bool = True,
+    ) -> None:
+        """Re-issue the viewport override after the window was clamped by the display.
+
+        A pinned ``inner_*`` describes a window the host cannot open, so the page
+        ends up reporting a viewport larger than the window that contains it
+        (``innerHeight > outerHeight``), which no browser produces. The profile's
+        own chrome height (``outer_* - inner_*``) is kept and subtracted from the
+        size the window actually got, so the pair stays possible; without a pinned
+        ``inner_*`` the real window already drives the viewport and there is
+        nothing to reconcile.
+        """
+        inner_width = screen.get('inner_width')
+        inner_height = screen.get('inner_height')
+        outer_width = screen.get('outer_width')
+        outer_height = screen.get('outer_height')
+        if inner_width is None or inner_height is None:
+            return
+        if outer_width is None or outer_height is None:
+            return
+        reconciled = dict(screen)
+        reconciled['inner_width'] = max(1, actual_width - (outer_width - inner_width))
+        reconciled['inner_height'] = max(1, actual_height - (outer_height - inner_height))
+        command = self._device_metrics_command(
+            cast('ScreenFingerprint', reconciled),
+            mobile=mobile,
+            include_screen_size=include_screen_size,
+        )
+        if command is not None:
+            await self._tab._execute_command(command)
+
+    def _warn_on_user_agent_option_conflict(
+        self, fingerprint_user_agent: str, parsed: 'ParsedUserAgent'
+    ) -> None:
         """Warn when a ``--user-agent`` option contradicts the fingerprint UA.
 
         The options-based ``--user-agent`` handling
@@ -402,9 +455,21 @@ class FingerprintApplier:
         conflicting worker override, so the two disagree on what a worker reports.
         The fingerprint owns the page User-Agent, but the option handler may still
         fire on workers, so setting both is a misconfiguration.
+
+        Both spellings of the profile's own identity are accepted. A profile
+        carries the four-part build in ``user_agent`` because the full version
+        feeds the Client Hints, while what Chrome exposes is the reduced string,
+        so the reduced form is the one a launch switch has to hold to say the
+        same thing. It is also the spelling
+        :meth:`_launch_identity_matches` requires before it leaves the header
+        order to Chrome, and warning about it would contradict that path.
         """
         options_user_agent = self._tab._browser._get_user_agent_from_options()
-        if options_user_agent and options_user_agent != fingerprint_user_agent:
+        matches_profile = options_user_agent in {
+            fingerprint_user_agent,
+            parsed.reduced_user_agent,
+        }
+        if options_user_agent and not matches_profile:
             logger.warning(
                 'A --user-agent browser option is set and differs from the fingerprint '
                 "User-Agent; don't combine --user-agent with apply_fingerprint (the "
@@ -467,6 +532,11 @@ class FingerprintApplier:
             platform=parsed.platform if parsed else '',
             user_agent=parsed.reduced_user_agent if parsed else '',
         )
+        worker_parsed = (
+            None
+            if parsed is not None and self._launch_identity_covers_page(fingerprint, parsed)
+            else parsed
+        )
         worker_deferred_js = build_fingerprint_worker_deferred_js(fingerprint)
         hardware_concurrency = fingerprint.get('hardware', {}).get('hardware_concurrency')
 
@@ -474,7 +544,7 @@ class FingerprintApplier:
         tab_handler = self._build_worker_handler(
             tab_conn,
             {'worker'},
-            parsed,
+            worker_parsed,
             accept_language,
             mobile,
             hardware_concurrency,
@@ -502,12 +572,14 @@ class FingerprintApplier:
 
         scope_context_id = await self._resolve_browser_context_id()
         browser_conn = tab._browser._connection_handler
-        if tab._browser._fingerprint_fetch_callback is None:
+        if tab._browser._fingerprint_fetch_callback is None and not self._launch_identity_matches(
+            fingerprint, parsed
+        ):
             await self._setup_script_fetch_override()
         browser_handler = self._build_worker_handler(
             browser_conn,
             {'service_worker', 'shared_worker'},
-            parsed,
+            worker_parsed,
             accept_language,
             mobile,
             hardware_concurrency,
@@ -525,6 +597,64 @@ class FingerprintApplier:
                 filter=[FilterEntry(type='service_worker'), FilterEntry(type='shared_worker')],
             )
         )
+
+    def _launch_identity_covers_page(
+        self, fingerprint: FingerprintConfig, parsed: 'ParsedUserAgent'
+    ) -> bool:
+        """Whether the launch switches already give the page the profile's identity.
+
+        With an override active Chrome writes ``user-agent`` where DevTools asks
+        instead of where it writes its own, so a session that overrides carries a
+        header order no stock browser emits. The override is only needed when the
+        profile claims something the binary does not already report: a different
+        platform than the host, or explicit Client Hints. When the switches
+        already carry the reduced User-Agent and the languages, and the profile
+        claims this host's own platform with no Client Hints of its own, Chrome
+        is left to write the headers, and the brands it derives are the ones the
+        profile asks for because the major matches the binary.
+        """
+        if fingerprint.get('client_hints'):
+            return False
+        if not self._launch_identity_matches(fingerprint, parsed):
+            return False
+        host_platform = {'Darwin': 'MacIntel', 'Windows': 'Win32', 'Linux': 'Linux x86_64'}.get(
+            platform.system()
+        )
+        return host_platform is not None and parsed.platform == host_platform
+
+    def _launch_user_agent(self) -> Optional[str]:
+        """Read the User-Agent the browser was launched with, if any."""
+        options = getattr(self._tab._browser, 'options', None)
+        for argument in getattr(options, 'arguments', []) or []:
+            if str(argument).startswith('--user-agent='):
+                return str(argument).split('=', 1)[1]
+        return None
+
+    def _launch_identity_matches(
+        self, fingerprint: FingerprintConfig, parsed: Optional['ParsedUserAgent']
+    ) -> bool:
+        """Whether the browser already launched with this profile's identity.
+
+        The service worker script and a nested worker's script are fetched by the
+        browser process, so they only carry the profile when either the launch
+        switches already say so or the ``Fetch`` domain rewrites them. Rewriting
+        costs the request's header order (``Fetch.continueRequest`` sends the
+        list it is given, and the paused event does not report the wire order),
+        so when the switches already match, the interception is skipped and
+        Chrome writes those requests itself.
+        """
+        if parsed is None:
+            return False
+        launch_user_agent = self._launch_user_agent()
+        if launch_user_agent is None:
+            return False
+        if launch_user_agent != parsed.reduced_user_agent:
+            return False
+        languages = fingerprint.get('locale', {}).get('languages', [])
+        if not languages:
+            return True
+        launched = self._launch_accept_language()
+        return bool(launched and self._same_language_list(launched, ','.join(languages)))
 
     async def _setup_script_fetch_override(self) -> None:
         """Rewrite the identity headers of scripts the browser process fetches.
@@ -603,22 +733,30 @@ class FingerprintApplier:
     def _identity_headers(
         fingerprint: FingerprintConfig, headers: dict[str, str]
     ) -> list[HeaderEntry]:
-        """Replace User-Agent / Accept-Language in a request's headers with the profile's."""
+        """Replace User-Agent / Accept-Language in a request's headers with the profile's.
+
+        The value is swapped where the header already sits, and a header the
+        request did not carry is appended, because ``Fetch.continueRequest``
+        sends exactly the list it is given: rebuilding it with the identity at
+        the end reorders every rewritten request, and header order is itself a
+        signal (Cloudflare's detection IDs and Akamai's request anomalies both
+        name it).
+        """
         parsed = UserAgentParser.parse(fingerprint['user_agent'])
-        rewritten: list[HeaderEntry] = [
-            HeaderEntry(name=name, value=value)
-            for name, value in headers.items()
-            if name.lower() not in {'user-agent', 'accept-language'}
-        ]
-        rewritten.append(HeaderEntry(name='User-Agent', value=parsed.reduced_user_agent))
         languages = fingerprint.get('locale', {}).get('languages', [])
+        replacements = {'user-agent': parsed.reduced_user_agent}
         if languages:
-            rewritten.append(
-                HeaderEntry(
-                    name='Accept-Language',
-                    value=FingerprintApplier._accept_language_header(languages),
-                )
-            )
+            replacements['accept-language'] = FingerprintApplier._accept_language_header(languages)
+        rewritten: list[HeaderEntry] = []
+        seen: set[str] = set()
+        for name, value in headers.items():
+            key = name.lower()
+            seen.add(key)
+            rewritten.append(HeaderEntry(name=name, value=replacements.get(key, value)))
+        for key, value in replacements.items():
+            if key not in seen:
+                header_name = 'User-Agent' if key == 'user-agent' else 'Accept-Language'
+                rewritten.append(HeaderEntry(name=header_name, value=value))
         return rewritten
 
     @staticmethod
@@ -961,6 +1099,74 @@ class FingerprintApplier:
         if not languages:
             return None
         return ','.join(languages)
+
+    def _launch_accept_language(self) -> Optional[str]:
+        """Read the Accept-Language the browser was launched with, if any.
+
+        Both ways of setting it before launch are accepted: the ``--accept-lang``
+        switch and the ``intl.accept_languages`` preference that
+        ``ChromiumOptions.set_accept_languages`` writes.
+        """
+        options = getattr(self._tab._browser, 'options', None)
+        if options is None:
+            return None
+        for argument in getattr(options, 'arguments', []):
+            if str(argument).startswith('--accept-lang='):
+                return str(argument).split('=', 1)[1]
+        preferences = getattr(options, 'browser_preferences', {}) or {}
+        value = dict(preferences).get('intl', {})
+        if isinstance(value, dict) and value.get('accept_languages'):
+            return str(value['accept_languages'])
+        return None
+
+    def _accept_language_override(self, fingerprint: FingerprintConfig) -> Optional[str]:
+        """Decide whether the languages have to ride on the User-Agent override.
+
+        ``Emulation.setUserAgentOverride.acceptLanguage`` is the only CDP way to
+        move ``navigator.languages`` in every realm, but Chrome then writes the
+        header at the DevTools override point instead of its own: measured on
+        Chrome 152, ``accept-language`` jumps from last to just after
+        ``user-agent`` on navigation and into the middle of the
+        ``sec-ch-ua`` block on subresources, an order no stock browser emits and
+        one that Cloudflare and Akamai both say they read. Launching the browser
+        with the same list (``--accept-lang`` or
+        ``ChromiumOptions.set_accept_languages``) sets ``navigator.languages``
+        just as well and keeps Chrome's own header order, so when the launch
+        value already matches the profile the override is left out.
+        """
+        wanted = self._build_accept_language(fingerprint)
+        if wanted is None:
+            return None
+        launched = self._launch_accept_language()
+        if launched and self._same_language_list(launched, wanted):
+            logger.debug('Accept-Language already set at launch; keeping Chrome header order')
+            return None
+        if launched:
+            logger.warning(
+                'The browser was launched with Accept-Language %r but the profile asks for %r, '
+                'so the header has to be overridden and Chrome will emit it out of its usual '
+                'order. Launch with options.set_accept_languages(%r) to avoid it.',
+                launched,
+                wanted,
+                wanted,
+            )
+        else:
+            logger.warning(
+                'Accept-Language is being overridden at runtime, which moves the header out of '
+                "Chrome's order on every request. Launch with options.set_accept_languages(%r) "
+                'to keep the browser order.',
+                wanted,
+            )
+        return wanted
+
+    @staticmethod
+    def _same_language_list(left: str, right: str) -> bool:
+        """Compare two Accept-Language lists ignoring spacing and case."""
+
+        def parts(value: str) -> list[str]:
+            return [item.strip().lower() for item in value.split(',') if item.strip()]
+
+        return parts(left) == parts(right)
 
     async def _apply_user_agent(
         self,
