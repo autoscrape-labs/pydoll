@@ -222,13 +222,6 @@ const _cloneError = (context, value) => {
   return new DOMException(context + ': ' + ctor + ' object could not be cloned.',
     'DataCloneError');
 };
-// A fake built in another same-origin realm is absent from this realm's _FAKES:
-// each realm keeps its own, so there is no shared slot to find. It stays
-// recognisable without one, the same way the toString hook works: the
-// prototypes this script patches carry accessors whose source every realm
-// records in _FAKED, so a foreign object standing on such a prototype is a
-// platform object over there, and no platform object clones. The answer is
-// cached per prototype.
 const _MARKED = new WeakMap();
 const _markedProto = (proto) => {
   let marked = _MARKED.get(proto);
@@ -540,10 +533,6 @@ const ext1 = %s;
 const ext2 = %s;
 const precisionOverrides = %s;
 const formatsByExtension = %s;
-// getTranslatedShaderSource names the real backend (Metal, HLSL, GLSL), so the
-// extension is dropped unless the profile lists it: a profile that claims a host
-// where almost every machine exposes it can ask for it back, and then the
-// translated source has to match the claimed backend.
 const HIDDEN_EXT = 'WEBGL_debug_shaders';
 
 function patchContext(proto, extOverrides) {
@@ -659,8 +648,6 @@ _SHADER_TYPE_MAP: dict[str, int] = {
     'fragment': 0x8B30,
 }
 
-# Format enums each compressed-texture extension contributes to
-# getParameter(COMPRESSED_TEXTURE_FORMATS), as (first, last) inclusive ranges.
 # Chrome enables an extension the moment getExtension asks for it, even when the
 # profile hides the extension from the context, and an enabled extension adds
 # its formats to that list: without filtering, a claimed D3D11 GPU still reports

@@ -556,8 +556,6 @@ DESKTOP_CHROMIUM_CODECS = MediaCodecsFingerprint(
     },
 )
 
-#: The three desktop profiles share the measured Chromium answers. Android was
-#: not measured here, so it carries the same map rather than an invented one.
 WINDOWS_CODECS = DESKTOP_CHROMIUM_CODECS
 MACOS_CODECS = DESKTOP_CHROMIUM_CODECS
 LINUX_CODECS = DESKTOP_CHROMIUM_CODECS
@@ -687,10 +685,7 @@ ANDROID_ABSENT_APIS = [
 # desktop still answers without them: that pair only closes on an Android host.
 
 #: Fontes que um desktop Linux traz e que o pacote de fontes de uma imagem de
-#: container consegue instalar. As dez primeiras são as que a coleta do hCaptcha
-#: sonda por nome, medido em 2026-09-16, e três delas (DejaVu Sans, Ubuntu e
-#: Noto Color Emoji) são justamente o que marca Linux no teste cruzado de
-#: sistema operacional. Declarar aqui não basta: o pacote precisa estar na
+#: container consegue instalar. Declarar aqui não basta: o pacote precisa estar na
 #: imagem, porque a largura que o motor de layout calcula não é alcançável por
 #: JavaScript.
 LINUX_FONTS = FontFingerprint(
@@ -736,9 +731,7 @@ LINUX_ABSENT_APIS = [
 
 #: Precisão de shader de um desktop GL. Medido: um Chrome com GPU real responde a faixa
 #: alta em TODAS as precisões, inclusive ``mediump``, porque o driver promove; um container
-#: por software responde a faixa média de verdade, ``[15, 15, 10]``. O payload do hCaptcha lê
-#: ``getShaderPrecisionFormat`` 16 vezes e ainda declara ``precision mediump float`` no próprio
-#: shader, então este é um dos poucos campos onde o valor declarado importa de verdade.
+#: por software responde a faixa média de verdade, ``[15, 15, 10]``.
 SHADER_PRECISION_DESKTOP_GL = {
     'vertex': {
         'highFloat': [127, 127, 23],
@@ -759,31 +752,6 @@ SHADER_PRECISION_DESKTOP_GL = {
 }
 
 #: WebGL de uma Intel integrada com a pilha Mesa, para um perfil Linux.
-#:
-#: ⚠️ **Declarar esta seção é seguro, e a razão vem da engenharia reversa do payload.** A
-#: tabela de strings do ``hsw.js`` traz o pipeline de desenho inteiro (``createShader``,
-#: ``compileShader``, ``bufferData``, ``drawArrays`` com ``TRIANGLE_STRIP``) e lê o resultado
-#: por ``canvas.toDataURL``. O que ela **não** traz é ``texImage2D``, ``createTexture``,
-#: ``renderbufferStorage``, ``createFramebuffer`` nem ``readPixels``: ele nunca tenta alocar
-#: nada no limite que acabou de ler. Os 47 enums que ele varre são apenas **lidos**, então um
-#: limite declarado não é verificável por ele.
-#:
-#: Os valores vêm de uma medição de 2026-09-16 num backend GL real da Mesa, e não de uma
-#: tabela inventada, justamente porque o payload lê os 47 numa varredura única e os limites
-#: por estágio e combinados têm relação aritmética entre si. Copiar um vetor real mantém essa
-#: aritmética de pé.
-#:
-#: ⚠️ **Não foi medido contra uma Intel UHD 620 física.** Não há máquina Intel na bancada.
-#: Dois valores denunciam o backend por software por baixo, ``max_elements_vertices`` e
-#: ``max_samples``, e ficam registrados como a lacuna conhecida deste perfil.
-#:
-#: ⚠️ **Três valores foram corrigidos em relação ao vetor medido, e o motivo é aritmético.**
-#: O backend reportou ``MAX_COMBINED_UNIFORM_BLOCKS`` 45 com 15 por estágio, e
-#: ``MAX_COMBINED_*_UNIFORM_COMPONENTS`` 262144 contra um orçamento de 249856. São números de
-#: OpenGL de desktop, que tem estágios de geometria e tesselação, vazando para dentro de um
-#: contexto WebGL, que só expõe vértice e fragmento. Um contexto WebGL de GPU real não os
-#: reporta assim, e os testes do próprio pydoll recusam o vetor cru. Aqui eles são o teto
-#: coerente: 30 blocos combinados e 249856 componentes.
 WEBGL_LINUX_MESA_INTEL = WebGLProfile(
     vendor='Google Inc. (Intel)',
     renderer='ANGLE (Intel, Mesa Intel(R) UHD Graphics 620 (KBL GT2), OpenGL 4.6)',
@@ -864,15 +832,6 @@ WEBGL_LINUX_MESA_INTEL = WebGLProfile(
 
 
 #: O que um Chrome moderno reporta em ``navigator.plugins`` e ``navigator.mimeTypes``.
-#:
-#: Não há plugins de verdade desde que o NPAPI morreu: sobraram cinco apelidos do
-#: mesmo visualizador de PDF embutido e dois tipos MIME, e essa forma fixa é a
-#: resposta esperada. Medido em 2026-09-16 no Chromium 152: exatamente estes cinco
-#: nomes, e ``mimeTypes`` de comprimento dois.
-#:
-#: Um Chromium de marca difere, e o Brave em particular randomiza os nomes a cada
-#: execução, o que o separa do Chrome e ainda torna o valor instável entre
-#: carregamentos. A coleta do hCaptcha lê ``plugins`` 15 vezes e ``mimeTypes`` 12.
 CHROME_PLUGINS = PluginsFingerprint(
     mime_types=[
         MimeTypeEntry(
@@ -902,20 +861,7 @@ CHROME_PLUGINS = PluginsFingerprint(
 #:
 #: Existem porque um Chromium de marca se anuncia: o Brave expõe
 #: ``navigator.brave``, cujo ``isBrave()`` devolve ``true``, e o Opera expõe
-#: ``window.opr``. Um perfil que diz ser Google Chrome precisa que eles não
-#: existam, e a varredura de ``Object.getOwnPropertyNames`` que a coleta do
-#: hCaptcha faz 52 vezes acha qualquer um deles sem esforço.
-#:
-#: Medido em 2026-09-16, com Brave 153 e Chromium 152 no mesmo container: sem o
-#: perfil, o Brave se entrega por três canais, a marca em ``userAgentData``,
-#: o ``navigator.brave`` e os nomes dos plugins. Com o perfil aplicado, os dois
-#: primeiros ficam idênticos aos do Chromium. ``window.opr`` não foi medido,
-#: porque não há build de Opera para esta arquitetura; apagar um caminho que não
-#: existe é inócuo, então incluí-lo não custa nada.
-#:
-#: ⚠️ ``navigator.plugins`` continua entregando o Brave e o perfil não alcança:
-#: o farbling dele randomiza os nomes, e eles mudam a cada execução. Não há
-#: seção de plugins no ``FingerprintConfig``.
+#: ``window.opr``.
 BROWSER_BRAND_APIS = [
     'navigator.brave',
     'window.opr',
@@ -924,13 +870,6 @@ BROWSER_BRAND_APIS = [
 
 
 #: Perfil de desktop Linux para rodar dentro de container.
-#:
-#: A seção ``webgl`` é declarada, e isso reverte a primeira versão deste perfil. O argumento
-#: de então era que declarar um limite acima do que o rasterizador entrega se desmente no
-#: teste de alocação. Isso é verdade contra um auditor que alocue, e o nosso scanner aloca.
-#: Não é verdade contra o payload do hCaptcha, cuja tabela de strings não traz ``texImage2D``
-#: nem ``renderbufferStorage``: ele lê os 47 enums e nunca os verifica. Otimizar contra o
-#: auditor em vez do alvo era o erro.
 #:
 #: ``hardware_concurrency`` deve bater com o que o container de fato tem. Medido: um limite
 #: por cota (``--cpus=2``) não chega ao navegador, que segue anunciando os núcleos do host;

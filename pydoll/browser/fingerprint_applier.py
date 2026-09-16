@@ -504,9 +504,6 @@ class FingerprintApplier:
             platform=parsed.platform if parsed else '',
             user_agent=parsed.reduced_user_agent if parsed else '',
         )
-        # A worker whose identity already came from the launch switches needs no
-        # User-Agent override, and skipping it keeps the header order of the
-        # scripts the worker itself fetches.
         worker_parsed = (
             None
             if parsed is not None and self._launch_identity_covers_page(fingerprint, parsed)
@@ -623,9 +620,6 @@ class FingerprintApplier:
         launch_user_agent = self._launch_user_agent()
         if launch_user_agent is None:
             return False
-        # Only the reduced form counts: the page and every worker report that one,
-        # so a launch switch carrying the full build number would put two
-        # different User-Agents on the wire for the same session.
         if launch_user_agent != parsed.reduced_user_agent:
             return False
         languages = fingerprint.get('locale', {}).get('languages', [])
