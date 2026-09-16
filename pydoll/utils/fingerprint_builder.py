@@ -604,8 +604,8 @@ _WEBGL_PARAM_MAP: dict[str, int] = {
     'subpixel_bits': 0x0D50,
     'max_elements_vertices': 0x80E8,
     'max_elements_indices': 0x80E9,
-    'max_transform_feedback_interleaved_components': 0x8C80,
-    'max_transform_feedback_separate_components': 0x8C8B,
+    'max_transform_feedback_interleaved_components': 0x8C8A,
+    'max_transform_feedback_separate_components': 0x8C80,
     'max_texture_size': 0x0D33,
     'max_renderbuffer_size': 0x84E8,
     'max_viewport_dims': 0x0D3A,
@@ -639,7 +639,7 @@ _WEBGL_PARAM_MAP: dict[str, int] = {
     'max_combined_fragment_uniform_components': 0x8A33,
     'uniform_buffer_offset_alignment': 0x8A34,
     'max_texture_lod_bias': 0x84FD,
-    'max_transform_feedback_separate_attribs': 0x8C8A,
+    'max_transform_feedback_separate_attribs': 0x8C8B,
 }
 
 # Maps shader type names to WebGL constants
