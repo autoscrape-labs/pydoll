@@ -115,11 +115,6 @@ DESKTOP_EXTENSIONS = [
     'WEBGL_compressed_texture_s3tc',
     'WEBGL_compressed_texture_s3tc_srgb',
     'WEBGL_debug_renderer_info',
-    # 99.71% of Windows machines expose this one (web3dsurvey), so a Windows
-    # profile that hides it stands out. It is only safe on a host whose real
-    # backend matches the claim: getTranslatedShaderSource returns the compiled
-    # source, and HLSL against Metal gives the host away. Drop it from this list
-    # when running a Windows profile on a Mac or a Linux box.
     'WEBGL_debug_shaders',
     'WEBGL_depth_texture',
     'WEBGL_draw_buffers',
@@ -320,10 +315,6 @@ WEBGPU_APPLE_M_SERIES = WebGPUProfile(
 # NVIDIA GeForce RTX 3060 on Windows, Chrome D3D12 backend. ``vendor`` and
 # ``architecture`` come from a real Chrome 150 capture of an RTX 3060; the
 # limits are the webgpu.report aggregate for NVIDIA + Windows + Chrome (42
-# adapters, every limit identical across them, including the per-stage storage
-# buffer limits at 16) and match Dawn's D3D12 tier tables; the features are the
-# ones at 100% in that aggregate (Ampere has shader-f16), plus
-# subgroup-size-control which Dawn enables on any current NVIDIA driver.
 WEBGPU_NVIDIA_AMPERE_D3D12 = WebGPUProfile(
     vendor='nvidia',
     architecture='ampere',
@@ -394,9 +385,6 @@ WEBGPU_NVIDIA_AMPERE_D3D12 = WebGPUProfile(
 # derived from the Galaxy S24 Ultra Vulkan capability reports through Dawn's
 # Vulkan mapping and Chrome's limit tiers, and agree with the webgpu.report
 # Qualcomm + Android aggregate on every discriminating value (128 MiB storage
-# binding, 16 inter-stage variables, 2 GiB maxBufferSize). The per-stage
-# storage buffer limits repeat maxStorageBuffersPerShaderStage, which is how
-# Dawn reports them on every adapter webgpu.report has measured.
 WEBGPU_ADRENO_750_VULKAN = WebGPUProfile(
     vendor='qualcomm',
     architecture='adreno-7xx',
@@ -484,10 +472,6 @@ SPEECH_MAC = SpeechFingerprint(
     ]
 )
 
-#: Um Chrome de Linux só expõe vozes quando o ``speech-dispatcher`` está
-#: instalado e rodando; sem ele a lista volta vazia, o que é marcador de Linux e
-#: não de automação. Estas são as que um sistema com espeak-ng em português
-#: apresenta.
 SPEECH_LINUX_PT_BR = SpeechFingerprint(
     voices=[
         SpeechVoice(name='Portuguese (Brazil)', lang='pt-BR', local_service=True),
@@ -511,20 +495,6 @@ SPEECH_ANDROID = SpeechFingerprint(
     ]
 )
 
-# Media codec support. The twelve content types below are the ones the hCaptcha
-# payload actually queries, recovered on 2026-09-16 by deobfuscating its script
-# and reading its own string table, so a map that covers them answers every
-# ``canPlayType`` and ``MediaSource.isTypeSupported`` call it makes.
-#
-# The values are measured, not assumed: Chrome 153 on macOS and the Chromium
-# 152 of Debian trixie answer these twelve identically, item by item. The set
-# therefore does NOT separate one desktop OS from another, which is why the
-# three profiles below share one map. What it does separate is browser family
-# (Firefox accepts theora and vorbis, Safari accepts quicktime and x-m4a) and a
-# Chromium built without the proprietary codecs, which answers '' for
-# ``avc1.42E01E`` and ``audio/aac`` where both binaries measured here answer
-# 'probably'. Override these only when the binary you drive is such a build, or
-# when the profile claims a browser from another family.
 DESKTOP_CHROMIUM_CODECS = MediaCodecsFingerprint(
     can_play_type={
         'video/mp4; codecs="avc1.42E01E"': 'probably',
@@ -651,13 +621,10 @@ ANDROID_PERMISSIONS = PermissionsFingerprint(
 )
 
 WINDOWS_ABSENT_APIS = [
-    # Shape Detection needs a platform barcode backend, which Windows has none of.
     'BarcodeDetector',
-    # The Contact Picker and the Content Index ship on Android only.
     'ContactsManager',
     'ContentIndex',
     'navigator.contacts',
-    # NetworkInformation.downlinkMax is exposed on Chrome for Android only.
     'NetworkInformation.downlinkMax',
 ]
 MACOS_ABSENT_APIS = [
@@ -667,9 +634,6 @@ MACOS_ABSENT_APIS = [
     'NetworkInformation.downlinkMax',
 ]
 ANDROID_ABSENT_APIS = [
-    # Chrome for Android has no SharedWorker, no WebHID and no Web Serial, no
-    # audio output selection, and the window controls overlay and the built-in
-    # AI models are desktop only.
     'SharedWorker',
     'navigator.hid',
     'navigator.serial',
@@ -680,14 +644,7 @@ ANDROID_ABSENT_APIS = [
     'Summarizer',
     'LanguageModel',
 ]
-# Removing is all a profile can do. The Contact Picker and the Content Index
-# exist on Android and not on a desktop host, so an Android profile run from a
-# desktop still answers without them: that pair only closes on an Android host.
 
-#: Fontes que um desktop Linux traz e que o pacote de fontes de uma imagem de
-#: container consegue instalar. Declarar aqui não basta: o pacote precisa estar na
-#: imagem, porque a largura que o motor de layout calcula não é alcançável por
-#: JavaScript.
 LINUX_FONTS = FontFingerprint(
     available_fonts=[
         'DejaVu Sans',
@@ -719,9 +676,6 @@ LINUX_FONTS = FontFingerprint(
     ]
 )
 
-#: Globais que um Chrome de Linux não expõe. BarcodeDetector precisa de um
-#: backend de leitura de código de barras que só existe em alguns sistemas, e
-#: os demais são interfaces que o Chrome de Linux não instala.
 LINUX_ABSENT_APIS = [
     'BarcodeDetector',
     'navigator.windowControlsOverlay',
@@ -729,9 +683,6 @@ LINUX_ABSENT_APIS = [
     'documentPictureInPicture',
 ]
 
-#: Precisão de shader de um desktop GL. Medido: um Chrome com GPU real responde a faixa
-#: alta em TODAS as precisões, inclusive ``mediump``, porque o driver promove; um container
-#: por software responde a faixa média de verdade, ``[15, 15, 10]``.
 SHADER_PRECISION_DESKTOP_GL = {
     'vertex': {
         'highFloat': [127, 127, 23],
@@ -751,7 +702,6 @@ SHADER_PRECISION_DESKTOP_GL = {
     },
 }
 
-#: WebGL de uma Intel integrada com a pilha Mesa, para um perfil Linux.
 WEBGL_LINUX_MESA_INTEL = WebGLProfile(
     vendor='Google Inc. (Intel)',
     renderer='ANGLE (Intel, Mesa Intel(R) UHD Graphics 620 (KBL GT2), OpenGL 4.6)',
@@ -831,7 +781,6 @@ WEBGL_LINUX_MESA_INTEL = WebGLProfile(
 )
 
 
-#: O que um Chrome moderno reporta em ``navigator.plugins`` e ``navigator.mimeTypes``.
 CHROME_PLUGINS = PluginsFingerprint(
     mime_types=[
         MimeTypeEntry(
@@ -857,11 +806,6 @@ CHROME_PLUGINS = PluginsFingerprint(
 )
 
 
-#: Globais que identificam a MARCA do binário, e não o sistema operacional.
-#:
-#: Existem porque um Chromium de marca se anuncia: o Brave expõe
-#: ``navigator.brave``, cujo ``isBrave()`` devolve ``true``, e o Opera expõe
-#: ``window.opr``.
 BROWSER_BRAND_APIS = [
     'navigator.brave',
     'window.opr',
@@ -869,11 +813,6 @@ BROWSER_BRAND_APIS = [
 ]
 
 
-#: Perfil de desktop Linux para rodar dentro de container.
-#:
-#: ``hardware_concurrency`` deve bater com o que o container de fato tem. Medido: um limite
-#: por cota (``--cpus=2``) não chega ao navegador, que segue anunciando os núcleos do host;
-#: só ``--cpuset-cpus`` chega. Ajuste o valor abaixo ao tamanho do cpuset.
 LINUX_CONTAINER = FingerprintConfig(
     user_agent=UA_LINUX,
     navigator=NavigatorFingerprint(
@@ -882,9 +821,6 @@ LINUX_CONTAINER = FingerprintConfig(
         app_version=APP_LINUX,
         pdf_viewer_enabled=True,
     ),
-    # Client Hints de alta entropia de um desktop Linux. A versão completa do
-    # build não entra aqui: ela é derivada do ``user_agent`` acima, que já traz
-    # o build inteiro, e a User-Agent exposta à página é a reduzida.
     client_hints=ClientHintsFingerprint(
         platform_version='',
         architecture='x86',
@@ -998,14 +934,6 @@ FINGERPRINTS: dict[str, FingerprintConfig] = {
         permissions=ANDROID_PERMISSIONS,
     ),
     # Windows desktop — US identity (pair with a US egress IP / proxy).
-    # The uniform, varying and transform-feedback limits are ANGLE's own D3D11
-    # caps (renderer11_utils.cpp GenerateCaps): 14 constant buffer slots minus
-    # 2 reserved gives 12 uniform blocks per stage, bindings and combined
-    # blocks are their sum, components are 4 x vectors, combined components are
-    # components + blocks x blockSize/4, maxLODBias is 2.0, the UBO alignment
-    # is 256 and interleaved transform-feedback components are vertex output
-    # vectors x 4. web3dsurvey's Windows distribution reports the same values
-    # on 97% of machines or more.
     'windows11_rtx3060_nyc': FingerprintConfig(
         user_agent=UA_WINDOWS,
         client_hints=ClientHintsFingerprint(platform_version='15.0.0'),
@@ -1091,9 +1019,6 @@ FINGERPRINTS: dict[str, FingerprintConfig] = {
         permissions=DESKTOP_PERMISSIONS,
     ),
     # macOS desktop — US identity (pair with a US egress IP / proxy).
-    # The uniform, varying and transform-feedback limits are ANGLE Metal on
-    # Apple silicon, read from an M4 under Chrome 152. No public per-parameter
-    # distribution exists for Metal, so this capture is the only reference.
     'macos_m3_new_york': FingerprintConfig(
         user_agent=UA_MAC,
         client_hints=ClientHintsFingerprint(platform_version='15.6.1'),
