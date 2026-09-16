@@ -869,7 +869,6 @@ LINUX_CONTAINER = FingerprintConfig(
     platform_apis=PlatformApisFingerprint(hidden=[*LINUX_ABSENT_APIS, *BROWSER_BRAND_APIS]),
     audio=AudioFingerprint(sample_rate=48000, max_channel_count=2),
     speech=SPEECH_LINUX_PT_BR,
-    webrtc_ip_policy='default_public_interface_only',
 )
 
 

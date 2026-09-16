@@ -709,4 +709,4 @@ class FingerprintConfig(TypedDict):
     platform_apis: NotRequired[PlatformApisFingerprint]
     permissions: NotRequired[PermissionsFingerprint]
     media_features: NotRequired[MediaFeaturesFingerprint]
-    webrtc_ip_policy: NotRequired[str]  # 'default' or 'relay'
+    webrtc_ip_policy: NotRequired[str]  # RTCIceTransportPolicy: 'all' or 'relay'
