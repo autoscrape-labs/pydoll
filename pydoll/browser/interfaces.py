@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+from pydoll.browser.preference_types import BrowserPreferences
 from pydoll.constants import PageLoadState
 
 
@@ -25,7 +26,7 @@ class Options(ABC):
 
     @property
     @abstractmethod
-    def browser_preferences(self) -> dict:
+    def browser_preferences(self) -> BrowserPreferences:
         pass
 
     @property
