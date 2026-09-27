@@ -228,7 +228,7 @@ class TestWebGPU:
         assert gpu['hasF16'] is True
         assert gpu['size'] == 2
         assert gpu['deviceOk'] == 'nvidia'
-        assert workers['own']['webgpuVendor'] in ('nvidia', 'no adapter')
+        assert workers['own']['webgpuVendor'] == 'nvidia'
 
 
 class TestWorkerRealms:

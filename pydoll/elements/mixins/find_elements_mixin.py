@@ -11,7 +11,7 @@ from pydoll.commands import (
 from pydoll.connection.connection_handler import ConnectionHandler
 from pydoll.constants import By, Scripts
 from pydoll.elements.utils import SelectorParser
-from pydoll.exceptions import ElementNotFound, WaitElementTimeout
+from pydoll.exceptions import CommandFailed, ElementNotFound, WaitElementTimeout
 
 if TYPE_CHECKING:
     from typing import Literal, Optional, Union
@@ -483,14 +483,16 @@ class FindElementsMixin:
         else:
             command = self._get_find_element_command(by, value)
 
-        response_for_command: Union[
-            EvaluateResponse, CallFunctionOnResponse
-        ] = await self._execute_command(command)
+        try:
+            response_for_command: Union[
+                EvaluateResponse, CallFunctionOnResponse
+            ] = await self._execute_command(command)
+        except CommandFailed as exc:
+            self._not_found(raise_exc, f'Element search rejected by the browser: {exc}', exc)
+            return None
 
         if not self._has_object_id_key(response_for_command):
-            if raise_exc:
-                logger.debug('Element not found and raise_exc=True')
-                raise ElementNotFound()
+            self._not_found(raise_exc, 'Element not found')
             return None
 
         object_id = response_for_command['result']['result']['objectId']
@@ -546,22 +548,29 @@ class FindElementsMixin:
         else:
             command = self._get_find_elements_command(by, value)
 
-        response_for_command: Union[
-            EvaluateResponse, CallFunctionOnResponse
-        ] = await self._execute_command(command)
+        try:
+            response_for_command: Union[
+                EvaluateResponse, CallFunctionOnResponse
+            ] = await self._execute_command(command)
+        except CommandFailed as exc:
+            self._not_found(raise_exc, f'Element search rejected by the browser: {exc}', exc)
+            return []
 
-        if not response_for_command.get('result', {}).get('result', {}).get('objectId'):
-            if raise_exc:
-                logger.debug('No elements found and raise_exc=True')
-                raise ElementNotFound()
+        if not self._has_object_id_key(response_for_command):
+            self._not_found(raise_exc, 'No elements found')
             return []
 
         object_id = response_for_command['result']['result']['objectId']
-        query_response: GetPropertiesResponse = await self._execute_command(
-            RuntimeCommands.get_properties(object_id=object_id)
-        )
+        try:
+            query_response: GetPropertiesResponse = await self._execute_command(
+                RuntimeCommands.get_properties(object_id=object_id)
+            )
+        except CommandFailed as exc:
+            self._not_found(raise_exc, f'Element list vanished before it was read: {exc}', exc)
+            return []
+
         response: list[str] = []
-        for query in query_response['result']['result']:
+        for query in query_response.get('result', {}).get('result', []):
             if not (query['name'].isdigit() and 'objectId' in query['value']):
                 continue
             response.append(query['value']['objectId'])
@@ -687,12 +696,11 @@ class FindElementsMixin:
 
         Used internally to gather data for WebElement initialization.
         """
-        response: DescribeNodeResponse = await self._execute_command(
-            DomCommands.describe_node(object_id=object_id)
-        )
-        if 'error' in response:
-            # Return empty node structure when CDP reports that the objectId
-            # doesn't reference a Node or any other describe error occurs.
+        try:
+            response: DescribeNodeResponse = await self._execute_command(
+                DomCommands.describe_node(object_id=object_id)
+            )
+        except CommandFailed:
             return {}
         return response.get('result', {}).get('node', {})
 
@@ -898,6 +906,13 @@ class FindElementsMixin:
         Converts absolute XPath to relative for context-based searches.
         """
         return SelectorParser.ensure_relative_xpath(xpath)
+
+    @staticmethod
+    def _not_found(raise_exc: bool, reason: str, cause: Optional[BaseException] = None) -> None:
+        """Log a failed search and raise ElementNotFound when the caller asked for it."""
+        logger.debug(reason)
+        if raise_exc:
+            raise ElementNotFound() from cause
 
     @staticmethod
     def _has_object_id_key(response: Union[EvaluateResponse, CallFunctionOnResponse]) -> bool:

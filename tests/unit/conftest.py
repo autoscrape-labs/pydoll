@@ -16,6 +16,7 @@ import pytest
 
 from pydoll.browser.chromium import Chrome
 from pydoll.browser.tab import Tab
+from pydoll.exceptions import CommandFailed
 
 
 class FakeConnection:
@@ -32,6 +33,7 @@ class FakeConnection:
         self.network_logs: list[dict] = []
         self.dialog: dict = {}
         self._results: dict[str, dict] = {}
+        self._failures: dict[str, CommandFailed] = {}
         self._callbacks: dict[int, dict] = {}
         self._callback_id = 0
         self._command_id = 0
@@ -39,6 +41,10 @@ class FakeConnection:
     def set_response(self, method: str, result: dict) -> None:
         """Configure the result payload returned for a command method."""
         self._results[method] = result
+
+    def set_failure(self, method: str, code: int, message: str) -> None:
+        """Make a command method raise CommandFailed, as the real handler does on a CDP error."""
+        self._failures[method] = CommandFailed(method=method, code=code, message=message)
 
     def commands_for(self, method: str) -> list[dict]:
         """Every recorded command matching a CDP method, in arrival order."""
@@ -64,7 +70,10 @@ class FakeConnection:
         self._command_id += 1
         command['id'] = self._command_id
         self.commands.append(command)
-        return {'id': self._command_id, 'result': self._results.get(command.get('method'), {})}
+        method = command.get('method', '')
+        if method in self._failures:
+            raise self._failures[method]
+        return {'id': self._command_id, 'result': self._results.get(method, {})}
 
     async def register_callback(
         self,

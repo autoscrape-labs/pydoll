@@ -8,13 +8,14 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional
 
 from pydoll.commands import InputCommands, RuntimeCommands
+from pydoll.constants import PRESSED_POINTER_FORCE
 from pydoll.interactions.utils import (
     bezier_2d,
     fitts_duration,
     minimum_jerk,
     random_control_points,
 )
-from pydoll.protocol.input.types import MouseButton, MouseEventType
+from pydoll.protocol.input.types import MOUSE_BUTTON_MASK, MouseButton, MouseEventType
 
 if TYPE_CHECKING:
     from pydoll.browser.tab import Tab
@@ -111,6 +112,7 @@ class Mouse:
         self._tab = tab
         self._timing = timing or MouseTimingConfig()
         self._position: tuple[float, float] = (0.0, 0.0)
+        self._pressed_button: Optional[MouseButton] = None
         self._debug = debug
 
     @property
@@ -435,10 +437,14 @@ class Mouse:
 
     async def _dispatch_move(self, x: float, y: float) -> None:
         """Dispatch a mouseMoved event and update internal position."""
+        pressed = self._pressed_button
         command = InputCommands.dispatch_mouse_event(
             type=MouseEventType.MOUSE_MOVED,
             x=int(round(x)),
             y=int(round(y)),
+            button=pressed,
+            buttons=MOUSE_BUTTON_MASK[pressed] if pressed is not None else None,
+            force=PRESSED_POINTER_FORCE if pressed is not None else None,
         )
         await self._tab._execute_command(command)
         self._position = (x, y)
@@ -453,14 +459,18 @@ class Mouse:
         click_count: int = 1,
     ) -> None:
         """Dispatch mousePressed or mouseReleased at current position."""
+        pressed = event_type == MouseEventType.MOUSE_PRESSED
         command = InputCommands.dispatch_mouse_event(
             type=event_type,
             x=int(round(self._position[0])),
             y=int(round(self._position[1])),
             button=button,
             click_count=click_count,
+            buttons=MOUSE_BUTTON_MASK[button] if pressed else None,
+            force=PRESSED_POINTER_FORCE if pressed else None,
         )
         await self._tab._execute_command(command)
+        self._pressed_button = button if pressed else None
 
         if self._debug and event_type == MouseEventType.MOUSE_PRESSED:
             await self._debug_draw_dot(

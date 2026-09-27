@@ -166,3 +166,34 @@ async def test_debug_overlay_recreated_on_every_draw_so_it_survives_navigation(f
     overlay_scripts = [script for script in fake_tab.scripts if '__pydoll_mouse_debug' in script]
     assert overlay_scripts
     assert all('createElement' in script for script in overlay_scripts)
+
+
+@pytest.mark.asyncio
+async def test_press_carries_buttons_and_pressure(fake_tab):
+    mouse = Mouse(fake_tab, timing=FAST)
+    await mouse.click(60, 40)
+
+    pressed = _of_type(fake_tab.events, 'mousePressed')[0]
+    released = _of_type(fake_tab.events, 'mouseReleased')[0]
+    assert pressed['buttons'] == 1
+    assert pressed['force'] == 0.5
+    assert 'buttons' not in released
+    assert 'force' not in released
+
+
+@pytest.mark.asyncio
+async def test_drag_moves_carry_the_held_button(fake_tab):
+    mouse = Mouse(fake_tab, timing=FAST)
+    await mouse.move(10, 10, humanize=True)
+    await mouse.drag(10, 10, 200, 120, humanize=True)
+    await mouse.move(250, 150, humanize=True)
+
+    events = fake_tab.events
+    press = next(i for i, e in enumerate(events) if e['type'] == 'mousePressed')
+    release = next(i for i, e in enumerate(events) if e['type'] == 'mouseReleased')
+    before = [e for e in events[:press] if e['type'] == 'mouseMoved']
+    during = [e for e in events[press + 1 : release] if e['type'] == 'mouseMoved']
+    after = [e for e in events[release + 1 :] if e['type'] == 'mouseMoved']
+    assert during
+    assert all(e['button'] == 'left' and e['buttons'] == 1 and e['force'] == 0.5 for e in during)
+    assert all('buttons' not in e and 'force' not in e for e in before + after)

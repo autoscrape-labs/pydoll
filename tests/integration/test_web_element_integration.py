@@ -15,6 +15,7 @@ import pytest
 import pytest_asyncio
 
 from pydoll.exceptions import (
+    CommandFailed,
     ElementNotFound,
     ElementNotInteractable,
     ElementNotVisible,
@@ -312,9 +313,9 @@ async def test_iframe_context_is_none_for_non_iframe(element_tab):
 
 
 @pytest.mark.asyncio
-async def test_bounds_raises_key_error_for_element_without_box_model(element_tab):
+async def test_bounds_raises_command_failed_for_element_without_box_model(element_tab):
     contents_only = await element_tab.find(id='contents-only')
-    with pytest.raises(KeyError):
+    with pytest.raises(CommandFailed):
         await contents_only.bounds()
 
 

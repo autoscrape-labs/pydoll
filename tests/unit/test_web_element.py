@@ -101,7 +101,9 @@ async def test_focus_sends_dom_focus_for_object(fake_conn, make_element):
 async def test_click_dispatches_press_and_release_at_center(fake_conn, make_element):
     element = make_element(attributes=['tag_name', 'button'])
     fake_conn.set_response('Runtime.callFunctionOn', {'result': {'value': True}})
-    fake_conn.set_response('DOM.getBoxModel', {'model': {'content': [0, 0, 100, 0, 100, 50, 0, 50]}})
+    fake_conn.set_response(
+        'DOM.getBoxModel', {'model': {'content': [0, 0, 100, 0, 100, 50, 0, 50]}}
+    )
 
     await element.click(hold_time=0)
 
@@ -110,6 +112,25 @@ async def test_click_dispatches_press_and_release_at_center(fake_conn, make_elem
     released = [e for e in dispatched if e['params']['type'] == 'mouseReleased']
     assert pressed and (pressed[0]['params']['x'], pressed[0]['params']['y']) == (50, 25)
     assert released and (released[0]['params']['x'], released[0]['params']['y']) == (50, 25)
+
+
+@pytest.mark.asyncio
+async def test_click_press_reads_like_a_real_mouse_button(fake_conn, make_element):
+    element = make_element(attributes=['tag_name', 'button'])
+    fake_conn.set_response('Runtime.callFunctionOn', {'result': {'value': True}})
+    fake_conn.set_response(
+        'DOM.getBoxModel', {'model': {'content': [0, 0, 100, 0, 100, 50, 0, 50]}}
+    )
+
+    await element.click(hold_time=0)
+
+    dispatched = fake_conn.commands_for('Input.dispatchMouseEvent')
+    pressed = next(e['params'] for e in dispatched if e['params']['type'] == 'mousePressed')
+    released = next(e['params'] for e in dispatched if e['params']['type'] == 'mouseReleased')
+    assert pressed['buttons'] == 1
+    assert pressed['force'] == 0.5
+    assert 'buttons' not in released
+    assert 'force' not in released
 
 
 @pytest.mark.asyncio
@@ -300,3 +321,21 @@ async def test_click_falls_back_to_js_bounds_when_box_model_missing(fake_conn, m
     pressed = [event for event in dispatched if event['params']['type'] == 'mousePressed']
     assert pressed
     assert (pressed[0]['params']['x'], pressed[0]['params']['y']) == (30, 35)
+
+
+@pytest.mark.asyncio
+async def test_scroll_into_view_asks_for_the_box_plus_a_margin(make_element, fake_conn):
+    fake_conn.set_response(
+        'Runtime.callFunctionOn',
+        {'result': {'value': '{"x": 10, "y": 380, "width": 100, "height": 20}'}},
+    )
+    await make_element().scroll_into_view()
+    rect = fake_conn.last_command('DOM.scrollIntoViewIfNeeded')['params']['rect']
+    margin = WebElement._SCROLL_INTO_VIEW_MARGIN
+    assert rect == {'x': -margin, 'y': -margin, 'width': 100 + 2 * margin, 'height': 20 + 2 * margin}
+
+
+@pytest.mark.asyncio
+async def test_scroll_into_view_falls_back_to_plain_scroll_without_a_box(make_element, fake_conn):
+    await make_element().scroll_into_view()
+    assert 'rect' not in fake_conn.last_command('DOM.scrollIntoViewIfNeeded')['params']

@@ -57,6 +57,14 @@ class WebGLProfile(TypedDict):
     (e.g. a spoofed combined of 128 over a real per-stage of 16). A single
     impossible triple is a reliable WebGL lie signal.
 
+    The uniform limits are bound by GLES 3.0 arithmetic a detector recomputes
+    from the same context: ``MAX_*_UNIFORM_COMPONENTS`` is exactly
+    ``4 * MAX_*_UNIFORM_VECTORS``, and ``MAX_COMBINED_*_UNIFORM_COMPONENTS`` is
+    exactly ``MAX_*_UNIFORM_COMPONENTS + MAX_*_UNIFORM_BLOCKS *
+    MAX_UNIFORM_BLOCK_SIZE / 4``. Override one member of a family and the rest
+    fall back to the real GPU, which leaves the identity broken, so set the
+    whole family from one device or leave all of it unset.
+
     When ``webgl2_extensions`` is provided, it is used for WebGL2 contexts
     while ``supported_extensions`` is used for WebGL1. If only
     ``supported_extensions`` is provided, it is used for both contexts.
@@ -101,12 +109,19 @@ class WebGLProfile(TypedDict):
 
     vendor: str  # UNMASKED_VENDOR_WEBGL
     renderer: str  # UNMASKED_RENDERER_WEBGL
+    subpixel_bits: NotRequired[int]  # gl.SUBPIXEL_BITS (4 on most desktop GPUs)
+    max_elements_vertices: NotRequired[int]  # gl.MAX_ELEMENTS_VERTICES
+    max_elements_indices: NotRequired[int]  # gl.MAX_ELEMENTS_INDICES
+    max_transform_feedback_interleaved_components: NotRequired[int]
+    max_transform_feedback_separate_components: NotRequired[int]
     max_texture_size: NotRequired[int]  # gl.MAX_TEXTURE_SIZE (e.g. 16384)
     max_renderbuffer_size: NotRequired[int]  # gl.MAX_RENDERBUFFER_SIZE
     max_viewport_dims: NotRequired[list[int]]  # [width, height]
     max_vertex_attribs: NotRequired[int]  # gl.MAX_VERTEX_ATTRIBS
     max_vertex_uniform_vectors: NotRequired[int]
+    max_vertex_uniform_components: NotRequired[int]  # gl2.MAX_VERTEX_UNIFORM_COMPONENTS
     max_fragment_uniform_vectors: NotRequired[int]
+    max_fragment_uniform_components: NotRequired[int]  # gl2.MAX_FRAGMENT_UNIFORM_COMPONENTS
     max_texture_image_units: NotRequired[int]  # gl.MAX_TEXTURE_IMAGE_UNITS (fragment stage)
     max_vertex_texture_image_units: NotRequired[int]  # gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS
     max_combined_texture_image_units: NotRequired[int]
@@ -114,6 +129,7 @@ class WebGLProfile(TypedDict):
     aliased_point_size_range: NotRequired[list[float]]  # [min, max]
     max_cube_map_texture_size: NotRequired[int]  # gl.MAX_CUBE_MAP_TEXTURE_SIZE
     max_varying_vectors: NotRequired[int]  # gl.MAX_VARYING_VECTORS
+    max_varying_components: NotRequired[int]  # gl2.MAX_VARYING_COMPONENTS
     max_3d_texture_size: NotRequired[int]  # gl2.MAX_3D_TEXTURE_SIZE
     max_array_texture_layers: NotRequired[int]  # gl2.MAX_ARRAY_TEXTURE_LAYERS
     max_color_attachments: NotRequired[int]  # gl2.MAX_COLOR_ATTACHMENTS
@@ -124,6 +140,11 @@ class WebGLProfile(TypedDict):
     max_vertex_uniform_blocks: NotRequired[int]  # gl2.MAX_VERTEX_UNIFORM_BLOCKS
     max_fragment_uniform_blocks: NotRequired[int]  # gl2.MAX_FRAGMENT_UNIFORM_BLOCKS
     max_combined_uniform_blocks: NotRequired[int]  # gl2.MAX_COMBINED_UNIFORM_BLOCKS
+    max_combined_vertex_uniform_components: NotRequired[int]
+    max_combined_fragment_uniform_components: NotRequired[int]
+    uniform_buffer_offset_alignment: NotRequired[int]  # gl2.UNIFORM_BUFFER_OFFSET_ALIGNMENT
+    max_texture_lod_bias: NotRequired[float]  # gl2.MAX_TEXTURE_LOD_BIAS
+    max_transform_feedback_separate_attribs: NotRequired[int]
     max_vertex_output_components: NotRequired[int]  # gl2.MAX_VERTEX_OUTPUT_COMPONENTS
     max_fragment_input_components: NotRequired[int]  # gl2.MAX_FRAGMENT_INPUT_COMPONENTS
     max_element_index: NotRequired[int]  # gl2.MAX_ELEMENT_INDEX
@@ -281,6 +302,97 @@ class HardwareFingerprint(TypedDict):
     max_touch_points: NotRequired[int]  # navigator.maxTouchPoints
 
 
+class MimeTypeEntry(TypedDict):
+    """One entry of ``navigator.mimeTypes``."""
+
+    type: str  # e.g. 'application/pdf'
+    description: NotRequired[str]
+    suffixes: NotRequired[str]  # e.g. 'pdf'
+
+
+class PluginEntry(TypedDict):
+    """One entry of ``navigator.plugins``.
+
+    ``mime_types`` holds indices into the profile's ``mime_types`` list, which
+    is how the browser relates the two arrays: every ``MimeType`` points back at
+    the plugin that enables it, and every ``Plugin`` indexes the types it takes.
+    """
+
+    name: str  # e.g. 'Chrome PDF Viewer'
+    description: NotRequired[str]
+    filename: NotRequired[str]  # e.g. 'internal-pdf-viewer'
+    mime_types: NotRequired[list[int]]
+
+
+class PluginsFingerprint(TypedDict):
+    """What ``navigator.plugins`` and ``navigator.mimeTypes`` report.
+
+    Modern Chrome no longer has real plugins: it reports five aliases of the
+    same built-in PDF viewer and two MIME types, and that fixed shape is itself
+    the expected answer. A Chromium with a brand may differ, and Brave in
+    particular randomises the names on every run, which both separates it from
+    Chrome and makes the value unstable between page loads.
+
+    Both arrays are rebuilt from the real ``Plugin``, ``MimeType``,
+    ``PluginArray`` and ``MimeTypeArray`` prototypes, so indexed access, named
+    access, ``item()``, ``namedItem()`` and iteration behave as the browser's own.
+
+    Usage example::
+
+        plugins = PluginsFingerprint(
+            mime_types=[
+                MimeTypeEntry(type='application/pdf', suffixes='pdf'),
+                MimeTypeEntry(type='text/pdf', suffixes='pdf'),
+            ],
+            plugins=[
+                PluginEntry(
+                    name='PDF Viewer',
+                    filename='internal-pdf-viewer',
+                    mime_types=[0, 1],
+                ),
+            ],
+        )
+    """
+
+    plugins: NotRequired[list[PluginEntry]]
+    mime_types: NotRequired[list[MimeTypeEntry]]
+
+
+class MediaCodecsFingerprint(TypedDict):
+    """What the media codec probes answer.
+
+    ``HTMLMediaElement.canPlayType()`` and ``MediaSource.isTypeSupported()``
+    describe what the *build* can decode, and the answer differs by operating
+    system and by binary: a Chromium built without the proprietary codecs
+    answers ``''`` for H.264 and AAC where Google Chrome answers
+    ``'probably'``, and HEVC is supported on macOS and Windows while a Linux
+    build typically refuses it. A profile that claims one platform while the
+    binary answers for another contradicts itself on a surface that costs a
+    page two calls to read.
+
+    Both maps are keyed by the content type as the page writes it. The lookup
+    normalises whitespace, quotes and case, so ``'video/mp4; codecs="avc1.42E01E"'``
+    and ``'video/mp4;codecs=avc1.42E01E'`` are the same key. A type that is not
+    in the map keeps the browser's own answer, so a partial map is safe.
+
+    ``can_play_type`` values are the three the specification allows:
+    ``'probably'``, ``'maybe'`` and ``''`` (cannot play).
+
+    Usage example::
+
+        media_codecs = MediaCodecsFingerprint(
+            can_play_type={
+                'video/mp4; codecs="avc1.42E01E"': 'probably',
+                'video/mp4; codecs="hvc1.1.6.L93.B0"': '',
+            },
+            media_source={'video/mp4; codecs="avc1.42E01E"': True},
+        )
+    """
+
+    can_play_type: NotRequired[dict[str, str]]
+    media_source: NotRequired[dict[str, bool]]
+
+
 class MediaDevicesFingerprint(TypedDict):
     """Media devices fingerprint profile.
 
@@ -402,6 +514,28 @@ class NetworkConnectionFingerprint(TypedDict):
     downlink: NotRequired[float]  # Mbps
     rtt: NotRequired[int]  # ms
     save_data: NotRequired[bool]
+
+
+class PlatformApisFingerprint(TypedDict):
+    """Web APIs that exist on some operating systems and not on others.
+
+    Chrome only exposes an API where the platform can back it, so the set of
+    interfaces a browser has is itself a statement about the host: the Contact
+    Picker and the Content Index ship on Android only, WebHID, Web Serial and
+    ``SharedWorker`` on desktop only, the Web Share API everywhere but desktop
+    Linux, Shape Detection (``BarcodeDetector``) only where the platform has a
+    barcode backend (macOS, Android, ChromeOS), and ``downlinkMax`` only on
+    Chrome for Android. A profile that claims one OS while the host exposes
+    another's set contradicts itself, and CreepJS reads exactly this.
+
+    ``hidden`` names what to remove, as a dotted path resolved from the global
+    scope (``BarcodeDetector``, ``navigator.share``, ``NetworkInformation.downlinkMax``).
+    Removing is all a profile can do honestly: an API the host does not
+    implement cannot be conjured, so a profile that needs one the host lacks
+    belongs on a different host.
+    """
+
+    hidden: list[str]  # dotted paths to delete, e.g. ['BarcodeDetector', 'navigator.share']
 
 
 class FontFingerprint(TypedDict):
@@ -564,12 +698,15 @@ class FingerprintConfig(TypedDict):
     geolocation: NotRequired[GeolocationFingerprint]
     hardware: NotRequired[HardwareFingerprint]
     media_devices: NotRequired[MediaDevicesFingerprint]
+    media_codecs: NotRequired[MediaCodecsFingerprint]
+    plugins: NotRequired[PluginsFingerprint]
     audio: NotRequired[AudioFingerprint]
     speech: NotRequired[SpeechFingerprint]
     locale: NotRequired[LocaleFingerprint]
     timezone: NotRequired[str]  # IANA timezone e.g. "America/New_York"
     network_connection: NotRequired[NetworkConnectionFingerprint]
     fonts: NotRequired[FontFingerprint]
+    platform_apis: NotRequired[PlatformApisFingerprint]
     permissions: NotRequired[PermissionsFingerprint]
     media_features: NotRequired[MediaFeaturesFingerprint]
-    webrtc_ip_policy: NotRequired[str]  # 'default' or 'relay'
+    webrtc_ip_policy: NotRequired[str]  # RTCIceTransportPolicy: 'all' or 'relay'

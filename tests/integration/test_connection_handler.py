@@ -14,7 +14,12 @@ from typing import Callable
 import pytest
 
 from pydoll.connection import ConnectionHandler
-from pydoll.exceptions import CommandExecutionTimeout, WebSocketConnectionClosed
+from pydoll.exceptions import (
+    CommandExecutionTimeout,
+    CommandFailed,
+    InvalidResponse,
+    WebSocketConnectionClosed,
+)
 
 
 async def _wait_until(condition: Callable[[], bool], timeout: float = 2.0) -> None:
@@ -378,3 +383,44 @@ async def test_context_manager_runs_commands_and_has_repr(cdp_server):
         assert result['result'] == {'ok': True}
         assert 'ConnectionHandler' in repr(handler)
         assert 'ConnectionHandler' in str(handler)
+
+
+@pytest.mark.asyncio
+async def test_error_response_raises_command_failed(cdp_server):
+    cdp_server.set_error('Runtime.getProperties', -32000, 'Could not find object with given id')
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address)
+    try:
+        with pytest.raises(CommandFailed) as raised:
+            await handler.execute_command({'method': 'Runtime.getProperties'})
+    finally:
+        await handler.close()
+
+    assert raised.value.method == 'Runtime.getProperties'
+    assert raised.value.code == -32000
+    assert 'Could not find object with given id' in str(raised.value)
+
+
+@pytest.mark.asyncio
+async def test_response_without_result_or_error_raises_invalid_response(cdp_server):
+    cdp_server.omit_result('Browser.getVersion')
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address)
+    try:
+        with pytest.raises(InvalidResponse):
+            await handler.execute_command({'method': 'Browser.getVersion'})
+    finally:
+        await handler.close()
+
+
+@pytest.mark.asyncio
+async def test_handler_keeps_working_after_a_rejected_command(cdp_server):
+    cdp_server.set_error('Runtime.evaluate', -32000, 'Cannot find context with specified id')
+    cdp_server.set_result('Browser.getVersion', {'product': 'FakeChrome/1.0'})
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address)
+    try:
+        with pytest.raises(CommandFailed):
+            await handler.execute_command({'method': 'Runtime.evaluate'})
+        result = await handler.execute_command({'method': 'Browser.getVersion'})
+    finally:
+        await handler.close()
+
+    assert result['result'] == {'product': 'FakeChrome/1.0'}
