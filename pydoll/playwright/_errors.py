@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from websockets.exceptions import WebSocketException
+
 from pydoll.exceptions import (
     CommandExecutionTimeout,
     CommandFailed,
@@ -53,16 +55,26 @@ def is_target_closed_error(error: Exception) -> bool:
     return isinstance(error, TargetClosedError)
 
 
+TRANSPORT_ERRORS = (PydollException, WebSocketException, OSError)
+"""Everything a pydoll call can raise that ``translate`` knows how to map."""
+
+
 def translate(error: BaseException) -> BaseException:
-    """Map a pydoll exception to its Playwright-compatible counterpart."""
+    """Map a pydoll or transport exception to its Playwright-compatible counterpart.
+
+    Connection failures surface as ``TargetClosedError``: pydoll's own
+    ``ConnectionException`` family, the ``websockets`` errors a dead endpoint
+    produces when the client tries to reconnect, and the ``OSError`` family
+    (``ConnectionRefusedError`` included) from the socket layer.
+    """
     if isinstance(error, (Error, TimeoutError, TargetClosedError)):
         return error
     if isinstance(
         error, (PageLoadTimeout, WaitElementTimeout, DownloadTimeout, CommandExecutionTimeout)
     ):
         return TimeoutError(str(error))
-    if isinstance(error, ConnectionException):
-        return TargetClosedError(str(error))
+    if isinstance(error, (ConnectionException, WebSocketException, OSError)):
+        return TargetClosedError(str(error) or None)
     if isinstance(error, CommandFailed):
         if _mentions_closed_target(error):
             return TargetClosedError(str(error))

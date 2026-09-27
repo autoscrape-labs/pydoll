@@ -8,6 +8,11 @@ import re
 
 import pytest
 
+from websockets.exceptions import ConnectionClosedError, InvalidURI
+
+from pydoll.exceptions import CommandFailed, WebSocketConnectionClosed
+from pydoll.playwright._dialog import _describe
+from pydoll.playwright._errors import Error, TargetClosedError, translate
 from pydoll.playwright._glob import URLMatcher, glob_to_regex_pattern
 from pydoll.playwright._keys import describe_key, modifier_bits, split_key_string
 from pydoll.playwright._selectors import (
@@ -90,8 +95,8 @@ class TestKeys:
         assert describe_key('Digit1', True).key == '!'
         assert describe_key('ArrowDown', False).key_code == 40
 
-    def test_unknown_key_raises(self):
-        with pytest.raises(ValueError, match='Unknown key'):
+    def test_unknown_key_raises_playwright_error(self):
+        with pytest.raises(Error, match='Unknown key'):
             describe_key('NotAKey', False)
 
     def test_split_and_modifiers(self):
@@ -107,6 +112,12 @@ class TestSerialization:
         assert normalize_expression('async function f() {}') == '(async function f() {})'
         assert normalize_expression('() => 1') == '() => 1'
         assert normalize_expression('document.title') == 'document.title'
+
+    def test_normalize_expression_drops_trailing_semicolons(self):
+        assert normalize_expression('document.title;') == 'document.title'
+        assert normalize_expression('1 + 1; ; \n') == '1 + 1'
+        assert normalize_expression('function() {};') == '(function() {})'
+        assert normalize_expression('"a;"') == '"a;"'
 
     def test_special_values(self):
         tree, handles = serialize_argument({
@@ -164,3 +175,37 @@ class TestLocaleLanguages:
         assert _accept_language('en-US') == 'en-US,en;q=0.9'
         assert _accept_language('en') == 'en'
         assert _navigator_languages('de') == 'de,en-US,en'
+
+
+class TestErrorTranslation:
+    @pytest.mark.parametrize(
+        'error',
+        [
+            ConnectionRefusedError(61, 'Connection refused'),
+            OSError('socket gone'),
+            ConnectionClosedError(None, None),
+            InvalidURI('nope', 'scheme'),
+            WebSocketConnectionClosed(),
+            CommandFailed('Target closed'),
+        ],
+    )
+    def test_transport_failures_become_target_closed(self, error):
+        assert isinstance(translate(error), TargetClosedError)
+
+    def test_other_command_failures_and_playwright_errors_pass_through(self):
+        assert type(translate(CommandFailed('Invalid InterceptionId'))) is Error
+        original = Error('mine')
+        assert translate(original) is original
+        assert translate(KeyError('x')).__class__ is KeyError
+
+
+class TestConsoleText:
+    def test_primitives_render_like_javascript(self):
+        assert _describe({'type': 'boolean', 'value': True}) == 'true'
+        assert _describe({'type': 'boolean', 'value': False}) == 'false'
+        assert _describe({'type': 'object', 'subtype': 'null', 'value': None}) == 'null'
+        assert _describe({'type': 'undefined'}) == 'undefined'
+        assert _describe({'type': 'number', 'value': 2.0}) == '2'
+        assert _describe({'type': 'number', 'value': 1.5}) == '1.5'
+        assert _describe({'type': 'number', 'unserializableValue': 'NaN'}) == 'NaN'
+        assert _describe({'type': 'string', 'value': 'None'}) == 'None'

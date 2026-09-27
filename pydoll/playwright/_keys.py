@@ -12,6 +12,7 @@ import sys
 from dataclasses import dataclass
 from typing import TypedDict, cast
 
+from pydoll.playwright._errors import Error
 from pydoll.protocol.input.types import KeyLocation, KeyModifier
 
 
@@ -274,7 +275,7 @@ def describe_key(name: str, shift_pressed: bool) -> KeyDescription:
     if description is None:
         if len(name) == 1:
             return KeyDescription(name, 0, 0, '', name, 0)
-        raise ValueError(f'Unknown key: "{name}"')
+        raise Error(f'Unknown key: "{name}"')
     if shift_pressed and not description.shifted:
         layout = _LAYOUT.get(description.code, _KeyDefinition())
         shift_key = layout.get('shiftKey')

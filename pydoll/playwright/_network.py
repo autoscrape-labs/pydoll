@@ -6,6 +6,7 @@ import asyncio
 import base64
 import inspect
 import json
+import logging
 import mimetypes
 import re
 from json import dumps as json_dumps
@@ -22,6 +23,8 @@ from pydoll.protocol.network.types import ErrorReason
 if TYPE_CHECKING:
     from pydoll.playwright._frame import Frame
     from pydoll.playwright._page import Page
+
+logger = logging.getLogger(__name__)
 
 RouteHandler = Callable[['Route'], Any] | Callable[['Route', 'Request'], Any]
 
@@ -364,15 +367,27 @@ class NetworkManager:
         return self._requests.get(request_id)
 
     async def navigation_response(self, loader_id: str, deadline: Deadline) -> Response | None:
+        """The response of the navigation request that carried ``loader_id``.
+
+        Called once the navigation reached its wait state, so a loader with no
+        request behind it (``about:blank``, ``data:`` documents) is a navigation
+        without a network round trip and answers ``None`` right away.
+        """
         while True:
-            for request in list(self._requests.values()):
-                if request._loader_id == loader_id and request._is_navigation:
-                    if request._response is not None:
-                        return request._response
-                    if request._failure is not None:
-                        return None
-                    if request._finished_future.done():
-                        return request._response
+            navigation = next(
+                (
+                    request
+                    for request in list(self._requests.values())
+                    if request._loader_id == loader_id and request._is_navigation
+                ),
+                None,
+            )
+            if navigation is None:
+                return None
+            if navigation._response is not None:
+                return navigation._response
+            if navigation._failure is not None or navigation._finished_future.done():
+                return None
             remaining = deadline.remaining_seconds()
             if remaining is not None and remaining <= 0:
                 return None
@@ -410,7 +425,7 @@ class Route:
     async def abort(self, error_code: str | None = None) -> None:
         self._mark()
         reason = _ERROR_REASONS.get((error_code or 'failed').lower(), ErrorReason.FAILED)
-        await self._page._tab.fail_request(self._interception_id, reason)
+        await self._page._guard(lambda: self._page._tab.fail_request(self._interception_id, reason))
 
     async def continue_(
         self,
@@ -446,14 +461,17 @@ class Route:
         if isinstance(post_data, str):
             post_data = post_data.encode()
         headers = overrides.get('headers')
-        await self._page._tab.continue_request(
-            self._interception_id,
-            url=overrides.get('url'),
-            method=overrides.get('method'),
-            post_data=base64.b64encode(post_data).decode() if post_data is not None else None,
-            headers=[{'name': name, 'value': value} for name, value in headers.items()]
-            if headers
-            else None,
+        encoded = base64.b64encode(post_data).decode() if post_data is not None else None
+        await self._page._guard(
+            lambda: self._page._tab.continue_request(
+                self._interception_id,
+                url=overrides.get('url'),
+                method=overrides.get('method'),
+                post_data=encoded,
+                headers=[{'name': name, 'value': value} for name, value in headers.items()]
+                if headers
+                else None,
+            )
         )
 
     async def fallback(
@@ -505,13 +523,15 @@ class Route:
         if content_type:
             response_headers['content-type'] = content_type
         response_headers.setdefault('content-length', str(len(payload)))
-        await self._page._tab.fulfill_request(
-            self._interception_id,
-            response_code=status_code,
-            response_headers=[
-                {'name': name, 'value': value} for name, value in response_headers.items()
-            ],
-            body=base64.b64encode(payload).decode(),
+        await self._page._guard(
+            lambda: self._page._tab.fulfill_request(
+                self._interception_id,
+                response_code=status_code,
+                response_headers=[
+                    {'name': name, 'value': value} for name, value in response_headers.items()
+                ],
+                body=base64.b64encode(payload).decode(),
+            )
         )
 
     async def fetch(
@@ -553,15 +573,18 @@ class Route:
         if isinstance(data, str):
             data = data.encode()
         request_headers = overrides.get('headers')
-        await self._page._tab.continue_request(
-            self._interception_id,
-            url=overrides.get('url'),
-            method=overrides.get('method'),
-            post_data=base64.b64encode(data).decode() if data is not None else None,
-            headers=[{'name': name, 'value': value} for name, value in request_headers.items()]
-            if request_headers
-            else None,
-            intercept_response=True,
+        encoded = base64.b64encode(data).decode() if data is not None else None
+        await self._page._guard(
+            lambda: self._page._tab.continue_request(
+                self._interception_id,
+                url=overrides.get('url'),
+                method=overrides.get('method'),
+                post_data=encoded,
+                headers=[{'name': name, 'value': value} for name, value in request_headers.items()]
+                if request_headers
+                else None,
+                intercept_response=True,
+            )
         )
         deadline = Deadline(self._page._timeout(timeout))
         remaining = deadline.remaining_seconds()
@@ -690,7 +713,11 @@ class Router:
         for entry in entries:
             if not entry.matches(request.url):
                 continue
-            handled = await entry.handle(route)
+            try:
+                handled = await entry.handle(route)
+            except Exception:
+                logger.exception('Route handler for %s raised', request.url)
+                handled = route._handled
             if handled:
                 return
         if not route._handled:

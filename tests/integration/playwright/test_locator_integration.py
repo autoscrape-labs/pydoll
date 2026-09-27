@@ -233,6 +233,14 @@ class TestKeyboardAndMouse:
         assert await page.text_content('#keys') == 'a:KeyA:;Shift:ShiftLeft:s;A:KeyA:s;Control:ControlLeft:c;ArrowDown:ArrowDown:c;1:Digit1:;'
 
     @pytest.mark.asyncio
+    async def test_unknown_key_and_modifier_raise_error(self, page):
+        await page.goto(page_url('playwright_events.html'))
+        with pytest.raises(Error, match='Unknown key'):
+            await page.keyboard.press('NotAKey')
+        with pytest.raises(Error, match='Unknown modifier'):
+            await page.click('#alert-btn', modifiers=['Hyper'])
+
+    @pytest.mark.asyncio
     async def test_keyboard_type_and_insert_text(self, page):
         await page.goto(page_url('playwright_events.html'))
         await page.focus('#name')
@@ -282,6 +290,46 @@ class TestFrames:
         content_frame = await element.content_frame()
         assert content_frame is not None
         assert await content_frame.locator('#iframe-heading').text_content() == 'Iframe Content'
+
+    @pytest.mark.asyncio
+    async def test_child_frames_evaluate_in_their_own_document_right_after_goto(self, page):
+        await page.goto(page_url('playwright_frames.html'), wait_until='domcontentloaded')
+        assert len(page.frames) == 3
+        hrefs = [await frame.evaluate('location.href') for frame in page.frames[1:]]
+        assert sorted(href.rsplit('/', 1)[1] for href in hrefs) == [
+            'test_core_simple.html',
+            'test_iframe_content.html',
+        ]
+        kid = page.frame(name='kid')
+        assert kid is not None
+        assert await kid.evaluate('document.title') == 'Iframe Content'
+        assert await kid.text_content('#iframe-heading') == 'Iframe Content'
+        assert page.frame(name='second') is not None
+        assert page.frame(url='**/test_core_simple.html') is page.frame(name='second')
+        owner = await kid.frame_element()
+        assert await owner.get_attribute('id') == 'kid'
+
+    @pytest.mark.asyncio
+    async def test_removed_iframe_becomes_a_detached_frame(self, page):
+        await page.goto(page_url('playwright_frames.html'))
+        kid = page.frame(name='kid')
+        assert kid is not None
+        detached = []
+        page.on('framedetached', lambda frame: detached.append(frame))
+        await page.click('#remove-kid')
+        await page.wait_for_function('() => window.frames.length === 1')
+        for _ in range(50):
+            if detached:
+                break
+            await page.wait_for_timeout(20)
+        assert detached == [kid]
+        assert kid.is_detached()
+        assert len(page.frames) == 2
+        assert page.frame(name='kid') is None
+        with pytest.raises(Error, match='Frame was detached'):
+            await kid.evaluate('location.href')
+        with pytest.raises(Error, match='Frame was detached'):
+            await kid.locator('#iframe-heading').text_content(timeout=500)
 
     @pytest.mark.asyncio
     async def test_nested_frames(self, page):

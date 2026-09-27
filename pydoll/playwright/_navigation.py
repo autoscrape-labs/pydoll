@@ -1,4 +1,10 @@
-"""Navigation and load-state tracking driven by Page lifecycle events."""
+"""Navigation and load-state tracking driven by Page lifecycle events.
+
+Chrome never emits a ``commit`` lifecycle event: a new document announces
+itself with the ``init`` lifecycle event and ``Page.frameNavigated``, both
+carrying the loader id ``Page.navigate`` returned. Either one marks the
+``commit`` state here so ``wait_until='commit'`` resolves.
+"""
 
 from __future__ import annotations
 
@@ -57,11 +63,14 @@ class NavigationTracker:
         loader_id = params.get('loaderId', '')
         if name == 'init':
             state.loader_id = loader_id
-            state.reached = set()
-            self._page._frame_for_id(params['frameId'])._reset_world()
+            state.reached = {'commit'}
+            frame = self._page._frame_for_id(params['frameId'])
+            frame._reset_world()
+            if frame is self._page._main_frame:
+                self._page._forget_detached_frames()
         elif loader_id and loader_id != state.loader_id:
             state.loader_id = loader_id
-            state.reached = set()
+            state.reached = {'commit'}
         state.reached.add(name)
         self._notify()
         if params['frameId'] == self._page._main_frame_id_cache:
@@ -76,12 +85,17 @@ class NavigationTracker:
         state.url = frame.get('url', '')
         if frame.get('loaderId') and frame['loaderId'] != state.loader_id:
             state.loader_id = frame['loaderId']
-            state.reached = {'commit'}
-        self._page._frame_for_id(frame['id'])._reset_world()
+            state.reached = set()
+        state.reached.add('commit')
+        tracked = self._page._frame_for_id(frame['id'])
+        tracked._reset_world()
+        if tracked is not self._page._main_frame:
+            tracked._name = frame.get('name', '')
         if frame['id'] == self._page._main_frame_id_cache:
             self._page._url = state.url
+            self._page._context._remember_origin(state.url)
         self._notify()
-        self._page.emit('framenavigated', self._page._frame_for_id(frame['id']))
+        self._page.emit('framenavigated', tracked)
 
     def on_navigated_within_document(self, params: dict[str, Any]) -> None:
         state = self._state(params['frameId'])
@@ -95,10 +109,16 @@ class NavigationTracker:
     def on_frame_attached(self, params: dict[str, Any]) -> None:
         self._page.emit('frameattached', self._page._frame_for_id(params['frameId']))
 
-    def on_frame_detached(self, params: dict[str, Any]) -> None:
-        frame_id = params['frameId']
-        self._frames.pop(frame_id, None)
-        self._page.emit('framedetached', self._page._frame_for_id(frame_id))
+    def on_frame_detached(self, params: dict[str, Any], frame: Frame | None) -> None:
+        """Drop the lifecycle state of a detached frame and announce the frame itself.
+
+        ``frame`` is the object the page already knew for this id; a frame
+        that was never tracked has nothing to announce, and looking the id up
+        again would only manufacture a phantom rooted in the main document.
+        """
+        self._frames.pop(params['frameId'], None)
+        if frame is not None:
+            self._page.emit('framedetached', frame)
 
     def _reached(self, frame_id: str, state_name: str, loader_id: str | None) -> bool:
         state = self._frames.get(frame_id)
@@ -155,7 +175,9 @@ class NavigationTracker:
             deadline,
             f'navigating to "{url}", waiting until "{state_name}"',
         )
-        return await self._page._network.navigation_response(loader_id, deadline)
+        response = await self._page._network.navigation_response(loader_id, deadline)
+        await self._page._settle_frames(deadline)
+        return response
 
     async def _wait_same_document(self, frame_id: str, deadline: Deadline, url: str) -> None:
         state = self._state(frame_id)

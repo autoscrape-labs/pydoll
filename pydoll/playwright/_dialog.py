@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any, Sequence
 
 from pydoll.commands import PageCommands
 from pydoll.playwright._element_handle import ElementHandle, JSHandle
-from pydoll.playwright._errors import Error
+from pydoll.playwright._errors import TRANSPORT_ERRORS, Error, translate
 from pydoll.playwright._remote_values import parse_remote_value
 
 if TYPE_CHECKING:
@@ -124,14 +124,26 @@ class _PrimitiveHandle:
 
 
 def _describe(remote: dict[str, Any]) -> str:
+    """Render a console argument the way JavaScript's ``String(value)`` would."""
     if 'value' in remote:
-        value = remote['value']
-        return value if isinstance(value, str) else str(value)
+        return _js_string(remote['value'])
     if remote.get('unserializableValue'):
         return str(remote['unserializableValue'])
     if remote.get('type') == 'undefined':
         return 'undefined'
     return remote.get('description') or remote.get('className') or remote.get('type', '')
+
+
+def _js_string(value: object) -> str:
+    if value is None:
+        return 'null'
+    if isinstance(value, bool):
+        return 'true' if value else 'false'
+    if isinstance(value, float) and value.is_integer():
+        return str(int(value))
+    if isinstance(value, str):
+        return value
+    return str(value)
 
 
 class FileChooser:
@@ -220,10 +232,13 @@ class Download:
     async def cancel(self) -> None:
         if self._done.done():
             return
-        await self._page.context._browser._chrome.execute_command({
-            'method': 'Browser.cancelDownload',
-            'params': {'guid': self._guid},
-        })
+        try:
+            await self._page.context._browser._chrome.execute_command({
+                'method': 'Browser.cancelDownload',
+                'params': {'guid': self._guid},
+            })
+        except TRANSPORT_ERRORS as error:
+            raise translate(error) from error
         self._cancelled = True
 
 

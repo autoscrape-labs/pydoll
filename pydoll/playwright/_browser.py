@@ -1,4 +1,9 @@
-"""Browser and BrowserType: launching pydoll's Chrome with Playwright's signatures."""
+"""Browser and BrowserType: launching pydoll's Chrome with Playwright's signatures.
+
+Known limitation: context-level init scripts, bindings and emulation reach a
+popup only after it is adopted, so they miss the popup's very first document
+(covering it needs ``Target.setAutoAttach`` with ``waitForDebuggerOnStart``).
+"""
 
 from __future__ import annotations
 
@@ -12,7 +17,7 @@ from pydoll.browser.options import ChromiumOptions
 from pydoll.commands import TargetCommands
 from pydoll.exceptions import PydollException
 from pydoll.playwright._browser_context import BrowserContext
-from pydoll.playwright._errors import Error, translate
+from pydoll.playwright._errors import TRANSPORT_ERRORS, Error, TargetClosedError, translate
 from pydoll.playwright._events import EventEmitter
 from pydoll.playwright._page import Page
 from pydoll.protocol.target.events import TargetEvent
@@ -56,6 +61,7 @@ _CONTEXT_OPTION_NAMES = {
     'client_certificates',
     'contrast',
     'user_gesture_on_evaluate',
+    'default_browser_type',
 }
 
 
@@ -150,14 +156,17 @@ class Browser(EventEmitter):
         return self._connected
 
     async def new_context(self, **options: Any) -> BrowserContext:
+        """Create an isolated context, ignoring ``default_browser_type`` from device descriptors."""
         _validate_context_options(options)
+        if not self._connected:
+            raise TargetClosedError()
         try:
             proxy = options.get('proxy')
             context_id = await self._chrome.create_browser_context(
                 proxy_server=_proxy_server(proxy) if proxy else None,
                 proxy_bypass_list=proxy.get('bypass') if proxy else None,
             )
-        except PydollException as error:
+        except TRANSPORT_ERRORS as error:
             raise translate(error) from error
         context = BrowserContext(self, context_id, options)
         await context._initialize()
@@ -178,6 +187,7 @@ class Browser(EventEmitter):
         return page
 
     async def close(self, reason: str | None = None) -> None:
+        """Close every context, then stop the Chrome this Playwright launched or disconnect."""
         if not self._connected:
             return
         self._connected = False
@@ -191,8 +201,9 @@ class Browser(EventEmitter):
                 await self._chrome.stop()
             else:
                 await self._chrome.close()
-        except PydollException:
+        except TRANSPORT_ERRORS:
             pass
+        self._browser_type._forget(self)
         self.emit('disconnected', self)
 
     async def new_browser_cdp_session(self) -> Any:

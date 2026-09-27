@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 import math
+import time
 
 import pytest
 
 from _pages import page_url
-from pydoll.playwright.async_api import Error, TimeoutError
+from pydoll.playwright.async_api import Error, TargetClosedError, TimeoutError, async_playwright
 from pydoll.utils.user_agent_parser import UserAgentParser
+
+LAUNCH_ARGS = ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage']
 
 
 class TestLifecycle:
@@ -47,6 +50,63 @@ class TestLifecycle:
         page.on('close', lambda p: closed.append(p))
         await page.close()
         assert closed == [page]
+
+    @pytest.mark.asyncio
+    async def test_leaving_async_playwright_stops_the_browsers_it_launched(self):
+        async with async_playwright() as instance:
+            browser = await instance.chromium.launch(headless=True, args=LAUNCH_ARGS)
+            page = await browser.new_page()
+            await page.goto(page_url('test_core_simple.html'))
+            process = browser.chrome._browser_process_manager._process
+            assert process is not None and process.poll() is None
+        assert not browser.is_connected()
+        assert page.is_closed()
+        assert process.poll() is not None
+
+    @pytest.mark.asyncio
+    async def test_browser_close_stops_the_process_it_launched(self, playwright):
+        browser = await playwright.chromium.launch(headless=True, args=LAUNCH_ARGS)
+        process = browser.chrome._browser_process_manager._process
+        await browser.close()
+        assert process is not None and process.poll() is not None
+
+    @pytest.mark.asyncio
+    async def test_calls_after_close_raise_target_closed_error(self, playwright, context):
+        page = await context.new_page()
+        await page.goto(page_url('test_core_simple.html'))
+        await page.close()
+        with pytest.raises(TargetClosedError):
+            await page.evaluate('1 + 1')
+        with pytest.raises(TargetClosedError):
+            await page.locator('#main-heading').text_content(timeout=500)
+        browser = await playwright.chromium.launch(headless=True, args=LAUNCH_ARGS)
+        other = await browser.new_page()
+        await browser.close()
+        with pytest.raises(TargetClosedError):
+            await other.title()
+        with pytest.raises(TargetClosedError):
+            await browser.new_context()
+
+    @pytest.mark.asyncio
+    async def test_connect_over_cdp_accepts_an_http_endpoint(self, playwright):
+        launched = await playwright.chromium.launch(headless=True, args=LAUNCH_ARGS)
+        try:
+            attached = await playwright.chromium.connect_over_cdp(
+                f'http://localhost:{launched.chrome._connection_port}'
+            )
+            try:
+                assert attached.is_connected()
+                page = await (await attached.new_context()).new_page()
+                await page.goto(page_url('test_core_simple.html'))
+                assert await page.title()
+            finally:
+                await attached.close()
+            assert launched.is_connected()
+            assert await launched.chrome.get_version()
+        finally:
+            await launched.close()
+        with pytest.raises(Error, match='DevTools endpoint'):
+            await playwright.chromium.connect_over_cdp('http://127.0.0.1:1', timeout=500)
 
 
 class TestNavigation:
@@ -113,6 +173,24 @@ class TestNavigation:
     async def test_navigation_timeout(self, page, http_server):
         with pytest.raises(TimeoutError, match='Timeout 1ms exceeded'):
             await page.goto(f'{http_server}/test_core_simple.html', timeout=1)
+
+    @pytest.mark.asyncio
+    async def test_goto_wait_until_commit_resolves(self, page, http_server):
+        response = await page.goto(
+            f'{http_server}/test_core_simple.html', wait_until='commit', timeout=5000
+        )
+        assert response is not None and response.status == 200
+        assert page.url == f'{http_server}/test_core_simple.html'
+        await page.wait_for_load_state('load')
+        assert await page.title() == 'Core Test Page'
+
+    @pytest.mark.asyncio
+    async def test_goto_without_a_network_request_returns_promptly(self, page):
+        await page.goto(page_url('test_core_simple.html'))
+        started = time.monotonic()
+        assert await page.goto('about:blank', timeout=5000) is None
+        assert time.monotonic() - started < 1
+        assert page.url == 'about:blank'
 
     @pytest.mark.asyncio
     async def test_base_url_resolves_relative_paths(self, pw_browser, http_server):
@@ -229,6 +307,30 @@ class TestContent:
         assert await page.evaluate('async () => add(2, 3)') == 5
         assert await page.evaluate('async () => who("me")') == 'me@file'
 
+    @pytest.mark.asyncio
+    async def test_exposed_function_with_unserializable_result_rejects_in_page(self, page):
+        await page.expose_function('weird', lambda: {1, 2})
+        await page.goto(page_url('test_core_simple.html'))
+        outcome = await page.evaluate(
+            'async () => weird().then(() => "resolved", error => error.message)',
+        )
+        assert 'not JSON serializable' in outcome
+
+    @pytest.mark.asyncio
+    async def test_evaluate_accepts_a_trailing_semicolon(self, page):
+        await page.goto(page_url('test_core_simple.html'))
+        assert await page.evaluate('document.title;') == 'Core Test Page'
+        assert await page.evaluate('1 + 1; ') == 2
+
+    @pytest.mark.asyncio
+    async def test_wait_for_selector_hidden_and_detached_honour_strict(self, page):
+        await page.goto(page_url('playwright_frames.html'))
+        with pytest.raises(Error, match='strict mode violation'):
+            await page.wait_for_selector('.twin', state='hidden', strict=True, timeout=500)
+        with pytest.raises(Error, match='strict mode violation'):
+            await page.wait_for_selector('.twin', state='detached', strict=True, timeout=500)
+        assert await page.wait_for_selector('.twin', state='hidden', timeout=500) is None
+
 
 class TestMedia:
     @pytest.mark.asyncio
@@ -325,6 +427,34 @@ class TestContext:
         assert await page.evaluate('() => localStorage.getItem("k")') == 'v'
         assert any(cookie['name'] == 'extra' for cookie in await restored.cookies())
         await restored.close()
+
+    @pytest.mark.asyncio
+    async def test_storage_state_covers_origins_without_an_open_page(self, pw_browser, http_server):
+        port = http_server.rsplit(':', 1)[1]
+        first_origin = http_server
+        second_origin = f'http://localhost:{port}'
+        context = await pw_browser.new_context()
+        page = await context.new_page()
+        await page.goto(f'{first_origin}/test_core_simple.html')
+        await page.evaluate('() => localStorage.setItem("where", "first")')
+        await page.goto(f'{second_origin}/test_core_simple.html')
+        await page.evaluate('() => localStorage.setItem("where", "second")')
+        state = await context.storage_state()
+        by_origin = {entry['origin']: entry['localStorage'] for entry in state['origins']}
+        assert by_origin[first_origin] == [{'name': 'where', 'value': 'first'}]
+        assert by_origin[second_origin] == [{'name': 'where', 'value': 'second'}]
+        assert context.pages == [page]
+        await context.close()
+
+    @pytest.mark.asyncio
+    async def test_new_context_accepts_a_device_descriptor(self, playwright, pw_browser):
+        context = await pw_browser.new_context(**playwright.devices['iPhone 13'])
+        page = await context.new_page()
+        await page.goto(page_url('test_core_simple.html'))
+        assert await page.evaluate('() => navigator.userAgent') == playwright.devices['iPhone 13']['user_agent']
+        assert await page.evaluate('() => devicePixelRatio') == 3
+        assert await page.evaluate('() => navigator.maxTouchPoints') > 0
+        await context.close()
 
     @pytest.mark.asyncio
     async def test_contexts_are_isolated(self, pw_browser, http_server):

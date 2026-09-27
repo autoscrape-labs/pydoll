@@ -11,7 +11,7 @@ import re
 import secrets
 import weakref
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Sequence
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Sequence, TypeVar
 from urllib.parse import urljoin
 
 from pydoll.browser.tab import Tab
@@ -20,7 +20,7 @@ from pydoll.elements.web_element import WebElement
 from pydoll.exceptions import PydollException
 from pydoll.playwright._dialog import ConsoleMessage, Dialog, Download, FileChooser
 from pydoll.playwright._element_handle import ElementHandle, JSHandle
-from pydoll.playwright._errors import Error, TargetClosedError, translate
+from pydoll.playwright._errors import TRANSPORT_ERRORS, Error, TargetClosedError, translate
 from pydoll.playwright._events import (
     Deadline,
     EventContextManager,
@@ -53,6 +53,8 @@ from pydoll.protocol.page.types import ScreenshotFormat, Viewport
 from pydoll.protocol.runtime.events import RuntimeEvent
 
 logger = logging.getLogger(__name__)
+
+T = TypeVar('T')
 
 if TYPE_CHECKING:
     from pydoll.playwright._browser_context import BrowserContext
@@ -125,9 +127,9 @@ class Page(EventEmitter):
         return f'<Page url={self._url!r}>'
 
     async def _initialize(self) -> None:
-        await self._tab.enable_page_events()
+        await self._guard(self._tab.enable_page_events)
         await self._send(PageCommands.set_lifecycle_events_enabled(True))
-        await self._tab.enable_network_events()
+        await self._guard(self._tab.enable_network_events)
         await self._main_frame_id()
         await self._listen(
             PageEvent.LIFECYCLE_EVENT, lambda e: self._navigation.on_lifecycle(e['params'])
@@ -178,9 +180,19 @@ class Page(EventEmitter):
         return self._main_frame_id_cache
 
     async def _send(self, command: Any) -> Any:
+        return await self._guard(lambda: self._tab.execute_command(command))
+
+    async def _guard(self, operation: Callable[[], Awaitable[T]]) -> T:
+        """Run a pydoll call, translating its failures.
+
+        A closed page answers immediately with ``TargetClosedError`` instead of
+        letting the transport discover the dead endpoint.
+        """
+        if self._closed:
+            raise TargetClosedError()
         try:
-            return await self._tab.execute_command(command)
-        except PydollException as error:
+            return await operation()
+        except TRANSPORT_ERRORS as error:
             raise translate(error) from error
 
     def _timeout(self, timeout: float | None) -> float:
@@ -200,6 +212,13 @@ class Page(EventEmitter):
         return self._context._default_navigation_timeout_value()
 
     def _frame_for_id(self, frame_id: str) -> Frame:
+        """The Frame for a CDP frame id, created on first sight.
+
+        A new child frame starts rooted in the tab and is not usable until
+        ``_resolve_frame`` swaps in its ``<iframe>`` element; ``_ready`` gates
+        every evaluation on that. Detached frames stay in the table so a late
+        event for their id never manufactures a fresh, attached phantom.
+        """
         if frame_id == self._main_frame_id_cache or not frame_id:
             return self._main_frame
         frame = self._frames_by_id.get(frame_id)
@@ -207,6 +226,7 @@ class Page(EventEmitter):
             frame = Frame(self, self._tab, parent=self._main_frame)
             frame._frame_id = frame_id
             frame._url = self._navigation._state(frame_id).url
+            frame._ready = self._loop.create_future()
             self._frames_by_id[frame_id] = frame
             asyncio.ensure_future(self._resolve_frame(frame_id))
         return frame
@@ -224,7 +244,31 @@ class Page(EventEmitter):
         existing._parent = candidate._parent
         if candidate._name:
             existing._name = candidate._name
+        existing._mark_ready(None)
         return existing
+
+    async def _settle_frames(self, deadline: Deadline) -> None:
+        """Wait for every attached child frame to finish resolving its owner element.
+
+        Resolution runs in the background from the moment a frame attaches;
+        after a navigation the page waits for the frames it already knows so
+        ``page.frames[n].evaluate`` and ``page.frame(name=...)`` see them ready.
+        A frame that fails to resolve reports that on use, not here.
+        """
+        pending = [
+            frame._ready
+            for frame in self._frames_by_id.values()
+            if frame._ready is not None and not frame._ready.done() and not frame._detached
+        ]
+        if not pending:
+            return
+        await asyncio.wait(pending, timeout=deadline.remaining_seconds())
+
+    def _forget_detached_frames(self) -> None:
+        """Drop detached frames once the main document is gone with them."""
+        self._frames_by_id = {
+            frame_id: frame for frame_id, frame in self._frames_by_id.items() if not frame._detached
+        }
 
     def _child_frames_of(self, parent: Frame) -> list[Frame]:
         return [
@@ -239,32 +283,47 @@ class Page(EventEmitter):
         self._navigation.on_frame_attached(params)
 
     def _on_frame_detached(self, event: dict[str, Any]) -> None:
+        """Mark the frame detached; a ``swap`` only moves it to another target.
+
+        The frame stays in the table so later events for its id find the
+        detached object instead of a new one rooted in the main document.
+        """
         params = event['params']
-        frame = self._frames_by_id.pop(params['frameId'], None)
+        if params.get('reason') == 'swap':
+            return
+        frame = self._frames_by_id.get(params['frameId'])
         if frame is not None:
             frame._detached = True
-        self._navigation.on_frame_detached(params)
+            frame._mark_ready(None)
+        self._navigation.on_frame_detached(params, frame)
 
     async def _resolve_frame(self, frame_id: str) -> None:
+        """Swap a child frame's root to its ``<iframe>`` element and settle ``_ready``.
+
+        A failure is recorded on the frame so the call that needs it raises a
+        clear error instead of silently evaluating in the main document.
+        """
+        frame = self._frames_by_id.get(frame_id)
+        if frame is None:
+            return
         try:
             owner = await self._send(DomCommands.get_frame_owner(frame_id=frame_id))
             backend_node_id = owner['result'].get('backendNodeId')
             if backend_node_id is None:
-                return
+                raise Error('the frame owner is not in this page target')
             resolved = await self._send(DomCommands.resolve_node(backend_node_id=backend_node_id))
             element = await self._main_frame._element_from_object_id(
                 resolved['result']['object']['objectId']
             )
-            frame = self._frames_by_id.get(frame_id)
-            if frame is None:
-                return
-            frame._root = element
-            frame._name = element.get_attribute('name') or ''
-            parent_id = owner['result'].get('parentId')
-            if parent_id:
-                frame._parent = self._frame_for_id(parent_id)
-        except Error:
+        except Error as error:
+            frame._mark_ready(f'Frame {frame_id} could not be resolved: {error}')
             return
+        frame._root = element
+        frame._name = element.get_attribute('name') or frame._name
+        parent_id = owner['result'].get('parentId')
+        if parent_id:
+            frame._parent = self._frame_for_id(parent_id)
+        frame._mark_ready(None)
 
     @property
     def main_frame(self) -> Frame:
@@ -361,7 +420,7 @@ class Page(EventEmitter):
         if self._runtime_enabled or self._closed:
             return
         self._runtime_enabled = True
-        await self._tab.enable_runtime_events()
+        await self._guard(self._tab.enable_runtime_events)
         await self._listen(RuntimeEvent.CONSOLE_API_CALLED, self._on_console)
         await self._listen(RuntimeEvent.EXCEPTION_THROWN, self._on_exception)
         await self._listen(RuntimeEvent.BINDING_CALLED, self._on_binding_called)
@@ -370,7 +429,7 @@ class Page(EventEmitter):
         if self._file_chooser_enabled or self._closed:
             return
         self._file_chooser_enabled = True
-        await self._tab.enable_intercept_file_chooser_dialog()
+        await self._guard(self._tab.enable_intercept_file_chooser_dialog)
 
     def _on_console(self, event: dict[str, Any]) -> None:
         self.emit('console', ConsoleMessage(self, event['params']))
@@ -448,7 +507,7 @@ class Page(EventEmitter):
         context_id: int | None,
     ) -> None:
         callback, with_source = binding
-        result: Any = None
+        serialized = 'null'
         error: str | None = None
         try:
             args = payload.get('args', [])
@@ -460,13 +519,14 @@ class Page(EventEmitter):
                 result = callback(*args)
             if inspect.isawaitable(result):
                 result = await result
+            serialized = json.dumps(result)
         except Exception as exc:
             error = str(exc)
         await self._send(
             RuntimeCommands.evaluate(
                 expression=(
                     f'globalThis.__pydoll_deliver__({json.dumps(name)}, {payload.get("id")}, '
-                    f'{json.dumps(result)}, {json.dumps(error)})'
+                    f'{serialized}, {json.dumps(error)})'
                 ),
                 context_id=context_id,
             )
@@ -797,7 +857,7 @@ class Page(EventEmitter):
         await self._send(EmulationCommands.set_emulated_media(media=media or '', features=features))
 
     async def bring_to_front(self) -> None:
-        await self._tab.bring_to_front()
+        await self._guard(self._tab.bring_to_front)
 
     async def request_gc(self) -> None:
         await self._send({'method': 'HeapProfiler.collectGarbage', 'params': {}})
@@ -990,7 +1050,7 @@ class Page(EventEmitter):
             return
         try:
             await self._tab.close()
-        except PydollException:
+        except TRANSPORT_ERRORS:
             pass
         self._on_target_closed()
         if self._owned_context is not None:

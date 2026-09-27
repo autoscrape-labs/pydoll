@@ -23,7 +23,7 @@ from pydoll.playwright._events import (
     schedule,
 )
 from pydoll.playwright._glob import URLMatch
-from pydoll.playwright._network import RouteEntry, RouteHandler, make_entry
+from pydoll.playwright._network import Route, RouteEntry, RouteHandler, make_entry
 from pydoll.playwright._page import Page
 from pydoll.protocol.browser.types import DownloadBehavior, PermissionType
 from pydoll.protocol.network.types import CookieParam
@@ -86,6 +86,7 @@ class BrowserContext(EventEmitter):
         )
         self._owns_downloads_dir = not options.get('downloads_path')
         self._tracing = None
+        self._origins: list[str] = []
         self._loop = asyncio.get_running_loop()
 
     def __repr__(self) -> str:
@@ -290,9 +291,24 @@ class BrowserContext(EventEmitter):
         except PydollException as error:
             raise translate(error) from error
 
+    def _remember_origin(self, url: str) -> None:
+        """Record an HTTP origin a page of this context navigated to, for ``storage_state``."""
+        parsed = urlparse(url)
+        if parsed.scheme not in {'http', 'https'} or not parsed.netloc:
+            return
+        origin = f'{parsed.scheme}://{parsed.netloc}'
+        if origin not in self._origins:
+            self._origins.append(origin)
+
     async def storage_state(
         self, path: str | Path | None = None, indexed_db: bool | None = None
     ) -> dict[str, Any]:
+        """Cookies plus the localStorage of every origin this context visited.
+
+        Origins that still have an open page are read there; the others are read
+        through a scratch page that lands on the origin with a fulfilled blank
+        document, so no request leaves the browser, and is closed afterwards.
+        """
         state: dict[str, Any] = {'cookies': await self.cookies(), 'origins': []}
         seen: set[str] = set()
         for page in self._pages:
@@ -301,16 +317,36 @@ class BrowserContext(EventEmitter):
                 if not origin or origin in seen or origin == 'null':
                     continue
                 seen.add(origin)
-                items = await page.evaluate(
-                    '() => Object.entries(localStorage).map(([name, value]) => ({ name, value }))'
-                )
+                items = await page.evaluate(_LOCAL_STORAGE_ENTRIES)
                 if items:
                     state['origins'].append({'origin': origin, 'localStorage': items})
             except Error:
                 continue
+        remaining = [origin for origin in self._origins if origin not in seen]
+        if remaining:
+            scratch = await self._scratch_page()
+            try:
+                await scratch.route('**/*', _fulfill_blank)
+                for origin in remaining:
+                    await scratch.goto(origin)
+                    items = await scratch.evaluate(_LOCAL_STORAGE_ENTRIES)
+                    if items:
+                        state['origins'].append({'origin': origin, 'localStorage': items})
+            finally:
+                await scratch.close()
         if path is not None:
             Path(path).write_text(json.dumps(state, indent=2), encoding='utf-8')
         return state
+
+    async def _scratch_page(self) -> Page:
+        """A page of this context that is never listed in ``pages`` nor announced."""
+        try:
+            tab = await self._browser._chrome.new_tab(browser_context_id=self._context_id)
+        except PydollException as error:
+            raise translate(error) from error
+        page = Page(self, tab)
+        await page._initialize()
+        return page
 
     async def grant_permissions(
         self, permissions: Sequence[str], origin: str | None = None
@@ -475,6 +511,15 @@ class BrowserContext(EventEmitter):
 
     async def new_cdp_session(self, page: Page) -> Any:
         raise Error('new_cdp_session is not supported; use page.tab.execute_command for raw CDP')
+
+
+_LOCAL_STORAGE_ENTRIES = (
+    '() => Object.entries(localStorage).map(([name, value]) => ({ name, value }))'
+)
+
+
+async def _fulfill_blank(route: Route) -> None:
+    await route.fulfill(body='<html></html>', content_type='text/html')
 
 
 def _languages(locale: str) -> list[str]:

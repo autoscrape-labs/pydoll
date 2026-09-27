@@ -4,6 +4,9 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Any, Sequence
+from urllib.parse import urlsplit
+
+import aiohttp
 
 from pydoll.browser.chromium import Chrome
 from pydoll.exceptions import PydollException
@@ -39,7 +42,8 @@ class BrowserType:
     def __init__(self, name: str, selectors: Selectors) -> None:
         self._selectors = selectors
         self._name = name
-        self._owned: set[int] = set()
+        self._launched: list[Browser] = []
+        self._attached: list[Browser] = []
 
     def __repr__(self) -> str:
         return f'<BrowserType name={self._name}>'
@@ -53,7 +57,16 @@ class BrowserType:
         return ''
 
     def _owns_process(self, browser: Browser) -> bool:
-        return id(browser) in self._owned
+        return any(candidate is browser for candidate in self._launched)
+
+    def _forget(self, browser: Browser) -> None:
+        self._launched = [candidate for candidate in self._launched if candidate is not browser]
+        self._attached = [candidate for candidate in self._attached if candidate is not browser]
+
+    async def _close_all(self) -> None:
+        """Stop every browser launched here and disconnect from the attached ones."""
+        for browser in [*self._launched, *self._attached]:
+            await browser.close()
 
     def _check_supported(self) -> None:
         if self._name != 'chromium':
@@ -101,7 +114,7 @@ class BrowserType:
         except PydollException as error:
             raise translate(error) from error
         browser = Browser(self, chrome)
-        self._owned.add(id(browser))
+        self._launched.append(browser)
         await browser._initialize(initial_tab)
         return browser
 
@@ -132,7 +145,7 @@ class BrowserType:
         except PydollException as error:
             raise translate(error) from error
         browser = Browser(self, chrome)
-        self._owned.add(id(browser))
+        self._launched.append(browser)
         await browser._initialize(initial_tab)
         context = await browser._default_browser_context(context_kwargs)
         await context._adopt(initial_tab, opener=None, emit_popup=False)
@@ -146,13 +159,20 @@ class BrowserType:
         slow_mo: float | None = None,
         headers: dict[str, str] | None = None,
     ) -> Browser:
+        """Attach to a running Chromium by its DevTools ``ws://`` or ``http://`` endpoint.
+
+        An HTTP endpoint is resolved through ``/json/version`` the way Playwright
+        does, so ``http://localhost:9222`` works as well as the browser socket URL.
+        """
         self._check_supported()
+        ws_endpoint = await _websocket_endpoint(endpoint_url, timeout, headers)
         chrome = Chrome()
         try:
-            initial_tab = await chrome.connect(endpoint_url)
+            initial_tab = await chrome.connect(ws_endpoint)
         except PydollException as error:
             raise translate(error) from error
         browser = Browser(self, chrome)
+        self._attached.append(browser)
         await browser._initialize(initial_tab)
         context = await browser._default_browser_context({})
         try:
@@ -197,15 +217,15 @@ class Playwright:
         self.firefox = BrowserType('firefox', self.selectors)
         self.webkit = BrowserType('webkit', self.selectors)
         self.devices: dict[str, dict[str, Any]] = dict(_DEVICES)
-        self._browsers: list[Browser] = []
 
     @property
     def request(self) -> Any:
         raise Error('playwright.request (APIRequestContext) is not supported by pydoll.playwright')
 
     async def stop(self) -> None:
-        for browser_type in (self.chromium,):
-            browser_type._owned.clear()
+        """Close every browser this Playwright launched or attached to."""
+        for browser_type in (self.chromium, self.firefox, self.webkit):
+            await browser_type._close_all()
 
 
 class PlaywrightContextManager:
@@ -229,6 +249,27 @@ class PlaywrightContextManager:
 
 def async_playwright() -> PlaywrightContextManager:
     return PlaywrightContextManager()
+
+
+async def _websocket_endpoint(
+    endpoint_url: str, timeout: float | None, headers: dict[str, str] | None
+) -> str:
+    """The browser WebSocket URL behind a DevTools endpoint given as ``ws://`` or ``http://``."""
+    if urlsplit(endpoint_url).scheme not in {'http', 'https'}:
+        return endpoint_url
+    version_url = f'{endpoint_url.rstrip("/")}/json/version'
+    client_timeout = aiohttp.ClientTimeout(total=timeout / 1000) if timeout else None
+    try:
+        async with aiohttp.ClientSession(headers=headers, timeout=client_timeout) as session:
+            async with session.get(version_url) as response:
+                response.raise_for_status()
+                data = await response.json()
+    except (aiohttp.ClientError, TimeoutError) as error:
+        raise Error(f'Could not reach the DevTools endpoint at {version_url}: {error}') from error
+    try:
+        return str(data['webSocketDebuggerUrl'])
+    except (KeyError, TypeError) as error:
+        raise Error(f'{version_url} did not report a webSocketDebuggerUrl') from error
 
 
 _DEVICES: dict[str, dict[str, Any]] = {

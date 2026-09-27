@@ -7,6 +7,7 @@ import asyncio
 import pytest
 
 from _pages import page_url
+from pydoll.playwright._network import Route
 from pydoll.playwright.async_api import Error, TimeoutError
 
 
@@ -62,6 +63,14 @@ class TestConsoleAndErrors:
         log = next(message for message in messages if message.type == 'log')
         assert log.text.startswith('plain 1')
         assert await log.args[1].json_value() == 1
+
+    @pytest.mark.asyncio
+    async def test_console_text_renders_primitives_like_javascript(self, page):
+        await page.goto(page_url('test_core_simple.html'))
+        async with page.expect_console_message() as info:
+            await page.evaluate('() => console.log(true, null, undefined, 1, 1.5, "s", -0, NaN)')
+        message = await info.value
+        assert message.text == 'true null undefined 1 1.5 s -0 NaN'
 
     @pytest.mark.asyncio
     async def test_page_errors(self, page):
@@ -224,6 +233,30 @@ class TestNetwork:
         assert b'Host' in await response.body()
         with pytest.raises(Error):
             await response.json()
+
+    @pytest.mark.asyncio
+    async def test_raising_route_handler_lets_the_request_through(self, page, http_server, caplog):
+        def handler(route):
+            raise RuntimeError('handler exploded')
+
+        await page.route('**/test_core_simple.html', handler)
+        response = await page.goto(f'{http_server}/test_core_simple.html', timeout=5000)
+        assert response is not None and response.status == 200
+        assert 'handler exploded' in caplog.text
+
+    @pytest.mark.asyncio
+    async def test_route_on_a_stale_interception_raises_error(self, page, http_server):
+        routes = []
+
+        async def handler(route):
+            routes.append(route)
+            await route.continue_()
+
+        await page.route('**/test_core_simple.html', handler)
+        await page.goto(f'{http_server}/test_core_simple.html')
+        stale = Route(page, {'requestId': 'interception-gone'}, routes[0].request)
+        with pytest.raises(Error, match='Invalid InterceptionId'):
+            await stale.abort()
 
     @pytest.mark.asyncio
     async def test_offline_context(self, pw_browser, http_server):

@@ -6,6 +6,7 @@ import asyncio
 from typing import TYPE_CHECKING, Literal, TypeAlias
 
 from pydoll.commands import InputCommands
+from pydoll.playwright._errors import Error
 from pydoll.playwright._keys import (
     KEYPAD_LOCATION,
     MODIFIER_NAMES,
@@ -112,7 +113,7 @@ class Keyboard:
         wanted = {resolve_smart_modifier(name) for name in modifiers}
         for name in wanted:
             if name not in MODIFIER_NAMES:
-                raise ValueError(f'Unknown modifier {name}')
+                raise Error(f'Unknown modifier {name}')
         restore = sorted(self._pressed_modifiers)
         for name in MODIFIER_NAMES:
             need_down = name in wanted
@@ -127,7 +128,7 @@ class Keyboard:
 def _safe_describe(char: str) -> KeyDescription | None:
     try:
         return describe_key(char, False)
-    except ValueError:
+    except Error:
         return None
 
 

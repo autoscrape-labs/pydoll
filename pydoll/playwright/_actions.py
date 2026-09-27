@@ -598,7 +598,7 @@ class Actions:
                 if not path.exists():
                     raise Error(f'File not found: {path}')
                 paths.append(str(path))
-            await element.set_input_files(paths)
+            await self._frame._page._guard(lambda: element.set_input_files(paths))
 
         await self._retry(resolver, deadline, attempt, 'setInputFiles')
 

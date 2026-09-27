@@ -138,8 +138,14 @@ def evaluate_source(
 
 
 def normalize_expression(expression: str) -> str:
-    """Wrap function declarations in parentheses so ``eval`` yields the function."""
-    expression = expression.strip()
+    """Prepare an expression for embedding in the evaluate template.
+
+    Trailing semicolons and whitespace are dropped, since the text lands inside
+    ``let result = ( ... )`` where a statement terminator is a syntax error.
+    Function declarations are wrapped in parentheses so they evaluate to the
+    function instead of declaring it.
+    """
+    expression = re.sub(r'[\s;]+$', '', expression.strip())
     if re.match(r'^(async)?\s*function(\s|\()', expression):
         expression = f'({expression})'
     return expression

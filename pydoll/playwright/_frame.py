@@ -4,6 +4,12 @@ A frame wraps a pydoll root that already knows how to route commands into
 the right execution context: the ``Tab`` for the main frame, an iframe
 ``WebElement`` for child frames. Every selector resolution, evaluation and
 action of Page, Locator and ElementHandle ends up here.
+
+Known limitation: a cross-origin iframe that Chrome renders out of process
+(OOPIF) cannot be reached through ``frame_locator`` or a ``>> internal:control=enter-frame``
+selector chain, because the engine handle lives in the parent session while the
+query would have to run in the child's; use ``element_handle.content_frame()``
+and the frame's own methods for those frames.
 """
 
 from __future__ import annotations
@@ -17,10 +23,9 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, Sequence, TypeVar, c
 from pydoll.browser.tab import Tab
 from pydoll.commands import DomCommands, PageCommands, RuntimeCommands
 from pydoll.elements.web_element import WebElement
-from pydoll.exceptions import PydollException
 from pydoll.playwright._actions import Actions, Resolver
 from pydoll.playwright._element_handle import ElementHandle, JSHandle, PrimitiveHandle
-from pydoll.playwright._errors import Error, translate
+from pydoll.playwright._errors import Error
 from pydoll.playwright._events import Deadline
 from pydoll.playwright._injected import engine_call, engine_source
 from pydoll.playwright._locator import FilePayload, FrameLocator, Locator
@@ -77,6 +82,7 @@ class Frame:
         self._url = ''
         self._name = ''
         self._detached = False
+        self._ready: asyncio.Future[str | None] | None = None
 
     def __repr__(self) -> str:
         return f'<Frame name={self._name!r} url={self.url!r}>'
@@ -111,9 +117,39 @@ class Frame:
         return self._detached
 
     async def frame_element(self) -> ElementHandle:
+        await self._await_ready()
         if self._parent is None or not isinstance(self._root, WebElement):
             raise Error('Main frame has no owner element')
         return ElementHandle(self._parent, self._root)
+
+    def _mark_ready(self, failure: str | None) -> None:
+        """Settle the resolution gate: ``None`` means usable, text is the reason it is not."""
+        if self._ready is not None and not self._ready.done():
+            self._ready.set_result(failure)
+
+    async def _await_ready(self) -> None:
+        """Block until this frame's owner element is known, then refuse a detached frame.
+
+        A child frame discovered from a CDP event is rooted in the tab until the
+        page resolves its ``<iframe>``; evaluating before that would silently run
+        in the main document, so every world lookup waits here first.
+        """
+        if self._detached:
+            raise Error('Frame was detached')
+        if self._ready is None or self._ready.done():
+            failure = self._ready.result() if self._ready is not None else None
+        else:
+            deadline = Deadline(self._page._timeout(None))
+            try:
+                failure = await asyncio.wait_for(
+                    asyncio.shield(self._ready), deadline.remaining_seconds()
+                )
+            except asyncio.TimeoutError:
+                raise deadline.error('waiting for the frame to be resolved') from None
+        if self._detached:
+            raise Error('Frame was detached')
+        if failure:
+            raise Error(failure)
 
     async def _frame_id_value(self) -> str:
         if self._frame_id:
@@ -121,7 +157,7 @@ class Frame:
         if isinstance(self._root, Tab):
             self._frame_id = await self._page._main_frame_id()
         else:
-            context = await self._root.iframe_context()
+            context = await self._page._guard(self._root.iframe_context)
             if context is None:
                 raise Error('Element is not an iframe')
             self._frame_id = context.frame_id
@@ -129,16 +165,10 @@ class Frame:
         return self._frame_id
 
     async def _send(self, command: Any) -> Any:
-        try:
-            return await self._root.execute_command(command)
-        except PydollException as error:
-            raise translate(error) from error
+        return await self._page._guard(lambda: self._root.execute_command(command))
 
     async def _send_for_element(self, element: WebElement, command: Any) -> Any:
-        try:
-            return await element.execute_command(command)
-        except PydollException as error:
-            raise translate(error) from error
+        return await self._page._guard(lambda: element.execute_command(command))
 
     def _child_frame(self, iframe: WebElement) -> Frame:
         frame = Frame(self._page, iframe, parent=self)
@@ -163,6 +193,7 @@ class Frame:
 
     async def _world(self) -> int:
         """Execution context id of this frame's isolated world, created on demand."""
+        await self._await_ready()
         if self._world_id is None:
             frame_id = await self._frame_id_value()
             response = await self._send(
@@ -200,6 +231,7 @@ class Frame:
 
     async def _document_id(self) -> str:
         """Object id of ``document`` in the main world, for user evaluations."""
+        await self._await_ready()
         if self._document_object_id:
             return self._document_object_id
         if isinstance(self._root, Tab):
@@ -207,7 +239,7 @@ class Frame:
                 RuntimeCommands.evaluate(expression='document', return_by_value=False)
             )
         else:
-            context = await self._root.iframe_context()
+            context = await self._page._guard(self._root.iframe_context)
             if context is None:
                 raise Error('Element is not an iframe')
             if context.document_object_id:
@@ -276,16 +308,15 @@ class Frame:
         user_gesture: bool = False,
     ) -> Any:
         """Call a function with ``this`` bound to the element, in the element's world."""
-        try:
-            response = await element.execute_script(
+        response = await self._page._guard(
+            lambda: element.execute_script(
                 function_declaration,
                 arguments=list(arguments),
                 return_by_value=by_value,
                 await_promise=await_promise,
                 user_gesture=user_gesture,
             )
-        except PydollException as error:
-            raise translate(error) from error
+        )
         self._raise_exception(cast('dict[str, Any]', response))
         remote = cast('dict[str, Any]', response['result']['result'])
         return parse_remote_value(remote) if by_value else remote
@@ -352,15 +383,17 @@ class Frame:
         async def operation() -> list[WebElement]:
             engine = await self._engine_handle()
             arguments: list[CallArgument] = [{'objectId': engine}, {'value': selector}]
-            try:
-                if root is not None:
-                    elements = await root.query_script(script, arguments=arguments)
-                else:
-                    elements = await self._root.query_script(
-                        script, arguments=arguments, execution_context_id=await self._world()
+            if root is not None:
+                elements = await self._page._guard(
+                    lambda: root.query_script(script, arguments=arguments)
+                )
+            else:
+                world = await self._world()
+                elements = await self._page._guard(
+                    lambda: self._root.query_script(
+                        script, arguments=arguments, execution_context_id=world
                     )
-            except PydollException as error:
-                raise translate(error) from error
+                )
             for element in elements:
                 self._page._element_frames[element] = self
             return elements
@@ -379,12 +412,11 @@ class Frame:
             DomCommands.resolve_node(backend_node_id=backend_node_id, execution_context_id=world)
         )
         isolated_id = resolved['result']['object']['objectId']
-        try:
-            elements = await self._root.query_script(
+        elements = await self._page._guard(
+            lambda: self._root.query_script(
                 _WRAP_NODE, arguments=[{'objectId': isolated_id}], execution_context_id=world
             )
-        except PydollException as error:
-            raise translate(error) from error
+        )
         if not elements:
             raise Error('Object is not an element')
         self._page._element_frames[elements[0]] = self
@@ -465,7 +497,9 @@ class Frame:
         chunks = split_by_frame(selector)
         if len(chunks) == 1:
             return await self._query_script(root, _QUERY_VISIBLE, selector)
-        elements = await self._query_all(selector, root=root)
+        return await self._visible_subset(await self._query_all(selector, root=root))
+
+    async def _visible_subset(self, elements: Sequence[WebElement]) -> list[WebElement]:
         visible = []
         for element in elements:
             if await self._engine_on_element(element, 'return engine.isElementVisible(this);', []):
@@ -485,14 +519,19 @@ class Frame:
         deadline = Deadline(self._page._timeout(timeout))
         description = f'locator({json.dumps(selector)}) to be {state}'
         while True:
-            if state in {'visible', 'hidden'}:
+            if strict:
+                matches = await self._query_all(selector, root=root)
+                if len(matches) > 1:
+                    raise Error(
+                        f'strict mode violation: {selector} resolved to {len(matches)} elements'
+                    )
+                candidates = matches
+                if state in {'visible', 'hidden'}:
+                    candidates = await self._visible_subset(matches)
+            elif state in {'visible', 'hidden'}:
                 candidates = await self._query_visible(selector, root)
             else:
                 candidates = await self._query_all(selector, root=root)
-            if strict and len(candidates) > 1:
-                raise Error(
-                    f'strict mode violation: {selector} resolved to {len(candidates)} elements'
-                )
             if state in {'attached', 'visible'}:
                 if candidates:
                     return ElementHandle(self, candidates[0])
