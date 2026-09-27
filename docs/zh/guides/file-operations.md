@@ -11,7 +11,7 @@
     ```python
     from pathlib import Path
 
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
@@ -111,7 +111,7 @@
     ```python
     from pathlib import Path
 
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
@@ -162,7 +162,7 @@
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:

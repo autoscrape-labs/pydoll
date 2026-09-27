@@ -24,7 +24,7 @@ O Pydoll corrige isso para você. Quando ele vê um argumento `--user-agent=`, e
 === "Sync"
 
     ```python
-    from pydoll import Chrome, ChromiumOptions
+    from pydoll.sync import Chrome, ChromiumOptions
 
     def main():
         options = ChromiumOptions()

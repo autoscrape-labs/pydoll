@@ -23,7 +23,7 @@ graph LR
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
@@ -181,7 +181,7 @@ Pydoll 以两种形式提供同一套 API。从 `pydoll.sync` 导入，每个调
     import time
     from functools import partial
 
-    from pydoll import Chrome, NetworkEvent
+    from pydoll.sync import Chrome, NetworkEvent
 
     def on_request(tab, event):
         url = event['params']['request']['url']
@@ -238,7 +238,7 @@ Pydoll 以两种形式提供同一套 API。从 `pydoll.sync` 导入，每个调
 === "Sync"
 
     ```python
-    from pydoll import Chrome, ChromiumOptions, Edge
+    from pydoll.sync import Chrome, ChromiumOptions, Edge
 
     # Chrome
     with Chrome() as browser:

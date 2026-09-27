@@ -23,7 +23,7 @@ Quando você inicia um navegador, o Pydoll lança o Chrome que você já tem ins
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
@@ -181,7 +181,7 @@ Em vez de consultar a página em um loop, você pode assinar eventos do navegado
     import time
     from functools import partial
 
-    from pydoll import Chrome, NetworkEvent
+    from pydoll.sync import Chrome, NetworkEvent
 
     def on_request(tab, event):
         url = event['params']['request']['url']
@@ -238,7 +238,7 @@ A mesma API controla qualquer navegador Chromium. O Chrome é o alvo principal; 
 === "Sync"
 
     ```python
-    from pydoll import Chrome, ChromiumOptions, Edge
+    from pydoll.sync import Chrome, ChromiumOptions, Edge
 
     # Chrome
     with Chrome() as browser:

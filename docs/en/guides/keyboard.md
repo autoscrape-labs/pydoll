@@ -6,7 +6,7 @@ Drive keyboard input through `tab.keyboard`: type into fields, press special key
 
     ```python
     import time
-    from pydoll import Chrome, Key
+    from pydoll.sync import Chrome, Key
 
     def main():
         with Chrome() as browser:
@@ -92,7 +92,7 @@ If you only need the text to appear and don't care about per-key events, `insert
 === "Sync"
 
     ```python
-    from pydoll import Key
+    from pydoll.sync import Key
 
     tab.keyboard.press(Key.ENTER)
     tab.keyboard.press(Key.TAB)
@@ -126,7 +126,7 @@ If you only need the text to appear and don't care about per-key events, `insert
 === "Sync"
 
     ```python
-    from pydoll import Key
+    from pydoll.sync import Key
 
     tab.keyboard.hotkey(Key.CONTROL, Key.A)   # select all
     tab.keyboard.hotkey(Key.CONTROL, Key.C)   # copy
@@ -149,7 +149,7 @@ macOS uses Command (Meta) where Windows and Linux use Control, so pick the modif
 
     ```python
     import sys
-    from pydoll import Key
+    from pydoll.sync import Key
 
     mod = Key.META if sys.platform == 'darwin' else Key.CONTROL
     tab.keyboard.hotkey(mod, Key.C)
@@ -194,7 +194,7 @@ For sequences where a modifier stays down across several presses, drive `down()`
 === "Sync"
 
     ```python
-    from pydoll import Key
+    from pydoll.sync import Key
 
     try:
         tab.keyboard.down(Key.SHIFT)

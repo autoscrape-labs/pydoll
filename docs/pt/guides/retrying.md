@@ -9,7 +9,7 @@ Decore uma função com `@retry` e liste as exceções que valem uma repetição
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
     from pydoll.decorators import retry
     from pydoll.exceptions import WaitElementTimeout, ConnectionFailed
 
@@ -155,7 +155,7 @@ Execute cada modo: um delay fixo mantém o mesmo intervalo entre as tentativas, 
 
     ```python
     import time
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
     from pydoll.decorators import retry
     from pydoll.exceptions import ElementNotFound, WaitElementTimeout
 

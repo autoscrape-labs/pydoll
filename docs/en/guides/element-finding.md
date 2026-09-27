@@ -13,7 +13,7 @@ Edit the attributes below and watch `find()` locate the element live. Pydoll tur
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
@@ -225,8 +225,6 @@ By default `find()` raises `ElementNotFound` when nothing matches. Pass `raise_e
 === "Sync"
 
     ```python
-    from pydoll.exceptions import ElementNotFound
-
     # required element: let it raise
     submit = tab.find(id='submit')
 
@@ -246,8 +244,6 @@ By default `find()` raises `ElementNotFound` when nothing matches. Pass `raise_e
 === "Async"
 
     ```python
-    from pydoll.exceptions import ElementNotFound
-
     # required element: let it raise
     submit = await tab.find(id='submit')
 
@@ -301,7 +297,7 @@ This logs in on [quotes.toscrape.com](https://quotes.toscrape.com/login) (which 
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:

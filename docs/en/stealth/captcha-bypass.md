@@ -11,7 +11,7 @@ The context manager waits for the Turnstile widget to appear during the block, c
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
@@ -57,7 +57,7 @@ When you don't want to wrap a specific navigation, enable background handling: P
 
     ```python
     import time
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:

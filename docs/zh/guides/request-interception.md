@@ -17,7 +17,7 @@
     ```python
     from functools import partial
 
-    from pydoll import Chrome, FetchEvent
+    from pydoll.sync import Chrome, FetchEvent
 
     def on_request(tab, event):
         request_id = event['params']['requestId']
@@ -103,7 +103,7 @@
     ```python
     from functools import partial
 
-    from pydoll import Chrome, FetchEvent
+    from pydoll.sync import Chrome, FetchEvent
     from pydoll.protocol.network.types import ErrorReason
 
     def block_heavy(tab, event):
@@ -172,7 +172,7 @@
     ```python
     from functools import partial
 
-    from pydoll import Chrome, FetchEvent
+    from pydoll.sync import Chrome, FetchEvent
     from pydoll.protocol.network.types import ResourceType
 
     def add_header(tab, event):
@@ -242,7 +242,7 @@
     import json
     from functools import partial
 
-    from pydoll import Chrome, FetchEvent
+    from pydoll.sync import Chrome, FetchEvent
 
     def mock_json(tab, event):
         request_id = event['params']['requestId']
@@ -343,7 +343,7 @@
     ```python
     from functools import partial
 
-    from pydoll import Chrome, FetchEvent
+    from pydoll.sync import Chrome, FetchEvent
     from pydoll.protocol.fetch.types import AuthChallengeResponseType
 
     def answer_auth(tab, event):

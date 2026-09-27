@@ -11,7 +11,7 @@ The everyday preferences have helper methods and properties, so you set them wit
 === "Sync"
 
     ```python
-    from pydoll import Chrome, ChromiumOptions
+    from pydoll.sync import Chrome, ChromiumOptions
 
     def main():
         options = ChromiumOptions()
@@ -103,7 +103,7 @@ Anti-bot systems read the profile, not just the page. A fresh, empty profile wit
     ```python
     import time
 
-    from pydoll import Chrome, ChromiumOptions
+    from pydoll.sync import Chrome, ChromiumOptions
 
     def realistic_options() -> ChromiumOptions:
         now = int(time.time())

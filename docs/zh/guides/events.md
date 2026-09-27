@@ -10,7 +10,7 @@
 
     ```python
     import time
-    from pydoll import Chrome, PageEvent
+    from pydoll.sync import Chrome, PageEvent
 
     def main():
         with Chrome() as browser:
@@ -101,7 +101,7 @@
 === "Sync"
 
     ```python
-    from pydoll import NetworkEvent
+    from pydoll.sync import NetworkEvent
 
     def on_request(event):
         print(f"→ {event['params']['request']['url']}")
@@ -148,7 +148,7 @@
 === "Sync"
 
     ```python
-    from pydoll import PageEvent
+    from pydoll.sync import PageEvent
 
     tab.on(PageEvent.LOAD_EVENT_FIRED, on_load, temporary=True)
 
@@ -176,7 +176,7 @@
     ```python
     import threading
 
-    from pydoll import PageEvent
+    from pydoll.sync import PageEvent
 
 
     def click_and_wait_for_navigation(tab):
@@ -228,7 +228,7 @@
     ```python
     from functools import partial
 
-    from pydoll import NetworkEvent
+    from pydoll.sync import NetworkEvent
 
     def capture_json(tab, event):
         url = event['params']['response']['url']
@@ -272,7 +272,7 @@
 === "Sync"
 
     ```python
-    from pydoll import PageEvent
+    from pydoll.sync import PageEvent
 
     def on_dialog(event):
         if tab.has_dialog():

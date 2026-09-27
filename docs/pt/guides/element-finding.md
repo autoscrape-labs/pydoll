@@ -13,7 +13,7 @@ O `find()` é a ferramenta do dia a dia. Você passa os atributos que usaria par
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
@@ -225,8 +225,6 @@ Por padrão, o `find()` levanta `ElementNotFound` quando nada corresponde. Passe
 === "Sync"
 
     ```python
-    from pydoll.exceptions import ElementNotFound
-
     # elemento obrigatório: deixe levantar a exceção
     submit = tab.find(id='submit')
 
@@ -246,8 +244,6 @@ Por padrão, o `find()` levanta `ElementNotFound` quando nada corresponde. Passe
 === "Async"
 
     ```python
-    from pydoll.exceptions import ElementNotFound
-
     # elemento obrigatório: deixe levantar a exceção
     submit = await tab.find(id='submit')
 
@@ -301,7 +297,7 @@ Isto faz login em [quotes.toscrape.com](https://quotes.toscrape.com/login) (que 
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:

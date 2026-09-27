@@ -11,7 +11,7 @@ Passe `--proxy-server` para `ChromiumOptions` e toda requisição que o navegado
 === "Sync"
 
     ```python
-    from pydoll import Chrome, ChromiumOptions
+    from pydoll.sync import Chrome, ChromiumOptions
 
     def main():
         options = ChromiumOptions()
@@ -92,64 +92,33 @@ Você não escreve nenhum código de autenticação. Nos bastidores, o Pydoll at
 !!! warning "Autenticação SOCKS5 não é suportada pelo Chrome"
     O Chrome ignora credenciais em uma URL `socks5://user:pass@host:port` ([Chromium issue 40323993](https://issues.chromium.org/issues/40323993)): ele nunca as envia e nunca emite o desafio 407 que o Pydoll responderia. Rode um forwarder SOCKS5 local sem autenticação que trata as credenciais para você, e aponte o Chrome para ele:
 
-    === "Sync"
+    ```python
+    import asyncio
 
-        ```python
-            import asyncio
-
-            from pydoll.utils import SOCKS5Forwarder
-            from pydoll.browser.chromium import Chrome
-            from pydoll.browser.options import ChromiumOptions
-
-            def main():
-                forwarder = SOCKS5Forwarder(
-                    remote_host='proxy.example.com',
-                    remote_port=1080,
-                    username='myuser',
-                    password='mypass',
-                    local_port=1081,
-                )
-                with forwarder:
-                    options = ChromiumOptions()
-                    options.add_argument('--proxy-server=socks5://127.0.0.1:1081')
-
-                    with Chrome(options=options) as browser:
-                        tab = browser.start()
-                        tab.go_to('https://httpbin.org/ip')
-
-            main()
-        ```
-
-    === "Async"
-
-        ```python
-            import asyncio
-
-            from pydoll.utils import SOCKS5Forwarder
-            from pydoll.browser.chromium import Chrome
-            from pydoll.browser.options import ChromiumOptions
+    from pydoll import Chrome, ChromiumOptions
+    from pydoll.utils import SOCKS5Forwarder
 
 
-            async def main():
-                forwarder = SOCKS5Forwarder(
-                    remote_host='proxy.example.com',
-                    remote_port=1080,
-                    username='myuser',
-                    password='mypass',
-                    local_port=1081,
-                )
-                async with forwarder:
-                    options = ChromiumOptions()
-                    options.add_argument('--proxy-server=socks5://127.0.0.1:1081')
+    async def main():
+        forwarder = SOCKS5Forwarder(
+            remote_host='proxy.example.com',
+            remote_port=1080,
+            username='myuser',
+            password='mypass',
+            local_port=1081,
+        )
+        async with forwarder:
+            options = ChromiumOptions()
+            options.add_argument('--proxy-server=socks5://127.0.0.1:1081')
 
-                    async with Chrome(options=options) as browser:
-                        tab = await browser.start()
-                        await tab.go_to('https://httpbin.org/ip')
+            async with Chrome(options=options) as browser:
+                tab = await browser.start()
+                await tab.go_to('https://httpbin.org/ip')
 
-            asyncio.run(main())
-        ```
+    asyncio.run(main())
+    ```
 
-    O Chrome conecta em `127.0.0.1` sem autenticação; o forwarder faz o handshake de usuário/senha com o proxy remoto.
+    O Chrome conecta em `127.0.0.1` sem autenticação; o forwarder faz o handshake de usuário/senha com o proxy remoto. O `SOCKS5Forwarder` é um servidor asyncio sem fachada em `pydoll.sync`, então esta receita é apenas assíncrona.
 
 ## Usar um proxy diferente por contexto
 
@@ -167,8 +136,8 @@ Um [contexto de navegador](browser-contexts.md) pode carregar seu próprio proxy
         us_tab = browser.new_tab(browser_context_id=us_ctx)
         de_tab = browser.new_tab(browser_context_id=de_ctx)
 
-        print((us_tab.request.get('https://httpbin.org/ip')).json())
-        print((de_tab.request.get('https://httpbin.org/ip')).json())
+        print(us_tab.request.get('https://httpbin.org/ip').json())
+        print(de_tab.request.get('https://httpbin.org/ip').json())
     ```
 
 === "Async"
@@ -205,7 +174,7 @@ Antes de uma execução longa, confirme que o tráfego de fato sai pelo proxy:
     ```python
     with Chrome(options=options) as browser:
         tab = browser.start()
-        ip = (tab.request.get('https://httpbin.org/ip')).json()['origin']
+        ip = tab.request.get('https://httpbin.org/ip').json()['origin']
         print(f'Egress IP: {ip}')
     ```
 

@@ -78,7 +78,7 @@ Com a sessão ativa, passe de interagir para coletar. Declare como é uma citaç
 === "Sync"
 
     ```python
-    from pydoll import ExtractionModel, Field
+    from pydoll.sync import ExtractionModel, Field
 
     class Quote(ExtractionModel):
         text: str = Field(selector='.text')
@@ -122,7 +122,7 @@ Crie `first_automation.py`:
 === "Sync"
 
     ```python
-    from pydoll import Chrome, ExtractionModel, Field
+    from pydoll.sync import Chrome, ExtractionModel, Field
 
     class Quote(ExtractionModel):
         text: str = Field(selector='.text')

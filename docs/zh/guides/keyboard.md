@@ -6,7 +6,7 @@
 
     ```python
     import time
-    from pydoll import Chrome, Key
+    from pydoll.sync import Chrome, Key
 
     def main():
         with Chrome() as browser:
@@ -92,7 +92,7 @@
 === "Sync"
 
     ```python
-    from pydoll import Key
+    from pydoll.sync import Key
 
     tab.keyboard.press(Key.ENTER)
     tab.keyboard.press(Key.TAB)
@@ -126,7 +126,7 @@
 === "Sync"
 
     ```python
-    from pydoll import Key
+    from pydoll.sync import Key
 
     tab.keyboard.hotkey(Key.CONTROL, Key.A)   # 全选
     tab.keyboard.hotkey(Key.CONTROL, Key.C)   # 复制
@@ -149,7 +149,7 @@ macOS 用 Command（Meta），而 Windows 和 Linux 用 Control，所以要根�
 
     ```python
     import sys
-    from pydoll import Key
+    from pydoll.sync import Key
 
     mod = Key.META if sys.platform == 'darwin' else Key.CONTROL
     tab.keyboard.hotkey(mod, Key.C)
@@ -194,7 +194,7 @@ macOS 用 Command（Meta），而 Windows 和 Linux 用 Control，所以要根�
 === "Sync"
 
     ```python
-    from pydoll import Key
+    from pydoll.sync import Key
 
     try:
         tab.keyboard.down(Key.SHIFT)

@@ -37,7 +37,7 @@ pip install git+https://github.com/autoscrape-labs/pydoll.git
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
@@ -97,7 +97,7 @@ python first_script.py
 === "Sync"
 
     ```python
-    from pydoll import Chrome, ChromiumOptions
+    from pydoll.sync import Chrome, ChromiumOptions
 
     def main():
         options = ChromiumOptions()

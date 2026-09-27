@@ -13,7 +13,7 @@
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
@@ -225,8 +225,6 @@
 === "Sync"
 
     ```python
-    from pydoll.exceptions import ElementNotFound
-
     # 必需的元素：让它抛出异常
     submit = tab.find(id='submit')
 
@@ -246,8 +244,6 @@
 === "Async"
 
     ```python
-    from pydoll.exceptions import ElementNotFound
-
     # 必需的元素：让它抛出异常
     submit = await tab.find(id='submit')
 
@@ -301,7 +297,7 @@
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:

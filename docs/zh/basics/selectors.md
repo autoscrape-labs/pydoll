@@ -11,7 +11,7 @@ selector 是你交给 `tab.query()`（以及提取模型中 `selector=`）的字
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:

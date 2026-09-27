@@ -9,7 +9,7 @@ Find the `<iframe>` like any element, then call `find()` or `query()` on it. Tho
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:

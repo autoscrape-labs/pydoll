@@ -11,7 +11,7 @@ Experimente: digite um seletor abaixo e os elementos correspondentes se acendem.
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:

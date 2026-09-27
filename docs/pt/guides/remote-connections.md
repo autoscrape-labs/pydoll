@@ -25,7 +25,7 @@ Crie um objeto browser, chame `connect()` com o endereço WebSocket, e use a aba
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         browser = Chrome()
@@ -77,13 +77,14 @@ Normalmente você descobre o endereço em tempo de execução em vez de embuti-l
 === "Sync"
 
     ```python
-    import aiohttp
-    from pydoll import Chrome
+    import json
+    from urllib.request import urlopen
+
+    from pydoll.sync import Chrome
 
     def main():
-        with aiohttp.ClientSession() as session:
-            with session.get('http://localhost:9222/json/version') as resp:
-                ws_address = (resp.json())['webSocketDebuggerUrl']
+        with urlopen('http://localhost:9222/json/version') as resp:
+            ws_address = json.load(resp)['webSocketDebuggerUrl']
 
         browser = Chrome()
         tab = browser.connect(ws_address)
@@ -136,45 +137,24 @@ Então conecte a partir do host com `browser.connect('ws://localhost:9222/devtoo
 
 Se você já tem uma integração CDP e o `objectId` de um elemento, envolva-o em um `WebElement` do Pydoll para usar a API de interação de alto nível. Construa um `ConnectionHandler` para o WebSocket da página e passe-o:
 
-=== "Sync"
+```python
+from pydoll.connection import ConnectionHandler
+from pydoll import WebElement
 
-    ```python
-    from pydoll.connection import ConnectionHandler
-    from pydoll import WebElement
+connection = ConnectionHandler(ws_address='ws://localhost:9222/devtools/page/<id>')
 
-    connection = ConnectionHandler(ws_address='ws://localhost:9222/devtools/page/<id>')
+button = WebElement(
+    object_id='<objectId from your CDP call>',
+    connection_handler=connection,
+)
 
-    button = WebElement(
-        object_id='<objectId from your CDP call>',
-        connection_handler=connection,
-    )
+await button.wait_until(is_visible=True, timeout=5)
+await button.click(x_offset=5, y_offset=5)
 
-    button.wait_until(is_visible=True, timeout=5)
-    button.click(x_offset=5, y_offset=5)
+await connection.close()
+```
 
-    connection.close()
-    ```
-
-=== "Async"
-
-    ```python
-    from pydoll.connection import ConnectionHandler
-    from pydoll import WebElement
-
-    connection = ConnectionHandler(ws_address='ws://localhost:9222/devtools/page/<id>')
-
-    button = WebElement(
-        object_id='<objectId from your CDP call>',
-        connection_handler=connection,
-    )
-
-    await button.wait_until(is_visible=True, timeout=5)
-    await button.click(x_offset=5, y_offset=5)
-
-    await connection.close()
-    ```
-
-O `objectId` é o que comandos CDP como `Runtime.evaluate` ou `DOM.resolveNode` retornam para um nó. Isso mantém sua configuração existente e toma emprestado por cima as esperas e interações do Pydoll.
+O `objectId` é o que comandos CDP como `Runtime.evaluate` ou `DOM.resolveNode` retornam para um nó. Isso mantém sua configuração existente e toma emprestado por cima as esperas e interações do Pydoll. O `ConnectionHandler` é um objeto asyncio, então este ponto de integração é apenas assíncrono; as fachadas em `pydoll.sync` envolvem elementos que vêm de um navegador que você inicia ou conecta por elas.
 
 ## Próximos passos
 

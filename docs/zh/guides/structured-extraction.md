@@ -34,7 +34,7 @@ class Quote(ExtractionModel):
 === "Sync"
 
     ```python
-    from pydoll import Chrome, ExtractionModel, Field
+    from pydoll.sync import Chrome, ExtractionModel, Field
 
     class Quote(ExtractionModel):
         text: str = Field(selector='.text')
@@ -424,7 +424,7 @@ class SearchResult(ExtractionModel):
 === "Sync"
 
     ```python
-    from pydoll import Chrome, ExtractionModel, Field
+    from pydoll.sync import Chrome, ExtractionModel, Field
 
     class Quote(ExtractionModel):
         text: str = Field(selector='.text', description='The quote text')

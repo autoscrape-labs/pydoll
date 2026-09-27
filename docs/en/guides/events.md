@@ -10,7 +10,7 @@ Working with events is always the same three steps: enable the domain you care a
 
     ```python
     import time
-    from pydoll import Chrome, PageEvent
+    from pydoll.sync import Chrome, PageEvent
 
     def main():
         with Chrome() as browser:
@@ -101,7 +101,7 @@ Enable the network domain to see every request go out and every response come ba
 === "Sync"
 
     ```python
-    from pydoll import NetworkEvent
+    from pydoll.sync import NetworkEvent
 
     def on_request(event):
         print(f"→ {event['params']['request']['url']}")
@@ -148,7 +148,7 @@ Pass `temporary=True` and the callback removes itself after it fires the first t
 === "Sync"
 
     ```python
-    from pydoll import PageEvent
+    from pydoll.sync import PageEvent
 
     tab.on(PageEvent.LOAD_EVENT_FIRED, on_load, temporary=True)
 
@@ -176,7 +176,7 @@ Events pair naturally with an event flag when you need to pause until something 
     ```python
     import threading
 
-    from pydoll import PageEvent
+    from pydoll.sync import PageEvent
 
 
     def click_and_wait_for_navigation(tab):
@@ -228,7 +228,7 @@ Events pair naturally with an event flag when you need to pause until something 
     ```python
     from functools import partial
 
-    from pydoll import NetworkEvent
+    from pydoll.sync import NetworkEvent
 
     def capture_json(tab, event):
         url = event['params']['response']['url']
@@ -272,7 +272,7 @@ Subscribe to dialog events to answer `alert`, `confirm`, and `prompt` boxes auto
 === "Sync"
 
     ```python
-    from pydoll import PageEvent
+    from pydoll.sync import PageEvent
 
     def on_dialog(event):
         if tab.has_dialog():

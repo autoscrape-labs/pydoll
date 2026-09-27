@@ -37,7 +37,7 @@ Crie um arquivo chamado `first_script.py`:
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
@@ -97,7 +97,7 @@ Em um servidor ou em CI não há display, então rode o navegador em headless. P
 === "Sync"
 
     ```python
-    from pydoll import Chrome, ChromiumOptions
+    from pydoll.sync import Chrome, ChromiumOptions
 
     def main():
         options = ChromiumOptions()

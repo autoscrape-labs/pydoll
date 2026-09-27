@@ -34,7 +34,7 @@ Use `tab.extract()` para preencher uma instância de modelo a partir da página.
 === "Sync"
 
     ```python
-    from pydoll import Chrome, ExtractionModel, Field
+    from pydoll.sync import Chrome, ExtractionModel, Field
 
     class Quote(ExtractionModel):
         text: str = Field(selector='.text')
@@ -424,7 +424,7 @@ Aqui está um exemplo completo e executável que extrai citações de [quotes.to
 === "Sync"
 
     ```python
-    from pydoll import Chrome, ExtractionModel, Field
+    from pydoll.sync import Chrome, ExtractionModel, Field
 
     class Quote(ExtractionModel):
         text: str = Field(selector='.text', description='The quote text')

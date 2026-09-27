@@ -11,7 +11,7 @@ O `get_children_elements()` retorna os descendentes de um elemento. `max_depth` 
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:

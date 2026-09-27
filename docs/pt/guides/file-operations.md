@@ -11,7 +11,7 @@ Quando a página tem um `<input type="file">` de verdade, encontre-o e chame `se
     ```python
     from pathlib import Path
 
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
@@ -111,7 +111,7 @@ Muitos sites escondem o input de arquivo atrás de um botão estilizado ou de um
     ```python
     from pathlib import Path
 
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
@@ -162,7 +162,7 @@ Envolva a ação que inicia um download em `expect_download()`. O Pydoll espera 
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:

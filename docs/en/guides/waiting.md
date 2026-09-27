@@ -9,7 +9,7 @@ Pages change after they load: a spinner goes away, a button becomes enabled, a c
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
@@ -59,7 +59,7 @@ The conditions you can set:
 | `is_interactable` | The element is visible, on top, and can receive a click. |
 | `is_detached` | The element was removed from the DOM. |
 
-Each element also answers the same questions directly: `is_visible()`, `is_enabled()`, `is_interactable()`, `is_on_top()` and `is_detached()`.
+Each element also answers the same questions directly: `is_visible()`, `is_interactable()`, `is_on_top()` and `is_detached()` are methods, and `is_enabled` is a plain property.
 
 ## Wait for an element to disappear
 
@@ -111,7 +111,7 @@ In a glob, `*` matches anything except `/`, `**` matches anything including `/`,
 
 ## Wait for a JavaScript condition
 
-`wait_for_script()` evaluates an expression in the page until it returns a truthy value, and returns that value. Use it for state the DOM does not show: a global set by the app, a store's ready flag, a count.
+`wait_for_script()` evaluates an expression in the page until it is truthy by JavaScript's rules, judged on the page side, so a DOM node, a function or an empty object count as found and a returned promise is awaited. It returns the value when it is a primitive and `True` for an object. A script that throws raises `ScriptEvaluationError` at once, with the JavaScript error in `error_text`, instead of waiting for the timeout. Use it for state the DOM does not show: a global set by the app, a store's ready flag, a count.
 
 === "Sync"
 
@@ -249,12 +249,14 @@ The three `expect_*` managers start listening when you enter the block, and the 
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
             tab = browser.start()
             tab.go_to('https://quotes.toscrape.com/scroll')
+            # the page fetches page 1 on load; wait for it before asking for page 2
+            tab.find(class_name='quote', timeout=10)
 
             with tab.expect_response('**/api/quotes?page=2') as response:
                 tab.execute_script('window.scrollTo(0, document.body.scrollHeight)')
@@ -279,6 +281,8 @@ The three `expect_*` managers start listening when you enter the block, and the 
         async with Chrome() as browser:
             tab = await browser.start()
             await tab.go_to('https://quotes.toscrape.com/scroll')
+            # the page fetches page 1 on load; wait for it before asking for page 2
+            await tab.find(class_name='quote', timeout=10)
 
             async with tab.expect_response('**/api/quotes?page=2') as response:
                 await tab.execute_script('window.scrollTo(0, document.body.scrollHeight)')

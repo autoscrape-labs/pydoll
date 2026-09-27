@@ -17,7 +17,7 @@ Interception runs on Chrome's Fetch domain. Enable it, register a handler for th
     ```python
     from functools import partial
 
-    from pydoll import Chrome, FetchEvent
+    from pydoll.sync import Chrome, FetchEvent
 
     def on_request(tab, event):
         request_id = event['params']['requestId']
@@ -103,7 +103,7 @@ Interception adds a round-trip through your handler for every matching request, 
     ```python
     from functools import partial
 
-    from pydoll import Chrome, FetchEvent
+    from pydoll.sync import Chrome, FetchEvent
     from pydoll.protocol.network.types import ErrorReason
 
     def block_heavy(tab, event):
@@ -172,7 +172,7 @@ Common `ErrorReason` values are `BLOCKED_BY_CLIENT` (looks like an ad blocker), 
     ```python
     from functools import partial
 
-    from pydoll import Chrome, FetchEvent
+    from pydoll.sync import Chrome, FetchEvent
     from pydoll.protocol.network.types import ResourceType
 
     def add_header(tab, event):
@@ -242,7 +242,7 @@ You can also change where a request goes by passing `url`, or replace `POST` dat
     import json
     from functools import partial
 
-    from pydoll import Chrome, FetchEvent
+    from pydoll.sync import Chrome, FetchEvent
 
     def mock_json(tab, event):
         request_id = event['params']['requestId']
@@ -343,7 +343,7 @@ With `handle_auth=True`, the browser raises an auth challenge you answer with `c
     ```python
     from functools import partial
 
-    from pydoll import Chrome, FetchEvent
+    from pydoll.sync import Chrome, FetchEvent
     from pydoll.protocol.fetch.types import AuthChallengeResponseType
 
     def answer_auth(tab, event):

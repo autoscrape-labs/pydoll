@@ -9,7 +9,7 @@
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
@@ -99,7 +99,7 @@ cookies 作用于整个浏览器上下文，所以该上下文中的每个标签
     import json
     from pathlib import Path
 
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     COOKIE_FILE = Path('session.json')
 
@@ -108,9 +108,9 @@ cookies 作用于整个浏览器上下文，所以该上下文中的每个标签
             tab = browser.start()
             tab.go_to('https://quotes.toscrape.com/login')
 
-            (tab.find(id='username')).type_text('tester', humanize=True)
-            (tab.find(id='password')).type_text('secret', humanize=True)
-            (tab.find(tag_name='input', type='submit')).click()
+            tab.find(id='username').type_text('tester', humanize=True)
+            tab.find(id='password').type_text('secret', humanize=True)
+            tab.find(tag_name='input', type='submit').click()
 
             cookies = tab.get_cookies()
             COOKIE_FILE.write_text(json.dumps(cookies))
@@ -155,7 +155,7 @@ cookies 作用于整个浏览器上下文，所以该上下文中的每个标签
     import json
     from pathlib import Path
 
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     COOKIE_FILE = Path('session.json')
 

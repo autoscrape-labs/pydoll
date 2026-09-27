@@ -14,7 +14,7 @@ Pydoll 让你可以观察页面发起的每一个请求、读取响应体、检�
     import time
     from functools import partial
 
-    from pydoll import Chrome, NetworkEvent
+    from pydoll.sync import Chrome, NetworkEvent
 
     def on_request(tab, event):
         request = event['params']['request']
@@ -74,7 +74,7 @@ Pydoll 让你可以观察页面发起的每一个请求、读取响应体、检�
 
     ```python
     import time
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
@@ -166,7 +166,7 @@ Pydoll 让你可以观察页面发起的每一个请求、读取响应体、检�
 
     ```python
     import time
-    from pydoll import Chrome, NetworkEvent
+    from pydoll.sync import Chrome, NetworkEvent
 
     def on_response(event):
         response = event['params']['response']

@@ -24,8 +24,9 @@
         page.goto('https://quotes.toscrape.com/login')
 
         page.get_by_label('Username').fill('john')
-        page.get_by_label('Password').fill('SecretPass123')
+        page.locator('#password').fill('SecretPass123')
         page.get_by_role('button', name='Login').click()
+        page.wait_for_url('**/')
 
         print(page.get_by_role('link', name='Logout').is_visible())
         browser.close()
@@ -46,8 +47,9 @@
             await page.goto('https://quotes.toscrape.com/login')
 
             await page.get_by_label('Username').fill('john')
-            await page.get_by_label('Password').fill('SecretPass123')
+            await page.locator('#password').fill('SecretPass123')
             await page.get_by_role('button', name='Login').click()
+            await page.wait_for_url('**/')
 
             print(await page.get_by_role('link', name='Logout').is_visible())
             await browser.close()
@@ -89,7 +91,7 @@ Pydoll 没有驱动。你的 `page.goto` 变成了直接从 Python 发出的 CDP
 === "Sync"
 
     ```python
-    from pydoll import ExtractionModel, Field
+    from pydoll.sync import ExtractionModel, Field
     from pydoll.playwright.sync_api import sync_playwright
 
     from examples.fingerprints import FINGERPRINTS
@@ -109,7 +111,7 @@ Pydoll 没有驱动。你的 `page.goto` 变成了直接从 Python 发出的 CDP
         page.goto('https://quotes.toscrape.com')
 
         quotes = page.tab.extract_all(Quote, scope='.quote')
-        submit = page.get_by_role('button', name='Login').element_handle().web_element
+        submit = page.get_by_role('link', name='Login').element_handle().web_element
         submit.click(humanize=True)
     ```
 
@@ -136,7 +138,7 @@ Pydoll 没有驱动。你的 `page.goto` 变成了直接从 Python 发出的 CDP
         await page.goto('https://quotes.toscrape.com')
 
         quotes = await page.tab.extract_all(Quote, scope='.quote')
-        submit = (await page.get_by_role('button', name='Login').element_handle()).web_element
+        submit = (await page.get_by_role('link', name='Login').element_handle()).web_element
         await submit.click(humanize=True)
     ```
 

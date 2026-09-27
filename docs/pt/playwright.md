@@ -24,8 +24,9 @@ Substitua `playwright.sync_api` por `pydoll.playwright.sync_api`, ou `playwright
         page.goto('https://quotes.toscrape.com/login')
 
         page.get_by_label('Username').fill('john')
-        page.get_by_label('Password').fill('SecretPass123')
+        page.locator('#password').fill('SecretPass123')
         page.get_by_role('button', name='Login').click()
+        page.wait_for_url('**/')
 
         print(page.get_by_role('link', name='Logout').is_visible())
         browser.close()
@@ -46,8 +47,9 @@ Substitua `playwright.sync_api` por `pydoll.playwright.sync_api`, ou `playwright
             await page.goto('https://quotes.toscrape.com/login')
 
             await page.get_by_label('Username').fill('john')
-            await page.get_by_label('Password').fill('SecretPass123')
+            await page.locator('#password').fill('SecretPass123')
             await page.get_by_role('button', name='Login').click()
+            await page.wait_for_url('**/')
 
             print(await page.get_by_role('link', name='Logout').is_visible())
             await browser.close()
@@ -89,7 +91,7 @@ Três coisas que um script bloqueado costuma precisar em seguida, cada uma em um
 === "Sync"
 
     ```python
-    from pydoll import ExtractionModel, Field
+    from pydoll.sync import ExtractionModel, Field
     from pydoll.playwright.sync_api import sync_playwright
 
     from examples.fingerprints import FINGERPRINTS
@@ -109,7 +111,7 @@ Três coisas que um script bloqueado costuma precisar em seguida, cada uma em um
         page.goto('https://quotes.toscrape.com')
 
         quotes = page.tab.extract_all(Quote, scope='.quote')
-        submit = page.get_by_role('button', name='Login').element_handle().web_element
+        submit = page.get_by_role('link', name='Login').element_handle().web_element
         submit.click(humanize=True)
     ```
 
@@ -136,7 +138,7 @@ Três coisas que um script bloqueado costuma precisar em seguida, cada uma em um
         await page.goto('https://quotes.toscrape.com')
 
         quotes = await page.tab.extract_all(Quote, scope='.quote')
-        submit = (await page.get_by_role('button', name='Login').element_handle()).web_element
+        submit = (await page.get_by_role('link', name='Login').element_handle()).web_element
         await submit.click(humanize=True)
     ```
 

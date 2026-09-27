@@ -11,7 +11,7 @@ Try it: type a selector below and the matching elements light up. It runs the sa
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:

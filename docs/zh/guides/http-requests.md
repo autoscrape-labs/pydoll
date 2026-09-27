@@ -9,7 +9,7 @@
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
@@ -52,7 +52,7 @@
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
@@ -60,9 +60,9 @@
 
             # 1. 通过界面登录（这是你自己的、已认证的应用）
             tab.go_to('https://yourapp.com/login')
-            (tab.find(id='username')).type_text('tester', humanize=True)
-            (tab.find(id='password')).type_text('secret', humanize=True)
-            (tab.find(tag_name='button', type='submit')).click()
+            tab.find(id='username').type_text('tester', humanize=True)
+            tab.find(id='password').type_text('secret', humanize=True)
+            tab.find(tag_name='button', type='submit').click()
 
             # 2. 用已登录的会话调用 API
             response = tab.request.get('https://yourapp.com/api/profile')

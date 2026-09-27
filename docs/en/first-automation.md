@@ -78,7 +78,7 @@ With the session active, switch from interacting to collecting. Declare what a q
 === "Sync"
 
     ```python
-    from pydoll import ExtractionModel, Field
+    from pydoll.sync import ExtractionModel, Field
 
     class Quote(ExtractionModel):
         text: str = Field(selector='.text')
@@ -122,7 +122,7 @@ Create `first_automation.py`:
 === "Sync"
 
     ```python
-    from pydoll import Chrome, ExtractionModel, Field
+    from pydoll.sync import Chrome, ExtractionModel, Field
 
     class Quote(ExtractionModel):
         text: str = Field(selector='.text')

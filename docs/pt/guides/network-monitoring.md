@@ -14,7 +14,7 @@ Habilite os eventos de rede antes de navegar e depois registre um callback. O Py
     import time
     from functools import partial
 
-    from pydoll import Chrome, NetworkEvent
+    from pydoll.sync import Chrome, NetworkEvent
 
     def on_request(tab, event):
         request = event['params']['request']
@@ -74,7 +74,7 @@ O corpo da resposta não está no evento; você o busca pelo id da requisição 
 
     ```python
     import time
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
@@ -166,7 +166,7 @@ Assine as respostas para verificar códigos de status e as falhas para capturar 
 
     ```python
     import time
-    from pydoll import Chrome, NetworkEvent
+    from pydoll.sync import Chrome, NetworkEvent
 
     def on_response(event):
         response = event['params']['response']

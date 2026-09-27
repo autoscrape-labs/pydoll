@@ -6,7 +6,7 @@ Controle a entrada de teclado através de `tab.keyboard`: digite em campos, pres
 
     ```python
     import time
-    from pydoll import Chrome, Key
+    from pydoll.sync import Chrome, Key
 
     def main():
         with Chrome() as browser:
@@ -92,7 +92,7 @@ O `press()` executa um pressionamento completo de tecla (baixa e sobe). Use para
 === "Sync"
 
     ```python
-    from pydoll import Key
+    from pydoll.sync import Key
 
     tab.keyboard.press(Key.ENTER)
     tab.keyboard.press(Key.TAB)
@@ -126,7 +126,7 @@ O `hotkey()` pressiona uma combinação e a solta na ordem certa, então você n
 === "Sync"
 
     ```python
-    from pydoll import Key
+    from pydoll.sync import Key
 
     tab.keyboard.hotkey(Key.CONTROL, Key.A)   # seleciona tudo
     tab.keyboard.hotkey(Key.CONTROL, Key.C)   # copia
@@ -149,7 +149,7 @@ O macOS usa Command (Meta) onde Windows e Linux usam Control, então escolha o m
 
     ```python
     import sys
-    from pydoll import Key
+    from pydoll.sync import Key
 
     mod = Key.META if sys.platform == 'darwin' else Key.CONTROL
     tab.keyboard.hotkey(mod, Key.C)
@@ -194,7 +194,7 @@ Para sequências em que um modificador permanece pressionado ao longo de vários
 === "Sync"
 
     ```python
-    from pydoll import Key
+    from pydoll.sync import Key
 
     try:
         tab.keyboard.down(Key.SHIFT)

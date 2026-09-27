@@ -24,7 +24,7 @@ Pydoll 3 让同步 API 成为库的一等公民，并清理了围绕异步 API �
     from pydoll import Chrome, ChromiumOptions, Key
     ```
 
-旧路径仍然可用（`pydoll.browser.chromium`、`pydoll.browser.options`、`pydoll.constants`），所以这项修改是可选的。顶层可用的名称有 `Chrome`、`Edge`、`ChromiumOptions`、`Tab`、`WebElement`、`ShadowRoot`、`Keyboard`、`Mouse`、`Scroll`、`Request`、`Response`、`DownloadHandle`、`Key`、`ExtractionModel`、`Field`、`PageEvent`、`NetworkEvent` 和 `FetchEvent`。
+旧路径仍然可用（`pydoll.browser.chromium`、`pydoll.browser.options`、`pydoll.constants`），所以这项修改是可选的。顶层可用的名称有 `Chrome`、`Edge`、`ChromiumOptions`、`Tab`、`WebElement`、`ShadowRoot`、`Keyboard`、`Mouse`、`Scroll`、`Request`、`RequestHandle`、`Response`、`ResponseHandle`、`DownloadHandle`、`Key`、`ExtractionModel`、`Field`、`PageEvent`、`NetworkEvent` 和 `FetchEvent`。
 
 ## 把原来的属性改为方法调用 {#call-what-used-to-be-a-property}
 

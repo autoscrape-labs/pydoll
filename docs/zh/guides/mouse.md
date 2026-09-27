@@ -11,7 +11,7 @@ Pydoll 用两种方式驱动鼠标：通过你找到的元素，这是大多数�
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
@@ -135,7 +135,7 @@ Pydoll 用两种方式驱动鼠标：通过你找到的元素，这是大多数�
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
     from pydoll.protocol.input.types import MouseButton
 
     def main():
@@ -230,12 +230,12 @@ Pydoll 用两种方式驱动鼠标：通过你找到的元素，这是大多数�
 
     ```python
     # 瞬时：光标径直跳到每个目标
-    (tab.find(id='first')).click()
-    (tab.find(id='second')).click()
+    tab.find(id='first').click()
+    tab.find(id='second').click()
 
     # 拟人化：光标从一个目标自然地弧线过渡到下一个
-    (tab.find(id='first')).click(humanize=True)
-    (tab.find(id='second')).click(humanize=True)
+    tab.find(id='first').click(humanize=True)
+    tab.find(id='second').click(humanize=True)
     ```
 
 === "Async"

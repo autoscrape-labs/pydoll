@@ -14,7 +14,7 @@ Enable network events before you navigate, then register a callback. Pydoll call
     import time
     from functools import partial
 
-    from pydoll import Chrome, NetworkEvent
+    from pydoll.sync import Chrome, NetworkEvent
 
     def on_request(tab, event):
         request = event['params']['request']
@@ -74,7 +74,7 @@ The response body is not in the event; you fetch it by request id once the respo
 
     ```python
     import time
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
@@ -166,7 +166,7 @@ Subscribe to responses to check status codes, and to failures to catch requests 
 
     ```python
     import time
-    from pydoll import Chrome, NetworkEvent
+    from pydoll.sync import Chrome, NetworkEvent
 
     def on_response(event):
         response = event['params']['response']

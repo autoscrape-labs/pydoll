@@ -11,7 +11,7 @@ As preferências do dia a dia têm métodos e propriedades auxiliares, então vo
 === "Sync"
 
     ```python
-    from pydoll import Chrome, ChromiumOptions
+    from pydoll.sync import Chrome, ChromiumOptions
 
     def main():
         options = ChromiumOptions()
@@ -103,7 +103,7 @@ Sistemas anti-bot leem o perfil, não só a página. Um perfil novo e vazio com 
     ```python
     import time
 
-    from pydoll import Chrome, ChromiumOptions
+    from pydoll.sync import Chrome, ChromiumOptions
 
     def realistic_options() -> ChromiumOptions:
         now = int(time.time())

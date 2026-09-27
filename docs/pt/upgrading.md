@@ -24,7 +24,7 @@ As classes que você usa em todo script são exportadas pelo pacote de nível su
     from pydoll import Chrome, ChromiumOptions, Key
     ```
 
-Os caminhos antigos continuam funcionando (`pydoll.browser.chromium`, `pydoll.browser.options`, `pydoll.constants`), então essa mudança é opcional. Os nomes disponíveis no nível superior são `Chrome`, `Edge`, `ChromiumOptions`, `Tab`, `WebElement`, `ShadowRoot`, `Keyboard`, `Mouse`, `Scroll`, `Request`, `Response`, `DownloadHandle`, `Key`, `ExtractionModel`, `Field`, `PageEvent`, `NetworkEvent` e `FetchEvent`.
+Os caminhos antigos continuam funcionando (`pydoll.browser.chromium`, `pydoll.browser.options`, `pydoll.constants`), então essa mudança é opcional. Os nomes disponíveis no nível superior são `Chrome`, `Edge`, `ChromiumOptions`, `Tab`, `WebElement`, `ShadowRoot`, `Keyboard`, `Mouse`, `Scroll`, `Request`, `RequestHandle`, `Response`, `ResponseHandle`, `DownloadHandle`, `Key`, `ExtractionModel`, `Field`, `PageEvent`, `NetworkEvent` e `FetchEvent`.
 
 ## Chame o que antes era propriedade {#chame-o-que-antes-era-propriedade}
 

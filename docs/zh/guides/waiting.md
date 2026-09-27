@@ -9,7 +9,7 @@
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
@@ -59,7 +59,7 @@
 | `is_interactable` | 元素可见、位于最上层，并且能接收点击。 |
 | `is_detached` | 元素已从 DOM 中移除。 |
 
-每个元素也能直接回答同样的问题：`is_visible()`、`is_enabled()`、`is_interactable()`、`is_on_top()` 和 `is_detached()`。
+每个元素也能直接回答同样的问题：`is_visible()`、`is_interactable()`、`is_on_top()` 和 `is_detached()` 是方法，`is_enabled` 则是普通属性。
 
 ## 等待元素消失
 
@@ -111,7 +111,7 @@
 
 ## 等待 JavaScript 条件
 
-`wait_for_script()` 在页面中反复求值一个表达式，直到它返回真值，并返回该值。用它等待 DOM 不显示的状态：应用设置的全局变量、某个 store 的就绪标志、一个计数。
+`wait_for_script()` 在页面中反复求值一个表达式，直到它按 JavaScript 的规则为真，判断在页面一侧完成，因此 DOM 节点、函数或空对象都算找到，返回的 promise 会被等待。值是基本类型时返回该值，是对象时返回 `True`。脚本抛出错误时立即抛出 `ScriptEvaluationError`，`error_text` 携带 JavaScript 错误，而不是等到超时。用它等待 DOM 不显示的状态：应用设置的全局变量、某个 store 的就绪标志、一个计数。
 
 === "Sync"
 
@@ -249,12 +249,14 @@
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
             tab = browser.start()
             tab.go_to('https://quotes.toscrape.com/scroll')
+            # 页面加载时会自己请求第 1 页；先等它到达，再去要第 2 页
+            tab.find(class_name='quote', timeout=10)
 
             with tab.expect_response('**/api/quotes?page=2') as response:
                 tab.execute_script('window.scrollTo(0, document.body.scrollHeight)')
@@ -279,6 +281,8 @@
         async with Chrome() as browser:
             tab = await browser.start()
             await tab.go_to('https://quotes.toscrape.com/scroll')
+            # 页面加载时会自己请求第 1 页；先等它到达，再去要第 2 页
+            await tab.find(class_name='quote', timeout=10)
 
             async with tab.expect_response('**/api/quotes?page=2') as response:
                 await tab.execute_script('window.scrollTo(0, document.body.scrollHeight)')

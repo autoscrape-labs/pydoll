@@ -9,7 +9,7 @@ Decorate a function with `@retry` and list the exceptions worth retrying. If the
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
     from pydoll.decorators import retry
     from pydoll.exceptions import WaitElementTimeout, ConnectionFailed
 
@@ -155,7 +155,7 @@ Run each mode: a fixed delay keeps the same gap between attempts, while exponent
 
     ```python
     import time
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
     from pydoll.decorators import retry
     from pydoll.exceptions import ElementNotFound, WaitElementTimeout
 

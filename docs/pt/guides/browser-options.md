@@ -9,7 +9,7 @@ Crie um `ChromiumOptions`, defina o que precisar e entregue-o ao navegador:
 === "Sync"
 
     ```python
-    from pydoll import Chrome, ChromiumOptions
+    from pydoll.sync import Chrome, ChromiumOptions
 
     def main():
         options = ChromiumOptions()

@@ -9,7 +9,7 @@ As páginas mudam depois de carregar: um spinner some, um botão fica habilitado
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
@@ -59,7 +59,7 @@ As condições que você pode definir:
 | `is_interactable` | O elemento está visível, por cima dos outros e pode receber um clique. |
 | `is_detached` | O elemento foi removido do DOM. |
 
-Cada elemento também responde às mesmas perguntas diretamente: `is_visible()`, `is_enabled()`, `is_interactable()`, `is_on_top()` e `is_detached()`.
+Cada elemento também responde às mesmas perguntas diretamente: `is_visible()`, `is_interactable()`, `is_on_top()` e `is_detached()` são métodos, e `is_enabled` é uma propriedade simples.
 
 ## Aguardar um elemento sumir
 
@@ -111,7 +111,7 @@ Em um glob, `*` corresponde a qualquer coisa exceto `/`, `**` corresponde a qual
 
 ## Aguardar uma condição em JavaScript
 
-`wait_for_script()` avalia uma expressão na página até ela retornar um valor verdadeiro, e retorna esse valor. Use para estado que o DOM não mostra: uma global definida pela aplicação, a flag de pronto de um store, uma contagem.
+`wait_for_script()` avalia uma expressão na página até ela ser verdadeira pelas regras do JavaScript, julgadas do lado da página, então um nó do DOM, uma função ou um objeto vazio contam como encontrados e uma promise retornada é aguardada. Retorna o valor quando é um primitivo e `True` quando é um objeto. Um script que lança erro levanta `ScriptEvaluationError` na hora, com o erro do JavaScript em `error_text`, em vez de esperar o timeout. Use para estado que o DOM não mostra: uma global definida pela aplicação, a flag de pronto de um store, uma contagem.
 
 === "Sync"
 
@@ -249,12 +249,14 @@ Os três gerenciadores `expect_*` começam a escutar quando você entra no bloco
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
             tab = browser.start()
             tab.go_to('https://quotes.toscrape.com/scroll')
+            # a página busca a página 1 ao carregar; espere por ela antes de pedir a página 2
+            tab.find(class_name='quote', timeout=10)
 
             with tab.expect_response('**/api/quotes?page=2') as response:
                 tab.execute_script('window.scrollTo(0, document.body.scrollHeight)')
@@ -279,6 +281,8 @@ Os três gerenciadores `expect_*` começam a escutar quando você entra no bloco
         async with Chrome() as browser:
             tab = await browser.start()
             await tab.go_to('https://quotes.toscrape.com/scroll')
+            # a página busca a página 1 ao carregar; espere por ela antes de pedir a página 2
+            await tab.find(class_name='quote', timeout=10)
 
             async with tab.expect_response('**/api/quotes?page=2') as response:
                 await tab.execute_script('window.scrollTo(0, document.body.scrollHeight)')

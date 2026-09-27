@@ -12,7 +12,7 @@ O [fingerprint-scan.com](https://fingerprint-scan.com/) roda um teste de fingerp
 
     ```python
     import time
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
     from examples.fingerprints import FINGERPRINTS
 
     def scan(profile):

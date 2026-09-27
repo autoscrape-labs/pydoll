@@ -24,7 +24,7 @@ Chame `apply_fingerprint()` antes da primeira navegação. Só os campos present
 
     ```python
     import time
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     from examples.fingerprints import FINGERPRINTS
 

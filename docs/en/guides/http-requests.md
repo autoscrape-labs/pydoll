@@ -9,7 +9,7 @@
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
@@ -52,7 +52,7 @@ Browser-context requests are most useful after a login. Sign in through the page
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
@@ -60,9 +60,9 @@ Browser-context requests are most useful after a login. Sign in through the page
 
             # 1. Log in through the UI (this is your own authenticated app)
             tab.go_to('https://yourapp.com/login')
-            (tab.find(id='username')).type_text('tester', humanize=True)
-            (tab.find(id='password')).type_text('secret', humanize=True)
-            (tab.find(tag_name='button', type='submit')).click()
+            tab.find(id='username').type_text('tester', humanize=True)
+            tab.find(id='password').type_text('secret', humanize=True)
+            tab.find(tag_name='button', type='submit').click()
 
             # 2. Call the API with the logged-in session
             response = tab.request.get('https://yourapp.com/api/profile')

@@ -34,7 +34,7 @@ Use `tab.extract()` to populate one model instance from the page. It resolves ea
 === "Sync"
 
     ```python
-    from pydoll import Chrome, ExtractionModel, Field
+    from pydoll.sync import Chrome, ExtractionModel, Field
 
     class Quote(ExtractionModel):
         text: str = Field(selector='.text')
@@ -424,7 +424,7 @@ Here is a complete, runnable example that extracts quotes from [quotes.toscrape.
 === "Sync"
 
     ```python
-    from pydoll import Chrome, ExtractionModel, Field
+    from pydoll.sync import Chrome, ExtractionModel, Field
 
     class Quote(ExtractionModel):
         text: str = Field(selector='.text', description='The quote text')

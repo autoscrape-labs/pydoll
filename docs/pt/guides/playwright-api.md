@@ -39,7 +39,7 @@ Aceitos e ignorados em `launch()`: `slow_mo`, `devtools`, `env`, `ignore_default
 | Membro | Status | Notas |
 |--------|--------|-------|
 | `new_context()`, `new_page()`, `contexts`, `version`, `close()` | Completo | |
-| Evento `disconnected` | Completo | |
+| Evento `disconnected` | Parcial | Dispara quando você chama `close()`; não dispara quando o processo do navegador morre por conta própria |
 | `new_browser_cdp_session()` | Ausente | Use `browser.chrome.execute_command(...)` |
 | `start_tracing()`, `stop_tracing()` | Ausente | Fora do escopo |
 
@@ -56,7 +56,7 @@ Aceitos e ignorados em `launch()`: `slow_mo`, `devtools`, `env`, `ignore_default
 | `route()`, `unroute()`, `route_from_har()` | Parcial | `route` e `unroute` são completos; `route_from_har` está ausente |
 | `expect_page()`, `expect_event()`, `wait_for_event()` | Completo | |
 | `set_default_timeout()`, `set_default_navigation_timeout()` | Completo | |
-| Opções: `viewport`, `user_agent`, `locale`, `timezone_id`, `extra_http_headers`, `storage_state`, `permissions`, `offline`, `base_url`, `http_credentials`, `ignore_https_errors`, `java_script_enabled`, `bypass_csp`, `color_scheme`, `device_scale_factor`, `is_mobile`, `has_touch` | Completo | `http_credentials` envia um header `Authorization` fixo em vez de responder ao desafio |
+| Opções: `viewport`, `user_agent`, `locale`, `timezone_id`, `extra_http_headers`, `storage_state`, `permissions`, `offline`, `base_url`, `http_credentials`, `ignore_https_errors`, `java_script_enabled`, `bypass_csp`, `color_scheme`, `device_scale_factor`, `is_mobile`, `has_touch` | Completo | `http_credentials` respondem ao desafio `401` pelo domínio Fetch em vez de enviar um header fixo |
 | Opções: `record_video_dir`, `record_har_path`, `client_certificates`, `service_workers`, `strict_selectors`, `accept_downloads=False` | Parcial | Aceitas e ignoradas |
 | `new_cdp_session()` | Ausente | Use `page.tab.execute_command(...)` |
 | `request` (`APIRequestContext`) | Ausente | Use `page.tab.request` |
@@ -66,12 +66,12 @@ Aceitos e ignorados em `launch()`: `slow_mo`, `devtools`, `env`, `ignore_default
 
 | Membro | Status | Notas |
 |--------|--------|-------|
-| `goto()`, `reload()`, `go_back()`, `go_forward()` | Completo | `wait_until='commit'` resolve assim que o comando de navegação retorna |
+| `goto()`, `reload()`, `go_back()`, `go_forward()` | Completo | `wait_until='commit'` resolve quando o novo documento é confirmado (commit) |
 | `wait_for_load_state()`, `wait_for_url()`, `expect_navigation()` | Completo | |
 | `evaluate()`, `evaluate_handle()` | Parcial | Roda no main world sem `eval`; `Date` volta como string ISO, `undefined` e `null` viram `None` |
 | `query_selector()`, `query_selector_all()`, `wait_for_selector()`, `wait_for_function()`, `wait_for_timeout()` | Completo | |
 | `content()`, `set_content()`, `title()`, `url` | Completo | |
-| `frames`, `main_frame`, `frame()`, `frame_locator()` | Parcial | `frames` é preenchido por eventos de frame, então pode atrasar alguns milissegundos em relação a uma navegação que adiciona iframes |
+| `frames`, `main_frame`, `frame()`, `frame_locator()` | Parcial | `frames` é preenchido por eventos de frame; um frame filho reporta o documento do pai até resolver, pouco depois de ser anexado |
 | `add_init_script()`, `add_script_tag()`, `add_style_tag()` | Completo | |
 | `set_viewport_size()`, `viewport_size`, `emulate_media()`, `set_extra_http_headers()` | Completo | |
 | `screenshot()`, `pdf()` | Parcial | As opções `mask`, `animations`, `caret`, `scale` e `style` de `screenshot` são aceitas e ignoradas |
@@ -81,6 +81,7 @@ Aceitos e ignorados em `launch()`: `slow_mo`, `devtools`, `env`, `ignore_default
 | `get_by_role()`, `get_by_text()`, `get_by_label()`, `get_by_placeholder()`, `get_by_alt_text()`, `get_by_title()`, `get_by_test_id()` | Completo | Papéis ARIA e nomes acessíveis calculados com um porte do algoritmo do Playwright |
 | Eventos: `load`, `domcontentloaded`, `framenavigated`, `request`, `response`, `requestfinished`, `requestfailed`, `dialog`, `console`, `pageerror`, `download`, `popup`, `filechooser`, `close`, `crash` | Completo | Com os context managers `expect_*` correspondentes; `console` e `pageerror` são os únicos listeners que habilitam o domínio `Runtime` |
 | Eventos: `websocket`, `worker` | Ausente | |
+| `wait_for_request()`, `wait_for_response()` | Ausente | Use `expect_request()` e `expect_response()` |
 | `pause()`, `add_locator_handler()`, `aria_snapshot()`, `clock` | Ausente | Fora do escopo |
 | `request` (`APIRequestContext`) | Ausente | Use `page.tab.request` |
 
@@ -90,7 +91,7 @@ Aceitos e ignorados em `launch()`: `slow_mo`, `devtools`, `env`, `ignore_default
 |--------|--------|-------|
 | O conjunto completo de métodos, incluindo `filter()`, `and_()`, `or_()`, `nth()`, `first`, `last`, `count()`, `all()`, `drag_to()`, `select_option()`, `set_input_files()`, `screenshot()`, `evaluate_all()`, `bounding_box()`, `scroll_into_view_if_needed()`, `dispatch_event()` | Completo | Locators são preguiçosos e estritos; as ações seguem as verificações de acionabilidade do Playwright e produzem o mesmo call log em timeout |
 | `set_input_files()` | Completo | Caminhos e `FilePayload` |
-| `highlight()` | Ausente | |
+| `highlight()`, `aria_snapshot()` | Ausente | |
 
 ### Seletores
 
@@ -115,8 +116,11 @@ Vêm dos padrões de stealth do Pydoll e ficam por baixo da superfície Playwrig
 
 - Avaliações rodam sem gesto de usuário sintético, então `navigator.userActivation` fica falso até um clique real. Defina `user_gesture_on_evaluate=True` no contexto se um script precisa de `window.open` a partir de `evaluate`.
 - Popups são bloqueados a menos que uma ação do usuário os abra, como em um Chrome normal.
+- Ações não esperam por uma navegação que elas mesmas iniciam, e `no_wait_after` é aceito e ignorado. Quando um clique envia um formulário ou segue um link, espere com `page.wait_for_url()` ou `page.expect_navigation()` antes de ler a nova página.
 - Um override de `user_agent` vem com Client Hints coerentes e segue o formato de UA reduzido do Chrome; a string que você passa é normalizada do jeito que o Pydoll faz nas próprias opções. `locale` define um `Accept-Language` com a forma do Chrome.
 - `http_credentials` só respondem a um desafio da própria origem.
+- Um iframe cross-origin que o Chrome renderiza em outro processo não é alcançável por `frame_locator()` nem por uma cadeia de seletores que entra no frame: o motor de seletores vive na sessão do pai, e a consulta teria de rodar na do filho. Para esses frames, use `element_handle.content_frame()` e os métodos do próprio frame.
+- Init scripts, bindings e emulação definidos no contexto só alcançam um popup depois que ele é adotado, então perdem o primeiríssimo documento do popup.
 - A emulação de viewport mantém `screen` pelo menos tão grande quanto a viewport, para que os dois nunca se contradigam.
 - O engine de seletores e acionabilidade roda em um isolated world de cada frame, avaliado uma vez e reutilizado, então uma página que envolve os protótipos do DOM, `requestAnimationFrame` ou `window.eval` nunca o vê. O seu próprio código de `page.evaluate` roda no main world, onde vivem os globais da página, e o código-fonte vai embutido na chamada em vez de passar por `eval`.
 

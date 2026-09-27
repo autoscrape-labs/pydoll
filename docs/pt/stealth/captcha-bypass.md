@@ -11,7 +11,7 @@ O context manager espera o widget do Turnstile aparecer durante o bloqueio, clic
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
@@ -57,7 +57,7 @@ Quando você não quer envolver uma navegação específica, ative o tratamento 
 
     ```python
     import time
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:

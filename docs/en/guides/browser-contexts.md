@@ -9,7 +9,7 @@ A browser context is an isolated session inside one browser process: its own coo
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:

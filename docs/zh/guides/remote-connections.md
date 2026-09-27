@@ -25,7 +25,7 @@ curl http://localhost:9222/json/version
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         browser = Chrome()
@@ -77,13 +77,14 @@ curl http://localhost:9222/json/version
 === "Sync"
 
     ```python
-    import aiohttp
-    from pydoll import Chrome
+    import json
+    from urllib.request import urlopen
+
+    from pydoll.sync import Chrome
 
     def main():
-        with aiohttp.ClientSession() as session:
-            with session.get('http://localhost:9222/json/version') as resp:
-                ws_address = (resp.json())['webSocketDebuggerUrl']
+        with urlopen('http://localhost:9222/json/version') as resp:
+            ws_address = json.load(resp)['webSocketDebuggerUrl']
 
         browser = Chrome()
         tab = browser.connect(ws_address)
@@ -136,45 +137,24 @@ docker run -d --shm-size=2g -p 127.0.0.1:9222:9222 \
 
 如果你已经有了一套 CDP 集成，以及某个元素的 `objectId`，可以把它包进一个 Pydoll 的 `WebElement`，从而使用高层交互 API。为该页面的 WebSocket 构建一个 `ConnectionHandler`，然后传进去：
 
-=== "Sync"
+```python
+from pydoll.connection import ConnectionHandler
+from pydoll import WebElement
 
-    ```python
-    from pydoll.connection import ConnectionHandler
-    from pydoll import WebElement
+connection = ConnectionHandler(ws_address='ws://localhost:9222/devtools/page/<id>')
 
-    connection = ConnectionHandler(ws_address='ws://localhost:9222/devtools/page/<id>')
+button = WebElement(
+    object_id='<objectId from your CDP call>',
+    connection_handler=connection,
+)
 
-    button = WebElement(
-        object_id='<objectId from your CDP call>',
-        connection_handler=connection,
-    )
+await button.wait_until(is_visible=True, timeout=5)
+await button.click(x_offset=5, y_offset=5)
 
-    button.wait_until(is_visible=True, timeout=5)
-    button.click(x_offset=5, y_offset=5)
+await connection.close()
+```
 
-    connection.close()
-    ```
-
-=== "Async"
-
-    ```python
-    from pydoll.connection import ConnectionHandler
-    from pydoll import WebElement
-
-    connection = ConnectionHandler(ws_address='ws://localhost:9222/devtools/page/<id>')
-
-    button = WebElement(
-        object_id='<objectId from your CDP call>',
-        connection_handler=connection,
-    )
-
-    await button.wait_until(is_visible=True, timeout=5)
-    await button.click(x_offset=5, y_offset=5)
-
-    await connection.close()
-    ```
-
-`objectId` 就是 `Runtime.evaluate` 或 `DOM.resolveNode` 这类 CDP 命令为某个节点返回的东西。这样既能保留你现有的搭建，又能在其上借用 Pydoll 的等待与交互。
+`objectId` 就是 `Runtime.evaluate` 或 `DOM.resolveNode` 这类 CDP 命令为某个节点返回的东西。这样既能保留你现有的搭建，又能在其上借用 Pydoll 的等待与交互。`ConnectionHandler` 是一个 asyncio 对象，所以这个集成点只有异步版本；`pydoll.sync` 里的门面包裹的是通过它们启动或连接的浏览器所产生的元素。
 
 ## 下一步
 

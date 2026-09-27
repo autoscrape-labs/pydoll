@@ -219,8 +219,9 @@ with sync_playwright() as p:
     page.goto('https://quotes.toscrape.com/login')
 
     page.get_by_label('Username').fill('john')
-    page.get_by_label('Password').fill('SecretPass123')
+    page.locator('#password').fill('SecretPass123')
     page.get_by_role('button', name='Login').click()
+    page.wait_for_url('**/')
     print(page.get_by_role('link', name='Logout').is_visible())
     browser.close()
 ```
@@ -410,7 +411,7 @@ Highlights:
 <summary><b>HAR Network Recording</b></summary>
 <br>
 
-Record network activity during a browser session and export as HAR 1.2. Replay recorded requests to reproduce exact API sequences.
+Record network activity during a browser session and export it as HAR 1.2. Every entry keeps its request, response, headers, body and timings, ready for DevTools or any HAR viewer.
 
 ```python
 from pydoll import Chrome
@@ -423,8 +424,6 @@ async with Chrome() as browser:
 
     capture.save('flow.har')
     print(f'Captured {len(capture.entries)} requests')
-
-    responses = await tab.request.replay('flow.har')
 ```
 
 [HAR Recording Docs](https://pydoll.tech/docs/guides/network-recording/)

@@ -9,7 +9,7 @@ Uma sessão logada vive nos cookies do navegador. Leia-os, defina-os ou salve-os
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
@@ -99,7 +99,7 @@ Primeira execução, faça login e salve:
     import json
     from pathlib import Path
 
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     COOKIE_FILE = Path('session.json')
 
@@ -108,9 +108,9 @@ Primeira execução, faça login e salve:
             tab = browser.start()
             tab.go_to('https://quotes.toscrape.com/login')
 
-            (tab.find(id='username')).type_text('tester', humanize=True)
-            (tab.find(id='password')).type_text('secret', humanize=True)
-            (tab.find(tag_name='input', type='submit')).click()
+            tab.find(id='username').type_text('tester', humanize=True)
+            tab.find(id='password').type_text('secret', humanize=True)
+            tab.find(tag_name='input', type='submit').click()
 
             cookies = tab.get_cookies()
             COOKIE_FILE.write_text(json.dumps(cookies))
@@ -155,7 +155,7 @@ Nas execuções seguintes, carregue os cookies e você já está logado:
     import json
     from pathlib import Path
 
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     COOKIE_FILE = Path('session.json')
 

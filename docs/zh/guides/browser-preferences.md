@@ -11,7 +11,7 @@
 === "Sync"
 
     ```python
-    from pydoll import Chrome, ChromiumOptions
+    from pydoll.sync import Chrome, ChromiumOptions
 
     def main():
         options = ChromiumOptions()
@@ -103,7 +103,7 @@ Chromium 以点分路径的形式记录偏好设置（例如 `download.default_d
     ```python
     import time
 
-    from pydoll import Chrome, ChromiumOptions
+    from pydoll.sync import Chrome, ChromiumOptions
 
     def realistic_options() -> ChromiumOptions:
         now = int(time.time())

@@ -52,16 +52,16 @@ driver.quit()
     ```python
     # Pydoll
 
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
             tab = browser.start()
             tab.go_to('https://quotes.toscrape.com/login')
 
-            (tab.find(id='username')).type_text('tester')
-            (tab.find(id='password')).type_text('secret')
-            (tab.find(tag_name='input', type='submit')).click()
+            tab.find(id='username').type_text('tester')
+            tab.find(id='password').type_text('secret')
+            tab.find(tag_name='input', type='submit').click()
 
             tab.find(text='Logout', timeout=5)
 
@@ -157,7 +157,7 @@ driver.quit()
     ```python
     # Pydoll
 
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:

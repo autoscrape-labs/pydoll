@@ -11,7 +11,7 @@ Pydoll 可以帮你点击 Cloudflare Turnstile 的复选框，就和真人在这
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
@@ -57,7 +57,7 @@ Pydoll 可以帮你点击 Cloudflare Turnstile 的复选框，就和真人在这
 
     ```python
     import time
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:

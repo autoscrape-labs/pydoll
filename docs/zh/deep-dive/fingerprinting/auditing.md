@@ -12,7 +12,7 @@
 
     ```python
     import time
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
     from examples.fingerprints import FINGERPRINTS
 
     def scan(profile):

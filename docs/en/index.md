@@ -28,7 +28,7 @@ Open a page, find elements by how you'd describe them to a person, and interact 
 
     ```python
     import time
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
@@ -83,7 +83,7 @@ When the goal is data rather than interaction, define a model and let Pydoll ext
 === "Sync"
 
     ```python
-    from pydoll import Chrome, ExtractionModel, Field
+    from pydoll.sync import Chrome, ExtractionModel, Field
 
     class Quote(ExtractionModel):
         text: str = Field(selector='.text')

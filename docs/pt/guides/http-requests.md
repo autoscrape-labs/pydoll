@@ -9,7 +9,7 @@
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
@@ -52,7 +52,7 @@ Requisições no contexto do navegador são mais úteis depois de um login. Entr
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
@@ -60,9 +60,9 @@ Requisições no contexto do navegador são mais úteis depois de um login. Entr
 
             # 1. Faça login pela interface (esta é a sua própria aplicação autenticada)
             tab.go_to('https://yourapp.com/login')
-            (tab.find(id='username')).type_text('tester', humanize=True)
-            (tab.find(id='password')).type_text('secret', humanize=True)
-            (tab.find(tag_name='button', type='submit')).click()
+            tab.find(id='username').type_text('tester', humanize=True)
+            tab.find(id='password').type_text('secret', humanize=True)
+            tab.find(tag_name='button', type='submit').click()
 
             # 2. Chame a API com a sessão logada
             response = tab.request.get('https://yourapp.com/api/profile')

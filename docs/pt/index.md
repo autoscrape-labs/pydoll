@@ -28,7 +28,7 @@ Abra uma página, encontre elementos pela forma como você os descreveria para u
 
     ```python
     import time
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
@@ -83,7 +83,7 @@ Quando o objetivo é dado, e não interação, defina um modelo e deixe o Pydoll
 === "Sync"
 
     ```python
-    from pydoll import Chrome, ExtractionModel, Field
+    from pydoll.sync import Chrome, ExtractionModel, Field
 
     class Quote(ExtractionModel):
         text: str = Field(selector='.text')

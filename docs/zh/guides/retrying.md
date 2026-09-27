@@ -9,7 +9,7 @@
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
     from pydoll.decorators import retry
     from pydoll.exceptions import WaitElementTimeout, ConnectionFailed
 
@@ -155,7 +155,7 @@
 
     ```python
     import time
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
     from pydoll.decorators import retry
     from pydoll.exceptions import ElementNotFound, WaitElementTimeout
 

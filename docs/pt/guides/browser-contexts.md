@@ -9,7 +9,7 @@ Um contexto de navegador é uma sessão isolada dentro de um mesmo processo de n
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:

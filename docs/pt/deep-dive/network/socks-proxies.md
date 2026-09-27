@@ -176,7 +176,7 @@ O Pydoll traz o `SOCKS5Forwarder` em `pydoll.utils`. É uma implementação ass�
 === "Sync"
 
     ```python
-    from pydoll import Chrome, ChromiumOptions
+    from pydoll.sync import Chrome, ChromiumOptions
     from pydoll.utils import SOCKS5Forwarder
 
     def main():

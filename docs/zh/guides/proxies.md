@@ -11,7 +11,7 @@
 === "Sync"
 
     ```python
-    from pydoll import Chrome, ChromiumOptions
+    from pydoll.sync import Chrome, ChromiumOptions
 
     def main():
         options = ChromiumOptions()
@@ -92,64 +92,33 @@ options.add_argument('--proxy-server=http://user:pass@proxy.example.com:8080')
 !!! warning "Chrome 不支持 SOCKS5 认证"
     Chrome 会忽略 `socks5://user:pass@host:port` URL 中的凭据（[Chromium issue 40323993](https://issues.chromium.org/issues/40323993)）：它既不发送这些凭据，也不会发出 Pydoll 本可应答的 407 质询。请运行一个替你处理凭据的本地无认证 SOCKS5 转发器，并让 Chrome 指向它：
 
-    === "Sync"
+    ```python
+    import asyncio
 
-        ```python
-            import asyncio
-
-            from pydoll.utils import SOCKS5Forwarder
-            from pydoll.browser.chromium import Chrome
-            from pydoll.browser.options import ChromiumOptions
-
-            def main():
-                forwarder = SOCKS5Forwarder(
-                    remote_host='proxy.example.com',
-                    remote_port=1080,
-                    username='myuser',
-                    password='mypass',
-                    local_port=1081,
-                )
-                with forwarder:
-                    options = ChromiumOptions()
-                    options.add_argument('--proxy-server=socks5://127.0.0.1:1081')
-
-                    with Chrome(options=options) as browser:
-                        tab = browser.start()
-                        tab.go_to('https://httpbin.org/ip')
-
-            main()
-        ```
-
-    === "Async"
-
-        ```python
-            import asyncio
-
-            from pydoll.utils import SOCKS5Forwarder
-            from pydoll.browser.chromium import Chrome
-            from pydoll.browser.options import ChromiumOptions
+    from pydoll import Chrome, ChromiumOptions
+    from pydoll.utils import SOCKS5Forwarder
 
 
-            async def main():
-                forwarder = SOCKS5Forwarder(
-                    remote_host='proxy.example.com',
-                    remote_port=1080,
-                    username='myuser',
-                    password='mypass',
-                    local_port=1081,
-                )
-                async with forwarder:
-                    options = ChromiumOptions()
-                    options.add_argument('--proxy-server=socks5://127.0.0.1:1081')
+    async def main():
+        forwarder = SOCKS5Forwarder(
+            remote_host='proxy.example.com',
+            remote_port=1080,
+            username='myuser',
+            password='mypass',
+            local_port=1081,
+        )
+        async with forwarder:
+            options = ChromiumOptions()
+            options.add_argument('--proxy-server=socks5://127.0.0.1:1081')
 
-                    async with Chrome(options=options) as browser:
-                        tab = await browser.start()
-                        await tab.go_to('https://httpbin.org/ip')
+            async with Chrome(options=options) as browser:
+                tab = await browser.start()
+                await tab.go_to('https://httpbin.org/ip')
 
-            asyncio.run(main())
-        ```
+    asyncio.run(main())
+    ```
 
-    Chrome 无需认证即可连接到 `127.0.0.1`；转发器则与远程 proxy 完成用户名/密码握手。
+    Chrome 无需认证即可连接到 `127.0.0.1`；转发器则与远程 proxy 完成用户名/密码握手。`SOCKS5Forwarder` 是一个 asyncio 服务器，在 `pydoll.sync` 中没有对应的门面，所以这个做法只有异步版本。
 
 ## 为每个上下文使用不同的 proxy
 
@@ -167,8 +136,8 @@ options.add_argument('--proxy-server=http://user:pass@proxy.example.com:8080')
         us_tab = browser.new_tab(browser_context_id=us_ctx)
         de_tab = browser.new_tab(browser_context_id=de_ctx)
 
-        print((us_tab.request.get('https://httpbin.org/ip')).json())
-        print((de_tab.request.get('https://httpbin.org/ip')).json())
+        print(us_tab.request.get('https://httpbin.org/ip').json())
+        print(de_tab.request.get('https://httpbin.org/ip').json())
     ```
 
 === "Async"
@@ -205,7 +174,7 @@ options.add_argument('--proxy-bypass-list=localhost,127.0.0.1,*.local')
     ```python
     with Chrome(options=options) as browser:
         tab = browser.start()
-        ip = (tab.request.get('https://httpbin.org/ip')).json()['origin']
+        ip = tab.request.get('https://httpbin.org/ip').json()['origin']
         print(f'Egress IP: {ip}')
     ```
 

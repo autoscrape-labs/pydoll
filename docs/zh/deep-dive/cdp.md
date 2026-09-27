@@ -54,7 +54,7 @@ Pydoll 把这些 domain 映射为一套更友好的 API，所以 `tab.go_to(...)
     ```python
     from functools import partial
 
-    from pydoll import NetworkEvent
+    from pydoll.sync import NetworkEvent
 
     def on_request(tab, event):
         url = event['params']['request']['url']

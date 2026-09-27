@@ -11,7 +11,7 @@ When the page has a real `<input type="file">`, find it and call `set_input_file
     ```python
     from pathlib import Path
 
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
@@ -111,7 +111,7 @@ Many sites hide the file input behind a styled button or a drag-and-drop zone, s
     ```python
     from pathlib import Path
 
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
@@ -162,7 +162,7 @@ Wrap the action that starts a download in `expect_download()`. Pydoll waits for 
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:

@@ -11,7 +11,7 @@ Pass `humanize=True` to `type_text()` and Pydoll varies the delay between keystr
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
@@ -112,7 +112,7 @@ Real users don't teleport down a page. `tab.scroll` offers three modes; `humaniz
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
     from pydoll.constants import ScrollPosition
 
     def main():

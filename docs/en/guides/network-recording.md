@@ -9,7 +9,7 @@ Wrap the browsing you want to capture in `tab.request.record()`. Everything the 
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:

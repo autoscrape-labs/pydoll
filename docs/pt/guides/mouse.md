@@ -11,7 +11,7 @@ O caso comum é clicar em um elemento que você já localizou com `find()` ou `q
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
@@ -135,7 +135,7 @@ O `click()` recebe algumas opções:
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
     from pydoll.protocol.input.types import MouseButton
 
     def main():
@@ -230,12 +230,12 @@ Cliques humanizados em elementos funcionam da mesma forma. Como a posição é r
 
     ```python
     # instantâneo: o cursor salta direto para cada alvo
-    (tab.find(id='first')).click()
-    (tab.find(id='second')).click()
+    tab.find(id='first').click()
+    tab.find(id='second').click()
 
     # humanizado: o cursor curva naturalmente de um alvo para o próximo
-    (tab.find(id='first')).click(humanize=True)
-    (tab.find(id='second')).click(humanize=True)
+    tab.find(id='first').click(humanize=True)
+    tab.find(id='second').click(humanize=True)
     ```
 
 === "Async"

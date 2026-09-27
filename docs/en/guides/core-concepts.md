@@ -23,7 +23,7 @@ When you start a browser, Pydoll launches the Chrome you already have installed 
 === "Sync"
 
     ```python
-    from pydoll import Chrome
+    from pydoll.sync import Chrome
 
     def main():
         with Chrome() as browser:
@@ -181,7 +181,7 @@ Instead of polling the page in a loop, you can subscribe to browser events and r
     import time
     from functools import partial
 
-    from pydoll import Chrome, NetworkEvent
+    from pydoll.sync import Chrome, NetworkEvent
 
     def on_request(tab, event):
         url = event['params']['request']['url']
@@ -238,7 +238,7 @@ The same API drives any Chromium browser. Chrome is the primary target; Edge has
 === "Sync"
 
     ```python
-    from pydoll import Chrome, ChromiumOptions, Edge
+    from pydoll.sync import Chrome, ChromiumOptions, Edge
 
     # Chrome
     with Chrome() as browser:
