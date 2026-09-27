@@ -79,6 +79,8 @@ Pydoll 用两种方式驱动鼠标：通过你找到的元素，这是大多数�
     await element.click(humanize=True)
     ```
 
+`humanize=True` 在元素所在的任何位置都有效：主文档、iframe 内部（包括跨源的）以及 shadow root 内部。独立进程中的 iframe 有自己的视口坐标，所以其中的元素移动的是它们自己的光标，与标签页的光标分开跟踪。
+
 !!! note "元素点击 vs 原始坐标"
     优先使用 `element.click()`。它会替你找出元素的位置，并且能挺过布局变动。只有在没有元素可作为目标时，比如在 `<canvas>` 内部点击或按像素拖动一个手柄，才求助下面的坐标 API。
 

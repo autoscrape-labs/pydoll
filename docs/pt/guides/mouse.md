@@ -79,6 +79,8 @@ O `click()` recebe algumas opções:
     await element.click(humanize=True)
     ```
 
+`humanize=True` funciona onde quer que o elemento esteja: no documento principal, dentro de um iframe (inclusive cross-origin) e dentro de um shadow root. Um iframe em outro processo tem coordenadas de viewport próprias, então seus elementos movem um cursor só deles, rastreado separado do da aba.
+
 !!! note "Clique em elemento vs coordenadas brutas"
     Prefira `element.click()`. Ele encontra a posição do elemento para você e sobrevive a mudanças de layout. Recorra à API de coordenadas abaixo apenas quando não há elemento a mirar, como clicar dentro de um `<canvas>` ou arrastar um controle por pixel.
 

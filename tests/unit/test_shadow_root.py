@@ -11,6 +11,7 @@ from __future__ import annotations
 import pytest
 
 from pydoll.elements.shadow_root import ShadowRoot
+from pydoll.elements.web_element import WebElement
 from pydoll.protocol.dom.types import ShadowRootType
 
 
@@ -28,7 +29,7 @@ def test_mode_property_reflects_construction(fake_conn):
 
 
 def test_host_element_property_reflects_construction(fake_conn):
-    host = object()
+    host = WebElement('host', fake_conn, attributes_list=['tag_name', 'div'])
     assert _shadow(fake_conn, host_element=host).host_element is host
 
 

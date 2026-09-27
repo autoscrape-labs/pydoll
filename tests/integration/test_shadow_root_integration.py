@@ -158,3 +158,27 @@ class TestShadowRootNotPresent:
         h1 = await tab.find(tag_name='h1', timeout=5)
         with pytest.raises(ShadowRootNotFound):
             await h1.get_shadow_root()
+
+
+class TestHumanizedInputInShadowDom:
+    @pytest.mark.asyncio
+    async def test_humanized_click_reaches_a_button_inside_a_shadow_root(self, tab):
+        await tab.go_to(TEST_PAGE)
+        await tab.execute_script(
+            'window.__moves = 0; document.addEventListener("mousemove", () => { window.__moves++; });'
+            'window.__clicks = 0; document.getElementById("open-host").shadowRoot'
+            '.getElementById("open-btn").addEventListener("click", () => { window.__clicks++; })'
+        )
+        host = await tab.find(id='open-host')
+        shadow = await host.get_shadow_root()
+        button = await shadow.query('#open-btn')
+
+        assert button._input_mouse() is tab.mouse
+        await button.click(humanize=True)
+
+        counts = await tab.execute_script(
+            'return [window.__moves, window.__clicks]', return_by_value=True
+        )
+        moves, clicks = counts['result']['result']['value']
+        assert moves > 2
+        assert clicks == 1

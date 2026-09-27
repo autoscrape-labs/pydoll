@@ -6,12 +6,15 @@ from typing import TYPE_CHECKING, Iterable
 
 from pydoll.commands import DomCommands, PageCommands, RuntimeCommands, TargetCommands
 from pydoll.connection import ConnectionHandler
-from pydoll.exceptions import CommandFailed, InvalidIFrame
+from pydoll.exceptions import CommandFailed, InvalidIFrame, WebSocketConnectionClosed
 from pydoll.protocol.dom.methods import DescribeNodeResponse, GetFrameOwnerResponse
 from pydoll.protocol.dom.types import Node
 from pydoll.protocol.page.methods import CreateIsolatedWorldResponse, GetFrameTreeResponse
 from pydoll.protocol.page.types import Frame, FrameTree
 from pydoll.protocol.runtime.methods import EvaluateResponse
+
+if TYPE_CHECKING:
+    from pydoll.interactions.mouse import Mouse
 from pydoll.protocol.target.methods import AttachToTargetResponse, GetTargetsResponse
 
 if TYPE_CHECKING:
@@ -30,6 +33,7 @@ class IFrameContext:
     document_object_id: str | None = None
     session_handler: ConnectionHandler | None = None
     session_id: str | None = None
+    mouse: Mouse | None = None
 
     async def close(self) -> None:
         """Close the session handler if one was created for this context."""
@@ -96,6 +100,39 @@ class IFrameContextResolver:
         context.document_object_id = document_object_id
 
         return context
+
+    async def is_current(self, context: IFrameContext) -> bool:
+        """
+        Whether a context resolved earlier still describes this iframe's document.
+
+        The frame owner is described on the parent session, which needs no
+        attach, and the context is current when the frame it names is still the
+        one the element hosts and the document object it holds is still
+        connected. A navigation or reload leaves that object disconnected or
+        gone, and any failure reads as stale, so the caller resolves afresh
+        exactly when the document changed.
+        """
+        base_handler, base_session_id = self._get_base_session()
+        node_info = await self._describe_element_node(base_handler, base_session_id)
+        frame_id, _, content_frame_id, _ = self._extract_frame_metadata(node_info)
+        if context.frame_id not in {frame_id, content_frame_id}:
+            return False
+        if context.document_object_id is None:
+            return False
+        command = RuntimeCommands.call_function_on(
+            object_id=context.document_object_id,
+            function_declaration='function() { return this.isConnected; }',
+            return_by_value=True,
+        )
+        handler = context.session_handler or base_handler
+        session_id = context.session_id or base_session_id
+        if session_id:
+            command['sessionId'] = session_id
+        try:
+            response: EvaluateResponse = await handler.execute_command(command)
+        except (CommandFailed, WebSocketConnectionClosed):
+            return False
+        return bool(response.get('result', {}).get('result', {}).get('value'))
 
     def _get_base_session(self) -> tuple[ConnectionHandler, str | None]:
         """Return the default handler and session id for routing commands."""

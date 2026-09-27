@@ -79,6 +79,8 @@ The common case is clicking an element you already located with `find()` or `que
     await element.click(humanize=True)
     ```
 
+`humanize=True` works wherever the element lives: in the main document, inside an iframe (a cross-origin one included) and inside a shadow root. An out-of-process iframe has its own viewport coordinates, so its elements move a cursor of their own, tracked separately from the tab's.
+
 !!! note "Element click vs raw coordinates"
     Prefer `element.click()`. It finds the element's position for you and survives layout changes. Reach for the coordinate API below only when there is no element to target, such as clicking inside a `<canvas>` or dragging a handle by pixel.
 

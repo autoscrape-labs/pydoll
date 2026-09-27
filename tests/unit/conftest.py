@@ -79,6 +79,10 @@ class FakeConnection:
         """Mirror ConnectionHandler.execute_commands: every command, in order."""
         return [await self.execute_command(command, timeout) for command in commands]
 
+    async def execute_command_nowait(self, command: dict) -> None:
+        """Mirror ConnectionHandler.execute_command_nowait: recorded, answer discarded."""
+        await self.execute_command(command)
+
     async def register_callback(
         self,
         event_name: str,

@@ -52,6 +52,7 @@ class ShadowRoot(FindElementsMixin):
         self._connection_handler = connection_handler
         self._mode = mode
         self._host_element = host_element
+        self._mouse = host_element._mouse if host_element is not None else None
 
         # Inherit iframe/routing context from host element if present
         if host_element:

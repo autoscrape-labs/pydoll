@@ -37,6 +37,7 @@ from pydoll.exceptions import (
 )
 from pydoll.interactions.iframe import IFrameContext, IFrameContextResolver
 from pydoll.interactions.keyboard import Keyboard
+from pydoll.interactions.mouse import Mouse
 from pydoll.protocol.dom.types import Rect, ShadowRootType
 from pydoll.protocol.input.types import (
     MOUSE_BUTTON_MASK,
@@ -59,7 +60,6 @@ from pydoll.utils import (
 )
 
 if TYPE_CHECKING:
-    from pydoll.interactions.mouse import Mouse as MouseType
     from pydoll.protocol.dom.methods import (
         DescribeNodeResponse,
         GetBoxModelResponse,
@@ -95,7 +95,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         method: str | None = None,
         selector: str | None = None,
         attributes_list: list[str] | None = None,
-        mouse: 'MouseType' | None = None,
+        mouse: Mouse | None = None,
     ):
         """
         Initialize WebElement wrapper.
@@ -109,13 +109,12 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
             mouse: Optional Mouse instance for humanized click behavior.
 
         Note:
-            Mouse and Keyboard follow different ownership strategies. Mouse is a shared
-            instance from Tab, passed down to elements to preserve cursor position state
-            across interactions. It dispatches commands through Tab._execute_command, which
-            means it has no iframe context awareness. Keyboard is created per-element and
-            routes commands through the element's own _execute_command, correctly handling
-            iframe routing. For iframe elements, the mouse is intentionally skipped during
-            humanized clicks (see click()) to avoid dispatching events to the wrong frame.
+            Mouse and Keyboard follow different ownership strategies. The tab's Mouse is
+            shared with the elements of its document and of its same-process iframes, so
+            the cursor keeps one position across interactions; an element inside an
+            out-of-process iframe uses a mouse bound to that frame's session, cached on
+            the iframe context (see ``_input_mouse``). Keyboard is created per element and
+            routes commands through the element's own ``_execute_command``.
         """
         self._object_id = object_id
         self._search_method = method
@@ -229,9 +228,11 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
 
         The context includes: frame_id, document_url, execution_context_id,
         document_object_id and, for OOPIF targets, the session_id and
-        session_handler used for routing commands. The context is always freshly
-        resolved to avoid stale execution contexts after iframe navigations or
-        reloads. Non-iframe elements return None.
+        session_handler used for routing commands. A context resolved earlier is
+        reused while it still describes the frame's current document, so the
+        elements already found inside the frame keep a live session; after a
+        navigation or reload it is resolved afresh and the old one is closed.
+        Non-iframe elements return None.
 
         Returns:
             IFrameContext | None: Resolved iframe context or None for non-iframes.
@@ -241,8 +242,10 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
 
         resolver = self._get_iframe_resolver()
         old_context = self._iframe_context
+        if old_context is not None and await resolver.is_current(old_context):
+            return old_context
         self._iframe_context = await resolver.resolve()
-        if old_context is not None and old_context is not self._iframe_context:
+        if old_context is not None:
             await old_context.close()
         self._apply_routing_from_context()
         return self._iframe_context
@@ -648,14 +651,14 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         await self.scroll_into_view()
         position_to_click = await self._target_point(x_offset, y_offset)
 
-        has_iframe_context = getattr(self, '_iframe_context', None) is not None
-        if humanize and self._mouse is not None and not has_iframe_context:
+        mouse = self._input_mouse()
+        if humanize and mouse is not None:
             logger.info(
                 'Clicking element (humanized): x=%s, y=%s',
                 position_to_click[0],
                 position_to_click[1],
             )
-            await self._mouse.click(position_to_click[0], position_to_click[1], humanize=True)
+            await mouse.click(position_to_click[0], position_to_click[1], humanize=True)
             return
 
         logger.info(
@@ -685,6 +688,29 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
             await asyncio.sleep(hold_time)
         await self._execute_command(release_command)
 
+    def _input_mouse(self) -> Mouse | None:
+        """The mouse that moves in this element's frame.
+
+        The main document and its same-process iframes share the tab's mouse:
+        their coordinates are the tab's and so is their session. An
+        out-of-process iframe is another CDP target with viewport coordinates
+        of its own, so its elements get a mouse bound to the frame's session,
+        created once with the tab mouse's timing and kept on the iframe
+        context. ``None`` when the element was created without a mouse.
+        """
+        tab_mouse = self._mouse
+        if tab_mouse is None:
+            return None
+        handler, session_id = self._resolve_routing()
+        if handler is tab_mouse.connection_handler and session_id == tab_mouse.session_id:
+            return tab_mouse
+        context = self._iframe_context
+        if context is None:
+            return Mouse(handler, session_id=session_id, timing=tab_mouse.timing)
+        if context.mouse is None:
+            context.mouse = Mouse(handler, session_id=session_id, timing=tab_mouse.timing)
+        return context.mouse
+
     async def hover(self, x_offset: int = 0, y_offset: int = 0, humanize: bool = False):
         """
         Move the mouse over the element without clicking.
@@ -708,9 +734,9 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         await self.scroll_into_view()
         x, y = await self._target_point(x_offset, y_offset)
 
-        has_iframe_context = getattr(self, '_iframe_context', None) is not None
-        if humanize and self._mouse is not None and not has_iframe_context:
-            await self._mouse.move(x, y, humanize=True)
+        mouse = self._input_mouse()
+        if humanize and mouse is not None:
+            await mouse.move(x, y, humanize=True)
             return
 
         logger.info('Hovering element: x=%s, y=%s', x, y)
@@ -740,9 +766,9 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         await self.scroll_into_view()
         x, y = await self._target_point(x_offset, y_offset)
 
-        has_iframe_context = getattr(self, '_iframe_context', None) is not None
-        if humanize and self._mouse is not None and not has_iframe_context:
-            await self._mouse.double_click(x, y, humanize=True)
+        mouse = self._input_mouse()
+        if humanize and mouse is not None:
+            await mouse.double_click(x, y, humanize=True)
             return
 
         logger.info('Double-clicking element: x=%s, y=%s', x, y)

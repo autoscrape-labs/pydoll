@@ -147,6 +147,49 @@ class ConnectionHandler:
             logger.warning(f'WebSocket connection closed during command: id={command.get("id")}')
             raise WebSocketConnectionClosed()
 
+    async def execute_command_nowait(
+        self, command: Command[T_CommandParams, T_CommandResponse]
+    ) -> None:
+        """
+        Send a CDP command and return as soon as it is on the wire.
+
+        The answer is still consumed when it arrives, so the pending table stays
+        clean, and a CDP error is logged instead of raised. Meant for streams
+        of input events whose order the socket already guarantees: awaiting
+        each answer would add a network round trip between consecutive mouse
+        moves, which no real input device has.
+
+        Args:
+            command: CDP command to send.
+
+        Raises:
+            WebSocketConnectionClosed: If the connection cannot be (re)established.
+        """
+        await self._ensure_active_connection()
+        future = self._command_manager.create_command_future(command)
+        future.add_done_callback(lambda done: self._log_discarded_answer(command, done))
+        ws = cast(ClientConnection, self._ws_connection)
+        logger.debug(
+            'Sending command without waiting: id=%s, method=%s',
+            command.get('id'),
+            command.get('method'),
+        )
+        await ws.send(json.dumps(command))
+
+    @staticmethod
+    def _log_discarded_answer(command: Command, future: asyncio.Future) -> None:
+        """Log a CDP error answered to a command whose result nobody awaits."""
+        if future.cancelled():
+            return
+        response = json.loads(future.result())
+        if 'error' in response:
+            logger.debug(
+                'Unawaited command %s (id=%s) failed: %s',
+                command.get('method'),
+                command.get('id'),
+                response['error'],
+            )
+
     async def execute_commands(
         self,
         commands: Sequence[Command[T_CommandParams, T_CommandResponse]],

@@ -16,6 +16,7 @@ from _waits import wait_for_element_text, wait_for_js_value
 
 from pydoll.browser.chromium import Chrome
 from pydoll.browser.tab import Tab
+from pydoll.commands import RuntimeCommands
 from pydoll.utils import get_browser_ws_address
 
 PAGES_DIR = Path(__file__).parent / 'pages' / 'oopif'
@@ -88,13 +89,19 @@ def cross_origin_servers():
     srv_b.shutdown()
 
 
+async def _evaluate_in_frame(element, expression: str):
+    """Evaluate in the main world of the frame an element belongs to, through its session."""
+    response = await element._execute_command(
+        RuntimeCommands.evaluate(expression=expression, return_by_value=True)
+    )
+    return response['result']['result'].get('value')
+
+
 class TestCrossOriginIframeResolution:
     """Finding elements inside cross-origin (OOPIF) iframes."""
 
     @pytest.mark.asyncio
-    async def test_find_element_in_cross_origin_iframe(
-        self, oopif_tab, cross_origin_servers
-    ):
+    async def test_find_element_in_cross_origin_iframe(self, oopif_tab, cross_origin_servers):
         port_a, port_b = cross_origin_servers
         url = f'http://127.0.0.1:{port_a}/oopif_main.html?port={port_b}'
 
@@ -108,9 +115,7 @@ class TestCrossOriginIframeResolution:
         assert await heading.text() == 'Cross-Origin Content'
 
     @pytest.mark.asyncio
-    async def test_click_button_in_cross_origin_iframe(
-        self, oopif_tab, cross_origin_servers
-    ):
+    async def test_click_button_in_cross_origin_iframe(self, oopif_tab, cross_origin_servers):
         port_a, port_b = cross_origin_servers
         url = f'http://127.0.0.1:{port_a}/oopif_main.html?port={port_b}'
 
@@ -124,6 +129,63 @@ class TestCrossOriginIframeResolution:
         assert await counter.text() == '0'
         await btn.click()
         await wait_for_element_text(counter, '1')
+
+    @pytest.mark.asyncio
+    async def test_elements_found_earlier_in_an_oopif_stay_usable_after_another_find(
+        self, oopif_tab, cross_origin_servers
+    ):
+        port_a, port_b = cross_origin_servers
+        tab = oopif_tab
+        await tab.go_to(_cross_site_main_url(port_a, port_b))
+
+        iframe = await tab.find(id='cross-origin-iframe', timeout=10)
+        btn = await iframe.find(id='oopif-btn', timeout=10)
+        counter = await iframe.find(id='oopif-btn-count', timeout=10)
+
+        assert counter._iframe_context is btn._iframe_context
+        assert await btn.is_visible()
+        await btn.click()
+        await wait_for_element_text(counter, '1')
+
+    @pytest.mark.asyncio
+    async def test_humanized_click_in_a_same_process_iframe_shares_the_tab_mouse(
+        self, oopif_tab, cross_origin_servers
+    ):
+        port_a, port_b = cross_origin_servers
+        tab = oopif_tab
+        await tab.go_to(f'http://127.0.0.1:{port_a}/oopif_main.html?port={port_b}')
+
+        iframe = await tab.find(id='cross-origin-iframe', timeout=10)
+        btn = await iframe.find(id='oopif-btn', timeout=10)
+        counter = await iframe.find(id='oopif-btn-count', timeout=10)
+
+        assert btn._input_mouse() is tab.mouse
+        await btn.click(humanize=True)
+        await wait_for_element_text(counter, '1')
+
+    @pytest.mark.asyncio
+    async def test_humanized_click_moves_a_mouse_inside_the_cross_origin_iframe(
+        self, oopif_tab, cross_origin_servers
+    ):
+        port_a, port_b = cross_origin_servers
+        tab = oopif_tab
+        await tab.go_to(_cross_site_main_url(port_a, port_b))
+
+        iframe = await tab.find(id='cross-origin-iframe', timeout=10)
+        btn = await iframe.find(id='oopif-btn', timeout=10)
+        counter = await iframe.find(id='oopif-btn-count', timeout=10)
+        await _evaluate_in_frame(
+            btn,
+            'window.__moves = 0; document.addEventListener("mousemove", () => { window.__moves++; })',
+        )
+
+        await btn.click(humanize=True)
+
+        await wait_for_element_text(counter, '1')
+        assert await _evaluate_in_frame(btn, 'window.__moves') > 2
+        frame_mouse = btn._input_mouse()
+        assert frame_mouse is not tab.mouse
+        assert frame_mouse is btn._iframe_context.mouse
 
 
 class TestNestedIframeInsideOopif:
@@ -148,9 +210,7 @@ class TestNestedIframeInsideOopif:
         assert await heading.text() == 'Nested Iframe Content'
 
     @pytest.mark.asyncio
-    async def test_type_text_in_nested_iframe_inside_oopif(
-        self, oopif_tab, cross_origin_servers
-    ):
+    async def test_type_text_in_nested_iframe_inside_oopif(self, oopif_tab, cross_origin_servers):
         """Type text into an input inside a nested iframe within an OOPIF."""
         port_a, port_b = cross_origin_servers
         url = f'http://127.0.0.1:{port_a}/oopif_main.html?port={port_b}'
@@ -178,9 +238,7 @@ class TestDataUrlIframeInsideOopif:
     """
 
     @pytest.mark.asyncio
-    async def test_find_element_in_data_iframe_inside_oopif(
-        self, oopif_tab, cross_origin_servers
-    ):
+    async def test_find_element_in_data_iframe_inside_oopif(self, oopif_tab, cross_origin_servers):
         port_a, port_b = cross_origin_servers
         url = _cross_site_main_url(port_a, port_b)
 
@@ -195,9 +253,7 @@ class TestDataUrlIframeInsideOopif:
         assert await heading.text() == 'Data Frame Content'
 
     @pytest.mark.asyncio
-    async def test_find_body_in_data_iframe_inside_oopif(
-        self, oopif_tab, cross_origin_servers
-    ):
+    async def test_find_body_in_data_iframe_inside_oopif(self, oopif_tab, cross_origin_servers):
         """The exact call from the bug report: find(tag_name='body')."""
         port_a, port_b = cross_origin_servers
         url = _cross_site_main_url(port_a, port_b)
@@ -212,9 +268,7 @@ class TestDataUrlIframeInsideOopif:
         assert 'Data Frame Content' in await body.text()
 
     @pytest.mark.asyncio
-    async def test_type_text_in_data_iframe_inside_oopif(
-        self, oopif_tab, cross_origin_servers
-    ):
+    async def test_type_text_in_data_iframe_inside_oopif(self, oopif_tab, cross_origin_servers):
         port_a, port_b = cross_origin_servers
         url = _cross_site_main_url(port_a, port_b)
 
@@ -233,9 +287,7 @@ class TestShadowRootInsideOopif:
     """Discovering and interacting with shadow roots inside OOPIFs."""
 
     @pytest.mark.asyncio
-    async def test_find_shadow_roots_inside_oopif(
-        self, oopif_tab, cross_origin_servers
-    ):
+    async def test_find_shadow_roots_inside_oopif(self, oopif_tab, cross_origin_servers):
         """find_shadow_roots(True) should discover shadow roots across OOPIFs."""
         port_a, port_b = cross_origin_servers
         url = f'http://127.0.0.1:{port_a}/oopif_main.html?port={port_b}'
@@ -254,9 +306,7 @@ class TestShadowRootInsideOopif:
         pytest.fail('Shadow root inside OOPIF not found via find_shadow_roots')
 
     @pytest.mark.asyncio
-    async def test_click_button_in_shadow_root_inside_oopif(
-        self, oopif_tab, cross_origin_servers
-    ):
+    async def test_click_button_in_shadow_root_inside_oopif(self, oopif_tab, cross_origin_servers):
         port_a, port_b = cross_origin_servers
         url = f'http://127.0.0.1:{port_a}/oopif_main.html?port={port_b}'
 
@@ -302,9 +352,7 @@ class TestIframeInsideShadowRootInsideOopif:
                 iframe = await sr.query('#shadow-iframe', timeout=10)
                 assert iframe.is_iframe
 
-                heading = await iframe.find(
-                    id='shadow-iframe-heading', timeout=10
-                )
+                heading = await iframe.find(id='shadow-iframe-heading', timeout=10)
                 assert await heading.text() == 'Shadow Iframe Content'
                 return
 
@@ -326,9 +374,7 @@ class TestIframeInsideShadowRootInsideOopif:
             html = await sr.inner_html()
             if 'Shadow content inside OOPIF' in html:
                 iframe = await sr.query('#shadow-iframe', timeout=10)
-                input_el = await iframe.find(
-                    id='shadow-iframe-input', timeout=10
-                )
+                input_el = await iframe.find(id='shadow-iframe-input', timeout=10)
                 await input_el.type_text('deep nested text')
                 await wait_for_js_value(input_el, 'this.value', 'deep nested text')
                 return

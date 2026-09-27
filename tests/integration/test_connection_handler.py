@@ -47,6 +47,23 @@ async def test_execute_command_returns_matching_response(cdp_server):
 
 
 @pytest.mark.asyncio
+async def test_execute_command_nowait_sends_in_order_and_leaves_nothing_pending(cdp_server):
+    cdp_server.set_result('Browser.getVersion', {'product': 'FakeChrome/1.0'})
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address)
+    try:
+        for _ in range(3):
+            await handler.execute_command_nowait({'method': 'Input.dispatchMouseEvent'})
+        result = await handler.execute_command({'method': 'Browser.getVersion'})
+        await _wait_until(lambda: not handler._command_manager._pending_commands)
+    finally:
+        await handler.close()
+
+    assert result['result'] == {'product': 'FakeChrome/1.0'}
+    methods = [c['method'] for c in cdp_server.received_commands]
+    assert methods[:4] == ['Input.dispatchMouseEvent'] * 3 + ['Browser.getVersion']
+
+
+@pytest.mark.asyncio
 async def test_execute_commands_sends_a_batch_in_order_and_returns_answers_in_order(cdp_server):
     cdp_server.set_result('Browser.getVersion', {'product': 'FakeChrome/1.0'})
     handler = ConnectionHandler(ws_address=cdp_server.ws_address)

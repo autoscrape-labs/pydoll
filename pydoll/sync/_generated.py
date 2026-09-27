@@ -132,7 +132,6 @@ from pydoll.protocol.input.types import MOUSE_BUTTON_MASK, MouseButton, MouseEve
 from pydoll.protocol.page.types import ScreenshotFormat, Viewport
 from pydoll.protocol.runtime.methods import CallFunctionOnResponse, EvaluateResponse, GetPropertiesResponse, SerializationOptions
 from pydoll.utils import PollInterval, decode_base64_to_bytes, extract_text_from_html, is_script_already_function
-from pydoll.interactions.mouse import Mouse as MouseType
 from pydoll.protocol.dom.methods import DescribeNodeResponse, GetBoxModelResponse, GetOuterHTMLResponse, ResolveNodeResponse
 from pydoll.protocol.dom.types import Quad
 from pydoll.protocol.page.methods import CaptureScreenshotResponse
@@ -1850,9 +1849,11 @@ class WebElement(SyncBase):
 
         The context includes: frame_id, document_url, execution_context_id,
         document_object_id and, for OOPIF targets, the session_id and
-        session_handler used for routing commands. The context is always freshly
-        resolved to avoid stale execution contexts after iframe navigations or
-        reloads. Non-iframe elements return None.
+        session_handler used for routing commands. A context resolved earlier is
+        reused while it still describes the frame's current document, so the
+        elements already found inside the frame keep a live session; after a
+        navigation or reload it is resolved afresh and the old one is closed.
+        Non-iframe elements return None.
 
         Returns:
             IFrameContext | None: Resolved iframe context or None for non-iframes.
@@ -2599,8 +2600,26 @@ class Mouse(SyncBase):
     and dragging with optional humanized simulation using Bezier curves,
     Fitts's Law timing, minimum-jerk velocity profiles, physiological
     tremor, and overshoot correction.
+
+    A mouse belongs to one CDP session: the tab's for the main document and
+    its same-process iframes, or an out-of-process iframe's own session, which
+    has its own viewport coordinates. Elements pick the mouse of their frame,
+    so the cursor position it tracks always lives in the coordinate space the
+    events are dispatched in. Intermediate humanized moves are sent without
+    waiting for their answers, so the cadence between two moves is the frame
+    interval rather than the frame interval plus a network round trip.
     """
     _impl: _MouseImpl
+
+    @property
+    def connection_handler(self) -> ConnectionHandler:
+        """The connection this mouse dispatches its events through."""
+        return mapping.from_impl(self._impl.connection_handler)
+
+    @property
+    def session_id(self) -> str | None:
+        """The flattened CDP session this mouse addresses, if any."""
+        return mapping.from_impl(self._impl.session_id)
 
     @property
     def timing(self) -> MouseTimingConfig:

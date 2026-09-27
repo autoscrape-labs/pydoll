@@ -12,7 +12,10 @@ from __future__ import annotations
 import pytest
 
 from pydoll.constants import By
+from pydoll.elements.shadow_root import ShadowRoot
 from pydoll.elements.web_element import WebElement
+from pydoll.interactions.iframe import IFrameContext
+from pydoll.interactions.mouse import Mouse, MouseTimingConfig
 from pydoll.exceptions import (
     ElementNotAFileInput,
     ElementNotInteractable,
@@ -424,3 +427,68 @@ async def test_double_click_sends_two_press_release_pairs_with_click_counts(fake
     ]
     assert all((e['x'], e['y']) == (50, 25) for e in events)
     assert events[0]['force'] == 0.5 and events[0]['buttons'] == 1
+
+
+FAST_MOUSE = MouseTimingConfig(
+    frame_interval=0.001,
+    frame_interval_variance=0.0,
+    min_duration=0.01,
+    max_duration=0.02,
+    micro_pause_probability=0.0,
+    pre_click_pause_min=0.0,
+    pre_click_pause_max=0.0,
+    click_hold_min=0.0,
+    click_hold_max=0.0,
+    overshoot_probability=0.0,
+)
+
+
+def _visible_with_box(conn) -> None:
+    conn.set_response('Runtime.callFunctionOn', {'result': {'value': True}})
+    conn.set_response('DOM.getBoxModel', {'model': {'content': [10, 10, 30, 10, 30, 50, 10, 50]}})
+
+
+@pytest.mark.asyncio
+async def test_an_element_in_an_out_of_process_frame_gets_a_mouse_bound_to_the_frame_session(
+    fake_conn,
+):
+    frame_conn = type(fake_conn)()
+    _visible_with_box(frame_conn)
+    tab_mouse = Mouse(fake_conn, timing=FAST_MOUSE)
+    element = WebElement('el-1', fake_conn, attributes_list=['tag_name', 'div'], mouse=tab_mouse)
+    element._iframe_context = IFrameContext(
+        frame_id='child', session_handler=frame_conn, session_id='child-session'
+    )
+
+    await element.hover(humanize=True)
+
+    frame_mouse = element._input_mouse()
+    assert frame_mouse is not tab_mouse
+    assert frame_mouse is element._iframe_context.mouse
+    assert frame_mouse.timing is tab_mouse.timing
+    moves = frame_conn.commands_for('Input.dispatchMouseEvent')
+    assert len(moves) > 2
+    assert {move['sessionId'] for move in moves} == {'child-session'}
+    assert (moves[-1]['params']['x'], moves[-1]['params']['y']) == (20, 30)
+    assert not fake_conn.commands_for('Input.dispatchMouseEvent')
+    assert tab_mouse._position == (0.0, 0.0)
+
+
+@pytest.mark.asyncio
+async def test_an_element_in_a_same_process_frame_shares_the_tab_mouse(fake_conn):
+    _visible_with_box(fake_conn)
+    tab_mouse = Mouse(fake_conn, timing=FAST_MOUSE)
+    element = WebElement('el-1', fake_conn, attributes_list=['tag_name', 'div'], mouse=tab_mouse)
+    element._iframe_context = IFrameContext(frame_id='child', execution_context_id=7)
+
+    assert element._input_mouse() is tab_mouse
+    await element.hover(humanize=True)
+    assert tab_mouse._position == (20, 30)
+    assert element._iframe_context.mouse is None
+
+
+def test_a_shadow_root_hands_the_host_mouse_to_its_elements(fake_conn):
+    tab_mouse = Mouse(fake_conn, timing=FAST_MOUSE)
+    host = WebElement('host', fake_conn, attributes_list=['tag_name', 'div'], mouse=tab_mouse)
+    assert ShadowRoot('shadow', fake_conn, host_element=host)._mouse is tab_mouse
+    assert ShadowRoot('shadow', fake_conn)._mouse is None

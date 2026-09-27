@@ -187,7 +187,7 @@ class Tab(FindElementsMixin):
         self._request: Request | None = None
         self._scroll: ScrollAPI | None = None
         self._keyboard: KeyboardAPI | None = None
-        self._mouse: MouseAPI = MouseAPI(self)
+        self._mouse: MouseAPI = MouseAPI(self._connection_handler)
         self._extraction_engine: ExtractionEngine | None = None
         logger.debug(
             'Tab initialized: target_id=%s, ws_address_set=%s, context_id=%s, port=%s',
