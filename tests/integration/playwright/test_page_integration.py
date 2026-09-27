@@ -470,10 +470,10 @@ class TestContext:
     async def test_context_init_script_and_default_timeout(self, pw_browser):
         context = await pw_browser.new_context()
         await context.add_init_script('window.__ctx = "yes"')
-        context.set_default_timeout(150)
         page = await context.new_page()
         await page.goto(page_url('test_core_simple.html'))
         assert await page.evaluate('() => window.__ctx') == 'yes'
+        context.set_default_timeout(150)
         with pytest.raises(TimeoutError, match='Timeout 150ms'):
             await page.locator('#nope').click()
         await context.close()
