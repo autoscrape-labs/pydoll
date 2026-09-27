@@ -12,16 +12,7 @@ from typing import Pattern
 
 TextMatch = str | Pattern[str]
 
-_test_id_attribute_name = 'data-testid'
-
-
-def test_id_attribute_name() -> str:
-    return _test_id_attribute_name
-
-
-def set_test_id_attribute_name(name: str) -> None:
-    global _test_id_attribute_name
-    _test_id_attribute_name = name
+DEFAULT_TEST_ID_ATTRIBUTE = 'data-testid'
 
 
 def escape_regex_flags(pattern: Pattern[str]) -> str:
@@ -59,9 +50,9 @@ def bool_to_js(value: bool) -> str:
     return 'true' if value else 'false'
 
 
-def get_by_test_id_selector(test_id: TextMatch) -> str:
+def get_by_test_id_selector(test_id: TextMatch, attribute_name: str) -> str:
     value = escape_for_attribute_selector(test_id, True)
-    return f'internal:testid=[{_test_id_attribute_name}={value}]'
+    return f'internal:testid=[{attribute_name}={value}]'
 
 
 def get_by_attribute_text_selector(

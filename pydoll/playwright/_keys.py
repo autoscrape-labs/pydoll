@@ -10,9 +10,9 @@ from __future__ import annotations
 
 import sys
 from dataclasses import dataclass
-from typing import cast
+from typing import TypedDict, cast
 
-from pydoll.protocol.input.types import KeyModifier
+from pydoll.protocol.input.types import KeyLocation, KeyModifier
 
 
 @dataclass(frozen=True)
@@ -26,7 +26,29 @@ class KeyDescription:
     shifted: bool = False
 
 
-_LAYOUT: dict[str, dict[str, object]] = {
+KEYPAD_LOCATION = 3
+
+
+class _KeyDefinition(TypedDict, total=False):
+    """One row of Playwright's US keyboard layout."""
+
+    key: str
+    keyCode: int
+    keyCodeWithoutLocation: int
+    location: int
+    text: str
+    shiftKey: str
+    shiftKeyCode: int
+
+
+def key_location(location: int) -> KeyLocation | None:
+    """CDP takes left and right as ``location``; the keypad travels as ``isKeypad``."""
+    if location in {KeyLocation.LEFT, KeyLocation.RIGHT}:
+        return KeyLocation(location)
+    return None
+
+
+_LAYOUT: dict[str, _KeyDefinition] = {
     'Escape': {'keyCode': 27, 'key': 'Escape'},
     'F1': {'keyCode': 112, 'key': 'F1'},
     'F2': {'keyCode': 113, 'key': 'F2'},
@@ -202,11 +224,11 @@ MODIFIER_BITS = {
 def _build() -> dict[str, KeyDescription]:
     result: dict[str, KeyDescription] = {}
     for code, definition in _LAYOUT.items():
-        key = str(definition['key'])
-        key_code = int(definition['keyCode'])
-        without_location = int(definition.get('keyCodeWithoutLocation', key_code))
-        location = int(definition.get('location', 0))
-        text = str(definition.get('text', key if len(key) == 1 else ''))
+        key = definition['key']
+        key_code = definition['keyCode']
+        without_location = definition.get('keyCodeWithoutLocation', key_code)
+        location = definition.get('location', 0)
+        text = definition.get('text', key if len(key) == 1 else '')
         description = KeyDescription(key, key_code, without_location, code, text, location)
         result.setdefault(code, description)
         if key not in result or location == 0:
@@ -215,11 +237,11 @@ def _build() -> dict[str, KeyDescription]:
             result.setdefault(alias, description)
         shift_key = definition.get('shiftKey')
         if shift_key is not None:
-            shifted_code = int(definition.get('shiftKeyCode', key_code))
+            shifted_code = definition.get('shiftKeyCode', key_code)
             shifted = KeyDescription(
-                str(shift_key), shifted_code, without_location, code, str(shift_key), location, True
+                shift_key, shifted_code, without_location, code, shift_key, location, True
             )
-            result.setdefault(str(shift_key), shifted)
+            result.setdefault(shift_key, shifted)
     return result
 
 
@@ -254,15 +276,15 @@ def describe_key(name: str, shift_pressed: bool) -> KeyDescription:
             return KeyDescription(name, 0, 0, '', name, 0)
         raise ValueError(f'Unknown key: "{name}"')
     if shift_pressed and not description.shifted:
-        layout = _LAYOUT.get(description.code, {})
+        layout = _LAYOUT.get(description.code, _KeyDefinition())
         shift_key = layout.get('shiftKey')
         if shift_key is not None:
             return KeyDescription(
-                str(shift_key),
-                int(layout.get('shiftKeyCode', description.key_code)),
+                shift_key,
+                layout.get('shiftKeyCode', description.key_code),
                 description.key_code_without_location,
                 description.code,
-                str(shift_key),
+                shift_key,
                 description.location,
                 True,
             )

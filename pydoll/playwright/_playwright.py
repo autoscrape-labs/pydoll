@@ -10,7 +10,7 @@ from pydoll.exceptions import PydollException
 from pydoll.playwright._browser import Browser, build_options
 from pydoll.playwright._browser_context import BrowserContext
 from pydoll.playwright._errors import Error, translate
-from pydoll.playwright._selectors import set_test_id_attribute_name
+from pydoll.playwright._selectors import DEFAULT_TEST_ID_ATTRIBUTE
 
 _LAUNCH_OPTION_NAMES = {
     'executable_path',
@@ -36,7 +36,8 @@ _LAUNCH_OPTION_NAMES = {
 class BrowserType:
     """``playwright.chromium``: launches or connects to a Chromium driven by pydoll."""
 
-    def __init__(self, name: str) -> None:
+    def __init__(self, name: str, selectors: Selectors) -> None:
+        self._selectors = selectors
         self._name = name
         self._owned: set[int] = set()
 
@@ -135,13 +136,7 @@ class BrowserType:
         await browser._initialize(initial_tab)
         context = await browser._default_browser_context(context_kwargs)
         await context._adopt(initial_tab, opener=None, emit_popup=False)
-        original_close = context.close
-
-        async def close_browser(reason: str | None = None) -> None:
-            await original_close(reason=reason)
-            await browser.close()
-
-        context.close = close_browser
+        context._owned_browser = browser
         return context
 
     async def connect_over_cdp(
@@ -177,6 +172,9 @@ class BrowserType:
 class Selectors:
     """``playwright.selectors``: only the test id attribute is configurable."""
 
+    def __init__(self) -> None:
+        self._test_id_attribute_name = DEFAULT_TEST_ID_ATTRIBUTE
+
     async def register(
         self,
         name: str,
@@ -187,17 +185,17 @@ class Selectors:
         raise Error('Custom selector engines are not supported by pydoll.playwright')
 
     def set_test_id_attribute(self, attribute_name: str) -> None:
-        set_test_id_attribute_name(attribute_name)
+        self._test_id_attribute_name = attribute_name
 
 
 class Playwright:
     """The object yielded by ``async_playwright()``."""
 
     def __init__(self) -> None:
-        self.chromium = BrowserType('chromium')
-        self.firefox = BrowserType('firefox')
-        self.webkit = BrowserType('webkit')
         self.selectors = Selectors()
+        self.chromium = BrowserType('chromium', self.selectors)
+        self.firefox = BrowserType('firefox', self.selectors)
+        self.webkit = BrowserType('webkit', self.selectors)
         self.devices: dict[str, dict[str, Any]] = dict(_DEVICES)
         self._browsers: list[Browser] = []
 

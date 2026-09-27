@@ -174,15 +174,7 @@ class Browser(EventEmitter):
     async def new_page(self, **options: Any) -> Page:
         context = await self.new_context(**options)
         page = await context.new_page()
-        original_close = page.close
-
-        async def close_with_context(
-            run_before_unload: bool | None = None, reason: str | None = None
-        ) -> None:
-            await original_close(run_before_unload=run_before_unload, reason=reason)
-            await context.close()
-
-        page.close = close_with_context
+        page._owned_context = context
         return page
 
     async def close(self, reason: str | None = None) -> None:

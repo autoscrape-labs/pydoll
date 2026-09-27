@@ -18,12 +18,12 @@ from pydoll.playwright._selectors import (
     get_by_text_selector,
     split_by_frame,
 )
+from pydoll.playwright._remote_values import parse_remote_value
 from pydoll.playwright._serialization import (
     HANDLE_KEY,
     call_arguments,
     evaluate_source,
     normalize_expression,
-    parse_remote_value,
     serialize_argument,
 )
 from pydoll.protocol.input.types import KeyModifier
@@ -63,10 +63,14 @@ class TestSelectors:
 
     def test_builders(self):
         assert get_by_text_selector('Hi') == 'internal:text="Hi"i'
-        assert get_by_test_id_selector('save') == 'internal:testid=[data-testid="save"s]'
-        assert get_by_role_selector('button', name='Save', exact=True, pressed=True, level=None) == (
-            'internal:role=button[name="Save"s][pressed=true]'
+        assert (
+            get_by_test_id_selector('save', 'data-testid')
+            == 'internal:testid=[data-testid="save"s]'
         )
+        assert get_by_test_id_selector('save', 'data-qa') == 'internal:testid=[data-qa="save"s]'
+        assert get_by_role_selector(
+            'button', name='Save', exact=True, pressed=True, level=None
+        ) == ('internal:role=button[name="Save"s][pressed=true]')
 
     def test_split_by_frame_respects_quotes(self):
         chunks = split_by_frame('iframe >> internal:control=enter-frame >> text="a >> b" >> nth=0')
@@ -105,7 +109,12 @@ class TestSerialization:
         assert normalize_expression('document.title') == 'document.title'
 
     def test_special_values(self):
-        tree, handles = serialize_argument({'n': math.nan, 'i': math.inf, 'z': -0.0, 'list': (1, 'a')})
+        tree, handles = serialize_argument({
+            'n': math.nan,
+            'i': math.inf,
+            'z': -0.0,
+            'list': (1, 'a'),
+        })
         assert tree['n'] == {'__pydoll_value__': 'NaN'}
         assert tree['i'] == {'__pydoll_value__': 'Infinity'}
         assert tree['z'] == {'__pydoll_value__': '-0'}
@@ -113,7 +122,10 @@ class TestSerialization:
         assert handles == []
 
     def test_dates_and_regex(self):
-        tree, _ = serialize_argument([datetime.datetime(2024, 1, 2, tzinfo=datetime.timezone.utc), re.compile('a+', re.I)])
+        tree, _ = serialize_argument([
+            datetime.datetime(2024, 1, 2, tzinfo=datetime.timezone.utc),
+            re.compile('a+', re.I),
+        ])
         assert tree[0] == {'__pydoll_date__': '2024-01-02T00:00:00Z'}
         assert tree[1] == {'__pydoll_regex__': ['a+', 'i']}
 

@@ -12,12 +12,10 @@ from __future__ import annotations
 import datetime
 import math
 import re
-from typing import TYPE_CHECKING, Any, Pattern
+from typing import Any, Pattern
 
+from pydoll.playwright._element_handle import JSHandle, PrimitiveHandle
 from pydoll.protocol.runtime.types import CallArgument
-
-if TYPE_CHECKING:
-    from pydoll.playwright._element_handle import JSHandle
 
 HANDLE_KEY = '__pydoll_handle__'
 VALUE_KEY = '__pydoll_value__'
@@ -163,8 +161,6 @@ def call_arguments(arg: Any) -> list[CallArgument]:
 
 
 def _serialize(value: Any, handles: list[JSHandle], visited: set[int]) -> Any:
-    from pydoll.playwright._element_handle import JSHandle, PrimitiveHandle
-
     if isinstance(value, PrimitiveHandle):
         return _serialize(value._value, handles, visited)
     if isinstance(value, JSHandle):
@@ -207,18 +203,3 @@ def _serialize(value: Any, handles: list[JSHandle], visited: set[int]) -> Any:
         visited.discard(id(value))
         return result_dict
     return {VALUE_KEY: 'undefined'}
-
-
-def parse_remote_value(remote_object: dict[str, Any]) -> Any:
-    """Convert a by-value ``RemoteObject`` into a Python value."""
-    unserializable = remote_object.get('unserializableValue')
-    if unserializable is not None:
-        return {
-            'NaN': math.nan,
-            'Infinity': math.inf,
-            '-Infinity': -math.inf,
-            '-0': -0.0,
-        }.get(unserializable, unserializable)
-    if remote_object.get('type') == 'undefined':
-        return None
-    return remote_object.get('value')

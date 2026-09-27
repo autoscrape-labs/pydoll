@@ -140,7 +140,7 @@ class Locator:
         return self.locator(get_by_role_selector(role, **kwargs))
 
     def get_by_test_id(self, test_id: TextMatch) -> Locator:
-        return self.locator(get_by_test_id_selector(test_id))
+        return self.locator(get_by_test_id_selector(test_id, self._frame._page._test_id_attribute))
 
     def get_by_text(self, text: TextMatch, exact: bool | None = None) -> Locator:
         return self.locator(get_by_text_selector(text, exact=exact))
@@ -493,7 +493,7 @@ class FrameLocator:
         return self.locator(get_by_role_selector(role, **kwargs))
 
     def get_by_test_id(self, test_id: TextMatch) -> Locator:
-        return self.locator(get_by_test_id_selector(test_id))
+        return self.locator(get_by_test_id_selector(test_id, self._frame._page._test_id_attribute))
 
     def get_by_text(self, text: TextMatch, exact: bool | None = None) -> Locator:
         return self.locator(get_by_text_selector(text, exact=exact))

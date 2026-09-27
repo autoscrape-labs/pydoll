@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any, Sequence
 from pydoll.commands import PageCommands
 from pydoll.playwright._element_handle import ElementHandle, JSHandle
 from pydoll.playwright._errors import Error
+from pydoll.playwright._remote_values import parse_remote_value
 
 if TYPE_CHECKING:
     from pydoll.playwright._page import Page
@@ -113,8 +114,6 @@ class _PrimitiveHandle:
         self._remote = remote
 
     async def json_value(self) -> Any:
-        from pydoll.playwright._serialization import parse_remote_value
-
         return parse_remote_value(self._remote)
 
     async def dispose(self) -> None:

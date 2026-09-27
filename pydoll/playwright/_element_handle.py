@@ -7,8 +7,9 @@ from typing import TYPE_CHECKING, Any, Sequence
 
 from pydoll.commands import RuntimeCommands
 from pydoll.elements.web_element import WebElement
+from pydoll.playwright._actions import fixed_resolver
 from pydoll.playwright._errors import Error
-from pydoll.playwright._serialization import parse_remote_value
+from pydoll.playwright._remote_values import parse_remote_value
 
 if TYPE_CHECKING:
     from pydoll.playwright._frame import Frame
@@ -306,8 +307,6 @@ class ElementHandle(JSHandle):
         return await self._frame.wait_for_selector(selector, root=self._element, **kwargs)
 
     def _resolver(self) -> Any:
-        from pydoll.playwright._actions import fixed_resolver
-
         return fixed_resolver(self._element, describe(self._element))
 
 

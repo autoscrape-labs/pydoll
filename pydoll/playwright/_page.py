@@ -7,10 +7,12 @@ import base64
 import inspect
 import json
 import logging
+import re
 import secrets
 import weakref
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Sequence
+from urllib.parse import urljoin
 
 from pydoll.browser.tab import Tab
 from pydoll.commands import DomCommands, EmulationCommands, PageCommands, RuntimeCommands
@@ -27,7 +29,7 @@ from pydoll.playwright._events import (
     schedule,
 )
 from pydoll.playwright._frame import Frame
-from pydoll.playwright._glob import URLMatch
+from pydoll.playwright._glob import URLMatch, URLMatcher
 from pydoll.playwright._input import Keyboard, Mouse, Touchscreen
 from pydoll.playwright._locator import FrameLocator, Locator
 from pydoll.playwright._navigation import NavigationTracker
@@ -42,10 +44,12 @@ from pydoll.playwright._network import (
     wait_for_matching,
 )
 from pydoll.playwright._selectors import TextMatch
+from pydoll.protocol.emulation.types import MediaFeature
 from pydoll.protocol.fetch.events import FetchEvent
 from pydoll.protocol.fetch.types import AuthChallengeResponseType
 from pydoll.protocol.network.events import NetworkEvent
 from pydoll.protocol.page.events import PageEvent
+from pydoll.protocol.page.types import ScreenshotFormat, Viewport
 from pydoll.protocol.runtime.events import RuntimeEvent
 
 logger = logging.getLogger(__name__)
@@ -86,6 +90,7 @@ class Page(EventEmitter):
         self._tab = tab
         self._opener = opener
         self._closed = False
+        self._owned_context: BrowserContext | None = None
         self._url = ''
         self._main_frame = Frame(self, tab)
         self._main_frame_id_cache: str | None = None
@@ -273,8 +278,6 @@ class Page(EventEmitter):
         ]
 
     def frame(self, name: str | None = None, url: URLMatch | None = None) -> Frame | None:
-        from pydoll.playwright._glob import URLMatcher
-
         matcher = URLMatcher(url, self._context._base_url) if url is not None else None
         for frame in self.frames:
             if name is not None and frame.name == name:
@@ -615,8 +618,6 @@ class Page(EventEmitter):
         referer: str | None = None,
     ) -> Response | None:
         if self._context._base_url and not _is_absolute(url):
-            from urllib.parse import urljoin
-
             url = urljoin(self._context._base_url, url)
         return await self._main_frame.goto(
             url, timeout=timeout, wait_until=wait_until, referer=referer
@@ -784,7 +785,7 @@ class Page(EventEmitter):
         forced_colors: str | None = None,
         contrast: str | None = None,
     ) -> None:
-        features = []
+        features: list[MediaFeature] = []
         for name, value in (
             ('prefers-color-scheme', color_scheme),
             ('prefers-reduced-motion', reduced_motion),
@@ -792,7 +793,7 @@ class Page(EventEmitter):
             ('prefers-contrast', contrast),
         ):
             if value is not None and value != 'null':
-                features.append({'name': name, 'value': value})
+                features.append(MediaFeature(name=name, value=value))
         await self._send(EmulationCommands.set_emulated_media(media=media or '', features=features))
 
     async def bring_to_front(self) -> None:
@@ -884,13 +885,19 @@ class Page(EventEmitter):
         image_type = type or (
             'jpeg' if str(path or '').lower().endswith(('.jpg', '.jpeg')) else 'png'
         )
-        capture_clip = dict(clip) if clip else None
-        if full_page and capture_clip is None:
+        capture_clip: Viewport | None = None
+        if clip:
+            capture_clip = Viewport(
+                x=clip['x'],
+                y=clip['y'],
+                width=clip['width'],
+                height=clip['height'],
+                scale=clip.get('scale', 1),
+            )
+        elif full_page:
             metrics = (await self._send(PageCommands.get_layout_metrics()))['result']
             size = metrics.get('cssContentSize') or metrics.get('contentSize')
-            capture_clip = {'x': 0, 'y': 0, 'width': size['width'], 'height': size['height']}
-        if capture_clip is not None:
-            capture_clip.setdefault('scale', 1)
+            capture_clip = Viewport(x=0, y=0, width=size['width'], height=size['height'], scale=1)
         return await self._capture_screenshot(
             type=image_type,
             quality=quality,
@@ -905,7 +912,7 @@ class Page(EventEmitter):
         *,
         type: str,
         quality: int | None,
-        clip: dict[str, float] | None,
+        clip: Viewport | None,
         omit_background: bool | None,
         path: str | Path | None,
         capture_beyond_viewport: bool,
@@ -918,7 +925,7 @@ class Page(EventEmitter):
         try:
             response = await self._send(
                 PageCommands.capture_screenshot(
-                    format=type,
+                    format=ScreenshotFormat(type),
                     quality=quality if type == 'jpeg' else None,
                     clip=clip,
                     capture_beyond_viewport=capture_beyond_viewport or None,
@@ -986,9 +993,15 @@ class Page(EventEmitter):
         except PydollException:
             pass
         self._on_target_closed()
+        if self._owned_context is not None:
+            await self._owned_context.close()
 
     async def _dispose(self) -> None:
         self._on_target_closed()
+
+    @property
+    def _test_id_attribute(self) -> str:
+        return self._context._browser._browser_type._selectors._test_id_attribute_name
 
     def locator(self, selector: str, **kwargs: Any) -> Locator:
         return self._main_frame.locator(selector, **kwargs)
@@ -1128,8 +1141,6 @@ def _inches(value: str | float | int) -> float:
 
 
 def _is_absolute(url: str) -> bool:
-    import re
-
     return bool(re.match(r'^[a-zA-Z][a-zA-Z0-9+\-.]*:', url))
 
 

@@ -346,3 +346,35 @@ class TestContext:
         await page.goto(page_url('test_core_simple.html'))
         assert await page.title()
         await context.close()
+
+    @pytest.mark.asyncio
+    async def test_closing_a_persistent_context_closes_its_browser(self, playwright, tmp_path):
+        context = await playwright.chromium.launch_persistent_context(
+            tmp_path / 'owned-profile', headless=True, args=['--no-sandbox']
+        )
+        browser = context.browser
+        assert browser is not None
+        assert browser.is_connected()
+        await context.close()
+        assert not browser.is_connected()
+
+    @pytest.mark.asyncio
+    async def test_closing_a_browser_page_closes_the_context_made_for_it(self, pw_browser):
+        before = len(pw_browser.contexts)
+        page = await pw_browser.new_page()
+        assert len(pw_browser.contexts) == before + 1
+        await page.close()
+        assert len(pw_browser.contexts) == before
+
+    @pytest.mark.asyncio
+    async def test_set_test_id_attribute_redirects_get_by_test_id(self, playwright, page):
+        await page.set_content(
+            '<button data-qa="save">By qa</button><button data-testid="save">By testid</button>'
+        )
+        assert await page.get_by_test_id('save').text_content() == 'By testid'
+        playwright.selectors.set_test_id_attribute('data-qa')
+        try:
+            assert await page.get_by_test_id('save').text_content() == 'By qa'
+        finally:
+            playwright.selectors.set_test_id_attribute('data-testid')
+        assert await page.get_by_test_id('save').text_content() == 'By testid'

@@ -6,7 +6,7 @@ import asyncio
 import inspect
 import logging
 import time
-from typing import Any, Awaitable, Callable, Generic, TypeAlias, TypeVar
+from typing import Any, Awaitable, Callable, Coroutine, Generic, TypeAlias, TypeVar
 
 from pydoll.playwright._errors import TimeoutError
 
@@ -23,7 +23,7 @@ def create_future(loop: asyncio.AbstractEventLoop) -> asyncio.Future[Any]:
     return loop.create_future()
 
 
-def schedule(loop: asyncio.AbstractEventLoop, coroutine: Awaitable[Any]) -> None:
+def schedule(loop: asyncio.AbstractEventLoop, coroutine: Coroutine[Any, Any, Any]) -> None:
     """Run ``coroutine`` on ``loop`` from the loop thread or from any other thread."""
     try:
         running = asyncio.get_running_loop()

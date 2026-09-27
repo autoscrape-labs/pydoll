@@ -7,9 +7,11 @@ from typing import TYPE_CHECKING, Literal, TypeAlias
 
 from pydoll.commands import InputCommands
 from pydoll.playwright._keys import (
+    KEYPAD_LOCATION,
     MODIFIER_NAMES,
     KeyDescription,
     describe_key,
+    key_location,
     modifier_bits,
     resolve_smart_modifier,
     split_key_string,
@@ -60,8 +62,8 @@ class Keyboard:
                 text=text or None,
                 unmodified_text=text or None,
                 auto_repeat=auto_repeat,
-                location=description.location or None,
-                is_keypad=description.location == 3,  # noqa: PLR2004
+                location=key_location(description.location),
+                is_keypad=description.location == KEYPAD_LOCATION,
             )
         )
 
@@ -77,7 +79,7 @@ class Keyboard:
                 key=description.key,
                 windows_virtual_key_code=description.key_code_without_location,
                 code=description.code,
-                location=description.location or None,
+                location=key_location(description.location),
             )
         )
 

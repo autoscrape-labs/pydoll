@@ -7,8 +7,11 @@ import base64
 import inspect
 import json
 import mimetypes
+import re
+from json import dumps as json_dumps
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, cast
+from urllib.parse import parse_qs
 
 from pydoll.commands import NetworkCommands
 from pydoll.playwright._errors import Error
@@ -100,8 +103,6 @@ class Request:
             return None
         content_type = self._headers.get('content-type', '')
         if 'application/x-www-form-urlencoded' in content_type:
-            from urllib.parse import parse_qs
-
             return {
                 key: values[0] if len(values) == 1 else values
                 for key, values in parse_qs(self._post_data).items()
@@ -490,9 +491,7 @@ class Route:
             response_headers.update(response.headers)
             payload = await response.body()
         if json is not None:
-            import json as _json
-
-            body = _json.dumps(json)
+            body = json_dumps(json)
             content_type = content_type or 'application/json'
         if path is not None:
             payload = Path(path).read_bytes()
@@ -632,6 +631,9 @@ class APIResponse:
         return json.loads(await self.text())
 
 
+_HANDLER_ARITY_WITH_REQUEST = 2
+
+
 class RouteEntry:
     """A registered route: matcher, handler and remaining invocations."""
 
@@ -647,7 +649,12 @@ class RouteEntry:
     async def handle(self, route: Route) -> bool:
         self.count += 1
         parameters = inspect.signature(self.handler).parameters
-        result = self.handler(route, route.request) if len(parameters) >= 2 else self.handler(route)  # noqa: PLR2004
+        if len(parameters) >= _HANDLER_ARITY_WITH_REQUEST:
+            with_request = cast(Callable[[Route, Request], Any], self.handler)
+            result = with_request(route, route.request)
+        else:
+            route_only = cast(Callable[[Route], Any], self.handler)
+            result = route_only(route)
         if inspect.isawaitable(result):
             await result
         return route._handled
@@ -704,11 +711,12 @@ async def wait_for_matching(
     deadline: Deadline,
 ) -> Any:
     future: asyncio.Future[Any] = page._loop.create_future()
-    url_matcher = (
-        URLMatcher(cast(URLMatch, matcher), page.context._base_url)
-        if isinstance(matcher, (str,)) or hasattr(matcher, 'pattern')
-        else None
-    )
+    url_matcher: URLMatcher | None = None
+    predicate: Callable[[Any], bool | Awaitable[bool]] | None = None
+    if isinstance(matcher, (str, re.Pattern)):
+        url_matcher = URLMatcher(matcher, page.context._base_url)
+    else:
+        predicate = matcher
 
     async def check(item: Any) -> None:
         if future.done():
@@ -716,8 +724,8 @@ async def wait_for_matching(
         try:
             if url_matcher is not None:
                 matched = url_matcher.matches(item.url)
-            else:
-                outcome = matcher(item)
+            elif predicate is not None:
+                outcome = predicate(item)
                 matched = await outcome if inspect.isawaitable(outcome) else bool(outcome)
         except Exception as error:
             future.set_exception(error)

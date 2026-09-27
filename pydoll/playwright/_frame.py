@@ -11,18 +11,20 @@ from __future__ import annotations
 import asyncio
 import json
 import weakref
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Sequence, TypeVar, cast
 
 from pydoll.browser.tab import Tab
 from pydoll.commands import DomCommands, PageCommands, RuntimeCommands
 from pydoll.elements.web_element import WebElement
 from pydoll.exceptions import PydollException
-from pydoll.playwright._actions import Actions
+from pydoll.playwright._actions import Actions, Resolver
 from pydoll.playwright._element_handle import ElementHandle, JSHandle, PrimitiveHandle
 from pydoll.playwright._errors import Error, translate
 from pydoll.playwright._events import Deadline
 from pydoll.playwright._injected import engine_call, engine_source
 from pydoll.playwright._locator import FilePayload, FrameLocator, Locator
+from pydoll.playwright._remote_values import parse_remote_value
 from pydoll.playwright._selectors import (
     TextMatch,
     get_by_alt_text_selector,
@@ -34,12 +36,10 @@ from pydoll.playwright._selectors import (
     get_by_title_selector,
     split_by_frame,
 )
-from pydoll.playwright._serialization import call_arguments, evaluate_source, parse_remote_value
+from pydoll.playwright._serialization import call_arguments, evaluate_source
 from pydoll.protocol.runtime.types import CallArgument
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from pydoll.playwright._network import Response
     from pydoll.playwright._page import Page
 
@@ -413,13 +413,16 @@ class Frame:
             self, object_id, remote.get('description') or remote.get('className') or 'JSHandle'
         )
 
+    async def _element_from_remote(self, remote: dict[str, Any]) -> ElementHandle:
+        element = await self._element_from_object_id(remote['objectId'])
+        handle = ElementHandle(self, element)
+        handle._object_id = remote['objectId']
+        self._main_ids[element] = remote['objectId']
+        return handle
+
     async def _handle_or_element(self, remote: dict[str, Any]) -> JSHandle:
         if remote.get('subtype') == 'node' and remote.get('objectId'):
-            element = await self._element_from_object_id(remote['objectId'])
-            handle = ElementHandle(self, element)
-            handle._object_id = remote['objectId']
-            self._main_ids[element] = remote['objectId']
-            return handle
+            return await self._element_from_remote(remote)
         if 'objectId' not in remote:
             return PrimitiveHandle(self, parse_remote_value(remote))
         return self._handle_from_remote_object(remote)
@@ -652,9 +655,7 @@ class Frame:
         type: str | None = None,
     ) -> ElementHandle:
         if path is not None:
-            from pathlib import Path as _Path
-
-            content = _Path(path).read_text(encoding='utf-8')
+            content = Path(path).read_text(encoding='utf-8')
         remote = await self._call(
             'function(url, content, type) {'
             ' return new Promise((resolve, reject) => {'
@@ -670,7 +671,7 @@ class Frame:
             by_value=False,
             await_promise=True,
         )
-        return await self._handle_or_element(remote)
+        return await self._element_from_remote(remote)
 
     async def add_style_tag(
         self,
@@ -679,9 +680,7 @@ class Frame:
         content: str | None = None,
     ) -> ElementHandle:
         if path is not None:
-            from pathlib import Path as _Path
-
-            content = _Path(path).read_text(encoding='utf-8')
+            content = Path(path).read_text(encoding='utf-8')
         remote = await self._call(
             'function(url, content) {'
             ' return new Promise((resolve, reject) => {'
@@ -697,7 +696,7 @@ class Frame:
             by_value=False,
             await_promise=True,
         )
-        return await self._handle_or_element(remote)
+        return await self._element_from_remote(remote)
 
     async def goto(
         self,
@@ -760,7 +759,7 @@ class Frame:
         return self.locator(get_by_role_selector(role, **kwargs))
 
     def get_by_test_id(self, test_id: TextMatch) -> Locator:
-        return self.locator(get_by_test_id_selector(test_id))
+        return self.locator(get_by_test_id_selector(test_id, self._page._test_id_attribute))
 
     def get_by_text(self, text: TextMatch, exact: bool | None = None) -> Locator:
         return self.locator(get_by_text_selector(text, exact=exact))
@@ -772,8 +771,6 @@ class Frame:
         return FrameLocator(self, selector)
 
     def _shortcut(self, selector: str, strict: bool | None) -> Any:
-        from pydoll.playwright._actions import Resolver
-
         async def find() -> WebElement | None:
             return await self._query_one(selector, strict=bool(strict))
 

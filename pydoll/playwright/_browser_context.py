@@ -8,6 +8,7 @@ import shutil
 import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Sequence
+from urllib.parse import urlparse
 
 from pydoll.browser.tab import Tab
 from pydoll.commands import BrowserCommands, EmulationCommands, PageCommands, RuntimeCommands
@@ -25,6 +26,7 @@ from pydoll.playwright._glob import URLMatch
 from pydoll.playwright._network import RouteEntry, RouteHandler, make_entry
 from pydoll.playwright._page import Page
 from pydoll.protocol.browser.types import DownloadBehavior, PermissionType
+from pydoll.protocol.network.types import CookieParam
 from pydoll.utils.user_agent_parser import UserAgentParser
 
 if TYPE_CHECKING:
@@ -59,6 +61,7 @@ class BrowserContext(EventEmitter):
         self._options = options
         self._pages: list[Page] = []
         self._closed = False
+        self._owned_browser: Browser | None = None
         self._default_timeout: float | None = None
         self._default_navigation_timeout: float | None = None
         self._routes: list[RouteEntry] = []
@@ -274,13 +277,7 @@ class BrowserContext(EventEmitter):
         return result
 
     async def add_cookies(self, cookies: Sequence[dict[str, Any]]) -> None:
-        params = []
-        for cookie in cookies:
-            entry: dict[str, Any] = {'name': cookie['name'], 'value': cookie['value']}
-            for key in ('url', 'domain', 'path', 'secure', 'httpOnly', 'sameSite', 'expires'):
-                if cookie.get(key) is not None and cookie.get(key) != -1:
-                    entry[key] = cookie[key]
-            params.append(entry)
+        params = [_cookie_param(cookie) for cookie in cookies]
         try:
             await self._browser._chrome.set_cookies(params, browser_context_id=self._context_id)
         except PydollException as error:
@@ -469,6 +466,8 @@ class BrowserContext(EventEmitter):
         if self._owns_downloads_dir:
             shutil.rmtree(self._downloads_dir, ignore_errors=True)
         self.emit('close', self)
+        if self._owned_browser is not None:
+            await self._owned_browser.close()
 
     def _on_page_closed(self, page: Page) -> None:
         self._pages = [item for item in self._pages if item is not page]
@@ -488,9 +487,32 @@ def _accept_language(locale: str) -> str:
     return ','.join(parts)
 
 
-def _cookie_matches(cookie: dict[str, Any], url: str) -> bool:
-    from urllib.parse import urlparse
+def _cookie_param(cookie: dict[str, Any]) -> CookieParam:
+    """The CDP cookie for a Playwright cookie dict; ``-1`` and ``None`` mean unset."""
 
+    def given(key: str) -> bool:
+        value = cookie.get(key)
+        return value is not None and value != -1
+
+    entry = CookieParam(name=cookie['name'], value=cookie['value'])
+    if given('url'):
+        entry['url'] = cookie['url']
+    if given('domain'):
+        entry['domain'] = cookie['domain']
+    if given('path'):
+        entry['path'] = cookie['path']
+    if given('secure'):
+        entry['secure'] = cookie['secure']
+    if given('httpOnly'):
+        entry['httpOnly'] = cookie['httpOnly']
+    if given('sameSite'):
+        entry['sameSite'] = cookie['sameSite']
+    if given('expires'):
+        entry['expires'] = cookie['expires']
+    return entry
+
+
+def _cookie_matches(cookie: dict[str, Any], url: str) -> bool:
     parsed = urlparse(url)
     domain = cookie['domain'].lstrip('.')
     host = parsed.hostname or ''
