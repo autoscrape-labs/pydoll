@@ -271,7 +271,8 @@ def _emit_method(method: Method, facade_name: str) -> str:
     doc = _docstring(node)
     lines: list[str] = []
     body_doc = f'        {doc}\n' if doc else ''
-    call = f'self._impl.{method.name}({_call_args(node)})'
+    receiver = "cast('Any', self._impl)" if method.overloads else 'self._impl'
+    call = f'{receiver}.{method.name}({_call_args(node)})'
     if method.kind == 'property':
         lines.append('    @property')
         lines.append(f'    def {method.name}(self){returns}:')
@@ -504,7 +505,7 @@ def render(target: Target) -> str:
         from __future__ import annotations
 
         from contextlib import AbstractContextManager
-        from typing import Any, overload
+        from typing import Any, cast, overload
 
         from pydoll.sync._runtime import SyncBase, mapping, run_sync
         '''

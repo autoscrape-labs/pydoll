@@ -93,5 +93,4 @@ post_test = 'coverage html'
 [tool.mypy]
 exclude = [
     "tests/",
-    "_generated\\.py$",
 ]

@@ -8,7 +8,7 @@ Regenerate with ``python scripts/generate_sync_api.py``.
 from __future__ import annotations
 
 from contextlib import AbstractContextManager
-from typing import Any, overload
+from typing import Any, cast, overload
 
 from pydoll.sync._runtime import SyncBase, mapping, run_sync
 
@@ -433,7 +433,7 @@ class Chrome(SyncBase):
         Note:
             For page-specific events, use Tab.on() instead.
         """
-        return mapping.from_impl(self._run(self._impl.on(event_name=mapping.to_impl(event_name), callback=mapping.wrap_handler(callback), temporary=mapping.to_impl(temporary))))
+        return mapping.from_impl(self._run(cast('Any', self._impl).on(event_name=mapping.to_impl(event_name), callback=mapping.wrap_handler(callback), temporary=mapping.to_impl(temporary))))
 
     def remove_callback(self, callback_id: int):
         """Remove callback from browser."""
@@ -737,7 +737,7 @@ class Edge(SyncBase):
         Note:
             For page-specific events, use Tab.on() instead.
         """
-        return mapping.from_impl(self._run(self._impl.on(event_name=mapping.to_impl(event_name), callback=mapping.wrap_handler(callback), temporary=mapping.to_impl(temporary))))
+        return mapping.from_impl(self._run(cast('Any', self._impl).on(event_name=mapping.to_impl(event_name), callback=mapping.wrap_handler(callback), temporary=mapping.to_impl(temporary))))
 
     def remove_callback(self, callback_id: int):
         """Remove callback from browser."""
@@ -1306,7 +1306,7 @@ class Tab(SyncBase):
             # Execute a script on an element to set its value
             await page.execute_script('argument.value = "Hello"', element)
         """
-        return mapping.from_impl(self._run(self._impl.execute_script(script=mapping.to_impl(script), element=mapping.to_impl(element), arguments=mapping.to_impl(arguments), object_group=mapping.to_impl(object_group), include_command_line_api=mapping.to_impl(include_command_line_api), silent=mapping.to_impl(silent), context_id=mapping.to_impl(context_id), return_by_value=mapping.to_impl(return_by_value), generate_preview=mapping.to_impl(generate_preview), user_gesture=mapping.to_impl(user_gesture), await_promise=mapping.to_impl(await_promise), execution_context_id=mapping.to_impl(execution_context_id), throw_on_side_effect=mapping.to_impl(throw_on_side_effect), timeout=mapping.to_impl(timeout), disable_breaks=mapping.to_impl(disable_breaks), repl_mode=mapping.to_impl(repl_mode), allow_unsafe_eval_blocked_by_csp=mapping.to_impl(allow_unsafe_eval_blocked_by_csp), unique_context_id=mapping.to_impl(unique_context_id), serialization_options=mapping.to_impl(serialization_options))))
+        return mapping.from_impl(self._run(cast('Any', self._impl).execute_script(script=mapping.to_impl(script), element=mapping.to_impl(element), arguments=mapping.to_impl(arguments), object_group=mapping.to_impl(object_group), include_command_line_api=mapping.to_impl(include_command_line_api), silent=mapping.to_impl(silent), context_id=mapping.to_impl(context_id), return_by_value=mapping.to_impl(return_by_value), generate_preview=mapping.to_impl(generate_preview), user_gesture=mapping.to_impl(user_gesture), await_promise=mapping.to_impl(await_promise), execution_context_id=mapping.to_impl(execution_context_id), throw_on_side_effect=mapping.to_impl(throw_on_side_effect), timeout=mapping.to_impl(timeout), disable_breaks=mapping.to_impl(disable_breaks), repl_mode=mapping.to_impl(repl_mode), allow_unsafe_eval_blocked_by_csp=mapping.to_impl(allow_unsafe_eval_blocked_by_csp), unique_context_id=mapping.to_impl(unique_context_id), serialization_options=mapping.to_impl(serialization_options))))
 
     def continue_request(self, request_id: str, url: Optional[str]=None, method: Optional[RequestMethod]=None, post_data: Optional[str]=None, headers: Optional[list[HeaderEntry]]=None, intercept_response: Optional[bool]=None):
         """
@@ -1391,7 +1391,7 @@ class Tab(SyncBase):
         Note:
             Corresponding domain must be enabled before events fire.
         """
-        return mapping.from_impl(self._run(self._impl.on(event_name=mapping.to_impl(event_name), callback=mapping.wrap_handler(callback), temporary=mapping.to_impl(temporary))))
+        return mapping.from_impl(self._run(cast('Any', self._impl).on(event_name=mapping.to_impl(event_name), callback=mapping.wrap_handler(callback), temporary=mapping.to_impl(temporary))))
 
     def remove_callback(self, callback_id: int):
         """Remove callback from tab."""
@@ -1438,7 +1438,7 @@ class Tab(SyncBase):
             WaitElementTimeout: If timeout specified and no elements appear in time.
             NotImplementedError: If called on a ShadowRoot (use query() with CSS instead).
         """
-        return mapping.from_impl(self._run(self._impl.find(id=mapping.to_impl(id), class_name=mapping.to_impl(class_name), name=mapping.to_impl(name), tag_name=mapping.to_impl(tag_name), text=mapping.to_impl(text), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc), **attributes)))
+        return mapping.from_impl(self._run(cast('Any', self._impl).find(id=mapping.to_impl(id), class_name=mapping.to_impl(class_name), name=mapping.to_impl(name), tag_name=mapping.to_impl(tag_name), text=mapping.to_impl(text), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc), **attributes)))
 
     @overload
     def query(self, expression: str, timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[True]=True) -> WebElement: ...
@@ -1471,7 +1471,7 @@ class Tab(SyncBase):
             WaitElementTimeout: If timeout specified and no elements appear in time.
             NotImplementedError: If called with XPath on a ShadowRoot.
         """
-        return mapping.from_impl(self._run(self._impl.query(expression=mapping.to_impl(expression), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc))))
+        return mapping.from_impl(self._run(cast('Any', self._impl).query(expression=mapping.to_impl(expression), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc))))
 
     def find_or_wait_element(self, by: By, value: str, timeout: int=0, find_all: bool=False, raise_exc: bool=True) -> Union[WebElement, list[WebElement], None]:
         """
@@ -1936,7 +1936,7 @@ class WebElement(SyncBase):
             WaitElementTimeout: If timeout specified and no elements appear in time.
             NotImplementedError: If called on a ShadowRoot (use query() with CSS instead).
         """
-        return mapping.from_impl(self._run(self._impl.find(id=mapping.to_impl(id), class_name=mapping.to_impl(class_name), name=mapping.to_impl(name), tag_name=mapping.to_impl(tag_name), text=mapping.to_impl(text), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc), **attributes)))
+        return mapping.from_impl(self._run(cast('Any', self._impl).find(id=mapping.to_impl(id), class_name=mapping.to_impl(class_name), name=mapping.to_impl(name), tag_name=mapping.to_impl(tag_name), text=mapping.to_impl(text), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc), **attributes)))
 
     @overload
     def query(self, expression: str, timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[True]=True) -> WebElement: ...
@@ -1969,7 +1969,7 @@ class WebElement(SyncBase):
             WaitElementTimeout: If timeout specified and no elements appear in time.
             NotImplementedError: If called with XPath on a ShadowRoot.
         """
-        return mapping.from_impl(self._run(self._impl.query(expression=mapping.to_impl(expression), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc))))
+        return mapping.from_impl(self._run(cast('Any', self._impl).query(expression=mapping.to_impl(expression), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc))))
 
     def find_or_wait_element(self, by: By, value: str, timeout: int=0, find_all: bool=False, raise_exc: bool=True) -> Union[WebElement, list[WebElement], None]:
         """
@@ -2063,7 +2063,7 @@ class ShadowRoot(SyncBase):
             WaitElementTimeout: If timeout specified and no elements appear in time.
             NotImplementedError: If called on a ShadowRoot (use query() with CSS instead).
         """
-        return mapping.from_impl(self._run(self._impl.find(id=mapping.to_impl(id), class_name=mapping.to_impl(class_name), name=mapping.to_impl(name), tag_name=mapping.to_impl(tag_name), text=mapping.to_impl(text), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc), **attributes)))
+        return mapping.from_impl(self._run(cast('Any', self._impl).find(id=mapping.to_impl(id), class_name=mapping.to_impl(class_name), name=mapping.to_impl(name), tag_name=mapping.to_impl(tag_name), text=mapping.to_impl(text), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc), **attributes)))
 
     @overload
     def query(self, expression: str, timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[True]=True) -> WebElement: ...
@@ -2096,7 +2096,7 @@ class ShadowRoot(SyncBase):
             WaitElementTimeout: If timeout specified and no elements appear in time.
             NotImplementedError: If called with XPath on a ShadowRoot.
         """
-        return mapping.from_impl(self._run(self._impl.query(expression=mapping.to_impl(expression), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc))))
+        return mapping.from_impl(self._run(cast('Any', self._impl).query(expression=mapping.to_impl(expression), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc))))
 
     def find_or_wait_element(self, by: By, value: str, timeout: int=0, find_all: bool=False, raise_exc: bool=True) -> Union[WebElement, list[WebElement], None]:
         """
