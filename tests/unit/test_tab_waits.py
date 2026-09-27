@@ -6,13 +6,14 @@ test drives the events by calling those callbacks, the way the browser would.
 
 from __future__ import annotations
 
+import asyncio
 import base64
 import re
 
 import pytest
 
 from pydoll.browser.tab import RequestHandle, ResponseHandle
-from pydoll.exceptions import WaitTimeout
+from pydoll.exceptions import ScriptEvaluationError, WaitTimeout
 
 
 def _fire(fake_conn, event_name: str, params: dict) -> None:
@@ -37,18 +38,76 @@ class TestWaitForUrl:
 
 class TestWaitForScript:
     @pytest.mark.asyncio
-    async def test_returns_the_first_truthy_value(self, fake_conn, fake_tab):
-        fake_conn.set_response('Runtime.evaluate', {'result': {'value': {'ready': True}}})
-        assert await fake_tab.wait_for_script('window.app', timeout=1) == {'ready': True}
+    async def test_returns_a_primitive_value_and_evaluates_by_reference(self, fake_conn, fake_tab):
+        fake_conn.set_response('Runtime.evaluate', {'result': {'type': 'string', 'value': 'Shop'}})
+        assert await fake_tab.wait_for_script('return document.title', timeout=1) == 'Shop'
         sent = fake_conn.last_command('Runtime.evaluate')['params']
-        assert sent['expression'] == 'window.app'
-        assert sent['returnByValue'] is True
+        assert sent['expression'].startswith('(function(){ return document.title')
+        assert sent['returnByValue'] is False
+        assert sent['awaitPromise'] is True
+        assert not fake_conn.commands_for('Runtime.releaseObject')
 
     @pytest.mark.asyncio
-    async def test_times_out_while_falsy(self, fake_conn, fake_tab):
-        fake_conn.set_response('Runtime.evaluate', {'result': {'value': 0}})
+    async def test_a_node_is_truthy_and_its_handle_is_released(self, fake_conn, fake_tab):
+        fake_conn.set_response(
+            'Runtime.evaluate',
+            {'result': {'type': 'object', 'subtype': 'node', 'className': 'HTMLDivElement', 'objectId': 'n1'}},
+        )
+        assert await fake_tab.wait_for_script("document.querySelector('#x')", timeout=1) is True
+        assert fake_conn.last_command('Runtime.releaseObject')['params']['objectId'] == 'n1'
+
+    @pytest.mark.asyncio
+    async def test_a_function_and_an_empty_object_are_truthy(self, fake_conn, fake_tab):
+        fake_conn.set_response('Runtime.evaluate', {'result': {'type': 'function', 'objectId': 'f1'}})
+        assert await fake_tab.wait_for_script('window.fn', timeout=1) is True
+        fake_conn.set_response('Runtime.evaluate', {'result': {'type': 'object', 'className': 'Object', 'objectId': 'o1'}})
+        assert await fake_tab.wait_for_script('({})', timeout=1) is True
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        'remote',
+        [
+            {'type': 'undefined'},
+            {'type': 'object', 'subtype': 'null', 'value': None},
+            {'type': 'number', 'value': 0},
+            {'type': 'string', 'value': ''},
+            {'type': 'boolean', 'value': False},
+            {'type': 'number', 'unserializableValue': 'NaN', 'description': 'NaN'},
+            {'type': 'number', 'unserializableValue': '-0', 'description': '-0'},
+            {'type': 'bigint', 'unserializableValue': '0n', 'description': '0n'},
+        ],
+    )
+    async def test_times_out_while_falsy(self, fake_conn, fake_tab, remote):
+        fake_conn.set_response('Runtime.evaluate', {'result': remote})
         with pytest.raises(WaitTimeout):
             await fake_tab.wait_for_script('window.count', timeout=0.05)
+        assert not fake_conn.commands_for('Runtime.releaseObject')
+
+    @pytest.mark.asyncio
+    async def test_a_thrown_error_raises_at_once_with_its_text(self, fake_conn, fake_tab):
+        fake_conn.set_response(
+            'Runtime.evaluate',
+            {
+                'result': {'type': 'object', 'subtype': 'error', 'objectId': 'e1'},
+                'exceptionDetails': {
+                    'exceptionId': 1,
+                    'text': 'Uncaught',
+                    'lineNumber': 0,
+                    'columnNumber': 0,
+                    'exception': {
+                        'type': 'object',
+                        'subtype': 'error',
+                        'objectId': 'e1',
+                        'description': 'ReferenceError: nothingHere is not defined\n    at <anonymous>:1:1',
+                    },
+                },
+            },
+        )
+        with pytest.raises(ScriptEvaluationError) as raised:
+            await fake_tab.wait_for_script('nothingHere.value', timeout=5)
+        assert raised.value.error_text == 'ReferenceError: nothingHere is not defined'
+        assert len(fake_conn.commands_for('Runtime.evaluate')) == 1
+        assert fake_conn.last_command('Runtime.releaseObject')['params']['objectId'] == 'e1'
 
 
 class TestWaitForAbsence:
@@ -202,6 +261,66 @@ class TestExpectResponse:
         assert not fake_conn.commands_for('Network.getResponseBody')
 
     @pytest.mark.asyncio
+    @pytest.mark.parametrize('status', [204, 205, 304])
+    async def test_a_bodiless_status_completes_with_an_empty_body(self, fake_conn, fake_tab, status):
+        """Chrome reports a bodiless response as ``loadingFailed net::ERR_ABORTED``."""
+        async with fake_tab.expect_response('**/api/empty') as response:
+            _fire(
+                fake_conn,
+                'Network.responseReceived',
+                {'requestId': 'r5', 'response': {'url': 'https://a.test/api/empty', 'status': status, 'headers': {}}},
+            )
+            _fire(
+                fake_conn,
+                'Network.loadingFailed',
+                {'requestId': 'r5', 'errorText': 'net::ERR_ABORTED', 'canceled': True},
+            )
+        assert response.status == status
+        assert response.body() == b''
+        assert response.text() == ''
+        assert not fake_conn.commands_for('Network.getResponseBody')
+
+    @pytest.mark.asyncio
+    async def test_a_bodiless_status_that_finishes_normally_skips_the_body_read(self, fake_conn, fake_tab):
+        async with fake_tab.expect_response('**/api/empty') as response:
+            _fire(
+                fake_conn,
+                'Network.responseReceived',
+                {'requestId': 'r6', 'response': {'url': 'https://a.test/api/empty', 'status': 204, 'headers': {}}},
+            )
+            _fire(fake_conn, 'Network.loadingFinished', {'requestId': 'r6'})
+        assert response.ok
+        assert response.body() == b''
+        assert not fake_conn.commands_for('Network.getResponseBody')
+
+    @pytest.mark.asyncio
+    async def test_an_aborted_load_with_a_normal_status_still_has_no_body(self, fake_conn, fake_tab):
+        async with fake_tab.expect_response('**/api/data') as response:
+            _fire(
+                fake_conn,
+                'Network.responseReceived',
+                {'requestId': 'r7', 'response': {'url': 'https://a.test/api/data', 'status': 200, 'headers': {}}},
+            )
+            _fire(fake_conn, 'Network.loadingFailed', {'requestId': 'r7', 'errorText': 'net::ERR_ABORTED', 'canceled': True})
+        with pytest.raises(WaitTimeout):
+            response.body()
+
+    @pytest.mark.asyncio
+    async def test_the_finished_callback_ignores_other_requests_before_a_capture(self, fake_conn, fake_tab):
+        """A ``loadingFinished`` for an unrelated request must not touch the pending future."""
+        async with fake_tab.expect_response('**/api/data') as response:
+            _fire(fake_conn, 'Network.loadingFinished', {'requestId': 'other'})
+            _fire(
+                fake_conn,
+                'Network.responseReceived',
+                {'requestId': 'r8', 'response': {'url': 'https://a.test/api/data', 'status': 200, 'headers': {}}},
+            )
+            _fire(fake_conn, 'Network.loadingFinished', {'requestId': 'other'})
+            fake_conn.set_response('Network.getResponseBody', {'body': 'ok', 'base64Encoded': False})
+            _fire(fake_conn, 'Network.loadingFinished', {'requestId': 'r8'})
+        assert response.text() == 'ok'
+
+    @pytest.mark.asyncio
     async def test_times_out_when_no_response_matches(self, fake_conn, fake_tab):
         with pytest.raises(WaitTimeout):
             async with fake_tab.expect_response('**/api/data', timeout=0.05):
@@ -228,6 +347,16 @@ class TestExpectNavigation:
             async with fake_tab.expect_navigation(url='**/checkout', timeout=0.05):
                 _fire(fake_conn, 'Page.frameNavigated', {'frame': {'id': 'main', 'url': 'https://a.test/cart'}})
                 _fire(fake_conn, 'Page.loadEventFired', {'timestamp': 1})
+
+    @pytest.mark.asyncio
+    async def test_the_whole_wait_is_bounded_by_one_timeout(self, fake_conn, fake_tab):
+        """A navigation that never loads fails after ``timeout``, not after twice that."""
+        loop = asyncio.get_running_loop()
+        started = loop.time()
+        with pytest.raises(WaitTimeout):
+            async with fake_tab.expect_navigation(timeout=0.2):
+                _fire(fake_conn, 'Page.frameNavigated', {'frame': {'id': 'main', 'url': 'https://a.test/next'}})
+        assert loop.time() - started < 0.35
 
     @pytest.mark.asyncio
     async def test_a_load_event_before_the_navigation_does_not_count(self, fake_conn, fake_tab):

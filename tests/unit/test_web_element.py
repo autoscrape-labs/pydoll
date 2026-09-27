@@ -366,6 +366,16 @@ async def test_wait_until_hidden_detached_and_enabled(fake_conn, make_element):
 
 
 @pytest.mark.asyncio
+async def test_wait_until_with_no_timeout_checks_once_and_raises(fake_conn, make_element):
+    element = make_element()
+    fake_conn.set_response('Runtime.callFunctionOn', {'result': {'value': True}})
+    before = len(fake_conn.commands_for('Runtime.callFunctionOn'))
+    with pytest.raises(WaitElementTimeout):
+        await element.wait_until(is_hidden=True, is_detached=True)
+    assert len(fake_conn.commands_for('Runtime.callFunctionOn')) - before == 2
+
+
+@pytest.mark.asyncio
 async def test_wait_until_times_out_and_requires_a_condition(fake_conn, make_element):
     element = make_element()
     fake_conn.set_response('Runtime.callFunctionOn', {'result': {'value': True}})

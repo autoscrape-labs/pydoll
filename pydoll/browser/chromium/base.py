@@ -40,14 +40,14 @@ from pydoll.protocol.fetch.events import FetchEvent
 from pydoll.protocol.fetch.types import AuthChallengeResponseType
 from pydoll.protocol.target.events import TargetEvent
 from pydoll.protocol.target.types import FilterEntry
-from pydoll.utils import find_free_port
+from pydoll.utils import PollInterval, find_free_port
 from pydoll.utils.fingerprint_builder import build_fingerprint_worker_js
 from pydoll.utils.user_agent_parser import ParsedUserAgent, UserAgentParser
 
 if TYPE_CHECKING:
     from tempfile import TemporaryDirectory
 
-    from pydoll.browser.interfaces import BrowserOptionsManager
+    from pydoll.browser.interfaces import BrowserOptionsManager, Options
     from pydoll.protocol.base import Command, Response, T_CommandParams, T_CommandResponse
     from pydoll.protocol.browser.methods import (
         GetVersionResponse,
@@ -111,7 +111,7 @@ class Browser(ABC):  # noqa: PLR0904
             Call start() to actually launch the browser.
         """
         self._validate_connection_port(connection_port)
-        self.options = options_manager.initialize_options()
+        self.options: Options = options_manager.initialize_options()
         self._proxy_manager = proxy_manager or ProxyManager(self.options)
         self._connection_port = connection_port if connection_port else find_free_port()
         self._browser_process_manager = browser_process_manager or BrowserProcessManager()
@@ -989,18 +989,20 @@ class Browser(ABC):  # noqa: PLR0904
     async def _is_browser_running(self, timeout: float = 10) -> bool:
         """Check if browser process is running and CDP endpoint is responsive.
 
-        Polls the endpoint every 20 ms until it answers or ``timeout`` seconds
-        elapse, so a browser that is up after 300 ms is not made to wait a
-        full second.
+        Polls the endpoint until it answers or ``timeout`` seconds elapse. The
+        pause starts at 20 ms, so a browser that is up after 300 ms is not made
+        to wait a full second, and backs off to one second, so a browser that
+        is gone costs a handful of connection attempts instead of hundreds.
         """
         loop = asyncio.get_running_loop()
         deadline = loop.time() + timeout
+        interval = PollInterval(cap=1.0)
         while True:
             if await self._connection_handler.ping():
                 return True
             if loop.time() >= deadline:
                 return False
-            await asyncio.sleep(0.02)
+            await interval.wait()
 
     async def execute_command(
         self, command: Command[T_CommandParams, T_CommandResponse], timeout: int = 60

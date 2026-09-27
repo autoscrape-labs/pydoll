@@ -15,6 +15,7 @@ from pydoll.browser.managers.browser_options_manager import ChromiumOptionsManag
 from pydoll.browser.options import ChromiumOptions
 from pydoll.browser.tab import Tab
 from pydoll.exceptions import InvalidOptionsObject
+from tests.unit.conftest import FakeConnection
 
 
 class _FakeProcess:
@@ -89,3 +90,26 @@ async def test_browser_start_and_stop_orchestrate_process_and_connection(fake_co
 
     await browser.stop()
     assert fake_process.terminated is True
+
+
+class _DeadConnection(FakeConnection):
+    """A connection whose endpoint never answers, counting the attempts."""
+
+    def __init__(self):
+        super().__init__()
+        self.pings = 0
+
+    async def ping(self) -> bool:
+        self.pings += 1
+        return False
+
+
+@pytest.mark.asyncio
+async def test_readiness_poll_backs_off_so_a_dead_browser_costs_few_attempts():
+    """``stop()`` and ``__aexit__`` poll the endpoint through this check; a fixed
+    20 ms pause made a browser that was already gone cost hundreds of connects."""
+    connection = _DeadConnection()
+    browser = Chrome()
+    browser._connection_handler = connection
+    assert await browser._is_browser_running(timeout=0.5) is False
+    assert 2 <= connection.pings <= 10

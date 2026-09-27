@@ -170,6 +170,24 @@ class EventsManager:
         """Add network event to logs (bounded deque keeps the last MAX_NETWORK_LOGS)."""
         self.network_logs.append(event_data)
 
+    @staticmethod
+    def _call_sync_callback(
+        cb_id: int, callback: Callable[[CDPEvent], object], event_data: CDPEvent
+    ):
+        """Run a synchronous callback, keeping a ``CancelledError`` it raises from
+        escaping as the worker's own cancellation.
+
+        A plain function cannot be the target of a task cancellation, so a
+        ``CancelledError`` here comes from the callback itself, typically from
+        reading a future that ``asyncio.wait_for`` already cancelled. Letting it
+        propagate would kill the event worker and stall every later event until
+        the socket reconnects, so it is logged like any other callback error.
+        """
+        try:
+            callback(event_data)
+        except asyncio.CancelledError:
+            logger.error('Callback %s raised CancelledError (a cancelled future was read)', cb_id)
+
     async def _trigger_callbacks(self, event_name: str, event_data: CDPEvent):
         """Trigger all registered callbacks for event, removing temporary ones."""
         callbacks_to_remove = []
@@ -180,9 +198,9 @@ class EventsManager:
                     if asyncio.iscoroutinefunction(cb_data['callback']):
                         await cb_data['callback'](event_data)
                     else:
-                        cb_data['callback'](event_data)
+                        self._call_sync_callback(cb_id, cb_data['callback'], event_data)
                 except Exception as e:
-                    logger.error(f'Error in callback {cb_id}: {str(e)}')
+                    logger.error('Error in callback %s: %s', cb_id, e)
 
                 if cb_data['temporary']:
                     callbacks_to_remove.append(cb_id)

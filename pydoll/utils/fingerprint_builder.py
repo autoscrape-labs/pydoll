@@ -552,6 +552,7 @@ const declared1 = %s;
 const declared2 = %s;
 const precisionOverrides = %s;
 const formatsByExtension = %s;
+const extensionOwnedParams = new Set(%s);
 const HIDDEN_EXT = 'WEBGL_debug_shaders';
 const _hasOwn = (obj, key) => _apply(Object.prototype.hasOwnProperty, obj, [key]);
 
@@ -562,7 +563,10 @@ function patchContext(proto, extOverrides, extOrder, declared) {
   const fakes = new WeakMap();
   const enabledFakes = new WeakMap();
   const fakeParams = new WeakMap();
-  const buildFake = (name) => {
+  const interfaces = new Map();
+  const origIsContextLost = proto.isContextLost;
+  const lost = (ctx) => _apply(origIsContextLost, ctx, []);
+  const buildInterface = (name) => {
     const spec = declared[name];
     const iface = Object.create(Object.prototype);
     for (const key in spec.constants) {
@@ -579,7 +583,11 @@ function patchContext(proto, extOverrides, extOrder, declared) {
     }
     Object.defineProperty(iface, Symbol.toStringTag,
       {value: spec.interface, writable: false, enumerable: false, configurable: true});
-    return Object.create(iface);
+    return iface;
+  };
+  const buildFake = (name) => {
+    if (!interfaces.has(name)) interfaces.set(name, buildInterface(name));
+    return Object.create(interfaces.get(name));
   };
   const fakeFor = (ctx, name) => {
     let byName = fakes.get(ctx);
@@ -616,11 +624,12 @@ function patchContext(proto, extOverrides, extOrder, declared) {
   const origGetParameter = proto.getParameter;
   _patchM(proto, 'getParameter', function getParameter(pname) {
     const fp = fakeParams.get(this);
-    if (fp !== undefined && fp.has(pname)) {
+    if (fp !== undefined && fp.has(pname) && !lost(this)) {
       _apply(origGetParameter, this, [GL_VENDOR]);
       return fp.get(pname);
     }
     const real = _apply(origGetParameter, this, [pname]);
+    if (lost(this)) return real;
     if (pname === VENDOR) return spoofVendor;
     if (pname === RENDERER) return spoofRenderer;
     if (pname === COMPRESSED_FORMATS && ArrayBuffer.isView(real)) {
@@ -629,6 +638,7 @@ function patchContext(proto, extOverrides, extOrder, declared) {
     }
     const override = paramOverrides[pname];
     if (override === undefined) return real;
+    if (real === null && extensionOwnedParams.has(pname)) return real;
     return ArrayBuffer.isView(override) ? override.slice() : override;
   });
 
@@ -648,9 +658,12 @@ function patchContext(proto, extOverrides, extOrder, declared) {
   const origGetExtension = proto.getExtension;
   const origGetSupportedExtensions = proto.getSupportedExtensions;
   _patchM(proto, 'getExtension', function getExtension(name) {
+    if (!allowed(name)) {
+      _apply(origGetSupportedExtensions, this, []);
+      return null;
+    }
     const real = _apply(origGetExtension, this, [name]);
-    if (!allowed(name)) return null;
-    if (real !== null) return real;
+    if (real !== null || lost(this)) return real;
     return fakeable(name) ? fakeFor(this, name) : null;
   });
   _patchM(proto, 'getSupportedExtensions', function getSupportedExtensions() {
@@ -729,10 +742,6 @@ _SHADER_TYPE_MAP: dict[str, int] = {
     'fragment': 0x8B30,
 }
 
-# Chrome enables an extension the moment getExtension asks for it, even when the
-# profile hides the extension from the context, and an enabled extension adds
-# its formats to that list: without filtering, a claimed D3D11 GPU still reports
-# the ASTC/ETC/PVRTC formats of the host's real GPU.
 _COMPRESSED_TEXTURE_FORMATS: dict[str, tuple[tuple[int, int], ...]] = {
     'WEBGL_compressed_texture_s3tc': ((0x83F0, 0x83F3),),
     'WEBKIT_WEBGL_compressed_texture_s3tc': ((0x83F0, 0x83F3),),
@@ -805,7 +814,9 @@ def _build_webgl_extension_js(
     names into WebGL2. ``WEBGL_debug_shaders`` never enters the list, even
     when a capture from a real machine carries it. The specs carry a profile
     limit over the registry default when the profile sets one
-    (``max_texture_max_anisotropy``).
+    (``max_texture_max_anisotropy``), and list an interface's methods by name,
+    the order Chrome installs an interface's operations in (the registry keeps
+    IDL order).
     """
     if names is None:
         return 'null', '{}'
@@ -829,7 +840,7 @@ def _build_webgl_extension_js(
         declared[name] = {
             'interface': spec['interface'],
             'constants': spec['constants'],
-            'methods': [list(method) for method in spec['methods']],
+            'methods': [list(method) for method in sorted(spec['methods'])],
             'returns': {
                 method: EXTENSION_METHOD_RETURNS[method]
                 for method, _ in spec['methods']
@@ -841,8 +852,23 @@ def _build_webgl_extension_js(
     return json.dumps(known + unknown), json.dumps(declared)
 
 
+def _extension_owned_params_js() -> str:
+    """Build the JS array of the ``getParameter`` names an extension unlocks."""
+    return json.dumps(
+        sorted({pname for params in EXTENSION_PARAMETER_DEFAULTS.values() for pname in params})
+    )
+
+
 def _build_compressed_formats_js() -> str:
-    """Build the JS map of extension name to the format enums it advertises."""
+    """Build the JS map of extension name to the format enums it advertises.
+
+    Chrome enables an extension the moment ``getExtension`` asks for it, and
+    an enabled extension adds its formats to ``COMPRESSED_TEXTURE_FORMATS``.
+    The override never asks Chrome for a hidden extension, but a context
+    created before the override ran (or a ``WEBKIT_``-prefixed alias) can
+    still carry them: without this map to filter by, a claimed D3D11 GPU
+    reports the ASTC, ETC or PVRTC formats of the host's real GPU.
+    """
     expanded = {
         name: [code for low, high in ranges for code in range(low, high + 1)]
         for name, ranges in _COMPRESSED_TEXTURE_FORMATS.items()
@@ -882,16 +908,22 @@ def _build_webgl_js(webgl: WebGLProfile) -> str:
     Chromium interface definition in ``pydoll.utils.webgl_extensions`` when
     ``getExtension`` asks for it (constants, methods, ``Symbol.toStringTag``,
     the compressed formats it adds and the ``getParameter`` limits it
-    unlocks). Before it is enabled, its parameters answer like real Chrome, an
-    ``INVALID_ENUM``. ``WEBGL_debug_shaders`` is always hidden because its
-    translated shader source names the real backend.
+    unlocks). Constructed objects of one extension share one interface
+    prototype per realm, as Chrome's do, so their methods are the same
+    functions across contexts. Before an extension is enabled, its parameters
+    answer like real Chrome, ``null`` and an ``INVALID_ENUM``; a profile limit
+    for such a parameter (``max_texture_max_anisotropy``) only applies once
+    the real context answers it. A hidden extension is never requested from
+    Chrome, which would enable it and unlock its parameters, so the receiver
+    check goes through ``getSupportedExtensions`` instead. A lost context
+    answers ``null`` everywhere, the way the real one does.
+    ``WEBGL_debug_shaders`` is always hidden because its translated shader
+    source names the real backend.
 
-    ``COMPRESSED_TEXTURE_FORMATS`` follows the same lists: the native
-    ``getExtension`` call the override makes before hiding an extension still
-    enables it inside Chrome, which appends the extension's formats to that
-    parameter, so the array is filtered back to the formats of the extensions
-    the context advertises, and the formats of the constructed extensions are
-    appended in the order they were enabled, as Chrome does.
+    ``COMPRESSED_TEXTURE_FORMATS`` follows the same lists: the array is
+    filtered back to the formats of the extensions the context advertises, and
+    the formats of the constructed extensions are appended in the order they
+    were enabled, as Chrome does.
     """
     param_overrides = _webgl_param_overrides(webgl)
     param_js = _build_webgl_param_js(webgl)
@@ -917,6 +949,7 @@ def _build_webgl_js(webgl: WebGLProfile) -> str:
         declared2_js,
         precision_js,
         _build_compressed_formats_js(),
+        _extension_owned_params_js(),
     )
 
 

@@ -80,10 +80,22 @@ def test_a_constructed_extension_matches_what_chrome_exposes():
         ('drawElementsInstancedANGLE', 5),
         ('vertexAttribDivisorANGLE', 2),
     ]
-    assert WEBGL_EXTENSIONS['OES_vertex_array_object']['methods'] == [
+    assert WEBGL_EXTENSIONS['WEBGL_blend_func_extended']['methods'] == []
+
+
+def test_the_registry_keeps_idl_order_and_sorting_gives_chromes_method_order():
+    """Chrome 152 exposes ``OES_vertex_array_object`` as bind, create, delete, is:
+    operations are installed by name, not in IDL order, so the builder sorts."""
+    methods = WEBGL_EXTENSIONS['OES_vertex_array_object']['methods']
+    assert methods == [
         ('createVertexArrayOES', 0),
         ('deleteVertexArrayOES', 0),
         ('isVertexArrayOES', 0),
         ('bindVertexArrayOES', 0),
     ]
-    assert WEBGL_EXTENSIONS['WEBGL_blend_func_extended']['methods'] == []
+    assert [name for name, _ in sorted(methods)] == [
+        'bindVertexArrayOES',
+        'createVertexArrayOES',
+        'deleteVertexArrayOES',
+        'isVertexArrayOES',
+    ]

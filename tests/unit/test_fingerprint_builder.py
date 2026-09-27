@@ -287,6 +287,38 @@ class TestSections:
         assert declared['WEBGL_draw_buffers']['params'][str(0x8CDF)] == 8
         assert declared['WEBGL_draw_buffers']['methods'] == [['drawBuffersWEBGL', 1]]
 
+    def test_webgl_constructed_methods_are_emitted_by_name_as_chrome_installs_them(self):
+        js = build_fingerprint_js({
+            'webgl': {
+                'vendor': 'v',
+                'renderer': 'r',
+                'supported_extensions': ['OES_vertex_array_object', 'EXT_disjoint_timer_query'],
+            }
+        })
+        declared = _js_const(js, 'declared1')
+        assert [name for name, _ in declared['OES_vertex_array_object']['methods']] == [
+            'bindVertexArrayOES',
+            'createVertexArrayOES',
+            'deleteVertexArrayOES',
+            'isVertexArrayOES',
+        ]
+        assert declared['EXT_disjoint_timer_query']['methods'][0] == ['beginQueryEXT', 2]
+
+    def test_webgl_names_the_parameters_extensions_own_and_guards_lost_contexts(self):
+        js = build_fingerprint_js({
+            'webgl': {'vendor': 'v', 'renderer': 'r', 'max_texture_max_anisotropy': 4}
+        })
+        head = 'const extensionOwnedParams = new Set('
+        start = js.index(head) + len(head)
+        owned = json.loads(js[start : js.index(');', start)])
+        assert 0x84FF in owned
+        assert 0x8B8B in owned
+        assert 0x0D33 not in owned
+        assert 'if (real === null && extensionOwnedParams.has(pname)) return real;' in js
+        assert 'const origIsContextLost = proto.isContextLost;' in js
+        assert '_apply(origGetSupportedExtensions, this, []);\n      return null;' in js
+        assert 'const interfaces = new Map();' in js
+
     def test_webgl_without_extension_lists_constructs_nothing(self):
         js = build_fingerprint_js({'webgl': {'vendor': 'v', 'renderer': 'r'}})
         assert 'const ext1 = null;' in js

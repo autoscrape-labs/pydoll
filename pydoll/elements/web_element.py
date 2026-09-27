@@ -533,14 +533,15 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         is_hidden: bool = False,
         is_detached: bool = False,
         is_enabled: bool = False,
-        timeout: int = 0,
+        timeout: float = 0,
     ):
         """Wait for the element to meet every condition you set to True.
 
         ``is_visible`` and ``is_interactable`` wait for the element to show up
         and accept input; ``is_hidden`` waits for it to leave the screen (a
         spinner finishing), ``is_detached`` for it to leave the DOM, and
-        ``is_enabled`` for its ``disabled`` attribute to be cleared.
+        ``is_enabled`` for its ``disabled`` attribute to be cleared. With the
+        default ``timeout`` of 0 the conditions are checked once.
 
         Raises:
             ValueError: If no condition is set to True.
@@ -560,13 +561,17 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         condition_msg = ' and '.join(label for flag, label, _ in checks_map if flag)
 
         logger.info(
-            'Waiting for element: visible=%s, interactable=%s, timeout=%ss',
+            'Waiting for element: visible=%s, interactable=%s, hidden=%s, detached=%s, '
+            'enabled=%s, timeout=%ss',
             is_visible,
             is_interactable,
+            is_hidden,
+            is_detached,
+            is_enabled,
             timeout,
         )
         loop = asyncio.get_running_loop()
-        start_time = loop.time()
+        deadline = loop.time() + timeout
         interval = PollInterval()
         while True:
             results = await asyncio.gather(*(check() for check in checks))
@@ -574,8 +579,8 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
                 logger.info('Element condition satisfied: %s', condition_msg)
                 return
 
-            if timeout and loop.time() - start_time > timeout:
-                logger.error(f'Timeout waiting for element to become {condition_msg}')
+            if loop.time() >= deadline:
+                logger.error('Timeout waiting for element to become %s', condition_msg)
                 raise WaitElementTimeout(f'Timed out waiting for element to become {condition_msg}')
 
             await interval.wait()

@@ -21,9 +21,12 @@ EXTRA = [
     'KHR_parallel_shader_compile',
     'WEBGL_blend_func_extended',
     'WEBGL_compressed_texture_pvrtc',
+    'WEBGL_provoking_vertex',
 ]
+HIDDEN = 'OES_standard_derivatives'
 COMPLETION_STATUS_KHR = 0x91B1
 INVALID_ENUM = 0x0500
+MAX_ANISOTROPY = 8
 
 READ_REAL = """
 (() => {
@@ -82,6 +85,46 @@ PROBE = """
     name: vao.bindVertexArrayOES.name,
     hasPrototype: 'prototype' in vao.bindVertexArrayOES,
   } : null;
+
+  const hidden = document.createElement('canvas').getContext('webgl');
+  out.hidden = {
+    ext: hidden.getExtension('OES_standard_derivatives'),
+    listed: hidden.getSupportedExtensions().includes('OES_standard_derivatives'),
+    hint: hidden.getParameter(0x8B8B),
+    error: hidden.getError(),
+  };
+
+  const aniso = document.createElement('canvas').getContext('webgl');
+  out.anisoBefore = {value: aniso.getParameter(0x84FF), error: aniso.getError()};
+  aniso.getExtension('EXT_texture_filter_anisotropic');
+  out.anisoAfter = {value: aniso.getParameter(0x84FF), error: aniso.getError()};
+
+  const a = document.createElement('canvas').getContext('webgl2');
+  const b = document.createElement('canvas').getContext('webgl2');
+  const pa = a.getExtension('WEBGL_provoking_vertex');
+  const pb = b.getExtension('WEBGL_provoking_vertex');
+  out.provoking = {
+    distinct: pa !== pb,
+    sharedProto: Object.getPrototypeOf(pa) === Object.getPrototypeOf(pb),
+    sameMethod: pa.provokingVertexWEBGL === pb.provokingVertexWEBGL,
+    protoKeys: Object.getOwnPropertyNames(Object.getPrototypeOf(pa)),
+    length: pa.provokingVertexWEBGL.length,
+    returnsUndefined: pa.provokingVertexWEBGL(pa.FIRST_VERTEX_CONVENTION_WEBGL) === undefined,
+    onWebGL1: gl.getExtension('WEBGL_provoking_vertex'),
+  };
+
+  const dying = document.createElement('canvas').getContext('webgl');
+  dying.getExtension('WEBGL_blend_func_extended');
+  dying.getExtension('WEBGL_lose_context').loseContext();
+  out.lost = {
+    isLost: dying.isContextLost(),
+    supported: dying.getSupportedExtensions(),
+    khr: dying.getExtension('KHR_parallel_shader_compile'),
+    blend: dying.getExtension('WEBGL_blend_func_extended'),
+    dual: dying.getParameter(0x88FC),
+    vendor: dying.getParameter(0x9245),
+    error: dying.getError(),
+  };
   return out;
 })()
 """
@@ -129,9 +172,11 @@ def webgl_snapshot():
                 return None, None
             profile = dict(FINGERPRINT_BASE)
             profile['webgl'] = dict(FINGERPRINT_BASE['webgl'])
-            profile['webgl']['supported_extensions'] = real['webgl'] + EXTRA
+            webgl1 = [name for name in real['webgl'] if name != HIDDEN] + EXTRA
+            profile['webgl']['supported_extensions'] = webgl1
             webgl2 = real['webgl2'] + EXTRA + ['OES_vertex_array_object']
             profile['webgl']['webgl2_extensions'] = webgl2
+            profile['webgl']['max_texture_max_anisotropy'] = MAX_ANISOTROPY
             tab = await browser.new_tab()
             await tab.apply_fingerprint(profile)
             await tab.go_to('about:blank')
@@ -155,11 +200,12 @@ def _declared_only(real: list[str]) -> list[str]:
 class TestDeclaredExtensions:
     def test_the_lists_are_the_profiles_in_chrome_order(self, snapshot):
         real, probe = snapshot
-        want1 = set(real['webgl']) | set(EXTRA)
+        want1 = set(real['webgl']) | {name for name in EXTRA if name in WEBGL1_ORDER}
         want1.discard('WEBGL_debug_shaders')
+        want1.discard(HIDDEN)
         assert set(probe['list1']) == want1
         assert probe['list1'] == [name for name in WEBGL1_ORDER if name in want1]
-        want2 = set(real['webgl2']) | set(EXTRA)
+        want2 = set(real['webgl2']) | {name for name in EXTRA if name in WEBGL2_ORDER}
         want2.discard('WEBGL_debug_shaders')
         assert set(probe['list2']) == want2
         assert probe['list2'] == [name for name in WEBGL2_ORDER if name in want2]
@@ -226,3 +272,52 @@ class TestDeclaredExtensions:
         assert probe['vaoMethod']['src'] == 'function bindVertexArrayOES() { [native code] }'
         assert probe['vaoMethod']['name'] == 'bindVertexArrayOES'
         assert probe['vaoMethod']['hasPrototype'] is False
+
+
+class TestChromeParity:
+    """Behaviours measured on a real Chrome the override has to reproduce."""
+
+    def test_hiding_an_extension_does_not_enable_it_inside_chrome(self, snapshot):
+        """Asking Chrome for the extension would enable it and unlock its parameter,
+        so a hidden extension is never requested: its parameter stays INVALID_ENUM."""
+        real, probe = snapshot
+        if HIDDEN not in real['webgl']:
+            pytest.skip(f'host does not expose {HIDDEN}, nothing to hide')
+        assert probe['hidden'] == {'ext': None, 'listed': False, 'hint': None, 'error': INVALID_ENUM}
+
+    def test_a_profile_limit_of_an_extension_parameter_waits_for_the_extension(self, snapshot):
+        _, probe = snapshot
+        assert probe['anisoBefore'] == {'value': None, 'error': INVALID_ENUM}
+        assert probe['anisoAfter'] == {'value': MAX_ANISOTROPY, 'error': 0}
+
+    def test_constructed_extensions_share_one_interface_per_realm(self, snapshot):
+        """Two contexts get two objects on one prototype, so the method is the same
+        function for both, the way Chrome's interface objects behave."""
+        real, probe = snapshot
+        if 'WEBGL_provoking_vertex' in real['webgl2']:
+            pytest.skip('host exposes WEBGL_provoking_vertex itself')
+        provoking = probe['provoking']
+        assert provoking['distinct'] is True
+        assert provoking['sharedProto'] is True
+        assert provoking['sameMethod'] is True
+        assert provoking['protoKeys'] == [
+            'FIRST_VERTEX_CONVENTION_WEBGL',
+            'LAST_VERTEX_CONVENTION_WEBGL',
+            'PROVOKING_VERTEX_WEBGL',
+            'provokingVertexWEBGL',
+        ]
+        assert provoking['length'] == 1
+        assert provoking['returnsUndefined'] is True
+        assert provoking['onWebGL1'] is None
+
+    def test_a_lost_context_answers_null_like_chrome(self, snapshot):
+        _, probe = snapshot
+        assert probe['lost'] == {
+            'isLost': True,
+            'supported': None,
+            'khr': None,
+            'blend': None,
+            'dual': None,
+            'vendor': None,
+            'error': 0x9242,
+        }

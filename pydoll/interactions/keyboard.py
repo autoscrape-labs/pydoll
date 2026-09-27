@@ -206,6 +206,11 @@ class Keyboard:
         """
         Type text character by character.
 
+        The plain path focuses the element once and sends every key event in
+        one batch, so a page that moves focus mid-typing receives the rest of
+        the text wherever focus went; the humanized path re-focuses before
+        each character.
+
         Args:
             text: Text to type.
             humanize: When True, simulates human-like typing with

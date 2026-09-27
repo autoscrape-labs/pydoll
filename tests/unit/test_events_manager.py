@@ -140,3 +140,25 @@ async def test_worker_processes_enqueued_events_in_order():
     finally:
         await manager.stop()
     assert [event['params']['n'] for event in received] == [1, 2]
+
+
+@pytest.mark.asyncio
+async def test_worker_survives_a_sync_callback_that_reads_a_cancelled_future():
+    """``asyncio.wait_for`` cancels the future a callback later reads; the
+    ``CancelledError`` that raises is the callback's, not the worker's, and
+    must not stop event delivery."""
+    manager = EventsManager()
+    loop = asyncio.get_running_loop()
+    cancelled: asyncio.Future[dict] = loop.create_future()
+    cancelled.cancel()
+    received = []
+    manager.register_callback('Network.loadingFinished', lambda event: cancelled.result())
+    manager.register_callback('Custom.marker', received.append)
+    manager.start()
+    try:
+        manager.enqueue_event({'method': 'Network.loadingFinished', 'params': {}})
+        manager.enqueue_event({'method': 'Custom.marker', 'params': {}})
+        await _wait_until(lambda: len(received) == 1)
+        assert not manager._worker_task.done()
+    finally:
+        await manager.stop()

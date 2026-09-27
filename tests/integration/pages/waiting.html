@@ -19,6 +19,7 @@
   <button id="start" type="button">Start timers</button>
   <button id="fetch-data" type="button">Fetch data</button>
   <button id="fetch-missing" type="button">Fetch missing</button>
+  <button id="fetch-empty" type="button">Fetch empty</button>
   <a id="go-next" href="waiting_next.html">Next page</a>
   <button id="push-state" type="button">Push state</button>
 
@@ -48,6 +49,9 @@
     });
     document.getElementById('fetch-missing').addEventListener('click', function () {
       fetch('/api/missing').catch(function () {});
+    });
+    document.getElementById('fetch-empty').addEventListener('click', function () {
+      fetch('/api/empty', { method: 'DELETE' }).catch(function () {});
     });
     document.getElementById('push-state').addEventListener('click', function () {
       history.pushState({}, '', '/app/checkout/42');

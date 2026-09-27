@@ -8,10 +8,10 @@ import pytest_asyncio
 import websockets
 from websockets.asyncio.server import Server, ServerConnection, serve
 
-from tests.browser_options import ci_options
 from pydoll.browser.chromium import Chrome
 from pydoll.browser.tab import Tab
 from pydoll.connection import ConnectionHandler
+from tests.browser_options import ci_options
 
 
 class FakeCDPServer:
@@ -183,14 +183,14 @@ async def tab(browser):
 
     A browser context has its own cookies, storage and cache, so a test sees
     the same isolation as a freshly launched browser at a fraction of the cost
-    (about 0.15 s instead of over a second).
+    (about 0.15 s instead of over a second). Disposing the context closes its
+    tabs, so a test that already closed the tab tears down cleanly.
     """
     context_id = await browser.create_browser_context()
     instance = await browser.new_tab(browser_context_id=context_id)
     try:
         yield instance
     finally:
-        await instance.close()
         await browser.delete_browser_context(context_id)
 
 
@@ -216,5 +216,4 @@ async def oopif_tab(site_per_process_browser):
     try:
         yield instance
     finally:
-        await instance.close()
         await site_per_process_browser.delete_browser_context(context_id)

@@ -61,13 +61,11 @@ class _SilentHandler(http.server.SimpleHTTPRequestHandler):
         pass
 
     def do_GET(self):
-        REQUEST_LOG.append(
-            (
-                self.path,
-                self.headers.get('User-Agent', ''),
-                self.headers.get('Accept-Language', ''),
-            )
-        )
+        REQUEST_LOG.append((
+            self.path,
+            self.headers.get('User-Agent', ''),
+            self.headers.get('Accept-Language', ''),
+        ))
         super().do_GET()
 
 
@@ -119,14 +117,20 @@ def _frames(stack: str) -> list[str]:
 
 
 def _ci_options() -> ChromiumOptions:
-    """Headless options for CI, mirroring the shared ``ci_chrome_options`` fixture
-    (module-scoped here so one browser serves every read-only assertion)."""
+    """Headless options with a software GL (module-scoped here so one browser
+    serves every read-only assertion).
+
+    SwiftShader gives the page a real WebGL context on any host, so the
+    ``WEBGL_debug_shaders`` check runs everywhere; with ``--disable-gpu``
+    ``getContext('webgl')`` is null and the test would skip on every machine.
+    """
     options = ChromiumOptions()
     options.headless = True
     options.start_timeout = 60
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
-    options.add_argument('--disable-gpu')
+    options.add_argument('--use-angle=swiftshader')
+    options.add_argument('--enable-unsafe-swiftshader')
     return options
 
 
@@ -193,9 +197,7 @@ class TestHardenedJavaScriptOverrides:
 
     def test_voices_are_real_prototypes_with_native_receiver_check(self, applied_page):
         page, _ = applied_page
-        assert [v['name'] for v in page['voices']] == [
-            'Microsoft David - English (United States)'
-        ]
+        assert [v['name'] for v in page['voices']] == ['Microsoft David - English (United States)']
         assert page['voices'][0]['ctor'] == 'SpeechSynthesisVoice'
         assert page['voices'][0]['ownProps'] == []
         assert 'Illegal invocation' in page['stacks']['getVoices']
@@ -207,8 +209,6 @@ class TestHardenedJavaScriptOverrides:
 
     def test_debug_shaders_extension_is_hidden(self, applied_page):
         page, _ = applied_page
-        if page['debugShaders'] == 'no-webgl':
-            pytest.skip('WebGL unavailable on this host')
         assert page['debugShaders'] == {'hidden': True, 'listed': False}
 
 
@@ -217,7 +217,10 @@ class TestWebGPU:
         page, workers = applied_page
         gpu = page['webgpu']
         if gpu == 'no adapter':
-            pytest.skip('no WebGPU adapter on this host')
+            pytest.skip(
+                'requestAdapter() returned null: headless Chrome on this host has no WebGPU '
+                'adapter, even on SwiftShader, so the profile has nothing to apply to'
+            )
         assert gpu['vendor'] == 'nvidia'
         assert gpu['architecture'] == 'ampere'
         assert gpu['infoCtor'] == 'GPUAdapterInfo'

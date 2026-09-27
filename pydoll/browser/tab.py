@@ -53,6 +53,7 @@ from pydoll.exceptions import (
     NetworkEventsNotEnabled,
     NoDialogPresent,
     PageLoadTimeout,
+    ScriptEvaluationError,
     TopLevelTargetRequired,
     WaitElementTimeout,
     WaitTimeout,
@@ -71,6 +72,7 @@ from pydoll.protocol.runtime.methods import (
     EvaluateResponse,
     SerializationOptions,
 )
+from pydoll.protocol.runtime.types import ExceptionDetails, RemoteObject
 from pydoll.protocol.target.types import TargetInfo
 from pydoll.utils import (
     PollInterval,
@@ -983,28 +985,50 @@ class Tab(FindElementsMixin):
         """
         Wait until a JavaScript expression evaluates to a truthy value and return it.
 
+        Truthiness is JavaScript's, judged on the page side: a DOM node, a
+        function, an object (even ``{}`` or ``[]``) and a non-empty string or
+        non-zero number are truthy; ``undefined``, ``null``, ``false``, ``0``,
+        ``NaN``, ``-0``, ``0n`` and ``''`` are falsy. A promise is awaited and
+        its settled value is judged.
+
         Args:
             script: An expression such as ``'window.app && window.app.ready'``,
                 or a script with a ``return``.
             timeout: Maximum seconds to wait.
 
         Returns:
-            The first truthy value the script produced.
+            The value itself when it is a primitive (string, number, ``True``),
+            ``True`` for any object, node or function.
 
         Raises:
             WaitTimeout: If the script stays falsy for ``timeout`` seconds.
+            ScriptEvaluationError: As soon as the script throws or its promise
+                rejects, with the JavaScript error text.
         """
         loop = asyncio.get_running_loop()
         deadline = loop.time() + timeout
         interval = PollInterval()
         while True:
-            response = await self.execute_script(script, return_by_value=True)
-            value = response['result']['result'].get('value')
-            if value:
-                return value
+            response = await self.execute_script(script, return_by_value=False, await_promise=True)
+            evaluated = response['result']
+            details = evaluated.get('exceptionDetails')
+            if details is not None:
+                await self._release_remote_object(details.get('exception'))
+                raise ScriptEvaluationError(_exception_text(details))
+            remote = evaluated['result']
+            await self._release_remote_object(remote)
+            if _remote_object_is_truthy(remote):
+                return remote['value'] if 'value' in remote else True
             if loop.time() >= deadline:
                 raise WaitTimeout(f'Timed out after {timeout}s waiting for script: {script!r}')
             await interval.wait()
+
+    async def _release_remote_object(self, remote: RemoteObject | None) -> None:
+        """Free the handle Chrome kept for an object returned by reference."""
+        if remote is None or 'objectId' not in remote:
+            return
+        with contextlib.suppress(CommandFailed):
+            await self._execute_command(RuntimeCommands.release_object(remote['objectId']))
 
     async def wait_for_absence(
         self,
@@ -1157,9 +1181,10 @@ class Tab(FindElementsMixin):
         ]
         try:
             yield
+            deadline = loop.time() + timeout
             try:
                 await asyncio.wait_for(navigated, timeout)
-                await asyncio.wait_for(loaded.wait(), timeout)
+                await asyncio.wait_for(loaded.wait(), max(deadline - loop.time(), 0))
             except asyncio.TimeoutError:
                 raise WaitTimeout(f'Timed out after {timeout}s waiting for a navigation')
         finally:
@@ -1228,6 +1253,8 @@ class Tab(FindElementsMixin):
         The block exits once the response has arrived and its body has been
         read, so ``response.json()`` is ready right after the block: the usual
         way to read the API call a click triggers instead of scraping the DOM.
+        A 204, 205 or 304 response has no body by definition (Chrome reports
+        its load as aborted), so it completes with an empty body.
 
         Args:
             url: A glob, a compiled regular expression, or a callable on the URL.
@@ -1243,16 +1270,26 @@ class Tab(FindElementsMixin):
         loop = asyncio.get_running_loop()
         received: asyncio.Future[dict] = loop.create_future()
         finished: asyncio.Future[bool] = loop.create_future()
+        captured: list[dict] = []
 
         def on_response(event: dict) -> None:
             params = event['params']
             if not received.done() and matches(params['response']['url']):
+                captured.append(params)
                 received.set_result(params)
 
         def on_finished(event: dict) -> None:
-            if received.done() and event['params']['requestId'] == received.result()['requestId']:
-                if not finished.done():
-                    finished.set_result(event['method'] == NetworkEvent.LOADING_FINISHED)
+            if not captured or finished.done():
+                return
+            if event['params']['requestId'] != captured[0]['requestId']:
+                return
+            if event['method'] == NetworkEvent.LOADING_FINISHED:
+                finished.set_result(True)
+                return
+            status = int(captured[0]['response'].get('status', 0))
+            error_text = event['params'].get('errorText', '')
+            aborted = event['params'].get('canceled', False) or 'ERR_ABORTED' in error_text
+            finished.set_result(status in _BODILESS_STATUSES and aborted)
 
         owns_network_events = not self._network_events_enabled
         if owns_network_events:
@@ -1271,7 +1308,9 @@ class Tab(FindElementsMixin):
             except asyncio.TimeoutError:
                 raise WaitTimeout(f'Timed out after {timeout}s waiting for a response from {url!r}')
             body: bytes | None = None
-            if completed:
+            if completed and int(params['response'].get('status', 0)) in _BODILESS_STATUSES:
+                body = b''
+            elif completed:
                 raw: GetResponseBodyResponse = await self._execute_command(
                     NetworkCommands.get_response_body(params['requestId'])
                 )
@@ -2302,6 +2341,34 @@ class DownloadHandle:
 
 
 _SUCCESS_STATUSES = range(200, 300)
+_BODILESS_STATUSES = frozenset({204, 205, 304})
+_FALSY_UNSERIALIZABLE = frozenset({'NaN', '-0', '0n'})
+
+
+def _remote_object_is_truthy(remote: RemoteObject) -> bool:
+    """JavaScript truthiness of a ``Runtime.evaluate`` result returned by reference.
+
+    Primitives travel with ``value`` (or ``unserializableValue`` for NaN, -0,
+    the infinities and bigints); anything carrying an object handle (an
+    object, node, function or symbol) is truthy.
+    """
+    if remote.get('type') == 'undefined' or remote.get('subtype') == 'null':
+        return False
+    if 'unserializableValue' in remote:
+        return remote['unserializableValue'] not in _FALSY_UNSERIALIZABLE
+    if 'value' in remote:
+        return bool(remote['value'])
+    return True
+
+
+def _exception_text(details: ExceptionDetails) -> str:
+    """The first line of the thrown error (``ReferenceError: x is not defined``)."""
+    exception = details.get('exception')
+    if exception is not None:
+        description = exception.get('description') or str(exception.get('value', ''))
+        if description:
+            return description.split('\n', 1)[0]
+    return details.get('text', 'Uncaught')
 
 
 class RequestHandle:
@@ -2396,7 +2463,10 @@ class ResponseHandle:
         return self._response.get('mimeType', '')
 
     def body(self) -> bytes:
-        """The raw body. Raises when loading failed, so there was no body to read."""
+        """The raw body, empty for a 204, 205 or 304.
+
+        Raises when loading failed, so there was no body to read.
+        """
         if self._body is None:
             self._response
             raise WaitTimeout('The response body was not received (the request failed)')

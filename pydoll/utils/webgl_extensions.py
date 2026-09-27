@@ -7,8 +7,11 @@ GPU's extensions instead of the host rasterizer's. Names, interface names,
 constants (in IDL order), methods with their JavaScript ``length`` (required
 parameters only) and the context each extension is registered on were read
 from Blink's modules/webgl IDL and .cc files at SOURCE_REVISION; draft extensions gated behind the
-WebGLDraftExtensions flag are left out. The registration order lists are
-what getSupportedExtensions() follows in Chrome.
+WebGLDraftExtensions flag are left out. Methods are kept in IDL order here;
+the builder emits them sorted by name, which is the order Chrome installs an
+interface's operations in (OES_vertex_array_object exposes bind, create,
+delete, is). The registration order lists are what getSupportedExtensions()
+follows in Chrome.
 """
 
 from __future__ import annotations

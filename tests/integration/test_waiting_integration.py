@@ -19,7 +19,7 @@ import pytest
 import pytest_asyncio
 
 from pydoll import RequestHandle, ResponseHandle
-from pydoll.exceptions import WaitElementTimeout, WaitTimeout
+from pydoll.exceptions import ScriptEvaluationError, WaitElementTimeout, WaitTimeout
 
 PAGES = Path(__file__).parent / 'pages'
 
@@ -30,6 +30,11 @@ class _WaitingHandler(SimpleHTTPRequestHandler):
 
     def log_message(self, format: str, *args: object) -> None:  # noqa: A002
         return
+
+    def do_DELETE(self):  # noqa: N802
+        self.send_response(204)
+        self.send_header('X-Served-By', 'waiting-test')
+        self.end_headers()
 
     def do_POST(self):  # noqa: N802
         length = int(self.headers.get('Content-Length', 0))
@@ -140,6 +145,37 @@ class TestTabWaits:
             await waiting_tab.wait_for_script('window.neverSet', timeout=0.3)
 
     @pytest.mark.asyncio
+    async def test_wait_for_script_judges_truthiness_on_the_page_side(self, waiting_tab):
+        """Nodes, functions and objects do not survive by-value serialization, so
+        the decision is taken on the RemoteObject and ``True`` stands for them."""
+        assert await waiting_tab.wait_for_script('document.getElementById', timeout=1) is True
+        assert await waiting_tab.wait_for_script("document.querySelector('#title')", timeout=1) is True
+        assert await waiting_tab.wait_for_script('({})', timeout=1) is True
+        assert await waiting_tab.wait_for_script('[]', timeout=1) is True
+        assert await waiting_tab.wait_for_script('Promise.resolve(true)', timeout=1) is True
+        assert await waiting_tab.wait_for_script(
+            "new Promise(function (r) { setTimeout(function () { r('done'); }, 50); })", timeout=2
+        ) == 'done'
+        assert await waiting_tab.wait_for_script('return 42', timeout=1) == 42
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize('expression', ['null', 'undefined', '0', "''", 'NaN', 'false', 'Promise.resolve(0)'])
+    async def test_wait_for_script_treats_javascript_falsy_values_as_falsy(self, waiting_tab, expression):
+        with pytest.raises(WaitTimeout):
+            await waiting_tab.wait_for_script(expression, timeout=0.2)
+
+    @pytest.mark.asyncio
+    async def test_wait_for_script_raises_at_once_when_the_script_throws(self, waiting_tab):
+        loop = asyncio.get_running_loop()
+        started = loop.time()
+        with pytest.raises(ScriptEvaluationError) as raised:
+            await waiting_tab.wait_for_script('nothingHere.value', timeout=10)
+        assert loop.time() - started < 2
+        assert raised.value.error_text == 'ReferenceError: nothingHere is not defined'
+        with pytest.raises(ScriptEvaluationError):
+            await waiting_tab.wait_for_script("Promise.reject(new Error('nope'))", timeout=10)
+
+    @pytest.mark.asyncio
     async def test_wait_for_url_after_a_navigation(self, waiting_tab):
         await (await waiting_tab.find(id='go-next')).click()
         url = await waiting_tab.wait_for_url('**/waiting_next.html', timeout=5)
@@ -218,6 +254,17 @@ class TestExpectContextManagers:
         assert response.status == 404
         assert not response.ok
         assert 'Error response' in response.text()
+
+    @pytest.mark.asyncio
+    async def test_expect_response_completes_a_204_with_an_empty_body(self, waiting_tab):
+        """Chrome reports a bodiless response as ``loadingFailed net::ERR_ABORTED``."""
+        async with waiting_tab.expect_response('**/api/empty', timeout=5) as response:
+            await (await waiting_tab.find(id='fetch-empty')).click()
+        assert response.status == 204
+        assert response.ok
+        assert response.headers['X-Served-By'] == 'waiting-test'
+        assert response.body() == b''
+        assert response.text() == ''
 
     @pytest.mark.asyncio
     async def test_expect_request_captures_method_headers_and_post_data(self, waiting_tab):

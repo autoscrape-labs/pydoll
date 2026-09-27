@@ -376,6 +376,14 @@ class InvalidScriptWithElement(ScriptException):
     message = 'Script contains "argument" but no element was provided'
 
 
+class ScriptEvaluationError(ScriptException):
+    """Raised when the script a wait evaluates throws (or its promise rejects)."""
+
+    def __init__(self, error_text: str):
+        self.error_text = error_text
+        super().__init__(message=f'The script threw: {error_text}')
+
+
 class WrongPrefsDict(PydollException):
     """Raised when the prefs dict provided contains the 'prefs' key"""
 
