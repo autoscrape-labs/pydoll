@@ -1,9 +1,11 @@
 """Navigation and load-state tracking driven by Page lifecycle events.
 
 Chrome never emits a ``commit`` lifecycle event: a new document announces
-itself with the ``init`` lifecycle event and ``Page.frameNavigated``, both
-carrying the loader id ``Page.navigate`` returned. Either one marks the
-``commit`` state here so ``wait_until='commit'`` resolves.
+itself with the ``init`` lifecycle event and then ``Page.frameNavigated``,
+both carrying the loader id ``Page.navigate`` returned. ``init`` starts the
+document's state afresh and ``frameNavigated``, which is the one that carries
+the committed URL, marks the ``commit`` state, so ``wait_until='commit'``
+resolves with ``page.url`` already updated.
 """
 
 from __future__ import annotations
@@ -62,15 +64,16 @@ class NavigationTracker:
         name = params['name']
         loader_id = params.get('loaderId', '')
         if name == 'init':
-            state.loader_id = loader_id
-            state.reached = {'commit'}
+            if loader_id != state.loader_id:
+                state.loader_id = loader_id
+                state.reached = set()
             frame = self._page._frame_for_id(params['frameId'])
             frame._reset_world()
             if frame is self._page._main_frame:
                 self._page._forget_detached_frames()
         elif loader_id and loader_id != state.loader_id:
             state.loader_id = loader_id
-            state.reached = {'commit'}
+            state.reached = set()
         state.reached.add(name)
         self._notify()
         if params['frameId'] == self._page._main_frame_id_cache:
